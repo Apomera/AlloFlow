@@ -4526,10 +4526,182 @@ var _alloRepeatedRunNumbers = function (pages, srcText, outText) {
   });
   return credit.join(' ');
 };
-var _numericFidelityLosses = function (srcText, outText) {
-  var src = _extractNumericTokens(srcText), out = _extractNumericTokens(outText), lost = [];
+var _numericFidelityLosses = function (srcText, outText, outputHtml) {
+  var _urlCredit = (outputHtml && typeof _alloPreservedHrefUrlNumbers === 'function')
+    ? _alloPreservedHrefUrlNumbers(srcText, outputHtml)
+    : '';
+  var src = _extractNumericTokens(srcText), out = _extractNumericTokens(_urlCredit ? (String(outText || '') + ' ' + _urlCredit) : outText), lost = [];
   src.forEach(function (cnt, val) { if ((out.get(val) || 0) < cnt) lost.push(val); });
   return lost;
+};
+
+// (2026-11-22, Wave 11B) WCAG 2.4.4 descriptive link text vs. numeric fidelity:
+// When remediation replaces a raw printed URL (e.g. www.lep.gov/resources/EOS_SOI_Philly_012716.pdf
+// or https://www.justice.gov/.../DOJFinLEPFRJun182002.pdf) with descriptive link text while
+// preserving the EXACT destination in a visible, non-empty <a href="...">, digits that originated
+// exclusively inside that preserved source URL are NOT dropped data values.
+// CRITICAL HONESTY RULE: dropped/altered/truncated/hidden/empty hrefs NEVER credit any number,
+// and prose/table numbers outside preserved URLs (or when the link already prints the URL text)
+// are still flagged if dropped.
+var _alloStripTrailingUrlPunct = function (rawUrl) {
+  var s = String(rawUrl || '').trim();
+  while (s.length) {
+    var last = s[s.length - 1];
+    if (/[.,;:!?\u201D\u2019"'\]\}]/.test(last)) { s = s.slice(0, -1); continue; }
+    if (last === ')') {
+      var opens = (s.match(/\(/g) || []).length;
+      var closes = (s.match(/\)/g) || []).length;
+      if (closes > opens) { s = s.slice(0, -1); continue; }
+    }
+    break;
+  }
+  return s;
+};
+
+var _alloNormalizeUrlForFidelity = function (rawUrl) {
+  var s = _alloStripTrailingUrlPunct(
+    String(rawUrl || '')
+      .replace(/&amp;|&#38;|&#x26;/gi, '&')
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;|&apos;/gi, "'")
+  );
+  if (!s) return '';
+  if (/^https?:\/\//i.test(s)) return s.replace(/^https?:\/\//i, 'http://').replace(/\/+$/, '').toLowerCase();
+  if (/^www\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9-]+)+(?:\/|$)/i.test(s)) {
+    return ('http://' + s).replace(/\/+$/, '').toLowerCase();
+  }
+  if (/^mailto:/i.test(s)) {
+    var addr = s.slice(7).trim().toLowerCase();
+    return addr.indexOf('@') > 0 ? ('mailto:' + addr) : '';
+  }
+  if (/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i.test(s)) {
+    return 'mailto:' + s.toLowerCase();
+  }
+  if (/^tel:/i.test(s)) {
+    var phone = s.slice(4).replace(/[\s().-]/g, '').toLowerCase();
+    return (phone.match(/\d/g) || []).length >= 2 ? ('tel:' + phone) : '';
+  }
+  return '';
+};
+
+var _alloPreservedHrefEntries = function (html) {
+  var entries = new Map();
+  var raw = String(html || '');
+  if (!raw || !/<a\b/i.test(raw)) return entries;
+  var _push = function (href, labelText) {
+    var label = String(labelText || '').replace(/\s+/g, ' ').trim();
+    if (!label) return;
+    var key = _alloNormalizeUrlForFidelity(href);
+    if (!key) return;
+    if (!entries.has(key)) entries.set(key, []);
+    entries.get(key).push(label);
+  };
+  if (typeof DOMParser !== 'undefined') {
+    try {
+      var doc = new DOMParser().parseFromString(raw, 'text/html');
+      Array.prototype.forEach.call(
+        doc.querySelectorAll('script,style,template,[hidden],[aria-hidden="true"]'),
+        function (n) { if (n.parentNode) n.parentNode.removeChild(n); }
+      );
+      Array.prototype.forEach.call(doc.querySelectorAll('[style]'), function (n) {
+        var st = n.style;
+        if (st && (st.display === 'none' || st.visibility === 'hidden')) {
+          if (n.parentNode) n.parentNode.removeChild(n);
+        }
+      });
+      Array.prototype.forEach.call(doc.querySelectorAll('a[href]'), function (a) {
+        var imgAlt = Array.prototype.map.call(a.querySelectorAll('img[alt]'), function (im) {
+          return im.getAttribute('alt') || '';
+        }).join(' ');
+        var label = ((a.textContent || '') + ' ' + (a.getAttribute('aria-label') || '') + ' ' + imgAlt).trim();
+        _push(a.getAttribute('href'), label);
+      });
+      return entries;
+    } catch (_) {}
+  }
+  var cleaned = raw
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/<(script|style|template)\b[^>]*>[\s\S]*?<\/\1>/gi, ' ');
+  var re = /<a\b([^>]*)>([\s\S]*?)<\/a>/gi, m;
+  while ((m = re.exec(cleaned)) !== null) {
+    var attrs = m[1] || '', inner = m[2] || '';
+    if (/(?:^|\s)hidden(?:\s|=|$)/i.test(attrs)) continue;
+    if (/aria-hidden\s*=\s*(?:"true"|'true'|true)/i.test(attrs)) continue;
+    if (/style\s*=\s*(?:"[^"]*(?:display\s*:\s*none|visibility\s*:\s*hidden)[^"]*"|'[^']*(?:display\s*:\s*none|visibility\s*:\s*hidden)[^']*')/i.test(attrs)) continue;
+    var hm = attrs.match(/(?:^|\s)href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i);
+    if (!hm) continue;
+    var href = hm[1] != null ? hm[1] : (hm[2] != null ? hm[2] : hm[3]);
+    var al = attrs.match(/(?:^|\s)aria-label\s*=\s*(?:"([^"]*)"|'([^']*)')/i);
+    var ariaLabel = al ? (al[1] != null ? al[1] : al[2]) : '';
+    var altTexts = [];
+    inner.replace(/<img\b[^>]*\balt\s*=\s*(?:"([^"]*)"|'([^']*)')/gi, function (_, d, s) {
+      altTexts.push(d != null ? d : s);
+      return '';
+    });
+    var visibleText = inner.replace(/<[^>]*>/g, ' ');
+    _push(href, visibleText + ' ' + ariaLabel + ' ' + altTexts.join(' '));
+  }
+  return entries;
+};
+
+var _alloPreservedHrefUrls = function (html) {
+  var entries = _alloPreservedHrefEntries(html);
+  var counts = new Map();
+  entries.forEach(function (labels, key) { counts.set(key, labels.length); });
+  return counts;
+};
+
+var _alloPreservedHrefUrlNumbers = function (srcText, html) {
+  var entries = _alloPreservedHrefEntries(html);
+  if (!entries.size) return '';
+  var raw = String(srcText || '');
+  var credits = [];
+  var urlRe = /(?:https?:\/\/[^\s<>()\[\]"']+|(?<![:@\/A-Za-z0-9])www\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9-]+)+(?:\/[^\s<>()\[\]"']*)?|mailto:[^\s<>()\[\]"']+|(?<![:A-Za-z0-9])tel:\+?[\d][\d().\-]*\d|(?<![:\/A-Za-z0-9._%+-])[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,})/gi;
+  var m;
+  while ((m = urlRe.exec(raw)) !== null) {
+    var matched = m[0];
+    var key = _alloNormalizeUrlForFidelity(matched);
+    var bucket = key ? entries.get(key) : null;
+    if ((!bucket || !bucket.length) && /^(?:https?:\/\/|www\.)/i.test(matched)) {
+      var tail = raw.slice(m.index + matched.length);
+      var ext = matched, consumed = 0, found = false;
+      for (var step = 0; step < 2; step++) {
+        var nm = tail.slice(consumed).match(/^(\s+)([^\s<>()\[\]"']+)/);
+        if (!nm) break;
+        ext += nm[2];
+        consumed += nm[0].length;
+        var extKey = _alloNormalizeUrlForFidelity(ext);
+        var extBucket = extKey ? entries.get(extKey) : null;
+        if (extBucket && extBucket.length) {
+          matched = raw.slice(m.index, m.index + m[0].length + consumed);
+          key = extKey;
+          bucket = extBucket;
+          urlRe.lastIndex = m.index + matched.length;
+          found = true;
+          break;
+        }
+      }
+      if (!found) continue;
+    }
+    if (!bucket || !bucket.length) continue;
+    var urlNums = _extractNumericTokens(_alloStripTrailingUrlPunct(matched));
+    if (!urlNums.size) { bucket.shift(); continue; }
+    // Prefer popping a link whose visible text already prints the URL's numbers (prevents double-counting).
+    var bestIdx = 0, bestOverlap = -1;
+    for (var bi = 0; bi < bucket.length; bi++) {
+      var candNums = _extractNumericTokens(bucket[bi]);
+      var ov = 0;
+      urlNums.forEach(function (cnt, val) { ov += Math.min(cnt, candNums.get(val) || 0); });
+      if (ov > bestOverlap) { bestOverlap = ov; bestIdx = bi; }
+    }
+    var linkText = bucket.splice(bestIdx, 1)[0];
+    var linkNums = _extractNumericTokens(linkText);
+    urlNums.forEach(function (cnt, val) {
+      var need = cnt - (linkNums.get(val) || 0);
+      for (var c = 0; c < need; c++) credits.push(val);
+    });
+  }
+  return credits.join(' ');
 };
 
 // Factory: returns all pipeline functions bound to provided deps

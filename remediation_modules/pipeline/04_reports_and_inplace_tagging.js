@@ -3446,6 +3446,7 @@ tr { page-break-inside: avoid; }
     // enumerate-based built-vs-saved tally is unaffected.
     let _perLeafLinked = 0;
     let _offPagePruned = 0; // Option B: unlinked leaves whose text is not on the page, dropped from this PDF's tree
+    const _prunedSyntheticHeadings = []; // Wave 11A: transparent ledger of unprinted synthetic H1-H6 leaves pruned in original_layout mode
     let _noPrintedHeadings = false; // every heading was AI-written and off the page: none left, title stands in
     let _offPageCellsBlanked = 0, _offPageHeaderRowsDropped = 0, _offPageTablesDropped = 0; // Option B for tables (Stage 4b)
     if (!isScanned && _stage4PageResults.length > 0 && _unifiableLeafRefs.length > 0) {
@@ -4110,14 +4111,22 @@ tr { page-break-inside: avoid; }
             const lo = [], hi = [];
             for (let j = li - 1; j >= 0 && lo.length < 2; j--) if (leafSeq[j]._linkedRun) lo.push(_bPgF[leafSeq[j]._linkedRun.end]);
             for (let j = li + 1; j < leafSeq.length && hi.length < 2; j++) if (leafSeq[j]._linkedRun) hi.push(_bPgF[leafSeq[j]._linkedRun.start]);
-            if (!lo.length || !hi.length) continue;
-            const a = Math.min.apply(null, lo), b = Math.max.apply(null, hi);
+            if (!hi.length) continue;
+            const a = lo.length ? Math.min.apply(null, lo) : 0, b = Math.max.apply(null, hi);
             if (a > b || (_bPgF[lf._linkedRun.end] >= a && _bPgF[lf._linkedRun.start] <= b)) continue;
             const d = context.lookup(lf.ref);
             const arr = context.lookup(d.get(PDFName.of('K'))) || d.get(PDFName.of('K'));
             const mine = new Set();
             for (let m = 0; arr && typeof arr.size === 'function' && m < arr.size(); m++) { const mcr = context.lookup(arr.get(m)) || arr.get(m); if (mcr && mcr.get) mine.add(String(mcr.get(PDFName.of('Pg'))) + ':' + Number(String(mcr.get(PDFName.of('MCID'))))); }
-            for (const bk of blockStream) if (mine.has(String(bk.pageRef) + ':' + bk.mcid)) { consumed.delete(String(bk.bRef)); if (bk.parentArr && typeof bk.parentArr.set === 'function') { try { bk.parentArr.set(bk.mcid, bk.bRef); } catch (_) {} } }
+            const freedIdx = [];
+            for (let bi = 0; bi < blockStream.length; bi++) {
+              const bk = blockStream[bi];
+              if (mine.has(String(bk.pageRef) + ':' + bk.mcid)) {
+                consumed.delete(String(bk.bRef));
+                if (bk.parentArr && typeof bk.parentArr.set === 'function') { try { bk.parentArr.set(bk.mcid, bk.bRef); } catch (_) {} }
+                freedIdx.push(bi);
+              }
+            }
             d.delete(PDFName.of('K')); lf._linkedRun = null; _perLeafLinked--; _farHeadings++;
             const tKey = _key(_norm(lf.text));
             const hits = [];
@@ -4132,7 +4141,39 @@ tr { page-break-inside: avoid; }
               d.set(PDFName.of('Pg'), run[0].pageRef);
               for (const x of run) { if (x.parentArr && typeof x.parentArr.set === 'function') { try { x.parentArr.set(x.mcid, lf.ref); } catch (_) {} } consumed.add(String(x.bRef)); }
               lf._linkedRun = hits[0]; _perLeafLinked++; _farRelinked++;
-            } else lf._farLink = true;
+            } else {
+              lf._farLink = true;
+              // If the released run belonged to a real later unlinked leaf with identical text (e.g. a page-2
+              // signature line hijacked by a leading page-1 synthetic H1), hand it directly to that leaf.
+              if (freedIdx.length && tKey) {
+                const freedPg = _bPgF[freedIdx[0]];
+                const claimants = [];
+                for (let oj = 0; oj < leafSeq.length; oj++) {
+                  if (oj === li) continue;
+                  const o = leafSeq[oj];
+                  if (o._linkedRun || !_isStage4bLinkable(o) || _key(_norm(o.text)) !== tKey) continue;
+                  let pLo = -1, pHi = Infinity;
+                  for (let k = oj - 1; k >= 0 && pLo < 0; k--) if (leafSeq[k]._linkedRun) pLo = _bPgF[leafSeq[k]._linkedRun.end];
+                  for (let k = oj + 1; k < leafSeq.length && pHi === Infinity; k++) if (leafSeq[k]._linkedRun) pHi = _bPgF[leafSeq[k]._linkedRun.start];
+                  const fitsWindow = (pLo >= 0 && pHi < Infinity && pLo > pHi)
+                    ? (freedPg === pLo || freedPg === pHi)
+                    : ((pLo < 0 || freedPg >= pLo) && (pHi === Infinity || freedPg <= pHi));
+                  if (fitsWindow) claimants.push(o);
+                }
+                if (claimants.length === 1) {
+                  try {
+                    const targetLf = claimants[0];
+                    const run = freedIdx.map((idx) => blockStream[idx]);
+                    const td = context.lookup(targetLf.ref);
+                    td.set(PDFName.of('K'), context.obj(run.map((x) => context.obj({ Type: PDFName.of('MCR'), Pg: x.pageRef, MCID: PDFNumber.of(x.mcid) }))));
+                    td.set(PDFName.of('Pg'), run[0].pageRef);
+                    for (const x of run) { if (x.parentArr && typeof x.parentArr.set === 'function') { try { x.parentArr.set(x.mcid, targetLf.ref); } catch (_) {} } consumed.add(String(x.bRef)); }
+                    targetLf._linkedRun = { start: freedIdx[0], end: freedIdx[freedIdx.length - 1] };
+                    _perLeafLinked++;
+                  } catch (_) {}
+                }
+              }
+            }
           }
           if (_farHeadings) { try { warnLog('[Stage4b-FarHeading] ' + _farHeadings + ' heading(s) linked to text away from where they sit released (' + _farRelinked + ' re-linked to a copy on their own pages)'); } catch (_) {} }
         } catch (fhErr) { try { warnLog('[Stage4b-FarHeading] non-fatal: ' + (fhErr && fhErr.message)); } catch (_) {} }
@@ -4361,16 +4402,38 @@ tr { page-break-inside: avoid; }
             let hit = 0; b.forEach((x) => { const n = m.get(x) || 0; if (n > 0) { hit++; m.set(x, n - 1); } });
             return (2 * hit) / (a.length + b.length);
           };
-          // A HEADING is printed only as a line of its own: its text is a whole block (or starts one, or
-          // spans up to 3 consecutive blocks), or agrees with one block's words (>= 0.8). Its words
-          // turning up inside a paragraph make a title the AI composed from body text (the OSEP letter's
-          // "IEP Translation: ... Statement of Interest in T.R. v. ..." kept as an orphan H1, 2026-10-19).
-          const _allKeys = blockStream.map((b) => b.key);
+          // A HEADING is printed only as a line of its own in UNCLAIMED page text: its text is a whole
+          // unclaimed block (or spans up to 3 consecutive unclaimed blocks), or starts an unclaimed block as
+          // a standalone/run-in heading (ending within <=3 chars or followed by a run-in delimiter), or
+          // agrees closely with 1-3 consecutive unclaimed blocks (>= 0.8 Dice). Restricting to unclaimed
+          // blocks prevents false positives where a synthetic heading borrows words from an already-linked
+          // paragraph or signature line (e.g. "Title VI" matching "Title VI is a civil rights law...", or
+          // "OSEP: Office of Special Education Programs" matching a page-2 signature line), while preserving
+          // every genuine unlinked printed heading so content-linking failures still fail closed.
+          const _freeSet = new Set(free);
+          const _hasRunInHeadingDelim = (rawBlockText, headingWords) => {
+            if (!rawBlockText || !headingWords || !headingWords.length) return false;
+            const pat = headingWords.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('[\\s\\p{P}]+');
+            try { return new RegExp('^\\s*' + pat + '\\s*([:\\u2014\\u2013\\-.]|$)', 'iu').test(rawBlockText); }
+            catch (_) { return false; }
+          };
           const _printedAsLine = (tKey, lw) => {
-            for (let i = 0; i < _allKeys.length; i++) {
-              if (tKey && _allKeys[i].startsWith(tKey)) return true;
-              if (tKey) { let r = ''; for (let j = i; j < _allKeys.length && j - i < 3; j++) { r += _allKeys[j]; if (r === tKey) return true; if (r.length >= tKey.length) break; } }
-              if (_wordDice(lw, bw[i]) >= 0.8) return true;
+            for (let fi = 0; fi < free.length; fi++) {
+              const i = free[fi];
+              const bk = blockStream[i].key;
+              if (tKey && bk.startsWith(tKey)) {
+                if (bk.length <= tKey.length + 3 || _hasRunInHeadingDelim(blockStream[i].ntext, lw)) return true;
+              }
+              let r = '';
+              let wRun = [];
+              for (let d = 0; d < 3 && (i + d) < blockStream.length && _freeSet.has(i + d); d++) {
+                const idx = i + d;
+                r += blockStream[idx].key;
+                if (tKey && (r === tKey || r === tKey + ':')) return true;
+                wRun = d === 0 ? bw[idx] : wRun.concat(bw[idx]);
+                if (lw.length && _wordDice(lw, wRun) >= 0.8) return true;
+                if (tKey && r.length > tKey.length + 12 && wRun.length > lw.length + 3) break;
+              }
             }
             return false;
           };
@@ -4461,9 +4524,21 @@ tr { page-break-inside: avoid; }
           const isHeading = (r) => /^H[1-6]$/.test(r);
           const headingsTotal = _unifiableLeafRefs.filter((lf) => isHeading(lf.role)).length;
           const headingCands = candidates.filter((c) => isHeading(c.lf.role)).length;
+          const _effectiveDocTitle = String(
+            (meta && meta.title)
+            || (typeof doc.getTitle === 'function' ? doc.getTitle() : '')
+            || (htmlDoc && htmlDoc.title && !/^Accessible Document\b/i.test(String(htmlDoc.title).trim()) ? htmlDoc.title : '')
+            || ''
+          ).trim();
           if (headingsTotal > 0 && headingCands === headingsTotal) {
-            if (meta && meta.title) _noPrintedHeadings = true;
-            else candidates.splice(candidates.findIndex((c) => isHeading(c.lf.role)), 1);
+            if (_effectiveDocTitle) {
+              _noPrintedHeadings = true;
+              if (!(meta && meta.title) && !(typeof doc.getTitle === 'function' && String(doc.getTitle() || '').trim())) {
+                try { doc.setTitle(_effectiveDocTitle); } catch (_) {}
+              }
+            } else {
+              candidates.splice(candidates.findIndex((c) => isHeading(c.lf.role)), 1);
+            }
           }
           for (const { lf, repeat } of candidates) {
             const leafDict = context.lookup(lf.ref);
@@ -4477,7 +4552,20 @@ tr { page-break-inside: avoid; }
             } else if (pk && String(pk) === String(lf.ref)) { parent.delete(PDFName.of('K')); removed = true; }
             // (2026-10-27) A top-level leaf is attached later from structElemRefs, which would put it back.
             for (let i = structElemRefs.length - 1; i >= 0; i--) if (String(structElemRefs[i]) === String(lf.ref)) { structElemRefs.splice(i, 1); removed = true; }
-            if (removed) { lf._offPage = true; _offPagePruned++; if (samples.length < 4) samples.push(lf.role + (repeat ? ' (repeat)' : '') + ' "' + String(lf.text).slice(0, 50) + '"'); }
+            if (removed) {
+              lf._offPage = true;
+              _offPagePruned++;
+              if (isHeading(lf.role)) {
+                const _rec = {
+                  role: lf.role,
+                  text: String(lf.text || '').replace(/\s+/g, ' ').trim().slice(0, 120),
+                  reason: repeat ? 'duplicate-of-linked' : (lf._farLink ? 'far-match-not-on-page' : 'not-in-source-text'),
+                };
+                lf._syntheticHeadingRecord = _rec;
+                _prunedSyntheticHeadings.push(_rec);
+              }
+              if (samples.length < 4) samples.push(lf.role + (repeat ? ' (repeat)' : '') + ' "' + String(lf.text).slice(0, 50) + '"');
+            }
           }
           // A dropped heading must not leave its sub-headings skipping a level (veraPDF 7.4.2-1 on IRS
           // 1040: H1 then H3). Re-level the remaining headings in reading order: never more than one
@@ -4833,6 +4921,35 @@ tr { page-break-inside: avoid; }
             if (d._tableAlt) continue;
             try { const fd = context.lookup(d.ref); fd.set(PDFName.of('S'), PDFName.of('NonStruct')); fd.set(PDFName.of('Alt'), PDFString.of('')); } catch (_) {}
           }
+          // Wave 11A: When a pruned synthetic H1 immediately preceded/followed a linked page-1 raster banner
+          // Figure, record that relationship transparently and ensure the Figure's /Alt carries the title if
+          // it previously only had a generic "(image)" placeholder.
+          try {
+            const p1RefStr = pages.length > 0 ? String(pages[0].ref) : '';
+            if (p1RefStr && _prunedSyntheticHeadings.length > 0) {
+              for (let ui = 0; ui < _unifiableLeafRefs.length; ui++) {
+                const lf = _unifiableLeafRefs[ui];
+                if (!lf || !lf._offPage || !lf._syntheticHeadingRecord || lf.role !== 'H1') continue;
+                const adj = [_unifiableLeafRefs[ui + 1], _unifiableLeafRefs[ui - 1]].find((n) => n && n.role === 'Figure' && !n._offPage);
+                if (!adj) continue;
+                const fd = context.lookup(adj.ref);
+                if (!fd || typeof fd.get !== 'function' || fd.get(PDFName.of('K')) == null) continue;
+                if (String(fd.get(PDFName.of('Pg')) || '') !== p1RefStr) continue;
+                lf._syntheticHeadingRecord.adjacentBannerFigure = true;
+                const rawAlt = fd.get(PDFName.of('Alt'));
+                const curAlt = rawAlt && typeof rawAlt.decodeText === 'function' ? rawAlt.decodeText().trim() : String(rawAlt || '').trim();
+                if (!curAlt || curAlt === '(image)') {
+                  const hTxt = String(lf.text || '').replace(/\s+/g, ' ').trim();
+                  if (hTxt) {
+                    fd.set(PDFName.of('Alt'), PDFHexString.fromText(hTxt));
+                    lf._syntheticHeadingRecord.bannerFigureAltPopulated = true;
+                  }
+                } else {
+                  lf._syntheticHeadingRecord.bannerFigureAltPreserved = true;
+                }
+              }
+            }
+          } catch (_) {}
         } catch (figErr) { try { warnLog('[Stage4c-Figures] non-fatal: ' + (figErr && figErr.message)); } catch (_) {} }
         // ── Page text no leaf claimed (2026-11-04, budget_v5) ── It stayed real content in page Sects AFTER the document,
         // so the PDF read on past its last section: "u" bullets, "3", "4", ... page numbers, axis ticks and a second H1.
@@ -6427,6 +6544,8 @@ tr { page-break-inside: avoid; }
         _summary.unreadableTextPages = Array.from(_unreadableTagPages).map((i) => i + 1);
         // Option B: what this PDF leaves to the HTML export (text not on the page)
         _summary.offPageLeavesDropped = _offPagePruned;
+        _summary.prunedSyntheticHeadings = _prunedSyntheticHeadings.slice(0, 20);
+        _summary.prunedSyntheticHeadingCount = _prunedSyntheticHeadings.length;
         _summary.imageTextMovedToAlt = _imageTextMovedToAlt;
         _summary.provenanceFooterDropped = _provenanceFooterDropped;
         _summary.noPrintedHeadings = _noPrintedHeadings;

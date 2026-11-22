@@ -8118,6 +8118,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         try {
           const _outPlainV = htmlToPlainText(_finalForIntegrity);
           const _lostVals = _numericFidelityLosses(_srcRaw, _outPlainV + ' ' + _alloListMarkerNumbers(_srcRaw, _finalForIntegrity) + ' ' + _alloFolioNumbers(typeof window !== 'undefined' ? window.__lastGroundTruthPageMap : null) + ' ' + _alloFurnitureNumbers() + ' ' + _alloFigureTextNumbers()
+            + ' ' + (typeof _alloPreservedHrefUrlNumbers === 'function' ? _alloPreservedHrefUrlNumbers(_srcRaw, _finalForIntegrity) : '')
             + ' ' + _alloRepeatedRunNumbers(typeof window !== 'undefined' ? window.__lastGroundTruthPageMap : null, _srcRaw, _outPlainV)
             + ' ' + _alloAxisScaleNumbers(typeof window !== 'undefined' ? window.__lastGroundTruthPageMap : null, _srcRaw, _outPlainV));
           if (_lostVals.length) {

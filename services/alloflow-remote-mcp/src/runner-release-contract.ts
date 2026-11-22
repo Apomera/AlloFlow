@@ -10,7 +10,7 @@ export const RUNNER_RELEASE_CONTRACT = {
   },
   "build": {
     "runnerBuildSha256": "a34b534555d86ee454c90fa0fb990f79de22375294209c44a615c0192166aea9",
-    "manifestSha256": "1203e2981e441b62143168ebaebb9120e7b39c2c8f02cf3cbb1e38688bd38f0f"
+    "manifestSha256": "6d91ed720b443e6adbd184cdb25b499c4e50de35f2aee047e67bf889060abe3e"
   },
   "modelConfig": {
     "geminiBase": "http://gemini.internal/v1beta/models"

@@ -584,15 +584,35 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
   // HTML whitespace is not a printed line end: "Nay-</em></p>\n<h2>Election" was joined as "nayelection" by the
   // source's hyphen-wrap rule (agenda, 2026-10-27), so the output's whitespace is collapsed first.
   const source=tokens(sourceText),output=tokens(String(doc.body.textContent||'').replace(/\s+/g,' ')),available=new Map();for(const token of output)available.set(token,(available.get(token)||0)+1);
-  // (2026-11-19) Bare printed URLs converted into WCAG 2.4.4 descriptive links (<a href="http://...">Descriptive label</a>)
-  // carry the URL in href rather than printing "http://..." verbatim. Credit each printed URL's exact source token span
-  // 1-to-1 when a visible, non-empty <a href> preserves that normalized URL, without adding extra tokens to available.
+  // (2026-11-19, hardened 2026-11-22 Wave 11B) Bare printed URLs (http(s)://, www., mailto:, bare emails, tel:)
+  // converted into WCAG 2.4.4 descriptive links (<a href="...">Descriptive label</a>) carry the URL in href rather
+  // than printing the raw address verbatim. Credit each printed URL's exact source token span 1-to-1 ONLY when a
+  // visible, non-empty <a href> preserves that exact normalized URL (and does not already print the raw URL as its
+  // visible text, preventing double-counting), without adding extra tokens to available.
   const sourceUrlCredits=new Set();
+  let preservedHrefUrlsCount=0;
   {
+    const stripPunct=u=>{
+      let s=String(u||'').trim();
+      while(s.length){
+        const last=s[s.length-1];
+        if(/[.,;:!?\u201D\u2019"'\]\}]/.test(last)){s=s.slice(0,-1);continue;}
+        if(last===')'){
+          const opens=(s.match(/\(/g)||[]).length,closes=(s.match(/\)/g)||[]).length;
+          if(closes>opens){s=s.slice(0,-1);continue;}
+        }
+        break;
+      }
+      return s;
+    };
     const normUrl=u=>{
-      const s=String(u||'').trim().replace(/[.,;:!?)\]}]+$/,'');
+      const s=stripPunct(String(u||'').replace(/&amp;|&#38;|&#x26;/gi,'&').replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'"));
+      if(!s)return '';
       if(/^https?:\/\//i.test(s))return s.replace(/^https?:\/\//i,'http://').replace(/\/+$/,'').toLowerCase();
-      if(/^mailto:/i.test(s))return s.toLowerCase();
+      if(/^www\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9-]+)+(?:\/|$)/i.test(s))return ('http://'+s).replace(/\/+$/,'').toLowerCase();
+      if(/^mailto:/i.test(s)){const a=s.slice(7).trim().toLowerCase();return a.includes('@')?'mailto:'+a:'';}
+      if(/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i.test(s))return 'mailto:'+s.toLowerCase();
+      if(/^tel:/i.test(s)){const p=s.slice(4).replace(/[\s().-]/g,'').toLowerCase();return (p.match(/\d/g)||[]).length>=2?'tel:'+p:'';}
       return '';
     };
     const hrefCounts=new Map();
@@ -600,30 +620,58 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
       const label=((a.textContent||'')+' '+(a.getAttribute('aria-label')||'')).trim();
       if(!label)continue;
       const key=normUrl(a.getAttribute('href'));
-      if(key)hrefCounts.set(key,(hrefCounts.get(key)||0)+1);
+      if(!key)continue;
+      // When the anchor prints the raw URL verbatim as its visible text, its tokens already sit in `available`;
+      // skipping hrefCounts avoids double-crediting (so a dropped prose copy elsewhere is still caught).
+      if(normUrl(a.textContent||'')===key)continue;
+      hrefCounts.set(key,(hrefCounts.get(key)||0)+1);
     }
     if(hrefCounts.size){
       const rawSrc=String(sourceText||'');
-      let prevIdx=0,tokPos=0;
-      for(const m of rawSrc.matchAll(/\b(?:https?:\/\/[^\s<>()\[\]"']+|mailto:[^\s<>()\[\]"']+)/gi)){
+      const urlRe=/(?:https?:\/\/[^\s<>()\[\]"']+|(?<![:@/\p{L}\p{N}])www\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9-]+)+(?:\/[^\s<>()\[\]"']*)?|mailto:[^\s<>()\[\]"']+|(?<![:\p{L}\p{N}])tel:\+?[\d][\d().\-]*\d|(?<![:/\p{L}\p{N}._%+-])[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,})/giu;
+      let prevIdx=0,tokPos=0,m;
+      while((m=urlRe.exec(rawSrc))!==null){
         tokPos+=tokens(rawSrc.slice(prevIdx,m.index)).length;
         prevIdx=m.index;
-        const trimmed=m[0].replace(/[.,;:!?)\]}]+$/,'');
-        const key=normUrl(trimmed);
-        const n=key?(hrefCounts.get(key)||0):0;
+        let spanText=m[0];
+        let trimmed=stripPunct(spanText);
+        let key=normUrl(trimmed);
+        let n=key?(hrefCounts.get(key)||0):0;
+        // Handle PDF line-wrapped URLs ONLY when concatenating 1-2 continuation pieces matches an exact preserved href.
+        if(!n&&/^(?:https?:\/\/|www\.)/i.test(spanText)){
+          const tail=rawSrc.slice(m.index+spanText.length);
+          let ext=spanText,consumed=0;
+          for(let step=0;step<2;step++){
+            const nm=tail.slice(consumed).match(/^(\s+)([^\s<>()\[\]"']+)/);
+            if(!nm)break;
+            ext+=nm[2];
+            consumed+=nm[0].length;
+            const extKey=normUrl(ext);
+            const extN=extKey?(hrefCounts.get(extKey)||0):0;
+            if(extN){
+              spanText=rawSrc.slice(m.index,m.index+m[0].length+consumed);
+              trimmed=stripPunct(spanText);
+              key=extKey;
+              n=extN;
+              urlRe.lastIndex=m.index+spanText.length;
+              break;
+            }
+          }
+        }
         if(!n)continue;
         const urlToks=tokens(trimmed);
         if(!urlToks.length)continue;
         let hit=-1;
-        for(const d of [0,-1,1,-2,2]){
+        for(const d of [0,-1,1,-2,2,-3,3,-4,4,-5,5]){
           const at=tokPos+d;
           if(at<0||at+urlToks.length>source.length)continue;
           let ok=true;
-          for(let j=0;j<urlToks.length;j++){if(source[at+j]!==urlToks[j]){ok=false;break;}}
+          for(let j=0;j<urlToks.length;j++){if(source[at+j]!==urlToks[j]||sourceUrlCredits.has(at+j)){ok=false;break;}}
           if(ok){hit=at;break;}
         }
         if(hit>=0){
           hrefCounts.set(key,n-1);
+          preservedHrefUrlsCount++;
           for(let j=0;j<urlToks.length;j++)sourceUrlCredits.add(hit+j);
         }
       }
@@ -686,6 +734,6 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
   const pageIds=items=>Array.isArray(items)?items.slice(0,100).map(item=>typeof item==='number'?item:item?.pageNum??item?.page??null).filter(value=>Number.isSafeInteger(value)&&value>0):[];
   const extraction={method:method||'unknown',pagesExamined:pageList?pageList.length:null,emptyPageCandidates:pageList?pageList.filter(page=>!String(page?.text||'').trim()).length:null,pageErrorCount:Array.isArray(pageErrors)?pageErrors.length:null,lowConfidencePageCount:Array.isArray(lowConfidencePages)?lowConfidencePages.length:null,errorPages:pageIds(pageErrors),lowConfidencePages:pageIds(lowConfidencePages)};
   const reviewRequired=!source.length||missingTokens>0||(extraction.pageErrorCount||0)>0||(extraction.lowConfidencePageCount||0)>0;
-  return {status:!source.length?'unavailable':reviewRequired?'review_required':'matched',reviewRequired,method:'normalized-token-occurrence-check',sourceTokens:source.length,outputTokens:output.length+sourceMarkerCredits.size,matchedTokens:source.length-missingTokens,missingTokens,tokenRecall:source.length?Math.round((source.length-missingTokens)/source.length*10000)/10000:null,missingPassages,missingPassagesTruncated:Math.max(0,missingPassageCount-50),missingWords:[...missingWordCounts].map(([word,count])=>({word,count})),...(figureWordsCredited?{figureWordsCredited}:{}),...(furnitureWordsCredited?{furnitureWordsCredited}:{}),extraction,scope:{pageRange:pageRange||null,wholeDocument:!pageRange},note:'Compares extracted source token occurrences with HTML. Missing tokens can reflect omissions or rewording and require review. A match does not establish reading order, semantic fidelity, correct OCR or visual coverage. Empty page candidates may be intentionally blank.'};
+  return {status:!source.length?'unavailable':reviewRequired?'review_required':'matched',reviewRequired,method:'normalized-token-occurrence-check',sourceTokens:source.length,outputTokens:output.length+sourceMarkerCredits.size,matchedTokens:source.length-missingTokens,missingTokens,tokenRecall:source.length?Math.round((source.length-missingTokens)/source.length*10000)/10000:null,missingPassages,missingPassagesTruncated:Math.max(0,missingPassageCount-50),missingWords:[...missingWordCounts].map(([word,count])=>({word,count})),...(figureWordsCredited?{figureWordsCredited}:{}),...(furnitureWordsCredited?{furnitureWordsCredited}:{}),...(preservedHrefUrlsCount?{preservedHrefUrlsCount}:{}),extraction,scope:{pageRange:pageRange||null,wholeDocument:!pageRange},note:'Compares extracted source token occurrences with HTML. Missing tokens can reflect omissions or rewording and require review. A match does not establish reading order, semantic fidelity, correct OCR or visual coverage. Empty page candidates may be intentionally blank.'};
 }
 module.exports={assessSourceCoverage,LABELS,normalizeLanguage,voiceCatalog,selectVoice,planDocument,routePlan,kokoroVoiceIds};

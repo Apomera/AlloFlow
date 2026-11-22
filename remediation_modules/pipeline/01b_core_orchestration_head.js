@@ -3309,6 +3309,7 @@ var createDocPipeline = function(deps) {
       try {
         const _outPlainR = htmlToPlainText(_stripSinks(html));
         const lostVals = _numericFidelityLosses(sourceText, _outPlainR + ' ' + _alloListMarkerNumbers(sourceText, _stripSinks(html)) + ' ' + _alloFolioNumbers(typeof window !== 'undefined' ? window.__lastGroundTruthPageMap : null) + ' ' + _alloFurnitureNumbers() + ' ' + _alloFigureTextNumbers()
+          + ' ' + (typeof _alloPreservedHrefUrlNumbers === 'function' ? _alloPreservedHrefUrlNumbers(sourceText, _stripSinks(html)) : '')
           + ' ' + _alloRepeatedRunNumbers(typeof window !== 'undefined' ? window.__lastGroundTruthPageMap : null, sourceText, _outPlainR)
           + ' ' + _alloAxisScaleNumbers(typeof window !== 'undefined' ? window.__lastGroundTruthPageMap : null, sourceText, _outPlainR));
         if (lostVals.length) {
