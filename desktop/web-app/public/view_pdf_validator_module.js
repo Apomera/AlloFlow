@@ -15,19 +15,33 @@
 // institutional-grade third-party validator that complements both —
 // see dev-tools/demo/verapdf_check.cjs + docs/verapdf_install.md.
 //
-// HAND-MAINTAINED — no build script. Update in lockstep with the CLI version
-// (dev-tools/demo/exported_pdf_validator.cjs) if you change the rule set, so
-// the CLI and in-Canvas versions stay aligned. (Exception: the reading notes below are
-// advisory, in-Canvas only; the CLI has no equivalent.)
+// UNIFIED CORE — shared directly by the in-Canvas browser runtime
+// (window.AlloModules.PdfValidator) and the Node CLI validator
+// (dev-tools/demo/exported_pdf_validator.cjs) via UMD/CJS module.exports.
 
-(function () {
+(function (root, factory) {
   'use strict';
 
-  if (typeof window === 'undefined') return;
-  if (window.AlloModules && window.AlloModules.PdfValidator) {
+  var hasWindow = typeof window !== 'undefined';
+  var hasModuleExports = typeof module === 'object' && module && module.exports;
+  if (!hasWindow && !hasModuleExports) return;
+  if (hasWindow && window.AlloModules && window.AlloModules.PdfValidator) {
     try { console.log('[PdfValidator] already loaded, skipping'); } catch (_) {}
+    if (hasModuleExports) module.exports = window.AlloModules.PdfValidator;
     return;
   }
+
+  var api = factory(hasWindow ? window : null, hasModuleExports);
+  if (hasWindow) {
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.PdfValidator = api;
+    try { console.log('[PdfValidator] Loaded — window.AlloModules.PdfValidator.validateExportedPdfBytes(bytes)'); } catch (_) {}
+  }
+  if (hasModuleExports) {
+    module.exports = api;
+  }
+})(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : this), function (win, hasModuleExports) {
+  'use strict';
 
   var LEAF_ROLES = ['H1','H2','H3','H4','H5','H6','P','Figure','Caption','BlockQuote','Lbl','LBody','TH','TD','Span','Link'];
   var CONTAINER_ROLES = ['Document','Part','Article','Sect','Section','Div','NonStruct','Private','Table','TR','TBody','THead','TFoot','L','LI'];
@@ -207,10 +221,41 @@
   var MAX_PDF_BYTES = 100 * 1024 * 1024;
   var MAX_XMP_BYTES = 1024 * 1024;
 
-  // ── Main validator: takes PDF bytes (Uint8Array), returns a structured report ──
-  async function validateExportedPdfBytes(bytes) {
-    if (typeof window === 'undefined' || !window.PDFLib) {
-      return { error: 'window.PDFLib not available — this module must run after pdf-lib is loaded' };
+  function resolvePdfLib(options) {
+    if (options && (options.pdfLib || options.PDFLib)) return options.pdfLib || options.PDFLib;
+    if (win && win.PDFLib) return win.PDFLib;
+    if (typeof window !== 'undefined' && window.PDFLib) return window.PDFLib;
+    if (typeof globalThis !== 'undefined' && globalThis.PDFLib) return globalThis.PDFLib;
+    if (hasModuleExports && typeof require === 'function') {
+      var pathMod = null;
+      try { pathMod = require('path'); } catch (_) {}
+      var candidates = [
+        pathMod && typeof __dirname === 'string' ? pathMod.join(__dirname, 'desktop', 'mcp', 'vendor', 'pdf-lib.min.js') : './desktop/mcp/vendor/pdf-lib.min.js',
+        pathMod && typeof __dirname === 'string' ? pathMod.join(__dirname, 'node_modules', 'pdf-lib') : 'pdf-lib',
+        'pdf-lib',
+        'C:/tmp/node_modules/pdf-lib',
+      ];
+      for (var ci = 0; ci < candidates.length; ci++) {
+        try {
+          var loaded = require(candidates[ci]);
+          if (loaded && loaded.PDFDocument) return loaded;
+        } catch (_) {}
+      }
+    }
+    return null;
+  }
+
+  // ── Main validator: takes PDF bytes (Uint8Array / Buffer / ArrayBuffer), returns a structured report ──
+  async function validateExportedPdfBytes(bytes, options) {
+    var PDFLib = resolvePdfLib(options);
+    if (!PDFLib) {
+      return {
+        error: hasModuleExports
+          ? 'pdf-lib not available — pass { pdfLib } in Node or load window.PDFLib in the browser'
+          : 'window.PDFLib not available — this module must run after pdf-lib is loaded',
+        checks: [],
+        summary: { overall: 'ERROR', pass: 0, fail: 0 },
+      };
     }
     var pdfBytes = null;
     if (bytes instanceof Uint8Array) pdfBytes = bytes;
@@ -222,7 +267,6 @@
     if (pdfBytes.byteLength > MAX_PDF_BYTES) {
       return { error: 'PDF exceeds maximum validator size limit', checks: [], summary: { overall: 'ERROR', pass: 0, fail: 0 } };
     }
-    var PDFLib = window.PDFLib;
     var PDFDocument = PDFLib.PDFDocument;
     var PDFName = PDFLib.PDFName;
     var PDFRef = PDFLib.PDFRef;
@@ -536,10 +580,13 @@
     };
   }
 
-  window.AlloModules = window.AlloModules || {};
-  window.AlloModules.PdfValidator = Object.freeze({
+  return Object.freeze({
     validateExportedPdfBytes: validateExportedPdfBytes,
+    validatePdfStructure: validateExportedPdfBytes,
     readingNotes: readingNotes,
+    walkStructTree: walkStructTree,
+    isMarkerLbl: isMarkerLbl,
+    LEAF_ROLES: Object.freeze(LEAF_ROLES.slice()),
+    CONTAINER_ROLES: Object.freeze(CONTAINER_ROLES.slice()),
   });
-  try { console.log('[PdfValidator] Loaded — window.AlloModules.PdfValidator.validateExportedPdfBytes(bytes)'); } catch (_) {}
-})();
+});

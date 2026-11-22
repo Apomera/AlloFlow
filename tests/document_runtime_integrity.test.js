@@ -243,7 +243,11 @@ it('disables PDF.js dynamic evaluation at every document call site', () => {
 
 it('pins every actual private classic-loader URL in the reviewed document catalog', () => {
   const manifest = JSON.parse(fs.readFileSync('document_runtime_integrity.json', 'utf8'));
-  const allowed = new Set(Object.values(manifest.assets).flatMap(record => [...(record.aliases || []), ...record.mirrors.map(mirror => mirror.url)]));
+  const allowed = new Set(Object.values(manifest.assets).flatMap(record => [
+    ...(record.aliases || []),
+    ...(record.path ? ['https://alloflow-cdn.pages.dev/' + record.path] : []),
+    ...record.mirrors.map(mirror => mirror.url),
+  ]));
   const urls = new Set(), arrays = new Set(['_AXE_CDN_URLS', '_DOMPURIFY_CDN_URLS', '_ACE_CDN_URLS']);
   const add = node => {
     expect(node?.type).toBe('ArrayExpression');

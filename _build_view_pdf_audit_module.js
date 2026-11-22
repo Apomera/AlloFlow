@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 /**
- * Build view_pdf_audit_module.js from view_pdf_audit_source.jsx
+ * Build view_pdf_audit_module.js from remediation_modules/view/* (via view_manifest.cjs)
+ * and generated-compatibility view_pdf_audit_source.jsx.
  *
- * Usage: node _build_view_pdf_audit_module.js
+ * Usage:
+ *   node _build_view_pdf_audit_module.js
+ *   node _build_view_pdf_audit_module.js --check
  *
  * Component: PdfAuditView — the PDF accessibility audit modal extracted
  * from AlloFlowANTI.txt L30982-L38171 (Round 4 Tier A, May 2026).
@@ -13,21 +16,52 @@
  */
 
 const { execSync } = require('child_process');
+const { Script } = require('vm');
 const fs = require('fs');
 const path = require('path');
+const esbuild = require('esbuild');
 
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'view_pdf_audit_source.jsx');
 const OUTPUT = path.join(ROOT, 'view_pdf_audit_module.js');
 const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'view_pdf_audit_module.js');
-const TMP = path.join(ROOT, '_tmp_view_pdf_audit_entry.jsx');
+const TEXT_OUTPUT = path.join(ROOT, 'document_narration_text_module.js');
+const TEXT_DEPLOY_OUT = path.join(ROOT, 'desktop', 'web-app', 'public', 'document_narration_text_module.js');
+const VIEW_MANIFEST_PATH = path.join(ROOT, 'remediation_modules', 'view_manifest.cjs');
+const IS_CHECK = process.argv.includes('--check');
 
-if (!fs.existsSync(SOURCE)) {
-    console.error('[ViewPdfAudit] Source not found:', SOURCE);
-    process.exit(1);
+const viewManifest = fs.existsSync(VIEW_MANIFEST_PATH) ? require(VIEW_MANIFEST_PATH) : null;
+
+let source;
+if (IS_CHECK) {
+    if (viewManifest) {
+        const syncStatus = viewManifest.checkViewPdfAuditSync(ROOT);
+        if (!syncStatus.inSync) {
+            console.error('[ViewPdfAudit] STALE source (rebuild with node _build_view_pdf_audit_module.js): ' + path.relative(ROOT, SOURCE) + ' does not match remediation_modules/view/*');
+            process.exit(1);
+        }
+        source = viewManifest.assembleViewPdfAuditSource(ROOT);
+    } else {
+        if (!fs.existsSync(SOURCE)) {
+            console.error('[ViewPdfAudit] Source not found:', SOURCE);
+            process.exit(1);
+        }
+        source = fs.readFileSync(SOURCE, 'utf-8');
+    }
+} else if (viewManifest) {
+    const synced = viewManifest.syncViewPdfAuditSource(ROOT);
+    source = synced.source;
+    if (synced.written) {
+        console.log('[ViewPdfAudit] Assembled ' + path.relative(ROOT, SOURCE) + ' from ' + synced.partCount + ' modular parts');
+    }
+} else {
+    if (!fs.existsSync(SOURCE)) {
+        console.error('[ViewPdfAudit] Source not found:', SOURCE);
+        process.exit(1);
+    }
+    source = fs.readFileSync(SOURCE, 'utf-8');
 }
 
-const source = fs.readFileSync(SOURCE, 'utf-8');
 // Keep the UMD helper outside JSX compilation. Its module.exports compatibility
 // branch would otherwise make esbuild wrap the whole entry as CommonJS/ESM.
 const reviewHelpers = fs.readFileSync(path.join(ROOT, 'remediation_review_helpers.js'), 'utf8');
@@ -41,26 +75,28 @@ ${fs.readFileSync(path.join(ROOT, 'remediation_review_component.jsx'), 'utf8')}
 ${source}
 `;
 
-writeBuildFile(TMP, entry, 'utf-8');
-
-console.log('[ViewPdfAudit] Compiling with esbuild...');
+if (!IS_CHECK) {
+    console.log('[ViewPdfAudit] Compiling with esbuild...');
+}
+let transformedCode;
 try {
-    execSync('npx esbuild "' + TMP + '" --bundle=false --format=esm --jsx=transform --jsx-factory=React.createElement --jsx-fragment=React.Fragment --outfile="' + TMP + '.compiled.js" --target=es2020', {
-        cwd: ROOT,
-        stdio: 'inherit'
-    });
+    transformedCode = esbuild.transformSync(entry, {
+        loader: 'jsx',
+        format: 'esm',
+        jsx: 'transform',
+        jsxFactory: 'React.createElement',
+        jsxFragment: 'React.Fragment',
+        target: 'es2020',
+        sourcefile: '_tmp_view_pdf_audit_entry.jsx',
+    }).code;
 } catch (e) {
-    console.error('[ViewPdfAudit] esbuild compilation failed');
-    try { fs.unlinkSync(TMP); } catch(_){}
+    console.error('[ViewPdfAudit] esbuild compilation failed:', e && e.message ? e.message : e);
     process.exit(1);
 }
 
-const compiled = fs.readFileSync(TMP + '.compiled.js', 'utf-8')
+const compiled = transformedCode
     .replace(/\/\*.*global.*\*\/\n/g, '')
     .trim();
-
-try { fs.unlinkSync(TMP); } catch(_){}
-try { fs.unlinkSync(TMP + '.compiled.js'); } catch(_){}
 
 const outputCode =
 `(function() {
@@ -123,14 +159,44 @@ console.log('[CDN] ViewPdfAuditModule loaded — PdfAuditView registered');
 `;
 
 // Validate as a classic browser script before replacing either runtime copy.
-new (require('vm').Script)(outputCode, { filename: OUTPUT });
+new Script(outputCode, { filename: OUTPUT });
 
-writeBuildFile(OUTPUT, outputCode, 'utf-8');
+// Tree-shaken pure narration helpers: preflight needs no React or network libraries.
+const narrationCode = buildNarrationTextModule(source);
+new Script(narrationCode, { filename: TEXT_OUTPUT });
+
+// --check: verify source matches modular parts AND built modules + public mirrors
+// are fresh without writing anything to disk.
+if (IS_CHECK) {
+    const stale = [];
+    for (const [targetFile, expected] of [
+        [OUTPUT, outputCode],
+        [DEPLOY_OUT, outputCode],
+        [TEXT_OUTPUT, narrationCode],
+        [TEXT_DEPLOY_OUT, narrationCode],
+    ]) {
+        try {
+            if (fs.readFileSync(targetFile, 'utf-8') !== expected) {
+                stale.push(path.relative(ROOT, targetFile));
+            }
+        } catch (_) {
+            stale.push(path.relative(ROOT, targetFile));
+        }
+    }
+    if (stale.length) {
+        console.error('[ViewPdfAudit] STALE (rebuild with node _build_view_pdf_audit_module.js): ' + stale.join(', '));
+        process.exit(1);
+    }
+    console.log('[ViewPdfAudit] up to date: ' + path.relative(ROOT, SOURCE) + ', ' + path.relative(ROOT, OUTPUT) + ', ' + path.relative(ROOT, TEXT_OUTPUT) + ', and public mirrors match remediation_modules/view/*');
+    process.exit(0);
+}
+
+writeBuildFileIfChanged(OUTPUT, outputCode, 'utf-8');
 try {
     if (!fs.existsSync(path.dirname(DEPLOY_OUT))) {
         fs.mkdirSync(path.dirname(DEPLOY_OUT), { recursive: true });
     }
-    writeBuildFile(DEPLOY_OUT, outputCode, 'utf-8');
+    writeBuildFileIfChanged(DEPLOY_OUT, outputCode, 'utf-8');
 } catch (e) {
     console.warn('[ViewPdfAudit] Could not sync to desktop/web-app/public/:', e.message);
 }
@@ -139,7 +205,7 @@ for (const extraOut of [
     path.join(ROOT, 'desktop', 'web-app', 'build', 'view_pdf_audit_module.js')
 ]) {
     try {
-        if (fs.existsSync(path.dirname(extraOut))) writeBuildFile(extraOut, outputCode, 'utf-8');
+        if (fs.existsSync(path.dirname(extraOut))) writeBuildFileIfChanged(extraOut, outputCode, 'utf-8');
     } catch (e) {
         console.warn('[ViewPdfAudit] Could not sync to ' + path.relative(ROOT, extraOut) + ':', e.message);
     }
@@ -157,38 +223,80 @@ const lineCount = outputCode.split('\n').length;
 console.log('[ViewPdfAudit] Built ' + OUTPUT + ' (' + lineCount + ' lines)');
 console.log('[ViewPdfAudit] Synced to ' + DEPLOY_OUT);
 
-// Tree-shaken pure narration helpers: preflight needs no React or network libraries.
-const textEntry = path.join(ROOT, '_tmp_narration_text.jsx');
-const textOutput = path.join(ROOT, 'document_narration_text_module.js');
-try {
-    const ast=require('@babel/parser').parse(source,{sourceType:'script',plugins:['jsx']});
-    const declarations=new Map();
-    for(const node of ast.program.body) {
-        if(node.type==='FunctionDeclaration' && node.id)declarations.set(node.id.name,node);
-        if(node.type==='VariableDeclaration')for(const declaration of node.declarations)if(declaration.id.type==='Identifier')declarations.set(declaration.id.name,node);
+writeBuildFileIfChanged(TEXT_OUTPUT, narrationCode, 'utf-8');
+for (const narOut of [
+    TEXT_DEPLOY_OUT,
+    path.join(ROOT, 'desktop', 'app-build', 'document_narration_text_module.js'),
+    path.join(ROOT, 'desktop', 'web-app', 'build', 'document_narration_text_module.js')
+]) {
+    if (fs.existsSync(path.dirname(narOut))) {
+        writeBuildFileIfChanged(narOut, narrationCode, 'utf-8');
     }
-    const needed=new Set();
-    const collect=name=>{const node=declarations.get(name);if(!node||needed.has(node))return;needed.add(node);const walk=value=>{if(!value||typeof value!=='object')return;if(value.type==='Identifier'&&declarations.has(value.name))collect(value.name);for(const [key,child] of Object.entries(value))if(key!=='loc'&&key!=='comments')if(Array.isArray(child))child.forEach(walk);else if(child&&typeof child==='object')walk(child);};walk(node);};
-    ['_audioReadyText','_srStyleTextFromHtml','_viewSanitizeMarkupForExport'].forEach(collect);
-    const helperSource=[...needed].sort((a,b)=>a.start-b.start).map(node=>source.slice(node.start,node.end)).join('\n');
-    writeBuildFile(textEntry, helperSource + '\nexport { _audioReadyText as naturalText, _srStyleTextFromHtml as accessibleText, _viewSanitizeMarkupForExport as sanitize };\n');
-    require('esbuild').buildSync({entryPoints:[textEntry],outfile:textOutput,bundle:true,format:'iife',globalName:'AlloNarrationText',treeShaking:true,jsxFactory:'React.createElement',jsxFragment:'React.Fragment',target:'es2020'});
-    for (const narOut of [
-        path.join(ROOT, 'desktop', 'web-app', 'public', 'document_narration_text_module.js'),
-        path.join(ROOT, 'desktop', 'app-build', 'document_narration_text_module.js'),
-        path.join(ROOT, 'desktop', 'web-app', 'build', 'document_narration_text_module.js')
-    ]) {
-        if (fs.existsSync(path.dirname(narOut))) {
-            fs.copyFileSync(textOutput, narOut + '.edit-tmp');
-            fs.renameSync(narOut + '.edit-tmp', narOut);
+}
+console.log('[ViewPdfAudit] Built offline narration helpers');
+
+function buildNarrationTextModule(src) {
+    const ast = require('@babel/parser').parse(src, { sourceType: 'script', plugins: ['jsx'] });
+    const declarations = new Map();
+    for (const node of ast.program.body) {
+        if (node.type === 'FunctionDeclaration' && node.id) declarations.set(node.id.name, node);
+        if (node.type === 'VariableDeclaration') {
+            for (const declaration of node.declarations) {
+                if (declaration.id.type === 'Identifier') declarations.set(declaration.id.name, node);
+            }
         }
     }
-    console.log('[ViewPdfAudit] Built offline narration helpers');
-} finally {try{fs.unlinkSync(textEntry);}catch(_){}}
+    const needed = new Set();
+    const collect = (name) => {
+        const node = declarations.get(name);
+        if (!node || needed.has(node)) return;
+        needed.add(node);
+        const walk = (value) => {
+            if (!value || typeof value !== 'object') return;
+            if (value.type === 'Identifier' && declarations.has(value.name)) collect(value.name);
+            for (const [key, child] of Object.entries(value)) {
+                if (key !== 'loc' && key !== 'comments') {
+                    if (Array.isArray(child)) child.forEach(walk);
+                    else if (child && typeof child === 'object') walk(child);
+                }
+            }
+        };
+        walk(node);
+    };
+    ['_audioReadyText', '_srStyleTextFromHtml', '_viewSanitizeMarkupForExport'].forEach(collect);
+    const helperSource = [...needed].sort((a, b) => a.start - b.start).map((node) => src.slice(node.start, node.end)).join('\n');
+    const result = esbuild.buildSync({
+        stdin: {
+            contents: helperSource + '\nexport { _audioReadyText as naturalText, _srStyleTextFromHtml as accessibleText, _viewSanitizeMarkupForExport as sanitize };\n',
+            loader: 'jsx',
+            resolveDir: ROOT,
+            sourcefile: '_tmp_narration_text.jsx',
+        },
+        write: false,
+        bundle: true,
+        format: 'iife',
+        globalName: 'AlloNarrationText',
+        treeShaking: true,
+        jsxFactory: 'React.createElement',
+        jsxFragment: 'React.Fragment',
+        target: 'es2020',
+    });
+    return result.outputFiles[0].text;
+}
 
 // Keep the previous generated module intact if a synced-folder write fails.
-function writeBuildFile(file,contents,encoding) {
-  const temporary=file+'.build-'+process.pid+'.tmp';
-  try { fs.writeFileSync(temporary,contents,encoding); fs.renameSync(temporary,file); }
-  finally { try { fs.unlinkSync(temporary); } catch (_) {} }
+function writeBuildFile(file, contents, encoding) {
+    const temporary = file + '.build-' + process.pid + '.tmp';
+    try { fs.writeFileSync(temporary, contents, encoding); fs.renameSync(temporary, file); }
+    finally { try { fs.unlinkSync(temporary); } catch (_) {} }
+}
+
+function writeBuildFileIfChanged(file, contents, encoding) {
+    try {
+        if (fs.existsSync(file) && fs.readFileSync(file, encoding) === contents) {
+            return false;
+        }
+    } catch (_) {}
+    writeBuildFile(file, contents, encoding);
+    return true;
 }

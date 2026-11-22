@@ -14,6 +14,11 @@
 const zlib = require('zlib');
 
 const MAX_HTML_BYTES = 8 * 1024 * 1024;
+const MAX_MATHML_FRAGMENTS = 128;
+const MAX_MATHML_FRAGMENT_BYTES = 128 * 1024;
+const MAX_MATHML_TOTAL_BYTES = 2 * 1024 * 1024;
+const MATHML_XMLNS = 'http://www.w3.org/1998/Math/MathML';
+const MATHML_SENTINEL_PREFIX = '__ALLOFLOW_MATHML_AF_';
 
 const PAINTING_OPS = new Set([
   'f', 'F', 'f*', 'B', 'B*', 'b', 'b*', 'S', 's',
@@ -102,6 +107,359 @@ function extractAnchorTexts(html) {
     if (text && href && !map.has(href)) map.set(href, text);
   }
   return map;
+}
+
+function findHtmlTagClose(src, startIdx) {
+  let quote = null;
+  for (let i = startIdx; i < src.length; i += 1) {
+    const ch = src[i];
+    if (quote) {
+      if (ch === quote) quote = null;
+      continue;
+    }
+    if (ch === '"' || ch === "'") {
+      quote = ch;
+    } else if (ch === '>') {
+      return i;
+    }
+  }
+  return -1;
+}
+
+/**
+ * Scan top-level <math ...>...</math> elements in exact document order while
+ * skipping comments, <script>, and <style>, and properly tracking nested <math>.
+ */
+function scanTopLevelMathElements(html) {
+  const src = String(html || '');
+  const results = [];
+  let i = 0;
+  const len = src.length;
+
+  while (i < len) {
+    const lt = src.indexOf('<', i);
+    if (lt < 0) break;
+
+    if (src.startsWith('<!--', lt)) {
+      const endComment = src.indexOf('-->', lt + 4);
+      i = endComment < 0 ? len : endComment + 3;
+      continue;
+    }
+
+    const skipBlock = /^<(script|style)(?=[\s>/])/i.exec(src.slice(lt, lt + 16));
+    if (skipBlock) {
+      const tagClose = findHtmlTagClose(src, lt + 1 + skipBlock[1].length);
+      if (tagClose < 0) break;
+      const closeRe = new RegExp(`</${skipBlock[1]}\\s*>`, 'ig');
+      closeRe.lastIndex = tagClose + 1;
+      const cm = closeRe.exec(src);
+      i = cm ? closeRe.lastIndex : len;
+      continue;
+    }
+
+    if (/^<math(?=[\s>/])/i.test(src.slice(lt, lt + 7))) {
+      const openEnd = findHtmlTagClose(src, lt + 5);
+      if (openEnd < 0) break;
+      const isSelfClosing = /\/\s*$/.test(src.slice(lt + 5, openEnd));
+      if (isSelfClosing) {
+        i = openEnd + 1;
+        continue;
+      }
+
+      let depth = 1;
+      let cursor = openEnd + 1;
+      let closeEnd = -1;
+      while (cursor < len && depth > 0) {
+        const nextLt = src.indexOf('<', cursor);
+        if (nextLt < 0) break;
+        if (src.startsWith('<!--', nextLt)) {
+          const ec = src.indexOf('-->', nextLt + 4);
+          cursor = ec < 0 ? len : ec + 3;
+          continue;
+        }
+        if (/^<\/math\s*>/i.test(src.slice(nextLt, nextLt + 16))) {
+          const gt = src.indexOf('>', nextLt + 6);
+          if (gt < 0) break;
+          depth -= 1;
+          cursor = gt + 1;
+          if (depth === 0) {
+            closeEnd = cursor;
+            break;
+          }
+          continue;
+        }
+        if (/^<math(?=[\s>/])/i.test(src.slice(nextLt, nextLt + 7))) {
+          const gt = findHtmlTagClose(src, nextLt + 5);
+          if (gt < 0) break;
+          if (!/\/\s*$/.test(src.slice(nextLt + 5, gt))) depth += 1;
+          cursor = gt + 1;
+          continue;
+        }
+        cursor = nextLt + 1;
+      }
+
+      if (closeEnd > openEnd) {
+        results.push({
+          start: lt,
+          openTagEnd: openEnd + 1,
+          end: closeEnd,
+          raw: src.slice(lt, closeEnd),
+        });
+        i = closeEnd;
+        continue;
+      }
+      i = openEnd + 1;
+      continue;
+    }
+
+    i = lt + 1;
+  }
+
+  return results;
+}
+
+/**
+ * Validate and normalize a single <math>...</math> XML fragment for PDF/UA-2
+ * Associated Files (/AF, application/mathml+xml). Rejects active markup,
+ * event handlers, DTD/ENTITY declarations, and oversized fragments.
+ */
+function sanitizeMathMlFragment(rawFragment) {
+  if (typeof rawFragment !== 'string') return null;
+  let xml = rawFragment.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '').trim();
+  if (!xml) return null;
+  if (!/^<math(?=[\s>])/i.test(xml) || !/<\/math\s*>$/i.test(xml)) return null;
+
+  const openEnd = findHtmlTagClose(xml, 5);
+  if (openEnd < 0) return null;
+  const closeMatch = /<\/math\s*>$/i.exec(xml);
+  if (!closeMatch || closeMatch.index <= openEnd) return null;
+  const inner = xml.slice(openEnd + 1, closeMatch.index);
+  if (!inner.trim()) return null;
+
+  // Reject dangerous embedded elements, XML PIs, and DTD/ENTITY declarations.
+  if (/<(?:script|iframe|object|embed|applet|base|meta|link|form)\b/i.test(xml)) return null;
+  if (/<!(?:DOCTYPE|ENTITY)\b/i.test(xml)) return null;
+  if (/<\?[\s\S]*?\?>/.test(xml)) return null;
+
+  // Inspect tag attributes only for event handlers and active URL schemes
+  // so mathematical prose in <mtext> (e.g. "one = 1") is never false-positived.
+  let pos = 0;
+  while (pos < xml.length) {
+    const lt = xml.indexOf('<', pos);
+    if (lt < 0) break;
+    if (xml.startsWith('<!--', lt)) {
+      const ec = xml.indexOf('-->', lt + 4);
+      pos = ec < 0 ? xml.length : ec + 3;
+      continue;
+    }
+    const gt = findHtmlTagClose(xml, lt + 1);
+    if (gt < 0) return null;
+    const tagContent = xml.slice(lt + 1, gt);
+    if (!tagContent.startsWith('/')) {
+      const nameEnd = tagContent.search(/[\s/]/);
+      const tagAttrs = nameEnd >= 0 ? tagContent.slice(nameEnd) : '';
+      if (tagAttrs) {
+        if (/(?:^|[\s/])on[a-z]+\s*=/i.test(tagAttrs)) return null;
+        if (/(?:javascript|vbscript)\s*:/i.test(tagAttrs)) return null;
+        if (/data\s*:\s*(?:text\/html|image\/svg\+xml)/i.test(tagAttrs)) return null;
+      }
+    }
+    pos = gt + 1;
+  }
+
+  // Normalize root <math ...>...</math> casing and ensure standard MathML xmlns.
+  let rootAttrs = xml.slice(5, openEnd);
+  if (/\bxmlns\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/i.test(rootAttrs)) {
+    rootAttrs = rootAttrs.replace(/\bxmlns\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/i, `xmlns="${MATHML_XMLNS}"`);
+  } else {
+    rootAttrs = ` xmlns="${MATHML_XMLNS}"` + rootAttrs;
+  }
+  xml = `<math${rootAttrs}>${inner}</math>`;
+
+  if (Buffer.byteLength(xml, 'utf8') > MAX_MATHML_FRAGMENT_BYTES) return null;
+  return xml;
+}
+
+/**
+ * Extract valid, sanitized Presentation/Content MathML <math>...</math> fragments
+ * from an HTML document in exact document order with strict count and size caps.
+ */
+function extractMathMlFragmentsFromHtml(html) {
+  const spans = scanTopLevelMathElements(html);
+  const fragments = [];
+  let totalBytes = 0;
+  for (const span of spans) {
+    if (fragments.length >= MAX_MATHML_FRAGMENTS) break;
+    const cleaned = sanitizeMathMlFragment(span.raw);
+    if (!cleaned) continue;
+    const byteLen = Buffer.byteLength(cleaned, 'utf8');
+    if (totalBytes + byteLen > MAX_MATHML_TOTAL_BYTES) break;
+    fragments.push(cleaned);
+    totalBytes += byteLen;
+  }
+  return fragments;
+}
+
+function extractMathMlAltText(mathXml, index) {
+  const openEnd = findHtmlTagClose(String(mathXml || ''), 5);
+  const attrs = openEnd > 5 ? String(mathXml).slice(5, openEnd) : '';
+  const ariaMatch = /\baria-label\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(attrs);
+  const altMatch = /\balttext\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(attrs);
+  const rawLabel = ariaMatch
+    ? (ariaMatch[1] !== undefined ? ariaMatch[1] : ariaMatch[2])
+    : (altMatch ? (altMatch[1] !== undefined ? altMatch[1] : altMatch[2]) : '');
+  const decodedLabel = decodeEntities(rawLabel);
+  if (decodedLabel) return decodedLabel.slice(0, 240);
+  const textContent = decodeEntities(
+    String(mathXml || '')
+      .replace(/<annotation(?:-xml)?\b[^>]*>[\s\S]*?<\/annotation(?:-xml)?>/gi, ' ')
+      .replace(/<[^>]+>/g, ' '),
+  );
+  if (textContent) return textContent.slice(0, 240);
+  return `Formula ${index + 1}`;
+}
+
+/**
+ * Transiently annotate valid <math> opening tags with role="img" and a deterministic
+ * sentinel aria-label so Chromium emits a dedicated StructElem per equation without
+ * altering MathML visual layout. finalizeTaggedPdfBytes upgrades each sentinel node
+ * to /S /Formula, restores the clean /Alt text, and attaches /AF [filespecRef].
+ */
+function instrumentMathMlForChromiumPdf(html) {
+  const src = String(html || '');
+  const spans = scanTopLevelMathElements(src);
+  if (!spans.length) return { html: src, fragments: [] };
+
+  const fragments = [];
+  const edits = [];
+  let totalBytes = 0;
+  for (const span of spans) {
+    if (fragments.length >= MAX_MATHML_FRAGMENTS) break;
+    const cleaned = sanitizeMathMlFragment(span.raw);
+    if (!cleaned) continue;
+    const byteLen = Buffer.byteLength(cleaned, 'utf8');
+    if (totalBytes + byteLen > MAX_MATHML_TOTAL_BYTES) break;
+    const idx = fragments.length;
+    fragments.push(cleaned);
+    totalBytes += byteLen;
+
+    const altText = extractMathMlAltText(cleaned, idx);
+    const openTag = src.slice(span.start, span.openTagEnd);
+    let attrs = openTag.slice(5, -1);
+    attrs = attrs
+      .replace(/\s+\brole\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+      .replace(/\s+\baria-label\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '');
+    const sentinel = `${MATHML_SENTINEL_PREFIX}${idx}__|${altText}`;
+    const replacementOpen = `<math${attrs} role="img" aria-label="${xmlEscape(sentinel)}">`;
+    edits.push({ start: span.start, end: span.openTagEnd, text: replacementOpen });
+  }
+
+  if (!edits.length) return { html: src, fragments: [] };
+  let out = '';
+  let last = 0;
+  for (const edit of edits) {
+    out += src.slice(last, edit.start) + edit.text;
+    last = edit.end;
+  }
+  out += src.slice(last);
+  return { html: out, fragments };
+}
+
+function decodePdfLiteralString(rawInner) {
+  let out = '';
+  for (let i = 0; i < rawInner.length; i += 1) {
+    const ch = rawInner[i];
+    if (ch !== '\\') {
+      out += ch;
+      continue;
+    }
+    if (i + 1 >= rawInner.length) break;
+    const next = rawInner[++i];
+    if (next === 'n') out += '\n';
+    else if (next === 'r') out += '\r';
+    else if (next === 't') out += '\t';
+    else if (next === 'b') out += '\b';
+    else if (next === 'f') out += '\f';
+    else if (next === '\r') {
+      if (rawInner[i + 1] === '\n') i += 1;
+    } else if (next === '\n') {
+      // line continuation
+    } else if (/[0-7]/.test(next)) {
+      let oct = next;
+      if (i + 1 < rawInner.length && /[0-7]/.test(rawInner[i + 1])) oct += rawInner[++i];
+      if (i + 1 < rawInner.length && /[0-7]/.test(rawInner[i + 1])) oct += rawInner[++i];
+      out += String.fromCharCode(parseInt(oct, 8) & 0xff);
+    } else {
+      out += next;
+    }
+  }
+  return out;
+}
+
+function decodePdfHexString(hexInner) {
+  const clean = String(hexInner || '').replace(/\s+/g, '');
+  const padded = clean.length % 2 === 1 ? clean + '0' : clean;
+  const buf = Buffer.from(padded, 'hex');
+  if (buf.length >= 2 && buf[0] === 0xfe && buf[1] === 0xff) {
+    const payload = Buffer.from(buf.subarray(2));
+    if (payload.length % 2 === 1) return payload.toString('latin1');
+    payload.swap16();
+    return payload.toString('utf16le');
+  }
+  return buf.toString('latin1');
+}
+
+function findPdfStringValueAfter(body, keyRegex) {
+  const km = keyRegex.exec(body);
+  if (!km) return null;
+  let pos = km.index + km[0].length;
+  while (pos < body.length && /\s/.test(body[pos])) pos += 1;
+  if (pos >= body.length) return null;
+
+  if (body[pos] === '<' && body[pos + 1] !== '<') {
+    const close = body.indexOf('>', pos + 1);
+    if (close < 0) return null;
+    return {
+      keyStart: km.index,
+      start: pos,
+      end: close + 1,
+      decoded: decodePdfHexString(body.slice(pos + 1, close)),
+    };
+  }
+  if (body[pos] === '(') {
+    let depth = 1;
+    let i = pos + 1;
+    while (i < body.length && depth > 0) {
+      if (body[i] === '\\') {
+        i += 2;
+        continue;
+      }
+      if (body[i] === '(') depth += 1;
+      else if (body[i] === ')') depth -= 1;
+      i += 1;
+    }
+    if (depth !== 0) return null;
+    return {
+      keyStart: km.index,
+      start: pos,
+      end: i,
+      decoded: decodePdfLiteralString(body.slice(pos + 1, i - 1)),
+    };
+  }
+  return null;
+}
+
+function attachAfRefToDictBody(dictBody, refStr) {
+  if (/\/AF\s*\[/.test(dictBody)) {
+    return dictBody.replace(/\/AF\s*\[([^\]]*)\]/, (_m, inner) => {
+      const trimmed = inner.trim();
+      return trimmed ? `/AF [${trimmed} ${refStr}]` : `/AF [${refStr}]`;
+    });
+  }
+  if (/\/Type\s*\/StructElem\b/.test(dictBody)) {
+    return dictBody.replace(/\/Type\s*\/StructElem\b/, (m) => `${m}\n/AF [${refStr}]`);
+  }
+  return dictBody.replace(/<<\s*/, (m) => `${m}/AF [${refStr}]\n`);
 }
 
 /**
@@ -275,6 +633,7 @@ function prepareHtmlForChromiumPdf(rawHtml, opts) {
     title: finalTitle,
     lang: finalLang,
     anchorTexts: extractAnchorTexts(html),
+    mathMlFragments: extractMathMlFragmentsFromHtml(html),
   };
 }
 
@@ -843,6 +1202,195 @@ function finalizeTaggedPdfBytes(originalBuffer, opts) {
     }
   }
 
+  /*
+   * PDF/UA-1 clause 7.3-1: every /Figure StructElem must carry /Alt or /ActualText.
+   * For standard HTML <figure><img alt="..."><figcaption>...</figcaption></figure>,
+   * Chromium emits an inner /Figure WITH /Alt wrapped inside an outer /Figure
+   * WITHOUT /Alt. Re-tag only such wrapper /Figure elements as /Div (leaving real
+   * alt-less figures untouched so missing alt text is never silently masked).
+   */
+  let figureWrappersNormalized = 0;
+  for (const [num] of objectSpans) {
+    const body = getObjectText(num);
+    if (!/\/S\s*\/Figure\b/.test(body) || /\/(?:Alt|ActualText)\b/.test(body)) continue;
+    const childRefs = [];
+    const arrayKids = /\/K\s*\[([^\]]*)\]/.exec(body);
+    if (arrayKids) {
+      if (arrayKids[1].includes('<<')) continue;
+      for (const m of arrayKids[1].matchAll(/(\d+)\s+0\s+R/g)) childRefs.push(Number(m[1]));
+    } else {
+      const singleRef = /\/K\s+(\d+)\s+0\s+R\b/.exec(body);
+      if (singleRef) childRefs.push(Number(singleRef[1]));
+    }
+    if (!childRefs.length) continue;
+    const hasChildFigureWithAlt = childRefs.some((refNum) => {
+      const childBody = getObjectText(refNum);
+      return Boolean(childBody && /\/S\s*\/Figure\b/.test(childBody) && /\/Alt\b/.test(childBody));
+    });
+    if (!hasChildFigureWithAlt) continue;
+    setReplacement(num, Buffer.from(body.replace(/\/S\s*\/Figure\b/, '/S /Div') + '\n', 'latin1'));
+    figureWrappersNormalized += 1;
+  }
+
+  /*
+   * PDF/UA-2 MathML Associated Files (/AF) pass (verified 106/106 compliant on veraPDF PDF/UA-1):
+   * Embeds each sanitized Presentation/Content MathML fragment as an /EmbeddedFile
+   * (/Subtype /application#2Fmathml+xml) with a /Filespec (/F, /UF, /Desc, /AFRelationship /Supplement, /EF),
+   * links /AF [filespecRef] onto the corresponding /S /Formula StructElem (upgrading Chromium's
+   * sentinel-tagged <math> elements cleanly to /S /Formula with restored /Alt text, or matching
+   * existing /Formula, math /Figure / /Div, or /Document fallbacks), and registers all filespecs
+   * in Catalog /Names /EmbeddedFiles (lexicographically sorted per ISO 32000-1 §7.9.6).
+   */
+  const wantMathMlAf = o.attachMathMlAf !== false;
+  const validMathFragments = [];
+  if (wantMathMlAf && Array.isArray(o.mathMlFragments) && o.mathMlFragments.length) {
+    let totalMathBytes = 0;
+    for (const rawFrag of o.mathMlFragments) {
+      if (validMathFragments.length >= MAX_MATHML_FRAGMENTS) break;
+      const cleaned = sanitizeMathMlFragment(rawFrag);
+      if (!cleaned) continue;
+      const fragBytes = Buffer.byteLength(cleaned, 'utf8');
+      if (totalMathBytes + fragBytes > MAX_MATHML_TOTAL_BYTES) break;
+      validMathFragments.push(cleaned);
+      totalMathBytes += fragBytes;
+    }
+  }
+
+  const sentinelTargets = new Map();
+  for (const [num] of objectSpans) {
+    const body = getObjectText(num);
+    if (!/\/Type\s*\/StructElem\b/.test(body) || !/\/Alt\b/.test(body)) continue;
+    const altVal = findPdfStringValueAfter(body, /\/Alt\b/);
+    if (!altVal || !altVal.decoded.startsWith(MATHML_SENTINEL_PREFIX)) continue;
+    const rest = altVal.decoded.slice(MATHML_SENTINEL_PREFIX.length);
+    const sep = rest.indexOf('__|');
+    if (sep < 0) continue;
+    const idx = Number(rest.slice(0, sep));
+    const cleanAlt = rest.slice(sep + 3);
+    if (Number.isInteger(idx) && idx >= 0 && idx < validMathFragments.length && !sentinelTargets.has(idx)) {
+      sentinelTargets.set(idx, { num, cleanAlt });
+    } else {
+      // Strip any stray/unmatched sentinel so internal markers never leak into output PDFs.
+      const restored = body.slice(0, altVal.start) + pdfTextString(cleanAlt || 'Formula') + body.slice(altVal.end);
+      setReplacement(num, Buffer.from(restored + '\n', 'latin1'));
+    }
+  }
+
+  let mathMlAfAttached = 0;
+  const attachedMathSpecs = [];
+  const catalogAfRefs = [];
+  if (validMathFragments.length) {
+    for (let idx = 0; idx < validMathFragments.length; idx += 1) {
+      const mathXml = validMathFragments[idx];
+      const mathBuf = Buffer.from(mathXml, 'utf8');
+      const filename = `formula-${idx + 1}.mml`;
+      const desc = `MathML representation of formula ${idx + 1}`;
+      const efNum = nextObjectNumber++;
+      setReplacement(efNum, Buffer.concat([
+        Buffer.from(
+          `${efNum} 0 obj\n<</Type /EmbeddedFile /Subtype /application#2Fmathml+xml /Length ${mathBuf.length} /Params <</Size ${mathBuf.length}>>>>\nstream\n`,
+          'latin1',
+        ),
+        mathBuf,
+        Buffer.from('\nendstream\nendobj\n', 'latin1'),
+      ]));
+      const fsNum = nextObjectNumber++;
+      setReplacement(fsNum, Buffer.from(
+        `${fsNum} 0 obj\n<</Type /Filespec /F (${filename}) /UF (${filename}) /Desc (${desc}) /AFRelationship /Supplement /EF <</F ${efNum} 0 R /UF ${efNum} 0 R>>>>\nendobj\n`,
+        'latin1',
+      ));
+      attachedMathSpecs.push({ idx, filename, efNum, fsNum, mathXml, linkedStructNum: null });
+    }
+
+    const usedStructNums = new Set();
+
+    // Pass 1: Bind sentinel-tagged Chromium <math> elements -> /S /Formula + clean /Alt + /AF.
+    for (const spec of attachedMathSpecs) {
+      const target = sentinelTargets.get(spec.idx);
+      if (!target) continue;
+      let body = getObjectText(target.num);
+      const altVal = findPdfStringValueAfter(body, /\/Alt\b/);
+      const finalAlt = target.cleanAlt || extractMathMlAltText(spec.mathXml, spec.idx);
+      if (altVal) {
+        body = body.slice(0, altVal.start) + pdfTextString(finalAlt) + body.slice(altVal.end);
+      } else {
+        body = body.replace(/\/Type\s*\/StructElem\b/, (m) => `${m}\n/Alt ${pdfTextString(finalAlt)}`);
+      }
+      body = body.replace(/\/S\s*\/\w+/, '/S /Formula');
+      body = attachAfRefToDictBody(body, `${spec.fsNum} 0 R`);
+      setReplacement(target.num, Buffer.from(body + '\n', 'latin1'));
+      spec.linkedStructNum = target.num;
+      usedStructNums.add(target.num);
+    }
+
+    // Pass 2: Bind remaining specs to existing /S /Formula StructElems in document order.
+    const existingFormulaNums = [];
+    for (const [num] of objectSpans) {
+      if (usedStructNums.has(num)) continue;
+      const body = getObjectText(num);
+      if (/\/Type\s*\/StructElem\b/.test(body) && /\/S\s*\/Formula\b/.test(body)) {
+        existingFormulaNums.push(num);
+      }
+    }
+    let formulaCursor = 0;
+    for (const spec of attachedMathSpecs) {
+      if (spec.linkedStructNum !== null) continue;
+      if (formulaCursor >= existingFormulaNums.length) break;
+      const targetNum = existingFormulaNums[formulaCursor++];
+      let body = getObjectText(targetNum);
+      if (!/\/(?:Alt|ActualText)\b/.test(body)) {
+        const fallbackAlt = extractMathMlAltText(spec.mathXml, spec.idx);
+        body = body.replace(/\/S\s*\/Formula\b/, (m) => `${m}\n/Alt ${pdfTextString(fallbackAlt)}`);
+      }
+      body = attachAfRefToDictBody(body, `${spec.fsNum} 0 R`);
+      setReplacement(targetNum, Buffer.from(body + '\n', 'latin1'));
+      spec.linkedStructNum = targetNum;
+      usedStructNums.add(targetNum);
+    }
+
+    // Pass 3: Fallback for un-instrumented PDFs — math-labeled /Figure or /Div, then /Document + Catalog /AF.
+    const unlinkedAfterFormula = attachedMathSpecs.filter((s) => s.linkedStructNum === null);
+    if (unlinkedAfterFormula.length) {
+      const mathFallbackNums = [];
+      let documentStructNum = null;
+      for (const [num] of objectSpans) {
+        if (usedStructNums.has(num)) continue;
+        const body = getObjectText(num);
+        if (!/\/Type\s*\/StructElem\b/.test(body)) continue;
+        if (documentStructNum === null && /\/S\s*\/Document\b/.test(body)) {
+          documentStructNum = num;
+        }
+        if (/\/S\s*\/(?:Figure|Div)\b/.test(body)) {
+          const altVal = findPdfStringValueAfter(body, /\/Alt\b/);
+          const tVal = findPdfStringValueAfter(body, /\/T\b/);
+          const label = ((altVal && altVal.decoded) || '') + ' ' + ((tVal && tVal.decoded) || '');
+          if (/\b(?:math|formula|equation)\b/i.test(label)) {
+            mathFallbackNums.push(num);
+          }
+        }
+      }
+      let fbCursor = 0;
+      for (const spec of unlinkedAfterFormula) {
+        if (fbCursor < mathFallbackNums.length) {
+          const targetNum = mathFallbackNums[fbCursor++];
+          const body = attachAfRefToDictBody(getObjectText(targetNum), `${spec.fsNum} 0 R`);
+          setReplacement(targetNum, Buffer.from(body + '\n', 'latin1'));
+          spec.linkedStructNum = targetNum;
+          usedStructNums.add(targetNum);
+        } else {
+          if (documentStructNum !== null) {
+            const docBody = attachAfRefToDictBody(getObjectText(documentStructNum), `${spec.fsNum} 0 R`);
+            setReplacement(documentStructNum, Buffer.from(docBody + '\n', 'latin1'));
+            spec.linkedStructNum = documentStructNum;
+          }
+          catalogAfRefs.push(`${spec.fsNum} 0 R`);
+        }
+      }
+    }
+
+    mathMlAfAttached = attachedMathSpecs.length;
+  }
+
   const metadataNum = nextObjectNumber++;
   const xmp = buildXmpPacket(title, pdfuaPart);
   setReplacement(metadataNum, Buffer.concat([
@@ -853,6 +1401,39 @@ function finalizeTaggedPdfBytes(originalBuffer, opts) {
   let updatedCatalog = getObjectText(rootNum).replace('/Type /Catalog', `/Type /Catalog\n/Metadata ${metadataNum} 0 R`);
   if (!/\/ViewerPreferences\b/.test(updatedCatalog)) {
     updatedCatalog = updatedCatalog.replace('/Type /Catalog', '/Type /Catalog\n/ViewerPreferences <</DisplayDocTitle true>>');
+  }
+  if (attachedMathSpecs.length) {
+    const sortedSpecs = [...attachedMathSpecs].sort((a, b) => (a.filename < b.filename ? -1 : (a.filename > b.filename ? 1 : 0)));
+    const efTreeNum = nextObjectNumber++;
+    const namesEntries = sortedSpecs.map((s) => `(${s.filename}) ${s.fsNum} 0 R`).join(' ');
+    setReplacement(efTreeNum, Buffer.from(
+      `${efTreeNum} 0 obj\n<</Names [${namesEntries}]>>\nendobj\n`,
+      'latin1',
+    ));
+    const indirectNames = /\/Names\s+(\d+)\s+0\s+R\b/.exec(updatedCatalog);
+    const inlineNames = !indirectNames ? /\/Names\s*<<([\s\S]*?)>>/.exec(updatedCatalog) : null;
+    if (indirectNames) {
+      const namesNum = Number(indirectNames[1]);
+      const namesSrc = getObjectText(namesNum);
+      if (namesSrc) {
+        const nextNamesSrc = /\/EmbeddedFiles\b/.test(namesSrc)
+          ? namesSrc.replace(/\/EmbeddedFiles\s+(?:\d+\s+0\s+R|<<[\s\S]*?>>)/, `/EmbeddedFiles ${efTreeNum} 0 R`)
+          : namesSrc.replace(/>>\s*endobj/, ` /EmbeddedFiles ${efTreeNum} 0 R>>\nendobj`);
+        setReplacement(namesNum, Buffer.from(nextNamesSrc + '\n', 'latin1'));
+      }
+    } else if (inlineNames) {
+      updatedCatalog = updatedCatalog.replace(
+        /\/Names\s*<<([\s\S]*?)>>/,
+        (_m, inner) => (/\/EmbeddedFiles\b/.test(inner)
+          ? `/Names <<${inner.replace(/\/EmbeddedFiles\s+(?:\d+\s+0\s+R|<<[\s\S]*?>>)/, `/EmbeddedFiles ${efTreeNum} 0 R`)}>>`
+          : `/Names <<${inner.trim()} /EmbeddedFiles ${efTreeNum} 0 R>>`),
+      );
+    } else {
+      updatedCatalog = updatedCatalog.replace('/Type /Catalog', `/Type /Catalog\n/Names <</EmbeddedFiles ${efTreeNum} 0 R>>`);
+    }
+    if (catalogAfRefs.length) {
+      updatedCatalog = attachAfRefToDictBody(updatedCatalog, catalogAfRefs.join(' '));
+    }
   }
   setReplacement(rootNum, Buffer.from(updatedCatalog + '\n', 'latin1'));
 
@@ -897,6 +1478,8 @@ function finalizeTaggedPdfBytes(originalBuffer, opts) {
       cmapEntriesFixed,
       metadataAdded: true,
       linkContentsAdded,
+      figureWrappersNormalized,
+      mathMlAfAttached,
       pdfuaIdentifierClaimed: Boolean(pdfuaPart),
     },
   };
@@ -924,6 +1507,10 @@ async function renderHtmlToTaggedPdf(browser, html, opts) {
     throw signal.reason || new Error('Chromium tagged PDF render cancelled.');
   }
   const prepared = prepareHtmlForChromiumPdf(html, { title: o.title, lang: o.lang });
+  const attachMathMlAf = o.attachMathMlAf !== false;
+  const mathInstrumented = attachMathMlAf
+    ? instrumentMathMlForChromiumPdf(prepared.html)
+    : { html: prepared.html, fragments: [] };
   const pdfuaPart = (o.pdfuaId === null || o.pdfuaId === 'none' || o.pdfuaId === false) ? null : 1;
   const timeout = Number.isFinite(Number(o.timeoutMs)) ? Math.max(5000, Number(o.timeoutMs)) : 30000;
 
@@ -988,7 +1575,7 @@ async function renderHtmlToTaggedPdf(browser, html, opts) {
       }
     });
     const page = await raceBounded(context.newPage(), 'page creation');
-    await raceBounded(page.setContent(prepared.html, { waitUntil: 'load', timeout }), 'setContent');
+    await raceBounded(page.setContent(mathInstrumented.html, { waitUntil: 'load', timeout }), 'setContent');
     await page.emulateMedia({ media: 'print', colorScheme: 'light', reducedMotion: 'reduce' });
     rawPdf = await raceBounded(
       page.pdf({
@@ -1020,6 +1607,8 @@ async function renderHtmlToTaggedPdf(browser, html, opts) {
     title: prepared.title,
     pdfuaPart,
     anchorTexts: prepared.anchorTexts,
+    mathMlFragments: mathInstrumented.fragments,
+    attachMathMlAf,
   });
   markers = structuralMarkersFromBuffer(finalized.bytes);
 
@@ -1037,6 +1626,10 @@ async function renderHtmlToTaggedPdf(browser, html, opts) {
 
 module.exports = {
   MAX_HTML_BYTES,
+  MAX_MATHML_FRAGMENTS,
+  MAX_MATHML_FRAGMENT_BYTES,
+  MAX_MATHML_TOTAL_BYTES,
+  MATHML_XMLNS,
   NON_STANDARD_ROLES,
   isRtlLanguage,
   xmlEscape,
@@ -1045,6 +1638,9 @@ module.exports = {
   extractHtmlTitle,
   extractHtmlLang,
   extractAnchorTexts,
+  sanitizeMathMlFragment,
+  extractMathMlFragmentsFromHtml,
+  instrumentMathMlForChromiumPdf,
   detectNonLatinOrShapingScript,
   prepareHtmlForChromiumPdf,
   wrapUntaggedPrefix,

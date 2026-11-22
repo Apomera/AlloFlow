@@ -37,6 +37,7 @@ const baseSourceFiles = [
   'desktop/mcp/accessible_html_edit.cjs',
   'desktop/mcp/scan_reading_corrections.cjs',
   'desktop/mcp/remediation_chromium_pdf.cjs',
+  'desktop/mcp/remediation_node_exporters.cjs',
   'accessibility_evidence_module.js',
   'verification_policy_module.js',
   'doc_builder_renderer_module.js',

@@ -2,323 +2,65 @@
 // dev-tools/demo/exported_pdf_validator.cjs
 //
 // Post-export validator for AlloFlow-remediated tagged PDFs. Takes a single
-// PDF file path on the command line, parses it with pdf-lib, walks the
-// StructTreeRoot, and emits a structured report covering the WCAG-relevant
-// properties that PAC 2024 / Adobe Accessibility Checker / a Knowbility-grade
-// reviewer would check.
+// PDF file path on the command line, parses it with pdf-lib, and delegates
+// directly to the unified byte-level validator core in
+// view_pdf_validator_module.js so browser and CLI run ONE shared rule set
+// with zero drift across all PDF/UA-1 structural assertions, including:
+//   - StructTreeRoot has /ParentTree
+//   - Pages with annotations set /Tabs /S (PDF/UA 7.18.3)
+//   - XMP metadata stream present (/Metadata, PDF/UA 7.1)
+//   - XMP dc:title non-empty (PDF/UA 7.1)
+//   - Link annotations /Contents + /StructParent, table/list containment,
+//     /Scope on TH, embedded fonts (including Form XObjects & Type0),
+//     evidence-backed PDF/UA XMP declaration, and advisory reading notes.
 //
-// This is NOT a PDF/UA-1 validator — that requires Acrobat Pro or PAC 2024.
-// It IS the cheap automated gate Aaron can run against every demo PDF to
-// confirm the export survived its trip through the pipeline with structure
-// intact, BEFORE handing it to Garry's reviewer.
+// This is NOT a full PDF/UA-1 validator — pair it with veraPDF (Java) via
+// dev-tools/demo/verapdf_check.cjs for content-stream operator verification.
 //
 // Usage:
 //   node dev-tools/demo/exported_pdf_validator.cjs <path-to-tagged.pdf>
 //   node dev-tools/demo/exported_pdf_validator.cjs --json <path>      # JSON only
 //   node dev-tools/demo/exported_pdf_validator.cjs --batch <dir>      # all *.pdf in dir
-//
-// Requires pdf-lib (installs to C:/tmp/node_modules if not found globally).
 
 'use strict';
 
 const fs = require('fs');
 const path = require('path');
 
-// ── pdf-lib loader (same fallback chain as dev-tools/debug/tag_tree_repro.cjs) ──
+// ── pdf-lib loader (prefers vendored copy, then local node_modules, then C:/tmp) ──
 let pdfLib;
 const candidates = [
-  'C:/tmp/node_modules/pdf-lib',
+  path.join(__dirname, '..', '..', 'desktop', 'mcp', 'vendor', 'pdf-lib.min.js'),
   path.join(__dirname, '..', '..', 'node_modules', 'pdf-lib'),
   'pdf-lib',
+  'C:/tmp/node_modules/pdf-lib',
 ];
 for (const p of candidates) {
   try { pdfLib = require(p); break; } catch (_) {}
 }
 if (!pdfLib) {
   console.error('[validator] pdf-lib not found. Install with: cd C:/tmp && npm install pdf-lib@1.17.1 --no-save');
-  process.exit(2);
-}
-const { PDFDocument, PDFName, PDFArray, PDFDict, PDFNumber, PDFRef, PDFString } = pdfLib;
-
-// ── Constants ──
-const LEAF_ROLES = ['H1','H2','H3','H4','H5','H6','P','Figure','Caption','BlockQuote','Lbl','LBody','TH','TD','Span','Link'];
-const CONTAINER_ROLES = ['Document', 'Part', 'Article', 'Sect', 'Section', 'Div', 'NonStruct', 'Private', 'Table', 'TR', 'TBody', 'THead', 'TFoot', 'L', 'LI'];
-
-// ── Walk the StructTreeRoot once, collecting per-element facts ──
-function walkStructTree(stRoot, ctx) {
-  const nm = (n) => PDFName.of(n);
-  const resolve = (o) => (o instanceof PDFRef ? ctx.lookup(o) : o);
-  const elems = [];
-
-  const walk = (objIn, depth) => {
-    let obj = resolve(objIn);
-    if (depth > 60 || obj == null) return;
-    if (obj instanceof PDFArray) {
-      for (let i = 0; i < obj.size(); i++) walk(obj.get(i), depth + 1);
-      return;
-    }
-    if (!(obj instanceof PDFDict)) return;
-    const S = obj.get(nm('S'));
-    if (!S) {
-      // Untyped node — recurse into K if present
-      const k0 = obj.get(nm('K'));
-      if (k0 != null) walk(k0, depth + 1);
-      return;
-    }
-    const role = String(S).replace(/^\//, '');
-    const K = obj.get(nm('K'));
-    let hasContent = false, hasChild = false;
-    if (K != null) {
-      const kr = resolve(K);
-      const items = (kr instanceof PDFArray)
-        ? Array.from({ length: kr.size() }, (_, i) => resolve(kr.get(i)))
-        : [kr];
-      for (const it of items) {
-        if (it instanceof PDFNumber) hasContent = true;
-        else if (it instanceof PDFDict) {
-          const t = it.get(nm('Type'));
-          const ts = t ? String(t) : '';
-          if (ts === '/MCR' || ts === '/OBJR') hasContent = true;
-          else if (it.get(nm('S'))) hasChild = true;
-          else hasContent = true;
-        }
-      }
-    }
-    elems.push({
-      role,
-      hasK: K != null,
-      hasContent,
-      hasChild,
-      hasAlt: !!obj.get(nm('Alt')),
-      hasActualText: !!obj.get(nm('ActualText')),
-      hasA: !!obj.get(nm('A')),
-      hasLang: !!obj.get(nm('Lang')),
-      hasID: !!obj.get(nm('ID')),
-    });
-    if (K != null) walk(K, depth + 1);
-  };
-
-  const rootK = stRoot && stRoot.get ? stRoot.get(nm('K')) : null;
-  if (rootK != null) walk(rootK, 0);
-  return elems;
+  if (require.main === module) process.exit(2);
 }
 
-// ── The actual validator ──
-async function validatePdf(filepath) {
+// ── Unified core validator (shared with in-Canvas browser runtime) ──
+const CORE_VALIDATOR = require(path.join(__dirname, '..', '..', 'view_pdf_validator_module.js'));
+
+async function validatePdfBytes(bytes, options) {
+  const opts = Object.assign({ pdfLib }, options || {});
+  return CORE_VALIDATOR.validateExportedPdfBytes(bytes, opts);
+}
+
+async function validatePdf(filepath, options) {
   const bytes = fs.readFileSync(filepath);
-  // Track encryption separately — a real reviewer would flag an encrypted PDF
-  // because SR/AT can't read it without the decryption key.
-  let isEncrypted = false;
-  try {
-    // Try unencrypted load first; if it throws, fall back to ignoreEncryption.
-    await PDFDocument.load(bytes, { ignoreEncryption: false });
-  } catch (e) {
-    isEncrypted = /encrypted|password/i.test(e.message || '');
-  }
-  const doc = await PDFDocument.load(bytes, { ignoreEncryption: true });
-  const ctx = doc.context;
-  const catalog = doc.catalog;
-  const nm = (n) => PDFName.of(n);
-  const resolve = (o) => (o instanceof PDFRef ? ctx.lookup(o) : o);
-
-  // Catalog-level invariants
-  const stRoot = resolve(catalog.get(nm('StructTreeRoot')));
-  const markInfo = resolve(catalog.get(nm('MarkInfo')));
-  const markedRaw = markInfo && markInfo.get ? markInfo.get(nm('Marked')) : null;
-  const langRaw = catalog.get(nm('Lang'));
-  const pages = doc.getPages();
-  // PDF/UA-1 requires DisplayDocTitle in ViewerPreferences so the title bar
-  // shows the document title (not the filename) — assistive tech reads it.
-  const viewerPrefs = resolve(catalog.get(nm('ViewerPreferences')));
-  const displayDocTitle = viewerPrefs && viewerPrefs.get ? viewerPrefs.get(nm('DisplayDocTitle')) : null;
-  // Document outline (bookmarks) — multi-page docs benefit from one;
-  // single-page docs don't strictly need it but it's never harmful.
-  const outlines = resolve(catalog.get(nm('Outlines')));
-  // Document metadata title — many PDF/UA validators check this.
-  const info = resolve(catalog.get(nm('Info')) || (ctx.trailerInfo && ctx.trailerInfo.Info));
-  const docTitle = info && info.get ? info.get(nm('Title')) : null;
-  // Font embedding: walk page resources, find Font dictionaries, check each has
-  // a FontDescriptor with at least one FontFile* entry. PDF/UA requires fonts
-  // be embedded so the document renders correctly even when the system is
-  // missing the font (otherwise content can substitute and break SR reading).
-  // Font embedding walk — collect EVERY font dict, not just page-level /Font: also nested
-  // form-XObject Resources, and Type0 DESCENDANT FontDescriptors (a composite font's
-  // descriptor lives on its CIDFont, not the Type0 dict). The old walk read only page /Font
-  // and checked FontDescriptor on the top font → missed XObject fonts and miscounted
-  // Type0/Type3, diverging from veraPDF §7.21.4.1. (2026-06-19 parity — keep in lockstep
-  // with view_pdf_validator_module.js)
-  let fontsTotal = 0, fontsEmbedded = 0;
-  const _seenFont = (typeof WeakSet === 'function') ? new WeakSet() : null;
-  const _fontEmbedded = (font) => {
-    if (!font || !font.get) return false;
-    const sub = String(font.get(nm('Subtype')) || '');
-    if (sub === '/Type3') return true; // glyphs are CharProcs content streams — embedded by definition
-    let fd = resolve(font.get(nm('FontDescriptor')));
-    if (!fd && sub === '/Type0') {
-      const desc = resolve(font.get(nm('DescendantFonts')));
-      const cid = desc && desc.get ? resolve(desc.get(0)) : null;
-      if (cid && cid.get) fd = resolve(cid.get(nm('FontDescriptor')));
-    }
-    if (fd && fd.get) return !!(fd.get(nm('FontFile')) || fd.get(nm('FontFile2')) || fd.get(nm('FontFile3')));
-    return false;
-  };
-  const _walkFonts = (resources, depth) => {
-    if (!resources || !resources.get || depth > 4) return;
-    const fontDict = resolve(resources.get(nm('Font')));
-    if (fontDict && fontDict.entries) {
-      try { for (const [, fontRef] of fontDict.entries()) {
-        const f = resolve(fontRef);
-        if (!f || !f.get) continue;
-        if (_seenFont) { if (_seenFont.has(f)) continue; _seenFont.add(f); }
-        fontsTotal++; if (_fontEmbedded(f)) fontsEmbedded++;
-      } } catch (_) {}
-    }
-    const xobj = resolve(resources.get(nm('XObject')));
-    if (xobj && xobj.entries) {
-      try { for (const [, xref] of xobj.entries()) {
-        const xo = resolve(xref);
-        const xdict = xo && xo.dict ? xo.dict : (xo && xo.get ? xo : null);
-        if (xdict && xdict.get && String(xdict.get(nm('Subtype')) || '') === '/Form') {
-          _walkFonts(resolve(xdict.get(nm('Resources'))), depth + 1);
-        }
-      } } catch (_) {}
-    }
-  };
-  try {
-    for (const page of pages) _walkFonts(resolve(page.node.get(nm('Resources'))), 0);
-  } catch (_) { /* font-walk is best-effort */ }
-
-  // Annotated pages /Tabs /S (PDF/UA-1 §7.18.3), /ParentTree, and XMP /Metadata + dc:title (§7.1)
-  let pagesWithAnnots = 0, pagesWithAnnotsTabsS = 0;
-  try {
-    for (const page of pages) {
-      const pAnnots = resolve(page.node.get(nm('Annots')));
-      if (!pAnnots || typeof pAnnots.size !== 'function' || pAnnots.size() === 0) continue;
-      pagesWithAnnots++;
-      if (String(page.node.get(nm('Tabs')) || '') === '/S') pagesWithAnnotsTabsS++;
-    }
-  } catch (_) { /* best-effort */ }
-  let xmpText = '', xmpUnreadable = false, hasMetadataStream = false;
-  try {
-    const metaStream = resolve(catalog.get(nm('Metadata')));
-    if (metaStream) {
-      hasMetadataStream = true;
-      const metaFilter = metaStream.dict && metaStream.dict.get ? metaStream.dict.get(nm('Filter')) : null;
-      const metaBytes = metaStream.contents || (metaStream.getContents && metaStream.getContents());
-      if (metaFilter) xmpUnreadable = true;
-      else if (metaBytes) xmpText = Buffer.from(metaBytes).toString('utf8');
-    }
-  } catch (_) { xmpUnreadable = true; }
-  const xmpDcTitleMatch = xmpText.match(/<dc:title\b[^>]*>([\s\S]*?)<\/dc:title>/i);
-  const xmpDcTitleText = xmpDcTitleMatch ? xmpDcTitleMatch[1].replace(/<[^>]+>/g, '').trim() : '';
-  const hasParentTree = !!(stRoot && stRoot.get && resolve(stRoot.get(nm('ParentTree'))));
-
-  // Walk the structure tree
-  const elems = stRoot ? walkStructTree(stRoot, ctx) : [];
-  const leaves = elems.filter(e => LEAF_ROLES.includes(e.role));
-  const containers = elems.filter(e => CONTAINER_ROLES.includes(e.role));
-  const orphanedLeaves = leaves.filter(e => !e.hasContent);
-
-  const byRole = {};
-  for (const e of elems) byRole[e.role] = (byRole[e.role] || 0) + 1;
-
-  // Table/cell facts (PDF/UA-1 §7.5)
-  const thElems = elems.filter(e => e.role === 'TH');
-  const cellElems = elems.filter(e => e.role === 'TH' || e.role === 'TD');
-  const figures = elems.filter(e => e.role === 'Figure');
-
-  // Per-section checks
-  const checks = [];
-  const passOrFail = (rule, ok, detail) => checks.push({ rule, status: ok ? 'pass' : 'fail', detail: detail || '' });
-
-  passOrFail('StructTreeRoot present', !!stRoot);
-  passOrFail('StructTreeRoot has /ParentTree', hasParentTree, hasParentTree ? 'present' : '(missing)');
-  passOrFail('MarkInfo /Marked true', String(markedRaw) === 'true');
-  passOrFail('Primary language set (/Lang)', !!langRaw, langRaw ? String(langRaw) : '');
-  passOrFail('Structure tree has content (rootK not null)', elems.length > 0, elems.length + ' elements');
-  passOrFail('At least one heading present', elems.some(e => /^H[1-6]$/.test(e.role)));
-  passOrFail('Every TH has /Scope', thElems.length === 0 || thElems.every(e => e.hasA), thElems.length + ' TH cells');
-  passOrFail('Every TH/TD has /ActualText', cellElems.length === 0 || cellElems.every(e => e.hasActualText), cellElems.length + ' cells');
-  passOrFail('Every Figure has /Alt', figures.length === 0 || figures.every(e => e.hasAlt), figures.length + ' figures');
-  passOrFail('Document is NOT encrypted (AT requires read access)', !isEncrypted, isEncrypted ? 'PDF is password-protected' : '');
-  passOrFail('Document title set in metadata (/Info /Title)', !!docTitle, docTitle ? String(docTitle).slice(0, 80) : '');
-  passOrFail('ViewerPreferences /DisplayDocTitle = true (AT reads title bar)', String(displayDocTitle) === 'true', displayDocTitle ? String(displayDocTitle) : '(missing)');
-  passOrFail('All page fonts embedded (no SR-breaking substitution)',
-    fontsTotal === 0 || fontsEmbedded === fontsTotal,
-    fontsEmbedded + '/' + fontsTotal + ' fonts embedded');
-  passOrFail('Pages with annotations set /Tabs /S (PDF/UA 7.18.3)',
-    pagesWithAnnots === 0 || pagesWithAnnotsTabsS === pagesWithAnnots,
-    pagesWithAnnots === 0 ? '0 annotated pages' : pagesWithAnnotsTabsS + '/' + pagesWithAnnots + ' annotated pages with /Tabs /S');
-  passOrFail('XMP metadata stream present (/Metadata, PDF/UA 7.1)',
-    hasMetadataStream,
-    hasMetadataStream ? (xmpUnreadable ? 'present (compressed)' : 'present') : '(missing)');
-  passOrFail('XMP dc:title non-empty (PDF/UA 7.1)',
-    xmpUnreadable ? true : (hasMetadataStream && !!xmpDcTitleText),
-    xmpUnreadable ? 'XMP compressed — checked externally' : (xmpDcTitleText ? xmpDcTitleText.slice(0, 80) : '(missing/empty)'));
-  // §7.1/§7.2 coverage honesty (2026-06-19 parity): structure-level self-check does NOT parse
-  // page content streams, so it cannot confirm every operator is marked /Artifact or tagged with a
-  // reachable MCID — the gap veraPDF caught on scanned docs. Surfaced as WARN, never a silent pass.
-  checks.push({ rule: 'Content marking & MCID reachability (§7.1, §7.2)', status: 'warn',
-    detail: 'Not verified here — this self-check does not parse page content streams. Run veraPDF to confirm content is marked /Artifact or tagged with a reachable MCID (the scanned-PDF gap).' });
-  // Outline (bookmarks) — not strict PDF/UA-1 requirement but a major navigation
-  // aid for multi-page docs. Soft check: report presence, don't fail multi-page
-  // docs that lack one (we don't have authoritative "should have bookmarks" rule).
-  passOrFail('Document outline (bookmarks) present', !!outlines, outlines ? '(navigation aid for multi-page docs)' : '(none — multi-page docs benefit from one)');
-
-  // Content linkage (PAC 2024's "orphaned semantic elements" check)
-  const orphanedRoles = orphanedLeaves.map(e => e.role);
-  passOrFail('No orphaned semantic leaves (all leaves have /K → MCR/MCID)',
-    orphanedLeaves.length === 0,
-    orphanedLeaves.length + '/' + leaves.length + ' orphaned: ' + JSON.stringify(orphanedRoles));
-
-  // Tally pass/fail
-  const passCount = checks.filter(c => c.status === 'pass').length;
-  const failCount = checks.filter(c => c.status === 'fail').length;
-
-  return {
-    file: path.basename(filepath),
-    fullPath: filepath,
-    byteLength: bytes.length,
-    pageCount: pages.length,
-    isEncrypted,
-    catalogChecks: {
-      hasStructTreeRoot: !!stRoot,
-      hasParentTree,
-      hasMetadataStream,
-      xmpDcTitle: xmpDcTitleText || null,
-      marked: String(markedRaw),
-      lang: langRaw ? String(langRaw) : null,
-      docTitle: docTitle ? String(docTitle).slice(0, 200) : null,
-      displayDocTitle: displayDocTitle ? String(displayDocTitle) : null,
-      hasOutline: !!outlines,
-      pagesWithAnnots,
-      pagesWithAnnotsTabsS,
-      fontsTotal,
-      fontsEmbedded,
+  const report = await validatePdfBytes(bytes, options);
+  return Object.assign(
+    {
+      file: path.basename(filepath),
+      fullPath: filepath,
     },
-    structureTally: {
-      totalStructElems: elems.length,
-      leafCount: leaves.length,
-      containerCount: containers.length,
-      orphanedLeafCount: orphanedLeaves.length,
-      orphanedRoles,
-      byRole,
-    },
-    cellChecks: {
-      thCount: thElems.length,
-      thWithScope: thElems.filter(e => e.hasA).length,
-      cellCount: cellElems.length,
-      cellsWithActualText: cellElems.filter(e => e.hasActualText).length,
-      figureCount: figures.length,
-      figuresWithAlt: figures.filter(e => e.hasAlt).length,
-    },
-    checks,
-    summary: {
-      pass: passCount,
-      fail: failCount,
-      overall: failCount === 0 ? 'PASS' : 'FAIL',
-    },
-  };
+    report
+  );
 }
 
 // ── Pretty-printer for terminal output ──
@@ -327,8 +69,13 @@ function renderReport(r) {
   const pad = (s, n) => (s + ' '.repeat(Math.max(0, n - s.length)));
   lines.push('');
   lines.push('═'.repeat(72));
-  lines.push('  ' + r.file);
+  lines.push('  ' + (r.file || '(bytes)'));
   lines.push('═'.repeat(72));
+  if (r.error) {
+    lines.push('  ✗ ERROR: ' + r.error);
+    lines.push('═'.repeat(72));
+    return lines.join('\n');
+  }
   lines.push('  Pages:        ' + r.pageCount + '   ·   Bytes: ' + (r.byteLength / 1024).toFixed(1) + ' KB');
   lines.push('  StructElems:  ' + r.structureTally.totalStructElems +
              ' (' + r.structureTally.leafCount + ' leaves, ' + r.structureTally.containerCount + ' containers)');
@@ -345,8 +92,8 @@ function renderReport(r) {
 }
 
 // ── CLI ──
-async function main() {
-  const args = process.argv.slice(2);
+async function main(argv) {
+  const args = Array.isArray(argv) ? argv : process.argv.slice(2);
   if (args.length === 0 || args.includes('-h') || args.includes('--help')) {
     console.log('Usage: node dev-tools/demo/exported_pdf_validator.cjs [--json] [--batch <dir>] <file.pdf>');
     process.exit(1);
@@ -361,7 +108,7 @@ async function main() {
     else files.push(args[i]);
   }
   if (batchDir) {
-    const all = fs.readdirSync(batchDir).filter(f => /\.pdf$/i.test(f)).map(f => path.join(batchDir, f));
+    const all = fs.readdirSync(batchDir).filter((f) => /\.pdf$/i.test(f)).map((f) => path.join(batchDir, f));
     files.push(...all);
   }
   if (files.length === 0) {
@@ -375,7 +122,7 @@ async function main() {
     try {
       const r = await validatePdf(f);
       reports.push(r);
-      if (r.summary.overall === 'FAIL') anyFail = true;
+      if (!r.summary || r.summary.overall !== 'PASS') anyFail = true;
       if (!jsonOnly) console.log(renderReport(r));
     } catch (e) {
       const r = { file: path.basename(f), fullPath: f, error: e.message, summary: { overall: 'ERROR', pass: 0, fail: 0 } };
@@ -389,11 +136,23 @@ async function main() {
   } else {
     console.log('');
     console.log('  Summary: ' + reports.length + ' file(s), ' +
-                reports.filter(r => r.summary.overall === 'PASS').length + ' PASS, ' +
-                reports.filter(r => r.summary.overall === 'FAIL').length + ' FAIL, ' +
-                reports.filter(r => r.summary.overall === 'ERROR').length + ' ERROR');
+                reports.filter((r) => r.summary && r.summary.overall === 'PASS').length + ' PASS, ' +
+                reports.filter((r) => r.summary && r.summary.overall === 'FAIL').length + ' FAIL, ' +
+                reports.filter((r) => !r.summary || r.summary.overall === 'ERROR').length + ' ERROR');
   }
   process.exit(anyFail ? 1 : 0);
 }
 
-main().catch(e => { console.error('[validator] FATAL:', e.stack || e.message); process.exit(2); });
+module.exports = {
+  validatePdf,
+  validatePdfBytes,
+  validatePdfStructure: validatePdfBytes,
+  validateExportedPdfBytes: validatePdfBytes,
+  renderReport,
+  main,
+  CORE_VALIDATOR,
+};
+
+if (require.main === module) {
+  main().catch((e) => { console.error('[validator] FATAL:', e.stack || e.message); process.exit(2); });
+}

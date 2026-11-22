@@ -24,7 +24,6 @@ import {
   jsonError,
   noStoreHeaders,
   nowSeconds,
-  readBoundedBytes,
   readBoundedText,
   sha256Base64Url,
 } from "./security";
@@ -36,9 +35,49 @@ type JobOutboundParams = {
 };
 
 const MAX_CHECKPOINT_BYTES = 32 * 1024 * 1024;
+export const MAX_GEMINI_REQUEST_BYTES = 20 * 1024 * 1024;
 const SHA256_HEX_RE = /^[0-9a-f]{64}$/u;
 const CHECKPOINT_STAGES = new Set(["extraction", "primary", "round"]);
 const MODEL_NAME_RE = /^[A-Za-z0-9._-]{2,100}$/u;
+
+export function boundedPassThroughStream(
+  body: ReadableStream<Uint8Array>,
+  maximumBytes: number,
+  tooLargeError: Error,
+  onLimitExceeded?: () => void,
+): { readable: ReadableStream<Uint8Array>; done: Promise<void> } {
+  if (!Number.isSafeInteger(maximumBytes) || maximumBytes < 0) {
+    throw new Error("invalid_maximum_bytes");
+  }
+  let receivedBytes = 0;
+  let exceeded = false;
+  const limiter = new TransformStream<Uint8Array, Uint8Array>({
+    transform(chunk, controller) {
+      const bytes = chunk instanceof Uint8Array
+        ? chunk
+        : new Uint8Array(chunk);
+      receivedBytes += bytes.byteLength;
+      if (receivedBytes > maximumBytes) {
+        exceeded = true;
+        try {
+          onLimitExceeded?.();
+        } catch {
+          // Best-effort abort callback.
+        }
+        controller.error(tooLargeError);
+        return;
+      }
+      controller.enqueue(bytes);
+    },
+    flush() {
+      if (exceeded) {
+        return;
+      }
+    },
+  });
+  const done = body.pipeTo(limiter.writable).catch(() => undefined);
+  return { readable: limiter.readable, done };
+}
 
 function resolvedFallbackModel(env: PilotEnv): string {
   const candidate = typeof env.GEMINI_FALLBACK_MODEL === "string"
@@ -659,28 +698,74 @@ async function geminiOutbound(
     ) {
       throw new PilotError("model_request_denied", 403);
     }
-    const bodyBytes = await readBoundedBytes(
-      request,
-      20 * 1024 * 1024,
-      new PilotError("model_request_too_large", 413),
-    );
+    const tooLargeError = new PilotError("model_request_too_large", 413);
+    const rawContentLength = request.headers.get("Content-Length");
+    if (rawContentLength !== null) {
+      const trimmed = rawContentLength.trim();
+      if (!/^\d+$/u.test(trimmed)) {
+        await request.body.cancel().catch(() => undefined);
+        throw new PilotError("model_request_denied", 400);
+      }
+      const declaredBytes = Number(trimmed);
+      if (
+        !Number.isSafeInteger(declaredBytes) ||
+        declaredBytes > MAX_GEMINI_REQUEST_BYTES
+      ) {
+        await request.body.cancel(tooLargeError).catch(() => undefined);
+        throw tooLargeError;
+      }
+    }
 
-    const upstream = await fetch(
-      `https://generativelanguage.googleapis.com${incoming.pathname}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          "x-goog-api-key": env.GEMINI_API_KEY,
+    const upstreamAbort = new AbortController();
+    let limitExceeded = false;
+    const { readable: boundedStream, done: bodyPipeDone } =
+      boundedPassThroughStream(
+        request.body,
+        MAX_GEMINI_REQUEST_BYTES,
+        tooLargeError,
+        () => {
+          limitExceeded = true;
+          if (!upstreamAbort.signal.aborted) {
+            upstreamAbort.abort(tooLargeError);
+          }
         },
-        body: bodyBytes.buffer.byteLength === bodyBytes.byteLength && bodyBytes.byteOffset === 0
-          ? (bodyBytes.buffer as ArrayBuffer)
-          : bodyBytes.slice().buffer,
-        redirect: "error",
-        signal: AbortSignal.timeout(90_000),
+      );
+    const timeoutSignal = AbortSignal.timeout(90_000);
+    const signal = typeof AbortSignal.any === "function"
+      ? AbortSignal.any([timeoutSignal, upstreamAbort.signal])
+      : upstreamAbort.signal;
+
+    const fetchInit: RequestInit & { duplex?: "half" } = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "x-goog-api-key": env.GEMINI_API_KEY,
       },
-    );
+      body: boundedStream,
+      duplex: "half",
+      redirect: "error",
+      signal,
+    };
+
+    let upstream: Response;
+    try {
+      upstream = await fetch(
+        `https://generativelanguage.googleapis.com${incoming.pathname}`,
+        fetchInit,
+      );
+    } catch (error) {
+      if (limitExceeded) {
+        await bodyPipeDone;
+        throw tooLargeError;
+      }
+      throw error;
+    }
+    if (limitExceeded) {
+      await bodyPipeDone;
+      await upstream.body?.cancel().catch(() => undefined);
+      throw tooLargeError;
+    }
     const headers = noStoreHeaders({
       "Content-Type":
         upstream.headers.get("Content-Type") || "application/json",

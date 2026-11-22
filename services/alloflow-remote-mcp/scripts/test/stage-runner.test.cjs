@@ -53,6 +53,7 @@ test('runner context check traverses nested files and performs no writes', () =>
     'desktop/mcp/accessible_html_edit.cjs',
     'desktop/mcp/scan_reading_corrections.cjs',
     'desktop/mcp/remediation_chromium_pdf.cjs',
+    'desktop/mcp/remediation_node_exporters.cjs',
   ]) {
     assert.deepEqual(fs.readFileSync(path.join(contextRoot, relative)), fs.readFileSync(path.join(repoRoot, relative)),
       'missing or stale required driver dependency: ' + relative);

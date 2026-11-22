@@ -39,6 +39,8 @@ const Verification = require('./remediation_verification.cjs');
 const AccessibleHtmlEdit = require('./accessible_html_edit.cjs');
 const ScanCorrections = require('./scan_reading_corrections.cjs');
 const ChromiumPdf = require('./remediation_chromium_pdf.cjs');
+let NodeExporters = null;
+try { NodeExporters = require('./remediation_node_exporters.cjs'); } catch (_) {}
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 // Kept beside the renderer's own constant and asserted equal in
@@ -3977,6 +3979,34 @@ function createDriver(options) {
     if (!fs.existsSync(modulePath)) {
       throw new Error(EXPORT_MODULE + ' is missing from ' + ASSETS_ROOT + ' — this connector build cannot export Office formats.');
     }
+    if (NodeExporters && typeof NodeExporters.exportAccessibleOfficeNode === 'function' && o.preferChromium !== true && o.disableNodeFastPath !== true) {
+      try {
+        const nodeOut = await NodeExporters.exportAccessibleOfficeNode({
+          html: o.html,
+          title: o.title || 'AlloFlow Document',
+          format,
+          assetsRoot: ASSETS_ROOT,
+          disableNodeFastPath: o.disableNodeFastPath === true,
+          _loadJsdom: o._loadJsdom,
+          freshContext: o.freshContext === true,
+        });
+        if (nodeOut && nodeOut.supported === true) {
+          rlog('office export (node-fast): ' + nodeOut.fileName + ' (' + Math.round(nodeOut.b64.length * 0.75 / 1024) + ' KB)');
+          return {
+            b64: nodeOut.b64,
+            fileName: nodeOut.fileName,
+            message: nodeOut.message || null,
+            counts: nodeOut.counts || null,
+            executionEngine: 'node-fast',
+          };
+        }
+        if (nodeOut && nodeOut.reason) {
+          rlog('office export: node-fast unavailable (' + nodeOut.reason + '), falling back to Chromium');
+        }
+      } catch (nodeErr) {
+        rlog('office export: node-fast failed (' + String((nodeErr && nodeErr.message) || nodeErr).slice(0, 160) + '), falling back to Chromium');
+      }
+    }
     const b = await getBrowser();
     const context = await b.newContext({ serviceWorkers: 'block' });
     try {
@@ -4009,7 +4039,7 @@ function createDriver(options) {
       }, { html: o.html, title: o.title || 'AlloFlow Document', format });
       if (pageErrors.length) rlog('office export page errors: ' + pageErrors.slice(0, 2).join(' | '));
       rlog('office export: ' + out.fileName + ' (' + Math.round(out.b64.length * 0.75 / 1024) + ' KB)');
-      return out;
+      return Object.assign({}, out, { executionEngine: 'chromium' });
     } finally {
       try { await context.close(); } catch (_) {}
     }
@@ -4055,6 +4085,62 @@ function createDriver(options) {
     if (!o.html || typeof o.html !== 'string') throw new Error('html is required');
     const title = String(o.title || 'document').replace(/\.\w+$/, '') || 'document';
     const fileStem = title.replace(/[\\/:*?"<>|\x00-\x1f]/g, '_').replace(/^\.+|\.+$/g, '').slice(0, 120) || 'document';
+
+    if (NodeExporters && typeof NodeExporters.exportAltFormatNode === 'function' && o.preferChromium !== true && o.disableNodeFastPath !== true) {
+      try {
+        const nodeOut = await NodeExporters.exportAltFormatNode({
+          html: o.html,
+          title,
+          format,
+          assetsRoot: ASSETS_ROOT,
+          builderOptions: o.builderOptions,
+          disableNodeFastPath: o.disableNodeFastPath === true,
+          _loadJsdom: o._loadJsdom,
+          freshContext: o.freshContext === true,
+        });
+        if (nodeOut && nodeOut.supported === true) {
+          if (format === 'brf') {
+            rlog('brf (node-fast): ' + nodeOut.bytes + ' bytes, grade ' + nodeOut.grade + ', ' + nodeOut.droppedCharacters + ' character(s) dropped');
+            return {
+              format: 'brf',
+              fileName: nodeOut.fileName,
+              b64: nodeOut.b64,
+              bytes: nodeOut.bytes,
+              grade: nodeOut.grade,
+              code: nodeOut.code,
+              droppedCharacters: nodeOut.droppedCharacters,
+              sourceCharacters: nodeOut.sourceCharacters,
+              modelFree: true,
+              warnings: nodeOut.warnings,
+              executionEngine: 'node-fast',
+            };
+          }
+          rlog(format + ' (node-fast): ' + nodeOut.entries.length + ' entries, ' + nodeOut.bytes + ' bytes'
+            + (nodeOut.structuralErrors.length ? ', ' + nodeOut.structuralErrors.length + ' structural error(s)' : ''));
+          return {
+            format: nodeOut.format,
+            fileName: nodeOut.fileName,
+            b64: nodeOut.b64,
+            bytes: nodeOut.bytes,
+            entries: nodeOut.entries,
+            language: nodeOut.language,
+            identifier: nodeOut.identifier,
+            navEntries: nodeOut.navEntries,
+            modelFree: true,
+            structuralErrors: nodeOut.structuralErrors,
+            selfChecked: nodeOut.selfChecked,
+            valid: nodeOut.valid,
+            warnings: nodeOut.warnings,
+            executionEngine: 'node-fast',
+          };
+        }
+        if (nodeOut && nodeOut.reason) {
+          rlog(format + ': node-fast unavailable (' + nodeOut.reason + '), falling back to Chromium');
+        }
+      } catch (nodeErr) {
+        rlog(format + ': node-fast failed (' + String((nodeErr && nodeErr.message) || nodeErr).slice(0, 160) + '), falling back to Chromium');
+      }
+    }
 
     const b = await getBrowser();
     const context = await b.newContext({ serviceWorkers: 'block' });
@@ -4109,6 +4195,7 @@ function createDriver(options) {
           warnings: built.dropped > 0
             ? [built.dropped + ' character(s) had no uncontracted-braille equivalent and were dropped.']
             : [],
+          executionEngine: 'chromium',
         };
       }
 
@@ -4139,6 +4226,7 @@ function createDriver(options) {
         warnings: errs.length
           ? [errs.length + ' structural issue(s) found by the built-in EPUB self-check; this file may not open in all readers. Not a substitute for epubcheck.']
           : [],
+        executionEngine: 'chromium',
       };
     } finally {
       try { await context.close(); } catch (_) {}
@@ -5013,6 +5101,7 @@ module.exports = {
   isPathContainedInRoot,
   resolveLocalSubstituteFont,
   ChromiumPdf,
+  NodeExporters,
   NORMALIZED_VENDOR_TEXT_PATHS,
   REPO_ROOT,
   ASSETS_ROOT,

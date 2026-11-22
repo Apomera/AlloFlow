@@ -5,12 +5,12 @@ const crypto = require('node:crypto');
 const fs = require('node:fs');
 const fsp = require('node:fs/promises');
 const http = require('node:http');
+const os = require('node:os');
 const path = require('node:path');
-const { promisify } = require('node:util');
+const { Readable, Transform, Writable } = require('node:stream');
+const { pipeline } = require('node:stream/promises');
+const { StringDecoder } = require('node:string_decoder');
 const zlib = require('node:zlib');
-
-const gzip = promisify(zlib.gzip);
-const gunzip = promisify(zlib.gunzip);
 
 const SERVICE_NAME = 'alloflow-remediation-runner';
 const SERVICE_VERSION = '0.3.0';
@@ -25,6 +25,9 @@ const MAX_REPORT_BYTES = 1024 * 1024;
 const MAX_RUN_MINUTES = 25;
 const MAX_CHECKPOINT_COMPRESSED_BYTES = 32 * 1024 * 1024;
 const MAX_CHECKPOINT_JSON_BYTES = 128 * 1024 * 1024;
+const CHECKPOINT_JSON_CHUNK_CHARS = 256 * 1024;
+const INLINE_CHECKPOINT_UPLOAD_THRESHOLD = 256 * 1024;
+const BASE64_DECODE_CHUNK_CHARS = 4 * 1024 * 1024;
 const MAX_CHECKPOINT_TELEMETRY_EVENTS = 16;
 const DEFAULT_CHECKPOINT_GEMINI_MODEL = 'gemini-3-flash-preview';
 const DEFAULT_CHECKPOINT_GEMINI_FALLBACK_MODEL = 'gemini-2.5-flash-lite';
@@ -959,7 +962,7 @@ function createStateStore(root) {
 }
 
 function throwIfCancelled(signal) {
-  if (!signal.aborted) return;
+  if (!signal || !signal.aborted) return;
   if (signal.reason instanceof RunnerError) throw signal.reason;
   throw new CancelledError();
 }
@@ -1122,39 +1125,310 @@ function checkpointHeaderMetadata(headers) {
   };
 }
 
-async function readBoundedBody(response, maximum, errorCode) {
-  const declaredText = response.headers.get('content-length');
-  let declared = null;
-  if (declaredText !== null) {
-    if (!/^\d+$/.test(declaredText)) {
-      await response.body?.cancel().catch(() => {});
-      return null;
-    }
-    declared = Number(declaredText);
-    if (!Number.isSafeInteger(declared) || declared < 1 || declared > maximum) {
-      await response.body?.cancel().catch(() => {});
-      return null;
-    }
+async function destroyReadStreamAndWait(stream) {
+  if (!stream) return;
+  if (stream.closed) {
+    stream.destroy();
+    return;
   }
-  if (!response.body) return null;
-  const chunks = [];
-  let size = 0;
-  try {
-    for await (const chunk of response.body) {
-      const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
-      size += buffer.length;
-      if (size > maximum) {
-        return null;
-      }
-      chunks.push(buffer);
-    }
-  } catch (error) {
-    if (error instanceof RunnerError) throw error;
-    throw new RunnerError(errorCode, 502, true);
-  }
-  if (declared !== null && size !== declared) return null;
-  return size > 0 ? Buffer.concat(chunks, size) : null;
+  await new Promise((resolve) => {
+    let done = false;
+    let timer = null;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      if (timer) clearTimeout(timer);
+      stream.removeListener('close', finish);
+      stream.removeListener('error', finish);
+      resolve();
+    };
+    timer = setTimeout(finish, 500);
+    timer.unref?.();
+    stream.once('close', finish);
+    stream.once('error', finish);
+    stream.destroy();
+    if (stream.closed) finish();
+  });
 }
+
+async function writeGzipCheckpointTempFile(envelope, options = {}) {
+  const tempDir = (options && typeof options.tempDir === 'string' && options.tempDir)
+    ? options.tempDir
+    : os.tmpdir();
+  const filePrefix = (options && typeof options.filePrefix === 'string' && options.filePrefix)
+    ? options.filePrefix
+    : 'alloflow-checkpoint';
+  const maxUncompressedBytes = options && options.maxUncompressedBytes !== undefined
+    ? options.maxUncompressedBytes
+    : MAX_CHECKPOINT_JSON_BYTES;
+  const maxCompressedBytes = options && options.maxCompressedBytes !== undefined
+    ? options.maxCompressedBytes
+    : MAX_CHECKPOINT_COMPRESSED_BYTES;
+  const level = options && options.level !== undefined ? options.level : 6;
+  const signal = (options && options.signal) || null;
+  const chunkChars = (
+    options &&
+    Number.isSafeInteger(options.chunkChars) &&
+    options.chunkChars > 0
+  ) ? options.chunkChars : CHECKPOINT_JSON_CHUNK_CHARS;
+
+  if (
+    !Number.isSafeInteger(maxUncompressedBytes) || maxUncompressedBytes < 1 ||
+    !Number.isSafeInteger(maxCompressedBytes) || maxCompressedBytes < 1
+  ) {
+    throw new RunnerError('checkpoint_snapshot_invalid', 500, false);
+  }
+  throwIfCancelled(signal);
+
+  let jsonString;
+  try {
+    jsonString = JSON.stringify(envelope);
+  } catch {
+    throw new RunnerError('checkpoint_snapshot_invalid', 500, false);
+  }
+  if (typeof jsonString !== 'string' || jsonString.length === 0) {
+    throw new RunnerError('checkpoint_snapshot_invalid', 500, false);
+  }
+  if (jsonString.length > maxUncompressedBytes) {
+    jsonString = null;
+    throw new RunnerError('checkpoint_snapshot_too_large', 500, false);
+  }
+
+  await fsp.mkdir(tempDir, { recursive: true, mode: 0o700 });
+  const tempPath = path.join(
+    tempDir,
+    `.${filePrefix}-${process.pid}-${crypto.randomUUID()}.tmp.gz`,
+  );
+
+  const hash = crypto.createHash('sha256');
+  let uncompressedBytes = 0;
+  let compressedBytes = 0;
+
+  async function* jsonUtf8Chunks() {
+    let sourceText = jsonString;
+    jsonString = null;
+    try {
+      for (let offset = 0; offset < sourceText.length; ) {
+        throwIfCancelled(signal);
+        let end = Math.min(offset + chunkChars, sourceText.length);
+        if (end < sourceText.length && end > offset) {
+          const lastCode = sourceText.charCodeAt(end - 1);
+          const nextCode = sourceText.charCodeAt(end);
+          if (
+            lastCode >= 0xd800 && lastCode <= 0xdbff &&
+            nextCode >= 0xdc00 && nextCode <= 0xdfff
+          ) {
+            end += 1;
+          }
+        }
+        const chunk = Buffer.from(sourceText.slice(offset, end), 'utf8');
+        offset = end;
+        uncompressedBytes += chunk.length;
+        if (uncompressedBytes > maxUncompressedBytes) {
+          throw new RunnerError('checkpoint_snapshot_too_large', 500, false);
+        }
+        yield chunk;
+      }
+    } finally {
+      sourceText = null;
+    }
+  }
+
+  const gzipStream = zlib.createGzip({ level });
+  const measureAndHash = new Transform({
+    transform(chunk, _encoding, callback) {
+      if (signal && signal.aborted) {
+        try {
+          throwIfCancelled(signal);
+        } catch (err) {
+          callback(err);
+          return;
+        }
+      }
+      const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+      compressedBytes += buf.length;
+      if (compressedBytes > maxCompressedBytes) {
+        callback(new RunnerError('checkpoint_snapshot_too_large', 500, false));
+        return;
+      }
+      hash.update(buf);
+      callback(null, buf);
+    },
+  });
+  const fileStream = fs.createWriteStream(tempPath, { flags: 'wx', mode: 0o600 });
+
+  try {
+    await pipeline(
+      Readable.from(jsonUtf8Chunks(), { objectMode: false }),
+      gzipStream,
+      measureAndHash,
+      fileStream,
+    );
+    if (uncompressedBytes === 0 || compressedBytes === 0) {
+      throw new RunnerError('checkpoint_snapshot_invalid', 500, false);
+    }
+    return {
+      tempPath,
+      compressedBytes,
+      uncompressedBytes,
+      sha256: hash.digest('hex'),
+    };
+  } catch (error) {
+    await fsp.rm(tempPath, { force: true, maxRetries: 3, retryDelay: 20 }).catch(() => {});
+    if (signal && signal.aborted) throwIfCancelled(signal);
+    if (error instanceof RunnerError) throw error;
+    throw new RunnerError('checkpoint_snapshot_invalid', 500, false);
+  }
+}
+
+async function readGzipCheckpointStream(readable, options = {}) {
+  const maxCompressedBytes = options && options.maxCompressedBytes !== undefined
+    ? options.maxCompressedBytes
+    : MAX_CHECKPOINT_COMPRESSED_BYTES;
+  const maxUncompressedBytes = options && options.maxUncompressedBytes !== undefined
+    ? options.maxUncompressedBytes
+    : MAX_CHECKPOINT_JSON_BYTES;
+  const expectedCompressedBytes = options && options.expectedCompressedBytes !== undefined
+    ? options.expectedCompressedBytes
+    : null;
+  const expectedSha256 = options && options.expectedSha256 !== undefined
+    ? options.expectedSha256
+    : null;
+  const signal = (options && options.signal) || null;
+
+  if (!readable) {
+    throw new RunnerError('checkpoint_stream_empty', 422, false);
+  }
+  if (
+    !Number.isSafeInteger(maxCompressedBytes) || maxCompressedBytes < 1 ||
+    !Number.isSafeInteger(maxUncompressedBytes) || maxUncompressedBytes < 1
+  ) {
+    throw new RunnerError('checkpoint_gunzip_failed', 422, false);
+  }
+  if (
+    expectedCompressedBytes !== null &&
+    (!Number.isSafeInteger(expectedCompressedBytes) ||
+      expectedCompressedBytes < 1 ||
+      expectedCompressedBytes > maxCompressedBytes)
+  ) {
+    throw new RunnerError('checkpoint_compressed_too_large', 413, false);
+  }
+
+  const hash = crypto.createHash('sha256');
+  const decoder = new StringDecoder('utf8');
+  const textParts = [];
+  let compressedBytes = 0;
+  let uncompressedBytes = 0;
+
+  async function* boundedCompressedSource() {
+    try {
+      for await (const chunk of readable) {
+        throwIfCancelled(signal);
+        const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+        if (buf.length === 0) continue;
+        compressedBytes += buf.length;
+        if (compressedBytes > maxCompressedBytes) {
+          throw new RunnerError('checkpoint_compressed_too_large', 413, false);
+        }
+        hash.update(buf);
+        yield buf;
+      }
+    } catch (error) {
+      if (error instanceof RunnerError) throw error;
+      throw new RunnerError('checkpoint_stream_read_failed', 502, true);
+    }
+  }
+
+  const gunzipStream = zlib.createGunzip({
+    maxOutputLength: maxUncompressedBytes,
+  });
+
+  const collectText = new Writable({
+    write(chunk, _encoding, callback) {
+      if (signal && signal.aborted) {
+        try {
+          throwIfCancelled(signal);
+        } catch (err) {
+          callback(err);
+          return;
+        }
+      }
+      const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+      uncompressedBytes += buf.length;
+      if (uncompressedBytes > maxUncompressedBytes) {
+        callback(new RunnerError('checkpoint_uncompressed_too_large', 413, false));
+        return;
+      }
+      if (buf.length > 0) {
+        textParts.push(decoder.write(buf));
+      }
+      callback();
+    },
+    final(callback) {
+      const tail = decoder.end();
+      if (tail) textParts.push(tail);
+      callback();
+    },
+  });
+
+  try {
+    await pipeline(
+      Readable.from(boundedCompressedSource(), { objectMode: false }),
+      gunzipStream,
+      collectText,
+    );
+  } catch (error) {
+    textParts.length = 0;
+    if (signal && signal.aborted) throwIfCancelled(signal);
+    if (error instanceof RunnerError) throw error;
+    if (error && error.code === 'ERR_BUFFER_TOO_LARGE') {
+      throw new RunnerError('checkpoint_uncompressed_too_large', 413, false);
+    }
+    throw new RunnerError('checkpoint_gunzip_failed', 422, false);
+  }
+
+  if (compressedBytes === 0 || uncompressedBytes === 0) {
+    textParts.length = 0;
+    throw new RunnerError('checkpoint_stream_empty', 422, false);
+  }
+  if (expectedCompressedBytes !== null && compressedBytes !== expectedCompressedBytes) {
+    textParts.length = 0;
+    throw new RunnerError('checkpoint_length_mismatch', 422, false);
+  }
+  const compressedSha256 = hash.digest('hex');
+  if (expectedSha256 !== null && compressedSha256 !== expectedSha256) {
+    textParts.length = 0;
+    throw new RunnerError('checkpoint_checksum_mismatch', 422, false);
+  }
+
+  let text = textParts.join('');
+  textParts.length = 0;
+  let parsed;
+  try {
+    parsed = JSON.parse(text, safeJsonReviver);
+  } catch {
+    throw new RunnerError('checkpoint_json_invalid', 422, false);
+  } finally {
+    text = null;
+  }
+
+  return {
+    parsed,
+    compressedBytes,
+    uncompressedBytes,
+    compressedSha256,
+  };
+}
+
+const CHECKPOINT_CORRUPT_CODES = new Set([
+  'checkpoint_stream_empty',
+  'checkpoint_compressed_too_large',
+  'checkpoint_uncompressed_too_large',
+  'checkpoint_gunzip_failed',
+  'checkpoint_length_mismatch',
+  'checkpoint_checksum_mismatch',
+  'checkpoint_json_invalid',
+]);
 
 async function loadCheckpoint(fetchImpl, url, expected, signal) {
   throwIfCancelled(signal);
@@ -1196,48 +1470,53 @@ async function loadCheckpoint(fetchImpl, url, expected, signal) {
   const metadata = checkpointHeaderMetadata(response.headers);
   const baseFromHeaders = metadata.sequence;
   if (
+    !metadata.valid ||
+    !response.body ||
     contentTypeOnly(response.headers.get('content-type')) !== 'application/gzip' ||
     ![null, '', 'identity'].includes(response.headers.get('content-encoding'))
   ) {
     await response.body?.cancel().catch(() => {});
     return { baseSequence: baseFromHeaders, resumeCheckpoint: null };
   }
-  let compressed = await readBoundedBody(
-    response,
-    MAX_CHECKPOINT_COMPRESSED_BYTES,
-    'checkpoint_fetch_failed',
-  );
-  if (
-    !compressed ||
-    !metadata.valid ||
-    sha256(compressed) !== metadata.compressedSha256
-  ) {
-    return { baseSequence: baseFromHeaders, resumeCheckpoint: null };
-  }
-  const compressedBytes = compressed.length;
 
-  let json;
+  const declaredText = response.headers.get('content-length');
+  let declared = null;
+  if (declaredText !== null) {
+    if (!/^\d+$/.test(declaredText)) {
+      await response.body?.cancel().catch(() => {});
+      return { baseSequence: baseFromHeaders, resumeCheckpoint: null };
+    }
+    declared = Number(declaredText);
+    if (!Number.isSafeInteger(declared) || declared < 1 || declared > MAX_CHECKPOINT_COMPRESSED_BYTES) {
+      await response.body?.cancel().catch(() => {});
+      return { baseSequence: baseFromHeaders, resumeCheckpoint: null };
+    }
+  }
+
+  let decoded;
   try {
-    json = await gunzip(compressed, {
-      maxOutputLength: MAX_CHECKPOINT_JSON_BYTES,
+    decoded = await readGzipCheckpointStream(response.body, {
+      maxCompressedBytes: MAX_CHECKPOINT_COMPRESSED_BYTES,
+      maxUncompressedBytes: MAX_CHECKPOINT_JSON_BYTES,
+      expectedCompressedBytes: declared,
+      expectedSha256: metadata.compressedSha256,
+      signal,
     });
-  } catch {
-    return { baseSequence: baseFromHeaders, resumeCheckpoint: null };
-  } finally {
-    compressed = null;
+  } catch (error) {
+    await response.body?.cancel().catch(() => {});
+    if (error instanceof RunnerError) {
+      if (error.code === 'checkpoint_stream_read_failed') {
+        throw new RunnerError('checkpoint_fetch_failed', 502, true);
+      }
+      if (CHECKPOINT_CORRUPT_CODES.has(error.code)) {
+        return { baseSequence: baseFromHeaders, resumeCheckpoint: null };
+      }
+      throw error;
+    }
+    throw new RunnerError('checkpoint_fetch_failed', 502, true);
   }
-  if (!json || json.length === 0 || json.length > MAX_CHECKPOINT_JSON_BYTES) {
-    return { baseSequence: baseFromHeaders, resumeCheckpoint: null };
-  }
-  const uncompressedBytes = json.length;
-  let parsed;
-  try {
-    parsed = JSON.parse(json.toString('utf8'), safeJsonReviver);
-  } catch {
-    return { baseSequence: baseFromHeaders, resumeCheckpoint: null };
-  } finally {
-    json = null;
-  }
+
+  const { parsed, compressedBytes, uncompressedBytes } = decoded;
   const baseSequence = Math.max(
     baseFromHeaders,
     checkpointSequence(parsed && parsed.sequence),
@@ -1274,6 +1553,7 @@ async function putCheckpoint(
   compatibility,
   sequence,
   signal,
+  options = {},
 ) {
   const envelope = {
     schema: CHECKPOINT_SCHEMA,
@@ -1287,43 +1567,29 @@ async function putCheckpoint(
   if (!validateCheckpointEnvelope(envelope, compatibility)) {
     throw new RunnerError('checkpoint_snapshot_invalid', 500, false);
   }
-  let json;
+  const written = await writeGzipCheckpointTempFile(envelope, {
+    tempDir: options && options.tempDir,
+    maxUncompressedBytes: options && options.maxUncompressedBytes,
+    maxCompressedBytes: options && options.maxCompressedBytes,
+    signal,
+  });
+  let bodyStream = null;
   try {
-    json = Buffer.from(JSON.stringify(envelope), 'utf8');
-  } catch {
-    throw new RunnerError('checkpoint_snapshot_invalid', 500, false);
-  }
-  if (json.length === 0) {
-    throw new RunnerError('checkpoint_snapshot_invalid', 500, false);
-  }
-  if (json.length > MAX_CHECKPOINT_JSON_BYTES) {
-    throw new RunnerError('checkpoint_snapshot_too_large', 500, false);
-  }
-  let compressed;
-  try {
-    compressed = await gzip(json, { level: 6 });
-  } catch {
-    throw new RunnerError('checkpoint_snapshot_invalid', 500, false);
-  }
-  if (compressed.length === 0) {
-    throw new RunnerError('checkpoint_snapshot_invalid', 500, false);
-  }
-  if (compressed.length > MAX_CHECKPOINT_COMPRESSED_BYTES) {
-    throw new RunnerError('checkpoint_snapshot_too_large', 500, false);
-  }
-  throwIfCancelled(signal);
-  const compressedSha256 = sha256(compressed);
-  const response = await fetchWithTimeout(
-    fetchImpl,
-    url,
-    {
+    throwIfCancelled(signal);
+    const useStreamBody = options && typeof options.streamBody === 'boolean'
+      ? options.streamBody
+      : (
+        fetchImpl === globalThis.fetch ||
+        written.compressedBytes > INLINE_CHECKPOINT_UPLOAD_THRESHOLD
+      );
+    const init = {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/gzip',
-        'Content-Length': String(compressed.length),
+        'Content-Length': String(written.compressedBytes),
         'Cache-Control': 'no-store',
         'X-AlloFlow-Job-Id': jobId,
-        'X-AlloFlow-SHA256': compressedSha256,
+        'X-AlloFlow-SHA256': written.sha256,
         'X-AlloFlow-Checkpoint-Schema': String(CHECKPOINT_SCHEMA),
         'X-AlloFlow-Checkpoint-Sequence': String(sequence),
         'X-AlloFlow-Checkpoint-Stage': envelope.stage,
@@ -1331,32 +1597,49 @@ async function putCheckpoint(
         'X-AlloFlow-Options-SHA256': envelope.optionsSha256,
         'X-AlloFlow-Engine-SHA256': envelope.engineSha256,
       },
-      body: compressed,
       redirect: 'error',
-    },
-    STORAGE_TIMEOUT_MS,
-    signal,
-  );
-  if ([403, 409, 412].includes(response.status)) {
+    };
+    if (useStreamBody) {
+      bodyStream = fs.createReadStream(written.tempPath);
+      bodyStream.on('error', () => {});
+      init.body = bodyStream;
+      init.duplex = 'half';
+    } else {
+      init.body = await fsp.readFile(written.tempPath);
+    }
+    const response = await fetchWithTimeout(
+      fetchImpl,
+      url,
+      init,
+      STORAGE_TIMEOUT_MS,
+      signal,
+    );
+    if ([403, 409, 412].includes(response.status)) {
+      await response.body?.cancel().catch(() => {});
+      throw new RunnerError('checkpoint_ownership_lost', 409, false);
+    }
+    if (!response.ok) {
+      await response.body?.cancel().catch(() => {});
+      const retryable = response.status >= 500;
+      throw new RunnerError(
+        retryable ? 'checkpoint_upload_failed' : 'checkpoint_upload_rejected',
+        502, retryable);
+    }
     await response.body?.cancel().catch(() => {});
-    throw new RunnerError('checkpoint_ownership_lost', 409, false);
+    return {
+      saved: true,
+      sequence,
+      size: written.compressedBytes,
+      jsonSize: written.uncompressedBytes,
+      stage: envelope.stage,
+      sha256: written.sha256,
+    };
+  } finally {
+    if (bodyStream) {
+      await destroyReadStreamAndWait(bodyStream);
+    }
+    await fsp.rm(written.tempPath, { force: true, maxRetries: 3, retryDelay: 20 }).catch(() => {});
   }
-  if (!response.ok) {
-    await response.body?.cancel().catch(() => {});
-    const retryable = response.status >= 500;
-    throw new RunnerError(
-      retryable ? 'checkpoint_upload_failed' : 'checkpoint_upload_rejected',
-      502, retryable);
-  }
-  await response.body?.cancel().catch(() => {});
-  return {
-    saved: true,
-    sequence,
-    size: compressed.length,
-    jsonSize: json.length,
-    stage: envelope.stage,
-    sha256: compressedSha256,
-  };
 }
 async function downloadPdf(fetchImpl, url, destination, maxBytes, signal) {
   throwIfCancelled(signal);
@@ -1463,6 +1746,184 @@ async function writeBufferAtomic(destination, buffer) {
     throw error;
   }
   await atomicReplaceFile(temp, destination);
+}
+
+async function writeFullBuffer(handle, buffer, errorCode) {
+  for (let offset = 0; offset < buffer.length; ) {
+    const { bytesWritten } = await handle.write(buffer, offset, buffer.length - offset);
+    if (bytesWritten <= 0) throw new RunnerError(errorCode, 500, true);
+    offset += bytesWritten;
+  }
+}
+
+async function writeBase64PdfAtomic(destination, b64, maxBytes, options = {}) {
+  if (typeof b64 !== 'string' || b64.length === 0) {
+    throw new RunnerError('tagged_pdf_not_produced', 500, false);
+  }
+  if (!Number.isSafeInteger(maxBytes) || maxBytes < 5) {
+    throw new RunnerError('tagged_pdf_invalid', 500, false);
+  }
+  const maximumBase64Length = Math.ceil(maxBytes / 3) * 4 + 4;
+  if (b64.length > maximumBase64Length) {
+    throw new RunnerError('result_too_large', 413, false);
+  }
+  const chunkChars = (
+    options &&
+    Number.isSafeInteger(options.chunkChars) &&
+    options.chunkChars >= 4 &&
+    options.chunkChars % 4 === 0
+  ) ? options.chunkChars : BASE64_DECODE_CHUNK_CHARS;
+
+  const temp = `${destination}.${crypto.randomUUID()}.tmp`;
+  let handle = null;
+  const hash = crypto.createHash('sha256');
+  const prefixParts = [];
+  let prefixBytes = 0;
+  let totalBytes = 0;
+  let carry = '';
+
+  try {
+    for (let offset = 0; offset < b64.length; offset += chunkChars) {
+      let slice = b64.slice(offset, offset + chunkChars);
+      if (/[\r\n\t ]/.test(slice)) {
+        slice = slice.replace(/[\r\n\t ]+/g, '');
+      }
+      const combined = carry ? carry + slice : slice;
+      const isLast = offset + chunkChars >= b64.length;
+      let toDecode;
+      if (isLast) {
+        carry = '';
+        toDecode = combined;
+      } else {
+        const aligned = combined.length - (combined.length % 4);
+        carry = combined.slice(aligned);
+        toDecode = aligned === combined.length ? combined : combined.slice(0, aligned);
+      }
+      if (toDecode.length === 0) continue;
+
+      const decoded = Buffer.from(toDecode, 'base64');
+      if (decoded.length === 0) continue;
+
+      totalBytes += decoded.length;
+      if (totalBytes > maxBytes) {
+        throw new RunnerError('result_too_large', 413, false);
+      }
+
+      if (prefixBytes < 5) {
+        const take = Math.min(decoded.length, 5 - prefixBytes);
+        prefixParts.push(Buffer.from(decoded.subarray(0, take)));
+        prefixBytes += take;
+        if (prefixBytes === 5) {
+          if (Buffer.concat(prefixParts, 5).toString('ascii') !== '%PDF-') {
+            throw new RunnerError('tagged_pdf_invalid', 500, false);
+          }
+        }
+      }
+
+      if (!handle) {
+        await fsp.mkdir(path.dirname(destination), { recursive: true, mode: 0o700 });
+        handle = await fsp.open(temp, 'wx', 0o600);
+      }
+      hash.update(decoded);
+      await writeFullBuffer(handle, decoded, 'tagged_pdf_write_failed');
+    }
+
+    if (totalBytes < 5 || prefixBytes < 5 || !handle) {
+      throw new RunnerError('tagged_pdf_invalid', 500, false);
+    }
+    const toClose = handle;
+    handle = null;
+    await toClose.close();
+    await atomicReplaceFile(temp, destination);
+    return { size: totalBytes, sha256: hash.digest('hex') };
+  } catch (error) {
+    if (handle) {
+      const toClose = handle;
+      handle = null;
+      await toClose.close().catch(() => {});
+    }
+    await fsp.rm(temp, { force: true, maxRetries: 3, retryDelay: 20 }).catch(() => {});
+    throw error;
+  }
+}
+
+async function stagePdfFileAtomic(sourcePath, destination, maxBytes) {
+  if (typeof sourcePath !== 'string' || sourcePath.length === 0 || sourcePath.includes('\0')) {
+    throw new RunnerError('tagged_pdf_invalid', 500, false);
+  }
+  if (!Number.isSafeInteger(maxBytes) || maxBytes < 5) {
+    throw new RunnerError('tagged_pdf_invalid', 500, false);
+  }
+  let stat;
+  try {
+    stat = await fsp.lstat(sourcePath);
+  } catch {
+    throw new RunnerError('tagged_pdf_invalid', 500, false);
+  }
+  if (stat.isSymbolicLink() || !stat.isFile() || stat.size === 0) {
+    throw new RunnerError('tagged_pdf_invalid', 500, false);
+  }
+  if (stat.size > maxBytes) {
+    throw new RunnerError('result_too_large', 413, false);
+  }
+
+  const temp = `${destination}.${crypto.randomUUID()}.tmp`;
+  let handle = null;
+  let readStream = null;
+  const hash = crypto.createHash('sha256');
+  const prefixParts = [];
+  let prefixBytes = 0;
+  let totalBytes = 0;
+
+  try {
+    readStream = fs.createReadStream(sourcePath);
+    for await (const chunk of readStream) {
+      const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+      if (buf.length === 0) continue;
+      totalBytes += buf.length;
+      if (totalBytes > maxBytes) {
+        throw new RunnerError('result_too_large', 413, false);
+      }
+      if (prefixBytes < 5) {
+        const take = Math.min(buf.length, 5 - prefixBytes);
+        prefixParts.push(Buffer.from(buf.subarray(0, take)));
+        prefixBytes += take;
+        if (prefixBytes === 5) {
+          if (Buffer.concat(prefixParts, 5).toString('ascii') !== '%PDF-') {
+            throw new RunnerError('tagged_pdf_invalid', 500, false);
+          }
+        }
+      }
+      if (!handle) {
+        await fsp.mkdir(path.dirname(destination), { recursive: true, mode: 0o700 });
+        handle = await fsp.open(temp, 'wx', 0o600);
+      }
+      hash.update(buf);
+      await writeFullBuffer(handle, buf, 'tagged_pdf_write_failed');
+    }
+    if (totalBytes < 5 || prefixBytes < 5 || !handle) {
+      throw new RunnerError('tagged_pdf_invalid', 500, false);
+    }
+    const toClose = handle;
+    handle = null;
+    await toClose.close();
+    await destroyReadStreamAndWait(readStream);
+    readStream = null;
+    await atomicReplaceFile(temp, destination);
+    return { size: totalBytes, sha256: hash.digest('hex') };
+  } catch (error) {
+    if (readStream) {
+      await destroyReadStreamAndWait(readStream);
+      readStream = null;
+    }
+    if (handle) {
+      const toClose = handle;
+      handle = null;
+      await toClose.close().catch(() => {});
+    }
+    await fsp.rm(temp, { force: true, maxRetries: 3, retryDelay: 20 }).catch(() => {});
+    throw error;
+  }
 }
 
 async function verifyLocalArtifact(filePath, metadata) {
@@ -1692,13 +2153,15 @@ function buildReport(spec, inputMetadata, result, taggedMetadata, quality, pdfUa
   };
 }
 
-function publicStatus(state, active) {
+function publicStatus(state, active, localOutputsReady = false) {
   if (state && state.status === 'succeeded' && state.result) return state.result;
   if (active) {
     return {
       schema: RUN_SCHEMA,
       jobId: active.jobId,
       status: active.stage,
+      active: true,
+      localOutputsReady: localOutputsReady === true,
     };
   }
   if (!state) return null;
@@ -1709,6 +2172,7 @@ function publicStatus(state, active) {
     schema: RUN_SCHEMA,
     jobId: state.jobId,
     status,
+    localOutputsReady: localOutputsReady === true,
     error: state.error || undefined,
   };
 }
@@ -1926,6 +2390,7 @@ function createRunnerServer(options = {}) {
               const saved = await putCheckpoint(
                 fetchImpl, spec.checkpoint.writeUrl, spec.jobId, snapshot,
                 compatibility, checkpointSequenceValue + 1, context.abort.signal,
+                { tempDir: files.dir, streamBody: true },
               );
               if (saved.saved) {
                 checkpointSequenceValue = saved.sequence;
@@ -1996,27 +2461,30 @@ function createRunnerServer(options = {}) {
         throwIfCancelled(context.abort.signal);
 
         const quality = remediationQuality(remediation);
-        if (typeof remediation.taggedPdfB64 !== 'string' || !remediation.taggedPdfB64) {
+        const hasTaggedPdfPath = typeof remediation.taggedPdfFilePath === 'string' &&
+          remediation.taggedPdfFilePath.length > 0;
+        const hasTaggedPdfB64 = typeof remediation.taggedPdfB64 === 'string' &&
+          remediation.taggedPdfB64.length > 0;
+        if (hasTaggedPdfPath) {
+          const taggedPdfFilePath = remediation.taggedPdfFilePath;
+          remediation.taggedPdfFilePath = null;
+          remediation.taggedPdfB64 = null;
+          taggedMetadata = await stagePdfFileAtomic(
+            taggedPdfFilePath,
+            files.taggedPdf,
+            maxResultBytes,
+          );
+        } else if (hasTaggedPdfB64) {
+          const taggedPdfB64 = remediation.taggedPdfB64;
+          remediation.taggedPdfB64 = null;
+          taggedMetadata = await writeBase64PdfAtomic(
+            files.taggedPdf,
+            taggedPdfB64,
+            maxResultBytes,
+          );
+        } else {
           throw new RunnerError('tagged_pdf_not_produced', 500, false);
         }
-        const maximumBase64Length = Math.ceil(maxResultBytes / 3) * 4 + 4;
-        if (remediation.taggedPdfB64.length > maximumBase64Length) {
-          throw new RunnerError('result_too_large', 413, false);
-        }
-        const taggedPdf = Buffer.from(remediation.taggedPdfB64, 'base64');
-        if (
-          taggedPdf.length === 0 ||
-          taggedPdf.length > maxResultBytes ||
-          taggedPdf.subarray(0, 5).toString('ascii') !== '%PDF-'
-        ) {
-          throw new RunnerError('tagged_pdf_invalid', 500, false);
-        }
-        taggedMetadata = {
-          size: taggedPdf.length,
-          sha256: sha256(taggedPdf),
-        };
-        await writeBufferAtomic(files.taggedPdf, taggedPdf);
-        remediation.taggedPdfB64 = null;
 
         let pdfUaValidation = {
           status: 'not_run',
@@ -2286,6 +2754,23 @@ function createRunnerServer(options = {}) {
     }
   }
 
+  async function hasVerifiedLocalOutputs(jobId, state) {
+    if (
+      !state ||
+      state.jobId !== jobId ||
+      !state.taggedMetadata ||
+      !state.reportMetadata ||
+      !state.pendingResult
+    ) {
+      return false;
+    }
+    const files = store.pathsFor(jobId);
+    return Boolean(
+      await verifyLocalArtifact(files.taggedPdf, state.taggedMetadata) &&
+      await verifyLocalArtifact(files.report, state.reportMetadata),
+    );
+  }
+
   async function handleStatus(url, res) {
     const values = url.searchParams.getAll('job_id');
     if (values.length !== 1 || url.searchParams.size !== 1) {
@@ -2293,7 +2778,18 @@ function createRunnerServer(options = {}) {
     }
     const jobId = validateJobId(values[0]);
     const state = await store.read(jobId);
-    const status = publicStatus(state, active && active.jobId === jobId ? active : null);
+    const activeForJob = active && active.jobId === jobId ? active : null;
+    let localOutputsReady = false;
+    if (
+      !activeForJob &&
+      state &&
+      state.status !== 'succeeded' &&
+      state.status !== 'failed' &&
+      state.status !== 'cancelled'
+    ) {
+      localOutputsReady = await hasVerifiedLocalOutputs(jobId, state);
+    }
+    const status = publicStatus(state, activeForJob, localOutputsReady);
     if (!status) throw new RunnerError('job_not_found', 404);
     sendJson(res, 200, status);
   }
@@ -2513,10 +3009,15 @@ module.exports = {
   CHECKPOINT_ENGINE_ABI,
   MAX_CHECKPOINT_COMPRESSED_BYTES,
   MAX_CHECKPOINT_JSON_BYTES,
+  BASE64_DECODE_CHUNK_CHARS,
   checkpointOptionsDigest,
   checkpointEngineConfigDigest,
   checkpointEngineDigest,
   validateCheckpointEnvelope,
+  writeGzipCheckpointTempFile,
+  readGzipCheckpointStream,
+  writeBase64PdfAtomic,
+  stagePdfFileAtomic,
   loadCheckpoint,
   putCheckpoint,
   checkpointSequence,

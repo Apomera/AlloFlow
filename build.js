@@ -1933,13 +1933,15 @@ const COMPILE_PAIRS = [
             // Delegate to the SAME wrapper _build_doc_pipeline_module.js uses, so a
             // module compiled by this deploy path is byte-identical to one compiled by
             // the per-module build script (tests/doc_pipeline_build_parity.test.js pins
-            // exactly that). This used to be a second, hand-maintained copy of the
-            // wrapper that omitted the remediation_review_helpers.js footer, so every
-            // deploy touching doc_pipeline_module.js truncated the ~13 KB
-            // AlloModules.RemediationReview block and the next real rebuild restored it
-            // — the artifact oscillated and the parity gate stayed red.
+            // exactly that). When remediation_modules/pipeline_manifest.cjs is present,
+            // assemble and atomically sync doc_pipeline_source.jsx from the ordered
+            // modular parts (falling back to doc_pipeline_source.jsx only if absent).
+            const pipelineManifestPath = path.join(ROOT, 'remediation_modules', 'pipeline_manifest.cjs');
+            const effectiveSrc = fs.existsSync(pipelineManifestPath)
+                ? require(pipelineManifestPath).syncDocPipelineSource(ROOT).source
+                : src;
             return require('./_build_simple_iife_module.js').wrapSimpleIife({
-                source: src,
+                source: effectiveSrc,
                 guardKey: 'DocPipelineModule',
                 footer: fs.readFileSync(path.join(ROOT, 'remediation_review_helpers.js'), 'utf-8'),
             });

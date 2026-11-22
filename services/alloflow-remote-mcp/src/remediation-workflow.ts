@@ -466,6 +466,137 @@ function runnerStatusStage(value: unknown): JobRunStage {
   }
 }
 
+const REUSABLE_RETRY_STATUSES = new Set([
+  "retryable",
+  "uploading",
+  "interrupted",
+]);
+
+export type RetryContainerProbeResult = {
+  preserve: boolean;
+  reason:
+    | "local_outputs_ready"
+    | "probe_failed"
+    | "status_not_ok"
+    | "status_invalid"
+    | "job_mismatch"
+    | "attempt_mismatch"
+    | "not_reusable";
+};
+
+export type RetryContainerDecision = {
+  preserved: boolean;
+  reason: RetryContainerProbeResult["reason"];
+  runnerToken: string;
+};
+
+export async function probeContainerForRetryPreservation(
+  container: Pick<ReturnType<typeof containerFor>, "fetch">,
+  jobId: string,
+  runnerToken: string,
+  expectedAttemptId?: string,
+): Promise<RetryContainerProbeResult> {
+  let response: Response;
+  try {
+    response = await container.fetch(
+      new Request(
+        `http://container.internal/v1/status?job_id=${encodeURIComponent(jobId)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${runnerToken}`,
+            Accept: "application/json",
+          },
+          signal: AbortSignal.timeout(5_000),
+        },
+      ),
+    );
+  } catch {
+    return { preserve: false, reason: "probe_failed" };
+  }
+  if (!response.ok) {
+    await response.body?.cancel().catch(() => undefined);
+    return { preserve: false, reason: "status_not_ok" };
+  }
+  let body: unknown;
+  try {
+    body = await readJson<unknown>(response, 8 * 1024);
+  } catch {
+    return { preserve: false, reason: "status_invalid" };
+  }
+  if (
+    !isRecord(body) ||
+    (body.schema !== undefined && body.schema !== 1)
+  ) {
+    return { preserve: false, reason: "status_invalid" };
+  }
+  if (body.jobId !== jobId) {
+    return { preserve: false, reason: "job_mismatch" };
+  }
+  if (
+    body.attemptId !== undefined &&
+    body.attemptId !== null &&
+    (typeof body.attemptId !== "string" ||
+      (expectedAttemptId !== undefined &&
+        body.attemptId !== expectedAttemptId))
+  ) {
+    return { preserve: false, reason: "attempt_mismatch" };
+  }
+  if (
+    body.localOutputsReady === true &&
+    body.active !== true &&
+    typeof body.status === "string" &&
+    REUSABLE_RETRY_STATUSES.has(body.status)
+  ) {
+    return { preserve: true, reason: "local_outputs_ready" };
+  }
+  return { preserve: false, reason: "not_reusable" };
+}
+
+export async function prepareContainerForRetryAttempt(
+  env: PilotEnv,
+  container: Pick<ReturnType<typeof containerFor>, "fetch" | "destroy">,
+  jobId: string,
+  stepCount: number,
+  attemptNumber: number,
+  currentAttemptId: string,
+): Promise<RetryContainerDecision> {
+  const previousAttemptId = workflowAttemptId(
+    jobId,
+    stepCount,
+    attemptNumber - 1,
+  );
+  const previousRunnerToken = await deriveRunnerToken(
+    env,
+    jobId,
+    previousAttemptId,
+  );
+  const probe = await probeContainerForRetryPreservation(
+    container,
+    jobId,
+    previousRunnerToken,
+    previousAttemptId,
+  );
+  workflowMetric(env, "retry_container_probe", {
+    outcome: probe.preserve ? "preserved" : "destroyed",
+    stage: probe.reason,
+  });
+  if (probe.preserve) {
+    return {
+      preserved: true,
+      reason: probe.reason,
+      runnerToken: previousRunnerToken,
+    };
+  }
+  // The D1 claim fences the old callback before the shared container
+  // is stopped, so a late retry cannot tear down its successor.
+  await container.destroy();
+  return {
+    preserved: false,
+    reason: probe.reason,
+    runnerToken: await deriveRunnerToken(env, jobId, currentAttemptId),
+  };
+}
+
 async function readRunnerStage(
   container: ReturnType<typeof containerFor>,
   jobId: string,
@@ -814,10 +945,25 @@ export class RemediationWorkflow extends WorkflowEntrypoint<
             "checkpoint_resume_pointer",
           );
 
+          let preservedContainer = false;
+          let runnerToken: string;
           if (context.attempt > 1) {
-            // The D1 claim fences the old callback before the shared container
-            // is stopped, so a late retry cannot tear down its successor.
-            await container.destroy();
+            const retryContainer = await prepareContainerForRetryAttempt(
+              this.env,
+              container,
+              jobId,
+              context.step.count,
+              context.attempt,
+              attemptId,
+            );
+            preservedContainer = retryContainer.preserved;
+            runnerToken = retryContainer.runnerToken;
+          } else {
+            runnerToken = await deriveRunnerToken(
+              this.env,
+              jobId,
+              attemptId,
+            );
           }
           if (
             claimed.supersededArtifactKeys.length > 0 &&
@@ -833,11 +979,6 @@ export class RemediationWorkflow extends WorkflowEntrypoint<
             jobId,
             attemptId,
             "starting",
-          );
-          const runnerToken = await deriveRunnerToken(
-            this.env,
-            jobId,
-            attemptId,
           );
           await container.configureJob(jobId, attemptId, runnerToken);
           await renewJobLease(
@@ -889,9 +1030,14 @@ export class RemediationWorkflow extends WorkflowEntrypoint<
                   maxRunMinutes: config.remediationMaxRunMinutes,
                   modelRetryBudget:
                     RUNNER_MODEL_RETRY_BUDGET_BY_ATTEMPT[
-                      Math.min(
-                        context.attempt - 1,
-                        RUNNER_MODEL_RETRY_BUDGET_BY_ATTEMPT.length - 1,
+                      Math.max(
+                        0,
+                        Math.min(
+                          preservedContainer
+                            ? context.attempt - 2
+                            : context.attempt - 1,
+                          RUNNER_MODEL_RETRY_BUDGET_BY_ATTEMPT.length - 1,
+                        ),
                       )
                     ],
                 },

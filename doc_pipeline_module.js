@@ -420,11 +420,30 @@ function _alloStructureOnlyEdit(original, replacement) {
   if (!r.trim()) return { ok: false, reason: 'empty-replacement' };
   if (r === o) return { ok: false, reason: 'unchanged' };
   if (r.length > o.length * 3 + 400) return { ok: false, reason: 'grew-too-much' };
-  if (/<(?:script|iframe|frame|object|embed|style|link|meta|base|svg|math|template|form)\b/i.test(r) || /[\s/"']on[a-z]+\s*=/i.test(r) || /\bsrcdoc\s*=/i.test(r) || /(?:javascript|vbscript|data\s*:\s*text\/html)\s*:/i.test(r)) return { ok: false, reason: 'executable-markup' };
+  if (/<(?:script|iframe|frame|object|embed|style|link|meta|base|svg|template|annotation-xml|maction)\b/i.test(r) || /[\s/"']on[a-z]+\s*=/i.test(r) || /\bsrcdoc\s*=/i.test(r) || /(?:javascript|vbscript|data\s*:\s*text\/html)\s*:/i.test(r)) return { ok: false, reason: 'executable-markup' };
+  var _tagCount = function (m, tag) { return (m.match(new RegExp('<' + tag + '\\b', 'gi')) || []).length; };
+  if (_tagCount(r, 'math') > _tagCount(o, 'math') || _tagCount(r, 'form') > _tagCount(o, 'form')) return { ok: false, reason: 'executable-markup' };
   if (typeof DOMParser !== 'undefined') {
     try {
+      var _oDoc = new DOMParser().parseFromString('<div>' + o + '</div>', 'text/html');
       var _doc = new DOMParser().parseFromString('<div>' + r + '</div>', 'text/html');
-      if (_doc.querySelector('script,iframe,frame,object,embed,style,link,meta,base,svg,math,template,form')) return { ok: false, reason: 'executable-markup' };
+      if (_doc.querySelector('script,iframe,frame,object,embed,style,link,meta,base,svg,template,annotation-xml,maction')) return { ok: false, reason: 'executable-markup' };
+      var _oMaths = _oDoc.querySelectorAll('math'), _rMaths = _doc.querySelectorAll('math');
+      if (_rMaths.length > _oMaths.length) return { ok: false, reason: 'executable-markup' };
+      if (_rMaths.length !== _oMaths.length) return { ok: false, reason: 'math-changed' };
+      for (var _mi = 0; _mi < _oMaths.length; _mi++) {
+        var _omt = String(_oMaths[_mi].textContent || '').replace(/\s+/g, ' ').trim();
+        var _rmt = String(_rMaths[_mi].textContent || '').replace(/\s+/g, ' ').trim();
+        if (_omt !== _rmt) return { ok: false, reason: 'math-changed' };
+      }
+      var _oForms = _oDoc.querySelectorAll('form'), _rForms = _doc.querySelectorAll('form');
+      if (_rForms.length > _oForms.length) return { ok: false, reason: 'executable-markup' };
+      if (_rForms.length !== _oForms.length) return { ok: false, reason: 'form-changed' };
+      for (var _fi = 0; _fi < _oForms.length; _fi++) {
+        var _oft = String(_oForms[_fi].textContent || '').replace(/\s+/g, ' ').trim();
+        var _rft = String(_rForms[_fi].textContent || '').replace(/\s+/g, ' ').trim();
+        if (_oft !== _rft) return { ok: false, reason: 'form-changed' };
+      }
       var _els = _doc.body ? _doc.body.querySelectorAll('*') : [];
       for (var _i = 0; _i < _els.length; _i++) {
         var _attrs = _els[_i].attributes || [];
@@ -444,6 +463,7 @@ function _alloStructureOnlyEdit(original, replacement) {
   var attrs = function (m, name) { var re = new RegExp('\\b' + name + '\\s*=\\s*("[^"]*"|\'[^\']*\'|[^\\s>]+)', 'gi'); var out = []; var x; while ((x = re.exec(m))) out.push(x[1].replace(/^["']|["']$/g, '')); return out.sort(); };
   if (attrs(o, 'src').join('\n') !== attrs(r, 'src').join('\n')) return { ok: false, reason: 'images-changed' };
   if (attrs(o, 'href').join('\n') !== attrs(r, 'href').join('\n')) return { ok: false, reason: 'links-changed' };
+  if (attrs(o, 'action').join('\n') !== attrs(r, 'action').join('\n')) return { ok: false, reason: 'executable-markup' };
   var tokens = function (m) { return (m.match(/__ALLOFLOW_DATAURL_[A-Z0-9_]+__|__IMG_DATA_\d+__/g) || []).sort().join('\n'); };
   if (tokens(o) !== tokens(r)) return { ok: false, reason: 'image-placeholders-changed' };
   return { ok: true, reason: null };
@@ -10319,6 +10339,412 @@ var _alloRelatedClozeGlossary = function(historyItems, item) {
   var data = match ? match.data : null;
   if (typeof data === 'string') { try { data = JSON.parse(data); } catch (_) { data = null; } }
   return Array.isArray(data) ? data : [];
+};
+
+// ── Canonical per-run RemediationRunContext encapsulation (Wave 10A) ─────────
+// Centralizes every per-document / per-run window global so sequential runs,
+// batch items, and retries atomically clear stale state without leaking across
+// documents while preserving session-level style/brand preferences by default.
+var ALLO_RUN_CONTEXT_PREF_KEYS = Object.freeze([
+  '__pdfStyleSeed',
+  '__pdfStylePreference',
+  '__pdfBrandMode',
+  '__pdfBrandOverride',
+]);
+
+var _ALLO_RUN_CONTEXT_DEFAULTS = Object.freeze({
+  __lastGroundTruthCharCount: 'zero',
+  __lastGroundTruthPageMap: 'null',
+  __lastGroundTruthMethod: 'null',
+  __lastGroundTruthDocKey: 'null',
+  __lastOcrPageErrors: 'array',
+  __lastOcrLowConfidencePages: 'array',
+  __lastOcrTesseractText: 'emptyStr',
+  __lastOcrVisionText: 'emptyStr',
+  __lastOcrDisagreements: 'array',
+  __lastOcrMethod: 'null',
+  __lastVisionStripTrail: 'array',
+  __lastExtractEncrypted: 'false',
+  __lastIncompleteProject: 'null',
+  __lastImageSrcMissing: 'array',
+  __lastImageDroppedByAi: 'array',
+  __alloSourceLinkCount: 'zero',
+  __alloSourceLinks: 'null',
+  __alloSourceFormFields: 'null',
+  __alloSourceTables: 'null',
+  __alloSourceTableGrids: 'null',
+  __alloDetectedFolios: 'array',
+  __alloPageFurniture: 'null',
+  __alloFigureText: 'null',
+  __alloLegendReplacedTexts: 'array',
+  __alloImagePairingUncertain: 'null',
+  __alloOcrColumnReorders: 'array',
+  __alloOcrDupeCollapses: 'array',
+  __alloOcrVisionAlignments: 'array',
+  __alloStrippedEdgeLines: 'array',
+  __alloAuditStage: 'null',
+  __alloForceOcr: 'null',
+  __alloPayloadCuts: 'null',
+  __alloFontFallbackNotes: 'array',
+  __pdfPageCanvases: 'object',
+  __alloflowExtractedImages: 'array',
+});
+
+var ALLO_RUN_CONTEXT_KEYS = Object.freeze(Object.keys(_ALLO_RUN_CONTEXT_DEFAULTS));
+
+var _ALLO_RUN_CONTEXT_REDACTED_KEYS = Object.freeze({
+  __lastOcrTesseractText: 1,
+  __lastOcrVisionText: 1,
+  __lastGroundTruthPageMap: 1,
+  __lastIncompleteProject: 1,
+  __pdfPageCanvases: 1,
+  __alloflowExtractedImages: 1,
+  __alloFigureText: 1,
+  __alloLegendReplacedTexts: 1,
+  __alloPageFurniture: 1,
+  __alloStrippedEdgeLines: 1,
+  __alloSourceLinks: 1,
+  __alloSourceFormFields: 1,
+  __alloSourceTables: 1,
+  __alloSourceTableGrids: 1,
+  __lastVisionStripTrail: 1,
+  __lastOcrDisagreements: 1,
+  __alloOcrDupeCollapses: 1,
+  __alloOcrColumnReorders: 1,
+  __alloOcrVisionAlignments: 1,
+  __alloDetectedFolios: 1,
+});
+
+var _alloIsUnsafeContextKey = function(key) {
+  return typeof key !== 'string' || !key || key === '__proto__' || key === 'constructor' || key === 'prototype';
+};
+
+var _alloRunContextDefaultValue = function(key) {
+  var kind = _ALLO_RUN_CONTEXT_DEFAULTS[key];
+  if (kind === 'zero') return 0;
+  if (kind === 'emptyStr') return '';
+  if (kind === 'false') return false;
+  if (kind === 'array') return [];
+  if (kind === 'object') return {};
+  return null;
+};
+
+var _alloIsRunContextValueActive = function(key, value) {
+  if (value === null || value === undefined || value === false || value === 0 || value === '') return false;
+  if (Array.isArray(value)) return value.length > 0;
+  if (typeof value === 'object') {
+    try { return Object.keys(value).length > 0; } catch (_) { return true; }
+  }
+  return true;
+};
+
+var _alloStringLooksSensitiveOrHtml = function(str) {
+  if (str.length > 160) return true;
+  if (/<!doctype|<html|<head|<body|<div|<p[\s>]|<table|<script|data:image\//i.test(str)) return true;
+  if (/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(str)) return true;
+  if (/\b\d{3}-\d{2}-\d{4}\b/.test(str)) return true;
+  return false;
+};
+
+var _alloSanitizeContextSnapshotValue = function(key, value) {
+  if (value === null || value === undefined) return null;
+  var redactedKey = Object.prototype.hasOwnProperty.call(_ALLO_RUN_CONTEXT_REDACTED_KEYS, key);
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  if (typeof value === 'string') {
+    if (redactedKey || _alloStringLooksSensitiveOrHtml(value)) {
+      var strSummary = { redacted: true, type: 'string', length: value.length };
+      return strSummary;
+    }
+    return value;
+  }
+  if (Array.isArray(value)) {
+    if (redactedKey) {
+      var arrRedacted = { redacted: true, type: 'array', count: value.length };
+      return arrRedacted;
+    }
+    if (key === '__alloFontFallbackNotes') {
+      var safeNotes = value.slice(0, 10).map(function(item) {
+        if (!item || typeof item !== 'object') return { kind: 'note' };
+        var safeNote = {
+          kind: typeof item.kind === 'string' ? item.kind.slice(0, 64) : 'fallback',
+          stage: typeof item.stage === 'string' ? item.stage.slice(0, 64) : null,
+          script: typeof item.script === 'string' ? item.script.slice(0, 32) : null,
+          family: typeof item.family === 'string' ? item.family.slice(0, 48) : null,
+          fallback: typeof item.fallback === 'string' ? item.fallback.slice(0, 48) : null,
+        };
+        return safeNote;
+      });
+      var notesSummary = { type: 'array', count: value.length, notes: safeNotes };
+      return notesSummary;
+    }
+    var arrSummary = { type: 'array', count: value.length };
+    return arrSummary;
+  }
+  if (typeof value === 'object') {
+    var objKeys = [];
+    try { objKeys = Object.keys(value); } catch (_) { objKeys = []; }
+    if (redactedKey) {
+      var objRedacted = { redacted: true, type: 'object', keyCount: objKeys.length };
+      return objRedacted;
+    }
+    var objSummary = { type: 'object', keyCount: objKeys.length };
+    return objSummary;
+  }
+  var fallbackSummary = { type: typeof value };
+  return fallbackSummary;
+};
+
+var _alloResetRemediationRunContext = function(ctxOrWin, opts) {
+  var options = (opts && typeof opts === 'object') ? opts : {};
+  var includePrefs = options.includePrefs === true;
+  var preserveMap = Object.create(null);
+  if (Array.isArray(options.preserveKeys)) {
+    for (var pi = 0; pi < options.preserveKeys.length; pi++) {
+      var pk = options.preserveKeys[pi];
+      if (!_alloIsUnsafeContextKey(pk)) preserveMap[pk] = 1;
+    }
+  }
+  var isCtx = !!(ctxOrWin && typeof ctxOrWin === 'object' && ctxOrWin._isRemediationRunContext === true);
+  var ctx = isCtx ? ctxOrWin : null;
+  var win = null;
+  if (options.window && typeof options.window === 'object') {
+    win = options.window;
+  } else if (!isCtx && ctxOrWin && typeof ctxOrWin === 'object') {
+    win = ctxOrWin;
+  } else if (!isCtx && !ctxOrWin && typeof window !== 'undefined') {
+    win = window;
+  }
+
+  var clearedKeys = [];
+  for (var i = 0; i < ALLO_RUN_CONTEXT_KEYS.length; i++) {
+    var k = ALLO_RUN_CONTEXT_KEYS[i];
+    if (preserveMap[k]) continue;
+    if (ctx && ctx.state) {
+      ctx.state[k] = _alloRunContextDefaultValue(k);
+    }
+    if (win) {
+      try { win[k] = _alloRunContextDefaultValue(k); } catch (_) {}
+    }
+    clearedKeys.push(k);
+  }
+
+  if (ctx && ctx.state) {
+    var existing = Object.keys(ctx.state);
+    for (var ei = 0; ei < existing.length; ei++) {
+      var ek = existing[ei];
+      if (preserveMap[ek] || Object.prototype.hasOwnProperty.call(_ALLO_RUN_CONTEXT_DEFAULTS, ek)) continue;
+      if (!includePrefs && ALLO_RUN_CONTEXT_PREF_KEYS.indexOf(ek) !== -1) continue;
+      delete ctx.state[ek];
+      clearedKeys.push(ek);
+    }
+  }
+
+  if (includePrefs) {
+    for (var fi = 0; fi < ALLO_RUN_CONTEXT_PREF_KEYS.length; fi++) {
+      var prefKey = ALLO_RUN_CONTEXT_PREF_KEYS[fi];
+      if (preserveMap[prefKey]) continue;
+      if (ctx && ctx.state) ctx.state[prefKey] = null;
+      if (win) { try { win[prefKey] = null; } catch (_) {} }
+      clearedKeys.push(prefKey);
+    }
+  }
+
+  if (options.docKey !== undefined) {
+    var normalizedDocKey = options.docKey == null ? null : String(options.docKey);
+    if (ctx && ctx.state) ctx.state.__lastGroundTruthDocKey = normalizedDocKey;
+    if (win) { try { win.__lastGroundTruthDocKey = normalizedDocKey; } catch (_) {} }
+  }
+
+  var resetResult = {
+    runId: ctx ? ctx.runId : null,
+    clearedCount: clearedKeys.length,
+    clearedKeys: clearedKeys,
+    preservedPrefs: !includePrefs,
+    docKey: options.docKey !== undefined ? (options.docKey == null ? null : String(options.docKey)) : null,
+  };
+  return resetResult;
+};
+
+var _alloSnapshotRemediationRunContext = function(ctxOrWin, opts) {
+  var options = (opts && typeof opts === 'object') ? opts : {};
+  var includeEmpty = options.includeEmpty === true;
+  var isCtx = !!(ctxOrWin && typeof ctxOrWin === 'object' && ctxOrWin._isRemediationRunContext === true);
+  var source = isCtx
+    ? ctxOrWin.state
+    : ((ctxOrWin && typeof ctxOrWin === 'object') ? ctxOrWin : (typeof window !== 'undefined' ? window : null));
+
+  var keyOrder = ALLO_RUN_CONTEXT_KEYS.slice();
+  var seen = Object.create(null);
+  for (var ki = 0; ki < keyOrder.length; ki++) seen[keyOrder[ki]] = 1;
+  if (isCtx && source) {
+    var extraKeys = Object.keys(source);
+    for (var xi = 0; xi < extraKeys.length; xi++) {
+      var xk = extraKeys[xi];
+      if (!_alloIsUnsafeContextKey(xk) && !seen[xk]) {
+        seen[xk] = 1;
+        keyOrder.push(xk);
+      }
+    }
+  }
+
+  var activeKeys = [];
+  var sanitizedKeys = {};
+  for (var i = 0; i < keyOrder.length; i++) {
+    var key = keyOrder[i];
+    var raw;
+    try { raw = source ? source[key] : undefined; } catch (_) { raw = undefined; }
+    var active = _alloIsRunContextValueActive(key, raw);
+    if (active) activeKeys.push(key);
+    if (active || includeEmpty) {
+      sanitizedKeys[key] = _alloSanitizeContextSnapshotValue(key, raw);
+    }
+  }
+
+  var snap = {
+    runId: isCtx ? ctxOrWin.runId : null,
+    createdAt: isCtx ? ctxOrWin.createdAt : null,
+    capturedAt: new Date().toISOString(),
+    activeKeys: activeKeys,
+    activeCount: activeKeys.length,
+    totalTrackedKeys: ALLO_RUN_CONTEXT_KEYS.length,
+    keys: sanitizedKeys,
+  };
+  return snap;
+};
+
+var _alloCreateRemediationRunContext = function(runMeta) {
+  var meta = (runMeta && typeof runMeta === 'object') ? runMeta : {};
+  var runId = meta.runId ? String(meta.runId) : ('run-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8));
+  var createdAt = meta.createdAt ? String(meta.createdAt) : new Date().toISOString();
+  var state = Object.create(null);
+  for (var i = 0; i < ALLO_RUN_CONTEXT_KEYS.length; i++) {
+    var k = ALLO_RUN_CONTEXT_KEYS[i];
+    state[k] = _alloRunContextDefaultValue(k);
+  }
+  if (meta.docKey !== undefined && meta.docKey !== null) {
+    state.__lastGroundTruthDocKey = String(meta.docKey);
+  }
+
+  var ctx = {
+    _isRemediationRunContext: true,
+    runId: runId,
+    createdAt: createdAt,
+    state: state,
+    get: function(key) {
+      if (_alloIsUnsafeContextKey(key)) return undefined;
+      return Object.prototype.hasOwnProperty.call(state, key) ? state[key] : undefined;
+    },
+    set: function(key, value) {
+      if (_alloIsUnsafeContextKey(key)) return undefined;
+      state[key] = value;
+      return value;
+    },
+    clear: function(opts) {
+      return _alloResetRemediationRunContext(ctx, opts);
+    },
+    snapshot: function(opts) {
+      return _alloSnapshotRemediationRunContext(ctx, opts);
+    },
+    syncToWindow: function(win) {
+      var target = (win && typeof win === 'object') ? win : (typeof window !== 'undefined' ? window : null);
+      if (!target) return false;
+      var keys = Object.keys(state);
+      for (var si = 0; si < keys.length; si++) {
+        var sk = keys[si];
+        if (_alloIsUnsafeContextKey(sk)) continue;
+        try { target[sk] = state[sk]; } catch (_) {}
+      }
+      return true;
+    },
+    captureFromWindow: function(win) {
+      var source = (win && typeof win === 'object') ? win : (typeof window !== 'undefined' ? window : null);
+      if (!source) return ctx;
+      var allKeys = ALLO_RUN_CONTEXT_KEYS.concat(ALLO_RUN_CONTEXT_PREF_KEYS);
+      for (var ci = 0; ci < allKeys.length; ci++) {
+        var ck = allKeys[ci];
+        try {
+          if (ck in source) {
+            var val = source[ck];
+            state[ck] = Array.isArray(val) ? val.slice() : val;
+          }
+        } catch (_) {}
+      }
+      return ctx;
+    },
+  };
+  return ctx;
+};
+
+// ── First-party-first font resilience helpers (Wave 10A) ─────────────────────
+var _ALLO_FIRST_PARTY_CDN_ORIGIN = 'https://alloflow-cdn.pages.dev/';
+
+var _alloLooksLikeFontBytes = function(bytes, contentType) {
+  if (!bytes || typeof bytes.byteLength !== 'number' || bytes.byteLength < 12) return false;
+  if (contentType && /text\/html|application\/xhtml|text\/plain|application\/json/i.test(String(contentType))) return false;
+  var u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+  // Reject HTML / XML SPA fallback pages (e.g. "<!DOCTYPE" or "<html")
+  if (u8[0] === 0x3C) return false;
+  var b0 = u8[0], b1 = u8[1], b2 = u8[2], b3 = u8[3];
+  // TrueType (0x00010000), OpenType CFF ('OTTO'), Apple TrueType ('true'), TTC ('ttcf'), WOFF/WOFF2
+  var isTtf = (b0 === 0x00 && b1 === 0x01 && b2 === 0x00 && b3 === 0x00);
+  var isOtf = (b0 === 0x4F && b1 === 0x54 && b2 === 0x54 && b3 === 0x4F);
+  var isTrue = (b0 === 0x74 && b1 === 0x72 && b2 === 0x75 && b3 === 0x65);
+  var isTtc = (b0 === 0x74 && b1 === 0x74 && b2 === 0x63 && b3 === 0x66);
+  var isWoff = (b0 === 0x77 && b1 === 0x4F && b2 === 0x46 && (b3 === 0x46 || b3 === 0x32));
+  return isTtf || isOtf || isTrue || isTtc || isWoff;
+};
+
+var _alloFirstPartyFontUrls = function(relPath, externalUrls) {
+  var cleanRel = String(relPath || '').replace(/^\/+/, '');
+  var out = [];
+  var seen = Object.create(null);
+  var push = function(u) {
+    if (!u || typeof u !== 'string' || seen[u]) return;
+    seen[u] = 1;
+    out.push(u);
+  };
+  if (cleanRel) {
+    push('vendor/fonts/' + cleanRel);
+    push(_ALLO_FIRST_PARTY_CDN_ORIGIN + 'vendor/fonts/' + cleanRel);
+  }
+  if (Array.isArray(externalUrls)) {
+    for (var i = 0; i < externalUrls.length; i++) push(externalUrls[i]);
+  }
+  return out;
+};
+
+var _alloRecordFontFallbackNote = function(notesArr, entry, win) {
+  if (!entry || typeof entry !== 'object') return null;
+  var normalized = {
+    kind: String(entry.kind || 'fontFallback'),
+    stage: String(entry.stage || 'tagged-pdf'),
+    script: entry.script ? String(entry.script) : null,
+    family: entry.family ? String(entry.family) : null,
+    style: entry.style ? String(entry.style) : null,
+    fallback: String(entry.fallback || 'Helvetica'),
+    reason: entry.reason ? String(entry.reason).slice(0, 180) : 'unavailable',
+    message: String(entry.message || 'Font resource unavailable; fell back to standard Helvetica.'),
+    ts: new Date().toISOString(),
+  };
+  var dedupeKey = normalized.kind + '|' + normalized.stage + '|' + (normalized.script || '') + '|' + (normalized.family || '') + '|' + (normalized.style || '');
+  if (Array.isArray(notesArr)) {
+    var exists = notesArr.some(function(n) {
+      return n && (n.kind + '|' + n.stage + '|' + (n.script || '') + '|' + (n.family || '') + '|' + (n.style || '')) === dedupeKey;
+    });
+    if (!exists) notesArr.push(normalized);
+  }
+  try {
+    var w = (win && typeof win === 'object') ? win : (typeof window !== 'undefined' ? window : null);
+    if (w) {
+      if (!Array.isArray(w.__alloFontFallbackNotes)) w.__alloFontFallbackNotes = [];
+      var winExists = w.__alloFontFallbackNotes.some(function(n) {
+        return n && (n.kind + '|' + n.stage + '|' + (n.script || '') + '|' + (n.family || '') + '|' + (n.style || '')) === dedupeKey;
+      });
+      if (!winExists) w.__alloFontFallbackNotes.push(normalized);
+    }
+  } catch (_) {}
+  return normalized;
 };
 
 // One verified PDF worker lease per loaded module, shared by pipeline instances.
@@ -27807,6 +28233,23 @@ HTML section ${chunkNum}/${chunks.length}:
     korean: 'https://cdn.jsdelivr.net/gh/notofonts/noto-cjk/Sans/SubsetOTF/KR/NotoSansKR-Bold.otf',
     chinese: 'https://cdn.jsdelivr.net/gh/notofonts/noto-cjk/Sans/SubsetOTF/SC/NotoSansSC-Bold.otf',
   };
+  const _alloNotoFontCandidateUrls = (scriptKey, weight) => {
+    const isBold = weight === 'bold';
+    if (!scriptKey) return [];
+    const cjkMap = isBold ? _ALLO_CJK_BOLD_URL : _ALLO_CJK_URL;
+    if (cjkMap[scriptKey]) {
+      const extUrl = cjkMap[scriptKey];
+      const fileName = extUrl.split('/').pop();
+      const fastlyUrl = extUrl.indexOf('cdn.jsdelivr.net') !== -1 ? extUrl.replace('cdn.jsdelivr.net', 'fastly.jsdelivr.net') : null;
+      return _alloFirstPartyFontUrls('noto/' + fileName, fastlyUrl ? [extUrl, fastlyUrl] : [extUrl]);
+    }
+    const fam = _ALLO_SCRIPT_FONT[scriptKey];
+    if (!fam) return [];
+    const extUrl = isBold ? _ALLO_NOTO_BOLD_URL(fam) : _ALLO_NOTO_URL(fam);
+    const fileName = fam + (isBold ? '-Bold.ttf' : '-Regular.ttf');
+    const fastlyUrl = extUrl.indexOf('cdn.jsdelivr.net') !== -1 ? extUrl.replace('cdn.jsdelivr.net', 'fastly.jsdelivr.net') : null;
+    return _alloFirstPartyFontUrls('noto/' + fileName, fastlyUrl ? [extUrl, fastlyUrl] : [extUrl]);
+  };
   const _alloDetectScript = (s) => {
     const t = String(s || '');
     const ranges = {
@@ -27863,6 +28306,7 @@ HTML section ${chunkNum}/${chunks.length}:
     let bold = await doc.embedFont(StandardFonts.HelveticaBold);
     let _uniMode = false, _cjkWrap = false;
     let _typesetFontInfo = null, _unicodeTypesetWarning = null, _imagesDropped = 0; // M11: count images the typeset PDF drops (too large / non-PNG-JPEG) so the drop is disclosed, not silent
+    const _typesetFontFallbackNotes = [];
     {
       const _probeDom = new DOMParser().parseFromString(html, 'text/html');
       const _probeText = ((_probeDom.body && _probeDom.body.textContent) || '') + ' '
@@ -27873,40 +28317,62 @@ HTML section ${chunkNum}/${chunks.length}:
         if (_script && _ALLO_TYPESET_SAFE_SCRIPTS[_script]) {
           try {
             const _fkOk = await _loadCdnScript('fontkit', [
+              'https://alloflow-cdn.pages.dev/runtime_assets/document/fontkit-1.1.1/fontkit.umd.min.js',
               'https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js',
               'https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js',
             ], () => !!window.fontkit);
-            if (!_fkOk || !window.fontkit) throw new Error('fontkit unavailable');
+            if (!_fkOk || !window.fontkit) {
+              _alloRecordFontFallbackNote(_typesetFontFallbackNotes, {
+                kind: 'fontkitUnavailable',
+                stage: 'typeset-unicode-embed',
+                script: _script,
+                fallback: 'Helvetica',
+                reason: 'fontkit unavailable',
+                message: 'Fontkit could not be loaded (offline or blocked by network policy); typeset PDF fell back to standard Helvetica and dropped non-Latin characters.',
+              }, typeof window !== 'undefined' ? window : null);
+              throw new Error('fontkit unavailable');
+            }
             doc.registerFontkit(window.fontkit);
-            const _regUrl = _ALLO_CJK_URL[_script] || _ALLO_NOTO_URL(_ALLO_SCRIPT_FONT[_script]);
-            const _boldUrl = _ALLO_CJK_BOLD_URL[_script] || _ALLO_NOTO_BOLD_URL(_ALLO_SCRIPT_FONT[_script]);
+            const _regCandidates = _alloNotoFontCandidateUrls(_script, 'regular');
+            const _boldCandidates = _alloNotoFontCandidateUrls(_script, 'bold');
             const _fetchFontOnce = async (u) => {
               // Bounded: a hung CDN must not stall the whole typeset export forever (the outer
               // catch already falls back to dropping non-Latin text + a warning). Both the fetch
               // AND the body read are timeout-wrapped.
               const r = await _withTimeout(fetch(u), 15000, 'Noto font fetch');
               if (!r.ok) throw new Error('HTTP ' + r.status);
-              return new Uint8Array(await _withTimeout(r.arrayBuffer(), 15000, 'Noto font bytes'));
+              const bytes = new Uint8Array(await _withTimeout(r.arrayBuffer(), 15000, 'Noto font bytes'));
+              const ct = (r.headers && typeof r.headers.get === 'function') ? r.headers.get('content-type') : '';
+              if (!_alloLooksLikeFontBytes(bytes, ct)) throw new Error('non-font response');
+              return bytes;
             };
-            // Mirror fallback (2026-07-01): one flaky CDN response was the whole difference between a
-            // correct PDF and silently-dropped non-Latin text — retry the same file on the jsDelivr
-            // Fastly mirror before giving up (all Noto URLs above are cdn.jsdelivr.net).
-            const _fetchFont = async (u) => {
-              try { return await _fetchFontOnce(u); }
-              catch (e0) {
-                if (String(u).indexOf('cdn.jsdelivr.net') === -1) throw e0;
-                try { warnLog('[TypesetTagged] primary font CDN failed (' + ((e0 && e0.message) || 'unknown') + ') — retrying via fastly mirror'); } catch (_) {}
-                return await _fetchFontOnce(String(u).replace('cdn.jsdelivr.net', 'fastly.jsdelivr.net'));
+            // First-party-first + mirror fallback (Wave 10A): tries relative vendor/fonts and
+            // alloflow-cdn.pages.dev first before external jsDelivr / Fastly mirrors.
+            const _fetchFont = async (urls) => {
+              const list = Array.isArray(urls) ? urls : [urls];
+              let lastErr = null;
+              for (const u of list) {
+                try { return await _fetchFontOnce(u); }
+                catch (e0) { lastErr = e0; }
               }
+              throw lastErr || new Error('font fetch failed');
             };
-            const _regBytes = await _fetchFont(_regUrl);
+            const _regBytes = await _fetchFont(_regCandidates);
             font = await doc.embedFont(_regBytes, { subset: true });
-            try { bold = await doc.embedFont(await _fetchFont(_boldUrl), { subset: true }); }
+            try { bold = await doc.embedFont(await _fetchFont(_boldCandidates), { subset: true }); }
             catch (_) { bold = font; }
             _uniMode = true;
             _cjkWrap = (_script === 'japanese' || _script === 'korean' || _script === 'chinese');
             _typesetFontInfo = { script: _script, family: _ALLO_CJK_URL[_script] ? ('NotoSans' + (_script === 'japanese' ? 'JP' : _script === 'korean' ? 'KR' : 'SC')) : _ALLO_SCRIPT_FONT[_script] };
           } catch (e) {
+            _alloRecordFontFallbackNote(_typesetFontFallbackNotes, {
+              kind: 'unicodeFontUnavailable',
+              stage: 'typeset-unicode-embed',
+              script: _script,
+              fallback: 'Helvetica',
+              reason: (e && e.message) || 'unknown',
+              message: 'Unicode font for ' + _script + ' could not be loaded from first-party or CDN mirrors; typeset PDF fell back to Helvetica.',
+            }, typeof window !== 'undefined' ? window : null);
             _unicodeTypesetWarning = { script: _script, droppedChars: _nonWinAnsi, reason: 'font-load-failed: ' + ((e && e.message) || 'unknown'), advice: 'The Noto font could not be fetched — non-Latin characters were dropped from the typeset PDF. The HTML and Word exports keep them; retry online for the PDF.' };
             try { warnLog('[TypesetTagged] ' + _script + ' font load failed — falling back to WinAnsi strip: ' + (e && e.message)); } catch (_) {}
           }
@@ -28165,6 +28631,9 @@ HTML section ${chunkNum}/${chunks.length}:
       if (_unicodeTypesetWarning) _tagged.summary.unicodeTypesetWarning = _unicodeTypesetWarning;
       if (_fieldsCreated > 0) _tagged.summary.fieldsCreated = _fieldsCreated;
       if (_imagesDropped > 0) _tagged.summary.imagesDropped = _imagesDropped; // M11: disclose dropped images (mirrors the unicode-drop disclosure)
+    }
+    if (_tagged && _typesetFontFallbackNotes.length > 0) {
+      _tagged.fontFallbackNotes = _typesetFontFallbackNotes.concat(Array.isArray(_tagged.fontFallbackNotes) ? _tagged.fontFallbackNotes : []);
     }
     return _tagged;
   };
@@ -34470,7 +34939,16 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       _pipeStepStart(1, _runTelemetry);
       updateProgress(1, 'Reading document content...');
       extractedText = '';
-      // Reset ground-truth state for this run
+      // Reset ground-truth state for this run via RemediationRunContext so no per-document global
+      // can leak across sequential single-file runs, batch items, or retries (preserving session
+      // style/brand preferences and one-shot run-start flags consumed right below).
+      const _runDocKey = _alloDocFingerprint(_base64);
+      const _runContext = _alloCreateRemediationRunContext({ runId: _runId, docKey: _runDocKey });
+      _alloResetRemediationRunContext(_runContext, {
+        window: (typeof window !== 'undefined' ? window : null),
+        docKey: _runDocKey,
+        preserveKeys: ['__alloForceOcr', '__alloPayloadCuts'],
+      });
       window.__lastGroundTruthCharCount = 0;
       window.__lastGroundTruthPageMap = null;
       window.__lastGroundTruthMethod = null;
@@ -34488,7 +34966,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       // Cross-document guard (review F1/F5, 2026-07-01): stamp this run's OCR globals with
       // the CURRENT document's fingerprint. createTaggedPdf's legacy window-fallbacks
       // validate against this key and refuse another document's OCR state.
-      window.__lastGroundTruthDocKey = _alloDocFingerprint(_base64);
+      window.__lastGroundTruthDocKey = _runDocKey;
       // H-1 (audit 2026-06-23): these dual-OCR globals are SET only in the scanned path (~13879) but READ by
       // isScanned (~14346) + AutoRestore (~16602); a born-digital doc that skips OCR would otherwise inherit
       // the PRIOR scanned doc's text (cross-document bleed) and be mislabeled scanned. Reset them per run.
@@ -42170,23 +42648,42 @@ tr { page-break-inside: avoid; }
     const _SCRIPT_FONT = _ALLO_SCRIPT_FONT;
     const _CJK_URL = _ALLO_CJK_URL;
     const _detectScript = _alloDetectScript;
+    const _fontFallbackNotes = [];
+    const _noteFontFallback = (entry) => _alloRecordFontFallbackNote(_fontFallbackNotes, entry, typeof window !== 'undefined' ? window : null);
     let _fontkitReady = false;
     const _ensureFontkit = async () => {
       if (_fontkitReady) return true;
+      let _fkReason = '';
       try {
         const ok = await _loadCdnScript('fontkit', [
+          'https://alloflow-cdn.pages.dev/runtime_assets/document/fontkit-1.1.1/fontkit.umd.min.js',
           'https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js',
           'https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js',
         ], () => !!window.fontkit);
         if (ok && window.fontkit && typeof doc.registerFontkit === 'function') { doc.registerFontkit(window.fontkit); _fontkitReady = true; }
-      } catch (e) { try { warnLog('[createTaggedPdf] fontkit load failed — non-Latin OCR falls back to Helvetica: ' + (e && e.message)); } catch(_) {} }
+        else if (!ok || !window.fontkit) { _fkReason = 'all-sources-failed'; }
+      } catch (e) {
+        _fkReason = (e && e.message) || 'load-error';
+        try { warnLog('[createTaggedPdf] fontkit load failed — non-Latin OCR falls back to Helvetica: ' + _fkReason); } catch(_) {}
+      }
+      if (!_fontkitReady) {
+        _noteFontFallback({
+          kind: 'fontkitUnavailable',
+          stage: 'ocr-unicode-embed',
+          script: 'non-latin',
+          fallback: 'Helvetica',
+          reason: _fkReason || 'fontkit-unavailable',
+          message: 'Fontkit could not be loaded (offline or blocked by network policy); non-Latin OCR text fell back to standard Helvetica and non-Latin glyphs may not render cleanly.',
+        });
+      }
       return _fontkitReady;
     };
     const _unicodeFontCache = {};
     const _getUnicodeFont = async (scriptKey) => {
-      // CJK routes to the noto-cjk OTF URLs; all other scripts to the notofonts TTFs.
-      const _fontUrl = scriptKey ? (_CJK_URL[scriptKey] || (_SCRIPT_FONT[scriptKey] ? _notoUrl(_SCRIPT_FONT[scriptKey]) : null)) : null;
-      if (!_fontUrl) return null;
+      // First-party-first candidate URLs (relative vendor/fonts + alloflow-cdn.pages.dev) before
+      // external jsDelivr / Fastly mirrors; CJK routes to noto-cjk OTFs, others to notofonts TTFs.
+      const _fontCandidates = _alloNotoFontCandidateUrls(scriptKey, 'regular');
+      if (!_fontCandidates.length) return null;
       if (Object.prototype.hasOwnProperty.call(_unicodeFontCache, scriptKey)) return _unicodeFontCache[scriptKey];
       _unicodeFontCache[scriptKey] = null;
       try {
@@ -42196,42 +42693,62 @@ tr { page-break-inside: avoid; }
         // await class as the other pipeline hang fixes. AbortController so the connection is actually
         // CANCELLED on timeout (not abandoned + leaked); the signal also aborts a stalled
         // arrayBuffer() body read. On timeout/failure the catch below degrades THIS script's OCR layer
-        // to Helvetica — tagging always COMPLETES rather than hanging.
-        const _fc = new AbortController();
-        const _fcTimer = setTimeout(() => { try { _fc.abort(); } catch (_) {} }, 25000);
-        try {
-          const resp = await fetch(_fontUrl, { signal: _fc.signal });
-          if (!resp.ok) throw new Error('HTTP ' + resp.status);
-          const bytes = new Uint8Array(await resp.arrayBuffer());
-          // (2026-11-07) Unshaped: this layer is invisible and exists to be READ. Shaped Noto Sans Arabic draws letters as
-          // dotless shapes plus separate dot glyphs shared across letters, so the Portland letter read back "ئورتلائد" for
-          // "بورتلاند". With substitutions off every character is its own glyph.
-          const _f = await doc.embedFont(bytes, { subset: true, features: { ccmp: false, locl: false, isol: false, init: false, medi: false, med2: false, fina: false, fin2: false, fin3: false, rlig: false, liga: false, clig: false, calt: false, rclt: false, dlig: false, mset: false } });
-          // A character the font has no glyph for is drawn as .notdef with no Unicode map (veraPDF
-          // 7.21.7-1 + 7.21.8-1 on a real scanned form, 2026-10-17). Every draw path goes through
-          // encodeText, so drop such characters there and COUNT them into the OCR coverage figure.
+        // to Helvetica and records an explicit disclosure note — tagging always COMPLETES rather than hanging.
+        let bytes = null;
+        let _lastFontErr = null;
+        for (const _candidateUrl of _fontCandidates) {
+          const _fc = typeof AbortController === 'function' ? new AbortController() : null;
+          const _fcTimer = _fc ? setTimeout(() => { try { _fc.abort(); } catch (_) {} }, 15000) : null;
           try {
-            const _cs = new Set(typeof _f.getCharacterSet === 'function' ? _f.getCharacterSet() : []);
-            if (_cs.size) {
-              const _drawable = (t, count) => {
-                let o = '', drop = 0;
-                for (const ch of String(t == null ? '' : t)) {
-                  const cp = ch.codePointAt(0);
-                  if (cp === 32 || cp === 9 || cp === 10 || cp === 13 || _cs.has(cp)) o += ch; else if (!_alloOcrIsPureSymbol(ch)) drop++;
-                }
-                if (count && drop) _ocrDroppedChars += drop;
-                return o;
-              };
-              const _enc = _f.encodeText.bind(_f), _wid = _f.widthOfTextAtSize.bind(_f);
-              _f.encodeText = (t) => _enc(_drawable(t, true));
-              _f.widthOfTextAtSize = (t, s) => _wid(_drawable(t, false), s);
-              _f.__alloCharSet = _cs;
-            }
-          } catch (_) {}
-          _unicodeFontCache[scriptKey] = _f;
-        } finally { clearTimeout(_fcTimer); }
+            const resp = await fetch(_candidateUrl, _fc ? { signal: _fc.signal } : undefined);
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            const rawBytes = new Uint8Array(await resp.arrayBuffer());
+            const ct = (resp.headers && typeof resp.headers.get === 'function') ? resp.headers.get('content-type') : '';
+            if (!_alloLooksLikeFontBytes(rawBytes, ct)) throw new Error('non-font response');
+            bytes = rawBytes;
+            break;
+          } catch (_candErr) {
+            _lastFontErr = _candErr;
+          } finally { if (_fcTimer) clearTimeout(_fcTimer); }
+        }
+        if (!bytes) throw _lastFontErr || new Error('all font sources unavailable');
+        // (2026-11-07) Unshaped: this layer is invisible and exists to be READ. Shaped Noto Sans Arabic draws letters as
+        // dotless shapes plus separate dot glyphs shared across letters, so the Portland letter read back "ئورتلائد" for
+        // "بورتلاند". With substitutions off every character is its own glyph.
+        const _f = await doc.embedFont(bytes, { subset: true, features: { ccmp: false, locl: false, isol: false, init: false, medi: false, med2: false, fina: false, fin2: false, fin3: false, rlig: false, liga: false, clig: false, calt: false, rclt: false, dlig: false, mset: false } });
+        // A character the font has no glyph for is drawn as .notdef with no Unicode map (veraPDF
+        // 7.21.7-1 + 7.21.8-1 on a real scanned form, 2026-10-17). Every draw path goes through
+        // encodeText, so drop such characters there and COUNT them into the OCR coverage figure.
+        try {
+          const _cs = new Set(typeof _f.getCharacterSet === 'function' ? _f.getCharacterSet() : []);
+          if (_cs.size) {
+            const _drawable = (t, count) => {
+              let o = '', drop = 0;
+              for (const ch of String(t == null ? '' : t)) {
+                const cp = ch.codePointAt(0);
+                if (cp === 32 || cp === 9 || cp === 10 || cp === 13 || _cs.has(cp)) o += ch; else if (!_alloOcrIsPureSymbol(ch)) drop++;
+              }
+              if (count && drop) _ocrDroppedChars += drop;
+              return o;
+            };
+            const _enc = _f.encodeText.bind(_f), _wid = _f.widthOfTextAtSize.bind(_f);
+            _f.encodeText = (t) => _enc(_drawable(t, true));
+            _f.widthOfTextAtSize = (t, s) => _wid(_drawable(t, false), s);
+            _f.__alloCharSet = _cs;
+          }
+        } catch (_) {}
+        _unicodeFontCache[scriptKey] = _f;
       } catch (e) {
-        try { warnLog('[createTaggedPdf] Unicode font (' + scriptKey + ') embed failed — OCR layer for this script falls back to Helvetica: ' + (e && e.message)); } catch(_) {}
+        const _errMsg = (e && e.message) || 'unavailable';
+        try { warnLog('[createTaggedPdf] Unicode font (' + scriptKey + ') embed failed — OCR layer for this script falls back to Helvetica: ' + _errMsg); } catch(_) {}
+        _noteFontFallback({
+          kind: 'unicodeFontUnavailable',
+          stage: 'ocr-unicode-embed',
+          script: scriptKey,
+          fallback: 'Helvetica',
+          reason: _errMsg,
+          message: 'Unicode font for ' + scriptKey + ' could not be loaded from first-party or CDN mirrors; OCR text layer fell back to standard Helvetica (non-Latin glyphs may be missing or dropped).',
+        });
         _unicodeFontCache[scriptKey] = null;
       }
       return _unicodeFontCache[scriptKey];
@@ -45305,7 +45822,10 @@ tr { page-break-inside: avoid; }
         sans: {
           base: 'LiberationSans', urls: (style) => {
             const f = 'LiberationSans-' + (style === 'reg' ? 'Regular' : style === 'bold' ? 'Bold' : style === 'italic' ? 'Italic' : 'BoldItalic') + '.ttf';
-            return ['https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/' + f, 'https://unpkg.com/pdfjs-dist@3.11.174/standard_fonts/' + f];
+            return _alloFirstPartyFontUrls('substitutes/' + f, [
+              'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/' + f,
+              'https://unpkg.com/pdfjs-dist@3.11.174/standard_fonts/' + f,
+            ]);
           },
         },
         // Times / Times New Roman (2026-10-18): DejaVu Serif is 16-18% wider, so the width gate below
@@ -45315,35 +45835,60 @@ tr { page-break-inside: avoid; }
           base: 'Tinos', urls: (style) => {
             const f = style === 'reg' ? '400Regular/Tinos_400Regular.ttf' : style === 'bold' ? '700Bold/Tinos_700Bold.ttf'
               : style === 'italic' ? '400Regular_Italic/Tinos_400Regular_Italic.ttf' : '700Bold_Italic/Tinos_700Bold_Italic.ttf';
-            return ['https://cdn.jsdelivr.net/npm/@expo-google-fonts/tinos@0.4.2/' + f, 'https://unpkg.com/@expo-google-fonts/tinos@0.4.2/' + f];
+            const localFile = f.split('/').pop();
+            return _alloFirstPartyFontUrls('substitutes/' + localFile, [
+              'https://cdn.jsdelivr.net/npm/@expo-google-fonts/tinos@0.4.2/' + f,
+              'https://unpkg.com/@expo-google-fonts/tinos@0.4.2/' + f,
+            ]);
           },
         },
         serif: {
           base: 'DejaVuSerif', urls: (style) => {
             const f = 'DejaVuSerif' + (style === 'reg' ? '' : style === 'bold' ? '-Bold' : style === 'italic' ? '-Italic' : '-BoldItalic') + '.ttf';
-            return ['https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37/ttf/' + f, 'https://unpkg.com/dejavu-fonts-ttf@2.37/ttf/' + f];
+            return _alloFirstPartyFontUrls('substitutes/' + f, [
+              'https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37/ttf/' + f,
+              'https://unpkg.com/dejavu-fonts-ttf@2.37/ttf/' + f,
+            ]);
           },
         },
         mono: {
           base: 'DejaVuSansMono', urls: (style) => {
             // DejaVu names mono slants "Oblique", not "Italic".
             const f = 'DejaVuSansMono' + (style === 'reg' ? '' : style === 'bold' ? '-Bold' : style === 'italic' ? '-Oblique' : '-BoldOblique') + '.ttf';
-            return ['https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37/ttf/' + f, 'https://unpkg.com/dejavu-fonts-ttf@2.37/ttf/' + f];
+            return _alloFirstPartyFontUrls('substitutes/' + f, [
+              'https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37/ttf/' + f,
+              'https://unpkg.com/dejavu-fonts-ttf@2.37/ttf/' + f,
+            ]);
           },
         },
       };
       const _fetchFontBytes = async (family, style) => {
+        let _lastErr = null;
         for (const u of _FONT_SOURCES[family].urls(style)) {
           try {
             // 12s timeout per mirror: an unresponsive CDN was the only
             // hang-forever path in Stage 7 (fetch has no default timeout).
             const _ac = typeof AbortController === 'function' ? new AbortController() : null;
             const _tid = _ac ? setTimeout(() => { try { _ac.abort(); } catch (_) {} }, 12000) : null;
-            const r = await fetch(u, _ac ? { signal: _ac.signal } : undefined);
-            if (_tid) clearTimeout(_tid);
-            if (r.ok) return new Uint8Array(await r.arrayBuffer());
-          } catch (_) {}
+            try {
+              const r = await fetch(u, _ac ? { signal: _ac.signal } : undefined);
+              if (r.ok) {
+                const bytes = new Uint8Array(await r.arrayBuffer());
+                const ct = (r.headers && typeof r.headers.get === 'function') ? r.headers.get('content-type') : '';
+                if (_alloLooksLikeFontBytes(bytes, ct)) return bytes;
+              }
+            } finally { if (_tid) clearTimeout(_tid); }
+          } catch (e) { _lastErr = e; }
         }
+        _noteFontFallback({
+          kind: 'substituteFontUnavailable',
+          stage: 'stage7-font-embedding',
+          family: family,
+          style: style,
+          fallback: 'source-unembedded',
+          reason: (_lastErr && _lastErr.message) || 'all-sources-failed',
+          message: 'Substitute font (' + family + '/' + style + ') could not be fetched from first-party or CDN mirrors; non-embedded source font left untouched.',
+        });
         return null;
       };
       // Collect candidate font dicts across all pages (dedup by ref/object id).
@@ -46297,6 +46842,10 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
           (_fontsUnicodeMapped ? _fontsUnicodeMapped + ' symbolic font(s) given a Unicode map from their own programs' : '')
           + (_fontsWithoutUnicode.length ? (_fontsUnicodeMapped ? '; ' : '') + 'no Unicode map derivable for: ' + _fontsWithoutUnicode.slice(0, 6).join('; ') : ''));
       }
+      if (_fontFallbackNotes.length > 0) {
+        _addCheck('Fonts', 'Unicode / fallback font loading', 'warn',
+          _fontFallbackNotes.map((n) => n.message).slice(0, 4).join(' | '));
+      }
       // TABLES
       const _tableTotal = (_summary && _summary.tables) || 0;
       const _thNoScope = (_summary && _summary.thWithoutScope) || 0;
@@ -46649,6 +47198,11 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
           if (_imById[_pr[0]] === 'pass' && _rtById[_pr[1]] === 'fail') _divergences.push({ rule: _pr[0], build: 'pass', shipped: 'fail' });
         }
       } catch (_) {}
+      if (_fontFallbackNotes.length > 0) {
+        for (const _fbn of _fontFallbackNotes) {
+          if (_fbn && _fbn.message) _rtWarn.push(_fbn.message);
+        }
+      }
       const _rtFailed = _rtChecks.some(c => c.status === 'fail') || _divergences.length > 0;
       _roundTrip = { ok: !_rtFailed, validatedAgainst: 'reparsed-bytes', checks: _rtChecks, warnings: _rtWarn, divergences: _divergences, structElemsSaved: _rtStructCount, structElemsBuilt: _builtCount, tagTreeOrder: _tagTreeOrderReport };
       if (_rtFailed) { try { warnLog('[createTaggedPdf] post-save verification FAILED: ' + JSON.stringify({ fails: _rtChecks.filter(c => c.status === 'fail'), divergences: _divergences })); } catch (_) {} }
@@ -46822,7 +47376,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       try { warnLog('[createTaggedPdf] post-export validator threw (non-fatal): ' + (_pevErr && _pevErr.message)); } catch (_) {}
       _postExportValidator = { error: (_pevErr && _pevErr.message) || 'validator threw' };
     }
-    return { bytes: _bytes, summary: _summary, pdfUa1Checks: _pdfUa1Checks, metadataStamped: { producer: _producerStamped, xmp: _xmpStamped }, ocrTextLayer: { scanned: !!isScanned, coveragePct: _ocrCoveragePct, nonLatinDropped: _ocrLayerNonLatinDropped, droppedChars: _ocrDroppedChars, pagesWithText: _ocrPagesWithText, pagesCovered: _ocrPagesDrew, pagesIncomplete: _ocrPagesIncomplete, pagesEmpty: _ocrPagesEmpty, positionedPages: _ocrPositionedPages, blockLayoutPages: _ocrBlockLayoutPages.slice(), alignedPages: _ocrAlignedPages.slice(), approximatedRuns: _ocrApproximatedRuns }, roundTrip: _roundTrip, postExportValidator: _postExportValidator };
+    return { bytes: _bytes, summary: _summary, pdfUa1Checks: _pdfUa1Checks, metadataStamped: { producer: _producerStamped, xmp: _xmpStamped }, ocrTextLayer: { scanned: !!isScanned, coveragePct: _ocrCoveragePct, nonLatinDropped: _ocrLayerNonLatinDropped, droppedChars: _ocrDroppedChars, pagesWithText: _ocrPagesWithText, pagesCovered: _ocrPagesDrew, pagesIncomplete: _ocrPagesIncomplete, pagesEmpty: _ocrPagesEmpty, positionedPages: _ocrPositionedPages, blockLayoutPages: _ocrBlockLayoutPages.slice(), alignedPages: _ocrAlignedPages.slice(), approximatedRuns: _ocrApproximatedRuns, fontFallbackNotes: _fontFallbackNotes.slice() }, fontFallbackNotes: _fontFallbackNotes.slice(), roundTrip: _roundTrip, postExportValidator: _postExportValidator };
   };
 
   // ── Download Accessible PDF from HTML ──
@@ -47325,6 +47879,226 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       idoc.addEventListener('click', (e) => { const t = e.target; if (pop && t && t.closest && !t.closest('.allo-table-refine-pop') && !t.closest('.allo-table-refine-btn')) closePop(); });
     } catch (_) {}
   };
+  // Declarative image-placeholder delegation (Wave 8B): replaces inline on*= JS strings inside
+  // figure[data-img-placeholder="true"] with a single idempotent delegated listener on iframeDoc.
+  // Preserves exact remove, file upload, pick-extracted, and drag-and-drop preview behavior even
+  // after canonical HTML sanitization strips all inline event handlers.
+  const _attachPreviewImagePlaceholders = (idoc) => {
+    try {
+      if (!idoc || !idoc.body) return;
+      if (idoc.body.__alloPlaceholderDelegationAttached) return;
+      idoc.body.__alloPlaceholderDelegationAttached = true;
+      const _okSrc = (u) => /^(?:data:image\/(?:png|jpeg|jpg|webp|gif);base64,|blob:|https?:\/\/|\/(?!\/)|\.\/)/i.test(String(u || '').trim());
+      const _okUploadDataUrl = (u) => /^data:image\/(?:png|jpeg|jpg|webp|gif);base64,/i.test(String(u || '').trim());
+      const _notifyMutated = () => {
+        try {
+          const w = idoc.defaultView;
+          if (w && w.parent && w.parent.__alloflowOnPdfPreviewMutated) { w.parent.__alloflowOnPdfPreviewMutated(); return; }
+          if (typeof window !== 'undefined' && window.__alloflowOnPdfPreviewMutated) window.__alloflowOnPdfPreviewMutated();
+        } catch (_) {}
+      };
+      const _defaultAltFor = (el) => {
+        const fig = el && el.closest ? el.closest('figure[data-img-placeholder="true"]') : null;
+        if (!fig) return 'Image';
+        return fig.getAttribute('data-allo-alt') || fig.getAttribute('data-allo-placeholder-alt') || (fig.querySelector('figcaption')?.textContent || '').trim() || 'Image';
+      };
+      const _containerFor = (el) => {
+        const pid = el && el.getAttribute ? el.getAttribute('data-allo-placeholder-id') : '';
+        if (pid) {
+          const byId = idoc.getElementById(pid + '-container');
+          if (byId) return byId;
+        }
+        const fig = el && el.closest ? el.closest('figure[data-img-placeholder="true"]') : null;
+        return fig ? fig.querySelector('[data-allo-placeholder-dropzone="true"], [id$="-container"]') : null;
+      };
+      const _insertPlaceholderImage = (c, dataUrl, altText) => {
+        if (!c || !_okSrc(dataUrl)) return;
+        const pk = c.querySelector('[data-alloflow-picker]');
+        if (pk) pk.remove();
+        let target = null;
+        const kids = c.children;
+        for (let ii = 0; ii < kids.length; ii++) {
+          if (kids[ii].tagName === 'IMG') { target = kids[ii]; break; }
+        }
+        if (target) {
+          target.src = dataUrl;
+          if (altText) target.alt = altText;
+        } else {
+          target = idoc.createElement('img');
+          target.src = dataUrl;
+          target.alt = altText || 'Image';
+          target.style.cssText = 'max-width:100%;border-radius:8px;border:1px solid #e2e8f0';
+          c.appendChild(target);
+        }
+        c.style.background = 'none';
+        c.style.border = 'none';
+        c.style.padding = '0';
+        c.style.minHeight = '0';
+        Array.from(c.children).forEach((ch) => { if (ch !== target) ch.remove(); });
+        c.removeAttribute('data-allo-placeholder-dropzone');
+        c.removeAttribute('ondragover');
+        c.removeAttribute('ondragleave');
+        c.removeAttribute('ondrop');
+        target.style.width = '100%';
+        target.style.height = 'auto';
+        target.setAttribute('width', '600');
+        const bar = idoc.createElement('div');
+        bar.className = 'allo-img-controls';
+        bar.setAttribute('contenteditable', 'false');
+        bar.style.cssText = 'display:flex;gap:6px;align-items:center;justify-content:center;margin-top:4px;font-size:11px;color:#475569';
+        let cur = 100;
+        const lab = idoc.createElement('span');
+        const applySize = () => {
+          target.style.width = cur + '%';
+          target.setAttribute('width', String(Math.round(cur * 6)));
+          lab.textContent = 'size ' + cur + '%';
+          _notifyMutated();
+        };
+        const mkBtn = (label, fn, ariaLabel) => {
+          const b = idoc.createElement('button');
+          b.type = 'button';
+          b.textContent = label;
+          if (ariaLabel) b.setAttribute('aria-label', ariaLabel);
+          b.title = 'Resize image (persists in every export)';
+          b.style.cssText = 'min-width:44px;min-height:44px;padding:6px 12px;border:1px solid #cbd5e1;border-radius:6px;background:#f8fafc;cursor:pointer;font-size:13px;font-weight:700';
+          b.addEventListener('click', (ev) => { ev.preventDefault(); fn(); });
+          return b;
+        };
+        bar.appendChild(mkBtn('\u2212', () => { cur = Math.max(25, cur - 25); applySize(); }, 'Smaller image (\u2212)'));
+        bar.appendChild(lab);
+        bar.appendChild(mkBtn('+', () => { cur = Math.min(100, cur + 25); applySize(); }, 'Larger image (+)'));
+        applySize();
+        if (target.parentNode === c) c.appendChild(bar);
+        else if (target.parentNode) target.parentNode.insertBefore(bar, target.nextSibling);
+      };
+      const _readImageFile = (file, onLoaded) => {
+        if (!file) return false;
+        if ((typeof file.size === 'number' && file.size > 20 * 1024 * 1024)
+          || /svg/i.test(String(file.type || ''))
+          || /\.svg$/i.test(String(file.name || ''))) {
+          return false;
+        }
+        const ReaderCtor = (idoc.defaultView && idoc.defaultView.FileReader) || (typeof FileReader !== 'undefined' ? FileReader : null);
+        if (!ReaderCtor) return false;
+        const r = new ReaderCtor();
+        r.onload = (ev) => { onLoaded(ev && ev.target ? ev.target.result : ''); };
+        r.readAsDataURL(file);
+        return true;
+      };
+      const _getExtractedImagesList = () => {
+        const w = idoc.defaultView;
+        const localList = (w && w.__alloflowExtractedImages) || null;
+        let parentList = null;
+        try { parentList = (w && w.parent && w.parent.__alloflowExtractedImages) || (typeof window !== 'undefined' ? window.__alloflowExtractedImages : null); } catch (_) { parentList = null; }
+        return (parentList && parentList.length) ? parentList : ((localList && localList.length) ? localList : (parentList || localList || []));
+      };
+      idoc.addEventListener('click', (e) => {
+        const target = e && e.target && e.target.closest ? e.target.closest('[data-allo-placeholder-action]') : null;
+        if (!target) return;
+        const fig = target.closest('figure[data-img-placeholder="true"]');
+        if (!fig) return;
+        const action = target.getAttribute('data-allo-placeholder-action');
+        if (action === 'remove') {
+          e.preventDefault();
+          const pid = target.getAttribute('data-allo-placeholder-id');
+          const removeFig = (pid && idoc.getElementById(pid + '-figure')) || fig;
+          if (removeFig) removeFig.remove();
+          _notifyMutated();
+          return;
+        }
+        if (action === 'pick') {
+          e.preventDefault();
+          const c = _containerFor(target);
+          if (!c) return;
+          const list = _getExtractedImagesList();
+          const prevMsg = c.querySelector('[data-alloflow-nomsg]');
+          if (prevMsg) prevMsg.remove();
+          if (!list.length) {
+            const msg = idoc.createElement('div');
+            msg.setAttribute('data-alloflow-nomsg', 'true');
+            msg.style.cssText = 'margin-top:0.5rem;padding:8px 12px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;font-size:12px;color:#92400e;max-width:90%';
+            msg.textContent = 'No extracted images yet. Upload a PDF that contains images, or click the \u201CUpload image\u201D button to pick a local file.';
+            c.appendChild(msg);
+            const _st = (idoc.defaultView && idoc.defaultView.setTimeout) || setTimeout;
+            _st(() => { try { msg.remove(); } catch (_) {} }, 5000);
+            return;
+          }
+          const existing = c.querySelector('[data-alloflow-picker]');
+          if (existing) { existing.remove(); return; }
+          const fallbackAlt = _defaultAltFor(target);
+          const p = idoc.createElement('div');
+          p.setAttribute('data-alloflow-picker', 'true');
+          p.style.cssText = 'margin-top:0.75rem;padding:0.5rem;background:#fff;border:1px solid #cbd5e1;border-radius:6px;display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:4px;width:100%;max-height:220px;overflow-y:auto';
+          list.forEach((img, i) => {
+            if (!img || !img.src || !_okSrc(img.src)) return;
+            const thumb = idoc.createElement('img');
+            thumb.src = img.src;
+            thumb.alt = img.description || ('Image ' + (i + 1));
+            thumb.title = img.description || ('Image ' + (i + 1));
+            thumb.style.cssText = 'width:100%;height:60px;object-fit:cover;cursor:pointer;border:1px solid #e2e8f0;border-radius:4px';
+            thumb.addEventListener('click', (ev) => {
+              ev.preventDefault();
+              _insertPlaceholderImage(c, img.src, img.description || fallbackAlt);
+            });
+            p.appendChild(thumb);
+          });
+          c.appendChild(p);
+        }
+      });
+      idoc.addEventListener('change', (e) => {
+        const input = e && e.target && e.target.closest ? e.target.closest('[data-allo-placeholder-action="upload"]') : null;
+        if (!input || !input.closest('figure[data-img-placeholder="true"]')) return;
+        const f = input.files && input.files[0];
+        if (!f) return;
+        const c = _containerFor(input);
+        const fallbackAlt = _defaultAltFor(input);
+        const accepted = _readImageFile(f, (dataUrl) => {
+          if (c && _okUploadDataUrl(dataUrl)) _insertPlaceholderImage(c, dataUrl, fallbackAlt);
+        });
+        if (!accepted) { try { input.value = ''; } catch (_) {} }
+      });
+      idoc.addEventListener('dragover', (e) => {
+        const dz = e && e.target && e.target.closest ? e.target.closest('figure[data-img-placeholder="true"] [data-allo-placeholder-dropzone="true"]') : null;
+        if (!dz) return;
+        e.preventDefault();
+        dz.style.borderColor = '#4f46e5';
+        dz.style.background = '#eef2ff';
+      });
+      idoc.addEventListener('dragleave', (e) => {
+        const dz = e && e.target && e.target.closest ? e.target.closest('figure[data-img-placeholder="true"] [data-allo-placeholder-dropzone="true"]') : null;
+        if (!dz) return;
+        if (e.relatedTarget && dz.contains(e.relatedTarget)) return;
+        dz.style.borderColor = '#64748b';
+        dz.style.background = '#f1f5f9';
+      });
+      idoc.addEventListener('drop', (e) => {
+        const dz = e && e.target && e.target.closest ? e.target.closest('figure[data-img-placeholder="true"] [data-allo-placeholder-dropzone="true"]') : null;
+        if (!dz) return;
+        e.preventDefault();
+        dz.style.borderColor = '#64748b';
+        dz.style.background = '#f1f5f9';
+        const fallbackAlt = _defaultAltFor(dz);
+        try {
+          const dt = e.dataTransfer;
+          if (!dt) return;
+          const raw = typeof dt.getData === 'function' ? dt.getData('text/x-alloflow-image') : '';
+          if (raw) {
+            const d = JSON.parse(raw);
+            if (d && d.src && _okSrc(d.src)) {
+              _insertPlaceholderImage(dz, d.src, d.alt || fallbackAlt);
+              return;
+            }
+          }
+          const f = dt.files && dt.files[0];
+          if (f) {
+            _readImageFile(f, (dataUrl) => {
+              if (_okSrc(dataUrl)) _insertPlaceholderImage(dz, dataUrl, fallbackAlt);
+            });
+          }
+        } catch (_) {}
+      });
+    } catch (_) {}
+  };
   const updatePdfPreview = (overrideTheme, overrideFontSize, overrideA11y, previewOpts) => {
     // S1 step 8: previewOpts.sourceHtml renders EXPLICIT content, bypassing both the React
     // state read and the live-iframe snapshot below. The word-restoration flow uses this —
@@ -47390,6 +48164,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     // Mark the HOST iframe element hydrated (not the inner doc — so it's never exported) so
     // getPdfPreviewHtml + the live-edit snapshot above trust the iframe even for a short doc. (DB-B6)
     try { iframe.setAttribute('data-allo-hydrated', '1'); } catch (_) {}
+    _attachPreviewImagePlaceholders(doc);
     // S1 step 8: capture the setters for the delayed auto-audit — those timers fire AFTER
     // this wrapped call returned, so they must not read the shared bound vars (identity-
     // stable in practice, but the anti-drift pin keeps the sync surface strictly clean).
@@ -47398,6 +48173,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     // Enable editing
     setTimeout(() => {
       try { doc.designMode = 'on'; } catch(e) {}
+      _attachPreviewImagePlaceholders(doc);
       _attachPreviewImageResizer(doc);
       _attachPreviewTableRefiner(doc);
                             // Auto-run lightweight a11y audit on preview load. The _s() read is a
@@ -56435,7 +57211,7 @@ function projectStudentGuideData(data, mode) {
              container's overflow:hidden is overridden inline only when
              scrolling actually engages, so this doesn't break short tables. */
           thead th { position: sticky; top: 0; z-index: 1; }
-          /* Row headers (<th scope="row">) get a distinct treatment so screen
+          /* Row headers (th[scope="row"]) get a distinct treatment so screen
              readers and sighted users can both tell the first column is a
              label, not data. Subtle left accent + slightly heavier text. */
           tbody th[scope="row"] { background: ${theme.cardBg}; font-weight: 600; text-transform: none; letter-spacing: normal; font-size: 0.95rem; color: ${theme.headingColor}; border-left: 3px solid ${theme.accentColor}; text-align: ${textAlign}; }
@@ -56560,7 +57336,7 @@ function projectStudentGuideData(data, mode) {
           .mcq-label:has(input[type="radio"]:checked) { background-color: #eef2ff; border-color: #4f46e5; font-weight: 600; }
           .mcq-label input[type="radio"] { width: 18px; height: 18px; accent-color: #4f46e5; flex-shrink: 0; }
           .quiz-box input[type="radio"], .quiz-box input[type="checkbox"] { width: 24px; height: 24px; flex-shrink: 0; }
-          /* Quiz options list: parallel focus-visible state for plain <li>
+          /* Quiz options list: parallel focus-visible state for plain li
              options that don't use the .mcq-label wrapper. */
           .options li:focus-within { background-color: #eef2ff; outline: 2px solid #6366f1; outline-offset: 1px; }
           /* Reflection-block accent: subtle indigo left bar so each prompt
@@ -56796,7 +57572,7 @@ function projectStudentGuideData(data, mode) {
              as an ink-wasting dark block — and they are exactly the modes light-sensitive and
              dyslexic students keep on, so printing in them is a common path. Force an ink-friendly
              light page for print only (scoped to the non-light themes, so default/light print is
-             untouched). The runtime switcher sets data-alloflow-theme on <html> for dark/sepia/hc. */
+             untouched). The runtime switcher sets data-alloflow-theme on the html root for dark/sepia/hc. */
           @media print {
             html[data-alloflow-theme="dark"]:not([data-alloflow-base-theme="dark"]) body, html[data-alloflow-theme="sepia"] body, html[data-alloflow-theme="hc"] body { background: #ffffff !important; color: #1a1a1a !important; }
             html[data-alloflow-theme="dark"]:not([data-alloflow-base-theme="dark"]) h1, html[data-alloflow-theme="dark"]:not([data-alloflow-base-theme="dark"]) h2, html[data-alloflow-theme="dark"]:not([data-alloflow-base-theme="dark"]) h3, html[data-alloflow-theme="dark"]:not([data-alloflow-base-theme="dark"]) h4, html[data-alloflow-theme="dark"]:not([data-alloflow-base-theme="dark"]) h5, html[data-alloflow-theme="dark"]:not([data-alloflow-base-theme="dark"]) h6,
@@ -62716,6 +63492,10 @@ window.AlloModules.createDocPipeline.applyToAxeTargetDoc = _applyToAxeTargetDoc;
 window.AlloModules.createDocPipeline.applyToAxeTarget = _applyToAxeTarget; // static: string-path applier (P5 equivalence tests)
 window.AlloModules.createDocPipeline.serializeDomEdit = _serializeDomEdit; // static: shape-matched serializer (P5 head-hoist pin)
 window.AlloModules.createDocPipeline.relatedClozeGlossary = _alloRelatedClozeGlossary;
+window.AlloModules.createDocPipeline.RUN_CONTEXT_KEYS = ALLO_RUN_CONTEXT_KEYS;
+window.AlloModules.createDocPipeline.createRemediationRunContext = _alloCreateRemediationRunContext;
+window.AlloModules.createDocPipeline.resetRemediationRunContext = _alloResetRemediationRunContext;
+window.AlloModules.createDocPipeline.snapshotRemediationRunContext = _alloSnapshotRemediationRunContext;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 (function (root, factory) {

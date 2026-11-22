@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 1,
+  "mode": "offline",
+  "fixtures": {
+    "pdf-out-of-order-formxobj.pdf": {
+      "bytes": 2085,
+      "sha256": "d736ce5798aac1c35ea9975d267e62df0558d31d7089f7dbdacac4c082389d3d"
+    },
+    "pdf-ocr-space-split.pdf": {
+      "bytes": 5769,
+      "sha256": "2ae3ada603f180dafd1890be3935da5652d01d2e703b6d92f905fc58ac505de5"
+    },
+    "docx-stem-omml-comments.docx": {
+      "bytes": 2516,
+      "sha256": "05e46aca907fac66e111dde98da8bbb9b9a319f23c91c95c81e19194f43965aa"
+    },
+    "xlsx-merged-pipes.xlsx": {
+      "bytes": 2484,
+      "sha256": "d67e8eb271a43346633108595a2422cce08ea175d5ccdbe924dfd8683abdfa7c"
+    },
+    "html-wcag22-rtl-defects.html": {
+      "bytes": 1954,
+      "sha256": "ad3ea904e64109888d207e95f1aef6f32d7a48cf6c27cc2738af4b7e723cb3ea"
+    },
+    "blocks-stem-semantic.json": {
+      "bytes": 1039,
+      "sha256": "095bfd0438e8bdfc880ebbb40955fbe4054e62a8dfe336e4760181949b8344af"
+    },
+    "html-tagged-pdf-and-altformats.html": {
+      "bytes": 3117,
+      "sha256": "fabb6c6252a5da0d4ac658dea756ba7122a821d11e3a8f23eeb62aaf745b6aa6"
+    }
+  },
+  "invariants": {
+    "portableAndStage4Pdf": {
+      "portablePageCount": 2,
+      "portablePageOrderCorrect": true,
+      "portableFormXobjExtracted": true,
+      "portableLengthFirstStreamOk": true,
+      "portableLengthFirstStreamLen": 17,
+      "portableIndexedColorType": 3,
+      "portableIndexedPalette": [
+        41,
+        41,
+        10,
+        65,
+        66,
+        67
+      ],
+      "stage4PageCount": 2,
+      "stage4ChainedDecoded": true,
+      "stage4FormXobjInlined": true,
+      "stage4UnsupportedFilterRejected": true
+    },
+    "ocrAndSpaceSplit": {
+      "csExtractedPageCount": 4,
+      "suspectSpaceSplitDetected": true,
+      "cleanPageFalsePositive": false,
+      "repairedSpaceCount": 4,
+      "spaceSplitsRestored": true,
+      "hyphenAcrossFolioRejoined": true,
+      "numericDataValuePreserved": true,
+      "runningHeaderStripped": true,
+      "strippedEdgeLineCount": 1,
+      "detectedFolioCount": 5,
+      "ufffdGarbageDetected": true,
+      "ufffdPageUnreadable": true,
+      "cleanGarbageFalsePositive": false
+    },
+    "docxOmmlAndComments": {
+      "method": "mammoth-html",
+      "headingExtracted": true,
+      "mergedTableExtracted": true,
+      "extractedEquations": 1,
+      "ommlEquationRecovered": true,
+      "extractedTextboxes": 1,
+      "textboxRecovered": true,
+      "hasReviewerComments": true,
+      "defaultOmittedCommentsCount": 1,
+      "commentsExcludedByDefault": true,
+      "optInOmittedCommentsCount": 0,
+      "commentsIncludedOnOptIn": true
+    },
+    "xlsxMergedAndPipes": {
+      "sheetCount": 2,
+      "tableGridCount": 2,
+      "sheetNames": [
+        "Lab Scores",
+        "Pipe Conditions"
+      ],
+      "hasMergedColspan2": true,
+      "hasMergedRowspan2": true,
+      "escapedPipeCount": 6,
+      "unescapedPipeLeak": false,
+      "truncatedRows": 0
+    },
+    "htmlWcag22AndRtl": {
+      "rtlDetected": true,
+      "rtlScripts": [
+        "Arabic"
+      ],
+      "darkBannerContrastFixed": true,
+      "roleFixCount": 2,
+      "dpubFootnotePreserved": true,
+      "dataRolePreserved": true,
+      "invalidRoleCleaned": true,
+      "headingOutlineSkipBefore": true,
+      "headingOutlineSkipAfter": false,
+      "headingLevelsAfter": [
+        1,
+        2,
+        3
+      ],
+      "duplicateIdsFixedCount": 1,
+      "duplicateIdsAfter": 0,
+      "dataIdPreserved": true,
+      "wcag22DefectReflowPassed": false,
+      "wcag22DefectReflowOverflowPx": 160,
+      "wcag22DefectTextSpacingPassed": false,
+      "wcag22DefectTextSpacingClipped": 1,
+      "wcag22DefectTargetSizePassed": false,
+      "wcag22DefectTargetUndersized": 1,
+      "wcag22CleanAllPassed": true
+    },
+    "docBuilderBlocks": {
+      "blockCount": 8,
+      "titlePrefixPreserved": true,
+      "descriptionPrefixPreserved": true,
+      "leakedJsonKeyStripped": true,
+      "mathRoleRendered": true,
+      "codeBlockEscaped": true,
+      "footnoteRendered": true,
+      "calloutRendered": true
+    },
+    "altFormatExports": {
+      "epubValid": true,
+      "epubValidationErrorCount": 0,
+      "epubRootXhtmlNamespaceOk": true,
+      "epubOpfDeclaresSvg": true,
+      "epubNavEntryCount": 5,
+      "epubMimetypeStoredAt38": true,
+      "daisyFileCount": 4,
+      "daisyHasRequiredFiles": true,
+      "daisyHasTitleAndRtl": true,
+      "daisyNavPointCount": 5,
+      "daisyNcxHasLangEn": true,
+      "brfGrade": 1,
+      "brfAsciiOnly": true,
+      "brfLinesOver40": 0,
+      "brfHasNumber128": true
+    }
+  }
+}

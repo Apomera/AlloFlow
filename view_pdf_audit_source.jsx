@@ -19707,7 +19707,23 @@ Return ONLY the plain-language summary.`, false));
                             table { border-color: ${tableBorder}; }
                           `;
                           doc.head.appendChild(style);
-                          addToast(t('toasts.brand_theme_applied'), 'success');
+                          try {
+                            if (typeof sanitizeStyleForWCAG === 'function') {
+                              const fullHtml = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+                              const sanitized = sanitizeStyleForWCAG(fullHtml);
+                              if (sanitized && sanitized.fixCount > 0 && sanitized.html) {
+                                const safeBrandHtml = _viewSanitizeMarkupForExport(sanitized.html, _docPipeline);
+                                doc.documentElement.innerHTML = safeBrandHtml.replace(/^<!DOCTYPE html>\s*<html[^>]*>/i, '').replace(/<\/html>\s*$/i, '');
+                                addToast((t('toasts.brand_theme_applied') || 'Brand theme applied!') + ` (${sanitized.fixCount} contrast fixes auto-applied for WCAG AA)`, 'success');
+                              } else {
+                                addToast(t('toasts.brand_theme_applied'), 'success');
+                              }
+                            } else {
+                              addToast(t('toasts.brand_theme_applied'), 'success');
+                            }
+                          } catch (_) {
+                            addToast(t('toasts.brand_theme_applied'), 'success');
+                          }
                         }
                       } catch(err) { warnLog('[Brand] Extract failed:', err); addToast(t('toasts.could_extract_brand_colors'), 'error'); }
                     };
@@ -19723,34 +19739,75 @@ Return ONLY the plain-language summary.`, false));
                   🎨 Custom Colors & Fonts <span className="text-[11px] text-slate-600 group-open:hidden">▸</span>
                 </summary>
                 <div className="mt-1.5 space-y-1.5 bg-slate-50 rounded-lg p-2 border border-slate-400">
-                  {[
-                    { label: 'Heading Color', prop: 'headingColor', sel: 'h1,h2,h3,h4', css: 'color', def: '#1e3a5f', isText: true },
-                    { label: 'Accent / Link', prop: 'accentColor', sel: 'a', css: 'color', def: '#2563eb', isText: true },
-                    { label: 'Background', prop: 'bgColor', sel: 'body', css: 'backgroundColor', def: '#ffffff', isText: false },
-                    { label: 'Table Header', prop: 'thBg', sel: 'th', css: 'backgroundColor', def: '#f1f5f9', isText: false },
-                  ].map(item => (
-                    <div key={item.prop} className="flex items-center gap-2">
-                      <input type="color" defaultValue={item.def} aria-label={item.label}
-                        onChange={(e) => {
-                          const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
-                          doc.querySelectorAll(item.sel).forEach(el => { el.style[item.css] = e.target.value; });
-                          if (item.isText) {
-                            const hex = e.target.value.replace('#', '');
-                            const r = parseInt(hex.substr(0,2),16), g = parseInt(hex.substr(2,2),16), b = parseInt(hex.substr(4,2),16);
-                            const lum = 0.2126 * (r/255 <= 0.03928 ? r/255/12.92 : Math.pow((r/255+0.055)/1.055, 2.4)) + 0.7152 * (g/255 <= 0.03928 ? g/255/12.92 : Math.pow((g/255+0.055)/1.055, 2.4)) + 0.0722 * (b/255 <= 0.03928 ? b/255/12.92 : Math.pow((b/255+0.055)/1.055, 2.4));
-                            const ratio = (1.05) / (lum + 0.05); // contrast vs white
-                            const badge = e.target.parentElement?.querySelector('.contrast-badge');
-                            if (badge) {
-                              badge.textContent = ratio >= 4.5 ? '✅ ' + ratio.toFixed(1) + ':1' : '⚠️ ' + ratio.toFixed(1) + ':1';
-                              badge.style.color = ratio >= 4.5 ? '#16a34a' : '#dc2626';
+                  {(() => {
+                    const _parseColorRgb = (val) => {
+                      const s = String(val || '').trim();
+                      const hm = s.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+                      if (hm) {
+                        let h = hm[1];
+                        if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+                        return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+                      }
+                      const rm = s.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?\s*\)$/i);
+                      if (rm && (rm[4] === undefined || parseFloat(rm[4]) > 0)) {
+                        return [parseInt(rm[1], 10), parseInt(rm[2], 10), parseInt(rm[3], 10)];
+                      }
+                      return null;
+                    };
+                    const _relLum = (rgb) => {
+                      const ch = (v) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+                      return 0.2126 * ch(rgb[0]) + 0.7152 * ch(rgb[1]) + 0.0722 * ch(rgb[2]);
+                    };
+                    const _activeBgRgb = (doc, panel) => {
+                      const bodyInline = doc && doc.body && doc.body.style && doc.body.style.backgroundColor;
+                      let rgb = _parseColorRgb(bodyInline);
+                      if (!rgb && doc && doc.body && doc.defaultView && typeof doc.defaultView.getComputedStyle === 'function') {
+                        try { rgb = _parseColorRgb(doc.defaultView.getComputedStyle(doc.body).backgroundColor); } catch (_) {}
+                      }
+                      if (!rgb && panel) {
+                        const bgInput = panel.querySelector('input[data-custom-color-prop="bgColor"]');
+                        if (bgInput) rgb = _parseColorRgb(bgInput.value);
+                      }
+                      return rgb || [255, 255, 255];
+                    };
+                    const _updateContrastBadge = (rowEl, fgVal, bgRgb) => {
+                      const fgRgb = _parseColorRgb(fgVal);
+                      const badge = rowEl && rowEl.querySelector('.contrast-badge');
+                      if (!fgRgb || !badge) return;
+                      const fgLum = _relLum(fgRgb);
+                      const bgLum = _relLum(bgRgb);
+                      const ratio = (Math.max(fgLum, bgLum) + 0.05) / (Math.min(fgLum, bgLum) + 0.05);
+                      badge.textContent = ratio >= 4.5 ? '✅ ' + ratio.toFixed(1) + ':1' : '⚠️ ' + ratio.toFixed(1) + ':1';
+                      badge.style.color = ratio >= 4.5 ? '#16a34a' : '#dc2626';
+                    };
+                    return [
+                      { label: 'Heading Color', prop: 'headingColor', sel: 'h1,h2,h3,h4', css: 'color', def: '#1e3a5f', isText: true },
+                      { label: 'Accent / Link', prop: 'accentColor', sel: 'a', css: 'color', def: '#2563eb', isText: true },
+                      { label: 'Background', prop: 'bgColor', sel: 'body', css: 'backgroundColor', def: '#ffffff', isText: false },
+                      { label: 'Table Header', prop: 'thBg', sel: 'th', css: 'backgroundColor', def: '#f1f5f9', isText: false },
+                    ].map(item => (
+                      <div key={item.prop} className="flex items-center gap-2">
+                        <input type="color" defaultValue={item.def} aria-label={item.label} data-custom-color-prop={item.prop}
+                          onChange={(e) => {
+                            const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
+                            doc.querySelectorAll(item.sel).forEach(el => { el.style[item.css] = e.target.value; });
+                            const panel = e.target.parentElement?.parentElement;
+                            const bgRgb = _activeBgRgb(doc, panel);
+                            if (item.isText) {
+                              _updateContrastBadge(e.target.parentElement, e.target.value, bgRgb);
+                            } else if (item.prop === 'bgColor' && panel) {
+                              panel.querySelectorAll('input[data-custom-color-text="true"]').forEach((textInput) => {
+                                _updateContrastBadge(textInput.parentElement, textInput.value, bgRgb);
+                              });
                             }
-                          }
-                        }}
-                        className="w-6 h-6 rounded border border-slate-400 cursor-pointer p-0" />
-                      <span className="text-[11px] text-slate-600">{item.label}</span>
-                      {item.isText && <span className="contrast-badge text-[11px] font-bold" style={{color: '#16a34a'}}>✅ 4.5+:1</span>}
-                    </div>
-                  ))}
+                          }}
+                          data-custom-color-text={item.isText ? 'true' : undefined}
+                          className="w-6 h-6 rounded border border-slate-400 cursor-pointer p-0" />
+                        <span className="text-[11px] text-slate-600">{item.label}</span>
+                        {item.isText && <span className="contrast-badge text-[11px] font-bold" style={{color: '#16a34a'}}>✅ 4.5+:1</span>}
+                      </div>
+                    ));
+                  })()}
                   <div className="flex items-center gap-2">
                     <select aria-label={t('pdf_audit.preview.body_font_aria') || 'Body font'} defaultValue="system-ui"
                       onChange={(e) => {
@@ -22267,7 +22324,13 @@ Return ONLY the plain-language summary.`, false));
                 <button type="button" id="preview-audio-dl-btn" onClick={async () => {
                   const btn = document.getElementById('preview-audio-dl-btn');
                   const doc = pdfPreviewRef.current?.contentDocument;
-                  const fullText = (doc?.body?.textContent || '').trim();
+                  let previewHtml = pdfFixResult?.accessibleHtml || '';
+                  if (doc?.documentElement) {
+                    const previewClone = doc.documentElement.cloneNode(true);
+                    try { previewClone.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], #allo-img-resize-style, #allo-table-refine-style').forEach((el) => el.remove()); } catch (_) {}
+                    previewHtml = '<!DOCTYPE html>\n' + previewClone.outerHTML;
+                  }
+                  const fullText = (_audioReadyText(previewHtml) || '').trim();
                   if (!fullText) { addToast(t('toasts.text_convert'), 'error'); return; }
                   const segments = [];
                   let rem = fullText;
@@ -22386,7 +22449,7 @@ Return ONLY the plain-language summary.`, false));
                   try {
                     const d = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
                     if (!d) { addToast(t('toasts.preview_not_ready') || 'Preview not ready yet — wait for it to render, then try again.', 'info'); return; }
-                    const c = d.querySelector('[ondrop*="alloflow-image"]');
+                    const c = d.querySelector('[data-allo-placeholder-dropzone="true"], [ondrop*="alloflow-image"]');
                     if (!c) { addToast(t('toasts.no_open_image_slot') || 'No open image slot left in the preview — drag the thumbnail onto a specific image to replace it instead.', 'info'); return; }
                     const pk = c.querySelector('[data-alloflow-picker]'); if (pk) pk.remove();
                     let target = null;
@@ -22400,6 +22463,7 @@ Return ONLY the plain-language summary.`, false));
                     }
                     c.style.background = 'none'; c.style.border = 'none'; c.style.padding = '0'; c.style.minHeight = '0';
                     Array.from(c.children).forEach((ch) => { if (ch !== target) ch.remove(); });
+                    c.removeAttribute('data-allo-placeholder-dropzone');
                     c.removeAttribute('ondragover'); c.removeAttribute('ondragleave'); c.removeAttribute('ondrop');
                     try { if (window.__alloflowOnPdfPreviewMutated) window.__alloflowOnPdfPreviewMutated(); } catch (_) {}
                     try { target.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (_) {}

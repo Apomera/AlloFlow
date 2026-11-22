@@ -6,6 +6,8 @@ import {
 
 export const REMOTE_MCP_VERSION = "0.3.0";
 
+export const BUNDLED_TESSERACT_LANGUAGES = ["eng"] as const;
+
 export const PILOT_TOOL_NAMES = [
   "remediation_capabilities",
   "create_document_upload",
@@ -46,6 +48,7 @@ export type RemoteCapabilities = {
   remediationCoverage: {
     effortProfiles: readonly ["standard", "thorough"];
     ocrLanguage: string;
+    bundledTesseractLanguages: readonly ["eng"];
     privacySafeReportTool: true;
     independentPdfUaValidation: false;
   };
@@ -65,7 +68,8 @@ export type RemoteCapabilities = {
 const REMEDIATION_COVERAGE: RemoteCapabilities["remediationCoverage"] = {
   effortProfiles: ["standard", "thorough"],
   ocrLanguage:
-    "Optional supported lower-case language tag such as en, es, or zh-hant.",
+    "Optional supported lower-case language tag such as en, es, or zh-hant. Offline Tesseract dual-engine verification covers bundled languages (eng) only; non-bundled languages rely on vision/text extraction rather than silent Tesseract fallback.",
+  bundledTesseractLanguages: BUNDLED_TESSERACT_LANGUAGES,
   privacySafeReportTool: true,
   independentPdfUaValidation: false,
 };
