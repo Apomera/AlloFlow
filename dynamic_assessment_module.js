@@ -1,4 +1,5 @@
 (function () {
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.DynamicAssessment) {
     console.log("[CDN] DynamicAssessment already loaded, skipping duplicate");
     return;
@@ -42,10 +43,20 @@
   var DA_GUARDED_EXPORT_CALLBACKS = new WeakSet();
   // AI-off sweep: blocked fns are truthy; ask the host whether AI is usable.
   function _aiUsable(kind, fn) {
+    if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
     try {
-      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
-    } catch (_) {}
-    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
+      if (typeof window !== 'undefined') {
+        var mp = window.ALLOFLOW_MANAGED_AI_POLICY;
+        if (mp && (mp.enabled === false || mp.allowAi === false || mp.aiEnabled === false || mp.disabled === true || mp.mode === 'disabled' || mp.mode === 'off')) return false;
+        var sp = window.StudentPolicy;
+        if (sp && (sp.allowAi === false || sp.aiEnabled === false || sp.aiDisabled === true || (typeof sp.isAiAllowed === 'function' && !sp.isAiAllowed(kind || 'text')))) return false;
+        var qm = window.__alloQrStudentMode;
+        if (qm === true || (qm && typeof qm === 'object' && (qm.active === true || qm.aiEnabled === false || qm.allowAi === false || qm.aiDisabled === true || qm.aiPolicy === 'off'))) return false;
+        if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true) return false;
+        if (typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
+      }
+    } catch (_) { return false; }
+    return true;
   }
   function daRequireWorkspace(session) {
     var api = window.AlloModules && window.AlloModules.SensitiveWorkspace;
@@ -304,8 +315,13 @@
     function current() { if (disposed) throw Object.assign(new Error('Read-aloud is closed.'), { name: 'AbortError' }); return options.capture(); }
     function notice(message) { try { current()(); options.notice(message); } catch (_) {} }
     function muted() {
-      try { return typeof host.__alloIsGlobalMuted === 'function' && host.__alloIsGlobalMuted() === true; }
-      catch (_) { return true; }
+      try {
+        if (typeof host.__alloIsGlobalMuted === 'function' && host.__alloIsGlobalMuted() === true) return true;
+        if (typeof host.isAlloMuted === 'function' && host.isAlloMuted() === true) return true;
+        if (host._alloGlobalMute || host._alloGlobalMuted || host.__alloFlowMuted || host.__alloSoundMuted) return true;
+        if (host.localStorage && (host.localStorage.getItem('alloflow-global-muted') === 'true' || host.localStorage.getItem('alloflow_muted') === '1')) return true;
+        return false;
+      } catch (_) { return true; }
     }
     function clear(utterance) {
       utterance.onstart = utterance.onboundary = utterance.onend = utterance.onerror = null;
@@ -3918,8 +3934,8 @@
       chunk("Difficulty band", session.difficulty),
       chunk("Mediation mode", session.mode === "ai" ? "AI-mediated" : "Clinician-led"),
       chunk("Items administered", session.sessionItemIds.length),
-      chunk("Pretest baseline", pretestSum + " / " + max + " (" + Math.round((pretestSum / max) * 100) + "%)"),
-      chunk("Posttest score", posttestSum + " / " + max + " (" + Math.round((posttestSum / max) * 100) + "%)"),
+      chunk("Pretest baseline", pretestSum + " / " + max + " (" + (max > 0 ? Math.round((pretestSum / max) * 100) : 0) + "%)"),
+      chunk("Posttest score", posttestSum + " / " + max + " (" + (max > 0 ? Math.round((posttestSum / max) * 100) : 0) + "%)"),
       chunk("Absolute growth", (posttestSum - pretestSum >= 0 ? "+" : "") + (posttestSum - pretestSum) + " points"),
       chunk("Modifiability Index", modIdx.toFixed(2), tier.label),
       chunk("Modifiability interpretation", tier.label, tier.id)
@@ -4075,8 +4091,8 @@
     );
     lines.push(
       "On the pretest baseline (unscaffolded performance), " + name + " earned " + pretestSum + " of " + max +
-      " possible points (" + Math.round((pretestSum / max) * 100) + "%). Following the mediation phase, posttest performance was " +
-      posttestSum + " of " + max + " points (" + Math.round((posttestSum / max) * 100) + "%), an absolute change of " +
+      " possible points (" + (max > 0 ? Math.round((pretestSum / max) * 100) : 0) + "%). Following the mediation phase, posttest performance was " +
+      posttestSum + " of " + max + " points (" + (max > 0 ? Math.round((posttestSum / max) * 100) : 0) + "%), an absolute change of " +
       (growth >= 0 ? "+" : "") + growth + " points." + scaffoldSentence
     );
     lines.push(
@@ -4478,7 +4494,7 @@
     var cleaned = String(raw).trim();
     cleaned = cleaned.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
     var parsed = null;
-    try { parsed = JSON.parse(cleaned); } catch (e) { return null; }
+    try { parsed = JSON.parse(cleaned, daJsonReviver); } catch (e) { return null; }
     if (!Array.isArray(parsed)) return null;
     return parsed;
   }
@@ -5242,11 +5258,11 @@
     var s = String(raw).trim();
     s = s.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
     var parsed;
-    try { parsed = JSON.parse(s); }
+    try { parsed = JSON.parse(s, daJsonReviver); }
     catch (e) {
       var m = s.match(/\[[\s\S]*\]/);
       if (!m) return null;
-      try { parsed = JSON.parse(m[0]); } catch (e2) { return null; }
+      try { parsed = JSON.parse(m[0], daJsonReviver); } catch (e2) { return null; }
     }
     if (!Array.isArray(parsed)) return null;
     return parsed.map(function (c, i) {
@@ -5319,11 +5335,11 @@
     var s = String(raw).trim();
     s = s.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
     var parsed;
-    try { parsed = JSON.parse(s); }
+    try { parsed = JSON.parse(s, daJsonReviver); }
     catch (e) {
       var m = s.match(/\[[\s\S]*\]/);
       if (!m) return null;
-      try { parsed = JSON.parse(m[0]); } catch (e2) { return null; }
+      try { parsed = JSON.parse(m[0], daJsonReviver); } catch (e2) { return null; }
     }
     if (!Array.isArray(parsed)) return null;
     return parsed;
@@ -5601,8 +5617,8 @@
       "Probe: " + domainLabel,
       "Mediation mode: " + (session.mode === "ai" ? "AI-mediated" : "clinician-led"),
       "Items administered: " + session.sessionItemIds.length,
-      "Pretest baseline: " + pretestSum + " / " + max + " (" + Math.round((pretestSum / max) * 100) + "%)",
-      "Posttest: " + posttestSum + " / " + max + " (" + Math.round((posttestSum / max) * 100) + "%)",
+      "Pretest baseline: " + pretestSum + " / " + max + " (" + (max > 0 ? Math.round((pretestSum / max) * 100) : 0) + "%)",
+      "Posttest: " + posttestSum + " / " + max + " (" + (max > 0 ? Math.round((posttestSum / max) * 100) : 0) + "%)",
       "Modifiability Index: " + modIdx.toFixed(2) + " (" + tier.label + ")",
       "Constructs probed: " + constructList,
       "Scaffolds that produced correct responses during mediation:",
@@ -5633,12 +5649,12 @@
     s = s.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
     // If the response wraps in an object with goals key, unwrap
     var parsed;
-    try { parsed = JSON.parse(s); }
+    try { parsed = JSON.parse(s, daJsonReviver); }
     catch (e) {
       // Last-ditch: try to find a [...] block
       var m = s.match(/\[[\s\S]*\]/);
       if (!m) return null;
-      try { parsed = JSON.parse(m[0]); } catch (e2) { return null; }
+      try { parsed = JSON.parse(m[0], daJsonReviver); } catch (e2) { return null; }
     }
     if (Array.isArray(parsed)) return parsed;
     if (parsed && Array.isArray(parsed.goals)) return parsed.goals;
@@ -5782,11 +5798,11 @@
     var s = String(raw).trim();
     s = s.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
     var parsed;
-    try { parsed = JSON.parse(s); }
+    try { parsed = JSON.parse(s, daJsonReviver); }
     catch (e) {
       var m = s.match(/\[[\s\S]*\]/);
       if (!m) return null;
-      try { parsed = JSON.parse(m[0]); } catch (e2) { return null; }
+      try { parsed = JSON.parse(m[0], daJsonReviver); } catch (e2) { return null; }
     }
     if (Array.isArray(parsed)) return parsed;
     if (parsed && Array.isArray(parsed.accommodations)) return parsed.accommodations;
@@ -6117,11 +6133,11 @@
     var s = String(raw).trim();
     s = s.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
     var parsed;
-    try { parsed = JSON.parse(s); }
+    try { parsed = JSON.parse(s, daJsonReviver); }
     catch (e) {
       var m = s.match(/\{[\s\S]*\}/);
       if (!m) return null;
-      try { parsed = JSON.parse(m[0]); } catch (e2) { return null; }
+      try { parsed = JSON.parse(m[0], daJsonReviver); } catch (e2) { return null; }
     }
     if (!parsed || typeof parsed !== "object") return null;
     return parsed;
@@ -6261,11 +6277,11 @@
     var s = String(raw).trim();
     s = s.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
     var parsed;
-    try { parsed = JSON.parse(s); }
+    try { parsed = JSON.parse(s, daJsonReviver); }
     catch (e) {
       var m = s.match(/\{[\s\S]*\}/);
       if (!m) return null;
-      try { parsed = JSON.parse(m[0]); } catch (e2) { return null; }
+      try { parsed = JSON.parse(m[0], daJsonReviver); } catch (e2) { return null; }
     }
     if (!parsed || typeof parsed !== "object") return null;
     return parsed;
@@ -6416,11 +6432,11 @@
     var s = String(raw).trim();
     s = s.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
     var parsed;
-    try { parsed = JSON.parse(s); }
+    try { parsed = JSON.parse(s, daJsonReviver); }
     catch (e) {
       var m = s.match(/\{[\s\S]*\}/);
       if (!m) return null;
-      try { parsed = JSON.parse(m[0]); } catch (e2) { return null; }
+      try { parsed = JSON.parse(m[0], daJsonReviver); } catch (e2) { return null; }
     }
     if (!parsed || typeof parsed !== "object") return null;
     return parsed;
@@ -6638,9 +6654,17 @@
     function isUsableProvider(provider, k) {
       if (typeof provider !== "function" || provider._alloQrBlocked) return false;
       var w = typeof window !== "undefined" ? window : null;
-      if (w && (w.__alloStudentAiDisabled === true || w.__alloAiSecretsLocked === true)) return false;
-      if (w && typeof w.__alloAiUsable === "function") {
-        try { return !!w.__alloAiUsable(k === "imageEdit" ? "imageEdit" : "text", provider); } catch (_) { return false; }
+      if (w) {
+        var mp = w.ALLOFLOW_MANAGED_AI_POLICY;
+        if (mp && (mp.enabled === false || mp.allowAi === false || mp.aiEnabled === false || mp.disabled === true || mp.mode === "disabled" || mp.mode === "off")) return false;
+        var sp = w.StudentPolicy;
+        if (sp && (sp.allowAi === false || sp.aiEnabled === false || sp.aiDisabled === true || (typeof sp.isAiAllowed === "function" && !sp.isAiAllowed(k === "imageEdit" ? "imageEdit" : "text")))) return false;
+        var qm = w.__alloQrStudentMode;
+        if (qm === true || (qm && typeof qm === "object" && (qm.active === true || qm.aiEnabled === false || qm.allowAi === false || qm.aiDisabled === true || qm.aiPolicy === "off"))) return false;
+        if (w.__alloStudentAiDisabled === true || w.__alloAiSecretsLocked === true) return false;
+        if (typeof w.__alloAiUsable === "function") {
+          try { return !!w.__alloAiUsable(k === "imageEdit" ? "imageEdit" : "text", provider); } catch (_) { return false; }
+        }
       }
       return true;
     }
@@ -7186,16 +7210,26 @@
       var description = isExport ? daBackupPasswordDescription : daBackupDecryptDescription;
       var passwordType = daBackupDialog.showPassword ? "text" : "password";
       function trapBackupDialogKeys(event) {
-        if ((event.key === "Escape" || event.key === "Esc") && !daBackupDialog.busy) {
+        if (!event || event.isComposing || event.keyCode === 229) return;
+        if ((event.key === "Escape" || event.key === "Esc") && !event.ctrlKey && !event.metaKey && !event.altKey && !daBackupDialog.busy) {
           event.preventDefault(); event.stopPropagation(); daCloseBackupDialog(false); return;
         }
         if (event.key !== "Tab") return;
         event.stopPropagation();
-        var controls;
-        try { controls = event.currentTarget.querySelectorAll("input:not([disabled]), button:not([disabled])"); } catch (_) { return; }
+        var rawControls;
+        try { rawControls = event.currentTarget.querySelectorAll("input:not([disabled]), button:not([disabled])"); } catch (_) { return; }
+        var controls = Array.prototype.slice.call(rawControls).filter(function (node) {
+          if (!node || node.hidden || node.getAttribute("aria-hidden") === "true") return false;
+          try {
+            var cs = typeof window !== "undefined" && typeof window.getComputedStyle === "function" ? window.getComputedStyle(node) : null;
+            if (cs && (cs.display === "none" || cs.visibility === "hidden")) return false;
+          } catch (_) {}
+          return true;
+        });
         if (!controls.length) return;
         var first = controls[0], last = controls[controls.length - 1];
-        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        if (!event.currentTarget.contains(document.activeElement)) { event.preventDefault(); (event.shiftKey ? last : first).focus(); }
+        else if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
         else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
       }
       var fieldStyle = { width: "100%", boxSizing: "border-box", minHeight: 40, padding: "8px 10px", border: "1px solid var(--da-border-2)", borderRadius: 8, background: "var(--da-surface)", color: "var(--da-ink)", font: "inherit" };
@@ -7721,9 +7755,9 @@
         if (e.isComposing || e.keyCode === 229) return;
         // The confirm dialog owns the keyboard while open (its own handler
         // cancels on Escape); don't back-navigate underneath it.
-        if (daConfirm) return;
+        if (daConfirm || daBackupDialog) return;
         // Esc — back-navigation
-        if (e.key === "Escape" || e.key === "Esc") {
+        if ((e.key === "Escape" || e.key === "Esc") && !e.ctrlKey && !e.metaKey && !e.altKey) {
           if (tourStep !== null) { closeTour(); e.preventDefault(); return; }
           if (state.activeSession) {
             // In an active session — let the user confirm discard via
@@ -7758,7 +7792,7 @@
           }
         }
         // Cmd/Ctrl+Enter — submit response in active item phase
-        if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+        if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && !e.altKey) {
           if (state.activeSession && state.activeSession.currentPhase !== "summary") {
             // We don't directly trigger submitResponse here because we
             // don't know which scoring path the user intended (auto-check
@@ -8890,7 +8924,7 @@
     }
 
     function removeIepGoal(idx) {
-      setIepGoals(function (prev) { return prev.filter(function (_, i) { return i !== idx; }); });
+      setIepGoals(function (prev) { return (Array.isArray(prev) ? prev : []).filter(function (_, i) { return i !== idx; }); });
     }
 
     function copyTextToClipboard(text) {
@@ -8995,8 +9029,9 @@
 
     function updateAccommodationField(idx, field, value) {
       setAccommodations(function (prev) {
-        var next = prev.slice();
-        if (!next[idx]) return prev;
+        var list = Array.isArray(prev) ? prev : [];
+        var next = list.slice();
+        if (!next[idx]) return list;
         var updated = Object.assign({}, next[idx]);
         updated[field] = value;
         next[idx] = updated;
@@ -9005,7 +9040,7 @@
     }
 
     function removeAccommodation(idx) {
-      setAccommodations(function (prev) { return prev.filter(function (_, i) { return i !== idx; }); });
+      setAccommodations(function (prev) { return (Array.isArray(prev) ? prev : []).filter(function (_, i) { return i !== idx; }); });
     }
 
     function formatAccommodationForClipboard(a) {
@@ -9737,7 +9772,7 @@
           var raw = (typeof out === "string" ? out : (out && out.text) || "").trim();
           raw = raw.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
           var parsed = null;
-          try { parsed = JSON.parse(raw); } catch (e) { parsed = null; }
+          try { parsed = JSON.parse(raw, daJsonReviver); } catch (e) { parsed = null; }
           if (!parsed || typeof parsed.verdict !== "string" ||
               typeof parsed.nextScaffoldLevel !== "number" ||
               ["correct", "partial", "incorrect"].indexOf(parsed.verdict) < 0) {
@@ -10461,7 +10496,7 @@
             }),
             // Bars
             stats.miDistribution.map(function (bin, bi) {
-              var hPx = (bin.count / maxBinCount) * plotH;
+              var hPx = (bin.count / Math.max(1, maxBinCount)) * plotH;
               var x = padL + bi * binW;
               var y = padT + plotH - hPx;
               var color = daHex(bin.lo >= 0.6 ? "#16a34a" : bin.lo >= 0.3 ? "#a16207" : bin.lo >= 0 ? "#b91c1c" : "#475569");
@@ -13134,7 +13169,7 @@
         .then(function (raw) {
           var cleaned = String(raw || "").trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
           var parsed = null;
-          try { parsed = JSON.parse(cleaned); } catch (_) {}
+          try { parsed = JSON.parse(cleaned, daJsonReviver); } catch (_) {}
           if (!parsed || typeof parsed !== "object") throw new Error("AI did not return valid JSON.");
           var toolId = String(parsed.toolId || "").toLowerCase();
           if (!({ numberline: 1, fractions: 1, areamodel: 1 })[toolId]) {
@@ -13379,7 +13414,7 @@
         .then(function (raw) {
           var cleaned = String(raw || "").trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
           var parsed = null;
-          try { parsed = JSON.parse(cleaned); } catch (_) {}
+          try { parsed = JSON.parse(cleaned, daJsonReviver); } catch (_) {}
           if (!parsed || typeof parsed !== "object") throw new Error("AI did not return valid JSON.");
           var ALLOWED = { counting: 1, segmentation: 1, blending: 1, isolation: 1, manipulation: 1, rhyming: 1, syllable_blending: 1, syllable_counting: 1 };
           var activity = String(parsed.activity || "").toLowerCase();
@@ -13470,7 +13505,7 @@
         .then(function (raw) {
           var cleaned = String(raw || "").trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
           var parsed = null;
-          try { parsed = JSON.parse(cleaned); } catch (_) {}
+          try { parsed = JSON.parse(cleaned, daJsonReviver); } catch (_) {}
           if (!parsed || typeof parsed !== "object") throw new Error("AI did not return valid JSON.");
           var ALLOWED = { "concept-map": 1, "mind-map": 1, "outline": 1, "timeline": 1, "concept-sort": 1 };
           var toolType = String(parsed.toolType || "").toLowerCase();
@@ -13553,7 +13588,7 @@
         .then(function (raw) {
           var cleaned = String(raw || "").trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
           var parsed = null;
-          try { parsed = JSON.parse(cleaned); } catch (_) {}
+          try { parsed = JSON.parse(cleaned, daJsonReviver); } catch (_) {}
           if (!parsed || typeof parsed !== "object") throw new Error("AI did not return valid JSON.");
           var directive = String(parsed.directive || "").trim().slice(0, 600);
           if (directive.length < 8) directive = promptText.slice(0, 300); // fall back to the item prompt
@@ -14444,7 +14479,7 @@
           "aria-checked": scaffoldLeakedDraft ? "true" : "false",
           "aria-label": "Flag that the current scaffold gave away the answer",
           onClick: function () { setScaffoldLeakedDraft(!scaffoldLeakedDraft); },
-          onKeyDown: function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setScaffoldLeakedDraft(!scaffoldLeakedDraft); } },
+          onKeyDown: function (e) { if (e && !e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setScaffoldLeakedDraft(!scaffoldLeakedDraft); } },
           style: {
             display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 8, padding: "6px 10px",
             borderRadius: 8, cursor: "pointer", fontFamily: "inherit",
@@ -14469,7 +14504,7 @@
           "aria-checked": accessReadAloudDraft ? "true" : "false",
           "aria-label": "Flag that the student succeeded only when the item was read aloud",
           onClick: function () { setAccessReadAloudDraft(!accessReadAloudDraft); },
-          onKeyDown: function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setAccessReadAloudDraft(!accessReadAloudDraft); } },
+          onKeyDown: function (e) { if (e && !e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setAccessReadAloudDraft(!accessReadAloudDraft); } },
           style: {
             display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 8, padding: "6px 10px",
             borderRadius: 8, cursor: "pointer", fontFamily: "inherit",
@@ -14490,7 +14525,7 @@
           "aria-checked": accessSimplifiedDraft ? "true" : "false",
           "aria-label": "Flag that the student succeeded only with the simpler-language version",
           onClick: function () { setAccessSimplifiedDraft(!accessSimplifiedDraft); },
-          onKeyDown: function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setAccessSimplifiedDraft(!accessSimplifiedDraft); } },
+          onKeyDown: function (e) { if (e && !e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setAccessSimplifiedDraft(!accessSimplifiedDraft); } },
           style: {
             display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 8, padding: "6px 10px",
             borderRadius: 8, cursor: "pointer", fontFamily: "inherit",
@@ -14511,7 +14546,7 @@
           "aria-checked": accessL1Draft ? "true" : "false",
           "aria-label": "Flag that the student succeeded only in their home language",
           onClick: function () { setAccessL1Draft(!accessL1Draft); },
-          onKeyDown: function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setAccessL1Draft(!accessL1Draft); } },
+          onKeyDown: function (e) { if (e && !e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setAccessL1Draft(!accessL1Draft); } },
           style: {
             display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 8, padding: "6px 10px",
             borderRadius: 8, cursor: "pointer", fontFamily: "inherit",
@@ -15286,7 +15321,29 @@
       return h("div", {
         role: "presentation",
         onClick: function (event) { if (event.target === event.currentTarget) closeDaAlloReview(); },
-        onKeyDown: function (event) { if (event.key === "Escape") closeDaAlloReview(); },
+        onKeyDown: function (event) {
+          if (!event || event.isComposing || event.keyCode === 229) return;
+          if (event.key === "Escape" && !event.ctrlKey && !event.metaKey && !event.altKey) {
+            event.preventDefault(); event.stopPropagation(); closeDaAlloReview(); return;
+          }
+          if (event.key !== "Tab") return;
+          event.stopPropagation();
+          var rawF;
+          try { rawF = event.currentTarget.querySelectorAll("button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])"); } catch (_) { return; }
+          var controls = Array.prototype.slice.call(rawF).filter(function (node) {
+            if (!node || node.hidden || node.getAttribute("aria-hidden") === "true") return false;
+            try {
+              var cs = typeof window !== "undefined" && typeof window.getComputedStyle === "function" ? window.getComputedStyle(node) : null;
+              if (cs && (cs.display === "none" || cs.visibility === "hidden")) return false;
+            } catch (_) {}
+            return true;
+          });
+          if (!controls.length) return;
+          var first = controls[0], last = controls[controls.length - 1];
+          if (!event.currentTarget.contains(document.activeElement)) { event.preventDefault(); (event.shiftKey ? last : first).focus(); }
+          else if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+          else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+        },
         style: { position: "fixed", inset: 0, zIndex: 2100, background: "rgba(0,0,0,0.58)", display: "flex", alignItems: "center", justifyContent: "center", padding: 18 }
       },
         h("div", {

@@ -39,6 +39,23 @@
     document.body.appendChild(liveRegion);
   })();
 
+  (function() {
+    if (typeof document === 'undefined' || !document.head) return;
+    if (document.getElementById('allo-opp-a11y-css')) return;
+    var s = document.createElement('style');
+    s.id = 'allo-opp-a11y-css';
+    s.textContent =
+      '.selh-opp button:focus-visible,.selh-opp a:focus-visible,.selh-opp input:focus-visible,.selh-opp textarea:focus-visible,.selh-opp summary:focus-visible,.selh-opp [tabindex]:focus-visible{outline:3px solid #818cf8;outline-offset:2px;}' +
+      '.selh-opp button{transition:background-color 140ms ease,border-color 140ms ease,color 140ms ease;}' +
+      '@media (prefers-reduced-motion: reduce){.selh-opp,.selh-opp *{transition:none !important;animation:none !important;}}' +
+      '@media (forced-colors: active){.selh-opp button:focus-visible,.selh-opp a:focus-visible,.selh-opp input:focus-visible,.selh-opp textarea:focus-visible,.selh-opp summary:focus-visible{outline:2px solid Highlight !important;}.selh-opp button,.selh-opp [role="tab"]{forced-color-adjust:auto;}}';
+    document.head.appendChild(s);
+  })();
+
+  function isImeComposing(e) {
+    return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+  }
+
   // ─── Emoji "photo" choices (privacy-friendly substitute for a photo) ───
   var PHOTO_EMOJIS = ['🧑', '👧', '👦', '🧒', '👩', '👨', '🧑‍🦰', '🧑‍🦱', '🧑‍🦲', '🧑‍🦳',
                       '🦊', '🐻', '🐼', '🦉', '🦅', '🐢', '🐙', '🌟', '🌙', '🌈',
@@ -144,6 +161,17 @@
       var announceToSR = ctx.announceToSR;
       var onSafetyFlag = ctx.onSafetyFlag || null;
       var _opBand = (ctx && ctx.gradeBand) || 'high';
+      function announceOPP(msg) {
+        if (!msg) return;
+        if (typeof announceToSR === 'function') { try { announceToSR(msg); return; } catch (_) {} }
+        if (typeof document !== 'undefined') {
+          var live = document.getElementById('allo-live-onepageprofile');
+          if (live) {
+            live.textContent = '';
+            setTimeout(function() { live.textContent = msg; }, 20);
+          }
+        }
+      }
 
       var rawD = labToolData.onePageProfile;
       var d = (rawD && typeof rawD === 'object' && !Array.isArray(rawD)) ? rawD : defaultState();
@@ -199,7 +227,7 @@
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { type: 'button', onClick: function() { if (typeof setSelHubTool === 'function') setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: _opSoftBg('rgba(255,255,255,0.05)', '#f1f5f9'), border: '1px solid ' + _opBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _opFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+            style: { background: _opSoftBg('rgba(255,255,255,0.05)', '#f1f5f9'), border: '1px solid ' + _opBd('#334155'), borderRadius: 8, padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', color: _opFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _opFg('#a5b4fc'), fontSize: 22, fontWeight: 900 } }, '📄 One-Page Profile'),
             h('div', { style: { fontSize: 12, color: _opFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A portable, person-centered profile that fits on one page.')
@@ -214,11 +242,12 @@
           { id: 'print', label: 'Print view', icon: '🖨' },
           { id: 'about', label: 'About', icon: 'ℹ' }
         ];
-        function selectTab(nextId) {
-          goto(nextId);
+        function selectTab(nextTab) {
+          goto(nextTab.id);
+          announceOPP('Switched to ' + nextTab.label + '.');
           if (typeof document !== 'undefined') {
             setTimeout(function() {
-              var el = document.getElementById('opp-tab-' + nextId);
+              var el = document.getElementById('opp-tab-' + nextTab.id);
               if (el && typeof el.focus === 'function') el.focus();
             }, 0);
           }
@@ -227,15 +256,16 @@
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
           tabs.map(function(t, ti) {
             var active = view === t.id;
-            return h('button', { key: t.id, id: 'opp-tab-' + t.id, type: 'button', onClick: function() { goto(t.id); },
+            return h('button', { key: t.id, id: 'opp-tab-' + t.id, type: 'button', onClick: function() { goto(t.id); announceOPP('Switched to ' + t.label + '.'); },
               role: 'tab', 'aria-selected': active, 'aria-controls': 'opp-panel-' + t.id, tabIndex: active ? 0 : -1,
               onKeyDown: function(e) {
-                if (e.key === 'ArrowRight') { e.preventDefault(); selectTab(tabs[(ti + 1) % tabs.length].id); }
-                else if (e.key === 'ArrowLeft') { e.preventDefault(); selectTab(tabs[(ti - 1 + tabs.length) % tabs.length].id); }
-                else if (e.key === 'Home') { e.preventDefault(); selectTab(tabs[0].id); }
-                else if (e.key === 'End') { e.preventDefault(); selectTab(tabs[tabs.length - 1].id); }
+                if (isImeComposing(e)) return;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); selectTab(tabs[(ti + 1) % tabs.length]); }
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); selectTab(tabs[(ti - 1 + tabs.length) % tabs.length]); }
+                else if (e.key === 'Home') { e.preventDefault(); selectTab(tabs[0]); }
+                else if (e.key === 'End') { e.preventDefault(); selectTab(tabs[tabs.length - 1]); }
               },
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + _opBd(active ? '#818cf8' : '#334155'),
+              style: { padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + _opBd(active ? '#818cf8' : '#334155'),
                 background: active ? _opSoftBg('rgba(129,140,248,0.18)', '#eef2ff') : _opBg('#1e293b'),
                 color: active ? _opFg('#e0e7ff') : _opFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
@@ -275,7 +305,7 @@
               h('p', { style: { margin: '0 0 14px', color: _opFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
                 'A One-Page Profile is three things people who work with you should know in order to support you well. It is not a list of diagnoses, scores, or things wrong with you. It is what is right with you, what matters to you, and what helps you do your best.'),
               h('button', { type: 'button', onClick: function() { goto('edit'); }, 'aria-label': 'Start my profile',
-                style: { padding: '10px 22px', borderRadius: 10, border: _opBtnBd(), cursor: 'pointer', background: _opGradBtn('linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)'), color: _opFg('#fff'), fontWeight: 800, fontSize: 14 } },
+                style: { padding: '10px 22px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 10, border: _opBtnBd(), cursor: 'pointer', background: _opGradBtn('linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)'), color: _opFg('#fff'), fontWeight: 800, fontSize: 14 } },
                 '+ Start my profile')
             ),
             softPointer()
@@ -295,7 +325,7 @@
               updatedStr ? h('div', { style: { fontSize: 12, color: _opFg('#64748b'), marginTop: 4, fontFamily: 'ui-monospace, monospace' } }, 'Updated ' + updatedStr) : null
             ),
             h('button', { type: 'button', onClick: function() { goto('edit'); }, 'aria-label': 'Edit profile',
-              style: { padding: '8px 16px', borderRadius: 8, border: '1px solid ' + _opBd('#818cf8'), background: _opSoftBg('rgba(129,140,248,0.18)', '#e0e7ff'), color: _opFg('#e0e7ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '✏️ Edit')
+              style: { padding: '10px 16px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + _opBd('#818cf8'), background: _opSoftBg('rgba(129,140,248,0.18)', '#e0e7ff'), color: _opFg('#e0e7ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '✏️ Edit')
           ),
 
           // Three sections
@@ -305,10 +335,10 @@
 
           // Print + Edit
           h('div', { style: { display: 'flex', gap: 10, marginTop: 18, flexWrap: 'wrap' } },
-            h('button', { type: 'button', onClick: function() { goto('print'); }, style: { padding: '10px 20px', borderRadius: 10, border: _opBtnBd(), cursor: 'pointer', background: _opGradBtn('linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)'), color: _opFg('#fff'), fontWeight: 800, fontSize: 14 } },
+            h('button', { type: 'button', onClick: function() { goto('print'); }, style: { padding: '10px 20px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 10, border: _opBtnBd(), cursor: 'pointer', background: _opGradBtn('linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)'), color: _opFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '🖨 Print or save as PDF'),
             h('button', { type: 'button', onClick: function() { goto('edit'); }, 'aria-label': 'Edit profile',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _opBd('#475569'), background: _opBg('#1e293b'), color: _opFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '✏️ Edit profile')
+              style: { padding: '10px 20px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 10, border: '1px solid ' + _opBd('#475569'), background: _opBg('#1e293b'), color: _opFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '✏️ Edit profile')
           ),
 
           softPointer()
@@ -342,7 +372,7 @@
             return patch;
           });
         }
-        function removeItem(sectionKey, idx) {
+        function removeItem(sectionKey, idx, label) {
           setOPP(function(prior) {
             var current = safeList(prior[sectionKey]).slice();
             if (idx < 0 || idx >= current.length) return null;
@@ -351,6 +381,7 @@
             patch[sectionKey] = current;
             return patch;
           });
+          announceOPP(label ? ('Removed: ' + label + '.') : 'Removed item.');
         }
         function moveItem(sectionKey, idx, dir) {
           setOPP(function(prior) {
@@ -364,6 +395,7 @@
             patch[sectionKey] = current;
             return patch;
           });
+          announceOPP(dir < 0 ? 'Moved item up.' : 'Moved item down.');
         }
 
         function sectionEditor(sectionKey, title, color, starters) {
@@ -373,12 +405,13 @@
             if (typeof document === 'undefined') return;
             var el = document.getElementById(inputId);
             if (!el || !el.value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
-            scanProfileText(el.value);
-            addItem(sectionKey, el.value);
+            var addedText = el.value.trim();
+            scanProfileText(addedText);
+            addItem(sectionKey, addedText);
             el.value = '';
-            if (announceToSR) announceToSR('Added.');
+            announceOPP('Added: ' + addedText);
           }
-          function useStarter(s) { addItem(sectionKey, s); if (announceToSR) announceToSR('Added: ' + s); }
+          function useStarter(s) { addItem(sectionKey, s); announceOPP('Added: ' + s); }
 
           return h('div', { style: { padding: 14, borderRadius: 10, background: _opBg('#0f172a'), borderTop: '1px solid ' + _opBd('#1e293b'), borderRight: '1px solid ' + _opBd('#1e293b'), borderBottom: '1px solid ' + _opBd('#1e293b'), borderLeft: '3px solid ' + _opBd(color), marginBottom: 14 } },
             h('div', { style: { fontSize: 13, color: _opInk(color), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 800, marginBottom: 10 } }, title),
@@ -387,12 +420,12 @@
               items.map(function(item, i) {
                 return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 6, padding: 8, borderRadius: 6, background: _opBg('#1e293b'), marginBottom: 4 } },
                   h('span', { style: { flex: 1, color: _opFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.55 } }, item),
-                  h('button', { type: 'button', onClick: function() { moveItem(sectionKey, i, -1); }, 'aria-label': 'Move up', disabled: i === 0,
-                    style: { background: 'transparent', border: '1px solid ' + _opBd('#475569'), color: i === 0 ? _opFg('#475569') : _opFg('#94a3b8'), borderRadius: 4, padding: '2px 6px', cursor: i === 0 ? 'not-allowed' : 'pointer', fontSize: 12 } }, '↑'),
-                  h('button', { type: 'button', onClick: function() { moveItem(sectionKey, i, 1); }, 'aria-label': 'Move down', disabled: i === items.length - 1,
-                    style: { background: 'transparent', border: '1px solid ' + _opBd('#475569'), color: i === items.length - 1 ? _opFg('#475569') : _opFg('#94a3b8'), borderRadius: 4, padding: '2px 6px', cursor: i === items.length - 1 ? 'not-allowed' : 'pointer', fontSize: 12 } }, '↓'),
-                  h('button', { type: 'button', onClick: function() { removeItem(sectionKey, i); }, 'aria-label': 'Remove item',
-                    style: { background: 'transparent', border: '1px solid ' + _opBd('#475569'), color: _opFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 12 } }, '✕')
+                  h('button', { type: 'button', onClick: function() { moveItem(sectionKey, i, -1); }, 'aria-label': 'Move up: ' + item, disabled: i === 0,
+                    style: { background: 'transparent', border: '1px solid ' + _opBd('#475569'), color: i === 0 ? _opFg('#475569') : _opFg('#94a3b8'), borderRadius: 6, minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '4px 8px', cursor: i === 0 ? 'not-allowed' : 'pointer', fontSize: 13 } }, '↑'),
+                  h('button', { type: 'button', onClick: function() { moveItem(sectionKey, i, 1); }, 'aria-label': 'Move down: ' + item, disabled: i === items.length - 1,
+                    style: { background: 'transparent', border: '1px solid ' + _opBd('#475569'), color: i === items.length - 1 ? _opFg('#475569') : _opFg('#94a3b8'), borderRadius: 6, minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '4px 8px', cursor: i === items.length - 1 ? 'not-allowed' : 'pointer', fontSize: 13 } }, '↓'),
+                  h('button', { type: 'button', onClick: function() { removeItem(sectionKey, i, item); }, 'aria-label': 'Remove item: ' + item,
+                    style: { background: 'transparent', border: '1px solid ' + _opBd('#475569'), color: _opFg('#94a3b8'), borderRadius: 6, minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '4px 8px', cursor: 'pointer', fontSize: 13 } }, '✕')
                 );
               })
             ) : null,
@@ -402,19 +435,27 @@
               h('input', { id: inputId, type: 'text',
                 placeholder: 'Type and press Enter, or pick a starter below...',
                 onBlur: function(e) { scanProfileText(e.target.value); },
-                onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); submitInput(); } },
-                style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid ' + _opBd('#334155'), background: _opBg('#1e293b'), color: _opFg('#e2e8f0'), fontSize: 13 } }),
+                onKeyDown: function(e) {
+                  if (isImeComposing(e)) return;
+                  if (e.key === 'Enter') { e.preventDefault(); submitInput(); }
+                  else if (e.key === 'Escape' && e.currentTarget && e.currentTarget.value) {
+                    e.preventDefault();
+                    e.currentTarget.value = '';
+                    announceOPP('Cleared input.');
+                  }
+                },
+                style: { flex: 1, minWidth: 200, minHeight: 44, padding: '8px 10px', boxSizing: 'border-box', borderRadius: 6, border: '1px solid ' + _opBd('#334155'), background: _opBg('#1e293b'), color: _opFg('#e2e8f0'), fontSize: 13 } }),
               h('button', { type: 'button', onClick: submitInput, 'aria-label': 'Add item',
-                style: { padding: '8px 14px', borderRadius: 6, border: _opBtnBd(), cursor: 'pointer', background: _opSolid(color), color: _opFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+                style: { padding: '10px 16px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 6, border: _opBtnBd(), cursor: 'pointer', background: _opSolid(color), color: _opFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
             ),
             // Starters
             h('details', null,
-              h('summary', { style: { cursor: 'pointer', fontSize: 12, color: _opFg('#94a3b8'), userSelect: 'none' } }, 'Need ideas? Tap a starter to add it (you can edit after)'),
+              h('summary', { style: { cursor: 'pointer', minHeight: 44, display: 'flex', alignItems: 'center', fontSize: 12, color: _opFg('#94a3b8'), userSelect: 'none' } }, 'Need ideas? Tap a starter to add it (you can edit after)'),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 } },
                 starters.map(function(s, si) {
                   var already = items.indexOf(s) !== -1;
                   return h('button', { key: si, type: 'button', onClick: function() { useStarter(s); }, disabled: already, 'aria-label': 'Add starter: ' + s,
-                    style: { padding: '4px 10px', borderRadius: 14, border: '1px solid ' + (_opHC ? '#ffff00' : color + '66'), background: already ? _opBg('#1e293b') : _opSoftBg('rgba(15,23,42,0.6)', '#ffffff'), color: already ? _opFg('#64748b') : _opFg('#cbd5e1'), cursor: already ? 'not-allowed' : 'pointer', fontSize: 12, opacity: already ? 0.5 : 1 } },
+                    style: { padding: '8px 12px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 14, border: '1px solid ' + (_opHC ? '#ffff00' : color + '66'), background: already ? _opBg('#1e293b') : _opSoftBg('rgba(15,23,42,0.6)', '#ffffff'), color: already ? _opFg('#64748b') : _opFg('#cbd5e1'), cursor: already ? 'not-allowed' : 'pointer', fontSize: 12, opacity: already ? 0.5 : 1 } },
                     (already ? '✓ ' : '+ ') + s);
                 })
               )
@@ -431,24 +472,36 @@
                 h('label', { htmlFor: 'opp-name', style: { display: 'block', fontSize: 12, color: _opFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'My name'),
                 h('input', { id: 'opp-name', type: 'text', value: safeStr(d.name),
                   onChange: function(e) { setOPP({ name: e.target.value }); },
+                  onKeyDown: function(e) {
+                    if (isImeComposing(e)) return;
+                    if (e.key === 'Escape' && safeStr(d.name)) { e.preventDefault(); setOPP({ name: '' }); announceOPP('Cleared name.'); }
+                  },
                   onBlur: function(e) { scanProfileText(e.target.value); },
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _opBd('#334155'), background: _opBg('#1e293b'), color: _opFg('#e2e8f0'), fontSize: 13 } })
+                  style: { width: '100%', minHeight: 44, padding: '8px 10px', boxSizing: 'border-box', borderRadius: 6, border: '1px solid ' + _opBd('#334155'), background: _opBg('#1e293b'), color: _opFg('#e2e8f0'), fontSize: 13 } })
               ),
               h('div', null,
                 h('label', { htmlFor: 'opp-grade', style: { display: 'block', fontSize: 12, color: _opFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Grade (optional)'),
                 h('input', { id: 'opp-grade', type: 'text', value: safeStr(d.gradeLevel),
                   placeholder: 'e.g. 7',
                   onChange: function(e) { setOPP({ gradeLevel: e.target.value }); },
+                  onKeyDown: function(e) {
+                    if (isImeComposing(e)) return;
+                    if (e.key === 'Escape' && safeStr(d.gradeLevel)) { e.preventDefault(); setOPP({ gradeLevel: '' }); announceOPP('Cleared grade.'); }
+                  },
                   onBlur: function(e) { scanProfileText(e.target.value); },
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _opBd('#334155'), background: _opBg('#1e293b'), color: _opFg('#e2e8f0'), fontSize: 13 } })
+                  style: { width: '100%', minHeight: 44, padding: '8px 10px', boxSizing: 'border-box', borderRadius: 6, border: '1px solid ' + _opBd('#334155'), background: _opBg('#1e293b'), color: _opFg('#e2e8f0'), fontSize: 13 } })
               ),
               h('div', null,
                 h('label', { htmlFor: 'opp-pronouns', style: { display: 'block', fontSize: 12, color: _opFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Pronouns (optional)'),
                 h('input', { id: 'opp-pronouns', type: 'text', value: safeStr(d.pronouns),
                   placeholder: 'e.g. she/her, they/them',
                   onChange: function(e) { setOPP({ pronouns: e.target.value }); },
+                  onKeyDown: function(e) {
+                    if (isImeComposing(e)) return;
+                    if (e.key === 'Escape' && safeStr(d.pronouns)) { e.preventDefault(); setOPP({ pronouns: '' }); announceOPP('Cleared pronouns.'); }
+                  },
                   onBlur: function(e) { scanProfileText(e.target.value); },
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _opBd('#334155'), background: _opBg('#1e293b'), color: _opFg('#e2e8f0'), fontSize: 13 } })
+                  style: { width: '100%', minHeight: 44, padding: '8px 10px', boxSizing: 'border-box', borderRadius: 6, border: '1px solid ' + _opBd('#334155'), background: _opBg('#1e293b'), color: _opFg('#e2e8f0'), fontSize: 13 } })
               )
             ),
             // Photo emoji picker
@@ -457,8 +510,8 @@
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
                 PHOTO_EMOJIS.map(function(em) {
                   var active = d.photoEmoji === em;
-                  return h('button', { key: em, type: 'button', onClick: function() { setOPP({ photoEmoji: em }); }, 'aria-label': 'Choose icon ' + em, 'aria-pressed': active,
-                    style: { padding: 6, borderRadius: 6, border: '1px solid ' + _opBd(active ? '#818cf8' : '#334155'), background: active ? _opSoftBg('rgba(129,140,248,0.2)', '#e0e7ff') : _opBg('#1e293b'), cursor: 'pointer', fontSize: 22 } }, em);
+                  return h('button', { key: em, type: 'button', onClick: function() { setOPP({ photoEmoji: em }); announceOPP('Selected icon ' + em); }, 'aria-label': 'Choose icon ' + em, 'aria-pressed': active,
+                    style: { minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: 6, borderRadius: 6, border: '1px solid ' + _opBd(active ? '#818cf8' : '#334155'), background: active ? _opSoftBg('rgba(129,140,248,0.2)', '#e0e7ff') : _opBg('#1e293b'), cursor: 'pointer', fontSize: 22 } }, em);
                 })
               )
             )
@@ -475,10 +528,10 @@
 
           h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
             h('button', { type: 'button', onClick: function() { goto('profile'); }, 'aria-label': 'See my profile',
-              style: { padding: '10px 20px', borderRadius: 10, border: _opBtnBd(), cursor: 'pointer', background: _opGradBtn('linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)'), color: _opFg('#fff'), fontWeight: 800, fontSize: 14 } },
+              style: { padding: '10px 20px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 10, border: _opBtnBd(), cursor: 'pointer', background: _opGradBtn('linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)'), color: _opFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '👁 See my profile'),
             h('button', { type: 'button', onClick: function() { goto('print'); }, 'aria-label': 'Open print view',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _opBd('#475569'), background: _opBg('#1e293b'), color: _opFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print view')
+              style: { padding: '10px 20px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 10, border: '1px solid ' + _opBd('#475569'), background: _opBg('#1e293b'), color: _opFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print view')
           ),
 
           softPointer()
@@ -501,9 +554,9 @@
               h('strong', null, '🖨 Print preview. '),
               'This is what your profile looks like printed. Use your browser\'s print dialog (Print or Save as PDF).'
             ),
-            h('button', { type: 'button', onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _opBtnBd(), cursor: 'pointer', background: _opGradBtn('linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)'), color: _opFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { type: 'button', onClick: printNow, style: { padding: '10px 18px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: _opBtnBd(), cursor: 'pointer', background: _opGradBtn('linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)'), color: _opFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { type: 'button', onClick: function() { goto('profile'); }, 'aria-label': 'Back to profile',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _opBd('#475569'), background: _opBg('#1e293b'), color: _opFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+              style: { padding: '10px 18px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + _opBd('#475569'), background: _opBg('#1e293b'), color: _opFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
@@ -523,7 +576,7 @@
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 16, paddingBottom: 14, marginBottom: 18, borderBottom: '3px solid ' + _opBd('#4f46e5') } },
               h('div', { style: { fontSize: 56, lineHeight: 1, padding: 4 }, 'aria-hidden': true }, photoStr),
               h('div', { style: { flex: 1 } },
-                h('div', { style: { fontSize: 12, color: _opFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'One-Page Profile'),
+                h('div', { style: { fontSize: 12, color: _opHC ? '#ffff00' : '#475569', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'One-Page Profile'),
                 h('h1', { style: { margin: 0, fontSize: 28, fontWeight: 900, color: _opFg('#0f172a') } }, nameStr.trim() ? nameStr : '(your name)'),
                 h('div', { style: { fontSize: 12, color: _opFg('#475569'), marginTop: 4 } },
                   gradeStr ? ('Grade ' + gradeStr) : '',
@@ -626,7 +679,7 @@
           h('div', { style: { fontSize: 12, color: _opFg('#a5b4fc'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: _opFg('#e0e7ff'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+                style: { fontSize: 13, color: _opFg('#e0e7ff'), fontWeight: 700, textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', minHeight: 44, marginBottom: 4 } }, title + ' ↗')
             : h('div', { style: { fontSize: 13, color: _opFg('#e0e7ff'), fontWeight: 700, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _opFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );
@@ -639,7 +692,7 @@
       else if (view === 'about') body = renderAbout();
       else body = renderProfile();
 
-      return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'One-Page Profile' },
+      return h('div', { className: 'selh-opp', style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'One-Page Profile' },
         header(),
         navTabs(),
         (d._crisisTier >= 3 && typeof window !== 'undefined' && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')

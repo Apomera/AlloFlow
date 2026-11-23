@@ -204,6 +204,14 @@
         [search, category, source, ai, access].forEach(function (control) {
             if (control) control.addEventListener(control === search ? 'input' : 'change', render);
         });
+        search.addEventListener('keydown', function (event) {
+            if (event.isComposing || event.keyCode === 229) return;
+            if (event.key === 'Escape' && search.value) {
+                event.preventDefault();
+                search.value = '';
+                render();
+            }
+        });
         if (clear) {
             clear.addEventListener('click', function () {
                 search.value = '';
@@ -260,6 +268,14 @@
             window.location.href = 'tools.html' + (query ? '?q=' + encodeURIComponent(query) : '');
         });
         search.addEventListener('input', render);
+        search.addEventListener('keydown', function (event) {
+            if (event.isComposing || event.keyCode === 229) return;
+            if (event.key === 'Escape' && search.value) {
+                event.preventDefault();
+                search.value = '';
+                render();
+            }
+        });
         render();
     }
 

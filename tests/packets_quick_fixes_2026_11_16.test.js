@@ -14,7 +14,7 @@ describe('Try it: the saved-place block reaches the file before its player start
   // "This browser cannot keep your work" on every screen and never reported its place, so the teacher bar
   // stayed on question 1 and "Remove question" removed question 1 whatever was showing.
   const source = read('packets-try.js');
-  const body = sliceBetween(source, '  function withSnapshot(html, items) {', '\n  }\n', { file: 'packets-try.js' });
+  const body = sliceBetween(source, '  function withSnapshot(html, items, token) {', '\n  }\n', { file: 'packets-try.js' });
   // eslint-disable-next-line no-new-func
   const withSnapshot = new Function('STORE_KIND', body + '\n  }\n  return withSnapshot;')('alloflow-packet-store');
   const FILE = '<!doctype html><html><head><meta charset="utf-8"><title>T</title></head><body><main></main><script type="application/json" id="packet-manifest">{}</script><script>var player = 1;</script></body></html>';
@@ -38,7 +38,7 @@ describe('Try it: the saved-place block reaches the file before its player start
   });
 
   it('is done the same way as on the Open page', () => {
-    expect(read('packets-open.js')).toContain("var at = html.search(/<\\/head\\s*>/i);");
+    expect(read('packets-open.js')).toMatch(/var at = (?:html|clean)\.search\(\/<\\\/head\\s\*>\//);
     expect(source).toContain("var at = clean.search(/<\\/head\\s*>/i);");
     expect(source).not.toContain("lastIndexOf('</body>')");
   });

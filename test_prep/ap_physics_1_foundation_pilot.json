@@ -1824,12 +1824,12 @@
         "14.0 m"
       ],
       "answerIndex": 3,
-      "rationale": "Substituting four seconds gives 2.0 m plus 3.0 m/s times 4.0 s, or 14.0 m.",
+      "rationale": "Using the constant-velocity position equation x(t) = x0 + v*t with x0 = 2.0 m and v = 3.0 m/s, substituting t = 4.0 s gives x = 2.0 + 3.0(4.0) = 2.0 + 12.0 = 14.0 m.",
       "choiceRationales": [
         "This choice is not supported because it drops the initial position term from the model under the stated conditions and measurement model.",
         "This choice is not supported because it reports only the displacement instead of final position under the stated conditions and measurement model.",
         "This choice is not supported because it multiplies the initial position by time even though it is a constant under the stated conditions and measurement model.",
-        "Substituting four seconds gives 2.0 m plus 3.0 m/s times 4.0 s, or 14.0 m."
+        "Using the constant-velocity position equation x(t) = x0 + v*t with x0 = 2.0 m and v = 3.0 m/s, substituting t = 4.0 s gives x = 2.0 + 3.0(4.0) = 2.0 + 12.0 = 14.0 m."
       ],
       "distractorDiagnostics": [
         {
@@ -2090,10 +2090,10 @@
         "48 m"
       ],
       "answerIndex": 1,
-      "rationale": "The magnitude is the square root of 6 squared plus 8 squared, which is 10 m.",
+      "rationale": "Because east and north components are perpendicular, apply the Pythagorean theorem: |d| = sqrt(dx^2 + dy^2). Substituting 6 m and 8 m gives sqrt(36 + 64) = sqrt(100) = 10 m.",
       "choiceRationales": [
         "This choice is not supported because it subtracts perpendicular components instead of using the Pythagorean relationship under the stated conditions and measurement model.",
-        "The magnitude is the square root of 6 squared plus 8 squared, which is 10 m.",
+        "Because east and north components are perpendicular, apply the Pythagorean theorem: |d| = sqrt(dx^2 + dy^2). Substituting 6 m and 8 m gives sqrt(36 + 64) = sqrt(100) = 10 m.",
         "This choice is not supported because it adds component magnitudes without accounting for their directions under the stated conditions and measurement model.",
         "This choice is not supported because it multiplies components, which does not produce vector magnitude under the stated conditions and measurement model."
       ],
@@ -3688,10 +3688,10 @@
         "The object moves with constant positive acceleration"
       ],
       "answerIndex": 1,
-      "rationale": "Zero acceleration means velocity remains constant at its initial nonzero value.",
+      "rationale": "Acceleration is the time rate of change of velocity (a = dv/dt). When a(t) = 0 throughout the interval, delta v = 0, so the object maintains its initial nonzero constant velocity.",
       "choiceRationales": [
         "This choice is not supported because it zero acceleration does not erase an existing velocity under the stated conditions and measurement model.",
-        "Zero acceleration means velocity remains constant at its initial nonzero value.",
+        "Acceleration is the time rate of change of velocity (a = dv/dt). When a(t) = 0 throughout the interval, delta v = 0, so the object maintains its initial nonzero constant velocity.",
         "This choice is not supported because it time passing alone does not increase velocity without acceleration under the stated conditions and measurement model.",
         "This choice is not supported because it a nonzero positive acceleration would not appear as zero on the graph under the stated conditions and measurement model."
       ],
@@ -4617,9 +4617,9 @@
         "20 m/s2"
       ],
       "answerIndex": 0,
-      "rationale": "The acceleration is net force divided by mass, 10 N divided by 2 kg, or 5 m/s2.",
+      "rationale": "Newton's second law relates acceleration to net force and mass via a = F_net / m. Dividing the 10 N horizontal net force by the 2 kg cart mass yields a = 10 / 2 = 5 m/s2.",
       "choiceRationales": [
-        "The acceleration is net force divided by mass, 10 N divided by 2 kg, or 5 m/s2.",
+        "Newton's second law relates acceleration to net force and mass via a = F_net / m. Dividing the 10 N horizontal net force by the 2 kg cart mass yields a = 10 / 2 = 5 m/s2.",
         "This choice is not supported because it inverts the force-to-mass relationship under the stated conditions and measurement model.",
         "This choice is not supported because it subtracts mass from force rather than dividing with units under the stated conditions and measurement model.",
         "This choice is not supported because it multiplies force and mass instead of applying F equals ma under the stated conditions and measurement model."
@@ -6346,10 +6346,10 @@
         "20 m/s2 east"
       ],
       "answerIndex": 1,
-      "rationale": "The net force is 10 N east, and dividing by 5 kg gives 2 m/s2 east.",
+      "rationale": "First combine opposing horizontal forces to find F_net = 15 N east - 5 N west = 10 N east. Applying Newton's second law a = F_net / m gives 10 N / 5 kg = 2 m/s2 east.",
       "choiceRationales": [
         "This choice is not supported because it uses the larger force without subtracting the opposing force under the stated conditions and measurement model.",
-        "The net force is 10 N east, and dividing by 5 kg gives 2 m/s2 east.",
+        "First combine opposing horizontal forces to find F_net = 15 N east - 5 N west = 10 N east. Applying Newton's second law a = F_net / m gives 10 N / 5 kg = 2 m/s2 east.",
         "This choice is not supported because it assigns acceleration opposite the net-force direction under the stated conditions and measurement model.",
         "This choice is not supported because it adds force magnitudes instead of finding the net force under the stated conditions and measurement model."
       ],
@@ -8470,10 +8470,10 @@
         "100 J"
       ],
       "answerIndex": 1,
-      "rationale": "Work is F d cosine theta, so 10 N times 5 m times 0.5 equals 25 J.",
+      "rationale": "Mechanical work done by a constant force at angle theta to displacement is W = F*d*cos(theta). Substituting F = 10 N, d = 5 m, and cos(60 deg) = 0.5 gives W = 10(5)(0.5) = 25 J.",
       "choiceRationales": [
         "This choice is not supported because it omits the angle factor and treats the force as parallel under the stated conditions and measurement model.",
-        "Work is F d cosine theta, so 10 N times 5 m times 0.5 equals 25 J.",
+        "Mechanical work done by a constant force at angle theta to displacement is W = F*d*cos(theta). Substituting F = 10 N, d = 5 m, and cos(60 deg) = 0.5 gives W = 10(5)(0.5) = 25 J.",
         "This choice is not supported because it divides force by distance rather than multiplying along the displacement component under the stated conditions and measurement model.",
         "This choice is not supported because it uses a cosine factor larger than one and doubles the parallel result under the stated conditions and measurement model."
       ],
@@ -8738,12 +8738,12 @@
         "The power delivered"
       ],
       "answerIndex": 3,
-      "rationale": "The slope of energy versus time is energy transferred per time, which is power.",
+      "rationale": "On an energy-versus-time graph, the slope equals delta E / delta t, the rate at which energy is transferred. By definition, P = delta E / delta t, so the slope represents power delivered.",
       "choiceRationales": [
         "This choice is not supported because it mass is not an energy-time rate under the stated conditions and measurement model.",
         "This choice is not supported because it displacement requires position information and does not follow from energy slope alone under the stated conditions and measurement model.",
         "This choice is not supported because it spring constant is a force-displacement ratio under the stated conditions and measurement model.",
-        "The slope of energy versus time is energy transferred per time, which is power."
+        "On an energy-versus-time graph, the slope equals delta E / delta t, the rate at which energy is transferred. By definition, P = delta E / delta t, so the slope represents power delivered."
       ],
       "distractorDiagnostics": [
         {
@@ -8872,9 +8872,9 @@
         "20 J"
       ],
       "answerIndex": 0,
-      "rationale": "Spring energy is one-half kx squared, so 0.5 times 200 times 0.01 equals 1.0 J.",
+      "rationale": "Elastic potential energy stored in an ideal Hookean spring is U_s = (1/2)k*x^2. With k = 200 N/m and compression x = 0.10 m, U_s = 0.5(200)(0.10)^2 = 100(0.01) = 1.0 J.",
       "choiceRationales": [
-        "Spring energy is one-half kx squared, so 0.5 times 200 times 0.01 equals 1.0 J.",
+        "Elastic potential energy stored in an ideal Hookean spring is U_s = (1/2)k*x^2. With k = 200 N/m and compression x = 0.10 m, U_s = 0.5(200)(0.10)^2 = 100(0.01) = 1.0 J.",
         "This choice is not supported because it drops the displacement-squared factor under the stated conditions and measurement model.",
         "This choice is not supported because it omits the one-half factor in the energy formula under the stated conditions and measurement model.",
         "This choice is not supported because it uses centimeters as though they were meters without conversion under the stated conditions and measurement model."
@@ -9805,12 +9805,12 @@
         "3.0 kg m/s east"
       ],
       "answerIndex": 3,
-      "rationale": "Momentum equals mass times velocity, giving 0.50 kg times 6 m/s, directed east.",
+      "rationale": "Linear momentum is the vector product of mass and velocity, p = m*v, pointing in the direction of motion. Multiplying m = 0.50 kg by v = 6 m/s east yields p = 3.0 kg m/s east.",
       "choiceRationales": [
         "This choice is not supported because it divides mass by velocity instead of multiplying under the stated conditions and measurement model.",
         "This choice is not supported because it adds mass and velocity despite their different units under the stated conditions and measurement model.",
         "This choice is not supported because it multiplies by two without a corresponding change in mass or velocity under the stated conditions and measurement model.",
-        "Momentum equals mass times velocity, giving 0.50 kg times 6 m/s, directed east."
+        "Linear momentum is the vector product of mass and velocity, p = m*v, pointing in the direction of motion. Multiplying m = 0.50 kg by v = 6 m/s east yields p = 3.0 kg m/s east."
       ],
       "distractorDiagnostics": [
         {
@@ -10471,9 +10471,9 @@
         "300 N s"
       ],
       "answerIndex": 0,
-      "rationale": "Impulse equals average force times duration, so 30 N times 0.10 s is 3.0 N s.",
+      "rationale": "Impulse delivered by an average force over a contact interval is J = F_avg * delta t, independent of the ball's mass. Multiplying 30 N by 0.10 s produces J = 3.0 N s.",
       "choiceRationales": [
-        "Impulse equals average force times duration, so 30 N times 0.10 s is 3.0 N s.",
+        "Impulse delivered by an average force over a contact interval is J = F_avg * delta t, independent of the ball's mass. Multiplying 30 N by 0.10 s produces J = 3.0 N s.",
         "This choice is not supported because it divides time by force instead of multiplying under the stated conditions and measurement model.",
         "This choice is not supported because it uses force alone and omits the contact duration under the stated conditions and measurement model.",
         "This choice is not supported because it multiplies by ten rather than using the stated tenth-second interval under the stated conditions and measurement model."
@@ -13129,9 +13129,9 @@
         "24 N m"
       ],
       "answerIndex": 0,
-      "rationale": "The torques are 12 N m and 12 N m in opposite directions, so their net is zero.",
+      "rationale": "Torque magnitude is tau = r*F for perpendicular forces: the first gives 0.40(30) = 12 N m and the opposing second gives 0.60(20) = 12 N m. Because they oppose, net torque is 12 - 12 = 0 N m.",
       "choiceRationales": [
-        "The torques are 12 N m and 12 N m in opposite directions, so their net is zero.",
+        "Torque magnitude is tau = r*F for perpendicular forces: the first gives 0.40(30) = 12 N m and the opposing second gives 0.60(20) = 12 N m. Because they oppose, net torque is 12 - 12 = 0 N m.",
         "This choice is not supported because it does not subtract equal opposing torques under the stated conditions and measurement model.",
         "This choice is not supported because it uses only one force and omits the opposing torque under the stated conditions and measurement model.",
         "This choice is not supported because it adds the torque magnitudes despite opposite rotational directions under the stated conditions and measurement model."
@@ -13528,12 +13528,12 @@
         "2.5 N m"
       ],
       "answerIndex": 3,
-      "rationale": "Torque is rF sine theta, so 0.50 times 10 times 0.50 equals 2.5 N m.",
+      "rationale": "For a force applied at angle theta to the lever arm, torque magnitude obeys tau = r*F*sin(theta). Substituting r = 0.50 m, F = 10 N, and sin(30 deg) = 0.50 yields tau = 0.50(10)(0.50) = 2.5 N m.",
       "choiceRationales": [
         "This choice is not supported because it uses the full force without the perpendicular component under the stated conditions and measurement model.",
         "This choice is not supported because it uses cosine instead of the sine component for torque from the lever arm under the stated conditions and measurement model.",
         "This choice is not supported because it multiplies force and distance by four without the angle relationship under the stated conditions and measurement model.",
-        "Torque is rF sine theta, so 0.50 times 10 times 0.50 equals 2.5 N m."
+        "For a force applied at angle theta to the lever arm, torque magnitude obeys tau = r*F*sin(theta). Substituting r = 0.50 m, F = 10 N, and sin(30 deg) = 0.50 yields tau = 0.50(10)(0.50) = 2.5 N m."
       ],
       "distractorDiagnostics": [
         {
@@ -14988,11 +14988,11 @@
         "100 J"
       ],
       "answerIndex": 2,
-      "rationale": "One-half I omega squared equals 0.5 times 4 times 25, or 50 J.",
+      "rationale": "Rotational kinetic energy of a rigid body is K_rot = (1/2)I*omega^2. Substituting rotational inertia I = 4 kg m2 and omega = 5 rad/s gives K_rot = 0.5(4)(5^2) = 2(25) = 50 J.",
       "choiceRationales": [
         "This choice is not supported because it omits the one-half factor under the stated conditions and measurement model.",
         "This choice is not supported because it uses angular speed rather than angular speed squared under the stated conditions and measurement model.",
-        "One-half I omega squared equals 0.5 times 4 times 25, or 50 J.",
+        "Rotational kinetic energy of a rigid body is K_rot = (1/2)I*omega^2. Substituting rotational inertia I = 4 kg m2 and omega = 5 rad/s gives K_rot = 0.5(4)(5^2) = 2(25) = 50 J.",
         "This choice is not supported because it doubles the correct value without changing inertia or speed under the stated conditions and measurement model."
       ],
       "distractorDiagnostics": [
@@ -15253,9 +15253,9 @@
         "16 N m s"
       ],
       "answerIndex": 0,
-      "rationale": "Angular impulse equals torque times time, so 8 N m times 0.50 s gives 4 N m s.",
+      "rationale": "Angular impulse equals constant net torque multiplied by duration, delta L = tau * delta t. Applying tau = 8 N m over delta t = 0.50 s delivers 8(0.50) = 4 N m s of angular impulse.",
       "choiceRationales": [
-        "Angular impulse equals torque times time, so 8 N m times 0.50 s gives 4 N m s.",
+        "Angular impulse equals constant net torque multiplied by duration, delta L = tau * delta t. Applying tau = 8 N m over delta t = 0.50 s delivers 8(0.50) = 4 N m s of angular impulse.",
         "This choice is not supported because it divides time by torque rather than multiplying under the stated conditions and measurement model.",
         "This choice is not supported because it adds torque and time despite different units under the stated conditions and measurement model.",
         "This choice is not supported because it doubles the product without using the stated half-second interval under the stated conditions and measurement model."
@@ -15917,10 +15917,10 @@
         "A negative external torque"
       ],
       "answerIndex": 1,
-      "rationale": "The slope of angular momentum versus time equals net external torque.",
+      "rationale": "By rotational Newton's second law, net external torque equals the rate of change of angular momentum (tau_net = dL/dt). A constant positive slope on L vs t means constant positive external torque.",
       "choiceRationales": [
         "This choice is not supported because it zero torque would produce a horizontal angular-momentum graph under the stated conditions and measurement model.",
-        "The slope of angular momentum versus time equals net external torque.",
+        "By rotational Newton's second law, net external torque equals the rate of change of angular momentum (tau_net = dL/dt). A constant positive slope on L vs t means constant positive external torque.",
         "This choice is not supported because it constant angular momentum requires zero slope, not positive slope under the stated conditions and measurement model.",
         "This choice is not supported because it negative torque would give a negative slope under the sign convention under the stated conditions and measurement model."
       ],
@@ -17115,11 +17115,11 @@
         "0.25 Hz"
       ],
       "answerIndex": 2,
-      "rationale": "Frequency is the reciprocal of period, so 1 divided by 2.0 s is 0.50 Hz.",
+      "rationale": "Frequency and period of a periodic oscillator are reciprocals, f = 1 / T. Substituting the pendulum's period T = 2.0 s gives f = 1 / 2.0 s = 0.50 Hz (half a cycle per second).",
       "choiceRationales": [
         "This choice is not supported because it uses period itself as frequency instead of taking the reciprocal under the stated conditions and measurement model.",
         "This choice is not supported because it doubles the reciprocal without a physical factor under the stated conditions and measurement model.",
-        "Frequency is the reciprocal of period, so 1 divided by 2.0 s is 0.50 Hz.",
+        "Frequency and period of a periodic oscillator are reciprocals, f = 1 / T. Substituting the pendulum's period T = 2.0 s gives f = 1 / 2.0 s = 0.50 Hz (half a cycle per second).",
         "This choice is not supported because it divides by four rather than using the stated period under the stated conditions and measurement model."
       ],
       "distractorDiagnostics": [
@@ -18046,10 +18046,10 @@
         "50 N"
       ],
       "answerIndex": 1,
-      "rationale": "The ideal spring force magnitude is kx, so 100 N/m times 0.20 m gives 20 N.",
+      "rationale": "By Hooke's law, the restoring force magnitude of an ideal spring is |F_s| = k*|x|. Multiplying stiffness k = 100 N/m by displacement x = 0.20 m gives a 20 N restoring force.",
       "choiceRationales": [
         "This choice is not supported because it divides spring constant by displacement rather than multiplying under the stated conditions and measurement model.",
-        "The ideal spring force magnitude is kx, so 100 N/m times 0.20 m gives 20 N.",
+        "By Hooke's law, the restoring force magnitude of an ideal spring is |F_s| = k*|x|. Multiplying stiffness k = 100 N/m by displacement x = 0.20 m gives a 20 N restoring force.",
         "This choice is not supported because it uses the reciprocal of the displacement under the stated conditions and measurement model.",
         "This choice is not supported because it divides by two without a relation in Hooke law under the stated conditions and measurement model."
       ],
@@ -18979,9 +18979,9 @@
         "200,000 Pa"
       ],
       "answerIndex": 0,
-      "rationale": "Gauge pressure is rho g h, giving 1000 times 10 times 2.0, or 20,000 Pa.",
+      "rationale": "Hydrostatic gauge pressure at depth h in an incompressible fluid is P_gauge = rho*g*h. Substituting rho = 1000 kg/m3, g = 10 m/s2, and h = 2.0 m gives 1000(10)(2.0) = 20,000 Pa.",
       "choiceRationales": [
-        "Gauge pressure is rho g h, giving 1000 times 10 times 2.0, or 20,000 Pa.",
+        "Hydrostatic gauge pressure at depth h in an incompressible fluid is P_gauge = rho*g*h. Substituting rho = 1000 kg/m3, g = 10 m/s2, and h = 2.0 m gives 1000(10)(2.0) = 20,000 Pa.",
         "This choice is not supported because it omits one factor of ten in the product under the stated conditions and measurement model.",
         "This choice is not supported because it uses height without density and gravity under the stated conditions and measurement model.",
         "This choice is not supported because it multiplies by an extra factor of ten beyond the stated values under the stated conditions and measurement model."
@@ -21769,10 +21769,10 @@
         "64 J"
       ],
       "answerIndex": 1,
-      "rationale": "One-half I omega squared equals 0.5 times 0.25 times 64, or 8 J.",
+      "rationale": "Rotational kinetic energy depends directly on I and omega via K_rot = (1/2)I*omega^2 (mass is already encoded in I). Computing 0.5(0.25 kg m2)(8 rad/s)^2 = 0.125(64) gives 8 J.",
       "choiceRationales": [
         "This choice is not supported because it omits the angular-speed-squared factor under the stated conditions and measurement model.",
-        "One-half I omega squared equals 0.5 times 0.25 times 64, or 8 J.",
+        "Rotational kinetic energy depends directly on I and omega via K_rot = (1/2)I*omega^2 (mass is already encoded in I). Computing 0.5(0.25 kg m2)(8 rad/s)^2 = 0.125(64) gives 8 J.",
         "This choice is not supported because it uses I omega as angular momentum rather than energy under the stated conditions and measurement model.",
         "This choice is not supported because it uses angular speed squared without the one-half inertia factor under the stated conditions and measurement model."
       ],
@@ -23368,10 +23368,10 @@
         "18 m"
       ],
       "answerIndex": 1,
-      "rationale": "The three trapezoids have areas 3, 4.5, and 6 m, for a total of 13.5 m.",
+      "rationale": "Displacement equals the area under a velocity-time graph. Using three 1 s trapezoids, areas are (2+4)/2 = 3 m, (4+5)/2 = 4.5 m, and (5+7)/2 = 6 m, summing to 3 + 4.5 + 6 = 13.5 m.",
       "choiceRationales": [
         "This choice is not supported because it uses only the first and last speeds without the intermediate data under the stated conditions and measurement model.",
-        "The three trapezoids have areas 3, 4.5, and 6 m, for a total of 13.5 m.",
+        "Displacement equals the area under a velocity-time graph. Using three 1 s trapezoids, areas are (2+4)/2 = 3 m, (4+5)/2 = 4.5 m, and (5+7)/2 = 6 m, summing to 3 + 4.5 + 6 = 13.5 m.",
         "This choice is not supported because it rounds the endpoint-weighted sum to an unsupported value under the stated conditions and measurement model.",
         "This choice is not supported because it multiplies all speeds instead of summing interval areas under the stated conditions and measurement model."
       ],
@@ -24433,10 +24433,10 @@
         "26 m/s2 east"
       ],
       "answerIndex": 1,
-      "rationale": "The net force is 10 N east, and 10 N divided by 5 kg gives 2.0 m/s2 east.",
+      "rationale": "Subtract opposite forces to get net force F_net = 18 N east - 8 N west = 10 N east. By Newton's second law a = F_net / m, dividing 10 N east by 5 kg produces 2.0 m/s2 east.",
       "choiceRationales": [
         "This choice is not supported because it divides the larger force by mass without subtracting the opposing force under the stated conditions and measurement model.",
-        "The net force is 10 N east, and 10 N divided by 5 kg gives 2.0 m/s2 east.",
+        "Subtract opposite forces to get net force F_net = 18 N east - 8 N west = 10 N east. By Newton's second law a = F_net / m, dividing 10 N east by 5 kg produces 2.0 m/s2 east.",
         "This choice is not supported because it reverses the sign of the net force under the stated conditions and measurement model.",
         "This choice is not supported because it adds force magnitudes without applying direction signs under the stated conditions and measurement model."
       ],
@@ -25228,12 +25228,12 @@
         "1.0 kg"
       ],
       "answerIndex": 3,
-      "rationale": "Near Earth, weight is mg, so 9.8 N divided by 9.8 m/s2 gives 1.0 kg.",
+      "rationale": "With negligible acceleration, vertical equilibrium sets sensor tension equal to weight: F_sensor = m*g. Solving m = F_g / g near Earth's surface gives 9.8 N / 9.8 m/s2 = 1.0 kg.",
       "choiceRationales": [
         "This choice is not supported because it divides by the wrong factor direction under the stated conditions and measurement model.",
         "This choice is not supported because it treats gravitational field as a mass multiplier under the stated conditions and measurement model.",
         "This choice is not supported because it moves the decimal in the wrong direction under the stated conditions and measurement model.",
-        "Near Earth, weight is mg, so 9.8 N divided by 9.8 m/s2 gives 1.0 kg."
+        "With negligible acceleration, vertical equilibrium sets sensor tension equal to weight: F_sensor = m*g. Solving m = F_g / g near Earth's surface gives 9.8 N / 9.8 m/s2 = 1.0 kg."
       ],
       "distractorDiagnostics": [
         {
@@ -27356,12 +27356,12 @@
         "30 J"
       ],
       "answerIndex": 3,
-      "rationale": "Work is Fd cos theta, so 12 times 5 times cos 60 degrees equals 30 J.",
+      "rationale": "Only the force component parallel to displacement does work: W = F*d*cos(theta). With F = 12 N, d = 5 m, and cos(60 deg) = 0.5, the work done is 12(5)(0.5) = 30 J.",
       "choiceRationales": [
         "This choice is not supported because it omits the angle factor under the stated conditions and measurement model.",
         "This choice is not supported because it uses sine instead of the component along displacement under the stated conditions and measurement model.",
         "This choice is not supported because it assumes a perpendicular force despite the stated 60 degree angle under the stated conditions and measurement model.",
-        "Work is Fd cos theta, so 12 times 5 times cos 60 degrees equals 30 J."
+        "Only the force component parallel to displacement does work: W = F*d*cos(theta). With F = 12 N, d = 5 m, and cos(60 deg) = 0.5, the work done is 12(5)(0.5) = 30 J."
       ],
       "distractorDiagnostics": [
         {
@@ -27756,11 +27756,11 @@
         "30 J"
       ],
       "answerIndex": 2,
-      "rationale": "One-half kx squared equals 0.5 times 150 times 0.04, or 3.0 J.",
+      "rationale": "Potential energy stored in a stretched linear spring obeys U_s = (1/2)k*x^2. Substituting k = 150 N/m and stretch x = 0.20 m gives U_s = 0.5(150)(0.04) = 75(0.04) = 3.0 J.",
       "choiceRationales": [
         "This choice is not supported because it uses extension without squaring it under the stated conditions and measurement model.",
         "This choice is not supported because it uses the full kx squared expression without one-half under the stated conditions and measurement model.",
-        "One-half kx squared equals 0.5 times 150 times 0.04, or 3.0 J.",
+        "Potential energy stored in a stretched linear spring obeys U_s = (1/2)k*x^2. Substituting k = 150 N/m and stretch x = 0.20 m gives U_s = 0.5(150)(0.04) = 75(0.04) = 3.0 J.",
         "This choice is not supported because it moves the decimal one place when squaring 0.20 m under the stated conditions and measurement model."
       ],
       "distractorDiagnostics": [
@@ -30553,12 +30553,12 @@
         "2.0 m/s east"
       ],
       "answerIndex": 3,
-      "rationale": "Momentum conservation gives 2 times 3 = 3v, so v is 2.0 m/s east.",
+      "rationale": "With no external horizontal impulse, momentum is conserved in a perfectly inelastic collision: m1*v1 + m2*v2 = (m1 + m2)*v_f. Solving 2(3) + 1(0) = 3*v_f gives v_f = 6 / 3 = 2.0 m/s east.",
       "choiceRationales": [
         "This choice is not supported because it divides initial speed by total mass without including cart momentum under the stated conditions and measurement model.",
         "This choice is not supported because it assumes speed remains unchanged despite added mass under the stated conditions and measurement model.",
         "This choice is not supported because it multiplies momentum by total mass instead of dividing under the stated conditions and measurement model.",
-        "Momentum conservation gives 2 times 3 = 3v, so v is 2.0 m/s east."
+        "With no external horizontal impulse, momentum is conserved in a perfectly inelastic collision: m1*v1 + m2*v2 = (m1 + m2)*v_f. Solving 2(3) + 1(0) = 3*v_f gives v_f = 6 / 3 = 2.0 m/s east."
       ],
       "distractorDiagnostics": [
         {
@@ -31753,9 +31753,9 @@
         "37.5 N m"
       ],
       "answerIndex": 0,
-      "rationale": "Perpendicular torque is rF, so 0.40 m times 15 N equals 6.0 N m.",
+      "rationale": "When a force acts perpendicular to the lever arm (theta = 90 deg, sin 90 = 1), torque simplifies to tau = r*F. Multiplying r = 0.40 m by F = 15 N gives tau = 6.0 N m.",
       "choiceRationales": [
-        "Perpendicular torque is rF, so 0.40 m times 15 N equals 6.0 N m.",
+        "When a force acts perpendicular to the lever arm (theta = 90 deg, sin 90 = 1), torque simplifies to tau = r*F. Multiplying r = 0.40 m by F = 15 N gives tau = 6.0 N m.",
         "This choice is not supported because it divides force by lever arm under the stated conditions and measurement model.",
         "This choice is not supported because it adds force and distance despite unlike units under the stated conditions and measurement model.",
         "This choice is not supported because it uses the reciprocal lever arm relationship under the stated conditions and measurement model."
@@ -31886,10 +31886,10 @@
         "40 N m"
       ],
       "answerIndex": 1,
-      "rationale": "Torque is rF sin theta, so 0.50 times 20 times sin 30 degrees equals 5.0 N m.",
+      "rationale": "Torque uses the perpendicular force component via tau = r*F*sin(theta). Substituting r = 0.50 m, F = 20 N, and sin(30 deg) = 0.50 gives tau = 0.50(20)(0.50) = 5.0 N m.",
       "choiceRationales": [
         "This choice is not supported because it uses the full force without taking the perpendicular component under the stated conditions and measurement model.",
-        "Torque is rF sin theta, so 0.50 times 20 times sin 30 degrees equals 5.0 N m.",
+        "Torque uses the perpendicular force component via tau = r*F*sin(theta). Substituting r = 0.50 m, F = 20 N, and sin(30 deg) = 0.50 gives tau = 0.50(20)(0.50) = 5.0 N m.",
         "This choice is not supported because it uses cosine instead of sine for the stated angle under the stated conditions and measurement model.",
         "This choice is not supported because it divides by the lever arm rather than multiplying under the stated conditions and measurement model."
       ],
@@ -32020,11 +32020,11 @@
         "4.0 kg m2"
       ],
       "answerIndex": 2,
-      "rationale": "For a point mass, I = mr squared = 2 times 0.50 squared, or 0.50 kg m2.",
+      "rationale": "A single point mass at distance r from the rotation axis has rotational inertia I = m*r^2. Substituting m = 2 kg and r = 0.50 m gives I = 2(0.50)^2 = 2(0.25) = 0.50 kg m2.",
       "choiceRationales": [
         "This choice is not supported because it uses distance rather than distance squared under the stated conditions and measurement model.",
         "This choice is not supported because it adds mass and distance instead of multiplying the model terms under the stated conditions and measurement model.",
-        "For a point mass, I = mr squared = 2 times 0.50 squared, or 0.50 kg m2.",
+        "A single point mass at distance r from the rotation axis has rotational inertia I = m*r^2. Substituting m = 2 kg and r = 0.50 m gives I = 2(0.50)^2 = 2(0.25) = 0.50 kg m2.",
         "This choice is not supported because it inverts the distance-squared relationship under the stated conditions and measurement model."
       ],
       "distractorDiagnostics": [
@@ -32286,9 +32286,9 @@
         "48 N m s"
       ],
       "answerIndex": 0,
-      "rationale": "Angular impulse is torque times time, so 4 N m times 3 s equals 12 N m s.",
+      "rationale": "A constant torque acting over time interval delta t imparts angular impulse J_ang = tau * delta t. Multiplying tau = 4 N m by delta t = 3 s yields 12 N m s.",
       "choiceRationales": [
-        "Angular impulse is torque times time, so 4 N m times 3 s equals 12 N m s.",
+        "A constant torque acting over time interval delta t imparts angular impulse J_ang = tau * delta t. Multiplying tau = 4 N m by delta t = 3 s yields 12 N m s.",
         "This choice is not supported because it divides torque by time instead of multiplying under the stated conditions and measurement model.",
         "This choice is not supported because it adds torque and time despite unlike quantities under the stated conditions and measurement model.",
         "This choice is not supported because it multiplies by time squared without a rotational impulse model under the stated conditions and measurement model."
@@ -33350,9 +33350,9 @@
         "30 rad/s"
       ],
       "answerIndex": 0,
-      "rationale": "The no-slip relation is v = r omega, so 3.0 divided by 0.30 gives 10 rad/s.",
+      "rationale": "Rolling without slipping links linear center-of-mass speed and angular speed via v = r*omega. Solving omega = v / r for v = 3.0 m/s and r = 0.30 m gives 3.0 / 0.30 = 10 rad/s.",
       "choiceRationales": [
-        "The no-slip relation is v = r omega, so 3.0 divided by 0.30 gives 10 rad/s.",
+        "Rolling without slipping links linear center-of-mass speed and angular speed via v = r*omega. Solving omega = v / r for v = 3.0 m/s and r = 0.30 m gives 3.0 / 0.30 = 10 rad/s.",
         "This choice is not supported because it multiplies speed and radius instead of dividing under the stated conditions and measurement model.",
         "This choice is not supported because it uses radius alone as angular speed under the stated conditions and measurement model.",
         "This choice is not supported because it multiplies by ten a second time without a kinematic relation under the stated conditions and measurement model."
@@ -34811,12 +34811,12 @@
         "19,600 Pa"
       ],
       "answerIndex": 3,
-      "rationale": "Gauge pressure is rho gh = 1000 times 9.8 times 2.0, or 19,600 Pa.",
+      "rationale": "Fluid gauge pressure increases linearly with depth as P_gauge = rho*g*h. Substituting rho = 1000 kg/m3, g = 9.8 m/s2, and h = 2.0 m gives 1000(9.8)(2.0) = 19,600 Pa.",
       "choiceRationales": [
         "This choice is not supported because it drops a factor of one hundred from the density conversion under the stated conditions and measurement model.",
         "This choice is not supported because it uses half the stated depth under the stated conditions and measurement model.",
         "This choice is not supported because it uses a depth of ten meters instead of two under the stated conditions and measurement model.",
-        "Gauge pressure is rho gh = 1000 times 9.8 times 2.0, or 19,600 Pa."
+        "Fluid gauge pressure increases linearly with depth as P_gauge = rho*g*h. Substituting rho = 1000 kg/m3, g = 9.8 m/s2, and h = 2.0 m gives 1000(9.8)(2.0) = 19,600 Pa."
       ],
       "distractorDiagnostics": [
         {
@@ -35076,10 +35076,10 @@
         "0.060 m3"
       ],
       "answerIndex": 1,
-      "rationale": "Volume flow rate is area times speed, 0.030 times 2.0 = 0.060 m3/s.",
+      "rationale": "Volume flow rate through a pipe cross-section is Q = A*v. Multiplying cross-sectional area A = 0.030 m2 by fluid speed v = 2.0 m/s gives Q = 0.060 m3/s.",
       "choiceRationales": [
         "This choice is not supported because it divides area by speed under the stated conditions and measurement model.",
-        "Volume flow rate is area times speed, 0.030 times 2.0 = 0.060 m3/s.",
+        "Volume flow rate through a pipe cross-section is Q = A*v. Multiplying cross-sectional area A = 0.030 m2 by fluid speed v = 2.0 m/s gives Q = 0.060 m3/s.",
         "This choice is not supported because it uses a reciprocal speed relation without continuity basis under the stated conditions and measurement model.",
         "This choice is not supported because it omits the per-second unit from a flow rate under the stated conditions and measurement model."
       ],
@@ -35611,10 +35611,10 @@
         "It increases by a factor of 1.44"
       ],
       "answerIndex": 1,
-      "rationale": "The new area is 0.80A, so continuity gives v new = v divided by 0.80 = 1.25v.",
+      "rationale": "By the continuity equation A1*v1 = A2*v2 for steady incompressible flow, reducing area by 20% leaves A2 = 0.80*A1. Therefore v2 = v1 / 0.80 = 1.25*v1, rising by a factor of 1.25.",
       "choiceRationales": [
         "This choice is not supported because it reverses the inverse relationship under the stated conditions and measurement model.",
-        "The new area is 0.80A, so continuity gives v new = v divided by 0.80 = 1.25v.",
+        "By the continuity equation A1*v1 = A2*v2 for steady incompressible flow, reducing area by 20% leaves A2 = 0.80*A1. Therefore v2 = v1 / 0.80 = 1.25*v1, rising by a factor of 1.25.",
         "This choice is not supported because it uses the area fraction as the speed factor rather than its reciprocal under the stated conditions and measurement model.",
         "This choice is not supported because it squares the reciprocal without a model basis under the stated conditions and measurement model."
       ],
@@ -36677,10 +36677,10 @@
         "9.0 s"
       ],
       "answerIndex": 1,
-      "rationale": "Using v = v0 + at gives 3 = 12 - 3t, so t = 3.0 s.",
+      "rationale": "Apply the constant-acceleration kinematics equation v = v0 + a*t. Substituting v = 3 m/s, v0 = 12 m/s, and a = -3 m/s^2 gives 3 = 12 - 3t, so -9 = -3t and t = 3.0 s.",
       "choiceRationales": [
         "This choice is not supported because it inverts the acceleration-time relationship under the stated conditions and measurement model.",
-        "Using v = v0 + at gives 3 = 12 - 3t, so t = 3.0 s.",
+        "Apply the constant-acceleration kinematics equation v = v0 + a*t. Substituting v = 3 m/s, v0 = 12 m/s, and a = -3 m/s^2 gives 3 = 12 - 3t, so -9 = -3t and t = 3.0 s.",
         "This choice is not supported because it uses the time to stop rather than the time to reach 3 m/s under the stated conditions and measurement model.",
         "This choice is not supported because it subtracts velocity values without dividing by acceleration under the stated conditions and measurement model."
       ],
@@ -38402,11 +38402,11 @@
         "5.3 m/s2"
       ],
       "answerIndex": 2,
-      "rationale": "The net force is 50 - 14 = 36 N, and 36 N divided by 12 kg is 3.0 m/s2.",
+      "rationale": "Kinetic friction opposes the applied pull, giving horizontal net force F_net = 50 N - 14 N = 36 N. By Newton's second law a = F_net / m, the crate accelerates at 36 / 12 = 3.0 m/s2.",
       "choiceRationales": [
         "This choice is not supported because it divides friction by mass without the applied force under the stated conditions and measurement model.",
         "This choice is not supported because it adds applied force and friction despite opposite directions under the stated conditions and measurement model.",
-        "The net force is 50 - 14 = 36 N, and 36 N divided by 12 kg is 3.0 m/s2.",
+        "Kinetic friction opposes the applied pull, giving horizontal net force F_net = 50 N - 14 N = 36 N. By Newton's second law a = F_net / m, the crate accelerates at 36 / 12 = 3.0 m/s2.",
         "This choice is not supported because it divides applied force by mass before subtracting friction under the stated conditions and measurement model."
       ],
       "distractorDiagnostics": [
@@ -41195,12 +41195,12 @@
         "75 J"
       ],
       "answerIndex": 3,
-      "rationale": "Parallel force and displacement give work Fd = 25 times 3 = 75 J.",
+      "rationale": "Because the 25 N force points in the same direction as the 3 m displacement (theta = 0 deg, cos 0 = 1), work is simply W = F*d = 25(3) = 75 J.",
       "choiceRationales": [
         "This choice is not supported because it divides force by displacement under the stated conditions and measurement model.",
         "This choice is not supported because it adds force and distance rather than multiplying under the stated conditions and measurement model.",
         "This choice is not supported because it assumes a perpendicular force despite the stated alignment under the stated conditions and measurement model.",
-        "Parallel force and displacement give work Fd = 25 times 3 = 75 J."
+        "Because the 25 N force points in the same direction as the 3 m displacement (theta = 0 deg, cos 0 = 1), work is simply W = F*d = 25(3) = 75 J."
       ],
       "distractorDiagnostics": [
         {
@@ -41327,9 +41327,9 @@
         "800 N/m"
       ],
       "answerIndex": 0,
-      "rationale": "Using U = one-half kx squared gives 8 = 0.5 k times 0.04, so k = 400 N/m.",
+      "rationale": "Rearranging spring potential energy U_s = (1/2)k*x^2 for the spring constant gives k = 2*U_s / x^2. Substituting U_s = 8 J and x = 0.20 m yields k = 16 / 0.04 = 400 N/m.",
       "choiceRationales": [
-        "Using U = one-half kx squared gives 8 = 0.5 k times 0.04, so k = 400 N/m.",
+        "Rearranging spring potential energy U_s = (1/2)k*x^2 for the spring constant gives k = 2*U_s / x^2. Substituting U_s = 8 J and x = 0.20 m yields k = 16 / 0.04 = 400 N/m.",
         "This choice is not supported because it loses a factor of ten in the squared extension under the stated conditions and measurement model.",
         "This choice is not supported because it uses kx rather than one-half kx squared under the stated conditions and measurement model.",
         "This choice is not supported because it forgets the one-half factor while solving for k under the stated conditions and measurement model."
@@ -41459,10 +41459,10 @@
         "12,020 W"
       ],
       "answerIndex": 1,
-      "rationale": "Average power is work divided by time, 12,000 J divided by 20 s = 600 W.",
+      "rationale": "Average useful power is the ratio of useful work done to elapsed time, P_avg = W / delta t. Dividing 12,000 J by 20 s yields P_avg = 600 W.",
       "choiceRationales": [
         "This choice is not supported because it inverts work and time under the stated conditions and measurement model.",
-        "Average power is work divided by time, 12,000 J divided by 20 s = 600 W.",
+        "Average useful power is the ratio of useful work done to elapsed time, P_avg = W / delta t. Dividing 12,000 J by 20 s yields P_avg = 600 W.",
         "This choice is not supported because it multiplies work by time instead of dividing under the stated conditions and measurement model.",
         "This choice is not supported because it adds work and time despite different units under the stated conditions and measurement model."
       ],
@@ -42926,9 +42926,9 @@
         "The mass of the object regardless of the force direction"
       ],
       "answerIndex": 0,
-      "rationale": "Signed force-time area equals impulse, which is the change in momentum.",
+      "rationale": "By the impulse-momentum theorem, J = integral of F dt = delta p. Because positive and negative force-time areas carry opposite signs, the net signed area equals net impulse and momentum change.",
       "choiceRationales": [
-        "Signed force-time area equals impulse, which is the change in momentum.",
+        "By the impulse-momentum theorem, J = integral of F dt = delta p. Because positive and negative force-time areas carry opposite signs, the net signed area equals net impulse and momentum change.",
         "This choice is not supported because it kinetic-energy change is not directly force-time area under the stated conditions and measurement model.",
         "This choice is not supported because it average force requires dividing impulse by duration under the stated conditions and measurement model.",
         "This choice is not supported because it mass is not determined by the impulse alone under the stated conditions and measurement model."
@@ -43860,12 +43860,12 @@
         "5 m/s west"
       ],
       "answerIndex": 3,
-      "rationale": "Velocity equals momentum divided by mass, 20 divided by 4 = 5 m/s west.",
+      "rationale": "Solving the momentum definition p = m*v for velocity gives v = p / m in the same direction as momentum. Dividing 20 kg m/s west by 4 kg yields v = 5 m/s west.",
       "choiceRationales": [
         "This choice is not supported because it inverts the momentum-to-mass ratio under the stated conditions and measurement model.",
         "This choice is not supported because it subtracts mass from momentum under the stated conditions and measurement model.",
         "This choice is not supported because it multiplies momentum and mass instead of dividing under the stated conditions and measurement model.",
-        "Velocity equals momentum divided by mass, 20 divided by 4 = 5 m/s west."
+        "Solving the momentum definition p = m*v for velocity gives v = p / m in the same direction as momentum. Dividing 20 kg m/s west by 4 kg yields v = 5 m/s west."
       ],
       "distractorDiagnostics": [
         {
@@ -45054,9 +45054,9 @@
         "120 N m"
       ],
       "answerIndex": 0,
-      "rationale": "For a perpendicular force, torque is rF = 0.25 times 30 = 7.5 N m.",
+      "rationale": "Applying a force at 90 degrees to a wrench maximizes the lever arm so tau = r*F. Multiplying r = 0.25 m by F = 30 N yields a torque magnitude of 7.5 N m.",
       "choiceRationales": [
-        "For a perpendicular force, torque is rF = 0.25 times 30 = 7.5 N m.",
+        "Applying a force at 90 degrees to a wrench maximizes the lever arm so tau = r*F. Multiplying r = 0.25 m by F = 30 N yields a torque magnitude of 7.5 N m.",
         "This choice is not supported because it divides force by lever arm under the stated conditions and measurement model.",
         "This choice is not supported because it subtracts force and distance despite unlike quantities under the stated conditions and measurement model.",
         "This choice is not supported because it uses the reciprocal lever-arm relationship under the stated conditions and measurement model."
@@ -45187,10 +45187,10 @@
         "3.75 kg m2"
       ],
       "answerIndex": 1,
-      "rationale": "For a point mass, I = mr squared = 1.5 times 0.40 squared = 0.24 kg m2.",
+      "rationale": "For a point particle orbiting at radius r, rotational inertia is I = m*r^2. Substituting m = 1.5 kg and r = 0.40 m gives I = 1.5(0.16) = 0.24 kg m2.",
       "choiceRationales": [
         "This choice is not supported because it uses distance rather than distance squared under the stated conditions and measurement model.",
-        "For a point mass, I = mr squared = 1.5 times 0.40 squared = 0.24 kg m2.",
+        "For a point particle orbiting at radius r, rotational inertia is I = m*r^2. Substituting m = 1.5 kg and r = 0.40 m gives I = 1.5(0.16) = 0.24 kg m2.",
         "This choice is not supported because it adds mass and distance instead of multiplying the model terms under the stated conditions and measurement model.",
         "This choice is not supported because it inverts the distance-squared relationship under the stated conditions and measurement model."
       ],
@@ -45320,11 +45320,11 @@
         "25 kg m2/s"
       ],
       "answerIndex": 2,
-      "rationale": "Angular momentum is I omega, so 2 times 5 = 10 kg m2/s.",
+      "rationale": "Angular momentum magnitude for a rigid body about its rotation axis is L = I*omega. Multiplying I = 2 kg*m^2 by omega = 5 rad/s gives L = 10 kg*m^2/s (10 kg m2/s), since radians are dimensionless.",
       "choiceRationales": [
         "This choice is not supported because it divides inertia by angular speed under the stated conditions and measurement model.",
         "This choice is not supported because it adds inertia and angular speed under the stated conditions and measurement model.",
-        "Angular momentum is I omega, so 2 times 5 = 10 kg m2/s.",
+        "Angular momentum magnitude for a rigid body about its rotation axis is L = I*omega. Multiplying I = 2 kg*m^2 by omega = 5 rad/s gives L = 10 kg*m^2/s (10 kg m2/s), since radians are dimensionless.",
         "This choice is not supported because it squares angular speed as in rotational energy under the stated conditions and measurement model."
       ],
       "distractorDiagnostics": [
@@ -46522,12 +46522,12 @@
         "20 rad/s"
       ],
       "answerIndex": 3,
-      "rationale": "Using v = r omega gives omega = 4.0 divided by 0.20 = 20 rad/s.",
+      "rationale": "Under the no-slip rolling constraint v = r*omega, angular speed equals linear speed divided by radius. Substituting v = 4.0 m/s and r = 0.20 m yields omega = 4.0 / 0.20 = 20 rad/s.",
       "choiceRationales": [
         "This choice is not supported because it inverts the radius-speed relationship under the stated conditions and measurement model.",
         "This choice is not supported because it multiplies speed and radius instead of dividing under the stated conditions and measurement model.",
         "This choice is not supported because it doubles the correct result without a kinematic basis under the stated conditions and measurement model.",
-        "Using v = r omega gives omega = 4.0 divided by 0.20 = 20 rad/s."
+        "Under the no-slip rolling constraint v = r*omega, angular speed equals linear speed divided by radius. Substituting v = 4.0 m/s and r = 0.20 m yields omega = 4.0 / 0.20 = 20 rad/s."
       ],
       "distractorDiagnostics": [
         {
@@ -46655,9 +46655,9 @@
         "108 kg m2"
       ],
       "answerIndex": 0,
-      "rationale": "Rotational inertia is L divided by omega, 18 divided by 6 = 3 kg m2.",
+      "rationale": "Rigid-body angular momentum satisfies L = I*omega, so rotational inertia is I = L / omega. Dividing L = 18 kg m2/s by omega = 6 rad/s gives I = 3 kg m2.",
       "choiceRationales": [
-        "Rotational inertia is L divided by omega, 18 divided by 6 = 3 kg m2.",
+        "Rigid-body angular momentum satisfies L = I*omega, so rotational inertia is I = L / omega. Dividing L = 18 kg m2/s by omega = 6 rad/s gives I = 3 kg m2.",
         "This choice is not supported because it inverts the ratio under the stated conditions and measurement model.",
         "This choice is not supported because it subtracts angular speed from momentum under the stated conditions and measurement model.",
         "This choice is not supported because it multiplies instead of dividing under the stated conditions and measurement model."
@@ -47718,9 +47718,9 @@
         "20 J"
       ],
       "answerIndex": 0,
-      "rationale": "Total energy is one-half kA squared = 0.5 times 80 times 0.0625 = 2.5 J.",
+      "rationale": "At maximum displacement x = A, all mechanical energy of an ideal spring oscillator is elastic potential energy: E = (1/2)k*A^2. Computing 0.5(80)(0.25)^2 = 40(0.0625) gives 2.5 J.",
       "choiceRationales": [
-        "Total energy is one-half kA squared = 0.5 times 80 times 0.0625 = 2.5 J.",
+        "At maximum displacement x = A, all mechanical energy of an ideal spring oscillator is elastic potential energy: E = (1/2)k*A^2. Computing 0.5(80)(0.25)^2 = 40(0.0625) gives 2.5 J.",
         "This choice is not supported because it uses one-quarter the correct squared-amplitude result under the stated conditions and measurement model.",
         "This choice is not supported because it omits the one-half factor or uses the wrong spring constant under the stated conditions and measurement model.",
         "This choice is not supported because it uses amplitude without squaring and introduces an extra factor under the stated conditions and measurement model."
@@ -48651,12 +48651,12 @@
         "40,000 Pa"
       ],
       "answerIndex": 3,
-      "rationale": "The gauge-pressure change is rho g delta h = 800 times 10 times 5 = 40,000 Pa.",
+      "rationale": "Hydrostatic pressure change across a vertical depth difference delta h is delta P = rho*g*delta h. Substituting rho = 800 kg/m3, g = 10 m/s2, and delta h = 5 m yields 40,000 Pa.",
       "choiceRationales": [
         "This choice is not supported because it drops factors from density and depth under the stated conditions and measurement model.",
         "This choice is not supported because it uses only one-half the depth under the stated conditions and measurement model.",
         "This choice is not supported because it multiplies by an extra factor of ten under the stated conditions and measurement model.",
-        "The gauge-pressure change is rho g delta h = 800 times 10 times 5 = 40,000 Pa."
+        "Hydrostatic pressure change across a vertical depth difference delta h is delta P = rho*g*delta h. Substituting rho = 800 kg/m3, g = 10 m/s2, and delta h = 5 m yields 40,000 Pa."
       ],
       "distractorDiagnostics": [
         {
@@ -48783,9 +48783,9 @@
         "12,000 N upward"
       ],
       "answerIndex": 0,
-      "rationale": "Buoyant force is rho g V = 1200 times 10 times 0.010 = 120 N upward.",
+      "rationale": "By Archimedes' principle, upward buoyant force equals the weight of displaced fluid: F_b = rho_fluid*g*V_sub. Computing 1200(10)(0.010) gives 120 N upward.",
       "choiceRationales": [
-        "Buoyant force is rho g V = 1200 times 10 times 0.010 = 120 N upward.",
+        "By Archimedes' principle, upward buoyant force equals the weight of displaced fluid: F_b = rho_fluid*g*V_sub. Computing 1200(10)(0.010) gives 120 N upward.",
         "This choice is not supported because it loses a factor of ten in volume under the stated conditions and measurement model.",
         "This choice is not supported because it uses a volume of 0.10 m3 under the stated conditions and measurement model.",
         "This choice is not supported because it uses a volume of 1.0 m3 under the stated conditions and measurement model."
@@ -49851,9 +49851,9 @@
         "200 s"
       ],
       "answerIndex": 0,
-      "rationale": "Using v = v0 - gt, zero = 20 - 10t, so t = 2.0 s.",
+      "rationale": "Taking upward as positive, gravity provides a = -g = -10 m/s^2 in v = v0 - g*t. Setting v = 0 m/s at the peak with v0 = 20 m/s gives 0 = 20 - 10t, so t = 20 / 10 = 2.0 s.",
       "choiceRationales": [
-        "Using v = v0 - gt, zero = 20 - 10t, so t = 2.0 s.",
+        "Taking upward as positive, gravity provides a = -g = -10 m/s^2 in v = v0 - g*t. Setting v = 0 m/s at the peak with v0 = 20 m/s gives 0 = 20 - 10t, so t = 20 / 10 = 2.0 s.",
         "This choice is not supported because it inverts the initial-speed and gravitational-field relationship under the stated conditions and measurement model.",
         "This choice is not supported because it uses the time to return to the launch height under the stated conditions and measurement model.",
         "This choice is not supported because it multiplies speed and gravitational field instead of dividing under the stated conditions and measurement model."
@@ -50115,11 +50115,11 @@
         "30 m/s"
       ],
       "answerIndex": 2,
-      "rationale": "The position change is 0.18 m, and 0.18 divided by 0.060 s gives 3.0 m/s.",
+      "rationale": "Average velocity is displacement divided by elapsed time, v_avg = (x_f - x_i) / delta t. Computing (2.18 m - 2.00 m) / 0.060 s = 0.18 / 0.060 gives 3.0 m/s.",
       "choiceRationales": [
         "This choice is not supported because it moves the decimal in the change in position under the stated conditions and measurement model.",
         "This choice is not supported because it divides the final position by time without subtracting the initial position under the stated conditions and measurement model.",
-        "The position change is 0.18 m, and 0.18 divided by 0.060 s gives 3.0 m/s.",
+        "Average velocity is displacement divided by elapsed time, v_avg = (x_f - x_i) / delta t. Computing (2.18 m - 2.00 m) / 0.060 s = 0.18 / 0.060 gives 3.0 m/s.",
         "This choice is not supported because it converts the interval by an extra factor of ten under the stated conditions and measurement model."
       ],
       "distractorDiagnostics": [
@@ -51575,10 +51575,10 @@
         "14 N west"
       ],
       "answerIndex": 1,
-      "rationale": "Net force is ma = 7 kg times 2.0 m/s2 = 14 N east.",
+      "rationale": "By Newton's second law, F_net = m*a, with net force pointing in the same direction as acceleration. Substituting m = 7 kg and a = 2.0 m/s^2 east yields F_net = 7(2.0) = 14 N east.",
       "choiceRationales": [
         "This choice is not supported because it divides mass by acceleration under the stated conditions and measurement model.",
-        "Net force is ma = 7 kg times 2.0 m/s2 = 14 N east.",
+        "By Newton's second law, F_net = m*a, with net force pointing in the same direction as acceleration. Substituting m = 7 kg and a = 2.0 m/s^2 east yields F_net = 7(2.0) = 14 N east.",
         "This choice is not supported because it subtracts mass and acceleration rather than multiplying under the stated conditions and measurement model.",
         "This choice is not supported because it reverses the direction sign under the stated conditions and measurement model."
       ],
@@ -52238,11 +52238,11 @@
         "5.5 N upward"
       ],
       "answerIndex": 2,
-      "rationale": "Net force is ma = 4 times 1.5 = 6 N upward.",
+      "rationale": "Net force equals mass times acceleration (F_net = m*a) regardless of individual tension or gravity forces. With m = 4 kg and a = 1.5 m/s^2 upward, F_net = 4(1.5) = 6 N upward.",
       "choiceRationales": [
         "This choice is not supported because it divides mass by acceleration under the stated conditions and measurement model.",
         "This choice is not supported because it uses mass alone as force under the stated conditions and measurement model.",
-        "Net force is ma = 4 times 1.5 = 6 N upward.",
+        "Net force equals mass times acceleration (F_net = m*a) regardless of individual tension or gravity forces. With m = 4 kg and a = 1.5 m/s^2 upward, F_net = 4(1.5) = 6 N upward.",
         "This choice is not supported because it subtracts mass and acceleration rather than multiplying under the stated conditions and measurement model."
       ],
       "distractorDiagnostics": [
@@ -54636,9 +54636,9 @@
         "300 J"
       ],
       "answerIndex": 0,
-      "rationale": "The gain is mgh = 0.50 times 10 times 6 = 30 J.",
+      "rationale": "Near a uniform gravitational field, the change in gravitational potential energy is delta U_g = m*g*delta y. Substituting m = 0.50 kg, g = 10 N/kg, and delta y = 6 m gives 0.50(10)(6) = 30 J.",
       "choiceRationales": [
-        "The gain is mgh = 0.50 times 10 times 6 = 30 J.",
+        "Near a uniform gravitational field, the change in gravitational potential energy is delta U_g = m*g*delta y. Substituting m = 0.50 kg, g = 10 N/kg, and delta y = 6 m gives 0.50(10)(6) = 30 J.",
         "This choice is not supported because it uses height divided by mass under the stated conditions and measurement model.",
         "This choice is not supported because it uses field strength without multiplying by mass under the stated conditions and measurement model.",
         "This choice is not supported because it moves the decimal one place too far under the stated conditions and measurement model."
@@ -54769,10 +54769,10 @@
         "13,500 W"
       ],
       "answerIndex": 1,
-      "rationale": "Power is energy divided by time, so 900 J divided by 15 s equals 60 W.",
+      "rationale": "Useful power measures energy transferred per unit time via P = delta E / delta t. Dividing the 900 J energy transfer by the 15 s interval yields P = 60 W.",
       "choiceRationales": [
         "This choice is not supported because it uses time as power without dividing energy under the stated conditions and measurement model.",
-        "Power is energy divided by time, so 900 J divided by 15 s equals 60 W.",
+        "Useful power measures energy transferred per unit time via P = delta E / delta t. Dividing the 900 J energy transfer by the 15 s interval yields P = 60 W.",
         "This choice is not supported because it multiplies energy and time under the stated conditions and measurement model.",
         "This choice is not supported because it moves the decimal by multiplying instead of dividing under the stated conditions and measurement model."
       ],
@@ -55837,10 +55837,10 @@
         "20 J"
       ],
       "answerIndex": 1,
-      "rationale": "Elastic energy is one-half kx squared = 0.5 times 200 times 0.01 = 1.0 J.",
+      "rationale": "Compressing an ideal spring stores elastic potential energy according to U_s = (1/2)k*x^2. Plugging in k = 200 N/m and x = 0.10 m gives 0.5(200)(0.01) = 1.0 J.",
       "choiceRationales": [
         "This choice is not supported because it omits the square on compression under the stated conditions and measurement model.",
-        "Elastic energy is one-half kx squared = 0.5 times 200 times 0.01 = 1.0 J.",
+        "Compressing an ideal spring stores elastic potential energy according to U_s = (1/2)k*x^2. Plugging in k = 200 N/m and x = 0.10 m gives 0.5(200)(0.01) = 1.0 J.",
         "This choice is not supported because it uses k times x without the one-half factor under the stated conditions and measurement model.",
         "This choice is not supported because it multiplies by ten instead of using 0.10 squared under the stated conditions and measurement model."
       ],
@@ -56904,10 +56904,10 @@
         "12.5 kg m/s east"
       ],
       "answerIndex": 1,
-      "rationale": "Momentum is mass times velocity, so 0.40 kg times 5 m/s equals 2.0 kg m/s east.",
+      "rationale": "Vector linear momentum is defined as p = m*v and shares the velocity vector's direction. Multiplying m = 0.40 kg by v = 5 m/s east gives p = 2.0 kg m/s east.",
       "choiceRationales": [
         "This choice is not supported because it divides mass by speed under the stated conditions and measurement model.",
-        "Momentum is mass times velocity, so 0.40 kg times 5 m/s equals 2.0 kg m/s east.",
+        "Vector linear momentum is defined as p = m*v and shares the velocity vector's direction. Multiplying m = 0.40 kg by v = 5 m/s east gives p = 2.0 kg m/s east.",
         "This choice is not supported because it uses speed divided by mass under the stated conditions and measurement model.",
         "This choice is not supported because it multiplies by mass reciprocal and overstates the result under the stated conditions and measurement model."
       ],
@@ -57037,11 +57037,11 @@
         "12 N s east"
       ],
       "answerIndex": 2,
-      "rationale": "Impulse is force times time, so 6 N times 0.50 s equals 3 N s east.",
+      "rationale": "Impulse from a constant force equals J = F * delta t in the direction of the force. Multiplying 6 N east by 0.50 s produces an impulse of 3 N s east.",
       "choiceRationales": [
         "This choice is not supported because it uses time alone under the stated conditions and measurement model.",
         "This choice is not supported because it adds force and time under the stated conditions and measurement model.",
-        "Impulse is force times time, so 6 N times 0.50 s equals 3 N s east.",
+        "Impulse from a constant force equals J = F * delta t in the direction of the force. Multiplying 6 N east by 0.50 s produces an impulse of 3 N s east.",
         "This choice is not supported because it doubles the result by using the reciprocal interval under the stated conditions and measurement model."
       ],
       "distractorDiagnostics": [
@@ -57171,12 +57171,12 @@
         "4 m/s east"
       ],
       "answerIndex": 3,
-      "rationale": "Momentum gives 2 times 6 = 3 times v, so v = 4 m/s east.",
+      "rationale": "In a perfectly inelastic collision with no external horizontal impulse, momentum is conserved: m1*v1 + m2*v2 = (m1 + m2)*v_f. Solving 2(6) + 1(0) = (2 + 1)*v_f gives 12 = 3*v_f, so v_f = 4 m/s east.",
       "choiceRationales": [
         "This choice is not supported because it uses total mass as 2 kg only under the stated conditions and measurement model.",
         "This choice is not supported because it divides momentum by the moving cart mass after sticking under the stated conditions and measurement model.",
         "This choice is not supported because it assumes the stationary cart adds no inertia under the stated conditions and measurement model.",
-        "Momentum gives 2 times 6 = 3 times v, so v = 4 m/s east."
+        "In a perfectly inelastic collision with no external horizontal impulse, momentum is conserved: m1*v1 + m2*v2 = (m1 + m2)*v_f. Solving 2(6) + 1(0) = (2 + 1)*v_f gives 12 = 3*v_f, so v_f = 4 m/s east."
       ],
       "distractorDiagnostics": [
         {
@@ -58503,10 +58503,10 @@
         "48 N m"
       ],
       "answerIndex": 1,
-      "rationale": "Torque magnitude is rF = 0.25 m times 12 N = 3.0 N m.",
+      "rationale": "Torque magnitude is tau = r*F*sin(theta). Because the 12 N force acts at a right angle (theta = 90 deg, sin 90 = 1) at lever arm r = 0.25 m, tau = 0.25(12)(1) = 3.0 N m.",
       "choiceRationales": [
         "This choice is not supported because it divides force by lever arm under the stated conditions and measurement model.",
-        "Torque magnitude is rF = 0.25 m times 12 N = 3.0 N m.",
+        "Torque magnitude is tau = r*F*sin(theta). Because the 12 N force acts at a right angle (theta = 90 deg, sin 90 = 1) at lever arm r = 0.25 m, tau = 0.25(12)(1) = 3.0 N m.",
         "This choice is not supported because it adds the two quantities under the stated conditions and measurement model.",
         "This choice is not supported because it uses the reciprocal of the lever arm under the stated conditions and measurement model."
       ],
@@ -58636,11 +58636,11 @@
         "32 rad/s"
       ],
       "answerIndex": 2,
-      "rationale": "Using v = r omega, omega = 8 m/s divided by 0.40 m = 20 rad/s.",
+      "rationale": "Covering 8 m each second gives linear speed v = 8 m/s. Because the 0.40 m wheel rolls without slipping, omega = v / r = 8 / 0.40 = 20 rad/s.",
       "choiceRationales": [
         "This choice is not supported because it multiplies speed and radius under the stated conditions and measurement model.",
         "This choice is not supported because it subtracts speed and radius under the stated conditions and measurement model.",
-        "Using v = r omega, omega = 8 m/s divided by 0.40 m = 20 rad/s.",
+        "Covering 8 m each second gives linear speed v = 8 m/s. Because the 0.40 m wheel rolls without slipping, omega = v / r = 8 / 0.40 = 20 rad/s.",
         "This choice is not supported because it uses radius divided by speed under the stated conditions and measurement model."
       ],
       "distractorDiagnostics": [
@@ -59963,9 +59963,9 @@
         "36 rad/s"
       ],
       "answerIndex": 0,
-      "rationale": "For no slip, omega = v divided by r = 6 divided by 0.30 = 20 rad/s.",
+      "rationale": "The no-slip kinematic constraint omega = v / r depends only on speed and radius, not on the hoop's inertia factor. Dividing v = 6 m/s by r = 0.30 m gives 20 rad/s.",
       "choiceRationales": [
-        "For no slip, omega = v divided by r = 6 divided by 0.30 = 20 rad/s.",
+        "The no-slip kinematic constraint omega = v / r depends only on speed and radius, not on the hoop's inertia factor. Dividing v = 6 m/s by r = 0.30 m gives 20 rad/s.",
         "This choice is not supported because it multiplies speed and radius under the stated conditions and measurement model.",
         "This choice is not supported because it adds the two values under the stated conditions and measurement model.",
         "This choice is not supported because it uses the inverse ratio incorrectly under the stated conditions and measurement model."
@@ -61960,12 +61960,12 @@
         "3 kg"
       ],
       "answerIndex": 3,
-      "rationale": "Mass equals density times volume, so 1000 kg/m3 times 0.003 m3 = 3 kg.",
+      "rationale": "From the definition of density rho = m / V, fluid mass is m = rho*V. Multiplying 1000 kg/m3 by 0.003 m3 cancels cubic meters and gives m = 3 kg.",
       "choiceRationales": [
         "This choice is not supported because it uses volume without multiplying by density under the stated conditions and measurement model.",
         "This choice is not supported because it moves the decimal one place too little under the stated conditions and measurement model.",
         "This choice is not supported because it multiplies by an extra factor of one thousand under the stated conditions and measurement model.",
-        "Mass equals density times volume, so 1000 kg/m3 times 0.003 m3 = 3 kg."
+        "From the definition of density rho = m / V, fluid mass is m = rho*V. Multiplying 1000 kg/m3 by 0.003 m3 cancels cubic meters and gives m = 3 kg."
       ],
       "distractorDiagnostics": [
         {
@@ -62093,9 +62093,9 @@
         "2000 N upward"
       ],
       "answerIndex": 0,
-      "rationale": "Buoyant force is rho fluid g V = 1000 times 10 times 0.020 = 200 N upward.",
+      "rationale": "Archimedes' principle gives buoyant force F_b = rho_water*g*V_sub upward. Using water density 1000 kg/m3, g = 10 N/kg, and V = 0.020 m3 yields 1000(10)(0.020) = 200 N upward.",
       "choiceRationales": [
-        "Buoyant force is rho fluid g V = 1000 times 10 times 0.020 = 200 N upward.",
+        "Archimedes' principle gives buoyant force F_b = rho_water*g*V_sub upward. Using water density 1000 kg/m3, g = 10 N/kg, and V = 0.020 m3 yields 1000(10)(0.020) = 200 N upward.",
         "This choice is not supported because it misplaces the decimal in volume under the stated conditions and measurement model.",
         "This choice is not supported because it omits the density factor under the stated conditions and measurement model.",
         "This choice is not supported because it multiplies by an extra factor of ten under the stated conditions and measurement model."
@@ -64091,12 +64091,12 @@
         "100 J"
       ],
       "answerIndex": 3,
-      "rationale": "Work is F delta x cosine 60 degrees = 40 times 5 times 0.5 = 100 J.",
+      "rationale": "Work by an angled pull equals W = F*delta x*cos(theta), using only the horizontal component. With F = 40 N, delta x = 5 m, and cos(60 deg) = 0.5, W = 40(5)(0.5) = 100 J.",
       "choiceRationales": [
         "This choice is not supported because it uses force without the displacement factor under the stated conditions and measurement model.",
         "This choice is not supported because it uses sine instead of the component along displacement under the stated conditions and measurement model.",
         "This choice is not supported because it omits the cosine factor and doubles the work under the stated conditions and measurement model.",
-        "Work is F delta x cosine 60 degrees = 40 times 5 times 0.5 = 100 J."
+        "Work by an angled pull equals W = F*delta x*cos(theta), using only the horizontal component. With F = 40 N, delta x = 5 m, and cos(60 deg) = 0.5, W = 40(5)(0.5) = 100 J."
       ],
       "distractorDiagnostics": [
         {
@@ -65822,9 +65822,9 @@
         "20 N m"
       ],
       "answerIndex": 0,
-      "rationale": "Torque is rF sine 30 degrees = 0.50 times 10 times 0.50 = 2.5 N m.",
+      "rationale": "Lever-arm torque equals tau = r*F*sin(theta), where sin(30 deg) = 0.50 selects the perpendicular component. Multiplying 0.50 m by 10 N and 0.50 gives tau = 2.5 N m.",
       "choiceRationales": [
-        "Torque is rF sine 30 degrees = 0.50 times 10 times 0.50 = 2.5 N m.",
+        "Lever-arm torque equals tau = r*F*sin(theta), where sin(30 deg) = 0.50 selects the perpendicular component. Multiplying 0.50 m by 10 N and 0.50 gives tau = 2.5 N m.",
         "This choice is not supported because it uses the full force without the perpendicular component under the stated conditions and measurement model.",
         "This choice is not supported because it uses cosine instead of the perpendicular sine component under the stated conditions and measurement model.",
         "This choice is not supported because it divides by lever arm rather than multiplying under the stated conditions and measurement model."
@@ -66354,9 +66354,9 @@
         "24 N m s"
       ],
       "answerIndex": 0,
-      "rationale": "Angular impulse is torque times time, so 4 N m times 3 s equals 12 N m s.",
+      "rationale": "Angular impulse equals the change in angular momentum, delta L = tau * delta t. Sustaining a 4 N m torque on the platform for 3 s delivers 4(3) = 12 N m s.",
       "choiceRationales": [
-        "Angular impulse is torque times time, so 4 N m times 3 s equals 12 N m s.",
+        "Angular impulse equals the change in angular momentum, delta L = tau * delta t. Sustaining a 4 N m torque on the platform for 3 s delivers 4(3) = 12 N m s.",
         "This choice is not supported because it divides torque by time under the stated conditions and measurement model.",
         "This choice is not supported because it adds torque and time under the stated conditions and measurement model.",
         "This choice is not supported because it doubles the product without a physical factor under the stated conditions and measurement model."
@@ -66754,12 +66754,12 @@
         "4 Hz"
       ],
       "answerIndex": 3,
-      "rationale": "Frequency is the reciprocal of period, so 1 divided by 0.25 s equals 4 Hz.",
+      "rationale": "Oscillation frequency is the inverse of the period, f = 1 / T. With each complete cycle taking T = 0.25 s, the spring completes f = 1 / 0.25 = 4 Hz (4 cycles per second).",
       "choiceRationales": [
         "This choice is not supported because it uses period itself as frequency under the stated conditions and measurement model.",
         "This choice is not supported because it divides by a factor of two without basis under the stated conditions and measurement model.",
         "This choice is not supported because it multiplies by the period instead of taking its reciprocal under the stated conditions and measurement model.",
-        "Frequency is the reciprocal of period, so 1 divided by 0.25 s equals 4 Hz."
+        "Oscillation frequency is the inverse of the period, f = 1 / T. With each complete cycle taking T = 0.25 s, the spring completes f = 1 / 0.25 = 4 Hz (4 cycles per second)."
       ],
       "distractorDiagnostics": [
         {
@@ -67420,9 +67420,9 @@
         "300,000 Pa"
       ],
       "answerIndex": 0,
-      "rationale": "Gauge pressure is rho g h = 1000 times 10 times 3 = 30,000 Pa.",
+      "rationale": "At depth h beneath an open water surface, hydrostatic gauge pressure is P_gauge = rho*g*h. Substituting 1000 kg/m3, 10 N/kg, and 3 m produces 30,000 Pa.",
       "choiceRationales": [
-        "Gauge pressure is rho g h = 1000 times 10 times 3 = 30,000 Pa.",
+        "At depth h beneath an open water surface, hydrostatic gauge pressure is P_gauge = rho*g*h. Substituting 1000 kg/m3, 10 N/kg, and 3 m produces 30,000 Pa.",
         "This choice is not supported because it misplaces the depth factor under the stated conditions and measurement model.",
         "This choice is not supported because it uses density without gravitational field under the stated conditions and measurement model.",
         "This choice is not supported because it adds atmospheric pressure even though gauge pressure is requested under the stated conditions and measurement model."
@@ -67686,11 +67686,11 @@
         "18 m/s"
       ],
       "answerIndex": 2,
-      "rationale": "Continuity gives A1 v1 = A2 v2, so v2 is 0.06 times 2 divided by 0.02 = 6 m/s.",
+      "rationale": "Incompressible continuity requires constant volume flow rate A1*v1 = A2*v2. Solving v2 = (A1 / A2)*v1 gives (0.06 / 0.02)(2 m/s) = 3(2) = 6 m/s at the narrower exit.",
       "choiceRationales": [
         "This choice is not supported because it divides the areas in the wrong order under the stated conditions and measurement model.",
         "This choice is not supported because it assumes speed is fixed despite the area change under the stated conditions and measurement model.",
-        "Continuity gives A1 v1 = A2 v2, so v2 is 0.06 times 2 divided by 0.02 = 6 m/s.",
+        "Incompressible continuity requires constant volume flow rate A1*v1 = A2*v2. Solving v2 = (A1 / A2)*v1 gives (0.06 / 0.02)(2 m/s) = 3(2) = 6 m/s at the narrower exit.",
         "This choice is not supported because it multiplies all three quantities without isolating exit speed under the stated conditions and measurement model."
       ],
       "distractorDiagnostics": [
@@ -129898,6 +129898,7 @@
   "diagramPlacements": [
     {
       "id": "ap-physics-1-diagram-01",
+      "diagramId": "ap-physics-1-diagram-01",
       "title": "Motion-representation bridge",
       "unitId": "kinematics",
       "unitNumber": 1,
@@ -129950,6 +129951,7 @@
     },
     {
       "id": "ap-physics-1-diagram-02",
+      "diagramId": "ap-physics-1-diagram-02",
       "title": "Interaction-to-force bridge",
       "unitId": "force-and-translational-dynamics",
       "unitNumber": 2,
@@ -130002,6 +130004,7 @@
     },
     {
       "id": "ap-physics-1-diagram-03",
+      "diagramId": "ap-physics-1-diagram-03",
       "title": "Energy-accounting bridge",
       "unitId": "work-energy-and-power",
       "unitNumber": 3,
@@ -130054,6 +130057,7 @@
     },
     {
       "id": "ap-physics-1-diagram-04",
+      "diagramId": "ap-physics-1-diagram-04",
       "title": "Collision-before-and-after bridge",
       "unitId": "linear-momentum",
       "unitNumber": 4,
@@ -130106,6 +130110,7 @@
     },
     {
       "id": "ap-physics-1-diagram-05",
+      "diagramId": "ap-physics-1-diagram-05",
       "title": "Torque-line-of-action bridge",
       "unitId": "torque-and-rotational-dynamics",
       "unitNumber": 5,
@@ -130158,6 +130163,7 @@
     },
     {
       "id": "ap-physics-1-diagram-06",
+      "diagramId": "ap-physics-1-diagram-06",
       "title": "Rolling-energy bridge",
       "unitId": "energy-and-momentum-of-rotating-systems",
       "unitNumber": 6,
@@ -130210,6 +130216,7 @@
     },
     {
       "id": "ap-physics-1-diagram-07",
+      "diagramId": "ap-physics-1-diagram-07",
       "title": "Oscillation-phase bridge",
       "unitId": "oscillations",
       "unitNumber": 7,
@@ -130262,6 +130269,7 @@
     },
     {
       "id": "ap-physics-1-diagram-08",
+      "diagramId": "ap-physics-1-diagram-08",
       "title": "Fluid-depth-and-flow bridge",
       "unitId": "fluids",
       "unitNumber": 8,

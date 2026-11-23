@@ -103,6 +103,7 @@ The value of `lesson` is JSON. Look inside a file calls it "the data block": the
 | `form`, `timeLimitS`, `check` | A check only. `check` holds the measure, the score unit, the scoring and form versions, untimed settings, and `lock` (a salted hash of the teacher code) when there is one. The answers are scrambled (XOR with a SHA-256 keystream). |
 | `pictures`, `instructionsOnce`, `repeatMissed`, `sequence` | Only when used. `repeatMissed` (from 2026-11-17) repeats missed Word Sounds questions once more at the end. `sequence` (from 2026-11-18) lists item ids in play order when questions are mixed across activities or ordered by the teacher. |
 | `directions` | From 2026-11-17, only in a check for the youngest students (Quantity Discrimination, Missing Number) made with the recordings of its directions: the ids, in `audio`, of the recordings of the three lines of its Get ready screen, in order. The screen then has a Hear the directions button. The items, the answers and `revision` are the same with or without it. |
+| `read_along` supports | From 2026-11-22, a `read_along` item may also carry `supports: [{ id, line, quote?, occ?, text, img?, alt?, audio? }]` (teacher-authored notes/definitions anchored to a page-local `line` index, capped at 60/page) and optional `glossary[word].a` (clip id in `lesson.audio` for spoken meanings) and `glossary[word].c: true` (teacher custom entry). Support clips use deterministic `g1`, `g2`, … ids in `lesson.audio` and play strictly from embedded `data:` URIs with zero AI or network calls. |
 
 ### 1.4 The manifest (`alloflow-packet-manifest`)
 
@@ -369,3 +370,32 @@ Places where the code and its comments, or two parts of the code, do not say the
 8. **The manifest field is spelled `licence`.** Look inside a file reads `licence` or `license`.
 9. **The manifest's `saves` list writes `LEARNER` and `DATE`** in place of the real label and date.
 10. **The Open page address is written into each English file when it is made.** A file made on a Packets page served over http or https names that site's Open page; any other file names `apomera.github.io/AlloFlow/packets-open.html`. A file already handed out cannot change it.
+
+---
+
+## 6. Offline sealed QR results (`AFPK1` / `AFSK1` / `AFQR1`, added 2026-11-22)
+
+When a teacher opts in (via `packets-qr.html` or `opts.qrPublicKey` in `word_sounds_take_home_loader.js`), a packet carries an X25519 teacher public key and can display an encrypted, non-URL QR result on the end screen without any internet connection (`connect-src 'none'`). Regular packets built without a teacher key carry none of this code or data.
+
+| Format | Prefix / kind | Contents |
+|---|---|---|
+| Teacher public key | `AFPK1.<base64url>` | 32-byte X25519 public key (49 characters total). Safe to embed inside student packets (`lesson.qr = { k, fp }`) or share with a co-teacher. |
+| Teacher private key file | `kind: "alloflow-packet-qr-key"`, `version: 1` | Local `.json` file (`alloflow-qr-key__<fp>.json`) holding `label`, `createdAt`, `fingerprint`, `publicKey`, and `secretKey` (`AFSK1.<base64url>`, 32-byte X25519 private scalar). |
+| Key ID (`fp`) | 8 lowercase hex chars | First 4 bytes of `SHA-256(publicKeyBytes)`, shown under the student QR and in `manifest.qr.keyFingerprint` so teacher and packet keys can be matched visually and verified by Look inside a file. |
+| Sealed QR payload | `AFQR1:<BASE32>` | RFC 4648 Base32 uppercase (`A-Z`, `2-7`, no padding) encoded in ISO 18004 QR Alphanumeric Mode (Versions 1–30, EC level L) and rendered as a 1-bit `data:image/png;base64,...` image (never a URL, no `http://` strings). |
+
+### 6.1 Wire envelope (`AFQR1:`)
+
+After Base32 decoding, the binary envelope is:
+
+1. `version` (1 byte): `0x01`
+2. `keyFingerprint` (4 bytes): first 4 bytes of `SHA-256(teacherPublicKey)`
+3. `ephemeralPublicKey` (32 bytes): fresh per-display X25519 public key generated with `crypto.getRandomValues`
+4. `nonce` (12 bytes): fresh random ChaCha20-Poly1305 nonce
+5. `ciphertext || tag` (variable + 16-byte Poly1305 MAC):
+   - Shared secret: `X25519(ephemeralPrivate, teacherPublic)` (RFC 7748)
+   - Symmetric key (32 bytes): `HKDF-SHA-256(ikm = sharedSecret, salt = ephemeralPub || teacherPub || nonce, info = "alloflow-packet-qr-v1")` (RFC 5869)
+   - AEAD: `ChaCha20-Poly1305(key, nonce, plaintext = compactResultJsonUtf8, aad = "AFQR1|" + keyFingerprintHex)` (RFC 8439)
+
+Long packets (> 1050 UTF-8 bytes compact JSON) preserve full summary totals and all missed/retried items while condensing first-try items (`tr: 1`) so results always fit inside a single scannable QR. When unlocked on `packets-qr.html`, each result expands into standard AlloFlow CSVs with SHA-256 check values for download or handoff to `packets-results.html`.
+

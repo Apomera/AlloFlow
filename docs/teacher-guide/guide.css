@@ -1037,6 +1037,10 @@ hr {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }
+
+  .skip-link {
+    transition: none !important;
+  }
 }
 
 @media (forced-colors: active) {

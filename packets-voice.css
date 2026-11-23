@@ -1,12 +1,20 @@
 /* The computer-voice page (packets-voice.html). Colors come from packets.css. No address, no font, no image. */
 .voice-rows { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: 0.5rem; }
+.voice-rows-said { margin-top: 0.5rem; }
+.voice-rows-said:empty { display: none; }
 .voice-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.75rem; padding: 0.6rem 0.8rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
 .voice-word { font-weight: 700; color: var(--ink); min-width: 6rem; }
 .voice-state { flex: 1 1 14rem; color: var(--muted); font-size: 0.9375rem; }
-.voice-row .btn { margin: 0; }
+.voice-row .btn { margin: 0; min-height: 2.75rem; }
 .voice-row.is-made { border-color: var(--line-strong); }
+.ra-voice-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-top: 0.35rem; }
+.ra-voice-row select { flex: 1 1 16rem; margin-top: 0; }
 .voice-get { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.9rem; margin-top: 1rem; }
 .voice-get .hint { flex: 1 1 16rem; }
 .voice-next { margin-top: 1.25rem; color: var(--muted); }
 /* A button that cannot be pressed yet looks it. */
 .maker .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+@media (forced-colors: active) {
+  .voice-row.is-made { border-width: 2px; border-color: CanvasText; }
+  .maker .btn:disabled { color: GrayText; border-color: GrayText; opacity: 1; }
+}

@@ -18,8 +18,8 @@
   "summary": {
     "chapters": 12,
     "sections": 48,
-    "diagrams": 0,
-    "diagramPlacements": 0,
+    "diagrams": 12,
+    "diagramPlacements": 12,
     "knowledgeChecks": 60,
     "flashcards": 75,
     "memoryAids": 20,
@@ -28,7 +28,11 @@
     "sourceReviewedFlashcards": 75,
     "sourceReviewedMemoryAids": 20,
     "sourceReviewedConstructedResponseWorkshops": 8,
-    "editorialReviewedSourcePendingMemoryAids": 0
+    "editorialReviewedSourcePendingMemoryAids": 0,
+    "glossaryTerms": 24,
+    "appliedCases": 12,
+    "quickReferenceCards": 4,
+    "misconceptionPlaybooks": 6
   },
   "skills": [
     {
@@ -201,7 +205,18 @@
             "https://ies.ed.gov/ncee/wwc/practiceguide/1"
           ],
           "reviewStatus": "source-reviewed-editorial-pass",
-          "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending."
+          "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending.",
+          "expandableCase": {
+            "schemaVersion": 1,
+            "label": "Applied classroom case",
+            "presentationLabel": "Classroom scenario",
+            "answerLabel": "Best pedagogical decision",
+            "explanationLabel": "Evidence-based rationale",
+            "title": "Building Math Self-Efficacy and Self-Talk in First Grade",
+            "clinicalDescription": "During two-digit addition with base-ten blocks, several first graders erase their entire paper whenever regrouping stalls and whisper, \"I am bad at math.\" They skip checking their models and wait passively for the teacher to fix errors, showing fragile self-efficacy and limited strategy monitoring.",
+            "diagnosis": "Model think-aloud self-talk with picture strategy checklists, scaffold proximal mastery steps, and give specific effort-and-strategy feedback.",
+            "explanation": "Pairing Vygotsky-aligned private speech prompts with Bandura mastery experiences teaches young learners to monitor steps and attribute growth to controllable strategies. Offering empty praise like \"You are so smart\" or solving the task for them undermines resilience and independent self-regulation."
+          }
         },
         {
           "id": "plt5621-ch-01-section-04",
@@ -317,6 +332,11 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending."
         }
+      ],
+      "chapterTakeaways": [
+        "Early childhood instruction is most effective inside Vygotsky's Zone of Proximal Development, pairing social interaction with temporary verbal or visual scaffolds that fade as mastery grows.",
+        "Young learners build schemas by linking hands-on discovery to prior experiences, while Bandura's social learning highlights how teacher think-alouds and peer models shape self-efficacy.",
+        "Nurture early metacognition and transfer across centers by prompting PreK-3 children to state simple play plans, talk through strategies, and revisit skills in varied daily routines."
       ]
     },
     {
@@ -408,7 +428,18 @@
             "https://ies.ed.gov/ncee/wwc/PracticeGuides"
           ],
           "reviewStatus": "source-reviewed-editorial-pass",
-          "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending."
+          "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending.",
+          "expandableCase": {
+            "schemaVersion": 1,
+            "label": "Applied classroom case",
+            "presentationLabel": "Classroom scenario",
+            "answerLabel": "Best pedagogical decision",
+            "explanationLabel": "Evidence-based rationale",
+            "title": "Aligning Pre-K Routines and Guided Play to Development",
+            "clinicalDescription": "A 40-minute seated phonics worksheet block in a four-year-old Pre-K class triggers tears, fidgeting, and wandering, yet the same children sustain 20 minutes of rich vocabulary and counting during grocery-store dramatic play. A colleague advises extending quiet seatwork to build kindergarten readiness.",
+            "diagnosis": "Embed literacy and counting goals into guided play centers, brief movement transitions, and predictable visual routines suited to young learners.",
+            "explanation": "Early childhood development thrives on active exploration, gross-motor movement, and responsive routines that match emerging executive attention. Forcing prolonged passive seatwork misinterprets readiness and heightens frustration rather than nurturing durable symbolic and social-emotional growth."
+          }
         }
       ],
       "knowledgeChecks": [
@@ -507,6 +538,11 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending."
         }
+      ],
+      "chapterTakeaways": [
+        "PreK-3 learners transition gradually from Piaget's preoperational symbolic play and centration toward early concrete thinking, requiring hands-on manipulatives instead of abstract lectures.",
+        "Cognitive, language, motor, and social-emotional domains interact constantly; supporting Erikson's initiative versus guilt builds confidence through safe, purposeful classroom choices.",
+        "Treat developmental milestones as broad guides rather than rigid age cutoffs, using guided and dramatic play, movement, and predictable routines to align challenge with readiness."
       ]
     },
     {
@@ -593,7 +629,18 @@
             "https://www.ed.gov/laws-and-policy/civil-rights-laws/race-color-and-national-origin-discrimination/race-color-and-national-origin-discrimination-key-issues/equal-education-opportunities-english"
           ],
           "reviewStatus": "source-reviewed-editorial-pass",
-          "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending."
+          "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending.",
+          "expandableCase": {
+            "schemaVersion": 1,
+            "label": "Applied classroom case",
+            "presentationLabel": "Classroom scenario",
+            "answerLabel": "Best pedagogical decision",
+            "explanationLabel": "Evidence-based rationale",
+            "title": "Ensuring Meaningful Grade-Level Science Access for Young ELs",
+            "clinicalDescription": "Three second-grade Spanish-speaking English learners accurately sequence butterfly life-cycle cards during partner work, yet stay silent during whole-group discussions. To reduce frustration, a classroom volunteer hands them simplified coloring pages while peers write grade-level science observations.",
+            "diagnosis": "Pair grade-level science standards with explicit language objectives, labeled visual anchor charts, sentence frames, and structured partner talk.",
+            "explanation": "Asset-based UDL supports and explicit language scaffolds uphold rigorous grade-level thinking while expanding academic English production. Replacing core science inquiry with coloring worksheets lowers expectations, blocks conceptual growth, and fails to provide meaningful multilingual participation."
+          }
         },
         {
           "id": "plt5621-ch-03-section-04",
@@ -727,6 +774,11 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending."
         }
+      ],
+      "chapterTakeaways": [
+        "Implement IEP and Section 504 accommodations faithfully in inclusive PreK-3 rooms while remembering classroom teachers document data and refer rather than diagnosing disabilities alone.",
+        "Support young multilingual learners with visuals, gestures, realia, sentence frames, and home-language bridges that maintain grade-level concept rigor alongside oral English growth.",
+        "Address early-childhood learner differences proactively through Universal Design for Learning and open-ended enrichment depth rather than assigning repetitive extra drill sheets."
       ]
     },
     {
@@ -818,7 +870,18 @@
             "https://ies.ed.gov/ncee/wwc/PracticeGuide/31/Published"
           ],
           "reviewStatus": "source-reviewed-editorial-pass",
-          "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending."
+          "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending.",
+          "expandableCase": {
+            "schemaVersion": 1,
+            "label": "Applied classroom case",
+            "presentationLabel": "Classroom scenario",
+            "answerLabel": "Best pedagogical decision",
+            "explanationLabel": "Evidence-based rationale",
+            "title": "Redesigning Kindergarten Space and Routines for Self-Management",
+            "clinicalDescription": "Congestion around a cluttered cubby and sink triggers pushing during every kindergarten transition, and a child with sensory sensitivities bolts when the loud cleanup bell rings. Moving clothespins down a public behavior chart has increased crying without reducing transition conflicts.",
+            "diagnosis": "Reorganize room traffic flow with clear center boundaries, add a visual countdown timer and calm-down area, and teach replacement cleanup routines.",
+            "explanation": "Proactive physical design and explicitly practiced self-management routines remove antecedent bottlenecks while teaching functional replacement skills that build autonomy. Public clip charts shame young children and escalate avoidance without addressing environmental triggers or self-regulation needs."
+          }
         }
       ],
       "knowledgeChecks": [
@@ -917,6 +980,11 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending."
         }
+      ],
+      "chapterTakeaways": [
+        "Build intrinsic motivation in PreK-3 learners through attainable challenges, meaningful center choices, and specific effort-focused praise rather than relying solely on external rewards.",
+        "Prevent early-childhood behavior disruptions by arranging defined activity zones, displaying picture schedules, and explicitly modeling and practicing transition routines from day one.",
+        "Analyze challenging behavior through its antecedent-behavior-consequence function, teaching concrete emotional-regulation and communication replacement skills instead of punitive isolation."
       ]
     },
     {
@@ -1008,7 +1076,18 @@
             "https://ies.ed.gov/ncee/wwc/PracticeGuides"
           ],
           "reviewStatus": "source-reviewed-editorial-pass",
-          "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending."
+          "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending.",
+          "expandableCase": {
+            "schemaVersion": 1,
+            "label": "Applied classroom case",
+            "presentationLabel": "Classroom scenario",
+            "answerLabel": "Best pedagogical decision",
+            "explanationLabel": "Evidence-based rationale",
+            "title": "Using Preassessment and Vetted Resources in Third-Grade Planning",
+            "clinicalDescription": "Before a standards-based local habitats unit, a quick preassessment shows six third graders already explain food chains accurately while five lack core habitat vocabulary. A free online slide deck features cute clip art, but contains inaccurate species facts and dense, inaccessible paragraphs.",
+            "diagnosis": "Reject inaccurate materials in favor of vetted accessible texts, and use preassessment data to plan targeted vocabulary remediation and inquiry enrichment.",
+            "explanation": "Backward design links clear standards and diagnostic evidence to both rigorous resource evaluation and flexible instructional pathways. Teaching one lockstep track from unvetted cute worksheets leaves foundational misconceptions unaddressed while capping growth for students already showing mastery."
+          }
         }
       ],
       "knowledgeChecks": [
@@ -1107,6 +1186,11 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending."
         }
+      ],
+      "chapterTakeaways": [
+        "Unpack early learning standards into observable, measurable objectives first, then align playful learning centers, brief mini-lessons, and authentic evidence checks to the same goal.",
+        "Weave literacy, numeracy, science inquiry, and fine-motor development into coherent thematic units so young children practice foundational skills in meaningful, connected contexts.",
+        "Use quick diagnostic observations and preassessments to plan targeted small-group remediation or enrichment while vetting books and toys for accuracy, accessibility, and fairness."
       ]
     },
     {
@@ -1185,7 +1269,18 @@
             "https://ies.ed.gov/ncee/wwc/PracticeGuides"
           ],
           "reviewStatus": "source-reviewed-editorial-pass",
-          "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending."
+          "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending.",
+          "expandableCase": {
+            "schemaVersion": 1,
+            "label": "Applied classroom case",
+            "presentationLabel": "Classroom scenario",
+            "answerLabel": "Best pedagogical decision",
+            "explanationLabel": "Evidence-based rationale",
+            "title": "Replacing Fixed Ability Tables with Accountable Cooperative Groups",
+            "clinicalDescription": "During a second-grade measurement project in fixed ability groups, one strong writer completes the whole poster while two peers watch off-task, and emerging readers remain assigned to the same low-expectation table all semester with minimal peer interaction or independent transfer.",
+            "diagnosis": "Form flexible, skill-matched cooperative groups with clear student roles, shared interdependence goals, and individual recording sheets.",
+            "explanation": "Structured cooperative learning pairs positive interdependence with individual accountability so every learner practices target skills during gradual release. Flexible grouping prevents the stigma and narrowed expectations of permanent tracking while adapting promptly as mastery shifts."
+          }
         },
         {
           "id": "plt5621-ch-06-section-04",
@@ -1307,6 +1402,11 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending."
         }
+      ],
+      "chapterTakeaways": [
+        "Pair brief, explicit teacher modeling for foundational phonics or routines with guided discovery, sensory exploration, and purposeful play when building conceptual understanding in PreK-3.",
+        "Form flexible small groups that shift frequently with current skill observations rather than fixed ability tracks, structuring partner tasks with clear roles and shared visual cues.",
+        "Provide contingent cues, sentence stems, and concrete models during guided practice, gradually fading prompts across distributed play and center tasks to build independent transfer."
       ]
     },
     {
@@ -1385,7 +1485,18 @@
             "https://ies.ed.gov/ncee/wwc/practiceguide/12"
           ],
           "reviewStatus": "source-reviewed-editorial-pass",
-          "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending."
+          "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending.",
+          "expandableCase": {
+            "schemaVersion": 1,
+            "label": "Applied classroom case",
+            "presentationLabel": "Classroom scenario",
+            "answerLabel": "Best pedagogical decision",
+            "explanationLabel": "Evidence-based rationale",
+            "title": "Tightening Explanations and Whole-Class Checks in First Grade",
+            "clinicalDescription": "After a fast verbal explanation of two-digit subtraction, the teacher asks, \"Does everyone understand?\" and moves on when two front-row volunteers nod. Five minutes into independent work, 14 of 20 first graders subtract the smaller digit from the larger regardless of top or bottom placement.",
+            "diagnosis": "Model subtraction with concrete-to-visual steps, contrasting examples and non-examples, and check every student on mini-whiteboards with wait time.",
+            "explanation": "Clear multimodal explanations paired with all-student checks for understanding expose misconceptions before independent practice cements procedural errors. Asking \"Does everyone get it?\" samples only eager volunteers and gives false assurance while most learners remain confused."
+          }
         },
         {
           "id": "plt5621-ch-07-section-04",
@@ -1507,6 +1618,11 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending."
         }
+      ],
+      "chapterTakeaways": [
+        "Use three to five seconds of wait time and balance quick recall checks with open-ended \"how\" and \"why\" prompts so young children can formulate richer oral explanations.",
+        "Treat early misconceptions as diagnostic evidence rather than mistakes to embarrass, using turn-and-talk, choral responses, and hand signals so quiet or emerging speakers participate safely.",
+        "Monitor understanding continuously during carpet mini-lessons and center rotations, adjusting explanations on the spot and leveraging teachable moments while keeping lesson focus intact."
       ]
     },
     {
@@ -1598,7 +1714,18 @@
             "https://ies.ed.gov/ncee/wwc/practiceguide/12"
           ],
           "reviewStatus": "source-reviewed-editorial-pass",
-          "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending."
+          "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending.",
+          "expandableCase": {
+            "schemaVersion": 1,
+            "label": "Applied classroom case",
+            "presentationLabel": "Classroom scenario",
+            "answerLabel": "Best pedagogical decision",
+            "explanationLabel": "Evidence-based rationale",
+            "title": "Protecting Construct Validity and IEP Accommodations in Science",
+            "clinicalDescription": "A third-grade unit targets explaining how magnets attract and repel, yet the summative test relies on dense multi-paragraph passages and deducts points for spelling. The teacher considers denying a student his documented IEP read-aloud accommodation out of concern that reading items aloud is unfair.",
+            "diagnosis": "Align items strictly to the science construct, provide the legally required IEP read-aloud accommodation, and give criterion-focused feedback.",
+            "explanation": "Valid assessment isolates the target science standard rather than measuring unrelated decoding or spelling speed, and IDEA mandates implementing documented IEP accommodations to remove construct-irrelevant barriers. Withholding a required accommodation violates federal law and distorts score meaning."
+          }
         }
       ],
       "knowledgeChecks": [
@@ -1697,6 +1824,11 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending."
         }
+      ],
+      "chapterTakeaways": [
+        "Select early-childhood assessments by intended use—diagnostic checks for entry readiness, ongoing formative observations to adjust daily teaching, and summative tasks to confirm mastery.",
+        "Use authentic PK-3 tools—anecdotal notes, developmental checklists, running records, work-sample portfolios, and brief conferences—to capture skills paper-and-pencil tests cannot measure.",
+        "Deliver immediate, child-friendly feedback targeting one clear next step, and apply approved accommodations that remove access barriers without diluting the assessed skill."
       ]
     },
     {
@@ -1775,7 +1907,18 @@
             "https://studentprivacy.ed.gov/faq/under-ferpa-may-educational-agency-or-institution-disclose-education-records-any-its-employees"
           ],
           "reviewStatus": "source-reviewed-editorial-pass",
-          "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending."
+          "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending.",
+          "expandableCase": {
+            "schemaVersion": 1,
+            "label": "Applied classroom case",
+            "presentationLabel": "Classroom scenario",
+            "answerLabel": "Best pedagogical decision",
+            "explanationLabel": "Evidence-based rationale",
+            "title": "Clarifying Percentiles, Grade Equivalents, and Skewed Class Data",
+            "clinicalDescription": "At spring conferences, a second-grade parent thinks a 60th percentile reading rank means a failing 60% score, while another assumes a 4.2 grade-equivalent score warrants skipping straight to fourth-grade math. Meanwhile, two extreme low outliers pull the class mean well below the typical score.",
+            "diagnosis": "Explain percentiles as norm-group standing and grade equivalents as second-grade item performance, and share the class median alongside score spread.",
+            "explanation": "Clear measurement communication prevents misplacement: percentile ranks show relative peer standing rather than percent correct, and grade equivalents do not prove mastery of higher-grade standards. Reporting the median with variation avoids outlier distortion when summarizing skewed class results."
+          }
         },
         {
           "id": "plt5621-ch-09-section-04",
@@ -1897,6 +2040,11 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending."
         }
+      ],
+      "chapterTakeaways": [
+        "Differentiate reliability (consistent measurement) from validity (measuring the intended construct), never making high-stakes PreK-3 placement or retention choices from a single score.",
+        "Use criterion-referenced evidence to see which early standards a child has met, never mistaking a percentile rank for percent correct or a grade equivalent for instructional level.",
+        "Communicate early-childhood results to families in plain, accessible language paired with concrete work samples, outlining child strengths, test limits, and clear classroom next steps."
       ]
     },
     {
@@ -1993,7 +2141,18 @@
             "https://ies.ed.gov/ncee/wwc/practiceguide/12"
           ],
           "reviewStatus": "source-reviewed-editorial-pass",
-          "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending."
+          "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending.",
+          "expandableCase": {
+            "schemaVersion": 1,
+            "label": "Applied classroom case",
+            "presentationLabel": "Classroom scenario",
+            "answerLabel": "Best pedagogical decision",
+            "explanationLabel": "Evidence-based rationale",
+            "title": "Engaging in Job-Embedded Mentor Coaching for Interactive Read-Alouds",
+            "clinicalDescription": "After a one-day workshop on interactive read-alouds, a first-year kindergarten teacher tries one open-ended prompt once, sees noisy blurting, and abandons the strategy. Her mentor offers a four-week observation and co-planning cycle, but the new teacher hesitates because she fears evaluative judgment.",
+            "diagnosis": "Partner in non-evaluative mentor observation cycles centered on one questioning goal, analyze student talk patterns, and refine routines iteratively.",
+            "explanation": "Sustained job-embedded learning through peer observation, modeling, and reflective debriefing reliably shifts classroom practice far more than isolated workshops. Framing mentoring as confidential formative inquiry rather than high-stakes evaluation accelerates early-career instructional growth."
+          }
         }
       ],
       "knowledgeChecks": [
@@ -2097,6 +2256,11 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending."
         }
+      ],
+      "chapterTakeaways": [
+        "Turn PK-3 lesson reflection into an evidence-and-action cycle by reviewing student work samples and observation logs to select specific instructional adjustments for the next session.",
+        "Appraise early-childhood research cautiously by checking age range, study design, and classroom context before adopting commercial programs or unverified developmental trends.",
+        "Prioritize job-embedded professional learning—classroom action research, mentoring, and peer observation—over isolated one-day workshops to drive lasting early-childhood improvement."
       ]
     },
     {
@@ -2175,7 +2339,18 @@
             "https://www.ed.gov/laws-and-policy/civil-rights-laws/race-color-and-national-origin-discrimination/race-color-and-national-origin-discrimination-key-issues/equal-education-opportunities-english"
           ],
           "reviewStatus": "source-reviewed-editorial-pass",
-          "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending."
+          "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending.",
+          "expandableCase": {
+            "schemaVersion": 1,
+            "label": "Applied classroom case",
+            "presentationLabel": "Classroom scenario",
+            "answerLabel": "Best pedagogical decision",
+            "explanationLabel": "Evidence-based rationale",
+            "title": "Coordinating SLP, Paraeducator, and Family Support in Inclusion Pre-K",
+            "clinicalDescription": "In an inclusive Pre-K room, a paraeducator begins rewriting a child's speech targets during play centers without consulting the teacher or speech-language pathologist. Meanwhile, the child's parents report hearing conflicting guidance about pull-out sessions and using a core communication board at home.",
+            "diagnosis": "Hold brief weekly alignment huddles with the SLP and paraeducator, clarify instructional versus implementation roles, and send unified family updates.",
+            "explanation": "Coordinated interdisciplinary support keeps goal design within licensed specialist and teacher scope while empowering paraeducators with clear, consistent cueing routines. Shared communication aligns home and school communication supports and strengthens reciprocal family trust under IDEA."
+          }
         },
         {
           "id": "plt5621-ch-11-section-04",
@@ -2297,6 +2472,11 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending."
         }
+      ],
+      "chapterTakeaways": [
+        "Build reciprocal partnerships with PreK-3 caregivers by honoring family funds of knowledge, providing translated notices and flexible schedules, and initiating positive contact early.",
+        "Clarify roles with speech therapists, early interventionists, and paraeducators through teacher-planned objectives, shared observation notes, and consistent cross-setting routines.",
+        "Connect families with vetted community literacy, health, and kindergarten-transition supports while protecting student confidentiality and tracking follow-up on shared action plans."
       ]
     },
     {
@@ -2403,7 +2583,18 @@
             "https://www.ed.gov/teaching-and-administration/safe-learning-environments/school-safety-and-security/emergency-planning"
           ],
           "reviewStatus": "source-reviewed-editorial-pass",
-          "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending."
+          "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending.",
+          "expandableCase": {
+            "schemaVersion": 1,
+            "label": "Applied classroom case",
+            "presentationLabel": "Classroom scenario",
+            "answerLabel": "Best pedagogical decision",
+            "explanationLabel": "Evidence-based rationale",
+            "title": "Following Site Emergency Plans and Mandated Reporting in First Grade",
+            "clinicalDescription": "During a tornado drill, a substitute aide asks whether to text parents personally from the hallway and leave a child's rescue inhaler inside a classroom backpack. Later that afternoon, the first-grade teacher notices unexplained patterned bruising on a student's arm and considers questioning the parent first.",
+            "diagnosis": "Follow verified site emergency protocols with student medical kits and rosters, safeguard FERPA privacy, and file a mandated report per state law.",
+            "explanation": "Student safety requires strict adherence to official site emergency procedures, uninterrupted access to life-saving medications, and direct reporting of suspected abuse to designated child-protection authorities. Informal parent investigations or unauthorized personal texts jeopardize safety and breach legal duties."
+          }
         }
       ],
       "knowledgeChecks": [
@@ -2517,10 +2708,1292 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Independently authored and source reviewed for study use; independent practicing early-childhood educator and psychometric validation remain pending."
         }
+      ],
+      "chapterTakeaways": [
+        "Protect early-childhood education records under FERPA by sharing private student details only with guardians or staff holding a legitimate educational interest, never in public spaces.",
+        "Report suspected child abuse or neglect immediately through statutory mandated-reporting procedures without conducting a solo investigation, and uphold IDEA FAPE and LRE protections.",
+        "Follow supervision, allergy, and emergency protocols strictly, respect educational copyright fair-use boundaries, and verify state or district legal specifics with school administrators."
       ]
     }
   ],
-  "diagrams": [],
+  "diagrams": [
+    {
+      "id": "plt5621-diagram-07",
+      "chapterId": "plt5621-ch-01",
+      "domainId": "students-as-learners",
+      "title": "Early Childhood Schema Construction, Self-Regulation & Transfer Cycle",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Connect early childhood cognitive processing—prior schema activation, working-memory limits, flexible theoretical lenses, emerging metacognition and self-efficacy, and scaffolded retrieval—to authentic transfer across classroom routines and play.",
+      "caption": "An original cognitive-learning cycle linking prior schema and working memory, theorists as flexible instructional lenses, early metacognition and self-efficacy, scaffolded retrieval, and cross-routine transfer for Praxis PLT: Early Childhood (5621).",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://ies.ed.gov/ncee/wwc/practiceguide/1"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Left-to-right cycle from prior schema and working-memory support through theoretical instructional lenses, metacognition and self-efficacy, and scaffolded retrieval to cross-routine transfer.",
+        "longDescription": "Read from left to right. First, activate children’s home and play-based prior knowledge while protecting limited early working memory through chunked steps, concrete objects, and visual anchors so new schemas form cleanly. Second, use foundational learning theorists—cognitive, constructivist, social-cognitive, and behavioral—as flexible instructional lenses tested against observable child evidence rather than rigid stage labels. Third, nurture early metacognition, self-regulation, and self-efficacy through teacher think-alouds, picture-supported self-checks, and authentic mastery experiences. Fourth, reinforce durable memory via scaffolded retrieval and spaced practice woven into songs, games, and small-group routines while fading prompts systematically. Fifth, promote transfer to novel centers, stories, and everyday classroom problems, using fresh observations to enrich the child’s prior schema for the next learning cycle.",
+        "textEquivalent": [
+          "Prior Schema & Working Memory: Activate home and play-based prior knowledge, chunk multistep tasks, and pair concise directions with concrete visual anchors to protect limited working memory.",
+          "Theorists as Instructional Lenses: Apply constructivist, cognitive, social, and behavioral principles flexibly alongside observable classroom evidence rather than relying on simplified stage labels.",
+          "Metacognition, Self-Regulation & Efficacy: Model verbal think-alouds, visual self-checks, and authentic mastery opportunities so young learners monitor effort and build self-efficacy.",
+          "Scaffolded Retrieval & Spaced Practice: Embed low-stakes recall across songs, center games, and distributed review while gradually fading adult prompts.",
+          "Cross-Routine & Play Transfer: Cue children to apply strategies in unfamiliar centers, read-alouds, and peer problem solving, feeding new mastery back into prior schema."
+        ],
+        "readingOrder": [
+          "prior-schema-working-memory",
+          "theorist-instructional-lens",
+          "metacognition-self-efficacy",
+          "scaffolded-retrieval-practice",
+          "novel-context-transfer"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "prior-schema-working-memory",
+            "label": "Prior Schema & Working Memory",
+            "detail": "Activate home and play-based prior knowledge, chunk multistep tasks, and pair concrete visual anchors with brief cues so young children avoid working-memory overload."
+          },
+          {
+            "id": "theorist-instructional-lens",
+            "label": "Theorists as Instructional Lenses",
+            "detail": "Translate constructivist, cognitive, social-learning, and behavioral frameworks into observable classroom choices while recognizing the limits of rigid stage labels."
+          },
+          {
+            "id": "metacognition-self-efficacy",
+            "label": "Metacognition, Self-Regulation & Efficacy",
+            "detail": "Model think-alouds, simple picture self-checks, and manageable challenges that build early emotional self-regulation, strategy awareness, and genuine self-efficacy."
+          },
+          {
+            "id": "scaffolded-retrieval-practice",
+            "label": "Scaffolded Retrieval & Spaced Practice",
+            "detail": "Weave low-stakes recall and spaced practice into songs, games, and routines—systematically fading prompts as independent accuracy grows."
+          },
+          {
+            "id": "novel-context-transfer",
+            "label": "Cross-Routine & Play Transfer",
+            "detail": "Prompt children to apply learned concepts across unfamiliar centers, story discussions, and daily problem solving, using new evidence to guide the next schema build."
+          }
+        ],
+        "edges": [
+          {
+            "id": "schema-to-lens",
+            "from": "prior-schema-working-memory",
+            "to": "theorist-instructional-lens",
+            "label": "surfaces readiness clues that guide theory-informed teaching choices"
+          },
+          {
+            "id": "lens-to-metacognition",
+            "from": "theorist-instructional-lens",
+            "to": "metacognition-self-efficacy",
+            "label": "shapes modeling and supports that cultivate learner agency"
+          },
+          {
+            "id": "metacognition-to-retrieval",
+            "from": "metacognition-self-efficacy",
+            "to": "scaffolded-retrieval-practice",
+            "label": "prepares confident learners to attempt active recall with fading cues"
+          },
+          {
+            "id": "retrieval-to-transfer",
+            "from": "scaffolded-retrieval-practice",
+            "to": "novel-context-transfer",
+            "label": "consolidates durable memory ready for flexible cross-context use"
+          },
+          {
+            "id": "transfer-to-schema",
+            "from": "novel-context-transfer",
+            "to": "prior-schema-working-memory",
+            "label": "enriches prior knowledge for the next conceptual leap"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "plt5621-diagram-01",
+      "chapterId": "plt5621-ch-02",
+      "domainId": "students-as-learners",
+      "title": "Early Childhood Development & Learning Theory Alignment",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Connect foundational early childhood developmental theories—Piagetian preoperational reasoning, Vygotsky’s zone of proximal development and scaffolding, Eriksonian initiative, and secure attachment—directly to play-based exploration and developmentally appropriate practice.",
+      "caption": "An original pedagogy flow linking developmental theory, attachment security, play-based exploration within the zone of proximal development, responsive scaffolding, and developmentally appropriate practice for Praxis PLT: Early Childhood (5621).",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Left-to-right flow from attachment security and developmental stages through play-based ZPD exploration and responsive scaffolding to developmentally appropriate practice and emergent transfer.",
+        "longDescription": "Read from left to right. First, ground early childhood decisions in developmental theory and attachment security: recognize Piagetian preoperational characteristics such as symbolic thought and centration, Eriksonian trust, autonomy, and initiative, and warm caregiver-teacher attachment as prerequisites for risk taking. Second, activate Vygotsky’s zone of proximal development through purposeful play-based exploration, dramatic play, hands-on manipulatives, and private speech that bridge what children do independently with what they can accomplish socially. Third, provide responsive adult scaffolding through contingent prompts, rich oral-language recasting, modeling, and gradual fading so initiative grows rather than learned dependence. Fourth, align every task to developmentally appropriate practice by balancing age-typical expectations, individual developmental trajectories, and cultural context. Fifth, foster emergent self-efficacy and transfer across classroom routines while observing play to recalibrate the child’s next zone of proximal development.",
+        "textEquivalent": [
+          "Developmental Lens & Secure Attachment: Account for Piagetian preoperational reasoning (symbolic representation, egocentrism, concrete sensory learning), Eriksonian autonomy and initiative, and emotionally safe attachment relationships before raising cognitive demands.",
+          "Vygotsky ZPD & Play-Based Exploration: Use structured and child-initiated play, symbolic centers, peer dialogue, and concrete manipulatives to stretch emerging skills within each child’s zone of proximal development.",
+          "Responsive Adult Scaffolding & Fading: Deliver contingent verbal prompts, open-ended questions, vocabulary recasting, and physical modeling—gradually fading support as the child internalizes strategies through private speech.",
+          "Developmentally Appropriate Practice (DAP): Calibrate activity duration, fine/gross motor demands, choice, and social grouping to age expectations, individual variation, and family cultural practices.",
+          "Emergent Self-Efficacy & Conceptual Transfer: Reinforce authentic mastery experiences across centers and daily routines, using new observations to recalibrate the next ZPD challenge."
+        ],
+        "readingOrder": [
+          "dev-stage-attachment",
+          "zpd-play-exploration",
+          "responsive-scaffolding",
+          "dap-instructional-fit",
+          "efficacy-transfer-loop"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "dev-stage-attachment",
+            "label": "Developmental Lens & Secure Attachment",
+            "detail": "Apply Piaget (preoperational symbolic thought, concrete reasoning), Erikson (trust, autonomy, initiative vs. guilt), and attachment security so young learners feel safe to explore and make mistakes."
+          },
+          {
+            "id": "zpd-play-exploration",
+            "label": "Vygotsky ZPD & Play-Based Exploration",
+            "detail": "Design rich sociodramatic, constructive, and sensory play where peer interaction, manipulatives, and private speech bridge independent ability and emerging capability."
+          },
+          {
+            "id": "responsive-scaffolding",
+            "label": "Responsive Adult Scaffolding & Fading",
+            "detail": "Offer contingent prompts, think-aloud modeling, and language recasting during play—fading cues systematically so children build initiative instead of prompt dependence."
+          },
+          {
+            "id": "dap-instructional-fit",
+            "label": "Developmentally Appropriate Practice (DAP)",
+            "detail": "Align pacing, movement breaks, concrete representations, and choices to age-typical patterns, individual developmental profiles, and cultural and linguistic backgrounds."
+          },
+          {
+            "id": "efficacy-transfer-loop",
+            "label": "Emergent Self-Efficacy & Transfer",
+            "detail": "Consolidate early literacy, numeracy, and social reasoning across novel centers and routines, observing mastery cues to reset the next ZPD stretch."
+          }
+        ],
+        "edges": [
+          {
+            "id": "attachment-to-zpd",
+            "from": "dev-stage-attachment",
+            "to": "zpd-play-exploration",
+            "label": "establishes emotional safety and readiness for play inquiry"
+          },
+          {
+            "id": "zpd-to-scaffolding",
+            "from": "zpd-play-exploration",
+            "to": "responsive-scaffolding",
+            "label": "reveals emerging skills ready for contingent adult support"
+          },
+          {
+            "id": "scaffolding-to-dap",
+            "from": "responsive-scaffolding",
+            "to": "dap-instructional-fit",
+            "label": "translates theory into balanced, child-responsive practice"
+          },
+          {
+            "id": "dap-to-transfer",
+            "from": "dap-instructional-fit",
+            "to": "efficacy-transfer-loop",
+            "label": "builds competence, initiative, and cross-context transfer"
+          },
+          {
+            "id": "transfer-to-zpd",
+            "from": "efficacy-transfer-loop",
+            "to": "zpd-play-exploration",
+            "label": "recalibrates the next zone of proximal development"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "plt5621-diagram-02",
+      "chapterId": "plt5621-ch-03",
+      "domainId": "students-as-learners",
+      "title": "Culturally Responsive, Multilingual & Exceptionality Support in Early Classrooms",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Apply an asset-based workflow for supporting diverse early childhood learners—including multilingual learners, students with disabilities, and children with advanced readiness—through UDL scaffolds and IDEA/Section 504 collaboration without premature labeling.",
+      "caption": "An original inclusion workflow connecting strengths-based learner profiles, UDL and home-language scaffolds, responsive differentiation without premature labeling, and IDEA/Section 504 team collaboration for Praxis PLT: Early Childhood (5621).",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://sites.ed.gov/idea/regs/b/d/300.304"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Left-to-right flow from strengths-based learner profiling through UDL visual and home-language scaffolds and non-labeling differentiation to IDEA and Section 504 team collaboration.",
+        "longDescription": "Read from left to right. First, build a strengths-based learner and family profile that documents home languages, cultural routines, interests, motor and communication strengths, and prior preschool exposure before attributing challenges to deficits. Second, embed Universal Design for Learning alongside visual, manipulative, and home-language scaffolds—such as picture cards, realia, gestures, bilingual labels, and multimodal expression options—so every child accesses core learning. Third, differentiate support intensity and enrichment responsively while separating normal second-language acquisition, developmental timing differences, or limited prior schooling from true disability so children are never prematurely labeled. Fourth, collaborate with families and multidisciplinary specialists under IDEA and Section 504 to implement required accommodations, document response to targeted interventions, and initiate nondiscriminatory Child Find evaluations when persistent, cross-setting evidence warrants referral.",
+        "textEquivalent": [
+          "Strengths-Based Learner & Family Profile: Gather family input, cultural funds of knowledge, home-language proficiency, interests, and multi-context developmental observations before drawing conclusions about learning needs.",
+          "UDL, Visual/Manipulative & Home-Language Scaffolds: Provide pictorial schedules, realia, gestures, concrete manipulatives, home-language bridges, and multiple ways for young learners to engage and show understanding.",
+          "Differentiation Without Premature Labeling: Adjust small-group scaffolding and gifted enrichment while distinguishing typical dual-language development or unfamiliar routines from disability.",
+          "IDEA / Section 504 Team Collaboration: Implement IEP/IFSP and 504 accommodations faithfully, document response to evidence-based supports, and partner with families and specialists for nondiscriminatory Child Find referral only when warranted."
+        ],
+        "readingOrder": [
+          "strengths-learner-profile",
+          "udl-visual-home-scaffolds",
+          "differentiate-no-premature-label",
+          "idea-504-team-collab"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "strengths-learner-profile",
+            "label": "Strengths-Based Learner & Family Profile",
+            "detail": "Document cultural funds of knowledge, home-language skills, interests, sensory preferences, and authentic classroom observations in partnership with families."
+          },
+          {
+            "id": "udl-visual-home-scaffolds",
+            "label": "UDL, Visual & Home-Language Scaffolds",
+            "detail": "Embed picture cues, concrete manipulatives, realia, gestures, bilingual anchor words, and multiple means of representation and expression so all learners participate meaningfully."
+          },
+          {
+            "id": "differentiate-no-premature-label",
+            "label": "Differentiation Without Premature Labeling",
+            "detail": "Tailor scaffolded practice and open-ended enrichment while carefully distinguishing normal second-language acquisition or limited prior schooling from disability."
+          },
+          {
+            "id": "idea-504-team-collab",
+            "label": "IDEA / Section 504 Team Collaboration",
+            "detail": "Deliver IEP/IFSP/504 accommodations with fidelity, monitor response to targeted supports, and initiate nondiscriminatory multidisciplinary Child Find evaluation when evidence warrants."
+          }
+        ],
+        "edges": [
+          {
+            "id": "profile-to-udl",
+            "from": "strengths-learner-profile",
+            "to": "udl-visual-home-scaffolds",
+            "label": "informs culturally sustaining, multimodal classroom access"
+          },
+          {
+            "id": "udl-to-differentiation",
+            "from": "udl-visual-home-scaffolds",
+            "to": "differentiate-no-premature-label",
+            "label": "tests how children respond once linguistic and access barriers drop"
+          },
+          {
+            "id": "differentiation-to-idea",
+            "from": "differentiate-no-premature-label",
+            "to": "idea-504-team-collab",
+            "label": "supplies objective response-to-support evidence for team decisions"
+          },
+          {
+            "id": "idea-to-profile",
+            "from": "idea-504-team-collab",
+            "to": "strengths-learner-profile",
+            "label": "updates classroom accommodations and strengths-based plans"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "plt5621-diagram-04",
+      "chapterId": "plt5621-ch-04",
+      "domainId": "students-as-learners",
+      "title": "Positive Early Classroom Environment, Routines & Self-Regulation Co-Teaching Flow",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Prevent behavior disruptions and cultivate self-regulation in early childhood classrooms by pairing predictable visual schedules and safe physical zones with explicit social-emotional modeling, proactive redirection, and co-teaching/caregiver consistency.",
+      "caption": "An original early-classroom climate workflow linking physical and visual structure, explicit social-emotional and conflict-resolution modeling, proactive redirection, and co-teaching/caregiver alignment for Praxis PLT: Early Childhood (5621).",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/31/Published"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Left-to-right flow from predictable visual schedules and safe physical zones through explicit social-emotional and conflict-resolution modeling and proactive redirection to co-teaching and caregiver alignment.",
+        "longDescription": "Read from left to right. First, design predictable visual schedules and safe, clearly defined physical zones—separating active play from quiet reading or calm-down corners, labeling shelves with pictures and words, and keeping sightlines open to prevent crowding and anxiety. Second, teach social-emotional skills and conflict resolution explicitly during calm periods by modeling emotion vocabulary, breathing or calm-down tools, turn-taking scripts, and shared problem solving. Third, respond to emerging behavioral friction with proactive redirection, proximity, clear positive language, and limited choices rooted in the behavior’s antecedent and function rather than public reprimands. Fourth, align cues and self-regulation language across co-teachers, paraeducators, and families so young children experience consistent, reassuring expectations across school and home.",
+        "textEquivalent": [
+          "Predictable Visual Schedules & Safe Physical Zones: Structure clear pathways, picture-labeled materials, quiet calm-down spaces, and posted daily picture schedules so children anticipate routines and self-manage transitions.",
+          "Explicit SEL & Conflict-Resolution Modeling: Teach emotion naming, self-calming tools, turn-taking language, and step-by-step peer problem solving proactively through read-alouds, puppets, and role-play.",
+          "Proactive Redirection & Function-Aware Support: Use calm proximity, specific positive feedback, visual reminders, and two-option choices—adjusting triggers and teaching replacement behaviors instead of relying on punitive timeouts.",
+          "Co-Teaching & Caregiver Alignment: Coordinate shared routines, sensory supports, and positive regulation phrases with paraeducators, co-teachers, and families so habits generalize beyond one adult."
+        ],
+        "readingOrder": [
+          "visual-schedules-safe-zones",
+          "explicit-sel-conflict-modeling",
+          "proactive-redirection-support",
+          "coteaching-caregiver-alignment"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "visual-schedules-safe-zones",
+            "label": "Visual Schedules & Safe Physical Zones",
+            "detail": "Organize clear sightlines, separated loud/quiet centers, picture-labeled bins, a restorative calm-down space, and posted visual schedules that reduce uncertainty."
+          },
+          {
+            "id": "explicit-sel-conflict-modeling",
+            "label": "Explicit SEL & Conflict-Resolution Modeling",
+            "detail": "Proactively teach emotion identification, waiting and sharing scripts, calm-down strategies, and guided peer problem solving during calm classroom moments."
+          },
+          {
+            "id": "proactive-redirection-support",
+            "label": "Proactive Redirection & Positive Supports",
+            "detail": "Respond early with calm proximity, positively stated prompts, descriptive praise, and antecedent tweaks that address behavioral function without shaming."
+          },
+          {
+            "id": "coteaching-caregiver-alignment",
+            "label": "Co-Teaching & Caregiver Alignment",
+            "detail": "Synchronize cues, visual supports, and encouraging regulation routines across teachers, paraeducators, and families to build durable self-regulation."
+          }
+        ],
+        "edges": [
+          {
+            "id": "zones-to-sel",
+            "from": "visual-schedules-safe-zones",
+            "to": "explicit-sel-conflict-modeling",
+            "label": "creates predictable safety needed to practice regulation skills"
+          },
+          {
+            "id": "sel-to-redirection",
+            "from": "explicit-sel-conflict-modeling",
+            "to": "proactive-redirection-support",
+            "label": "gives children shared scripts to cue during real conflicts"
+          },
+          {
+            "id": "redirection-to-alignment",
+            "from": "proactive-redirection-support",
+            "to": "coteaching-caregiver-alignment",
+            "label": "shares what calming cues work best across adults and home"
+          },
+          {
+            "id": "alignment-to-zones",
+            "from": "coteaching-caregiver-alignment",
+            "to": "visual-schedules-safe-zones",
+            "label": "refines classroom layout and routines from shared observations"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "plt5621-diagram-03",
+      "chapterId": "plt5621-ch-05",
+      "domainId": "instructional-process",
+      "title": "Backward-Design Early Childhood Lesson Planning & Play-Embedded Sequence",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Plan coherent early childhood lessons and thematic units using backward design—linking standards and whole-child developmental goals to authentic evidence, play/inquiry centers paired with brief explicit mini-lessons, and guided modeling with smooth transitions.",
+      "caption": "An original backward-design instructional sequence integrating early learning standards, authentic performance evidence, play/inquiry centers and explicit mini-lessons, and guided transition routines for Praxis PLT: Early Childhood (5621).",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Left-to-right backward-design sequence from standards and developmental goals through authentic performance criteria, play/inquiry centers and explicit mini-lessons, and guided modeling with transition cues to evidence-based lesson adjustment.",
+        "longDescription": "Read from left to right. First, anchor planning in early learning standards and holistic developmental goals that integrate cognitive, language, motor, and social-emotional growth into observable objectives. Second, define authentic performance evidence before selecting activities—specifying what children will build, retell, sort, explain, or demonstrate during centers and small groups. Third, sequence brief, developmentally paced explicit mini-lessons alongside purposeful play and inquiry centers stocked with aligned props, texts, and manipulatives. Fourth, execute guided modeling, partner talk, and predictable auditory or visual transition cues so children move cleanly between whole-group, center, and small-group blocks without losing engagement. Fifth, review authentic student performance evidence against the target objective to refine next-day mini-lessons, center provocations, and small-group scaffolds.",
+        "textEquivalent": [
+          "Standards & Developmental Goal: Unpack early learning standards into observable, whole-child objectives integrating literacy, math, inquiry, language, and motor/social readiness.",
+          "Authentic Performance Evidence Plan: Determine up front what observable behaviors, oral explanations, constructions, or work samples will verify mastery of the goal.",
+          "Play/Inquiry Centers & Explicit Mini-Lessons: Pair short, focused teacher modeling (5–10 minutes) with purposeful play and inquiry centers that invite hands-on practice of the target concept.",
+          "Guided Modeling & Transition Cues: Coach emerging skills in small groups and centers while using songs, timers, and visual cues to keep transitions calm and instructional time intact.",
+          "Evidence Review & Next-Day Adjustment: Compare authentic child demonstrations to the objective to extend inquiry, reteach concepts concretely, or refresh center materials."
+        ],
+        "readingOrder": [
+          "standards-developmental-goal",
+          "authentic-evidence-criteria",
+          "play-centers-minilessons",
+          "guided-modeling-transitions",
+          "performance-evidence-adjust"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "standards-developmental-goal",
+            "label": "Standards & Developmental Goal",
+            "detail": "Translate early learning standards into clear, observable, whole-child objectives aligned to developmental readiness and interdisciplinary themes."
+          },
+          {
+            "id": "authentic-evidence-criteria",
+            "label": "Authentic Evidence Criteria",
+            "detail": "Decide before choosing activities what concrete performances—sorting, story retelling, counting, building, or oral reasoning—will show children met the objective."
+          },
+          {
+            "id": "play-centers-minilessons",
+            "label": "Play/Inquiry Centers & Mini-Lessons",
+            "detail": "Combine concise explicit mini-lessons with intentionally stocked dramatic, block, math, literacy, and science centers that embed target vocabulary and concepts."
+          },
+          {
+            "id": "guided-modeling-transitions",
+            "label": "Guided Modeling & Transition Cues",
+            "detail": "Scaffold guided practice with concrete models and peer talk while using visual/musical transition signals and clear routines to sustain focus."
+          },
+          {
+            "id": "performance-evidence-adjust",
+            "label": "Performance Evidence & Adaptation",
+            "detail": "Review observational notes and child artifacts against the objective to plan concrete reteaching, richer center provocations, or next-step challenges."
+          }
+        ],
+        "edges": [
+          {
+            "id": "goal-to-criteria",
+            "from": "standards-developmental-goal",
+            "to": "authentic-evidence-criteria",
+            "label": "defines observable mastery indicators first (backward design)"
+          },
+          {
+            "id": "criteria-to-centers",
+            "from": "authentic-evidence-criteria",
+            "to": "play-centers-minilessons",
+            "label": "aligns mini-lesson focus and center materials to target evidence"
+          },
+          {
+            "id": "centers-to-transitions",
+            "from": "play-centers-minilessons",
+            "to": "guided-modeling-transitions",
+            "label": "enacts instruction with responsive coaching and smooth pacing"
+          },
+          {
+            "id": "transitions-to-review",
+            "from": "guided-modeling-transitions",
+            "to": "performance-evidence-adjust",
+            "label": "captures authentic demonstrations during play and small groups"
+          },
+          {
+            "id": "review-to-centers",
+            "from": "performance-evidence-adjust",
+            "to": "play-centers-minilessons",
+            "label": "updates next-day mini-lessons and center provocations"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "plt5621-diagram-08",
+      "chapterId": "plt5621-ch-06",
+      "domainId": "instructional-process",
+      "title": "Matching Early Childhood Instructional Methods, Grouping & Practice",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Select and sequence explicit modeling, experiential inquiry, flexible cooperative grouping, and spaced differentiated practice based on the early childhood objective, learner readiness, and needed scaffolds.",
+      "caption": "An original instructional-selection flow uniting objective analysis, explicit modeling, inquiry and experiential exploration, flexible cooperative grouping, and spaced differentiated transfer for Praxis PLT: Early Childhood (5621).",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://ies.ed.gov/ncee/wwc/practiceguide/1"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Left-to-right flow from objective and readiness analysis through explicit modeling, inquiry and experiential play, and flexible cooperative grouping to differentiated spaced practice and transfer.",
+        "longDescription": "Read from left to right. First, analyze the learning objective, developmental readiness, and prior knowledge to choose the best instructional method rather than defaulting to one routine. Second, deliver explicit, direct, and modeled instruction with brief demonstrations and guided practice when introducing foundational phonics, counting, or safety routines. Third, extend conceptual synthesis through inquiry, problem-based investigations, and hands-on experiential learning centers where children test predictions with concrete materials. Fourth, organize flexible grouping and cooperative learning with clear partner roles and shared accountability, rotating groups fluidly by current evidence instead of permanent ability tracks. Fifth, sustain mastery through differentiated scaffolds and spaced practice that bridge guided routines into independent transfer, feeding new mastery data back into future method selection.",
+        "textEquivalent": [
+          "Objective & Readiness Analysis: Match instructional methods to the target goal, prior knowledge, and support needs instead of using one method for every lesson.",
+          "Explicit Modeling & Guided Practice: Teach foundational literacy, numeracy, and classroom procedures through brief clear demonstrations, choral responses, and immediate guided feedback.",
+          "Inquiry & Experiential Exploration: Deepen understanding through hands-on investigations, sensory discovery, and interactive centers that invite child questioning and synthesis.",
+          "Flexible Grouping & Cooperative Roles: Rotate skill, interest, and mixed-readiness groups using clear partner jobs and individual accountability rather than fixed tracks.",
+          "Differentiated, Spaced Practice & Transfer: Calibrate scaffolds, revisit key skills across spaced intervals, and promote independent application in fresh contexts."
+        ],
+        "readingOrder": [
+          "objective-readiness-match",
+          "explicit-modeled-launch",
+          "inquiry-experiential-play",
+          "flexible-cooperative-groups",
+          "spaced-differentiated-transfer"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "objective-readiness-match",
+            "label": "Objective & Readiness Analysis",
+            "detail": "Determine whether the objective calls for explicit skill introduction, guided exploration, or peer synthesis based on current child readiness and available scaffolds."
+          },
+          {
+            "id": "explicit-modeled-launch",
+            "label": "Explicit Modeling & Guided Practice",
+            "detail": "Introduce foundational decoding, counting, or routine steps via brief clear demonstrations, visual models, and responsive guided practice with immediate feedback."
+          },
+          {
+            "id": "inquiry-experiential-play",
+            "label": "Inquiry & Experiential Exploration",
+            "detail": "Invite hands-on discovery, sensory experiments, and structured problem solving where children test ideas, compare observations, and synthesize emerging concepts."
+          },
+          {
+            "id": "flexible-cooperative-groups",
+            "label": "Flexible Grouping & Cooperative Roles",
+            "detail": "Form fluid small groups and structured partner tasks with explicit child-friendly roles and accountability, regrouping regularly from fresh evidence."
+          },
+          {
+            "id": "spaced-differentiated-transfer",
+            "label": "Differentiated, Spaced Practice & Transfer",
+            "detail": "Tailor scaffold intensity, distribute review across days and centers, and coach children to transfer skills independently to unfamiliar tasks."
+          }
+        ],
+        "edges": [
+          {
+            "id": "match-to-explicit",
+            "from": "objective-readiness-match",
+            "to": "explicit-modeled-launch",
+            "label": "builds essential prerequisite skills through clear modeling"
+          },
+          {
+            "id": "explicit-to-inquiry",
+            "from": "explicit-modeled-launch",
+            "to": "inquiry-experiential-play",
+            "label": "equips learners with tools for purposeful hands-on inquiry"
+          },
+          {
+            "id": "inquiry-to-grouping",
+            "from": "inquiry-experiential-play",
+            "to": "flexible-cooperative-groups",
+            "label": "structures peer dialogue and shared accountability around discovery"
+          },
+          {
+            "id": "grouping-to-transfer",
+            "from": "flexible-cooperative-groups",
+            "to": "spaced-differentiated-transfer",
+            "label": "fades peer and adult cues toward distributed independent mastery"
+          },
+          {
+            "id": "transfer-to-match",
+            "from": "spaced-differentiated-transfer",
+            "to": "objective-readiness-match",
+            "label": "updates readiness evidence for the next method and group choice"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "plt5621-diagram-09",
+      "chapterId": "plt5621-ch-07",
+      "domainId": "instructional-process",
+      "title": "Responsive Questioning, Discourse & Real-Time Instructional Adjustment",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Combine clear multimodal explanations, purposeful questioning with deliberate wait time, inclusive listening and error analysis, and live monitoring to adjust early childhood instruction responsively.",
+      "caption": "An original classroom-communication cycle connecting clear explanations, purposeful questions with wait time, inclusive discourse and error analysis, and real-time instructional adjustment for Praxis PLT: Early Childhood (5621).",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://ies.ed.gov/ncee/wwc/practiceguide/12"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Left-to-right loop from clear explanations and representations through purposeful questions with wait time and inclusive listening with error analysis to live monitoring, adjustment, and reflection.",
+        "longDescription": "Read from left to right. First, deliver concise explanations reinforced by concrete objects, gestures, pictures, and modeled examples so every young learner understands the concept and task expectations. Second, pose purposeful questions matched to cognitive demand—balancing recall prompts with open-ended “why” and “how” questions—and hold deliberate wait time so children can process language and formulate answers. Third, foster inclusive discussion through active listening, turn-and-talk routines, and supportive error analysis that treats mistakes as informative clues about child thinking while elevating quieter and multilingual voices. Fourth, pair frequent checks for understanding with real-time pacing adjustments, productive teachable moments, and brief post-lesson reflection that sharpens the next explanation.",
+        "textEquivalent": [
+          "Clear Explanations & Multiple Representations: Present ideas concisely with gestures, concrete manipulatives, visuals, and familiar vocabulary so all children access the core concept.",
+          "Purposeful Questions & Wait Time: Align question prompts to intended cognitive demand and pause intentionally with wait time so young learners compose thoughtful responses.",
+          "Inclusive Listening & Error Analysis: Use active listening, equitable turn-taking, and non-punitive error analysis to uncover misconceptions and honor every child’s voice.",
+          "Real-Time Adjustment & Reflection: Act immediately on checks for understanding—reteaching, extending, or seizing teachable moments—then reflect to strengthen upcoming lessons."
+        ],
+        "readingOrder": [
+          "clear-explanations-representations",
+          "purposeful-questions-wait-time",
+          "inclusive-discourse-error-analysis",
+          "live-monitoring-reflection"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "clear-explanations-representations",
+            "label": "Clear Explanations & Representations",
+            "detail": "Communicate concepts and directions concisely using concrete objects, gestures, visuals, and child-accessible language so understanding is never blocked by jargon."
+          },
+          {
+            "id": "purposeful-questions-wait-time",
+            "label": "Purposeful Questions & Wait Time",
+            "detail": "Sequence scaffolded and open-ended questions matched to cognitive demand, pausing deliberately with wait time before calling on learners or prompting elaboration."
+          },
+          {
+            "id": "inclusive-discourse-error-analysis",
+            "label": "Inclusive Listening & Error Analysis",
+            "detail": "Broaden participation via partner talk, visual response cards, and active listening, analyzing child errors diagnostically to clarify misconceptions without shame."
+          },
+          {
+            "id": "live-monitoring-reflection",
+            "label": "Real-Time Adjustment & Reflection",
+            "detail": "Use rapid checks for understanding to pivot pacing, weave in aligned teachable moments, and capture disciplined reflections that improve tomorrow’s lesson."
+          }
+        ],
+        "edges": [
+          {
+            "id": "explain-to-question",
+            "from": "clear-explanations-representations",
+            "to": "purposeful-questions-wait-time",
+            "label": "sets a clear shared anchor for targeted questioning"
+          },
+          {
+            "id": "question-to-discourse",
+            "from": "purposeful-questions-wait-time",
+            "to": "inclusive-discourse-error-analysis",
+            "label": "invites equitable child responses and visible thinking"
+          },
+          {
+            "id": "discourse-to-monitor",
+            "from": "inclusive-discourse-error-analysis",
+            "to": "live-monitoring-reflection",
+            "label": "supplies live diagnostic evidence for immediate teaching pivots"
+          },
+          {
+            "id": "monitor-to-explain",
+            "from": "live-monitoring-reflection",
+            "to": "clear-explanations-representations",
+            "label": "refines representations and clarity for the next instructional cycle"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "plt5621-diagram-05",
+      "chapterId": "plt5621-ch-08",
+      "domainId": "assessment",
+      "title": "Authentic Formative Assessment & Portfolio Evidence Cycle in Early Childhood",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Run a continuous, developmentally appropriate early childhood assessment cycle—from objective observational checklists, anecdotes, and work samples through developmental progression analysis to flexible regrouping, timely feedback, and family-accessible reporting.",
+      "caption": "An original formative assessment cycle connecting observational records and portfolios, developmental progression analysis, flexible regrouping with concrete feedback, and family-accessible reporting for Praxis PLT: Early Childhood (5621).",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://ies.ed.gov/ncee/wwc/practiceguide/12"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Left-to-right assessment cycle from observational checklists, anecdotes, and work samples through developmental progression analysis and flexible regrouping with timely feedback to family-accessible portfolio reporting.",
+        "longDescription": "Read from left to right. First, gather authentic, ongoing formative evidence in natural classroom contexts using dated observational checklists, objective anecdotal notes free of judgmental labels, running records, photographs, and curated work samples. Second, analyze multiple measures along criterion-referenced developmental progressions to distinguish emerging behaviors, consistent mastery, and specific instructional barriers rather than relying on a single snapshot score. Third, act immediately on the evidence by forming flexible, fluid small groups and giving children concrete, timely, process-focused feedback that guides their next attempt. Fourth, communicate growth through family-accessible portfolios and strengths-first conferences in plain, translated language, inviting caregivers to contribute home observations that feed directly back into the next evidence cycle.",
+        "textEquivalent": [
+          "Observational Checklists, Anecdotes & Work Samples: Record dated, objective, behavior-specific observations, conference notes, and authentic child artifacts across play, literacy, and math routines.",
+          "Developmental Progression Analysis: Triangulate multiple observations against criterion-referenced learning progressions to pinpoint mastered skills, emerging strategies, and next instructional targets.",
+          "Flexible Regrouping & Timely Feedback: Adjust small-group membership fluidly based on current skill needs and provide immediate, specific, encouraging feedback focused on effort and strategy.",
+          "Family-Accessible Portfolio Reporting: Share clear, jargon-free work samples and growth narratives in families’ preferred languages, incorporating caregiver insights into ongoing classroom observations."
+        ],
+        "readingOrder": [
+          "observational-portfolio-evidence",
+          "developmental-progression-analysis",
+          "flexible-regrouping-feedback",
+          "family-accessible-reporting"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "observational-portfolio-evidence",
+            "label": "Checklists, Anecdotes & Work Samples",
+            "detail": "Collect dated, objective, observable evidence—checklists, anecdotal records, dictation, photos, and authentic work samples—across multiple natural classroom tasks."
+          },
+          {
+            "id": "developmental-progression-analysis",
+            "label": "Developmental Progression Analysis",
+            "detail": "Compare triangulated artifacts against criterion-referenced milestones to distinguish consistent mastery, emerging approximations, and task-access barriers."
+          },
+          {
+            "id": "flexible-regrouping-feedback",
+            "label": "Flexible Regrouping & Timely Feedback",
+            "detail": "Use current evidence to form temporary skill-based groups (avoiding permanent tracking) and give concrete, immediate, process-focused feedback to children."
+          },
+          {
+            "id": "family-accessible-reporting",
+            "label": "Family-Accessible Portfolio Reporting",
+            "detail": "Present strengths-based portfolios in jargon-free, accessible language with qualified translation as needed so families co-plan supportive home-school next steps."
+          }
+        ],
+        "edges": [
+          {
+            "id": "evidence-to-progression",
+            "from": "observational-portfolio-evidence",
+            "to": "developmental-progression-analysis",
+            "label": "triangulates multi-context evidence against clear criteria"
+          },
+          {
+            "id": "progression-to-regrouping",
+            "from": "developmental-progression-analysis",
+            "to": "flexible-regrouping-feedback",
+            "label": "pinpoints next-step targets for fluid groups and feedback"
+          },
+          {
+            "id": "regrouping-to-reporting",
+            "from": "flexible-regrouping-feedback",
+            "to": "family-accessible-reporting",
+            "label": "documents growth trajectories for transparent family dialogue"
+          },
+          {
+            "id": "reporting-to-evidence",
+            "from": "family-accessible-reporting",
+            "to": "observational-portfolio-evidence",
+            "label": "brings family insights back into ongoing classroom observation"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "plt5621-diagram-10",
+      "chapterId": "plt5621-ch-09",
+      "domainId": "assessment",
+      "title": "Early Childhood Measurement Quality, Score Frames & Fair Communication",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Evaluate early childhood classroom and standardized results accurately by checking reliability, validity, and measurement error, distinguishing norm- and criterion-referenced frames, interpreting percentiles and spread cautiously, and communicating multiple measures fairly.",
+      "caption": "An original measurement-literacy flow linking reliability and validity, norm- versus criterion-referenced score frames, percentile and distribution interpretation, and fair multiple-measure family communication for Praxis PLT: Early Childhood (5621).",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://ies.ed.gov/ncee/wwc/practiceguide/12"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Top-to-bottom sequence from reliability, validity, and error checks through norm versus criterion score frames and percentiles or distribution checks to multiple-measure fairness and accessible score communication.",
+        "longDescription": "Read from top to bottom. First, examine reliability, validity for the intended decision, and sources of measurement error—such as child fatigue, unfamiliar testing formats, or language load—before trusting any single score. Second, separate criterion-referenced interpretations that describe mastery of specific early-learning standards from norm-referenced comparisons against a peer group, using scaled scores rather than raw counts when comparing across test forms. Third, interpret percentile ranks accurately as relative standing, avoid misreading grade-equivalent scores as instructional placement levels, and inspect the median and spread when extreme scores distort the mean. Fourth, triangulate multiple developmentally appropriate measures to protect fairness and share plain-language growth summaries with families while protecting record confidentiality under FERPA.",
+        "textEquivalent": [
+          "Reliability, Validity & Measurement Error: Verify consistency and construct alignment for the intended purpose, accounting for young-child fatigue, language demands, and testing error.",
+          "Norm vs. Criterion & Scaled Scores: Distinguish mastery against defined early-learning criteria from peer-group norm comparisons, relying on scaled scores for cross-form comparisons.",
+          "Percentiles, Grade Equivalents & Spread: Explain percentile ranks accurately, reject grade equivalents as curriculum placement labels, and inspect median and variation when outliers skew means.",
+          "Multiple Measures, Fairness & Clear Reporting: Combine observations, work samples, and screeners to prevent single-score bias, communicating strengths and next steps clearly within FERPA safeguards."
+        ],
+        "readingOrder": [
+          "reliability-validity-error",
+          "reference-frames-score-types",
+          "percentiles-ge-distribution",
+          "multiple-measures-family-comms"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "top-to-bottom",
+        "nodes": [
+          {
+            "id": "reliability-validity-error",
+            "label": "Reliability, Validity & Measurement Error",
+            "detail": "Audit score consistency, intended-use validity, and error bands—recognizing how fatigue, rapport, or linguistic load can depress a young child’s single-sitting performance."
+          },
+          {
+            "id": "reference-frames-score-types",
+            "label": "Norm vs. Criterion & Scaled Scores",
+            "detail": "Separate criterion-referenced skill mastery from norm-referenced peer standing, and use scaled scores rather than raw totals when comparing across alternate forms or dates."
+          },
+          {
+            "id": "percentiles-ge-distribution",
+            "label": "Percentiles, Grade Equivalents & Spread",
+            "detail": "Interpret percentile ranks as relative peer standing, avoid treating grade equivalents as placement levels, and review median and spread when outliers pull the class mean."
+          },
+          {
+            "id": "multiple-measures-family-comms",
+            "label": "Multiple Measures, Fairness & Clear Reporting",
+            "detail": "Triangulate classroom observations, work samples, and screeners to guard against bias, sharing clear, actionable, FERPA-compliant summaries with families and teams."
+          }
+        ],
+        "edges": [
+          {
+            "id": "quality-to-frames",
+            "from": "reliability-validity-error",
+            "to": "reference-frames-score-types",
+            "label": "confirms score trustworthiness before choosing an interpretive frame"
+          },
+          {
+            "id": "frames-to-stats",
+            "from": "reference-frames-score-types",
+            "to": "percentiles-ge-distribution",
+            "label": "guides accurate reading of derived scores and group distributions"
+          },
+          {
+            "id": "stats-to-fairness",
+            "from": "percentiles-ge-distribution",
+            "to": "multiple-measures-family-comms",
+            "label": "prevents over-interpretation by pairing numbers with authentic work"
+          },
+          {
+            "id": "fairness-to-quality",
+            "from": "multiple-measures-family-comms",
+            "to": "reliability-validity-error",
+            "label": "surfaces bias or mismatch cues that improve future tool selection"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": false,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "plt5621-diagram-11",
+      "chapterId": "plt5621-ch-10",
+      "domainId": "professional-development-leadership-community",
+      "title": "Early Childhood Reflective Inquiry, Research Appraisal & Action Learning",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Drive continuous early childhood instructional improvement by uniting baseline reflective goals, critical research appraisal, disciplined classroom action research, and job-embedded mentoring and peer observation.",
+      "caption": "An original professional-growth cycle connecting baseline reflective goals, research design appraisal, classroom action research, and job-embedded mentoring and peer observation for Praxis PLT: Early Childhood (5621).",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Left-to-right professional learning cycle from reflective baseline goals through research appraisal and classroom action research to mentoring, peer observation, and job-embedded learning.",
+        "longDescription": "Read from left to right. First, examine classroom observations, child work samples, and interaction notes objectively to establish a clear baseline and define a targeted professional learning goal. Second, appraise external early-childhood research critically by inspecting study design, sample generalizability to your age group, and the boundary between correlation and causal proof. Third, conduct focused classroom action research—implementing one well-defined strategy, monitoring fidelity and child progress systematically, and acknowledging local sample limitations before over-generalizing. Fourth, sustain instructional growth through mentoring, non-evaluative peer observation, and ongoing job-embedded professional learning teams that feed new insights back into baseline reflection.",
+        "textEquivalent": [
+          "Reflective Baseline & Professional Goal: Review child evidence and classroom observations systematically to establish a baseline and set a measurable improvement goal.",
+          "Research Appraisal & Evidence Limits: Evaluate study design, sample fit, generalizability, and correlation-versus-causation claims before adopting a practice.",
+          "Classroom Action Research Cycle: Pilot a focused instructional change, track implementation fidelity and child outcomes, and interpret results with honest attention to local limitations.",
+          "Mentoring, Peer Observation & Sustained PL: Deepen practice through coaching, reciprocal peer observation, and ongoing job-embedded inquiry rather than isolated workshops."
+        ],
+        "readingOrder": [
+          "reflective-baseline-goal",
+          "evidence-research-appraisal",
+          "classroom-action-research",
+          "mentoring-job-embedded-pl"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "reflective-baseline-goal",
+            "label": "Reflective Baseline & Goal",
+            "detail": "Analyze child work, play anecdotes, and classroom patterns objectively to document baseline practice and set a specific, student-centered professional goal."
+          },
+          {
+            "id": "evidence-research-appraisal",
+            "label": "Research Appraisal & Evidence Limits",
+            "detail": "Vet early-childhood studies for methodological rigor, developmental generalizability, and whether findings support causal claims or only correlations."
+          },
+          {
+            "id": "classroom-action-research",
+            "label": "Classroom Action Research Cycle",
+            "detail": "Test a targeted classroom adjustment, log implementation fidelity alongside child progress, and recognize local sample size and context limitations."
+          },
+          {
+            "id": "mentoring-job-embedded-pl",
+            "label": "Mentoring, Peer Observation & Sustained PL",
+            "detail": "Extend learning through instructional coaching, non-evaluative peer classroom visits, and sustained job-embedded professional learning communities."
+          }
+        ],
+        "edges": [
+          {
+            "id": "baseline-to-appraisal",
+            "from": "reflective-baseline-goal",
+            "to": "evidence-research-appraisal",
+            "label": "directs literature review toward a concrete classroom question"
+          },
+          {
+            "id": "appraisal-to-action",
+            "from": "evidence-research-appraisal",
+            "to": "classroom-action-research",
+            "label": "selects a credible, developmentally matched strategy to pilot"
+          },
+          {
+            "id": "action-to-mentoring",
+            "from": "classroom-action-research",
+            "to": "mentoring-job-embedded-pl",
+            "label": "shares local evidence for peer feedback and sustained coaching"
+          },
+          {
+            "id": "mentoring-to-baseline",
+            "from": "mentoring-job-embedded-pl",
+            "to": "reflective-baseline-goal",
+            "label": "reframes observations into the next cycle of reflective inquiry"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "plt5621-diagram-12",
+      "chapterId": "plt5621-ch-11",
+      "domainId": "professional-development-leadership-community",
+      "title": "Role-Clear Early Childhood Collaboration, Language Access & Continuity",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Coordinate early childhood families, paraeducators, specialists, and community partners through explicit role clarity, reciprocal language-accessible family engagement, and FERPA-compliant data safeguarding.",
+      "caption": "An original collaboration workflow linking role-clear action plans, reciprocal family partnerships with language access, specialist and paraeducator coordination, and community continuity with safeguarding for Praxis PLT: Early Childhood (5621).",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://www.ed.gov/laws-and-policy/civil-rights-laws/race-color-and-national-origin-discrimination/race-color-and-national-origin-discrimination-key-issues/equal-education-opportunities-english"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Left-to-right collaboration flow from shared purpose and role-clear action plans through reciprocal family language access and specialist or paraeducator coordination to community continuity and data safeguarding.",
+        "longDescription": "Read from left to right. First, define a shared student-centered purpose, explicit role boundaries, and a concrete action plan with follow-up timelines across school team members and families. Second, build reciprocal family partnerships that treat caregivers as co-experts on their child’s routines and strengths while ensuring meaningful language access through qualified interpreters and translated communications rather than using children to translate. Third, coordinate early-intervention specialists, speech-language pathologists, counselors, and paraeducators around teacher-planned instructional goals and classroom schedules so services reinforce rather than fragment learning. Fourth, bridge families to community early-learning, health, and library resources while practicing strict data minimization, written parental consent, and safeguarding rules whenever collaborating beyond school staff.",
+        "textEquivalent": [
+          "Shared Purpose & Role-Clear Action Plans: Align goals, explicit responsibilities, and review timelines across educators, families, and administrators before acting.",
+          "Reciprocal Families & Language Access: Welcome caregiver expertise through two-way dialogue and provide qualified interpreters and translated notices rather than relying on students.",
+          "Specialists & Paraeducator Coordination: Synchronize related-service providers and paraeducators around teacher-directed instructional plans and predictable daily routines.",
+          "Community Continuity & Data Safeguarding: Connect families with community supports while enforcing data minimization, FERPA need-to-know boundaries, and written consent."
+        ],
+        "readingOrder": [
+          "shared-purpose-role-clarity",
+          "reciprocal-family-language-access",
+          "specialists-paraeducator-coordination",
+          "community-safeguarding-continuity"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "shared-purpose-role-clarity",
+            "label": "Shared Purpose & Role-Clear Plans",
+            "detail": "Clarify child-centered goals, professional role boundaries, and concrete action steps with follow-up dates across colleagues, administrators, and families."
+          },
+          {
+            "id": "reciprocal-family-language-access",
+            "label": "Reciprocal Families & Language Access",
+            "detail": "Engage families as reciprocal partners in their home languages using qualified interpreters and translated materials—never asking students or untrained peers to interpret."
+          },
+          {
+            "id": "specialists-paraeducator-coordination",
+            "label": "Specialists & Paraeducator Coordination",
+            "detail": "Align speech-language, occupational therapy, intervention, and paraeducator supports under teacher-designed instructional plans and coherent classroom transitions."
+          },
+          {
+            "id": "community-safeguarding-continuity",
+            "label": "Community Continuity & Data Safeguarding",
+            "detail": "Coordinate early-learning and community wraparound referrals while maintaining child safeguarding, data minimization, and written parental consent before external record sharing."
+          }
+        ],
+        "edges": [
+          {
+            "id": "purpose-to-family",
+            "from": "shared-purpose-role-clarity",
+            "to": "reciprocal-family-language-access",
+            "label": "opens accessible, transparent partnerships grounded in shared goals"
+          },
+          {
+            "id": "family-to-specialists",
+            "from": "reciprocal-family-language-access",
+            "to": "specialists-paraeducator-coordination",
+            "label": "brings family insights into coordinated classroom and specialist support"
+          },
+          {
+            "id": "specialists-to-community",
+            "from": "specialists-paraeducator-coordination",
+            "to": "community-safeguarding-continuity",
+            "label": "extends seamless support into community transitions with strict privacy"
+          },
+          {
+            "id": "community-to-purpose",
+            "from": "community-safeguarding-continuity",
+            "to": "shared-purpose-role-clarity",
+            "label": "feeds continuity updates back into team action plans"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "plt5621-diagram-06",
+      "chapterId": "plt5621-ch-12",
+      "domainId": "professional-development-leadership-community",
+      "title": "Reflective Early Childhood Practice, Family Partnership & Legal-Ethical Safeguards",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Integrate reciprocal family engagement, qualified language access, reflective professional learning, and non-negotiable legal-ethical safeguards—FERPA privacy, IDEA procedural rights, and mandatory reporting—into daily early childhood decision making.",
+      "caption": "An original professional responsibility workflow uniting reciprocal family engagement, reflective professional inquiry, FERPA/IDEA legal safeguards, and mandatory reporting boundaries for Praxis PLT: Early Childhood (5621).",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://studentprivacy.ed.gov/faq/under-ferpa-may-educational-agency-or-institution-disclose-education-records-any-its-employees"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Left-to-right flow from two-way family engagement and qualified interpretation through reflective inquiry and professional learning to FERPA privacy and IDEA procedural rights and mandatory reporting safeguards.",
+        "longDescription": "Read from left to right. First, cultivate two-way family engagement with respectful, flexible communication channels and qualified interpreters or translated materials whenever needed—never using students or unvetted peers to translate sensitive information. Second, sustain reflective inquiry and job-embedded professional learning by examining classroom evidence, consulting peer-reviewed early childhood research, and collaborating with mentors and specialists. Third, uphold FERPA student-record confidentiality and IDEA procedural safeguards—limiting personally identifiable records to staff with a legitimate educational interest, securing informed parental consent prior to evaluations, and honoring IEP/504 legal rights. Fourth, enforce mandatory reporting and ethical safety boundaries by reporting reasonable suspicion of child abuse or neglect immediately through required statutory channels without conducting an independent investigation, while keeping student welfare central.",
+        "textEquivalent": [
+          "Two-Way Family Engagement & Qualified Interpretation: Build reciprocal partnerships honoring family expertise and provide qualified interpreters and translated notices so all caregivers participate equitably.",
+          "Professional Learning & Reflective Inquiry: Analyze classroom evidence, engage in peer coaching and PLCs, and evaluate research critically to close opportunity gaps and refine teaching.",
+          "FERPA Privacy & IDEA Procedural Safeguards: Protect education records strictly to need-to-know school officials, obtain written parental consent for IDEA evaluations/services, and safeguard due-process rights.",
+          "Mandatory Reporting & Child Safety Boundaries: Fulfill legal mandatory-reporting duties promptly upon reasonable suspicion of abuse or neglect—without investigating personally—and follow emergency and ethical protocols."
+        ],
+        "readingOrder": [
+          "two-way-family-interpretation",
+          "reflective-inquiry-pl",
+          "ferpa-idea-procedural-rights",
+          "mandatory-reporting-ethics"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "two-way-family-interpretation",
+            "label": "Two-Way Family Engagement & Interpretation",
+            "detail": "Invite reciprocal caregiver dialogue and arrange qualified interpreters and translated communications rather than relying on children or informal bystanders."
+          },
+          {
+            "id": "reflective-inquiry-pl",
+            "label": "Professional Learning & Reflective Inquiry",
+            "detail": "Use student evidence, action research, peer observation, and vetted early childhood scholarship to evaluate instructional impact and set growth goals."
+          },
+          {
+            "id": "ferpa-idea-procedural-rights",
+            "label": "FERPA Privacy & IDEA Procedural Rights",
+            "detail": "Restrict education records strictly to staff with legitimate educational interest, protect private conferences, and uphold written parental consent and IDEA/504 safeguards."
+          },
+          {
+            "id": "mandatory-reporting-ethics",
+            "label": "Mandatory Reporting & Ethical Safety",
+            "detail": "Report reasonable suspicion of abuse or neglect immediately per statutory mandate without conducting an independent investigation, while upholding student safety and professional ethics."
+          }
+        ],
+        "edges": [
+          {
+            "id": "family-to-reflection",
+            "from": "two-way-family-interpretation",
+            "to": "reflective-inquiry-pl",
+            "label": "enriches teacher reflection with authentic family context"
+          },
+          {
+            "id": "reflection-to-ferpa",
+            "from": "reflective-inquiry-pl",
+            "to": "ferpa-idea-procedural-rights",
+            "label": "ensures data sharing and team reviews obey privacy and rights law"
+          },
+          {
+            "id": "ferpa-to-reporting",
+            "from": "ferpa-idea-procedural-rights",
+            "to": "mandatory-reporting-ethics",
+            "label": "distinguishes routine confidentiality from statutory child-safety duties"
+          },
+          {
+            "id": "reporting-to-family",
+            "from": "mandatory-reporting-ethics",
+            "to": "two-way-family-interpretation",
+            "label": "maintains lawful, transparent, child-centered ethical boundaries"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    }
+  ],
   "flashcards": [
     {
       "id": "plt5621-card-001",
@@ -4572,6 +6045,1457 @@
       ],
       "reviewStatus": "source-reviewed-editorial-pass",
       "reviewNote": "Independent early-childhood case-analysis practice; not an official ETS case, prompt, scoring guide, response score, scaled score, pass prediction, licensure decision, developmental screening, diagnosis, disability decision, or legal advice. AlloFlow does not score written responses."
+    }
+  ],
+  "diagramPlacements": [
+    {
+      "id": "plt5621-diagram-placement-07",
+      "diagramId": "plt5621-diagram-07",
+      "chapterId": "plt5621-ch-01",
+      "sectionId": "plt5621-ch-01-section-04",
+      "position": "after-section-content",
+      "learnerPurpose": "Connect early childhood cognitive processing—prior schema activation, working-memory limits, flexible theoretical lenses, emerging metacognition and self-efficacy, and scaffolded retrieval—to authentic transfer across classroom routines and play.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5621-diagram-placement-01",
+      "diagramId": "plt5621-diagram-01",
+      "chapterId": "plt5621-ch-02",
+      "sectionId": "plt5621-ch-02-section-02",
+      "position": "after-section-content",
+      "learnerPurpose": "Connect foundational early childhood developmental theories—Piagetian preoperational reasoning, Vygotsky’s zone of proximal development and scaffolding, Eriksonian initiative, and secure attachment—directly to play-based exploration and developmentally appropriate practice.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5621-diagram-placement-02",
+      "diagramId": "plt5621-diagram-02",
+      "chapterId": "plt5621-ch-03",
+      "sectionId": "plt5621-ch-03-section-04",
+      "position": "after-section-content",
+      "learnerPurpose": "Apply an asset-based workflow for supporting diverse early childhood learners—including multilingual learners, students with disabilities, and children with advanced readiness—through UDL scaffolds and IDEA/Section 504 collaboration without premature labeling.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5621-diagram-placement-04",
+      "diagramId": "plt5621-diagram-04",
+      "chapterId": "plt5621-ch-04",
+      "sectionId": "plt5621-ch-04-section-02",
+      "position": "after-section-content",
+      "learnerPurpose": "Prevent behavior disruptions and cultivate self-regulation in early childhood classrooms by pairing predictable visual schedules and safe physical zones with explicit social-emotional modeling, proactive redirection, and co-teaching/caregiver consistency.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5621-diagram-placement-03",
+      "diagramId": "plt5621-diagram-03",
+      "chapterId": "plt5621-ch-05",
+      "sectionId": "plt5621-ch-05-section-03",
+      "position": "after-section-content",
+      "learnerPurpose": "Plan coherent early childhood lessons and thematic units using backward design—linking standards and whole-child developmental goals to authentic evidence, play/inquiry centers paired with brief explicit mini-lessons, and guided modeling with smooth transitions.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5621-diagram-placement-08",
+      "diagramId": "plt5621-diagram-08",
+      "chapterId": "plt5621-ch-06",
+      "sectionId": "plt5621-ch-06-section-04",
+      "position": "after-section-content",
+      "learnerPurpose": "Select and sequence explicit modeling, experiential inquiry, flexible cooperative grouping, and spaced differentiated practice based on the early childhood objective, learner readiness, and needed scaffolds.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5621-diagram-placement-09",
+      "diagramId": "plt5621-diagram-09",
+      "chapterId": "plt5621-ch-07",
+      "sectionId": "plt5621-ch-07-section-04",
+      "position": "after-section-content",
+      "learnerPurpose": "Combine clear multimodal explanations, purposeful questioning with deliberate wait time, inclusive listening and error analysis, and live monitoring to adjust early childhood instruction responsively.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5621-diagram-placement-05",
+      "diagramId": "plt5621-diagram-05",
+      "chapterId": "plt5621-ch-08",
+      "sectionId": "plt5621-ch-08-section-03",
+      "position": "after-section-content",
+      "learnerPurpose": "Run a continuous, developmentally appropriate early childhood assessment cycle—from objective observational checklists, anecdotes, and work samples through developmental progression analysis to flexible regrouping, timely feedback, and family-accessible reporting.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5621-diagram-placement-10",
+      "diagramId": "plt5621-diagram-10",
+      "chapterId": "plt5621-ch-09",
+      "sectionId": "plt5621-ch-09-section-04",
+      "position": "after-section-content",
+      "learnerPurpose": "Evaluate early childhood classroom and standardized results accurately by checking reliability, validity, and measurement error, distinguishing norm- and criterion-referenced frames, interpreting percentiles and spread cautiously, and communicating multiple measures fairly.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5621-diagram-placement-11",
+      "diagramId": "plt5621-diagram-11",
+      "chapterId": "plt5621-ch-10",
+      "sectionId": "plt5621-ch-10-section-03",
+      "position": "after-section-content",
+      "learnerPurpose": "Drive continuous early childhood instructional improvement by uniting baseline reflective goals, critical research appraisal, disciplined classroom action research, and job-embedded mentoring and peer observation.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5621-diagram-placement-12",
+      "diagramId": "plt5621-diagram-12",
+      "chapterId": "plt5621-ch-11",
+      "sectionId": "plt5621-ch-11-section-04",
+      "position": "after-section-content",
+      "learnerPurpose": "Coordinate early childhood families, paraeducators, specialists, and community partners through explicit role clarity, reciprocal language-accessible family engagement, and FERPA-compliant data safeguarding.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5621-diagram-placement-06",
+      "diagramId": "plt5621-diagram-06",
+      "chapterId": "plt5621-ch-12",
+      "sectionId": "plt5621-ch-12-section-03",
+      "position": "after-section-content",
+      "learnerPurpose": "Integrate reciprocal family engagement, qualified language access, reflective professional learning, and non-negotiable legal-ethical safeguards—FERPA privacy, IDEA procedural rights, and mandatory reporting—into daily early childhood decision making.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    }
+  ],
+  "glossary": [
+    {
+      "id": "plt5621-gloss-01",
+      "term": "Zone of Proximal Development",
+      "definition": "Vygotsky's range between what a young child can accomplish independently and what the child can achieve with guided adult or peer support, defining the prime target for early childhood instruction.",
+      "aliases": [
+        "ZPD"
+      ],
+      "chapterIds": [
+        "plt5621-ch-01"
+      ],
+      "domainIds": [
+        "students-as-learners"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5621-ch-01",
+            "chapterTitle": "Learning Theory, Cognition, and Transfer",
+            "domainId": "students-as-learners",
+            "domain": "Students as Learners",
+            "sectionId": "plt5621-ch-01-section-02",
+            "sectionHeading": "Foundational theorists as instructional lenses",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf"
+      ]
+    },
+    {
+      "id": "plt5621-gloss-02",
+      "term": "Instructional scaffolding",
+      "definition": "Temporary, responsive guidance—such as modeling, visual cues, or verbal prompts—that helps a young learner perform a task within the ZPD and is systematically faded as competence grows.",
+      "aliases": [
+        "Scaffolded support",
+        "Gradual fading"
+      ],
+      "chapterIds": [
+        "plt5621-ch-01"
+      ],
+      "domainIds": [
+        "students-as-learners"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5621-ch-01",
+            "chapterTitle": "Learning Theory, Cognition, and Transfer",
+            "domainId": "students-as-learners",
+            "domain": "Students as Learners",
+            "sectionId": "plt5621-ch-01-section-04",
+            "sectionHeading": "Scaffolding, retrieval, and transfer",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://ies.ed.gov/ncee/wwc/practiceguide/1"
+      ]
+    },
+    {
+      "id": "plt5621-gloss-03",
+      "term": "Preoperational stage",
+      "definition": "Piaget's early childhood cognitive stage (roughly ages 2–7) marked by symbolic play and rapid language growth alongside centration, egocentrism, and emerging conservation of quantity.",
+      "aliases": [
+        "Conservation and centration"
+      ],
+      "chapterIds": [
+        "plt5621-ch-02"
+      ],
+      "domainIds": [
+        "students-as-learners"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5621-ch-02",
+            "chapterTitle": "Human Development in Early Childhood",
+            "domainId": "students-as-learners",
+            "domain": "Students as Learners",
+            "sectionId": "plt5621-ch-02-section-02",
+            "sectionHeading": "Play, language, reasoning, and representation",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf"
+      ]
+    },
+    {
+      "id": "plt5621-gloss-04",
+      "term": "Initiative versus guilt",
+      "definition": "Erikson's preschool psychosocial crisis in which children develop purposeful agency through imaginative play and choice-making, or internalize guilt when exploration meets harsh criticism.",
+      "aliases": [
+        "Erikson's third stage"
+      ],
+      "chapterIds": [
+        "plt5621-ch-02"
+      ],
+      "domainIds": [
+        "students-as-learners"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5621-ch-02",
+            "chapterTitle": "Human Development in Early Childhood",
+            "domainId": "students-as-learners",
+            "domain": "Students as Learners",
+            "sectionId": "plt5621-ch-02-section-03",
+            "sectionHeading": "Social-emotional, identity, and moral development",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf"
+      ]
+    },
+    {
+      "id": "plt5621-gloss-05",
+      "term": "IEP and Section 504 accommodations",
+      "definition": "Legally mandated instructional or environmental adjustments under IDEA or Section 504 that remove disability-related barriers so young learners access grade-level standards without lowering expectations.",
+      "aliases": [
+        "Individualized access supports"
+      ],
+      "chapterIds": [
+        "plt5621-ch-03"
+      ],
+      "domainIds": [
+        "students-as-learners"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5621-ch-03",
+            "chapterTitle": "Learner Differences, Access, Disability, Giftedness, and Language",
+            "domainId": "students-as-learners",
+            "domain": "Students as Learners",
+            "sectionId": "plt5621-ch-03-section-02",
+            "sectionHeading": "Disability access, IDEA, Section 504, and classroom responsibility",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://sites.ed.gov/idea/regs/b/d/300.304",
+        "https://www.ed.gov/laws-and-policy/civil-rights-laws/disability-discrimination"
+      ]
+    },
+    {
+      "id": "plt5621-gloss-06",
+      "term": "Sheltered language support",
+      "definition": "Targeted instructional practices for young English learners—including visuals, gestures, sentence frames, and home-language bridges—that build academic English while ensuring meaningful content access.",
+      "aliases": [
+        "EL visual and oral scaffolds"
+      ],
+      "chapterIds": [
+        "plt5621-ch-03"
+      ],
+      "domainIds": [
+        "students-as-learners"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5621-ch-03",
+            "chapterTitle": "Learner Differences, Access, Disability, Giftedness, and Language",
+            "domainId": "students-as-learners",
+            "domain": "Students as Learners",
+            "sectionId": "plt5621-ch-03-section-03",
+            "sectionHeading": "English learners and meaningful grade-level participation",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://www.ed.gov/laws-and-policy/civil-rights-laws/race-color-and-national-origin-discrimination/race-color-and-national-origin-discrimination-key-issues/equal-education-opportunities-english"
+      ]
+    },
+    {
+      "id": "plt5621-gloss-07",
+      "term": "Positive behavior management",
+      "definition": "Preventive early childhood guidance using predictable routines, visual schedules, explicitly taught expectations, and behavior-specific praise to foster emotional safety and sustained engagement.",
+      "aliases": [
+        "Proactive classroom routines"
+      ],
+      "chapterIds": [
+        "plt5621-ch-04"
+      ],
+      "domainIds": [
+        "students-as-learners"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5621-ch-04",
+            "chapterTitle": "Motivation, Learning Environment, and Behavior",
+            "domainId": "students-as-learners",
+            "domain": "Students as Learners",
+            "sectionId": "plt5621-ch-04-section-02",
+            "sectionHeading": "Routines, expectations, and positive climate",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/31/Published"
+      ]
+    },
+    {
+      "id": "plt5621-gloss-08",
+      "term": "Self-regulation",
+      "definition": "A young child's developing capacity to monitor and adjust emotions, attention, and impulses during learning and social play, strengthened through co-regulation, modeling, and calm-down routines.",
+      "aliases": [
+        "Emotional and behavioral self-control"
+      ],
+      "chapterIds": [
+        "plt5621-ch-04"
+      ],
+      "domainIds": [
+        "students-as-learners"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5621-ch-04",
+            "chapterTitle": "Motivation, Learning Environment, and Behavior",
+            "domainId": "students-as-learners",
+            "domain": "Students as Learners",
+            "sectionId": "plt5621-ch-04-section-04",
+            "sectionHeading": "Physical environment, engagement, and self-management",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/31/Published"
+      ]
+    },
+    {
+      "id": "plt5621-gloss-09",
+      "term": "Standards-aligned learning objective",
+      "definition": "A clear statement specifying the observable skill or understanding young learners will demonstrate, aligned directly to state early learning standards, classroom activities, and assessment criteria.",
+      "aliases": [
+        "Measurable lesson objective"
+      ],
+      "chapterIds": [
+        "plt5621-ch-05"
+      ],
+      "domainIds": [
+        "instructional-process"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5621-ch-05",
+            "chapterTitle": "Standards, Objectives, Planning, and Resources",
+            "domainId": "instructional-process",
+            "domain": "Instructional Process",
+            "sectionId": "plt5621-ch-05-section-02",
+            "sectionHeading": "Observable objectives and aligned evidence",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf"
+      ]
+    },
+    {
+      "id": "plt5621-gloss-10",
+      "term": "Backward design",
+      "definition": "Curriculum planning process that begins by identifying desired standards and enduring understandings, next determines acceptable assessment evidence, and finally designs aligned learning experiences.",
+      "aliases": [
+        "Backward planning",
+        "UbD"
+      ],
+      "chapterIds": [
+        "plt5621-ch-05"
+      ],
+      "domainIds": [
+        "instructional-process"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5621-ch-05",
+            "chapterTitle": "Standards, Objectives, Planning, and Resources",
+            "domainId": "instructional-process",
+            "domain": "Instructional Process",
+            "sectionId": "plt5621-ch-05-section-03",
+            "sectionHeading": "Backward planning, units, and interdisciplinary design",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf"
+      ]
+    },
+    {
+      "id": "plt5621-gloss-11",
+      "term": "Play-based inquiry",
+      "definition": "Developmentally appropriate early childhood pedagogy in which structured, hands-on play centers invite children to explore, question, and test ideas while the teacher embeds targeted learning goals.",
+      "aliases": [
+        "Guided play",
+        "Experiential inquiry"
+      ],
+      "chapterIds": [
+        "plt5621-ch-06"
+      ],
+      "domainIds": [
+        "instructional-process"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5621-ch-06",
+            "chapterTitle": "Instructional Methods, Grouping, Scaffolding, and Practice",
+            "domainId": "instructional-process",
+            "domain": "Instructional Process",
+            "sectionId": "plt5621-ch-06-section-02",
+            "sectionHeading": "Inquiry, problem-based, experiential, and interactive learning",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf"
+      ]
+    },
+    {
+      "id": "plt5621-gloss-12",
+      "term": "Differentiated instruction",
+      "definition": "Proactive adjustment of content, process, product, or learning environment based on ongoing readiness and interest data so every PK–3 learner reaches shared standards through accessible pathways.",
+      "aliases": [
+        "Instructional differentiation"
+      ],
+      "chapterIds": [
+        "plt5621-ch-06"
+      ],
+      "domainIds": [
+        "instructional-process"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5621-ch-06",
+            "chapterTitle": "Instructional Methods, Grouping, Scaffolding, and Practice",
+            "domainId": "instructional-process",
+            "domain": "Instructional Process",
+            "sectionId": "plt5621-ch-06-section-04",
+            "sectionHeading": "Scaffolding, differentiation, practice, and transfer",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://ies.ed.gov/ncee/wwc/practiceguide/1"
+      ]
+    },
+    {
+      "id": "plt5621-gloss-13",
+      "term": "Wait time",
+      "definition": "An intentional three-to-five-second silent pause after posing a question and after a student responds, increasing young children's language complexity, participation equity, and reasoning depth.",
+      "aliases": [
+        "Think time"
+      ],
+      "chapterIds": [
+        "plt5621-ch-07"
+      ],
+      "domainIds": [
+        "instructional-process"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5621-ch-07",
+            "chapterTitle": "Questioning, Communication, Monitoring, and Reflection",
+            "domainId": "instructional-process",
+            "domain": "Instructional Process",
+            "sectionId": "plt5621-ch-07-section-01",
+            "sectionHeading": "Question purpose, wait time, and cognitive demand",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://ies.ed.gov/ncee/wwc/practiceguide/1"
+      ]
+    },
+    {
+      "id": "plt5621-gloss-14",
+      "term": "Open-ended questioning",
+      "definition": "Asking prompts with multiple valid explanations rather than single-word recall answers to elicit young children's reasoning, expand expressive vocabulary, and surface conceptual misunderstandings.",
+      "aliases": [
+        "Divergent questioning"
+      ],
+      "chapterIds": [
+        "plt5621-ch-07"
+      ],
+      "domainIds": [
+        "instructional-process"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5621-ch-07",
+            "chapterTitle": "Questioning, Communication, Monitoring, and Reflection",
+            "domainId": "instructional-process",
+            "domain": "Instructional Process",
+            "sectionId": "plt5621-ch-07-section-02",
+            "sectionHeading": "Discussion, listening, error response, and learner voice",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf"
+      ]
+    },
+    {
+      "id": "plt5621-gloss-15",
+      "term": "Formative versus summative assessment",
+      "definition": "Formative assessment gathers ongoing evidence during instruction to adjust teaching and provide feedback, whereas summative assessment evaluates cumulative mastery at the end of an instructional unit.",
+      "aliases": [
+        "Assessment for vs. of learning"
+      ],
+      "chapterIds": [
+        "plt5621-ch-08"
+      ],
+      "domainIds": [
+        "assessment"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5621-ch-08",
+            "chapterTitle": "Assessment Purpose, Format, Alignment, and Feedback",
+            "domainId": "assessment",
+            "domain": "Assessment",
+            "sectionId": "plt5621-ch-08-section-01",
+            "sectionHeading": "Diagnostic, formative, and summative purposes",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://ies.ed.gov/ncee/wwc/practiceguide/12"
+      ]
+    },
+    {
+      "id": "plt5621-gloss-16",
+      "term": "Authentic portfolio assessment",
+      "definition": "Purposeful collection of dated student work samples, anecdotal records, and performance artifacts over time that documents developmental growth and mastery in natural early childhood contexts.",
+      "aliases": [
+        "Work-sampling portfolio"
+      ],
+      "chapterIds": [
+        "plt5621-ch-08"
+      ],
+      "domainIds": [
+        "assessment"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5621-ch-08",
+            "chapterTitle": "Assessment Purpose, Format, Alignment, and Feedback",
+            "domainId": "assessment",
+            "domain": "Assessment",
+            "sectionId": "plt5621-ch-08-section-03",
+            "sectionHeading": "Rubrics, checklists, portfolios, self assessment, and peer assessment",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf"
+      ]
+    },
+    {
+      "id": "plt5621-gloss-17",
+      "term": "Assessment reliability and validity",
+      "definition": "Reliability is the consistency of assessment scores across occasions or raters, while validity is the degree to which evidence supports the intended interpretation and instructional use of scores.",
+      "aliases": [
+        "Psychometric quality"
+      ],
+      "chapterIds": [
+        "plt5621-ch-09"
+      ],
+      "domainIds": [
+        "assessment"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5621-ch-09",
+            "chapterTitle": "Measurement, Scoring, Interpretation, and Communication",
+            "domainId": "assessment",
+            "domain": "Assessment",
+            "sectionId": "plt5621-ch-09-section-01",
+            "sectionHeading": "Reliability, validity, error, and intended use",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://ies.ed.gov/ncee/wwc/practiceguide/12"
+      ]
+    },
+    {
+      "id": "plt5621-gloss-18",
+      "term": "Analytic scoring rubric",
+      "definition": "A scoring guide that defines explicit performance levels separately for each learning criterion, reducing subjective rater bias and giving students and families clear feedback on growth targets.",
+      "aliases": [
+        "Criteria-based rubric"
+      ],
+      "chapterIds": [
+        "plt5621-ch-09"
+      ],
+      "domainIds": [
+        "assessment"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5621-ch-09",
+            "chapterTitle": "Measurement, Scoring, Interpretation, and Communication",
+            "domainId": "assessment",
+            "domain": "Assessment",
+            "sectionId": "plt5621-ch-09-section-04",
+            "sectionHeading": "Fairness, multiple measures, and communication",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf"
+      ]
+    },
+    {
+      "id": "plt5621-gloss-19",
+      "term": "Reflective practice",
+      "definition": "Continuous, evidence-based examination of one's instructional choices, observational records, and student outcomes to identify bias, refine pedagogy, and set measurable professional learning goals.",
+      "aliases": [
+        "Reflective inquiry"
+      ],
+      "chapterIds": [
+        "plt5621-ch-10"
+      ],
+      "domainIds": [
+        "professional-development-leadership-community"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5621-ch-10",
+            "chapterTitle": "Reflection, Research, and Professional Learning",
+            "domainId": "professional-development-leadership-community",
+            "domain": "Professional Development, Leadership, and Community",
+            "sectionId": "plt5621-ch-10-section-01",
+            "sectionHeading": "Reflective inquiry and professional goals",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf"
+      ]
+    },
+    {
+      "id": "plt5621-gloss-20",
+      "term": "Job-embedded professional learning",
+      "definition": "Ongoing educator growth situated directly in daily classroom practice—such as instructional coaching, lesson study, and peer observation—focused on improving specific early learning outcomes.",
+      "aliases": [
+        "Coaching and peer observation"
+      ],
+      "chapterIds": [
+        "plt5621-ch-10"
+      ],
+      "domainIds": [
+        "professional-development-leadership-community"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5621-ch-10",
+            "chapterTitle": "Reflection, Research, and Professional Learning",
+            "domainId": "professional-development-leadership-community",
+            "domain": "Professional Development, Leadership, and Community",
+            "sectionId": "plt5621-ch-10-section-04",
+            "sectionHeading": "Mentoring, peer observation, and job-embedded learning",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuides"
+      ]
+    },
+    {
+      "id": "plt5621-gloss-21",
+      "term": "Reciprocal family partnership",
+      "definition": "Culturally sustaining collaboration that treats caregivers as equal experts on their child's development, using accessible home-language communication to co-construct learning and developmental goals.",
+      "aliases": [
+        "Two-way family engagement"
+      ],
+      "chapterIds": [
+        "plt5621-ch-11"
+      ],
+      "domainIds": [
+        "professional-development-leadership-community"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5621-ch-11",
+            "chapterTitle": "Collaboration, Families, Support Personnel, and Community",
+            "domainId": "professional-development-leadership-community",
+            "domain": "Professional Development, Leadership, and Community",
+            "sectionId": "plt5621-ch-11-section-02",
+            "sectionHeading": "Reciprocal family partnership and language access",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf",
+        "https://www.ed.gov/laws-and-policy/civil-rights-laws/race-color-and-national-origin-discrimination/race-color-and-national-origin-discrimination-key-issues/equal-education-opportunities-english"
+      ]
+    },
+    {
+      "id": "plt5621-gloss-22",
+      "term": "Multidisciplinary support coordination",
+      "definition": "Structured collaboration among classroom teachers, speech-language pathologists, occupational therapists, and paraeducators to align goals, clarify roles, and maintain consistent daily supports.",
+      "aliases": [
+        "Team-based student support"
+      ],
+      "chapterIds": [
+        "plt5621-ch-11"
+      ],
+      "domainIds": [
+        "professional-development-leadership-community"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5621-ch-11",
+            "chapterTitle": "Collaboration, Families, Support Personnel, and Community",
+            "domainId": "professional-development-leadership-community",
+            "domain": "Professional Development, Leadership, and Community",
+            "sectionId": "plt5621-ch-11-section-03",
+            "sectionHeading": "Specialists, paraeducators, and coordinated student support",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf"
+      ]
+    },
+    {
+      "id": "plt5621-gloss-23",
+      "term": "FERPA educational privacy",
+      "definition": "Federal law protecting the confidentiality of student education records, permitting disclosure without written parental consent only to school officials with a legitimate educational interest.",
+      "aliases": [
+        "Legitimate educational interest"
+      ],
+      "chapterIds": [
+        "plt5621-ch-12"
+      ],
+      "domainIds": [
+        "professional-development-leadership-community"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5621-ch-12",
+            "chapterTitle": "Ethics, Law, Privacy, Rights, and Student Safety",
+            "domainId": "professional-development-leadership-community",
+            "domain": "Professional Development, Leadership, and Community",
+            "sectionId": "plt5621-ch-12-section-02",
+            "sectionHeading": "FERPA, confidentiality, and secure communication",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5621.pdf",
+        "https://studentprivacy.ed.gov/faq/under-ferpa-may-educational-agency-or-institution-disclose-education-records-any-its-employees"
+      ]
+    },
+    {
+      "id": "plt5621-gloss-24",
+      "term": "IDEA Child Find and mandated reporting",
+      "definition": "Core statutory duties requiring educators to refer children suspected of having a disability for IDEA evaluation without delay and to report suspected child abuse or neglect under state law.",
+      "aliases": [
+        "Legal safeguarding duties"
+      ],
+      "chapterIds": [
+        "plt5621-ch-12"
+      ],
+      "domainIds": [
+        "professional-development-leadership-community"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5621-ch-12",
+            "chapterTitle": "Ethics, Law, Privacy, Rights, and Student Safety",
+            "domainId": "professional-development-leadership-community",
+            "domain": "Professional Development, Leadership, and Community",
+            "sectionId": "plt5621-ch-12-section-03",
+            "sectionHeading": "Disability rights, reporting, speech, and copyright",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://sites.ed.gov/idea/idea-files/rts-qa-child-find-part-b-08-24-2021/",
+        "https://www.ed.gov/laws-and-policy/civil-rights-laws/disability-discrimination"
+      ]
+    }
+  ],
+  "quickReference": [
+    {
+      "id": "plt5621-reference-01",
+      "domainId": "students-as-learners",
+      "domainLabel": "Students as Learners",
+      "title": "Early Childhood Development, Play & Learner Access",
+      "purpose": "Anchors birth-to-grade-3 developmental stages, play progression, early intervention frameworks, and supportive classroom climate.",
+      "checklistLabel": "Before deciding",
+      "formulasLabel": "Core formulas, rules & benchmarks",
+      "checklist": [
+        "Check the child's exact age or grade (infant/toddler, preschool ages 3–5, or primary K–3 ages 5–8) before matching developmental expectations.",
+        "Verify whether behavior reflects typical early developmental stages (egocentrism, emerging self-regulation, parallel play) rather than willful defiance.",
+        "Identify language, sensory, motor, or disability access needs and align supports to NAEYC Developmentally Appropriate Practice (DAP)."
+      ],
+      "formulas": [
+        "Piaget's early childhood arc: Sensorimotor (birth–2: object permanence, sensory exploration) → Preoperational (2–7: symbolic/pretend play, egocentrism, centration, animism, no conservation yet) → early Concrete Operational (around age 7–8: emerging conservation and reversibility with hands-on manipulatives).",
+        "Erikson's early psychosocial stages: Trust vs. Mistrust (0–18 mo) → Autonomy vs. Shame/Doubt (18 mo–3 yr) → Initiative vs. Guilt (3–5/6 yr: purposeful play and trying new tasks) → entering Industry vs. Inferiority (grades 1–3: pride in mastery).",
+        "Parten's play progression & Vygotsky: Unoccupied → Solitary → Onlooker → Parallel (playing side-by-side, ages 2–3) → Associative → Cooperative (shared goals/rules, ages 4+); Vygotsky's ZPD and private speech guide early self-regulation.",
+        "Early intervention & access benchmarks: IDEA Part C (birth–2) delivers family-centered IFSP services in natural environments; IDEA Part B (ages 3+) delivers IEP services in the LRE; dual-language learners benefit from home-language affirmation plus visual/gestural scaffolding."
+      ],
+      "decisionRules": [
+        "When a 4-year-old insists a tall narrow cup holds more juice than a wide cup of equal volume → recognize Piagetian preoperational centration and lack of conservation rather than a math disability.",
+        "When toddlers play side-by-side with blocks without sharing a joint storyline → recognize developmentally typical parallel play and model gentle turn-taking rather than forcing complex cooperative rules.",
+        "When a preschooler talks aloud while assembling a puzzle → treat it as Vygotskian private speech aiding self-regulation and allow it rather than demanding silence.",
+        "When a young child acts out during transitions → prioritize predictable visual schedules, countdown warnings, positive phrasing of expected behaviors, and co-regulation routines before punitive consequences."
+      ],
+      "cautions": [
+        "Never expect preschoolers (ages 3–5) to sustain long passive seatwork or abstract verbal lectures without concrete materials and movement.",
+        "Do not confuse a young multilingual child's silent period or home-language transfer with a speech-language or cognitive disability.",
+        "Avoid attributing typical early childhood egocentrism to selfishness or intentional disrespect."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5621-reference-02",
+      "domainId": "instructional-process",
+      "domainLabel": "Instructional Process",
+      "title": "DAP Planning, Play-Based Scaffolding & Early Inquiry",
+      "purpose": "Anchors developmentally appropriate curriculum design, integrated learning centers, early scaffolding, and responsive questioning.",
+      "checklistLabel": "Before deciding",
+      "formulasLabel": "Core formulas, rules & benchmarks",
+      "checklist": [
+        "Confirm that learning objectives align to early learning standards and integrate cognitive, language, social-emotional, and motor domains.",
+        "Check whether the instructional format balances teacher-guided explicit modeling with hands-on exploration, learning centers, and guided play.",
+        "Evaluate teacher questions and wait time to ensure young children have concrete prompts and time to formulate oral responses."
+      ],
+      "formulas": [
+        "NAEYC DAP three core considerations: Commonality (general developmental and learning trajectories), Individuality (each child's unique strengths, interests, and needs), and Context (family, cultural, and community background).",
+        "Early scaffolding cycle (ZPD + Gradual Release): Concrete Modeling (I Do) → Guided Shared Practice with visual/physical cues (We Do) → Supported Peer/Center Practice → Independent Exploration with faded prompts.",
+        "Play-based & thematic integration: embed literacy (environmental print, shared read-alouds, dramatic-play writing), numeracy (counting, sorting, patterning), and inquiry across centers rather than isolated drill packets.",
+        "Responsive early communication: use 3–5 seconds wait time, open-ended prompts (How did you figure that out? What might happen next?), recasting/expanding child utterances, and multimodal visual supports."
+      ],
+      "decisionRules": [
+        "When planning a unit for pre-K or kindergarten → select hands-on thematic centers and manipulative exploration linked to standards rather than timed silent worksheets.",
+        "When young students struggle to follow multi-step verbal directions → break directions into one or two concrete steps paired with picture cues and physical modeling.",
+        "When a child speaks in short telegraphic phrases during play → expand and model enriched vocabulary naturally (Yes, the tall red truck is climbing the steep ramp) rather than interrupting with harsh correction.",
+        "When grouping K–3 learners for literacy or math practice → use flexible, skill-based small groups updated frequently from observation rather than permanent fixed ability tracks."
+      ],
+      "cautions": [
+        "Do not equate play-based learning with unstructured free-for-all time; effective guided play has intentional objectives, curated materials, and active teacher scaffolding.",
+        "Never rely solely on whole-group lecture to teach early decoding, counting, or self-regulation skills.",
+        "Avoid asking rapid-fire closed yes/no questions when the goal is expanding early oral language and reasoning."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5621-reference-03",
+      "domainId": "assessment",
+      "domainLabel": "Assessment",
+      "title": "Authentic Early Assessment, Observation & Documentation",
+      "purpose": "Anchors observational tools, portfolios, developmental screening vs. diagnostic evaluation, and developmentally sound feedback.",
+      "checklistLabel": "Before deciding",
+      "formulasLabel": "Core formulas, rules & benchmarks",
+      "checklist": [
+        "Verify the assessment purpose first: universal developmental screening, ongoing formative observation, or formal multidisciplinary diagnostic evaluation.",
+        "Check whether the assessment captures authentic performance in natural routines across multiple occasions rather than a single high-stakes snapshot.",
+        "Confirm that assessment accommodations respect linguistic diversity, fine-motor readiness, and young children's attention spans."
+      ],
+      "formulas": [
+        "Core early observational tools: Anecdotal Records (brief objective narrative of a specific event), Running Records (continuous timed detail or oral reading miscue log), Checklists (presence/absence of milestones), Rating Scales (degree/frequency), and Time/Event Sampling.",
+        "Portfolio & authentic assessment: purposeful collections of dated work samples, drawings, dictations, and photos demonstrating longitudinal growth against early learning benchmarks.",
+        "Screening vs. Diagnosis rule: Developmental screeners (brief, broad checks) flag children who may need closer review; they NEVER establish a disability diagnosis or special education eligibility on their own.",
+        "Validity & reliability in early childhood: young children's performance fluctuates with fatigue, hunger, and familiarity, requiring multiple data points in natural settings and objective behavioral recording free of judgmental labels."
+      ],
+      "decisionRules": [
+        "When documenting a preschooler's social interaction in the dramatic-play center → record objective observable actions and quotes (handed block to peer and said your turn) rather than subjective inferences (was being bossy or lazy).",
+        "When a kindergarten readiness screener shows a low score in one area → use results to guide targeted classroom scaffolding and further observation/referral if warranted, never to deny school entry or label a disability immediately.",
+        "When tracking emergent writing or fine-motor growth over a semester → assemble dated portfolio work samples paired with clear developmental rubrics to share concrete progress with families.",
+        "When a bilingual 5-year-old scores poorly on an English-only vocabulary check → assess conceptual understanding with visuals and home-language input to distinguish language acquisition from developmental delay."
+      ],
+      "cautions": [
+        "Never use a single standardized paper-and-pencil test to make high-stakes placement, retention, or eligibility decisions for young children.",
+        "Do not include interpretive assumptions (angry, unmotivated, immature) inside anecdotal observation records.",
+        "Avoid sharing norm-referenced scores with families without explaining them in plain language alongside concrete classroom work samples."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5621-reference-04",
+      "domainId": "professional-development-leadership-community",
+      "domainLabel": "Professional Development, Leadership, and Community",
+      "title": "Family Partnerships, Early Childhood Ethics & Child Safety",
+      "purpose": "Anchors NAEYC ethical standards, Part C-to-Part B transitions, FERPA privacy, mandatory reporting, and family-centered collaboration.",
+      "checklistLabel": "Before deciding",
+      "formulasLabel": "Core formulas, rules & benchmarks",
+      "checklist": [
+        "Check whether the scenario involves child safety or suspected abuse/neglect, which always triggers immediate mandated reporting.",
+        "Verify parental consent and FERPA confidentiality before sharing child records, photos, or behavioral details outside authorized team members.",
+        "Confirm that family communication honors home language, cultural child-rearing assets, and two-way partnership rather than one-way directives."
+      ],
+      "formulas": [
+        "NAEYC Code of Ethical Conduct priority: above all, early childhood educators shall not harm children; never engage in practices that are emotionally damaging, physically harmful, disrespectful, or intimidating.",
+        "IDEA Part C to Part B transition: toddlers with an IFSP (birth–2) receive a transition plan at least 90 days before age 3 to ensure a seamless shift to preschool IEP services without a gap in support.",
+        "FERPA & parental consent rules: education records are confidential; disclose only to school personnel with legitimate educational interest or with written parent consent; IDEA requires informed written parent consent before initial evaluation and initial special education placement.",
+        "Mandatory reporting duty: educators must report reasonable suspicion of child abuse or neglect immediately to designated child protective services/authorities—never investigate independently, confront caregivers about suspicions, or promise secrecy."
+      ],
+      "decisionRules": [
+        "When a child arrives with unexplained bruises or discloses potential abuse → report immediately to child protective services per state law and school protocol without interrogating the child or calling parents first to verify.",
+        "When a non-English-speaking family needs to discuss their child's IEP or developmental progress → provide a qualified interpreter and translated written materials rather than relying on the child or an untrained friend to translate.",
+        "When another parent volunteers in the classroom and asks about a classmate's behavior plan or disability → decline politely citing FERPA confidentiality and redirect focus to the volunteer's assigned task.",
+        "When an early childhood teacher notices a recurring instructional challenge across the class → engage in reflective practice, peer coaching, action research, and targeted professional learning communities."
+      ],
+      "cautions": [
+        "Never wait for absolute proof or conduct a home investigation before filing a mandated child-abuse or neglect report.",
+        "Do not post recognizable student photos or identifying classroom anecdotes on public or personal social media without documented parental release.",
+        "Avoid treating families as passive recipients of school rules; treat caregivers as primary experts on their young child's strengths and routines."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    }
+  ],
+  "misconceptionFamilies": [
+    {
+      "id": "plt5621-developmental-mismatch-abstract-before-concrete",
+      "label": "Developmental Mismatch: Pushing Abstract Worksheets Before Concrete Play and Manipulatives",
+      "description": "Selecting extended whole-group lectures, timed abstract symbol drills, or silent seatwork for preschool through grade 3 learners instead of developmentally appropriate hands-on exploration, concrete manipulatives, guided play, and short multisensory learning cycles aligned to Piagetian preoperational and early concrete-operational thinking.",
+      "remediationMove": "Check the child's developmental stage first (Pre-K through Grade 3): anchor new math, science, and literacy ideas in concrete manipulatives, active play, movement, and real-world objects before moving to pictorial models and abstract symbols.",
+      "remediationPlaybookId": "plt5621-playbook-developmental-mismatch-abstract-before-concrete",
+      "itemIds": [
+        "plt5621-b1-001",
+        "plt5621-b1-003",
+        "plt5621-b1-006",
+        "plt5621-b1-007",
+        "plt5621-b1-009",
+        "plt5621-b1-010",
+        "plt5621-b1-011",
+        "plt5621-b1-012",
+        "plt5621-b1-036",
+        "plt5621-b1-037",
+        "plt5621-b1-040",
+        "plt5621-b1-042"
+      ]
+    },
+    {
+      "id": "plt5621-zpd-over-scaffolding-or-no-scaffolding",
+      "label": "Missing the Zone of Proximal Development: Over-Scaffolding or Zero-Scaffold Discovery",
+      "description": "Either turning an early-childhood task into unguided free-for-all discovery with no modeling or prompts, or permanently over-scaffolding young learners by never fading prompts—instead of matching Vygotsky's Zone of Proximal Development (ZPD) with contingent support and gradual release.",
+      "remediationMove": "Diagnose what the young learner can do independently vs. with timely cues, provide modeled think-alouds and targeted scaffolds inside the ZPD, and systematically fade assistance as competence grows.",
+      "remediationPlaybookId": "plt5621-playbook-zpd-over-scaffolding-or-no-scaffolding",
+      "itemIds": [
+        "plt5621-b1-002",
+        "plt5621-b1-004",
+        "plt5621-b1-005",
+        "plt5621-b1-007",
+        "plt5621-b1-031",
+        "plt5621-b1-032",
+        "plt5621-b1-033",
+        "plt5621-b1-034",
+        "plt5621-b1-035",
+        "plt5621-b1-038",
+        "plt5621-b1-039",
+        "plt5621-b1-041"
+      ]
+    },
+    {
+      "id": "plt5621-punishment-vs-positive-guidance-and-routines",
+      "label": "Confusing Punitive Control with Positive Guidance, Predictable Routines, and Reinforcement",
+      "description": "Treating public shaming, recess removal, or harsh reprimands as effective early-childhood behavior management, or confusing negative reinforcement (removing an aversive demand to strengthen a desired behavior) with punishment instead of using predictable routines, visual cues, redirection, and explicit social-emotional coaching.",
+      "remediationMove": "Build proactive early-childhood environments with visual schedules, clear transition warnings, and taught self-regulation skills; distinguish reinforcement (increases target behavior) from punishment (decreases behavior) and respond to misbehavior with calm positive guidance.",
+      "remediationPlaybookId": "plt5621-playbook-punishment-vs-positive-guidance-and-routines",
+      "itemIds": [
+        "plt5621-b1-005",
+        "plt5621-b1-008",
+        "plt5621-b1-009",
+        "plt5621-b1-010",
+        "plt5621-b1-011",
+        "plt5621-b1-012",
+        "plt5621-b1-033",
+        "plt5621-b1-037",
+        "plt5621-b1-040",
+        "plt5621-b1-041"
+      ]
+    },
+    {
+      "id": "plt5621-summative-only-vs-authentic-formative-play-checks",
+      "label": "Relying on Summative Paper Tests Instead of Authentic Formative and Play-Based Checks",
+      "description": "Assessing preschool through grade 3 learners solely through end-of-unit paper tests or unfocused folders of crafts instead of gathering ongoing formative evidence through objective anecdotal notes, checklists, work-sample portfolios tied to criteria, and play-embedded performance checks that guide next-day teaching.",
+      "remediationMove": "Use continuous authentic assessment—objective anecdotal records (observable actions, not value judgments), purposeful portfolios showing growth against learning goals, and formative checks during centers and small groups—to adjust instruction immediately.",
+      "remediationPlaybookId": "plt5621-playbook-summative-only-vs-authentic-formative-play-checks",
+      "itemIds": [
+        "plt5621-b1-061",
+        "plt5621-b1-062",
+        "plt5621-b1-063",
+        "plt5621-b1-064",
+        "plt5621-b1-065",
+        "plt5621-b1-066",
+        "plt5621-b1-067",
+        "plt5621-b1-068",
+        "plt5621-b1-069",
+        "plt5621-b1-035"
+      ]
+    },
+    {
+      "id": "plt5621-norm-vs-criterion-and-reliability-vs-validity",
+      "label": "Confusing Norm- vs. Criterion-Referenced Scores and Reliability vs. Validity",
+      "description": "Treating a consistent test score (reliability) as proof that the test measures the intended early-childhood standard (validity), mixing up norm-referenced peer rankings with criterion-referenced mastery standards, or confusing accommodations (preserving construct validity) with modifications (altering the measured standard).",
+      "remediationMove": "Separate consistency (reliability: repeatable scores) from accuracy of construct alignment (validity: measures the intended skill), match norm-referenced scores to peer comparison vs. criterion-referenced scores to mastery targets, and verify that accommodations remove access barriers without lowering the measured standard.",
+      "remediationPlaybookId": "plt5621-playbook-norm-vs-criterion-and-reliability-vs-validity",
+      "itemIds": [
+        "plt5621-b1-061",
+        "plt5621-b1-062",
+        "plt5621-b1-063",
+        "plt5621-b1-064",
+        "plt5621-b1-066",
+        "plt5621-b1-068",
+        "plt5621-b1-069",
+        "plt5621-b1-070",
+        "plt5621-b1-071",
+        "plt5621-b1-072"
+      ]
+    },
+    {
+      "id": "plt5621-ferpa-idea-mandated-reporting-and-family-partnership-traps",
+      "label": "FERPA Confidentiality, IDEA/IFSP Rights, Mandated Reporting, and Family Partnership Traps",
+      "description": "Sharing identifiable child records without authorization, delaying a mandated child-abuse/neglect report to investigate personally, bypassing IDEA multidisciplinary team procedures or Least Restrictive Environment (LRE), or treating family conferences as one-way deficit reporting without translated communication.",
+      "remediationMove": "Enforce legal and ethical guardrails automatically: protect student privacy under FERPA, report suspected abuse/neglect immediately through mandated channels without conducting an investigation, follow IDEA/IEP team protocols, and build reciprocal, linguistically accessible partnerships with families.",
+      "remediationPlaybookId": "plt5621-playbook-ferpa-idea-mandated-reporting-and-family-partnership-traps",
+      "itemIds": [
+        "plt5621-b1-081",
+        "plt5621-b1-082",
+        "plt5621-b1-083",
+        "plt5621-b1-084",
+        "plt5621-b1-085",
+        "plt5621-b1-086",
+        "plt5621-b1-087",
+        "plt5621-b1-088",
+        "plt5621-b1-089",
+        "plt5621-b1-090",
+        "plt5621-b1-091",
+        "plt5621-b1-092"
+      ]
+    }
+  ],
+  "misconceptionRemediationPlaybooks": [
+    {
+      "id": "plt5621-playbook-developmental-mismatch-abstract-before-concrete",
+      "familyId": "plt5621-developmental-mismatch-abstract-before-concrete",
+      "familyLabel": "Developmental Mismatch: Pushing Abstract Worksheets Before Concrete Play and Manipulatives",
+      "title": "Match Pre-K–3 Instruction to Concrete, Active, Whole-Child Development",
+      "recognitionCue": "A PLT 5621 vignette describes preschool, kindergarten, or grades 1–3 children struggling with a concept or showing varied fine-motor readiness, and distractors prescribe silent worksheet packets, 40-minute teacher lectures, or delaying all instruction until every child matures identically.",
+      "repairQuestion": "Does this choice honor young children's concrete-to-abstract progression and uneven across-domain development without watering down meaningful learning?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Scan early-childhood options for developmental red flags: abstract symbolic drills before hands-on modeling, ignoring fine-motor/physical variance across same-age children, or treating cognitive growth apart from social-emotional and language development.",
+          "requiredOutput": "Flag the exact developmental mismatch in the distractor and name the cognitive, physical, or social-emotional domain the child actually needs supported."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Connect Piaget's preoperational and early concrete-operational stages to the CRA progression (Concrete manipulatives → Representational drawings/models → Abstract symbols) and normal uneven maturation (such as varied pencil grip in kindergarten).",
+          "requiredOutput": "Write a two-sentence planning rule explaining how to adapt materials (such as thicker grips, fraction tiles, or science sorting trays) while holding rich conceptual goals."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Redesign two Pre-K–3 lessons: (1) introducing equal parts/fractions to second graders who only recognize one textbook circle diagram, and (2) supporting two 6-year-olds with very different fine-motor control during writer's workshop.",
+          "requiredOutput": "Specify concrete manipulatives across varied shapes (bars, tiles, sets) for fractions and low-barrier motor scaffolds (adaptive grips, varied line spacing, oral-to-written dictation) for writing."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Evaluate a new PLT 5621 scenario where a teacher plans a science inquiry unit for first graders holding persistent misconceptions about floating and sinking.",
+          "requiredOutput": "Choose the developmentally responsive sequence that surfaces prior ideas through hands-on testing and guided reflection rather than lecturing abstract density formulas."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5621-playbook-zpd-over-scaffolding-or-no-scaffolding",
+      "familyId": "plt5621-zpd-over-scaffolding-or-no-scaffolding",
+      "familyLabel": "Missing the Zone of Proximal Development: Over-Scaffolding or Zero-Scaffold Discovery",
+      "title": "Target the Zone of Proximal Development with Contingent, Fading Scaffolds",
+      "recognitionCue": "A young learner succeeds on a complex task only with well-timed teacher prompts—or a teacher wants guided inquiry rather than chaotic play—and distractors either declare the task \"too hard\" and drop it, keep permanent hand-holding, or leave children completely unguided.",
+      "repairQuestion": "Is the task positioned right inside the child's Zone of Proximal Development, and does the teacher plan to model, prompt contingently, and gradually fade support toward independence?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Sort instructional distractors into two opposite ZPD errors: Under-Scaffolding (unstructured discovery with no criteria or modeling) vs. Over-Scaffolding (permanent dependency or lowering expectations below the child's reach).",
+          "requiredOutput": "Diagnose which ZPD failure each distractor represents and identify the evidence showing the learner is currently inside the ZPD."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Map the four-step explicit-and-scaffolded sequence (Model with think-aloud → Guided practice with prompts → Collaborative/supported practice with fading cues → Independent application) and link Bandura's social learning theory to verbalized strategy modeling.",
+          "requiredOutput": "State the exact instructional signal that tells an early-childhood teacher when to fade a scaffold vs. when to provide targeted remediation instead of mere repetition."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Plan a teacher response for a kindergarten child who can retell a story with picture cards and teacher sentence starters, plus a second-grade guided inquiry activity that risks becoming unstructured tinkering.",
+          "requiredOutput": "Specify how to fade the picture/starter cues step by step for the retell and list two guardrails (focused question + structured observation sheet) that keep inquiry conceptually productive."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Apply ZPD and gradual-release criteria to a fresh PLT 5621 item testing preassessment, backward planning, or remediation vs. repetition.",
+          "requiredOutput": "Select the response that uses preassessment data to pitch instruction inside the ZPD and targets root misconceptions rather than repeating the exact same worksheet."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5621-playbook-punishment-vs-positive-guidance-and-routines",
+      "familyId": "plt5621-punishment-vs-positive-guidance-and-routines",
+      "familyLabel": "Confusing Punitive Control with Positive Guidance, Predictable Routines, and Reinforcement",
+      "title": "Distinguish Positive Guidance and Reinforcement Principles in Pre-K–3",
+      "recognitionCue": "A PLT 5621 behavior or motivation item describes a teacher removing an unpleasant extra drill when students hit a goal, or young children melting down during transitions, and distractors mislabel negative reinforcement as punishment or recommend public clip charts and lost recess.",
+      "repairQuestion": "Does the consequence increase or decrease a target behavior (reinforcement vs. punishment), and does the classroom routine proactively teach the expected self-regulation skill?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Check two axes on every operant-conditioning or guidance item: (1) Is something added (+) or removed (−)? (2) Does the target behavior increase (reinforcement) or decrease (punishment)? Also flag punitive early-childhood traps like public shaming or withholding physical movement.",
+          "requiredOutput": "Correctly classify the scenario on the 2×2 operant grid and point out any developmental harm in punitive distractors."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Contrast negative reinforcement (removing an aversive task to strengthen desired fluency/effort) with punishment (weakening an unwanted behavior), and connect Erikson's initiative vs. guilt (Pre-K/K) and industry vs. inferiority (Grades 1–3) to specific, effort-focused encouragement and predictable routines.",
+          "requiredOutput": "Write one crisp example of negative reinforcement vs. presentation punishment, plus two proactive transition routines (such as 2-minute visual chime warning and modeled cleanup roles)."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Analyze two Pre-K–3 cases: (1) a first-grade teacher excuses students from an extra drill sheet once they demonstrate accurate sight-word reading; (2) a preschooler repeatedly grabs blocks during center cleanup.",
+          "requiredOutput": "Identify Case 1 as negative reinforcement and design a positive-guidance sequence for Case 2 (calm proximity, visual transition warning, explicit language model for turn-taking, and practiced cleanup routine)."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Evaluate a fresh motivation or classroom-climate scenario involving young children's sense of competence (industry vs. inferiority) or peer modeling.",
+          "requiredOutput": "Choose the proactive routine that teaches clear behavioral expectations, protects emotional safety, and reinforces genuine mastery rather than compliance through fear."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5621-playbook-summative-only-vs-authentic-formative-play-checks",
+      "familyId": "plt5621-summative-only-vs-authentic-formative-play-checks",
+      "familyLabel": "Relying on Summative Paper Tests Instead of Authentic Formative and Play-Based Checks",
+      "title": "Use Formative Checks, Objective Anecdotals, and Purposeful Portfolios",
+      "recognitionCue": "An early-childhood assessment item asks how to monitor young learners' emerging skills or make anecdotal notes and portfolios useful, and distractors offer subjective labels (\"lazy,\" \"smart\"), end-of-unit multiple-choice grades, or stuffing every worksheet into a folder.",
+      "repairQuestion": "Does this assessment gather objective, criteria-aligned evidence during authentic early-childhood tasks so the teacher can adjust tomorrow's instruction?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Spot three early-childhood assessment traps: (1) using summative tests to do formative monitoring, (2) writing interpretive value judgments instead of objective behavioral observations in anecdotal notes, and (3) confusing a storage folder with a purposeful portfolio.",
+          "requiredOutput": "Underline the non-objective wording or purpose mismatch inside each distractor."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Define the four classroom assessment roles: preassessment/diagnostic (uncovers prior knowledge and error patterns before teaching), formative (in-process checks that steer immediate instruction), summative (end-of-unit mastery evaluation), and authentic performance/portfolio (dated, criteria-tagged work samples plus reflection showing growth).",
+          "requiredOutput": "Rewrite a flawed anecdotal note (\"Leo was unfocused and bad at math today\") into an objective, date-stamped behavioral record aligned to a target counting skill."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Match three Pre-K–3 objectives—(1) demonstrating a plant-growth experiment, (2) tracking writing progress across a quarter, (3) identifying why a second grader misses subtraction with regrouping—to the best assessment method (performance task with analytic rubric, purposeful portfolio, or diagnostic probe).",
+          "requiredOutput": "Justify each pairing and explain why an analytic rubric beats a single holistic score when giving feedback to young learners and families."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Re-read a new early-childhood assessment scenario asking how to keep peer feedback fair or align an assessment with a hands-on science objective.",
+          "requiredOutput": "Select the option grounded in explicit, age-appropriate criteria and authentic demonstration rather than a mismatched paper quiz."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5621-playbook-norm-vs-criterion-and-reliability-vs-validity",
+      "familyId": "plt5621-norm-vs-criterion-and-reliability-vs-validity",
+      "familyLabel": "Confusing Norm- vs. Criterion-Referenced Scores and Reliability vs. Validity",
+      "title": "Separate Reliability from Validity and Norm- vs. Criterion-Referenced Meaning",
+      "recognitionCue": "A PLT 5621 test-design item describes an assessment that gives identical scores every time yet actually tests reading speed rather than math reasoning—or asks how to interpret a percentile rank vs. a mastery rubric or whether an accommodation harms validity.",
+      "repairQuestion": "Is the score flaw about repeatability (reliability) or about measuring the intended construct (validity), and does the score compare the child to peers (norm) or to a fixed learning standard (criterion)?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Diagnose psychometric keywords immediately: \"consistent/repeatable\" signals reliability; \"measures what it intends to measure/construct alignment\" signals validity; \"percentile/compared to national age peers\" signals norm-referenced; \"meets standard/rubric benchmark\" signals criterion-referenced.",
+          "requiredOutput": "Map the vignette's exact symptom (such as high consistency + wrong construct = reliable but not valid) before reading the answer options."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Lock in two core test rules: (1) a test can be reliable without being valid, though it cannot be valid without reasonable reliability; (2) a valid accommodation (such as reading math word problems aloud to a child with a decoding disability) removes construct-irrelevant barriers and increases validity without changing the math standard.",
+          "requiredOutput": "Contrast one valid accommodation (read-aloud on a math reasoning task) with an invalid accommodation (read-aloud on a reading-decoding test) in two concise lines."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Evaluate three scenarios: (1) a timed grade-2 math test yields repeatable scores but mostly measures reading speed; (2) a child scores at the 72nd percentile on a screening battery; (3) a child scores 9/10 on a phonemic-blending mastery checklist.",
+          "requiredOutput": "Classify each case (reliable/low-validity construct interference; norm-referenced peer rank; criterion-referenced mastery evidence) and state what instructional decision each score can and cannot support."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Apply the validity and reference-frame checks to a fresh PLT 5621 item on test accommodations or interpreting district benchmark data for an early-childhood team.",
+          "requiredOutput": "Select the defensible interpretation that preserves construct validity and never confuses a percentile rank with percentage of items answered correctly."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5621-playbook-ferpa-idea-mandated-reporting-and-family-partnership-traps",
+      "familyId": "plt5621-ferpa-idea-mandated-reporting-and-family-partnership-traps",
+      "familyLabel": "FERPA Confidentiality, IDEA/IFSP Rights, Mandated Reporting, and Family Partnership Traps",
+      "title": "Uphold FERPA, IDEA, Mandated Reporting, and Reciprocal Family Partnerships",
+      "recognitionCue": "A professional-responsibility scenario features a caregiver with limited English proficiency, a child needing coordinated speech/OT/academic services, a colleague asking about another child's IEP, or a suspected safety concern—and distractors invite informal shortcuts (\"ask another student to translate,\" \"wait for proof before reporting,\" or \"talk at parents\").",
+      "repairQuestion": "Does this response satisfy federal privacy and disability law (FERPA/IDEA), fulfill immediate mandated-reporting duties, and treat families as equitable, linguistically supported partners?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Spot four high-stakes legal/ethical red flags in distractors: disclosing records to unauthorized parties (FERPA violation), conducting your own abuse investigation or delaying a report, using a child or untrained neighbor to translate confidential school info, or acting solo instead of convening the multidisciplinary team (IDEA).",
+          "requiredOutput": "Name the exact legal duty or partnership principle violated by each trap option."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Anchor four non-negotiable protocols: (1) FERPA restricts educational records to parents and staff with legitimate educational interest; (2) IDEA/IFSP requires parental consent, multidisciplinary evaluation, LRE, and coordinated service delivery; (3) mandated reporters report reasonable suspicion immediately through official channels without interrogating the child or family; (4) reciprocal family communication uses qualified interpreters/translated materials and invites caregiver insights.",
+          "requiredOutput": "Write a 4-bullet compliance checklist covering FERPA, IDEA collaboration, mandated reporting, and equitable family conferences."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Determine the compliant action for three Pre-K–3 cases: (1) a first grader requires coordinated speech, motor, and classroom reading supports; (2) a parent conference is scheduled for a family speaking primarily Spanish; (3) a classroom paraeducator joins the room to support small-group literacy.",
+          "requiredOutput": "Specify the exact collaborative protocol for each case: participate in multidisciplinary IEP coordination, provide a qualified interpreter/translated notices and invite two-way dialogue, and share clear instructional goals/roles with the paraeducator under teacher direction."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Evaluate a fresh PLT 5621 professional-practice item involving reflective action research, mentor coaching, or non-comparable study claims.",
+          "requiredOutput": "Choose the evidence-based, legally compliant, collaborative response while rejecting overgeneralized study claims or unilateral privacy breaches."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
     }
   ]
 }

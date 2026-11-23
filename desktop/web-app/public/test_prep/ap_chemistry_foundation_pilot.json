@@ -7487,11 +7487,11 @@
         "HCl and NaOH as intact molecules"
       ],
       "answerIndex": 2,
-      "rationale": "Na+ and Cl- remain dissolved and unchanged; H+ and OH- react to form water.",
+      "rationale": "Both HCl and NaOH are strong electrolytes that dissociate completely into H+, Cl-, Na+, and OH-. Only H+ and OH- combine to form H2O(l), leaving Na+ and Cl- unchanged in solution as spectator ions.",
       "choiceRationales": [
         "This option is not the best answer because Hydrogen and hydroxide ions are the reacting species in the net ionic equation.",
         "This option is not the best answer because Water is a product of the neutralization, not a spectator ion.",
-        "Na+ and Cl- remain dissolved and unchanged; H+ and OH- react to form water.",
+        "Both HCl and NaOH are strong electrolytes that dissociate completely into H+, Cl-, Na+, and OH-. Only H+ and OH- combine to form H2O(l), leaving Na+ and Cl- unchanged in solution as spectator ions.",
         "This option is not the best answer because Strong electrolytes are represented as ions in aqueous solution rather than intact HCl and NaOH molecules."
       ],
       "references": [
@@ -8558,11 +8558,11 @@
         "Na+ and Cl-"
       ],
       "answerIndex": 2,
-      "rationale": "Conjugate pairs differ by one proton; NH4+ can donate H+ to become NH3.",
+      "rationale": "A Brønsted-Lowry conjugate acid-base pair differs by exactly one proton (H+). Ammonium (NH4+) donates a single H+ to become ammonia (NH3), and NH3 accepts H+ to reform NH4+, making them a conjugate pair.",
       "choiceRationales": [
         "This option is not the best answer because NaCl contains a spectator salt pair, not species differing by one proton.",
         "This option is not the best answer because Water and oxygen do not differ by a single proton in this context.",
-        "Conjugate pairs differ by one proton; NH4+ can donate H+ to become NH3.",
+        "A Brønsted-Lowry conjugate acid-base pair differs by exactly one proton (H+). Ammonium (NH4+) donates a single H+ to become ammonia (NH3), and NH3 accepts H+ to reform NH4+, making them a conjugate pair.",
         "This option is not the best answer because Na+ and Cl- differ in charge and element identity, not by one proton."
       ],
       "references": [
@@ -9362,12 +9362,12 @@
         "rate = k[A]"
       ],
       "answerIndex": 3,
-      "rationale": "The rate is first order in A and zero order in B based on the observed changes.",
+      "rationale": "In rate = k[A]^m[B]^n, doubling [A] doubles rate so 2^m = 2 (m = 1, first order), while doubling [B] causes no rate change so 2^n = 1 (n = 0, zero order). Dropping [B]^0 = 1 yields rate = k[A].",
       "choiceRationales": [
         "This option is not the best answer because This law predicts a factor of four change from doubling A and a dependence on B.",
         "This option is not the best answer because a rate law depending only on [B] predicts no change when [A] doubles and a doubled rate when [B] doubles, opposite to the data.",
         "This option is not the best answer because The stated observations do not support first-order dependence on B.",
-        "The rate is first order in A and zero order in B based on the observed changes."
+        "In rate = k[A]^m[B]^n, doubling [A] doubles rate so 2^m = 2 (m = 1, first order), while doubling [B] causes no rate change so 2^n = 1 (n = 0, zero order). Dropping [B]^0 = 1 yields rate = k[A]."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
@@ -11506,12 +11506,12 @@
         "800 J"
       ],
       "answerIndex": 3,
-      "rationale": "q = m c delta T = 50.0 times 4.00 times 4.00 J = 800 J gained by the solution.",
+      "rationale": "Apply calorimetry equation q = m*c*delta T to the solution. Substituting m = 50.0 g, c = 4.00 J/(g*deg C), and delta T = 4.00 deg C gives q = 50.0(4.00)(4.00) = 800 J gained by the solution.",
       "choiceRationales": [
         "This option is not the best answer because 50 J uses only the solution mass and omits multiplying by both the 4.00 J/g C specific heat and the 4.00 C temperature rise.",
         "This option is not the best answer because 200 J multiplies 50.0 g by only one factor of 4.00 instead of including both specific heat and temperature change.",
         "This option is not the best answer because 3,200 J applies an extra factor of four beyond the product of 50.0 g, 4.00 J/g C, and 4.00 C.",
-        "q = m c delta T = 50.0 times 4.00 times 4.00 J = 800 J gained by the solution."
+        "Apply calorimetry equation q = m*c*delta T to the solution. Substituting m = 50.0 g, c = 4.00 J/(g*deg C), and delta T = 4.00 deg C gives q = 50.0(4.00)(4.00) = 800 J gained by the solution."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
@@ -12931,12 +12931,12 @@
         "4.0"
       ],
       "answerIndex": 3,
-      "rationale": "For a one-to-one reaction, Kc = [B]/[A] = 0.80/0.20 = 4.0.",
+      "rationale": "For the 1:1 reversible reaction A <=> B, the mass-action equilibrium expression is Kc = [B] / [A]. Substituting [B] = 0.80 M and [A] = 0.20 M yields Kc = 0.80 / 0.20 = 4.0, favoring products.",
       "choiceRationales": [
         "This option is not the best answer because 0.25 computes the inverted ratio [A]/[B] = 0.20/0.80 rather than placing the product concentration [B] in the numerator.",
         "This option is not the best answer because Kc is not 1 when the equilibrium concentrations differ by a factor of four.",
         "This option is not the best answer because 16 squares the ratio without a stoichiometric coefficient requiring a square.",
-        "For a one-to-one reaction, Kc = [B]/[A] = 0.80/0.20 = 4.0."
+        "For the 1:1 reversible reaction A <=> B, the mass-action equilibrium expression is Kc = [B] / [A]. Substituting [B] = 0.80 M and [A] = 0.20 M yields Kc = 0.80 / 0.20 = 4.0, favoring products."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
@@ -14180,10 +14180,10 @@
         "4.0"
       ],
       "answerIndex": 1,
-      "rationale": "Kc = [B]/[A]2 = 0.20/(0.50 squared) = 0.20/0.25 = 0.80.",
+      "rationale": "Stoichiometric coefficients become exponents in the equilibrium expression, so for 2A <=> B, Kc = [B] / [A]^2. Substituting [B] = 0.20 M and [A] = 0.50 M gives 0.20 / (0.50)^2 = 0.20 / 0.25 = 0.80.",
       "choiceRationales": [
         "This option is not the best answer because 0.40 divides [B] by [A] without squaring [A] = 0.50 M as required by the stoichiometric coefficient 2 in 2A <=> B.",
-        "Kc = [B]/[A]2 = 0.20/(0.50 squared) = 0.20/0.25 = 0.80.",
+        "Stoichiometric coefficients become exponents in the equilibrium expression, so for 2A <=> B, Kc = [B] / [A]^2. Substituting [B] = 0.20 M and [A] = 0.50 M gives 0.20 / (0.50)^2 = 0.20 / 0.25 = 0.80.",
         "This option is not the best answer because 2.5 is the reciprocal of 0.40 and does not use the correct expression.",
         "This option is not the best answer because 4.0 does not follow from the stated concentrations and coefficients."
       ],
@@ -23012,9 +23012,9 @@
         "The higher-frequency photon has four times the energy."
       ],
       "answerIndex": 0,
-      "rationale": "Photon energy follows E = h nu, so doubling frequency doubles energy.",
+      "rationale": "By the Planck-Einstein relation E = h*nu, photon energy is directly proportional to frequency nu (with Planck's constant h fixed). Doubling the frequency therefore doubles the photon's energy.",
       "choiceRationales": [
-        "Photon energy follows E = h nu, so doubling frequency doubles energy.",
+        "By the Planck-Einstein relation E = h*nu, photon energy is directly proportional to frequency nu (with Planck's constant h fixed). Doubling the frequency therefore doubles the photon's energy.",
         "This option is not the best answer because Energy is directly, not inversely, proportional to frequency.",
         "This option is not the best answer because Equal speed in vacuum does not imply equal photon energy.",
         "This option is not the best answer because A fourfold energy increase would require four times the frequency."
@@ -24706,12 +24706,12 @@
         "NH3"
       ],
       "answerIndex": 3,
-      "rationale": "NH3 accepts a proton from water to become NH4+, so it acts as the base.",
+      "rationale": "Under the Brønsted-Lowry definition, a base is a proton (H+) acceptor. In the forward reaction NH3 + H2O <=> NH4+ + OH-, H2O donates H+ while NH3 accepts H+ to form NH4+, so NH3 is the base.",
       "choiceRationales": [
         "This option is not the best answer because Water donates the proton in the forward direction and acts as the acid.",
         "This option is not the best answer because NH4+ is the conjugate acid formed after ammonia accepts a proton.",
         "This option is not the best answer because OH- is a product and can act as a base in another reaction, but it is not the proton acceptor in this forward step.",
-        "NH3 accepts a proton from water to become NH4+, so it acts as the base."
+        "Under the Brønsted-Lowry definition, a base is a proton (H+) acceptor. In the forward reaction NH3 + H2O <=> NH4+ + OH-, H2O donates H+ while NH3 accepts H+ to form NH4+, so NH3 is the base."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
@@ -28988,12 +28988,12 @@
         "12.0"
       ],
       "answerIndex": 3,
-      "rationale": "Strong NaOH gives [OH-] = 0.010 M and pOH = 2.0; pH = 14.0 minus 2.0 = 12.0.",
+      "rationale": "Strong base NaOH dissociates completely, giving [OH-] = 0.010 M = 1.0 x 10^-2 M and pOH = -log(0.010) = 2.0. At 25 deg C, pH + pOH = 14.0, so pH = 14.0 - 2.0 = 12.0.",
       "choiceRationales": [
         "This option is not the best answer because pH 2.0 is acidic and corresponds to a hydronium concentration rather than the stated hydroxide concentration.",
         "This option is not the best answer because pH 10.0 corresponds to pOH 4.0 ([OH-] = 1.0 x 10^-4 M), whereas 0.010 M NaOH gives pOH 2.0 and pH 12.0.",
         "This option is not the best answer because A pH of 14.0 would require pOH near zero in this approximation.",
-        "Strong NaOH gives [OH-] = 0.010 M and pOH = 2.0; pH = 14.0 minus 2.0 = 12.0."
+        "Strong base NaOH dissociates completely, giving [OH-] = 0.010 M = 1.0 x 10^-2 M and pOH = -log(0.010) = 2.0. At 25 deg C, pH + pOH = 14.0, so pH = 14.0 - 2.0 = 12.0."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
@@ -29346,12 +29346,12 @@
         "NH3, because it accepts a proton"
       ],
       "answerIndex": 3,
-      "rationale": "Ammonia accepts H+ from HCl to form NH4+, so NH3 is the Brønsted-Lowry base.",
+      "rationale": "A Brønsted-Lowry acid donates a proton while a base accepts one. In HCl + NH3 -> NH4+ + Cl-, HCl transfers H+ to ammonia, converting NH3 into NH4+, so NH3 acts as the base because it accepts a proton.",
       "choiceRationales": [
         "This option is not the best answer because HCl donates the proton and acts as the acid in this reaction.",
         "This option is not the best answer because NH4+ is the conjugate acid produced after NH3 accepts H+.",
         "This option is not the best answer because Charge alone does not determine the role; chloride is the conjugate base of HCl and is not the proton acceptor in the displayed transfer.",
-        "Ammonia accepts H+ from HCl to form NH4+, so NH3 is the Brønsted-Lowry base."
+        "A Brønsted-Lowry acid donates a proton while a base accepts one. In HCl + NH3 -> NH4+ + Cl-, HCl transfers H+ to ammonia, converting NH3 into NH4+, so NH3 acts as the base because it accepts a proton."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
@@ -29970,11 +29970,11 @@
         "The acid with the larger pKa"
       ],
       "answerIndex": 2,
-      "rationale": "Lower pKa corresponds to larger Ka and a greater tendency to donate a proton.",
+      "rationale": "Because pKa = -log(Ka), a smaller pKa corresponds to a larger acid-dissociation constant Ka and greater ionization. Comparing 3.2 versus 6.8, the acid with pKa = 3.2 has a much larger Ka and is stronger.",
       "choiceRationales": [
         "This option is not the best answer because A higher pKa means a smaller Ka and weaker acid behavior.",
         "This option is not the best answer because Positive pKa values can describe acids with different strengths.",
-        "Lower pKa corresponds to larger Ka and a greater tendency to donate a proton.",
+        "Because pKa = -log(Ka), a smaller pKa corresponds to a larger acid-dissociation constant Ka and greater ionization. Comparing 3.2 versus 6.8, the acid with pKa = 3.2 has a much larger Ka and is stronger.",
         "This option is not the best answer because The inverse relationship means the smaller pKa identifies the stronger acid."
       ],
       "references": [
@@ -31310,10 +31310,10 @@
         "Equal to delta H for every reaction"
       ],
       "answerIndex": 1,
-      "rationale": "Delta G standard = -RT ln K, and ln(1) equals zero.",
+      "rationale": "Standard Gibbs free energy obeys delta G deg = -R*T*ln(K). When K = 1.0, ln(1.0) = 0, so delta G deg = -R*T(0) = 0 (Zero), meaning the reaction is at equilibrium under standard conditions.",
       "choiceRationales": [
         "This option is not the best answer because K greater than 1 gives negative delta G standard, not K equal to 1.",
-        "Delta G standard = -RT ln K, and ln(1) equals zero.",
+        "Standard Gibbs free energy obeys delta G deg = -R*T*ln(K). When K = 1.0, ln(1.0) = 0, so delta G deg = -R*T(0) = 0 (Zero), meaning the reaction is at equilibrium under standard conditions.",
         "This option is not the best answer because K less than 1 gives positive delta G standard, not K equal to 1.",
         "This option is not the best answer because Enthalpy and standard Gibbs free energy are distinct state-function quantities."
       ],
@@ -31489,12 +31489,12 @@
         "-8 kJ/mol"
       ],
       "answerIndex": 3,
-      "rationale": "Free-energy changes add for coupled reactions: +12 plus (-20) equals -8 kJ/mol.",
+      "rationale": "Because Gibbs free energy is a state function, delta G values add when elementary or coupled reactions are summed. Coupling +12 kJ/mol with -20 kJ/mol yields delta G_net = +12 + (-20) = -8 kJ/mol.",
       "choiceRationales": [
         "This option is not the best answer because The exergonic contribution is larger in magnitude, so the net value is negative.",
         "This option is not the best answer because Adding magnitudes without signs gives 32 but ignores the direction of each process.",
         "This option is not the best answer because +32 kJ/mol adds the magnitudes of 12 and 20 instead of taking the algebraic sum of +12 kJ/mol and -20 kJ/mol.",
-        "Free-energy changes add for coupled reactions: +12 plus (-20) equals -8 kJ/mol."
+        "Because Gibbs free energy is a state function, delta G values add when elementary or coupled reactions are summed. Coupling +12 kJ/mol with -20 kJ/mol yields delta G_net = +12 + (-20) = -8 kJ/mol."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
@@ -33807,10 +33807,10 @@
         "+65 kJ"
       ],
       "answerIndex": 1,
-      "rationale": "Adding the two equations cancels B and gives +25 plus -40 equals -15 kJ.",
+      "rationale": "By Hess's Law, enthalpy is a state function, so summing A -> B and B -> C cancels intermediate B to yield A -> C. Adding the step enthalpies gives delta H = +25 kJ + (-40 kJ) = -15 kJ.",
       "choiceRationales": [
         "This option is not the best answer because +15 kJ reverses the sign of the combined state-function change.",
-        "Adding the two equations cancels B and gives +25 plus -40 equals -15 kJ.",
+        "By Hess's Law, enthalpy is a state function, so summing A -> B and B -> C cancels intermediate B to yield A -> C. Adding the step enthalpies gives delta H = +25 kJ + (-40 kJ) = -15 kJ.",
         "This option is not the best answer because -65 kJ adds magnitudes without retaining the signs of the two reactions.",
         "This option is not the best answer because +65 kJ has both the wrong sign and the wrong addition of signed values."
       ],
@@ -34792,9 +34792,9 @@
         "Cobalt"
       ],
       "answerIndex": 0,
-      "rationale": "A neutral atom with [Ar]3d5 4s2 has 25 electrons, identifying manganese.",
+      "rationale": "An argon core [Ar] accounts for 18 electrons, and adding 3d5 4s2 brings the total to 18 + 5 + 2 = 25 electrons. In a neutral atom, 25 electrons means atomic number Z = 25, which is manganese (Mn).",
       "choiceRationales": [
-        "A neutral atom with [Ar]3d5 4s2 has 25 electrons, identifying manganese.",
+        "An argon core [Ar] accounts for 18 electrons, and adding 3d5 4s2 brings the total to 18 + 5 + 2 = 25 electrons. In a neutral atom, 25 electrons means atomic number Z = 25, which is manganese (Mn).",
         "This option is not the best answer because neutral chromium adopts the half-filled exception [Ar]3d5 4s1 with only one 4s electron rather than 3d5 4s2.",
         "This option is not the best answer because neutral iron has twenty-six electrons and a ground-state configuration of [Ar]3d6 4s2, one d electron beyond 3d5 4s2.",
         "This option is not the best answer because neutral cobalt has twenty-seven electrons and a ground-state configuration of [Ar]3d7 4s2, two d electrons beyond 3d5 4s2."
@@ -37383,10 +37383,10 @@
         "4.50 L"
       ],
       "answerIndex": 1,
-      "rationale": "Charles-law reasoning gives V2 = V1 times T2/T1 = 2.00 times 450/300 = 3.00 L.",
+      "rationale": "At constant pressure and moles, Charles's Law states V1/T1 = V2/T2 with Kelvin temperatures. Solving V2 = V1*(T2/T1) = 2.00 L * (450 K / 300 K) = 2.00 * 1.50 = 3.00 L.",
       "choiceRationales": [
         "This option is not the best answer because 1.33 L inverts Charles law by multiplying 2.00 L by 300/450 instead of scaling volume upward with temperature as 2.00(450/300).",
-        "Charles-law reasoning gives V2 = V1 times T2/T1 = 2.00 times 450/300 = 3.00 L.",
+        "At constant pressure and moles, Charles's Law states V1/T1 = V2/T2 with Kelvin temperatures. Solving V2 = V1*(T2/T1) = 2.00 L * (450 K / 300 K) = 2.00 * 1.50 = 3.00 L.",
         "This option is not the best answer because 2.00 L would imply no temperature effect at constant pressure.",
         "This option is not the best answer because 4.50 L multiplies by 450 without dividing by the initial temperature."
       ],
@@ -37832,11 +37832,11 @@
         "500 mL"
       ],
       "answerIndex": 2,
-      "rationale": "Using M1V1 = M2V2 gives V1 = 0.400 times 250.0 divided by 2.00 = 50.0 mL.",
+      "rationale": "Dilution conserves solute moles according to M1*V1 = M2*V2. Solving for stock volume gives V1 = (M2*V2)/M1 = (0.400 M * 250.0 mL) / 2.00 M = 100 / 2.00 = 50.0 mL.",
       "choiceRationales": [
         "This option is not the best answer because 20.0 mL would produce only 0.160 M after dilution to 250.0 mL.",
         "This option is not the best answer because 125 mL is the final-volume fraction without accounting for the stock concentration.",
-        "Using M1V1 = M2V2 gives V1 = 0.400 times 250.0 divided by 2.00 = 50.0 mL.",
+        "Dilution conserves solute moles according to M1*V1 = M2*V2. Solving for stock volume gives V1 = (M2*V2)/M1 = (0.400 M * 250.0 mL) / 2.00 M = 100 / 2.00 = 50.0 mL.",
         "This option is not the best answer because 500 mL exceeds the desired final volume and reverses the dilution relationship."
       ],
       "references": [
@@ -40249,10 +40249,10 @@
         "M^-3 s^-1"
       ],
       "answerIndex": 1,
-      "rationale": "The overall order is three, so k has units of M^(1-3) s^-1, or M^-2 s^-1.",
+      "rationale": "The reaction order is 2 + 1 = 3 overall, so solving k = rate / ([A]^2[B]) gives units of (M s^-1) / M^3 = M^(1-3) s^-1 = M^-2 s^-1.",
       "choiceRationales": [
         "This option is not the best answer because M^-1 s^-1 are the rate-constant units for an overall second-order reaction, whereas rate = k[A]^2[B] is overall third order.",
-        "The overall order is three, so k has units of M^(1-3) s^-1, or M^-2 s^-1.",
+        "The reaction order is 2 + 1 = 3 overall, so solving k = rate / ([A]^2[B]) gives units of (M s^-1) / M^3 = M^(1-3) s^-1 = M^-2 s^-1.",
         "This option is not the best answer because M s^-1 would not cancel the concentration factors to give M/s.",
         "This option is not the best answer because M^-3 s^-1 uses an exponent one too large for a third-order rate law."
       ],
@@ -41500,12 +41500,12 @@
         "1.80 kJ"
       ],
       "answerIndex": 3,
-      "rationale": "q = m c delta T = 75.0 times 4.00 times 6.00 = 1800 J, or 1.80 kJ.",
+      "rationale": "Using q = m*c*delta T with m = 75.0 g, c = 4.00 J/(g*deg C), and delta T = 6.00 deg C gives q = 75.0(4.00)(6.00) = 1800 J. Dividing by 1000 J/kJ converts this to 1.80 kJ.",
       "choiceRationales": [
         "This option is not the best answer because 0.0180 kJ is one hundred times too small after conversion.",
         "This option is not the best answer because 0.450 kJ multiplies 75.0 g by 6.00 C while omitting the 4.00 J/g C specific heat factor in q = m c delta T.",
         "This option is not the best answer because 18.0 kJ is ten times too large for the stated heat capacity product.",
-        "q = m c delta T = 75.0 times 4.00 times 6.00 = 1800 J, or 1.80 kJ."
+        "Using q = m*c*delta T with m = 75.0 g, c = 4.00 J/(g*deg C), and delta T = 6.00 deg C gives q = 75.0(4.00)(6.00) = 1800 J. Dividing by 1000 J/kJ converts this to 1.80 kJ."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
@@ -41679,10 +41679,10 @@
         "160 kJ"
       ],
       "answerIndex": 1,
-      "rationale": "The heat is n delta Hvap = 0.250 times 40.0 = 10.0 kJ.",
+      "rationale": "At constant pressure during a phase change, heat absorbed is q = n * delta H_vap. Multiplying n = 0.250 mol by delta H_vap = 40.0 kJ/mol cancels moles and requires 0.250(40.0) = 10.0 kJ of heat.",
       "choiceRationales": [
         "This option is not the best answer because 0.0100 kJ confuses the mole fraction with the heat amount.",
-        "The heat is n delta Hvap = 0.250 times 40.0 = 10.0 kJ.",
+        "At constant pressure during a phase change, heat absorbed is q = n * delta H_vap. Multiplying n = 0.250 mol by delta H_vap = 40.0 kJ/mol cancels moles and requires 0.250(40.0) = 10.0 kJ of heat.",
         "This option is not the best answer because 40.0 kJ is the enthalpy required to vaporize one full mole of substance, not the stated 0.250 mol sample.",
         "This option is not the best answer because 160 kJ divides 40.0 kJ/mol by 0.250 mol instead of multiplying molar enthalpy of vaporization by moles vaporized."
       ],

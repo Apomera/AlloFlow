@@ -4516,7 +4516,10 @@
     "adventure_resumed_level": "Resumed Adventure (Level {level})",
     "source_choice_ambiguous": "Choose a reading in Based on before generating. More than one reading is available.",
     "source_choices_load_failed": "Reading choices could not load. Please try again.",
-    "submission_tools_still_loading": "Submission tools are still loading. Try Submit again."
+    "submission_tools_still_loading": "Submission tools are still loading. Try Submit again.",
+    "sent_to_read_along": "Qoraalka waxaa loogu diray Xirmada Isla-akhriska daaqad cusub.",
+    "read_along_handoff_failed": "Qoraalka qabyada ah looma diri karin Xirmada Isla-akhriska.",
+    "read_along_no_text": "Ku dar ama hadal-qor qoraalka asalka ah kahor intaadan u dirin Xirmada Isla-akhriska."
   },
   "large_file": {
     "modal_title": "Import Large Audio fayl",
@@ -4533,7 +4536,8 @@
     "chunk_info": "Audio waa split into 5-minute chunks u processing",
     "chunk_progress": "Chunk {current} {total}",
     "audio_only_error": "Currently only audio fayl (MP3, WAV, etc.) waa supported u chunked transcription.",
-    "starting": "Bilaabaya..."
+    "starting": "Bilaabaya...",
+    "engine_legend": "Mashiinka Qorista Codka"
   },
   "formatting": {
     "bold": "Bold (**text**)",
@@ -4845,7 +4849,8 @@
       "analyzing_short": "Wo falanqaynayo...",
       "generate_short": "Sameey",
       "books_short": "Buugag",
-      "books_hint": "Fur buugagta sawirka leh: buug kasta wuxuu noqon karaa qoraalkaaga asalka ah"
+      "books_hint": "Fur buugagta sawirka leh: buug kasta wuxuu noqon karaa qoraalkaaga asalka ah",
+      "dictate_hint": "Ku hadal-qor qoraalkaaga asalka ah Whisper-ka qalabka iyo hubinta Gemini oo ikhtiyaari ah"
     },
     "status_generating": "Generating source text...",
     "success_long_form": "Long-form text soo saaray successfully!",
@@ -4888,7 +4893,8 @@
     "qs_find": "Raadi ilo internet ah",
     "qs_find_sub": "Ku dheji link ama AI ha raadiyo",
     "qs_generate": "Ka abuur mawduuc",
-    "qs_generate_sub": "AI ayaa kuu qori doona"
+    "qs_generate_sub": "AI ayaa kuu qori doona",
+    "dictate_or_record": "Hadal-qor ama cod duub"
   },
   "wizard": {
     "title": "Quick Bilow",
@@ -5013,7 +5019,12 @@
     "step_of": "ka",
     "progress": "Horumarka Bilowga Degdegga",
     "progress_value": "Tallaabada {current} ee {total}",
-    "help_click_element": "Guji shay kasta oo hoose si aad u hesho sharaxaad faahfaahsan"
+    "help_click_element": "Guji shay kasta oo hoose si aad u hesho sharaxaad faahfaahsan",
+    "dictate_desc": "Hadal-qorista codka ee Whisper gudaha qalabka & hubin ikhtiyaari ah",
+    "dictate_title": "Hadal-qor ama duub qoraalkaaga asalka ah",
+    "dictate_helper": "Asal ahaan waxay isticmaashaa hadal-qorista gaarka ah ee Whisper gudaha qalabka. Si xor ah u sax, haddii aad rabto nadiifi qoraalka, ama Gemini kula hubi codkaaga la duubay.",
+    "dictate_loading": "Waxaa furmaya Qolka Hadal-qorista (Whisper gudaha qalabka)… Waad qori kartaa ama sax kartaa hoosta inta uu furmayo.",
+    "words_dictated_unit": "erayo la hadal-qoray"
   },
   "settings": {
     "immersive_options": "Immersive Options",
@@ -103171,5 +103182,75 @@
     "a11y_unverified_clinical_deletion": "Unverified clinical deletion",
     "a11y_review_protected_clinical_record_deletion": "Review protected clinical record deletion",
     "a11y_protected_record_security": "Protected record security"
+  },
+  "source_view": {
+    "dictate": "Hadal-qor",
+    "close_dictate": "Xir hadal-qorista",
+    "send_read_along": "U dir Xirmada Isla-akhriska",
+    "upload_verify_banner": "Codka/muuqaalka waxaa gudaha qalabka loogu qoray Whisper ({count} qaybood baa xusuusta ku jira)",
+    "clear_audio": "Tirtir codka"
+  },
+  "dictation": {
+    "badge_desktop": "Whisper-ka Kombiyuutarka Diyaar",
+    "badge_download_needed": "Whisper Gudaha · Soo-dejinta Koowaad",
+    "badge_local_ready": "Whisper Gudaha Diyaar · {name}",
+    "cleanup_apply": "Dhaqan geli nadiifinta",
+    "cleanup_failed": "Qoraalka hadda lama nadiifin karin.",
+    "cleanup_fillers": "Yaree erayada buuxinta",
+    "cleanup_heading": "Nadiifinta qoraalka AI (ikhtiyaari)",
+    "cleanup_keep": "Hayso kii hore",
+    "cleanup_no_changes": "Wax isbeddel ah looma soo jeedin qoraalkan qabyada ah.",
+    "cleanup_notes": "U habeey sida qoraallada fasalka",
+    "cleanup_punctuation": "Hagaaji calaamadaha iyo qaabeynta",
+    "cleanup_review_title": "Nadiifinta la soo jeediyay way diyaar tahay — qoraalkaagu weli isma beddelin",
+    "cleanup_text_only": "qoraal kaliya — cod lama diro",
+    "cleanup_unavailable": "Nadiifinta qoraalka AI hadda lama heli karo.",
+    "cleanup_undo": "Ka noqo nadiifinta",
+    "cleanup_working": "Waa la nadiifinayaa…",
+    "clear_audio": "Tirtir codka la duubay ({mb} MB)",
+    "crosscheck_all_resolved": "Dhammaan meelaha la calaamadeeyay waa la eegay.",
+    "crosscheck_btn": "Kula hubi codka Gemini",
+    "crosscheck_count": "{count} meel(ood) la calaamadeeyay oo la eegayo:",
+    "crosscheck_disabled_note": "Hadda lama heli karo (waxaa lagu damiyay habka internet la'aanta / AI ardayda oo dansan ama furaha Gemini la'aantiis). Hadal-qoristaada Whisper gudaha waxay weli si buuxda u shaqeysaa internet la'aan.",
+    "crosscheck_disclosure": "Kaliya wuu shaqeeyaa haddii aad hoos riixdo: wuxuu u diraa qaybaha codka ee xusuusta ku jira iyo qoraalka qabyada ah Gemini si uu u calaamadeeyo khaladaadka erayada ee suurtogalka ah.",
+    "crosscheck_failed": "Hubinta codka Gemini ma dhammaan. Qoraalkaaga gudaha lama taaban.",
+    "crosscheck_heading": "Is-barbardhigga codka ee Gemini (Ikhtiyaari)",
+    "crosscheck_none": "Wax farqi weyn ah lagama helin u dhexeeya Whisper Gudaha iyo Gemini Audio.",
+    "crosscheck_running": "Codka ayaa lala hubinayaa…",
+    "crosscheck_unavailable": "Is-barbardhigga codka Gemini hadda lama heli karo.",
+    "download_now": "Soo deji Whisper Gudaha ({size} MB)",
+    "download_warning": "Ogeysiis soo-dejin: Whisper Gudaha wuxuu adeegsadaa aqoonsiga hadalka gaarka ah ee qalabka dhexdiisa. Soo-dejinta moodeelka {name} waxay qaadataa ~{size} MB hal mar (~1–2 daqiiqo iyadoo ku xiran internetka), waxay ku keydsantaa biraawsarkaaga internet la'aan, codkaaga la duubayna qalabkan ayuu ku haraa.",
+    "draft_label": "Qoraalka qabyada ah (la sax karo)",
+    "draft_placeholder": "Riix Bilow hadal-qorista kor, ama si toos ah halkan ugu qor/sax qoraalkaaga…",
+    "guide_both_body": "Si gaar ah ugu bilow Whisper Gudaha si hadal-qoristaadu u ahaato mid degdeg ah oo internet la'aan ku shaqeysa. Haddii aad rabto aragti labaad oo ku saabsan ereyada adag ama magacyada, dooro is-barbardhigga Gemini si aad u barbar dhigto laba moodeel oo madax-bannaan codkaaga oo aad dib u dhageysato qaybo 5-ilbiriqsi ah meel kasta oo la calaamadeeyay.",
+    "guide_both_label": "Sababta labadaba loo isticmaalo (Is-barbardhig):",
+    "guide_gemini_body": "Looma baahna soo-dejinta moodeel. Wuxuu ku xooggan yahay ereyada gaarka ah, magacyada gaarka ah, lahjadaha, fasallada buuqa badan, iyo calaamadaha qoraalka — wuxuu u diraa qaybaha codka Gemini kaliya haddii aad doorato.",
+    "guide_gemini_title": "Gemini Audio (Hubin ikhtiyaari ah)",
+    "guide_summary": "Whisper Gudaha vs. Gemini Audio — awoodaha & sababta labadaba loo isticmaalo",
+    "guide_whisper_body": "Waa gaar oo internet la'aan ah kadib hal soo-dejin (~39–73 MB). Wax cod ah kama baxo qalabkaaga, looma baahna furaha API ama xad, hadal-qorista dheer ee joogtada ahna si la isku halleyn karo ayay u shaqeysaa.",
+    "guide_whisper_title": "Whisper Gudaha (Asalka)",
+    "ios_canvas_blocked": "Whisper Gudaha wuxuu ku hakaday iPhone/iPad gudaha Gemini Canvas. Si toos ah hoos ugu qor ama ku fur AlloFlow biraawsarka kombiyuutarka.",
+    "ios_canvas_hint": "Waad ku qori kartaa si toos ah hoosta, ku furi kartaa AlloFlow biraawsarka kombiyuutarka ee Whisper Gudaha, ama adeegsan kartaa Gemini Audio haddii la diyaariyay.",
+    "ios_canvas_title": "Whisper-ka qalabka wuxuu ku hakaday iPhone/iPad gudaha Gemini Canvas",
+    "listening_local": "Waxaa gudaha qalabka looga dhageysanayaa Whisper… yara naso ama hadalka sii wad si qoraal loogu daro.",
+    "mic_start_failed": "Makarafoonka lama bilaabi karin. Hubi oggolaanshaha biraawsarka.",
+    "model_size_label": "Cabbirka moodeelka Whisper Gudaha",
+    "pause_recording": "Haki",
+    "paused_note": "Waa la hakiyay. Waad sax kartaa qoraalka hoosta ama riix Sii wad si aad u sii waddo hadal-qorista.",
+    "privacy_tag": "Gaar ah · Internet la'aan soo-dejinta kadib · Furaha API looma baahna",
+    "resume_recording": "Sii wad",
+    "send_read_along": "U dir Xirmada Isla-akhriska",
+    "speech_settings": "Dejinta hadalka",
+    "speed_badge_lesson": "La tijaabiyay: {speed}x ka dheereeya hadalka · Ku fiican hadal-qoris dheer",
+    "speed_badge_short": "La tijaabiyay: {speed}x ka dheereeya hadalka · Ku fiican qaybaha gaaban",
+    "speed_badge_slow": "La tijaabiyay: {speed}x · Ka gaabiya waqtiga dhabta ah (filo hakadyo)",
+    "speed_badge_upgrade": "La tijaabiyay: {speed}x ka dheereeya hadalka · Ku fiican hadal-qoris dheer (waad tijaabin kartaa {name} sidoo kale)",
+    "start_recording": "Bilow hadal-qorista (Whisper Gudaha)",
+    "stop_recording": "Jooji",
+    "studio_title": "Qolka Hadal-qorista",
+    "test_mic": "Tijaabi makarafoonka (4s)",
+    "upload_media": "Qor faylka codka/muuqaalka",
+    "use_text": "Isticmaal qoraalka la hadal-qoray",
+    "voice_unavailable": "Cod-duubaha weli wuu furmayaa. Fadlan mar kale isku day daqiiqad kadib."
   }
 }

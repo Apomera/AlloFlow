@@ -53,6 +53,11 @@
 
   // The usual set in each strand, and what a first visit starts with.
   var USUAL = { syllables_rhyme: ['rhyming'], hearing_sounds: ['isolation', 'blending', 'segmentation'], letters_sounds: ['mapping'], spelling: ['missing_letter', 'spelling_bee'] };
+  var QUICK_RECIPES = {
+    'blending-cvc': { activities: ['isolation', 'blending', 'segmentation'], stage: 'K early', shapes: ['CVC'] },
+    'digraphs-blends': { activities: ['blending', 'segmentation', 'mapping'], stage: 'G1 early', shapes: ['CCVC', 'CVCC'] },
+    'spelling-practice': { activities: ['missing_letter', 'orthography', 'spelling_bee'], stage: 'G1 late', shapes: [] },
+  };
   var FIRST_VISIT = USUAL.hearing_sounds;
   // 2026-11-16 (owner): a first visit starts at a grade level, not at "Any grade level", so the first words are ones a
   // beginning reader can read (can, get, bed) and not the most common words of all (what, right, could). It is the first
@@ -112,6 +117,8 @@
   var CHOICE_LEVELS = ['easy', 'medium', 'all'];
   // 2026-11-18: Break it Down (Easy shows the word's sounds and one more); 2026-11-19: Sight & Spell (Easy shows a smaller letter bank and word length).
   var CHOICE_ACTIVITIES = ['isolation', 'blending', 'rhyming', 'counting', 'segmentation', 'orthography'];
+  // Sound-only activities that can optionally show letters or sound labels when the teacher turns on letter hints.
+  var LETTER_HINT_ACTIVITIES = ['isolation', 'blending', 'manipulation', 'rhyming', 'segmentation', 'sound_sort', 'syllable_blending', 'word_families'];
   // The words for each, on the top line of a "More options" box.
   var CHOICE_NAMES = { easy: 'Easy', medium: 'Medium', all: 'All' };
   var TRACE_NAMES = { both: 'capital, then lowercase', capital: 'capital only', lowercase: 'lowercase only' };
@@ -172,7 +179,7 @@
   var step = 1;
 
   function defaults() {
-    return { activities: FIRST_VISIT.slice(), mode: 'pick', sound: '', position: 'any', shape: '', stage: stageRow(FIRST_STAGE) ? FIRST_STAGE : '', removed: [], own: '', version: 'A',
+    return { activities: FIRST_VISIT.slice(), mode: 'pick', sound: '', position: 'any', shape: '', shapes: [], stage: stageRow(FIRST_STAGE) ? FIRST_STAGE : '', stages: [], multiStage: false, removed: [], own: '', version: 'A',
       length: core && core.LESSON_LENGTHS[core.LESSON_LENGTH_DEFAULT] ? core.LESSON_LENGTH_DEFAULT : 'regular', title: '', titleEdited: false,
       // order: the page picks the most common words that fit ('common'), or any words that fit ('random', "Pick different
       // words"). shuffle: which random set, one more each press. Neither changes the build seed (the version's 1, 2 or 3).
@@ -188,12 +195,45 @@
       tracing: 'both',
       // choices: fewer answers to choose from ('easy'), 'medium' (the default) or 'all', as Word Sounds does by level.
       choices: 'medium',
+      showLetters: false,
       directionsOnce: false, repeatMissed: false,
       // 2026-11-18 (owner): mix: with two or more activities, they take turns in a mixed order (on unless turned off).
       // questionOrder: the teacher's own order ('activity|word' keys, step 3), or null. mixSeed: another mix ("Mix
       // again"), or null for the version's own. Neither of the last two is kept between visits.
       mix: true, questionOrder: null, mixSeed: null };
   }
+  function validShape(code) { return SHAPES.some(function (row) { return row[0] === code; }); }
+  function cleanShapes(list) {
+    var out = [];
+    (Array.isArray(list) ? list : []).forEach(function (s) {
+      var up = String(s || '').trim().toUpperCase();
+      if (validShape(up) && out.indexOf(up) < 0) out.push(up);
+    });
+    return SHAPES.map(function (row) { return row[0]; }).filter(function (code) { return out.indexOf(code) >= 0; });
+  }
+  function cleanStages(list) {
+    var out = [];
+    (Array.isArray(list) ? list : []).forEach(function (id) {
+      if (typeof id === 'string' && (stageRow(id) || levelRow(id)) && out.indexOf(id) < 0) out.push(id);
+    });
+    return out;
+  }
+  function activeShapes() {
+    if (!state) return [];
+    if (Array.isArray(state.shapes) && state.shapes.length) return cleanShapes(state.shapes);
+    return state.shape && validShape(state.shape) ? [state.shape] : [];
+  }
+  function setShapes(list) {
+    var clean = cleanShapes(list);
+    state.shapes = clean;
+    state.shape = clean.length === 1 ? clean[0] : '';
+  }
+  function activeStages() {
+    if (!state) return [];
+    if (state.multiStage) return cleanStages(state.stages);
+    return state.stage && (stageRow(state.stage) || levelRow(state.stage)) ? [state.stage] : [];
+  }
+  function isMultiCategory() { return activeShapes().length >= 2 || activeStages().length >= 2; }
   function wordCount(value) { var n = Number(value); return n >= 1 && n <= MAX_WORDS && Math.floor(n) === n ? n : 0; }
   function shuffleCount(value) { var n = Number(value); return n >= 1 && n < 1e6 && Math.floor(n) === n ? n : 1; }
 
@@ -205,10 +245,16 @@
   }
   function remember() {
     try {
-      window.localStorage.setItem(STORE_KEY, JSON.stringify({ v: 1, activities: state.activities, mode: state.mode, sound: state.sound, position: state.position,
-        shape: state.shape, stage: state.stage, own: state.own, version: state.version, length: state.length, count: state.count, hand: state.hand, chosen: state.chosen, choices: state.choices, tracing: state.tracing, directionsOnce: !!state.directionsOnce, repeatMissed: !!state.repeatMissed, mix: state.mix !== false,
+      var shapesNow = activeShapes(), stagesNow = cleanStages(state.stages);
+      var payload = { v: 1, activities: state.activities, mode: state.mode, sound: state.sound, position: state.position,
+        shape: shapesNow.length === 1 ? shapesNow[0] : '', stage: state.stage,
+        own: state.own, version: state.version, length: state.length, count: state.count, hand: state.hand, chosen: state.chosen, choices: state.choices, tracing: state.tracing, directionsOnce: !!state.directionsOnce, repeatMissed: !!state.repeatMissed, mix: state.mix !== false,
         order: state.order === 'random' ? 'random' : 'common', shuffle: state.order === 'random' ? state.shuffle : 0, title: titleForHandoff(), words: wordsForHandoff(),
-        spread: !!state.spread, label: state.label, groups: state.groups.map(function (g) { return { label: g.label, stage: g.stage, sound: g.sound, shape: g.shape, count: g.count }; }) }));
+        spread: !!state.spread, label: state.label, groups: state.groups.map(function (g) { return { label: g.label, stage: g.stage, sound: g.sound, shape: g.shape, count: g.count }; }) };
+      if (shapesNow.length >= 2) payload.shapes = shapesNow;
+      if (state.multiStage) { payload.multiStage = true; payload.stages = stagesNow; }
+      if (state.showLetters) payload.showLetters = true;
+      window.localStorage.setItem(STORE_KEY, JSON.stringify(payload));
     } catch (_) { /* a browser that cannot keep them still works */ }
   }
   // The file's title, for "Present or export slides" (packets-present-export.js reads it with the words).
@@ -225,8 +271,16 @@
     if (['any', 'first', 'middle', 'last'].indexOf(saved.position) >= 0) fresh.position = saved.position;
     // Choices kept from an earlier visit win over what a first visit starts with: "Any grade level" stays "Any grade level",
     // and a browser that kept its choices before 2026-11-16 keeps the pattern it started with then (CVC).
-    fresh.shape = saved.shape === '' || SHAPES.some(function (row) { return row[0] === saved.shape; }) ? saved.shape : 'CVC';
+    if (Array.isArray(saved.shapes)) {
+      fresh.shapes = cleanShapes(saved.shapes);
+      fresh.shape = fresh.shapes.length === 1 ? fresh.shapes[0] : '';
+    } else {
+      fresh.shape = saved.shape === '' || validShape(saved.shape) ? saved.shape : 'CVC';
+      fresh.shapes = fresh.shape ? [fresh.shape] : [];
+    }
     fresh.stage = stageRow(saved.stage) || levelRow(saved.stage) ? saved.stage : '';
+    if (Array.isArray(saved.stages)) fresh.stages = cleanStages(saved.stages);
+    if (saved.multiStage === true || (fresh.stages.length >= 2 && saved.multiStage !== false)) fresh.multiStage = true;
     if (saved.order === 'random') { fresh.order = 'random'; fresh.shuffle = shuffleCount(saved.shuffle); }
     if (typeof saved.own === 'string') fresh.own = saved.own.slice(0, 4000);
     if (Object.prototype.hasOwnProperty.call(SEEDS, saved.version)) fresh.version = saved.version;
@@ -238,6 +292,7 @@
     if (Array.isArray(saved.groups)) fresh.groups = saved.groups.slice(0, MAX_GROUPS).filter(function (g) { return g && typeof g === 'object'; }).map(cleanGroup);
     if (TRACE_CASES.indexOf(saved.tracing) >= 0) fresh.tracing = saved.tracing;
     if (CHOICE_LEVELS.indexOf(saved.choices) >= 0) fresh.choices = saved.choices;
+    if (saved.showLetters === true) fresh.showLetters = true;
     if (saved.directionsOnce === true) fresh.directionsOnce = true;
     if (saved.repeatMissed === true) fresh.repeatMissed = true;
     if (saved.mix === false) fresh.mix = false;
@@ -320,24 +375,29 @@
     var leveled = state.activities.some(function (id) { return CHOICE_ACTIVITIES.indexOf(id) >= 0; });
     show('choice-level-field', leveled);
     if ($('f-choices')) $('f-choices').value = state.choices;
+    var letterHints = state.activities.some(function (id) { return LETTER_HINT_ACTIVITIES.indexOf(id) >= 0; });
+    show('show-letters-field', letterHints);
+    var showLettersBox = $('f-show-letters');
+    if (showLettersBox) { showLettersBox.checked = !!state.showLetters; showLettersBox.parentNode.classList.toggle('is-on', showLettersBox.checked); }
     // Each group's top line: how many of its activities are chosen.
     Array.prototype.forEach.call($('strands').querySelectorAll('details.strand'), function (group) {
       var on = group.querySelectorAll('input[type="checkbox"]:checked').length, node = group.querySelector('.strand-count');
       if (node) node.textContent = on ? on + ' chosen' : 'none chosen';
     });
-    // 2026-11-18: with two or more activities, "Mix the activities" (on unless turned off).
+    // 2026-11-18 / 2026-11-21: with two or more activities, "Mix the activities" is surfaced directly below the activities.
     var mixable = state.activities.length >= 2;
     show('mix-field', mixable);
     var mixBox = $('f-mix');
     if (mixBox) { mixBox.checked = state.mix !== false; mixBox.parentNode.classList.toggle('is-on', mixBox.checked); }
     // "More options" of step 1: shown when one of its choices applies; its top line says what they are now.
     var now = [];
-    if (mixable) now.push(state.mix !== false ? 'activities mixed' : 'one activity at a time');
     if (leveled) now.push('Choices: ' + CHOICE_NAMES[state.choices]);
     if (tracing) now.push('Letter Trace: ' + TRACE_NAMES[state.tracing]);
-    show('more-1', now.length > 0);
+    if (letterHints && state.showLetters) now.push('Letter hints: on');
+    else if (letterHints && !now.length) now.push('Letter hints: off');
+    show('more-1', now.length > 0 || letterHints);
     setText('more-1-now', now.join(', '));
-    openMore('more-1', (leveled && state.choices !== 'medium') || (tracing && state.tracing !== 'both') || (mixable && state.mix === false));
+    openMore('more-1', (leveled && state.choices !== 'medium') || (tracing && state.tracing !== 'both') || (letterHints && !!state.showLetters));
     var n = state.activities.length;
     setText('activity-count', n ? count(n, 'activity', 'activities') + ' chosen.' : 'No activity is chosen yet.');
     if (n) setText('step-1-problem', '');
@@ -360,12 +420,54 @@
     });
   }
   // The line under "Make it with the usual settings": what the file would be made with, as chosen now.
+  function sameSet(a, b) {
+    if (a.length !== b.length) return false;
+    var sortedA = a.slice().sort(), sortedB = b.slice().sort();
+    for (var i = 0; i < sortedA.length; i++) if (sortedA[i] !== sortedB[i]) return false;
+    return true;
+  }
+  function applyRecipe(id) {
+    var spec = QUICK_RECIPES[id];
+    if (!spec) return;
+    var acts = order.filter(function (act) { return spec.activities.indexOf(act) >= 0; });
+    if (!acts.length) return;
+    state.activities = acts;
+    state.mode = 'pick';
+    state.hand = false;
+    state.multiStage = false;
+    state.stages = [];
+    state.stage = spec.stage || '';
+    setShapes(spec.shapes || []);
+    state.sound = '';
+    state.position = 'any';
+    state.groups = [];
+    state.removed = [];
+    state.questionOrder = null;
+    state.titleEdited = false;
+    state.title = '';
+    picked = null;
+    syncActivities();
+    openStrands();
+    syncPickControls();
+    remember();
+  }
   function drawQuick() {
     if (!$('quick-line')) return;
     var acts = order.filter(function (id) { return state.activities.indexOf(id) >= 0; }).map(core.activityLabel);
-    var words = state.mode === 'own' ? 'Your own words' : state.hand ? 'The words you chose' : (state.stage ? stageName(state.stage) : 'Any level') + ', ' + count(wordsFor(state.length), 'word');
+    var stages = activeStages(), shapes = activeShapes();
+    var levelText = stages.length >= 2 ? stages.length + ' mixed levels' : stages.length === 1 ? stageName(stages[0]) : 'Any level';
+    var shapeText = shapes.length >= 2 ? ', ' + shapes.join(' + ') : shapes.length === 1 ? ', ' + shapes[0] : '';
+    var words = state.mode === 'own' ? 'Your own words' : state.hand ? 'The words you chose' : levelText + shapeText + ', ' + count(wordsFor(state.length), 'word');
     setText('quick-line', acts.length ? 'Skips to step 3 and makes the file with what is chosen now: ' + listed(acts) + '. ' + words + '. You can still change anything.'
       : 'Choose at least one activity first.');
+    Array.prototype.forEach.call(doc.querySelectorAll('#quick [data-recipe]'), function (btn) {
+      var spec = QUICK_RECIPES[btn.getAttribute('data-recipe')];
+      if (!spec) return;
+      var wantActs = order.filter(function (id) { return spec.activities.indexOf(id) >= 0; });
+      var active = state.mode === 'pick' && !state.hand && !state.multiStage && !state.sound && !groupsOn()
+        && state.stage === (spec.stage || '') && sameSet(shapes, spec.shapes || []) && sameSet(state.activities, wantActs);
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
   }
 
   // ---------------------------------------------------------------------------
@@ -383,18 +485,30 @@
   // How many words the picker lists: enough for a Long file, or for Custom when that is more.
   function pickTarget() { return Math.max(wordsFor('long'), state.length === 'custom' ? wordsFor('custom') : 0); }
   function criteria(change) {
-    var now = { sound: state.sound, position: state.position, shape: state.shape, stage: state.stage };
-    Object.keys(change || {}).forEach(function (key) { now[key] = change[key]; });
+    var now = { sound: state.sound, position: state.position, shapes: activeShapes(), stages: activeStages() };
+    Object.keys(change || {}).forEach(function (key) {
+      if (key === 'shape') now.shapes = change.shape ? cleanShapes([change.shape]) : [];
+      else if (key === 'shapes') now.shapes = cleanShapes(change.shapes);
+      else if (key === 'stage') now.stages = change.stage ? cleanStages([change.stage]) : [];
+      else if (key === 'stages') now.stages = cleanStages(change.stages);
+      else now[key] = change[key];
+    });
     // The words the teacher removed are NOT handed to the picker (see pick): a few more words are asked for instead.
     var asked = { count: pickTarget() + state.removed.length, exclude: recordedOnly.slice() };
     if (now.sound) { asked.targetSound = now.sound; asked.position = now.position; }
-    if (now.shape) asked.shape = now.shape;
-    if (levelRow(now.stage)) asked.level = levelRow(now.stage).level;
-    else if (now.stage) asked.stage = now.stage;
-    // "Pick different words": any words that fit, not the most common first.
-    if (state.order === 'random') asked.mix = 'any';
-    // Mixed by number of sounds, when asked for and no one pattern is chosen (a pattern fixes the number of sounds).
-    if (state.spread && !now.shape) asked.spread = 'sounds';
+    if (now.shapes.length >= 2) asked.shapes = now.shapes.slice();
+    else if (now.shapes.length === 1) asked.shape = now.shapes[0];
+    if (now.stages.length >= 2) asked.stages = now.stages.slice();
+    else if (now.stages.length === 1) {
+      now.stage = now.stages[0];
+      if (levelRow(now.stage)) asked.level = levelRow(now.stage).level;
+      else if (now.stage) asked.stage = now.stage;
+    }
+    var multi = now.shapes.length >= 2 || now.stages.length >= 2;
+    // "Pick different words", or 2+ categories: full-pool seeded randomization instead of most-common-first.
+    if (state.order === 'random' || multi) asked.mix = 'any';
+    // Mixed by number of sounds, when asked for and no pattern is chosen (a pattern fixes the number of sounds).
+    if (state.spread && !now.shapes.length) asked.spread = 'sounds';
     return asked;
   }
   // The seed of the pick: the version's, and with "Pick different words" which random set it is. The seed the file is
@@ -476,10 +590,20 @@
     });
     return have;
   }
-  // The sounds the words of ONE grade level have, or null for any grade level (then every sound on offer has words).
+  // The sounds the words of ONE or MORE grade levels have, or null for any grade level (then every sound on offer has words).
   // Kept for each grade level until the words left out change (a recording added or removed in My words).
   var soundsAtStage = {};
   function soundsFor(stage) {
+    if (Array.isArray(stage)) {
+      if (!stage.length) return null;
+      if (stage.length === 1) return soundsFor(stage[0]);
+      var union = {};
+      stage.forEach(function (id) {
+        var one = soundsFor(id);
+        if (one) Object.keys(one).forEach(function (k) { union[k] = true; });
+      });
+      return union;
+    }
     if (!stage) return null;
     var key = stage + '|' + recordedOnly.length;
     if (!soundsAtStage[key]) {
@@ -610,8 +734,9 @@
     words.forEach(function (word) { var n = soundsIn(word); if (n && numbers.indexOf(n) < 0) numbers.push(n); });
     numbers.sort(function (a, b) { return a - b; });
     var picking = state.mode === 'pick' && !state.hand, name = core.activityLabel('counting');
+    var hasShape = activeShapes().length > 0;
     // What the grade level has to offer with any pattern: the button is there only when it would change something.
-    var offer = picking ? poolSoundNumbers() : [], mixedNow = picking && state.spread && !state.shape;
+    var offer = picking ? poolSoundNumbers() : [], mixedNow = picking && state.spread && !hasShape;
     if (counting && numbers.length && numbers.length <= 2) {
       var note = el('p', 'note mix-note');
       note.setAttribute('data-mix', 'counting');
@@ -619,17 +744,17 @@
         ? name + ': every word here has ' + count(numbers[0], 'sound') + ', so the answer is always ' + numbers[0] + '.'
         : name + ': these words have only ' + numbers[0] + ' or ' + numbers[1] + ' sounds, so there are only two answers.'));
       if (picking && !mixedNow && offer.length > numbers.length) {
-        var fix = el('button', 'btn btn-small', state.shape ? 'Mix in words with other numbers of sounds (any pattern)' : 'Mix in words with other numbers of sounds');
+        var fix = el('button', 'btn btn-small', hasShape ? 'Mix in words with other numbers of sounds (any pattern)' : 'Mix in words with other numbers of sounds');
         fix.type = 'button';
         fix.id = 'mix-fix';
-        fix.addEventListener('click', function () { state.spread = true; state.shape = ''; pickChanged(false); mixFocus = 'mix-undo'; });
+        fix.addEventListener('click', function () { state.spread = true; setShapes([]); pickChanged(false); mixFocus = 'mix-undo'; });
         note.appendChild(document.createTextNode(' '));
         note.appendChild(fix);
       } else if (picking) note.appendChild(el('span', 'mix-why', ' The words that fit these choices all have ' + (offer.length > 1 ? offer.slice(0, -1).join(', ') + ' or ' + offer[offer.length - 1] : (offer[0] || numbers[0])) + ' sounds. A later level, or no sound to practice, gives a wider mix.'));
       else note.appendChild(el('span', 'mix-why', ' Add a few words with a different number of sounds.'));
       host.appendChild(note);
     }
-    if (picking && state.spread && !state.shape) {
+    if (picking && state.spread && !hasShape) {
       var on = el('p', 'result-sub mix-on');
       on.setAttribute('data-mix', 'spread');
       on.appendChild(el('span', '', numbers.length > 1 ? 'The words are mixed by their number of sounds (' + numbers[0] + ' to ' + numbers[numbers.length - 1] + ').' : 'The words are mixed by their number of sounds.'));
@@ -647,11 +772,11 @@
   var mixFocus = '', groupFocus = '', mixPoolKey = null, mixPoolNumbers = [];
   // The numbers of sounds (2 to 6) among ALL the words that fit the first group's choices with any pattern.
   function poolSoundNumbers() {
-    var asked = criteria({ shape: '' });
+    var asked = criteria({ shapes: [] });
     delete asked.spread; delete asked.mix;
     asked.count = 100000;
     asked.exclude = recordedOnly.slice();
-    var key = JSON.stringify([asked.targetSound || '', asked.position || '', asked.stage || '', asked.level || '', recordedOnly.length]);
+    var key = JSON.stringify([asked.targetSound || '', asked.position || '', asked.stage || '', asked.level || '', asked.stages || [], recordedOnly.length]);
     if (key !== mixPoolKey) {
       var seen = {};
       try { builder.pickWords(asked, { wordlist: wordlist, core: core, dictionary: dictionary, seed: 1 }).words.forEach(function (word) { var n = soundsIn(word); if (n >= 2 && n <= 6) seen[n] = true; }); } catch (_) { /* no words: no numbers */ }
@@ -718,7 +843,13 @@
     if (!first) {
       field('Level', select('stage', 'f-stage', group.stage, function (v) { group.stage = v; }));
       field('Sound', select('sound', 'f-sound', group.sound, function (v) { group.sound = v; }));
-      field('Pattern', select('shape', 'f-shape', group.shape, function (v) { group.shape = v; }));
+      var shapeSel = document.createElement('select');
+      shapeSel.id = id + '-shape';
+      var anyOpt = el('option', '', 'Any pattern'); anyOpt.value = ''; shapeSel.appendChild(anyOpt);
+      SHAPES.forEach(function (row) { var o = el('option', '', row[0] + ', like ' + row[1]); o.value = row[0]; shapeSel.appendChild(o); });
+      shapeSel.value = group.shape;
+      shapeSel.addEventListener('change', function () { group.shape = shapeSel.value; groupFocus = shapeSel.id; pickChanged(true); });
+      field('Pattern', shapeSel);
       var number = document.createElement('input');
       // A text box with the number keypad: it takes the page's field style (a number box was 33 px tall).
       number.type = 'text'; number.id = id + '-count'; number.inputMode = 'numeric'; number.maxLength = 2; number.autocomplete = 'off'; number.setAttribute('pattern', '[0-9]*');
@@ -757,6 +888,33 @@
     groupFocus = 'g' + state.groups.length + '-label';
     pickChanged(true);
   }
+  var stagePillsOthers = null;
+  function drawStagePills(showOthers) {
+    var host = $('stage-pills');
+    if (!host) return;
+    var want = !!showOthers;
+    if (stagePillsOthers === want && host.firstChild) return;
+    stagePillsOthers = want;
+    host.textContent = '';
+    var list = [];
+    stageRows.forEach(function (row) {
+      if (!want && otherStage(row)) return;
+      list.push({ id: row.id, name: stageName(row.id) });
+    });
+    LEVELS.forEach(function (row) { list.push({ id: row.id, name: row.name }); });
+    list.forEach(function (entry) {
+      var label = el('label', 'pill');
+      var box = doc.createElement('input');
+      box.type = 'checkbox';
+      box.name = 'stages';
+      box.value = entry.id;
+      box.setAttribute('data-stage', entry.id);
+      box.setAttribute('aria-describedby', 'stage-multi-hint');
+      label.appendChild(box);
+      label.appendChild(el('span', 'pill-name', entry.name));
+      host.appendChild(label);
+    });
+  }
   function drawPickControls() {
     var sound = $('f-sound'), have = soundsOnOffer();
     SOUND_GROUPS.forEach(function (group) {
@@ -771,12 +929,23 @@
       });
       if (box.firstChild) sound.appendChild(box);
     });
-    var shape = $('f-shape');
-    SHAPES.forEach(function (row) {
-      var option = el('option', '', row[0] + ', like ' + row[1]);
-      option.value = row[0];
-      shape.appendChild(option);
-    });
+    var shapeHost = $('f-shapes');
+    if (shapeHost) {
+      shapeHost.textContent = '';
+      SHAPES.forEach(function (row) {
+        var label = el('label', 'pill');
+        var box = doc.createElement('input');
+        box.type = 'checkbox';
+        box.name = 'shapes';
+        box.value = row[0];
+        box.setAttribute('data-shape', row[0]);
+        box.setAttribute('aria-describedby', 'shape-hint');
+        label.appendChild(box);
+        label.appendChild(el('span', 'pill-name', row[0]));
+        label.appendChild(el('span', 'pill-ex', ', like ' + row[1]));
+        shapeHost.appendChild(label);
+      });
+    }
     var stage = $('f-stage');
     var groups = [];
     stageRows.forEach(function (row) {
@@ -813,6 +982,7 @@
     show('stage-other', otherStageGroups.length > 0);
     if (otherNames.length) setText('stage-other-line', 'Show ' + listed(otherNames) + ' in the Level list: ' + listed(otherStages));
     otherStagesOn = otherStageGroups.length > 0 && regionAsks();
+    drawStagePills(otherStagesOn);
     drawStageKey();
   }
   function otherStage(row) { return !!row && row.isDefault === false; }
@@ -827,7 +997,8 @@
     // A sound the chosen grade level has no word for stays in the list, says why and cannot be chosen (2026-11-16:
     // at Kindergarten, first part, half the sounds gave "No words fit these choices"). A sound already chosen stays
     // chosen, with the reason beside it.
-    var haveSounds = soundsFor(state.stage);
+    var curStages = activeStages(), curShapes = activeShapes();
+    var haveSounds = soundsFor(curStages);
     Array.prototype.forEach.call($('f-sound').options, function (option) {
       if (!option.value) return;
       var none = !!haveSounds && !haveSounds[option.value];
@@ -837,8 +1008,16 @@
     $('f-sound').value = state.sound;
     $('f-position').value = state.position;
     $('f-position').disabled = !state.sound;
-    $('f-shape').value = state.shape;
-    var stage = $('f-stage'), others = otherStagesOn || otherStage(stageRow(state.stage));
+    if ($('f-shapes')) {
+      Array.prototype.forEach.call($('f-shapes').querySelectorAll('input[data-shape]'), function (box) {
+        box.checked = curShapes.indexOf(box.value) >= 0;
+        box.parentNode.classList.toggle('is-on', box.checked);
+      });
+    }
+    show('shape-meta', curShapes.length > 0);
+    setText('shape-count', curShapes.length ? curShapes.length + ' selected' : '');
+    var stage = $('f-stage');
+    var others = otherStagesOn || curStages.some(function (id) { return otherStage(stageRow(id)); }) || otherStage(stageRow(state.stage));
     otherStageGroups.forEach(function (group) {
       if (others && group.parentNode !== stage) stage.appendChild(group);
       if (!others && group.parentNode === stage) stage.removeChild(group);
@@ -846,21 +1025,41 @@
     // The wider levels stay last, after another curriculum's grade levels when those are shown.
     if (widerGroup) stage.appendChild(widerGroup);
     if ($('f-stage-other')) $('f-stage-other').checked = others;
+    drawStagePills(others);
+    var multiBox = $('f-multi-stage');
+    if (multiBox) {
+      multiBox.checked = !!state.multiStage;
+      multiBox.parentNode.classList.toggle('is-on', multiBox.checked);
+    }
+    show('stage-single-wrap', !state.multiStage);
+    show('stage-multi-field', !!state.multiStage);
+    stage.disabled = !!state.multiStage;
     stage.value = state.stage;
-    setText('stage-hint', stageLine(state.stage));
+    var chosenMulti = cleanStages(state.stages);
+    show('stage-multi-meta', !!state.multiStage && chosenMulti.length > 0);
+    setText('stage-multi-count', chosenMulti.length ? chosenMulti.length + ' selected' : '');
+    if ($('stage-pills')) {
+      Array.prototype.forEach.call($('stage-pills').querySelectorAll('input[data-stage]'), function (box) {
+        box.checked = chosenMulti.indexOf(box.value) >= 0;
+        box.parentNode.classList.toggle('is-on', box.checked);
+      });
+    }
+    var singleStage = curStages.length === 1 ? curStages[0] : '';
+    var multiStagesOn = curStages.length >= 2;
+    setText('stage-hint', multiStagesOn ? 'Balanced random mix across ' + curStages.length + ' levels.' : stageLine(singleStage));
     // One more line for the two kindergarten rows of the Common Core table, and for no other stage. Its words are in the page.
-    var kindergarten = K_STAGES.indexOf(state.stage) >= 0;
+    var kindergarten = curStages.length > 0 && curStages.every(function (id) { return K_STAGES.indexOf(id) >= 0; });
     show('stage-k-note', kindergarten);
     // Spelling with "Any stage": one short line that suggests a stage.
-    var spelling = !state.stage && state.activities.some(function (id) { return core.activityStrand(id) === 'spelling'; });
+    var spelling = !curStages.length && state.activities.some(function (id) { return core.activityStrand(id) === 'spelling'; });
     show('stage-spell-note', spelling);
     stage.setAttribute('aria-describedby', ['stage-hint'].concat(kindergarten ? ['stage-k-note'] : [], spelling ? ['stage-spell-note'] : []).join(' '));
-    var whyText = stageWhy(state.stage);
+    var whyText = multiStagesOn ? '' : stageWhy(singleStage);
     setText('stage-why-text', whyText);
     show('stage-why-text', !!whyText);
     drawMore2();
   }
-  // "More options" of step 2: a sound, a pattern and other curricula while the page picks the words, and the version
+  // "More options" of step 2: a sound and other curricula while the page picks the words, and the version
   // always. Its top line says what they are now; it opens by itself when one of them is set.
   function drawMore2() {
     var picking = state.mode === 'pick';
@@ -868,7 +1067,6 @@
     var now = [];
     if (picking) {
       now.push(state.sound ? soundName(state.sound) + ' sound' + (state.position === 'any' ? '' : ', ' + POSITION_NAMES[state.position]) : 'any sound');
-      now.push(state.shape ? state.shape + ' pattern' : 'any pattern');
     }
     now.push('version ' + state.version);
     // 2026-11-17: groups of words and choosing the words yourself are in this box too.
@@ -876,7 +1074,8 @@
     if (picking && state.hand) now.push('words chosen yourself');
     setText('more-2-now', now.join(', '));
     show('more-2-words', picking);
-    openMore('more-2', state.version !== 'A' || (picking && (!!state.sound || !!state.shape || otherStage(stageRow(state.stage)) || groupsOn() || !!state.hand)));
+    var hasOtherStage = activeStages().some(function (id) { return otherStage(stageRow(id)); }) || otherStage(stageRow(state.stage));
+    openMore('more-2', state.version !== 'A' || (picking && (!!state.sound || hasOtherStage || groupsOn() || !!state.hand)));
   }
   function pickChanged(keepRemoved) {
     if (!keepRemoved) state.removed = [];
@@ -948,7 +1147,7 @@
   // The bar beside the picked words: the stepper and "Pick different words", while the page picks the words.
   function syncPickBar() {
     show('pick-bar', state.mode === 'pick' && !state.hand);
-    show('pick-common', state.order === 'random');
+    show('pick-common', state.order === 'random' && !isMultiCategory());
     placeCount();
   }
   function stepCount(delta) {
@@ -1035,8 +1234,8 @@
   // When few words fit: try each choice set to "any", one at a time, and offer the ones that give more.
   function suggestLoosening(run, fit) {
     var tries = [];
-    if (state.stage) tries.push({ change: { stage: '' }, label: 'Any level' });
-    if (state.shape) tries.push({ change: { shape: '' }, label: 'Any pattern' });
+    if (activeStages().length) tries.push({ change: { stages: [] }, apply: function () { state.stage = ''; state.stages = []; state.multiStage = false; }, label: 'Any level' });
+    if (activeShapes().length) tries.push({ change: { shapes: [] }, apply: function () { setShapes([]); }, label: 'Any pattern' });
     if (state.sound && state.position !== 'any') tries.push({ change: { position: 'any' }, label: 'The sound anywhere in the word' });
     if (state.sound) tries.push({ change: { sound: '', position: 'any' }, label: 'Any sound' });
     var host = $('pick-loosen');
@@ -1053,7 +1252,8 @@
         var button = el('button', 'btn btn-small', option.label + ': ' + count(pool, 'word fits', 'words fit'));
         button.type = 'button';
         button.addEventListener('click', function () {
-          Object.keys(option.change).forEach(function (key) { state[key] = option.change[key]; });
+          if (typeof option.apply === 'function') option.apply();
+          else Object.keys(option.change).forEach(function (key) { state[key] = option.change[key]; });
           pickChanged(false);
           $('pick-line').focus();
         });
@@ -1155,6 +1355,21 @@
     var ready = ownRows.filter(function (row) { return row.ok; }).length;
     setText('own-line', !words.length ? 'Type or paste your words above.'
       : ready + ' of ' + count(ownRows.length, 'word') + ' can be used.' + (extra ? ' Only the first ' + MAX_TYPED + ' words are checked.' : ''));
+    var ownCap = wordsFor(state.length);
+    var showOwnLimit = state.mode === 'own' && ready > ownCap;
+    if (showOwnLimit) {
+      var targetAll = Math.min(ready, MAX_WORDS);
+      setText('own-limit-text', 'This file length uses the first ' + count(ownCap, 'word') + ' (' + (ready - ownCap) + ' would be left out).' + (ready > MAX_WORDS ? ' A file holds at most ' + MAX_WORDS + ' words.' : ''));
+      setText('own-use-all', 'Use all ' + targetAll + ' words');
+    }
+    show('own-limit-note', showOwnLimit);
+    var voiceLink = $('own-voice-link');
+    if (voiceLink) {
+      var needVoice = ownRows.filter(function (row) {
+        return row.edit && !canLoad(row.word) && !(mineOf(row.word) && mineOf(row.word).clip);
+      }).map(function (row) { return row.word; }).slice(0, 40);
+      voiceLink.setAttribute('href', needVoice.length ? 'packets-voice.html#words=' + needVoice.join(',') : 'packets-voice.html');
+    }
     if (ready && state.mode === 'own') setText('step-2-problem', '');
     if (step === 2) soundsNote();
     remember();
@@ -1209,7 +1424,7 @@
   // Every word the picker would offer now, A to Z (the picker's rules, not its count). Worked out again only when a choice changes.
   function poolWords() {
     var asked = criteria();
-    var key = JSON.stringify([asked.targetSound || '', asked.position || '', asked.shape || '', asked.stage || '', asked.level || '']);
+    var key = JSON.stringify([asked.targetSound || '', asked.position || '', asked.shape || '', asked.shapes || [], asked.stage || '', asked.level || '', asked.stages || []]);
     if (key !== listKey) {
       listKey = key;
       asked.count = 100000;
@@ -1517,10 +1732,53 @@
   function wordMade(row) {
     var parts = [];
     if (row.sounds) parts.push('sounds');
-    if (row.clip) parts.push('recording');
+    if (row.clip) parts.push(row.clipSource === 'computer-voice' ? 'computer voice' : 'recording');
     if (row.noPicture) parts.push('no picture');
     else if (row.picture) parts.push(row.own ? 'your picture' : 'picture');
     return parts.join(', ');
+  }
+  var myWordsQuery = '', myWordsFilter = 'all';
+  function useMyWordInList(word) {
+    if (!state) return;
+    if (state.mode === 'own') {
+      if (typedWords().indexOf(word) >= 0) { setText('my-words-said', word + ' is already in your word list.'); return; }
+      state.own = (String(state.own || '').replace(/\s+$/, '') + (String(state.own || '').trim() ? '\n' : '') + word).slice(0, 4000);
+      if ($('f-own').value !== state.own) $('f-own').value = state.own;
+      drawOwn();
+      setText('my-words-said', 'Added ' + word + ' to your word list.');
+      return;
+    }
+    var finishPick = function () {
+      if (typedWords().indexOf(word) < 0) {
+        state.own = (String(state.own || '').replace(/\s+$/, '') + (String(state.own || '').trim() ? ' ' : '') + word).slice(0, 4000);
+        if ($('f-own').value !== state.own) $('f-own').value = state.own;
+      }
+      startHand();
+      if (state.chosen.indexOf(word) >= 0) { setText('my-words-said', word + ' is already in your word list.'); return; }
+      if (state.chosen.length >= MAX_WORDS) { setText('my-words-said', 'A file has at most ' + MAX_WORDS + ' words. Remove one to add ' + word + '.'); return; }
+      if (usable(word)) {
+        state.chosen.push(word);
+        drawOwn();
+        listChanged();
+        setText('my-words-said', 'Added ' + word + ' to your word list.');
+      } else if (checkWord(word).edit) {
+        addPending[word] = true;
+        drawOwn();
+        listChanged();
+        setText('my-words-said', 'Added ' + word + '. Give it its sounds and a recording to use it in the file.');
+      } else {
+        setText('my-words-said', word + ' cannot be used in this file.');
+      }
+    };
+    if (needsEntry(word) && myWords && typeof myWords.getMany === 'function') {
+      myWords.getMany([word]).then(function (found) {
+        if (found && found[word]) mine[word] = found[word];
+        mineTried[word] = true;
+        finishPick();
+      }, finishPick);
+    } else {
+      finishPick();
+    }
   }
   // The quiet summary in step 2: always reachable (closed by default) when the device store is available so "Open a My words file" works on fresh devices.
   function drawMyWords() {
@@ -1530,28 +1788,56 @@
     box.hidden = !myWordsReady;
     var bytes = rows.reduce(function (sum, row) { return sum + (Number(row.bytes) || 0); }, 0);
     setText('my-words-line', 'My words on this device: ' + (rows.length ? count(rows.length, 'word') + ', ' + fileSize(bytes) : 'none') + '.');
+    var showTools = rows.length > 6;
+    show('my-words-tools', showTools);
+    if (!showTools) {
+      myWordsQuery = '';
+      myWordsFilter = 'all';
+      if ($('my-words-find')) $('my-words-find').value = '';
+      if ($('my-words-filter')) $('my-words-filter').value = 'all';
+    }
+    var visible = showTools ? rows.filter(function (row) {
+      if (myWordsQuery && String(row.word || '').toLowerCase().indexOf(myWordsQuery) < 0) return false;
+      if (myWordsFilter === 'sounds') return !!row.sounds;
+      if (myWordsFilter === 'recording') return !!row.clip && row.clipSource !== 'computer-voice';
+      if (myWordsFilter === 'computer-voice') return !!row.clip && row.clipSource === 'computer-voice';
+      if (myWordsFilter === 'picture') return !!row.picture && !row.noPicture;
+      return true;
+    }) : rows;
     list.textContent = '';
-    rows.forEach(function (row) {
+    if (rows.length && !visible.length) {
+      list.appendChild(el('li', 'mw-empty', 'No saved words match that filter.'));
+    }
+    visible.forEach(function (row) {
       var item = el('li');
       item.appendChild(el('span', 'mw-word', row.word));
       item.appendChild(el('span', 'mw-what', wordMade(row) + ', ' + fileSize(Number(row.bytes) || 1) + '.'));
+      var actions = el('span', 'mw-actions');
+      var useBtn = el('button', 'btn btn-text btn-small', 'Use in list');
+      useBtn.type = 'button';
+      useBtn.setAttribute('data-mw-use', row.word);
+      useBtn.setAttribute('aria-label', 'Use ' + row.word + ' in your word list');
+      useBtn.addEventListener('click', function () { useMyWordInList(row.word); });
+      actions.appendChild(useBtn);
       var remove = el('button', 'btn btn-text btn-small', 'Remove');
       remove.type = 'button';
+      remove.setAttribute('data-mw-remove', row.word);
       remove.setAttribute('aria-label', 'Remove ' + row.word + ' from my words');
       remove.addEventListener('click', function () {
-        var at = rows.indexOf(row);
+        var at = visible.indexOf(row);
         myWords.remove(row.word).then(function () {
           setText('my-words-said', 'Removed ' + row.word + '.');
           return readMine();
         }).then(function () {
-          var buttons = $('my-words-list').querySelectorAll('button');
+          var buttons = $('my-words-list').querySelectorAll('button[data-mw-remove]');
           var next = buttons[Math.min(at, buttons.length - 1)];
           if (next) next.focus(); else $('my-words-line').focus();
         }).catch(function () {
           setText('my-words-said', 'Could not remove ' + row.word + '.');
         });
       });
-      item.appendChild(remove);
+      actions.appendChild(remove);
+      item.appendChild(actions);
       list.appendChild(item);
     });
     var clear = $('my-words-clear');
@@ -1563,6 +1849,18 @@
     if (cleared) setText('my-words-said', cleared);
   }
   function wireMyWords() {
+    if ($('my-words-find')) {
+      $('my-words-find').addEventListener('input', function () {
+        myWordsQuery = String(this.value || '').trim().toLowerCase();
+        drawMyWords();
+      });
+    }
+    if ($('my-words-filter')) {
+      $('my-words-filter').addEventListener('change', function () {
+        myWordsFilter = String(this.value || 'all');
+        drawMyWords();
+      });
+    }
     $('my-words-clear').addEventListener('click', function () {
       if (!clearing) { clearing = true; cleared = ''; setText('my-words-said', ''); drawMyWords(); return; }
       clearing = false;
@@ -1700,7 +1998,7 @@
   var wavs = typeof Map === 'function' ? new Map() : null, wavCount = 0;
   var buildTimer = 0, buildRun = 0, built = null, fileUrl = '';
   // The lesson of the last file made: the questions "Question order" lists (step 3).
-  var lastLesson = null;
+  var lastLesson = null, lastManifest = null;
 
   function openCache() {
     try {
@@ -2071,11 +2369,15 @@
 
   function autoTitle() {
     var what = 'mixed words';
+    var shapes = activeShapes(), stages = activeStages();
     if (state.mode === 'own') what = 'my words';
     else if (state.hand) what = 'chosen words';
     else if (state.sound) what = soundName(state.sound).replace(/ \(.*\)$/, '') + ' words';
-    else if (state.shape) what = state.shape + ' words';
-    else if (state.stage) what = STAGE_PRACTICE[state.stage] || (levelRow(state.stage) ? stageName(state.stage).toLowerCase() : 'mixed words');
+    else if (shapes.length >= 2) what = shapes.length === 2 ? shapes[0] + ' and ' + shapes[1] + ' words' : 'mixed patterns (' + shapes.length + ')';
+    else if (shapes.length === 1) what = shapes[0] + ' words';
+    else if (stages.length >= 2) what = 'mixed levels';
+    else if (stages.length === 1 && stages[0] === state.stage) what = STAGE_PRACTICE[state.stage] || (levelRow(state.stage) ? stageName(state.stage).toLowerCase() : 'mixed words');
+    else if (stages.length === 1) what = STAGE_PRACTICE[stages[0]] || (levelRow(stages[0]) ? stageName(stages[0]).toLowerCase() : 'mixed words');
     return 'Word Sounds: ' + what + ', version ' + state.version;
   }
   // What a stage practices, for the file title a student sees (2026-11-18: no grade or year in it, to avoid stigma).
@@ -2202,6 +2504,7 @@
     buildRun++;
     built = null;
     lastLesson = null;
+    lastManifest = null;
     if (typeof drawOrder === 'function') drawOrder();
     if (fileUrl) { try { URL.revokeObjectURL(fileUrl); } catch (_) {} fileUrl = ''; }
     show('summary', false);
@@ -2209,6 +2512,8 @@
     show('size-warn', false);
     show('try', false);
     show('save', false);
+    show('download-bundle', false);
+    show('open-symbol-runner', false);
     show('after-save', false);
     show('build-problem', false);
     // The files for each student follow the same choices: a change means making them again.
@@ -2255,6 +2560,7 @@
     if (learner) options.learnerLabel = learner;
     if (state.tracing !== 'both' && plan.activities.indexOf('letter_tracing') >= 0) options.tracingCases = state.tracing;
     options.choices = CHOICE_LEVELS.indexOf(state.choices) >= 0 ? state.choices : 'medium';
+    options.showLetters = !!state.showLetters;
     if (state.directionsOnce) options.directionsOnce = true;
     if (state.repeatMissed) options.repeatMissed = true;
     // The questions' order: the teacher's own, else a mix (another one after "Mix again"), else one activity at a time.
@@ -2289,7 +2595,7 @@
       problem('There is nothing to make yet. Choose at least one activity and one word.', 'change');
       return Promise.resolve({ html: null, said: 'There is nothing to make yet.' });
     }
-    var nextCtx = JSON.stringify([activities, words, state.version, state.choices, state.tracing]);
+    var nextCtx = JSON.stringify([activities, words, state.version, state.choices, state.tracing, !!state.showLetters]);
     if (previewContextKey && previewContextKey !== nextCtx) {
       previewOmit = {};
       previewSeeds = {};
@@ -2552,6 +2858,7 @@
     var baseHtml = typeof builder.withCodeName === 'function' ? builder.withCodeName(result.html, '') : result.html;
     built = { html: result.html, baseHtml: baseHtml, title: manifest.title, total: manifest.items.total, name: fileName(manifest.title, manifest.learnerLabel), bytes: blob.size };
     lastLesson = result.lesson || null;
+    lastManifest = manifest || null;
     drawOrder();
     try { fileUrl = URL.createObjectURL(blob); } catch (_) { fileUrl = ''; }
     var total = manifest.items.total;
@@ -2600,6 +2907,18 @@
       }
     }
     show('save', true);
+    show('download-bundle', !!(window.AlloPacketZip && typeof window.AlloPacketZip.create === 'function' && window.AlloPacketPrintCards && typeof window.AlloPacketPrintCards.buildWordSoundsWorksheetHtml === 'function'));
+    var srLink = $('open-symbol-runner');
+    if (srLink) {
+      var srWords = usedNow.filter(function (w) { return /^[a-z0-9]{1,20}$/i.test(w); }).slice(0, 30);
+      if (srWords.length >= 2) {
+        srLink.setAttribute('href', 'packets-symbol-runner.html#symbols=' + srWords.join(','));
+        srLink.hidden = false;
+      } else {
+        srLink.setAttribute('href', 'packets-symbol-runner.html');
+        srLink.hidden = true;
+      }
+    }
     setText('making-said', 'The file is ready: ' + count(total, 'question') + ', ' + fileSize(built.bytes) + '.');
     drawBatch();
   }
@@ -2954,6 +3273,7 @@
     fresh.learner = result.learner || '';
     if (TRACE_CASES.indexOf(result.tracing) >= 0) fresh.tracing = result.tracing;
     if (CHOICE_LEVELS.indexOf(result.choices) >= 0) fresh.choices = result.choices;
+    if (result.showLetters === true) fresh.showLetters = true;
     if (result.directionsOnce === true) fresh.directionsOnce = true;
     if (result.repeatMissed === true) fresh.repeatMissed = true;
     // The questions' order as the file had it (a file made before 2026-11-18: one activity at a time). A file of one
@@ -2976,6 +3296,7 @@
     items.push(result.activities.length ? count(result.activities.length, 'activity', 'activities') + ': ' + listed(result.activities.map(core.activityLabel)) + '.' : 'No activity of the file is offered here. Choose one in step 1.');
     items.push(n ? count(n, 'word') + ': ' + result.words.join(', ') + '. They are in step 2, under Type my own words, in the order of the file.' : 'No word could be read from the file. Choose the words in step 2.');
     items.push('Version ' + state.version + '. Length: ' + (preset ? LENGTH_NAMES[preset] : 'Custom, ' + count(state.count, 'word')) + '. Pictures: ' + (result.pictures ? 'on' : 'off') + '.');
+    if (state.showLetters) items.push('Letter hints on sound activities: on.');
     if (state.directionsOnce) items.push('Spoken directions: first question only.');
     if (state.repeatMissed) items.push('The missed questions once more at the end, as practice.');
     if (result.activities.length >= 2) items.push(state.questionOrder ? 'Question order: your own, as in the file.' : state.mix ? 'Question order: the activities mixed.' : 'Question order: one activity at a time.');
@@ -3069,6 +3390,125 @@
     }
   }
 
+  function normalizeDraftPictureUri(uri) {
+    if (typeof uri !== 'string') return '';
+    var s = uri.trim();
+    if (!s || s.length > 1572864) return '';
+    if (/^data:image\/svg\+xml(?:;charset=[^;,]+)?,/i.test(s) && !/;base64,/i.test(s)) {
+      var comma = s.indexOf(',');
+      var rawSvg = comma >= 0 ? s.slice(comma + 1) : '';
+      try { rawSvg = decodeURIComponent(rawSvg); } catch (_) {}
+      if (!rawSvg) return '';
+      if (builder && typeof builder.svgRefusal === 'function' && builder.svgRefusal(rawSvg)) return '';
+      try {
+        if (typeof TextEncoder === 'function' && typeof window.btoa === 'function') {
+          var bytes = new TextEncoder().encode(rawSvg), bin = '';
+          for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+          return 'data:image/svg+xml;base64,' + window.btoa(bin);
+        }
+        if (typeof window.btoa === 'function') return 'data:image/svg+xml;base64,' + window.btoa(rawSvg);
+      } catch (_) { return ''; }
+      return '';
+    }
+    var norm = s.replace(/^data:image\/jpg;base64,/i, 'data:image/jpeg;base64,');
+    var m = /^data:image\/(png|jpeg|webp|gif|svg\+xml);base64,([A-Za-z0-9+/]+=*)$/i.exec(norm);
+    if (!m) return '';
+    if (m[1].toLowerCase() === 'svg+xml') {
+      try {
+        var decoded = typeof window.atob === 'function' ? window.atob(m[2]) : '';
+        if (!decoded || (builder && typeof builder.svgRefusal === 'function' && builder.svgRefusal(decoded))) return '';
+      } catch (_) { return ''; }
+    }
+    return 'data:image/' + m[1].toLowerCase() + ';base64,' + m[2];
+  }
+  function applyWordSoundsDraft(draft) {
+    if (!draft || draft.kind !== 'word_sounds' || !Array.isArray(draft.words) || !draft.words.length) {
+      showReopen('The draft is not here any more. Choose or type your words below.', [], null);
+      return;
+    }
+    var words = [], seen = Object.create(null);
+    draft.words.forEach(function (raw) {
+      if (typeof raw !== 'string' || words.length >= MAX_TYPED) return;
+      var w = raw.trim();
+      if (!w) return;
+      var low = w.toLowerCase();
+      if (seen[low]) return;
+      seen[low] = true;
+      words.push(w);
+    });
+    if (!words.length) {
+      showReopen('No usable words were found in that draft. Choose or type your words below.', [], null);
+      return;
+    }
+    reopenPending = null;
+    clearTimeout(buildTimer);
+    resetPreview(true);
+    previewNoPicture = Object.create(null);
+    previewOwnPic = {};
+    clearBuilt();
+    closePanels();
+    var fresh = defaults();
+    var draftActs = Array.isArray(draft.activities) ? draft.activities : [];
+    var matchedActs = order.filter(function (id) { return draftActs.indexOf(id) >= 0; });
+    if (matchedActs.length) fresh.activities = matchedActs;
+    fresh.mode = 'own';
+    fresh.own = words.join('\n').slice(0, 4000);
+    state = fresh;
+    picked = null;
+    var n = words.length;
+    var preset = ['regular', 'short', 'long'].filter(function (length) { return core.LESSON_LENGTHS[length] && wordsFor(length) === n; })[0];
+    state.length = preset || 'custom';
+    if (!preset) state.count = Math.max(1, Math.min(MAX_WORDS, n || CUSTOM_WORDS));
+    if (typeof draft.title === 'string' && draft.title.trim()) {
+      state.title = draft.title.trim().slice(0, 80);
+      state.titleEdited = true;
+      if ($('f-title')) $('f-title').value = state.title;
+    }
+    fromFile = Object.create(null);
+    var carriedPics = 0;
+    if (draft.pictures && typeof draft.pictures === 'object' && !Array.isArray(draft.pictures)) {
+      Object.keys(draft.pictures).forEach(function (k) {
+        if (!k || k === '__proto__' || k === 'constructor' || k === 'prototype') return;
+        var wKey = String(k).trim().toLowerCase();
+        if (!wKey || wKey === '__proto__' || wKey === 'constructor' || wKey === 'prototype') return;
+        var safeUri = normalizeDraftPictureUri(draft.pictures[k]);
+        if (!safeUri) return;
+        fromFile[wKey] = { picture: { dataUri: safeUri, credit: { own: true } } };
+        carriedPics++;
+      });
+    }
+    picturesChoice = carriedPics > 0 ? 'on' : '';
+    picturesNote = '';
+    if ($('f-own')) $('f-own').value = state.own;
+    syncActivities();
+    openStrands();
+    syncMode();
+    drawOwn();
+    remember();
+    if (myWords) readMine();
+    var readyWords = chosenWords();
+    goTo(readyWords.length ? 3 : 2, true);
+    var items = [];
+    if (state.titleEdited) items.push('Title: ' + state.title + (/[.!?]$/.test(state.title) ? '' : '.'));
+    if (state.activities.length) items.push(count(state.activities.length, 'activity', 'activities') + ': ' + listed(state.activities.map(core.activityLabel)) + '.');
+    if (carriedPics) items.push('Included ' + count(carriedPics, 'picture') + ' from AlloFlow.');
+    show('reopen', true);
+    showReopen('Loaded ' + count(words.length, 'word') + ' from AlloFlow.', items, null);
+  }
+  function takeHandedDraft() {
+    var handoff = window.AlloPacketHandoff;
+    var draftHash = (handoff && handoff.DRAFT_HASH) || '#import-draft';
+    if (!handoff || typeof handoff.takeDraft !== 'function' || window.location.hash !== draftHash) return;
+    try { window.history.replaceState(null, '', window.location.href.split('#')[0]); } catch (_) {}
+    handoff.takeDraft().then(function (draft) {
+      if (draft && draft.kind === 'word_sounds' && Array.isArray(draft.words) && draft.words.length) {
+        applyWordSoundsDraft(draft);
+      } else {
+        showReopen('The draft is not here any more. Choose or type your words below.', [], null);
+      }
+    }, function () { showReopen('This browser could not hand the draft over. Choose or type your words below.', [], null); });
+  }
+
   // ---------------------------------------------------------------------------
   // Moving between the steps
   // ---------------------------------------------------------------------------
@@ -3124,15 +3564,50 @@
     });
     if ($('f-trace-cases')) $('f-trace-cases').addEventListener('change', function () { state.tracing = TRACE_CASES.indexOf(this.value) >= 0 ? this.value : 'both'; syncActivities(); remember(); });
     if ($('f-choices')) $('f-choices').addEventListener('change', function () { state.choices = CHOICE_LEVELS.indexOf(this.value) >= 0 ? this.value : 'medium'; syncActivities(); remember(); });
+    if ($('f-show-letters')) $('f-show-letters').addEventListener('change', function () { state.showLetters = this.checked; syncActivities(); remember(); });
     $('f-sound').addEventListener('change', function () { state.sound = this.value; if (!state.sound) state.position = 'any'; pickChanged(false); });
     $('f-position').addEventListener('change', function () { state.position = this.value; pickChanged(false); });
-    $('f-shape').addEventListener('change', function () { state.shape = this.value; pickChanged(false); });
+    if ($('f-shapes')) $('f-shapes').addEventListener('change', function () {
+      var checked = Array.prototype.map.call($('f-shapes').querySelectorAll('input[data-shape]:checked'), function (b) { return b.value; });
+      setShapes(checked);
+      pickChanged(false);
+    });
     $('f-stage').addEventListener('change', function () { state.stage = this.value; pickChanged(false); });
+    if ($('f-multi-stage')) $('f-multi-stage').addEventListener('change', function () {
+      state.multiStage = this.checked;
+      if (state.multiStage && !state.stages.length && state.stage) state.stages = cleanStages([state.stage]);
+      if (!state.multiStage && state.stages.length === 1) state.stage = state.stages[0];
+      pickChanged(false);
+    });
+    if ($('stage-pills')) $('stage-pills').addEventListener('change', function () {
+      var checked = Array.prototype.map.call($('stage-pills').querySelectorAll('input[data-stage]:checked'), function (b) { return b.value; });
+      state.stages = cleanStages(checked);
+      pickChanged(false);
+    });
+    if ($('shape-clear')) $('shape-clear').addEventListener('click', function () { setShapes([]); pickChanged(false); });
+    if ($('stage-multi-clear')) $('stage-multi-clear').addEventListener('click', function () { state.stages = []; pickChanged(false); });
+    if ($('own-use-all')) $('own-use-all').addEventListener('click', function () {
+      var ready = ownRows.filter(function (row) { return row.ok; }).length;
+      if (!ready) return;
+      state.length = 'custom';
+      state.count = Math.max(1, Math.min(MAX_WORDS, ready));
+      syncRadios('length', state.length);
+      if ($('f-count')) $('f-count').value = String(state.count);
+      remember();
+      drawOwn();
+      drawQuick();
+    });
     if ($('group-add')) $('group-add').addEventListener('click', addGroup);
     // "Other curricula": add or take away their stages. Taking them away while one is chosen goes back to "Any stage".
     $('f-stage-other').addEventListener('change', function () {
       otherStagesOn = this.checked;
-      if (!otherStagesOn && otherStage(stageRow(state.stage))) { state.stage = ''; pickChanged(false); } else syncPickControls();
+      var changedStage = false;
+      if (!otherStagesOn) {
+        if (otherStage(stageRow(state.stage))) { state.stage = ''; changedStage = true; }
+        var kept = state.stages.filter(function (id) { return !otherStage(stageRow(id)); });
+        if (kept.length !== state.stages.length) { state.stages = kept; changedStage = true; }
+      }
+      if (changedStage) pickChanged(false); else syncPickControls();
     });
     $('pick-restore').addEventListener('click', function () { state.removed = []; remember(); drawPick(); $('pick-line').focus(); });
     $('f-own').addEventListener('input', function () {
@@ -3156,6 +3631,9 @@
     // "Make it with the usual settings": straight to step 3 with what is chosen now. goTo sends the teacher back with
     // the reason when there is no activity or no word yet.
     if ($('quick-make')) $('quick-make').addEventListener('click', function () { goTo(3); });
+    Array.prototype.forEach.call(doc.querySelectorAll('#quick [data-recipe]'), function (btn) {
+      btn.addEventListener('click', function () { applyRecipe(btn.getAttribute('data-recipe')); });
+    });
     wireWordList();
     $('f-title').addEventListener('input', function () {
       state.title = this.value;
@@ -3195,6 +3673,44 @@
     var cards = window.AlloPacketPrintCards;
     if (cards && typeof cards.wire === 'function') cards.wire($('print-cards'), function () {
       return { words: fileWords(), title: titleNow(), pictures: !!$('f-pictures').checked, symbols: symbols, loadPictures: symbols ? loadPictures : null, own: ownFor };
+    });
+    var wordSoundsWorksheetState = function () {
+      return {
+        lesson: lastLesson,
+        blocks: lastLesson && Array.isArray(lastLesson.blocks) ? lastLesson.blocks : null,
+        images: lastLesson && lastLesson.images ? lastLesson.images : null,
+        manifest: lastManifest,
+        words: fileWords(),
+        activities: order.filter(function (id) { return state.activities.indexOf(id) >= 0; }),
+        title: titleNow(),
+        pictures: !!$('f-pictures').checked,
+        symbols: symbols,
+        matcher: getMatcher() || window.AlloWordPictureMatcher || null,
+        loadPictures: symbols ? loadPictures : null,
+        own: ownFor,
+        dictionary: dictionary,
+        core: core,
+        tracing: state.tracing
+      };
+    };
+    if (cards && typeof cards.wireWorksheet === 'function') cards.wireWorksheet($('print-worksheet'), wordSoundsWorksheetState);
+    if ($('download-bundle')) $('download-bundle').addEventListener('click', function () {
+      if (!built || !built.html) return;
+      var zipKit = window.AlloPacketZip;
+      if (!zipKit || typeof zipKit.create !== 'function' || !cards || typeof cards.buildWordSoundsWorksheetHtml !== 'function') return;
+      var wsState = wordSoundsWorksheetState();
+      var ext = '.html';
+      var zip = zipKit.create();
+      zip.add('01-Interactive-Packet' + ext, built.html);
+      zip.add('02-Worksheet-Scaffolded' + ext, cards.buildWordSoundsWorksheetHtml(wsState, { showPictures: true, showHints: true, showSyllables: true, includeAnswerKey: false }));
+      zip.add('03-Worksheet-Independent' + ext, cards.buildWordSoundsWorksheetHtml(wsState, { showPictures: false, showHints: false, showSyllables: false, includeAnswerKey: false }));
+      zip.add('04-Teacher-Answer-Key' + ext, cards.buildWordSoundsWorksheetHtml(wsState, { showPictures: true, showHints: true, showSyllables: true, includeAnswerKey: true }));
+      var slug = String(titleNow() || 'word-sounds').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'word-sounds';
+      var url = '';
+      try { url = URL.createObjectURL(new Blob(zip.finish(), { type: 'application/zip' })); } catch (_) { url = ''; }
+      if (!url) return;
+      saveBlob(url, slug + '-classroom-bundle.zip');
+      window.setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 10000);
     });
     $('forget').addEventListener('click', function () {
       try { window.localStorage.removeItem(STORE_KEY); } catch (_) {}
@@ -3379,6 +3895,7 @@
       var previewList = rehearseWords.slice(0, 8).join(', ') + (rehearseWords.length > 8 ? ', ...' : '');
       showReopen('Loaded ' + count(rehearseWords.length, 'missed word') + ': ' + previewList + '.', [], null);
     }
+    takeHandedDraft();
     checkSavedSounds();
     window.addEventListener('pagehide', function () {
       if (fileUrl) { try { URL.revokeObjectURL(fileUrl); } catch (_) {} fileUrl = ''; }

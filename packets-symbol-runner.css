@@ -207,5 +207,6 @@
 .asr-hc .asr-summary h3, .asr-hc .asr-adult summary, .asr-hc .asr-adult p, .asr-hc .asr-tricky p { color: #ff0; }
 .asr-hc .asr-tricky-sym { background: #000; color: #ff0; border: 2px solid #ff0; }
 @media (max-width: 480px) {
+  .sr-sub { margin-left: 0.75rem; }
   .asr-ran-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }

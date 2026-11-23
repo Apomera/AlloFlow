@@ -127,7 +127,8 @@
       // 2026-11-17: a goal's date (the same keys as goals) and the paper scores typed on this page.
       goalDates: Object.create(null), paper: [],
       // Each table of the group sorts on its own (2026-11-13: checks and practice are two tables).
-      sort: { checks: { by: 'learner', down: false }, practice: { by: 'learner', down: false } }, keep: false };
+      sort: { checks: { by: 'learner', down: false }, practice: { by: 'learner', down: false } }, keep: false,
+      groupQuery: '', sessionNewest: false, sessionKind: 'all' };
   }
 
   // ---------------------------------------------------------------------------
@@ -639,7 +640,30 @@
     });
     pick.value = state.learner;
     drawView();
+    syncLearnerControls();
     drawKeep();
+  }
+  function syncLearnerControls() {
+    var list = model && Array.isArray(model.learners) ? model.learners : [];
+    var idx = -1;
+    for (var i = 0; i < list.length; i++) if (list[i].key === state.learner) { idx = i; break; }
+    var prev = $('prev-learner'), next = $('next-learner'), printBtn = $('print-learner'), copyBtn = $('copy-summary');
+    if (prev) prev.disabled = !(list.length > 1 && idx > 0);
+    if (next) next.disabled = !(list.length > 1 && idx >= 0 && idx < list.length - 1);
+    var cur = idx >= 0 ? list[idx] : null;
+    if (printBtn) {
+      printBtn.disabled = !cur;
+      printBtn.textContent = cur ? 'Print ' + cur.label : 'Print this student';
+    }
+    if (copyBtn) {
+      copyBtn.disabled = !cur;
+      if (cur) copyBtn.setAttribute('aria-label', 'Copy student summary for ' + cur.label);
+      else copyBtn.removeAttribute('aria-label');
+    }
+  }
+  function hideSummaryBox() {
+    var box = $('copy-summary-box');
+    if (box) { box.textContent = ''; box.hidden = true; }
   }
   function drawView() {
     Array.prototype.forEach.call(doc.querySelectorAll('input[name="view"]'), function (radio) {
@@ -648,13 +672,16 @@
     });
     show('view-group', state.view === 'group');
     show('view-learner', state.view === 'learner');
+    hideSummaryBox();
     // Only the view that is shown is on the page: the other one is emptied, not just hidden.
     $('middles').textContent = '';
+    if ($('group-filter')) $('group-filter').remove();
     $('group-table').textContent = '';
     if ($('group-missed')) { $('group-missed').textContent = ''; $('group-missed').hidden = true; }
     $('learner-body').textContent = '';
     if (state.view === 'group') drawGroup(); else drawLearner();
     setPrintHead();
+    syncLearnerControls();
     // A table measured while its view was hidden is measured again now it shows.
     measureCues();
   }
@@ -742,15 +769,34 @@
     tables.forEach(function (table, i) { table.columns = (i ? base.slice(0, 1) : base).concat(table.columns); });
     return tables;
   }
-  function sortedLearners(columns, sort) {
+  function filteredLearners() {
+    var q = String(state.groupQuery || '').trim().toLowerCase();
+    if (!q || !model || model.learners.length < 8) return model ? model.learners.slice() : [];
+    return model.learners.filter(function (row) {
+      if (String(row.label || '').toLowerCase().indexOf(q) >= 0) return true;
+      return Array.isArray(row.labels) && row.labels.some(function (alt) { return String(alt || '').toLowerCase().indexOf(q) >= 0; });
+    });
+  }
+  function sortedLearners(columns, sort, list) {
     var column = columns.filter(function (c) { return c.id === sort.by; })[0] || columns[0];
     var turn = column.id === sort.by && sort.down ? -1 : 1;
-    return model.learners.slice().sort(function (a, b) {
+    return (list || model.learners).slice().sort(function (a, b) {
       var x = column.value(a), y = column.value(b);
       // A learner with nothing in this column goes last, whichever way the column is sorted.
       if (x === null || y === null) return x === y ? 0 : x === null ? 1 : -1;
       return x < y ? -turn : x > y ? turn : 0;
     });
+  }
+  function mergeWordLists(first, second, max) {
+    var seen = Object.create(null), out = [];
+    (first || []).concat(second || []).forEach(function (word) {
+      var text = String(word || '').trim();
+      var key = text.toLowerCase();
+      if (!text || seen[key] || (max && out.length >= max)) return;
+      seen[key] = true;
+      out.push(text);
+    });
+    return out;
   }
   // A box a table scrolls in, with a cue that shows when the table is wider than the box (2026-11-13).
   // measureCues() says which boxes are wider, once they are on the page.
@@ -807,6 +853,13 @@
     return link;
   }
   function newTabHint() { return el('p', 'hint new-tab-hint no-print', 'These buttons open the maker in a new tab. This page stays open as it is.'); }
+  function nextPracticeCard(links) {
+    if (!links || !links.length) return null;
+    var box = el('section', 'next-practice no-print');
+    var row = el('div', 'next-practice-links');
+    links.forEach(function (link) { if (link) row.appendChild(link); });
+    return add(box, el('h4', 'next-practice-title', 'Next practice from missed items'), row, newTabHint());
+  }
 
   var SR_CUSTOM_TOKEN = /^[A-Za-z0-9]{1,16}$/;
   var SR_SPECIAL_MODE = /(?:stroop|subitize|flanker|^math_)/i;
@@ -953,20 +1006,58 @@
 
     host.hidden = false;
     // 2026-11-17: the students' code names under each count, so a teacher can form a small group. More than 6: in a closed fold.
+    function sortedNames(entry) {
+      return entry.names.slice().sort(function (a, b) { return a.toLowerCase() < b.toLowerCase() ? -1 : a.toLowerCase() > b.toLowerCase() ? 1 : 0; });
+    }
     function namesOf(entry) {
-      var names = entry.names.slice().sort(function (a, b) { return a.toLowerCase() < b.toLowerCase() ? -1 : a.toLowerCase() > b.toLowerCase() ? 1 : 0; });
+      var names = sortedNames(entry);
       if (names.length <= 6) return el('span', 'cell-sub missed-names', names.join(', '));
       var fold = el('details', 'missed-fold');
       add(fold, el('summary', '', 'Show the ' + names.length + ' names'), el('span', 'cell-sub missed-names', names.join(', ')));
       return fold;
     }
+    var copySaid = el('p', 'copy-names-said no-print', '');
+    copySaid.setAttribute('role', 'status');
+    var copyBox = el('div', 'copy-names-wrap no-print');
+    copyBox.hidden = true;
+    function copyNamesBtn(entry) {
+      var names = sortedNames(entry);
+      var btn = button('btn btn-text btn-small no-print copy-names', 'Copy names');
+      btn.setAttribute('aria-label', 'Copy student names for ' + entry.display);
+      btn.addEventListener('click', function () {
+        var text = names.join('\n');
+        var manual = function () {
+          copyBox.textContent = '';
+          var area = el('textarea', 'copy-names-box');
+          area.readOnly = true;
+          area.rows = Math.min(6, Math.max(2, names.length));
+          area.setAttribute('aria-label', 'Student code names to copy');
+          area.value = text;
+          copyBox.appendChild(area);
+          copyBox.hidden = false;
+          var msg = 'Select and copy the ' + count(names.length, 'name') + ' below to paste into a batch file.';
+          copySaid.textContent = msg;
+          say(msg);
+          area.focus();
+          area.select();
+        };
+        try {
+          window.navigator.clipboard.writeText(text).then(function () {
+            copyBox.hidden = true;
+            var msg = 'Copied ' + count(names.length, 'name') + ' for ' + entry.display + ' (one per line for batch files).';
+            copySaid.textContent = msg;
+            say(msg);
+          }, manual);
+        } catch (_) { manual(); }
+      });
+      return btn;
+    }
     add(host, el('h4', 'group-sub', 'Most missed across the group'));
     add(host, plainTable('Most missed across the group', ['Item', 'Students', 'Misses', 'Common wrong answer'],
       list.slice(0, 10).map(function (entry) {
-        return [entry.display, [entry.students + ' of ' + model.learners.length, namesOf(entry)], String(entry.misses), topWrongText(entry)];
+        return [entry.display, [entry.students + ' of ' + model.learners.length, namesOf(entry), copyNamesBtn(entry)], String(entry.misses), topWrongText(entry)];
       }), 'narrow'));
-    add(host, el('p', 'hint', 'Under each count are the students who missed it, by the names in their files. Use them to form a small group.'));
-    var navStart = host.childNodes.length;
+    add(host, el('p', 'hint', 'Under each count are the students who missed it, by the names in their files. Use them to form a small group.'), copySaid, copyBox);
 
     var srList = list.filter(function (e) { return e.kind === 'sr'; }).slice(0, 6).map(function (e) { return e.display; });
     var srModes = [];
@@ -982,24 +1073,22 @@
     var hasQd = list.some(function (e) { return e.kind === 'qd'; });
     var hasMn = list.some(function (e) { return e.kind === 'mn'; });
 
+    var groupLinks = [];
     if (srList.length || srModes.length) {
-      var srGroupRow = el('p', 'actions no-print');
-      if (srList.length) add(srGroupRow, navButton('Practice group missed symbols in Symbol Runner', 'packets-symbol-runner.html#rehearse=' + encodeURIComponent(srList.join(','))));
+      if (srList.length) groupLinks.push(navButton('Practice group missed symbols in Symbol Runner', 'packets-symbol-runner.html#rehearse=' + encodeURIComponent(srList.join(','))));
       srModes.forEach(function (modeId) {
-        add(srGroupRow, navButton('Practice group ' + srModeLabel(modeId) + ' in Symbol Runner', 'packets-symbol-runner.html#mode=' + encodeURIComponent(modeId)));
+        groupLinks.push(navButton('Practice group ' + srModeLabel(modeId) + ' in Symbol Runner', 'packets-symbol-runner.html#mode=' + encodeURIComponent(modeId)));
       });
-      add(host, srGroupRow);
     }
     if (vocabList.length) {
-      add(host, add(el('p', 'actions no-print'),
-        navButton('Practice group missed words in Vocabulary', 'packets-vocab.html#rehearse=' + encodeURIComponent(vocabList.join(','))),
-        navButton('Open group missed words in Present & print word cards', 'packets-present-export.html#words=' + encodeURIComponent(vocabList.join(',')))));
+      groupLinks.push(navButton('Practice group missed words in Vocabulary', 'packets-vocab.html#rehearse=' + encodeURIComponent(vocabList.join(','))));
     }
     if (wsList.length) {
-      var wsGroupRow = add(el('p', 'actions no-print'),
-        navButton('Practice group missed words in Word Sounds', 'packets-make.html#rehearse=' + encodeURIComponent(wsList.join(','))),
-        navButton('Open group missed words in Present & print word cards', 'packets-present-export.html#words=' + encodeURIComponent(wsList.join(','))));
-      add(host, wsGroupRow);
+      groupLinks.push(navButton('Practice group missed words in Word Sounds', 'packets-make.html#rehearse=' + encodeURIComponent(wsList.join(','))));
+    }
+    var groupWordCards = mergeWordLists(vocabList, wsList, 24);
+    if (groupWordCards.length) {
+      groupLinks.push(navButton('Open group missed words in Present & print word cards', 'packets-present-export.html#words=' + encodeURIComponent(groupWordCards.join(','))));
     }
     if (mathList.length) {
       var groupKnown = [];
@@ -1009,31 +1098,34 @@
       });
       var mathGroupHref = 'packets-math-practice.html#rehearse=' + encodeURIComponent(mathList.join(',')) + (groupKnown.length >= 3 ? '&known=' + encodeURIComponent(groupKnown.join(',')) : '');
       // 2026-11-17: the maker's own name ("Make math fact practice"), not "Math Facts".
-      var mathGroupRow = add(el('p', 'actions no-print'), navButton('Practice group missed facts in Math fact practice', mathGroupHref));
+      groupLinks.push(navButton('Practice group missed facts in Math fact practice', mathGroupHref));
       var gMental = mentalMathFlags(mathList);
-      if (gMental.make10) add(mathGroupRow, navButton('Practice group make-10 partners in Symbol Runner', 'packets-symbol-runner.html#mode=math_make_10'));
-      if (gMental.doubles) add(mathGroupRow, navButton('Practice group doubles facts in Symbol Runner', 'packets-symbol-runner.html#mode=math_doubles'));
-      if (gMental.mult2510) add(mathGroupRow, navButton('Practice group 2s, 5s, and 10s in Symbol Runner', 'packets-symbol-runner.html#mode=math_mult_2_5_10'));
-      if (gMental.squares) add(mathGroupRow, navButton('Practice group multiplication squares in Symbol Runner', 'packets-symbol-runner.html#mode=math_squares'));
-      add(host, mathGroupRow);
+      if (gMental.make10) groupLinks.push(navButton('Practice group make-10 partners in Symbol Runner', 'packets-symbol-runner.html#mode=math_make_10'));
+      if (gMental.doubles) groupLinks.push(navButton('Practice group doubles facts in Symbol Runner', 'packets-symbol-runner.html#mode=math_doubles'));
+      if (gMental.mult2510) groupLinks.push(navButton('Practice group 2s, 5s, and 10s in Symbol Runner', 'packets-symbol-runner.html#mode=math_mult_2_5_10'));
+      if (gMental.squares) groupLinks.push(navButton('Practice group multiplication squares in Symbol Runner', 'packets-symbol-runner.html#mode=math_squares'));
     }
     if (hasQd || hasMn) {
-      var numGroupRow = el('p', 'actions no-print');
-      if (hasQd) add(numGroupRow, navButton('Practice group number comparison in Symbol Runner', 'packets-symbol-runner.html#mode=number_size_stroop'));
-      if (hasMn) add(numGroupRow, navButton('Practice group teen and decade numbers in Symbol Runner', 'packets-symbol-runner.html#mode=digits_teen_decade'));
-      add(host, numGroupRow);
+      if (hasQd) groupLinks.push(navButton('Practice group number comparison in Symbol Runner', 'packets-symbol-runner.html#mode=number_size_stroop'));
+      if (hasMn) groupLinks.push(navButton('Practice group teen and decade numbers in Symbol Runner', 'packets-symbol-runner.html#mode=digits_teen_decade'));
     }
-    if (host.childNodes.length > navStart) add(host, newTabHint());
+    add(host, nextPracticeCard(groupLinks));
   }
 
-  function drawGroup() {
-    drawMiddles();
+  function drawGroupTables() {
     var host = $('group-table');
     host.textContent = '';
     var tables = groupColumns();
+    var shown = filteredLearners();
+    var q = String(state.groupQuery || '').trim();
+    var countEl = $('group-filter-count');
+    if (countEl) {
+      countEl.textContent = q ? (shown.length ? 'Showing ' + shown.length + ' of ' + model.learners.length + ' students.' : 'No students match "' + q + '".') : '';
+    }
     // Results in which nothing is scored (a read-along, Letter Trace alone): say so; an empty space reads as a fault.
     if (!tables.length) add(host, el('p', 'group-none', 'Nothing in these results is scored: they are practice that is never scored, such as a read-along. Choose One student to see what each student did.'));
-    tables.forEach(function (spec, n) {
+    else if (q && !shown.length) add(host, el('p', 'hint', 'No students match "' + q + '". Clear the search box to show all ' + model.learners.length + ' students.'));
+    else tables.forEach(function (spec, n) {
       var sort = state.sort[spec.id];
       var title = el('h4', 'group-sub', spec.title);
       title.id = 'group-' + spec.id + '-title';
@@ -1051,7 +1143,7 @@
         add(sorter, el('span', 'sort-name', column.label), column.sub ? el('span', 'sort-sub', column.sub) : null);
         sorter.addEventListener('click', function () {
           var next = state.sort[spec.id] = { by: column.id, down: on ? !sort.down : !!column.number };
-          drawGroup();
+          drawGroupTables();
           var again = Array.prototype.find.call($('group-table').querySelectorAll('.sort'), function (btn) {
             return btn.getAttribute('data-table') === spec.id && btn.getAttribute('data-sort') === column.id;
           });
@@ -1061,7 +1153,7 @@
         headRow.appendChild(add(th, sorter));
       });
       var body = el('tbody');
-      sortedLearners(spec.columns, sort).forEach(function (learner) {
+      sortedLearners(spec.columns, sort, shown).forEach(function (learner) {
         var row = el('tr');
         var name = el('th');
         name.scope = 'row';
@@ -1089,8 +1181,42 @@
       add(host, title, warn, add(scroll, add(table, add(el('thead'), headRow), body)),
         el('p', 'hint', spec.hint + (n === tables.length - 1 ? ' Choose a name to see that student over time.' : '')));
     });
-    drawGroupMissed();
     measureCues();
+  }
+  function drawGroup() {
+    drawMiddles();
+    var viewGroup = $('view-group');
+    var groupTable = $('group-table');
+    var existing = $('group-filter');
+    if (model.learners.length >= 8) {
+      if (!existing && viewGroup && groupTable) {
+        var bar = el('div', 'group-filter no-print');
+        bar.id = 'group-filter';
+        var lab = el('label', '', 'Find a student');
+        lab.htmlFor = 'group-search';
+        var input = el('input');
+        input.id = 'group-search';
+        input.type = 'search';
+        input.setAttribute('autocomplete', 'off');
+        input.value = state.groupQuery || '';
+        input.addEventListener('input', function () {
+          state.groupQuery = input.value;
+          drawGroupTables();
+        });
+        var countSpan = el('span', 'group-filter-count', '');
+        countSpan.id = 'group-filter-count';
+        countSpan.setAttribute('role', 'status');
+        add(bar, lab, input, countSpan);
+        viewGroup.insertBefore(bar, groupTable);
+      } else if (existing && $('group-search')) {
+        $('group-search').value = state.groupQuery || '';
+      }
+    } else {
+      state.groupQuery = '';
+      if (existing) existing.remove();
+    }
+    drawGroupTables();
+    drawGroupMissed();
   }
 
   // ---------------------------------------------------------------------------
@@ -1516,6 +1642,7 @@
   function drawLearner() {
     var body = $('learner-body');
     body.textContent = '';
+    hideSummaryBox();
     var learner = learnerNamed(state.learner);
     if (!learner) return;
     var first = learner.sessions.filter(function (s) { return s.date; })[0];
@@ -1608,44 +1735,66 @@
       if (mathKnown.length >= 8 || mathBlocked[cand.key]) return;
       mathKnown.push(cand.text);
     });
+    var checkMissed = typeof reader.checkMissedItems === 'function' ? reader.checkMissedItems(learner.sessions, 20) : [];
+    if (checkMissed.length) {
+      var cmFold = el('details', 'check-missed-fold');
+      add(cmFold, el('summary', '', 'Missed items on checks (' + checkMissed.length + ')'),
+        plainTable('Missed items on checks for ' + learner.label, ['Item', 'Check', 'Answered', 'Times'],
+          checkMissed.map(function (row) {
+            return [row.item, row.check, row.answers.length ? row.answers.join(', ') : '\u2014', String(row.times)];
+          }), 'narrow'));
+      add(body, cmFold);
+    }
+    var learnerLinks = [];
     if (srMissed.length || srModes.length) {
-      var srRow = el('p', 'actions no-print');
-      if (srMissed.length) add(srRow, navButton('Practice missed symbols in Symbol Runner', 'packets-symbol-runner.html#rehearse=' + encodeURIComponent(srMissed.join(','))));
+      if (srMissed.length) learnerLinks.push(navButton('Practice missed symbols in Symbol Runner', 'packets-symbol-runner.html#rehearse=' + encodeURIComponent(srMissed.join(','))));
       srModes.forEach(function (modeId) {
-        add(srRow, navButton('Practice ' + srModeLabel(modeId) + ' in Symbol Runner', 'packets-symbol-runner.html#mode=' + encodeURIComponent(modeId)));
+        learnerLinks.push(navButton('Practice ' + srModeLabel(modeId) + ' in Symbol Runner', 'packets-symbol-runner.html#mode=' + encodeURIComponent(modeId)));
       });
-      add(body, srRow);
     }
     if (vocabMissed.length) {
-      add(body, add(el('p', 'actions no-print'),
-        navButton('Practice missed words in Vocabulary', 'packets-vocab.html#rehearse=' + encodeURIComponent(vocabMissed.join(','))),
-        navButton('Open missed words in Present & print word cards', 'packets-present-export.html#words=' + encodeURIComponent(vocabMissed.join(',')))));
+      learnerLinks.push(navButton('Practice missed words in Vocabulary', 'packets-vocab.html#rehearse=' + encodeURIComponent(vocabMissed.join(','))));
     }
     if (wsMissed.length) {
-      var wsRow = add(el('p', 'actions no-print'),
-        navButton('Practice missed words in Word Sounds', 'packets-make.html#rehearse=' + encodeURIComponent(wsMissed.join(','))),
-        navButton('Open missed words in Present & print word cards', 'packets-present-export.html#words=' + encodeURIComponent(wsMissed.join(','))));
-      add(body, wsRow);
+      learnerLinks.push(navButton('Practice missed words in Word Sounds', 'packets-make.html#rehearse=' + encodeURIComponent(wsMissed.join(','))));
+    }
+    var learnerWordCards = mergeWordLists(vocabMissed, wsMissed, 24);
+    if (learnerWordCards.length) {
+      learnerLinks.push(navButton('Open missed words in Present & print word cards', 'packets-present-export.html#words=' + encodeURIComponent(learnerWordCards.join(','))));
     }
     if (mathMissed.length) {
       var mathTarget = 'packets-math-practice.html#rehearse=' + encodeURIComponent(mathMissed.join(',')) + (mathKnown.length >= 3 ? '&known=' + encodeURIComponent(mathKnown.join(',')) : '');
-      var mathLearnerRow = add(el('p', 'actions no-print'), navButton('Practice missed facts in Math fact practice', mathTarget));
+      learnerLinks.push(navButton('Practice missed facts in Math fact practice', mathTarget));
       var lMental = mentalMathFlags(mathMissed);
-      if (lMental.make10) add(mathLearnerRow, navButton('Practice make-10 partners in Symbol Runner', 'packets-symbol-runner.html#mode=math_make_10'));
-      if (lMental.doubles) add(mathLearnerRow, navButton('Practice doubles facts in Symbol Runner', 'packets-symbol-runner.html#mode=math_doubles'));
-      if (lMental.mult2510) add(mathLearnerRow, navButton('Practice 2s, 5s, and 10s in Symbol Runner', 'packets-symbol-runner.html#mode=math_mult_2_5_10'));
-      if (lMental.squares) add(mathLearnerRow, navButton('Practice multiplication squares in Symbol Runner', 'packets-symbol-runner.html#mode=math_squares'));
-      add(body, mathLearnerRow);
+      if (lMental.make10) learnerLinks.push(navButton('Practice make-10 partners in Symbol Runner', 'packets-symbol-runner.html#mode=math_make_10'));
+      if (lMental.doubles) learnerLinks.push(navButton('Practice doubles facts in Symbol Runner', 'packets-symbol-runner.html#mode=math_doubles'));
+      if (lMental.mult2510) learnerLinks.push(navButton('Practice 2s, 5s, and 10s in Symbol Runner', 'packets-symbol-runner.html#mode=math_mult_2_5_10'));
+      if (lMental.squares) learnerLinks.push(navButton('Practice multiplication squares in Symbol Runner', 'packets-symbol-runner.html#mode=math_squares'));
     }
     if (qdMissedCount || mnMissedCount) {
-      var numRow = el('p', 'actions no-print');
-      if (qdMissedCount) add(numRow, navButton('Practice number comparison in Symbol Runner', 'packets-symbol-runner.html#mode=number_size_stroop'));
-      if (mnMissedCount) add(numRow, navButton('Practice teen and decade numbers in Symbol Runner', 'packets-symbol-runner.html#mode=digits_teen_decade'));
-      add(body, numRow);
+      if (qdMissedCount) learnerLinks.push(navButton('Practice number comparison in Symbol Runner', 'packets-symbol-runner.html#mode=number_size_stroop'));
+      if (mnMissedCount) learnerLinks.push(navButton('Practice teen and decade numbers in Symbol Runner', 'packets-symbol-runner.html#mode=digits_teen_decade'));
     }
-    if (body.querySelector('.nav-new-tab')) add(body, newTabHint());
-    add(body, el('h4', 'learner-sub', 'Every result, in date order'),
-      plainTable('Every result for ' + learner.label + ', in date order', ['Date', 'What', 'Result', 'Answered', 'Time taken', 'Notes', { text: 'Action', className: 'no-print' }], learner.sessions.map(function (s) {
+    add(body, nextPracticeCard(learnerLinks));
+    var showSessionControls = learner.sessions.length >= 6;
+    if (!showSessionControls) {
+      state.sessionNewest = false;
+      state.sessionKind = 'all';
+    }
+    var everyHeading = el('h4', 'learner-sub', 'Every result, in date order');
+    var sessionStatus = showSessionControls ? el('span', 'group-filter-count', '') : null;
+    if (sessionStatus) sessionStatus.setAttribute('role', 'status');
+    function buildEveryTable() {
+      var list = learner.sessions.slice();
+      if (showSessionControls && state.sessionKind === 'check') list = list.filter(function (s) { return s.mode === 'probe'; });
+      else if (showSessionControls && state.sessionKind === 'practice') list = list.filter(function (s) { return s.mode !== 'probe'; });
+      if (showSessionControls && state.sessionNewest) list.reverse();
+      if (sessionStatus) {
+        sessionStatus.textContent = (state.sessionKind !== 'all' || state.sessionNewest)
+          ? 'Showing ' + list.length + ' of ' + learner.sessions.length + ' results.'
+          : '';
+      }
+      var rows = list.length ? list.map(function (s) {
         var probe = s.mode === 'probe';
         var what = probe ? s.measureName + (formText(s.form) ? ', version ' + s.form : '') + (s.attempt ? ', try ' + s.attempt : '') : 'Practice: ' + s.title;
         var result = probe ? (s.value === null ? 'No score' : s.value + ' ' + unitFor(s.value, s.unitName)) : s.summary.firstTryPct === null ? 'Not scored' : s.summary.firstTryPct + '% on the first try';
@@ -1674,7 +1823,59 @@
           say('Removed ' + what + ' from ' + showDate(s.date) + '. Press Undo to restore it.');
         });
         return [showDate(s.date), what, more.length ? [result].concat(more) : result, answered, timeCell(s), sentence(notesOf(s).join('; ')), rem];
-      }), 'wide'));
+      }) : [['\u2014', state.sessionKind === 'check' ? 'No check results for this student.' : 'No practice results for this student.', '', '', '', '', '']];
+      return plainTable('Every result for ' + learner.label + ', in date order', ['Date', 'What', 'Result', 'Answered', 'Time taken', 'Notes', { text: 'Action', className: 'no-print' }], rows, 'wide');
+    }
+    var everyBox = buildEveryTable();
+    add(body, everyHeading);
+    if (showSessionControls) {
+      var controls = el('div', 'session-controls no-print');
+      controls.setAttribute('role', 'group');
+      controls.setAttribute('aria-label', 'Filter and sort every result');
+      var newestBtn = button('btn btn-small' + (state.sessionNewest ? ' is-on' : ''), 'Newest first');
+      newestBtn.id = 'sessions-newest';
+      newestBtn.setAttribute('aria-pressed', state.sessionNewest ? 'true' : 'false');
+      var kindBtns = [
+        ['all', 'All'],
+        ['check', 'Checks'],
+        ['practice', 'Practice'],
+      ].map(function (pair) {
+        var b = button('btn btn-small' + (state.sessionKind === pair[0] ? ' is-on' : ''), pair[1]);
+        b.setAttribute('data-session-kind', pair[0]);
+        b.setAttribute('aria-pressed', state.sessionKind === pair[0] ? 'true' : 'false');
+        return b;
+      });
+      var refreshEvery = function () {
+        newestBtn.classList.toggle('is-on', state.sessionNewest);
+        newestBtn.setAttribute('aria-pressed', state.sessionNewest ? 'true' : 'false');
+        kindBtns.forEach(function (b) {
+          var on = b.getAttribute('data-session-kind') === state.sessionKind;
+          b.classList.toggle('is-on', on);
+          b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+        var nextBox = buildEveryTable();
+        if (everyBox && everyBox.parentNode) everyBox.parentNode.replaceChild(nextBox, everyBox);
+        everyBox = nextBox;
+        measureCues();
+      };
+      newestBtn.addEventListener('click', function () {
+        state.sessionNewest = !state.sessionNewest;
+        refreshEvery();
+        say(state.sessionNewest ? 'Sorted newest first.' : 'Sorted oldest first.');
+      });
+      kindBtns.forEach(function (b) {
+        b.addEventListener('click', function () {
+          state.sessionKind = b.getAttribute('data-session-kind');
+          refreshEvery();
+          say('Showing ' + b.textContent.toLowerCase() + ' results.');
+        });
+      });
+      var kindGroup = el('span', 'session-controls-group');
+      kindBtns.forEach(function (b) { kindGroup.appendChild(b); });
+      add(controls, newestBtn, kindGroup, sessionStatus);
+      add(body, controls);
+    }
+    add(body, everyBox);
     measureCues();
   }
 
@@ -1710,6 +1911,151 @@
     }
     return '';
   }
+  function studentSummaryText(learner) {
+    var lines = [];
+    var first = learner.sessions.filter(function (s) { return s.date; })[0];
+    var range = first ? dateRange(first.date, learner.lastDate) : '';
+    lines.push('Student: ' + learner.label);
+    if (learner.labels.length > 1) {
+      lines.push('Also written in files as: ' + learner.labels.filter(function (l) { return l !== learner.label; }).join(', '));
+    }
+    lines.push('Results: ' + count(learner.count, 'result') + (range ? ', ' + range : '') + '.');
+    lines.push('Prepared: ' + showDate(today()) + '.');
+    if (state.sample) lines.push('Note: Sample results with made-up code names and scores.');
+
+    var seriesList = reader.learnerSeries(learner, model);
+    var have = Object.create(null);
+    seriesList.forEach(function (series) { have[series.key] = true; });
+    state.paper.forEach(function (p) {
+      if (canonKey(p.learner) !== learner.key || have[p.measure]) return;
+      have[p.measure] = true;
+      seriesList.push({ key: p.measure, kind: 'paper', name: p.name, unitName: '', percent: false, points: [], dates: 0, formKey: '' });
+    });
+
+    var checks = seriesList.filter(function (s) { return s.kind === 'check' || s.kind === 'paper'; });
+    var strands = seriesList.filter(function (s) { return s.kind !== 'check' && s.kind !== 'paper'; });
+
+    function pushSeriesLines(series) {
+      var scored = series.points.filter(function (p) { return p.value !== null; });
+      var latest = scored[scored.length - 1];
+      var paper = paperFor(learner, series);
+      var scoresHere = series.kind === 'paper' ? paper : series.points;
+      var goalVal = mergedMapValue(state.goals, learner.key, series.key);
+      var goal = goalVal === undefined ? null : goalVal;
+      var goalDateVal = mergedMapValue(state.goalDates, learner.key, series.key);
+      var goalDate = goalDateVal === undefined ? '' : goalDateVal;
+      var aim = aimOf(scoresHere, goal, goalDate);
+      var growth = growthPerWeek(scoresHere);
+      var head = '- ' + series.name + ': ';
+      if (latest) {
+        head += 'latest ' + amountText(latest.value, series) + ' on ' + showDate(latest.date);
+        if (scored.length > 1) head += ' (' + count(scored.length, 'scored result') + ')';
+        head += '.';
+      } else if (series.kind === 'paper') {
+        head += 'paper scores only (no results file has this check).';
+      } else {
+        head += 'no score yet.';
+      }
+      lines.push(head);
+      var mid = series.formKey ? model.middles.filter(function (row) { return row.key === series.formKey; })[0] : null;
+      if (mid) {
+        lines.push('  Middle of this group on ' + (formText(mid.form) ? 'version ' + mid.form : 'this set') + ' (n = ' + mid.n + '): ' + mid.median + '. '
+          + (mid.q1 !== null ? 'Middle half: ' + mid.q1 + ' to ' + mid.q3 + '.' : 'Lowest ' + mid.min + ', highest ' + mid.max + '.'));
+      }
+      if (goal !== null) {
+        lines.push('  ' + GOAL_NOTE + ': ' + amountText(goal, series) + (goalDate ? ', by ' + showDate(goalDate) : '') + '.');
+      }
+      if (aim && !aim.bad) lines.push('  ' + aimText(aim, series));
+      if (growth.slope !== null) {
+        lines.push('  Growth per week (6 or more scores): ' + perWeekText(growth.slope, series) + ' (rough guide across ' + count(growth.n, 'score') + ').');
+      } else if (growth.n >= 2) {
+        lines.push('  Growth per week is shown from 6 scores on (' + growth.n + ' so far).');
+      }
+      if (paper.length) {
+        lines.push('  Paper scores (kept apart from file scores): ' + paper.map(function (p) {
+          return showDate(p.date) + ': ' + amountText(p.value, series) + (p.note ? ' (' + p.note + ')' : '');
+        }).join('; ') + '.');
+      }
+    }
+
+    if (checks.length) {
+      lines.push('');
+      lines.push('Checks:');
+      checks.forEach(pushSeriesLines);
+    }
+    if (strands.length) {
+      lines.push('');
+      lines.push('Practice strands:');
+      strands.forEach(pushSeriesLines);
+    }
+
+    var toolSeen = Object.create(null), toolsUsed = [], untimedCount = 0;
+    learner.sessions.forEach(function (s) {
+      if (s.score && Array.isArray(s.score.tools)) {
+        s.score.tools.forEach(function (t) {
+          var label = own(TOOL_NAMES, t) ? TOOL_NAMES[t] : String(t);
+          if (label && !toolSeen[label]) { toolSeen[label] = true; toolsUsed.push(label); }
+        });
+      }
+      if (Array.isArray(s.flags) && s.flags.indexOf('untimed') >= 0) untimedCount++;
+    });
+    if (toolsUsed.length || untimedCount) {
+      lines.push('');
+      if (toolsUsed.length) lines.push('Reading tools used: ' + toolsUsed.join(', ') + '.');
+      if (untimedCount) lines.push('Untimed check accommodation recorded on ' + count(untimedCount, 'check') + ' (kept apart from timed scores).');
+    }
+
+    var checkMissed = typeof reader.checkMissedItems === 'function' ? reader.checkMissedItems(learner.sessions, 8) : [];
+    var wrong = reader.wrongAnswers(learner.sessions, 8);
+    if (checkMissed.length || wrong.length) {
+      lines.push('');
+      if (checkMissed.length) {
+        lines.push('Top missed items on checks: ' + checkMissed.map(function (row) {
+          return row.item + ' (' + row.check + (row.answers.length ? ', answered ' + row.answers.join('/') : '') + ', ' + count(row.times, 'time') + ')';
+        }).join('; ') + '.');
+      }
+      if (wrong.length) {
+        lines.push('Most frequent wrong answers in practice: ' + wrong.map(function (row) {
+          return row.word + ' (answered ' + row.answer + ', ' + count(row.times, 'time') + ')';
+        }).join('; ') + '.');
+      }
+    }
+
+    lines.push('');
+    lines.push(HONEST);
+    return lines.join('\n');
+  }
+  function copyStudentSummary() {
+    var learner = learnerNamed(state.learner);
+    if (!learner) return;
+    var text = studentSummaryText(learner);
+    var box = $('copy-summary-box');
+    var manual = function () {
+      if (box) {
+        box.textContent = '';
+        var area = el('textarea', 'copy-summary-box');
+        area.readOnly = true;
+        area.rows = 10;
+        area.setAttribute('aria-label', 'Plain-text summary for ' + learner.label);
+        area.value = text;
+        box.appendChild(area);
+        box.hidden = false;
+        area.focus();
+        area.select();
+      }
+      var msg = 'This browser did not let the page copy. Select all of the text below and copy it.';
+      setText('take-said', msg);
+      say(msg);
+    };
+    try {
+      window.navigator.clipboard.writeText(text).then(function () {
+        hideSummaryBox();
+        var msg = 'Copied a plain-text summary for ' + learner.label + '.';
+        setText('take-said', msg);
+        say(msg);
+      }, manual);
+    } catch (_) { manual(); }
+  }
   function printView(view) {
     if (!model || !model.learners.length) return;
     state.view = view;
@@ -1724,8 +2070,11 @@
     lastRemoved = null;
     endNudge();
     drawUndo();
+    hideSummaryBox();
+    if ($('group-filter')) $('group-filter').remove();
     $('files').value = '';
     go('empty', false);
+    syncLearnerControls();
     drawKeep('');
     setText('take-said', '');
     say('The page is clear.');
@@ -1778,9 +2127,26 @@
     Array.prototype.forEach.call(doc.querySelectorAll('input[name="view"]'), function (radio) {
       radio.addEventListener('change', function () { if (radio.checked) { state.view = radio.value; drawView(); } });
     });
-    $('pick-learner').addEventListener('change', function () { state.learner = $('pick-learner').value; drawLearner(); setPrintHead(); });
+    $('pick-learner').addEventListener('change', function () { state.learner = $('pick-learner').value; drawLearner(); setPrintHead(); syncLearnerControls(); });
+    function stepLearner(delta) {
+      if (!model || !model.learners.length) return;
+      var idx = -1;
+      for (var i = 0; i < model.learners.length; i++) if (model.learners[i].key === state.learner) { idx = i; break; }
+      var next = idx < 0 ? 0 : Math.max(0, Math.min(model.learners.length - 1, idx + delta));
+      if (next === idx) return;
+      state.learner = model.learners[next].key;
+      $('pick-learner').value = state.learner;
+      drawLearner();
+      setPrintHead();
+      syncLearnerControls();
+      say(model.learners[next].label + ', student ' + (next + 1) + ' of ' + model.learners.length + '.');
+    }
+    if ($('prev-learner')) $('prev-learner').addEventListener('click', function () { stepLearner(-1); });
+    if ($('next-learner')) $('next-learner').addEventListener('click', function () { stepLearner(1); });
+    syncLearnerControls();
     $('print-group').addEventListener('click', function () { printView('group'); });
     $('print-learner').addEventListener('click', function () { printView('learner'); });
+    if ($('copy-summary')) $('copy-summary').addEventListener('click', copyStudentSummary);
     $('save-csv').addEventListener('click', saveSummary);
     $('save-bundle').addEventListener('click', function () { if (saveBundle()) endNudge(); });
     // The same action from the quiet line near the top. The line goes once the file is saved, and the page says so there.
@@ -1806,7 +2172,7 @@
     function preparePrint() {
       setPrintHead();
       openedMissed = [];
-      Array.prototype.forEach.call(doc.querySelectorAll('details.missed-fold'), function (box) {
+      Array.prototype.forEach.call(doc.querySelectorAll('details.missed-fold, details.check-missed-fold'), function (box) {
         if (!box.open) { box.open = true; openedMissed.push(box); }
       });
     }

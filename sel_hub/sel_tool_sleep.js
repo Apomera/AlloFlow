@@ -25,16 +25,34 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
   'use strict';
 
   (function() {
-    if (document.getElementById('allo-live-sleep')) return;
-    var liveRegion = document.createElement('div');
-    liveRegion.id = 'allo-live-sleep';
-    liveRegion.setAttribute('aria-live', 'polite');
-    liveRegion.setAttribute('aria-atomic', 'true');
-    liveRegion.setAttribute('role', 'status');
-    liveRegion.className = 'sr-only';
-    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
-    document.body.appendChild(liveRegion);
+    if (typeof document === 'undefined' || !document.body) return;
+    if (!document.getElementById('allo-live-sleep')) {
+      var liveRegion = document.createElement('div');
+      liveRegion.id = 'allo-live-sleep';
+      liveRegion.setAttribute('aria-live', 'polite');
+      liveRegion.setAttribute('aria-atomic', 'true');
+      liveRegion.setAttribute('role', 'status');
+      liveRegion.className = 'sr-only';
+      liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+      document.body.appendChild(liveRegion);
+    }
+    if (document.head && !document.getElementById('allo-sleep-a11y-css')) {
+      var st = document.createElement('style');
+      st.id = 'allo-sleep-a11y-css';
+      st.textContent =
+        '.selh-sleep button:focus-visible, .selh-sleep a:focus-visible, .selh-sleep input:focus-visible, .selh-sleep textarea:focus-visible, .selh-sleep [tabindex]:focus-visible { outline: 3px solid #818cf8; outline-offset: 2px; }' +
+        '.selh-sleep button, .selh-sleep a, .selh-sleep input[type="range"] { touch-action: manipulation; }' +
+        '.selh-sleep button:not(:disabled) { transition: transform 140ms ease, filter 140ms ease, background 140ms ease, border-color 140ms ease; }' +
+        '.selh-sleep button:not(:disabled):hover { filter: brightness(1.06); }' +
+        '@media (prefers-reduced-motion: reduce) { .selh-sleep * { transition: none !important; animation: none !important; } }' +
+        '@media (forced-colors: active) { .selh-sleep button, .selh-sleep a { border: 1px solid ButtonText !important; } .selh-sleep :focus-visible { outline: 3px solid Highlight !important; } }';
+      document.head.appendChild(st);
+    }
   })();
+
+  function isImeComposing(e) {
+    return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+  }
 
   // Barriers + what helps
   var BARRIERS = [

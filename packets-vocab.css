@@ -17,7 +17,7 @@
 .v-wrong { margin: 0.25rem 0 0; padding: 0; list-style: none; }
 .v-wrong .v-text { color: var(--ink); }
 .v-tools { display: flex; flex-wrap: wrap; gap: 0.35rem; justify-content: flex-end; }
-.v-tools .btn { min-height: 2.5rem; padding: 0.25rem 0.75rem; font-size: 0.875rem; }
+.v-tools .btn { min-height: 2.75rem; padding: 0.25rem 0.75rem; font-size: 0.875rem; }
 .v-warn { grid-column: 1 / -1; margin: 0; font-size: 0.9375rem; font-weight: 600; color: var(--ink); border-left: 4px solid var(--ink); padding-left: 0.5rem; }
 .v-edit { grid-column: 1 / -1; display: grid; gap: 0.4rem; }
 .v-edit input, .v-edit textarea { display: block; width: 100%; min-height: 2.75rem; padding: 0.45rem 0.65rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--ink); font: inherit; }
@@ -50,3 +50,7 @@
 .v-pic-main figcaption { font-weight: 700; }
 .choice.is-off { opacity: 0.75; }
 .choice.is-off input { cursor: not-allowed; }
+@media (forced-colors: active) {
+  .v-pic-main img { border-color: Highlight; }
+  .v-mark, .v-warn { border-color: CanvasText; }
+}

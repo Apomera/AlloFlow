@@ -464,7 +464,7 @@
       return h('div', {
         'data-timeline-studio': 'true',
         'data-timeline-contrast': isContrast ? 'true' : undefined,
-        className: 'flex flex-col gap-4 animate-in fade-in duration-300 max-w-2xl',
+        className: 'flex flex-col gap-4 animate-in fade-in duration-300 max-w-2xl mx-auto w-full',
         // The launcher card is dark-authored (text-slate-300 body, bg-slate-800/60
         // privacy panel, slate-900/70 back button) but painted no ground, so it sat
         // on the host card -- white in BOTH themes (stem_lab_module.js ~1633): body

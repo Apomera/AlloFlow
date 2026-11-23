@@ -2367,14 +2367,61 @@
   function _aiUsable(kind, fn) {
     if (typeof fn !== 'function' || fn._alloQrBlocked === true) return false;
     if (typeof window !== 'undefined') {
+      var mp = window.ALLOFLOW_MANAGED_AI_POLICY;
+      if (mp && (mp.enabled === false || mp.allowAi === false || mp.aiEnabled === false || mp.disabled === true || mp.mode === 'disabled' || mp.mode === 'off')) return false;
+      var sp = window.StudentPolicy;
+      if (sp && (sp.allowAi === false || sp.aiEnabled === false || sp.aiDisabled === true || (typeof sp.isAiAllowed === 'function' && !sp.isAiAllowed(kind || 'text')))) return false;
       var qrMode = window.__alloQrStudentMode;
-      var qrBlocked = qrMode === true || (qrMode && typeof qrMode === 'object' && (qrMode.aiDisabled === true || qrMode.aiPolicy === 'off'));
+      var qrBlocked = qrMode === true || (qrMode && typeof qrMode === 'object' && (qrMode.active === true || qrMode.aiEnabled === false || qrMode.allowAi === false || qrMode.aiDisabled === true || qrMode.aiPolicy === 'off'));
       if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true || qrBlocked) return false;
       if (typeof window.__alloAiUsable === 'function') {
         try { return !!window.__alloAiUsable(kind, fn); } catch (_) { return false; }
       }
     }
     return true;
+  }
+  function _lpGlobalMuted() {
+    try {
+      if (typeof window !== 'undefined') {
+        if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+        if (typeof window.isAlloMuted === 'function' && window.isAlloMuted()) return true;
+        if (window._alloGlobalMute || window._alloGlobalMuted || window.__alloFlowMuted || window.__alloSoundMuted) return true;
+      }
+      if (typeof localStorage !== 'undefined') {
+        if (localStorage.getItem('alloflow-global-muted') === 'true' || localStorage.getItem('alloflow_muted') === '1') return true;
+      }
+    } catch (_) {}
+    return false;
+  }
+  var _LP_CRISIS_RE = /\b(?:kill\s+my\s*self|suicid(?:e|al)|end\s+my\s+life|want\s+to\s+die|hurt\s+my\s*self|self[-\s]?harm|cut\s+my\s*self|overdose|shoot\s+up\s+(?:the\s+)?school|bomb\s+(?:the\s+)?school)\b/i;
+  function _lpScreenCrisis(text, surface, props) {
+    var s = String(text == null ? '' : text);
+    if (!s.trim()) return false;
+    var onFlag = props && typeof props.onSafetyFlag === 'function' ? props.onSafetyFlag : null;
+    var blocked = false;
+    if (typeof window !== 'undefined') {
+      if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+        try { var r = window.SelHub.safeRehearseCheck(s, { toolId: surface || 'lingua_practice_chat', onSafetyFlag: onFlag }); if (r && (r.action === 'block' || r.safe === false || r.blocked === true)) blocked = true; } catch (_) {}
+      }
+      if (!blocked) {
+        var checker = (window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker || null;
+        var flags = null;
+        try { flags = (checker && typeof checker.check === 'function') ? checker.check(s) : null; } catch (_) { flags = null; }
+        var crit = Array.isArray(flags) ? flags.find(function (f) { return f && f.severity === 'critical'; }) : (flags && (flags.action === 'block' || flags.severity === 'critical' || flags.flagged === true) ? flags : null);
+        if (crit) {
+          blocked = true;
+          if (onFlag) { try { onFlag(Object.assign({}, crit, { source: surface || 'lingua_practice_chat', context: s.slice(0, 100), aiGenerated: false })); } catch (_) {} }
+        }
+      }
+    }
+    if (!blocked && _LP_CRISIS_RE.test(s)) {
+      blocked = true;
+      if (onFlag) { try { onFlag({ category: 'self_harm', severity: 'critical', matched: 'crisis_fallback', source: surface || 'lingua_practice_chat', context: s.slice(0, 100), aiGenerated: false }); } catch (_) {} }
+    }
+    if (blocked && typeof window !== 'undefined' && window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+      try { window.SelHub.showCrisisModal({ toolName: 'Lingua Practice', contentSnippet: s.slice(0, 200) }); } catch (_) {}
+    }
+    return blocked;
   }
   function _aiDisabledError(error) { var code = error && error.code; return code === 'allo-qr-ai-disabled' || code === 'allo/no-api-key'; }
   function imageGenAvailable() {
@@ -2874,6 +2921,7 @@
     return { target: '', translation: '', pronunciation: '', tip: 'Live AI conversation is unavailable right now. Add an AI connection to chat, or practice with the Speak and Conversation tabs.' };
   }
   function speak(text, code, name, rate, options) {
+    if (_lpGlobalMuted()) return Promise.resolve(false);
     var r=typeof rate==='number'&&rate>0?rate:1,opts=options&&typeof options==='object'?options:{};
     try {
       if(window.AlloSpeechPlayer&&typeof window.AlloSpeechPlayer.speak==='function'){
@@ -3798,6 +3846,15 @@ useEffect(function(){
       var owner=audioOwnerRef.current;audioReqRef.current++;stopOwnedAudio(owner);if(owner)owner.active=false;
       setAudioState(function(old){return {status:'idle',text:old.text||'',rate:old.rate||1,error:''};});setAudioAnnouncement('');
     }
+    React.useEffect(function(){
+      if(typeof window==='undefined')return undefined;
+      function onMuteChanged(ev){
+        var muted=(ev&&ev.detail&&typeof ev.detail.muted==='boolean')?ev.detail.muted:_lpGlobalMuted();
+        if(muted)stopAudio();
+      }
+      window.addEventListener('alloflow-mute-changed',onMuteChanged);
+      return function(){window.removeEventListener('alloflow-mute-changed',onMuteChanged);};
+    },[]);
     async function playAtRate(text,rate,force){
       var value=String(text||'').trim();if(!value)return false;
       var request=++audioReqRef.current,r=typeof rate==='number'&&rate>0?rate:1;
@@ -4745,6 +4802,12 @@ useEffect(function(){
     }
     async function coach(){
       if(!convo||!response.trim())return;
+      if(_lpScreenCrisis(response,'lingua_practice_coach',props)){
+        var pauseText='Let us pause our practice for a second. Please talk to a trusted adult, call or text 988 (Suicide & Crisis Lifeline), text HOME to 741741, or call 911 for immediate danger.';
+        setFeedback({strength:'Paused for safety',tip:pauseText,suggested:'',suggestedPronunciation:''});
+        notify(props,pauseText,'warn');
+        return;
+      }
       var requestId=++coachRequestRef.current,requestedConvo=convo,requestedResponse=response,requestedProfile=profile,raw='';
       setBusy(true);
       if(textAiCallable){
@@ -4846,30 +4909,11 @@ useEffect(function(){
       if(!text||chatBusy)return;
       var history=chatMessages.concat([{role:'you',target:text}]);
       // Safety gate: check learner conversation turns before sending to AI.
-      if(typeof window!=='undefined'){
-        var onFlag=typeof props.onSafetyFlag==='function'?props.onSafetyFlag:null;
-        var blocked=false;
-        if(window.SelHub&&typeof window.SelHub.safeRehearseCheck==='function'){
-          try{var r=window.SelHub.safeRehearseCheck(text,{toolId:'lingua_practice_chat',onSafetyFlag:onFlag});if(r&&r.action==='block')blocked=true;}catch(_){}
-        }else{
-          var checker=(window.__alloShared&&window.__alloShared.SafetyContentChecker)||window.SafetyContentChecker||null;
-          var flags=null;
-          try{flags=(checker&&typeof checker.check==='function')?checker.check(text):null;}catch(_){flags=null;}
-          var crit=Array.isArray(flags)&&flags.find(function(f){return f&&f.severity==='critical';});
-          if(crit){
-            blocked=true;
-            if(onFlag){try{onFlag(Object.assign({},crit,{source:'lingua_practice_chat',context:text.slice(0,100),aiGenerated:false}));}catch(_){}}
-          }
-        }
-        if(blocked){
-          var pauseReply={role:'coach',target:'Let us pause our practice for a second. Your wellbeing matters more than any lesson.',known:'Please talk to a trusted adult, call or text 988 (Suicide & Crisis Lifeline), or text HOME to 741741 (Crisis Text Line). You are not alone.'};
-          var nextMsgs=history.concat([pauseReply]);
-          setChatMessages(nextMsgs);setChatInput('');persistChat(profile.target,nextMsgs);
-          if(window.SelHub&&typeof window.SelHub.showCrisisModal==='function'){
-            try{window.SelHub.showCrisisModal({toolName:'Lingua Practice',contentSnippet:text.slice(0,200)});}catch(_){}
-          }
-          return;
-        }
+      if(_lpScreenCrisis(text,'lingua_practice_chat',props)){
+        var pauseReply={role:'coach',target:'Let us pause our practice for a second. Your wellbeing matters more than any lesson.',known:'Please talk to a trusted adult, call or text 988 (Suicide & Crisis Lifeline), text HOME to 741741 (Crisis Text Line), or call 911 for immediate danger. You are not alone.'};
+        var nextMsgs=chatMessages.concat([pauseReply]);
+        setChatMessages(nextMsgs);setChatInput('');
+        return;
       }
       setChatMessages(history);setChatInput('');persistChat(profile.target,history);
       progressWith(function(old){return trackLanguageActivity(old,profile.target,{chatTurns:1},Date.now(),currentActivityContext());});
@@ -5052,6 +5096,12 @@ useEffect(function(){
     }
     async function checkPicture(){
       if(!pictureDesc.trim()||!sceneImage||pictureBusy)return;
+      if(_lpScreenCrisis(pictureDesc,'lingua_practice_picture',props)){
+        var pauseText='Let us pause our practice for a second. Please talk to a trusted adult, call or text 988 (Suicide & Crisis Lifeline), text HOME to 741741, or call 911 for immediate danger.';
+        setPictureFeedback({strength:'Paused for safety',tip:pauseText,suggested:'',suggestedPronunciation:''});
+        notify(props,pauseText,'warn');
+        return;
+      }
       var requestedProfile=profile,base64=dataUrlBase64(sceneImage.url),mime=(sceneImage.url.match(/^data:([^;]+)/)||[])[1]||'image/png',request=null;
       if(_aiUsable('vision',window.callGeminiVision)&&base64)request=function(signal){return window.callGeminiVision(pictureFeedbackPrompt(requestedProfile,pictureDesc),base64,mime,{signal:signal});};
       else if(textAiCallable)request=function(signal){return props.callGemini(pictureFeedbackPrompt(requestedProfile,pictureDesc)+String.fromCharCode(10)+'The scene (no image attached) shows: '+_lpFence('SCENE',lesson&&lesson.scenario||requestedProfile.topic||'',300),false,false,null,null,signal);};
@@ -5100,6 +5150,7 @@ useEffect(function(){
     var enabledNav=nav.filter(function(item){return !navItemDisabled(item);});
     var effectiveNavFocusKey=enabledNav.some(function(item){return item[0]===navFocusKey;})?navFocusKey:(enabledNav.some(function(item){return item[0]===tab;})?tab:(enabledNav[0]&&enabledNav[0][0]||''));
     function moveNavFocus(event,currentKey){
+      if(!event||event.isComposing||event.keyCode===229||event.ctrlKey||event.metaKey||event.altKey)return;
       var key=event.key,step=0,nextIndex;
       if(key==='Home')nextIndex=0;
       else if(key==='End')nextIndex=enabledNav.length-1;
@@ -5280,7 +5331,7 @@ useEffect(function(){
                   e('p',{className:'text-sm text-slate-600 mt-1',dir:known.rtl?'rtl':'ltr',lang:known.code},displayedFormItem.meaning),
                   e('p',{className:'mt-2 inline-flex rounded-full border px-2 py-0.5 text-xs font-bold '+(displayedFormReview&&Number(displayedFormReview.nextReviewAt||0)<=Date.now()?'border-rose-200 bg-rose-50 text-rose-800':'border-slate-200 bg-slate-50 text-slate-600')},displayedFormReview?(Number(displayedFormReview.nextReviewAt||0)<=Date.now()?tr('forms_schedule_due'):tr('forms_schedule_recorded')):tr('forms_schedule_new')),
                   e('label',{htmlFor:'lingua-form-answer',className:'block text-sm font-bold text-slate-700 mt-6 mb-2'},tr('forms_input',{lang:profile.target})),
-                  e('input',{id:'lingua-form-answer',type:'text',value:formAnswer,disabled:!!formResult,maxLength:260,onChange:function(x){setFormAnswer(x.target.value.slice(0,260));},onSelect:function(x){rememberTypingSelection('lingua-form-answer',x);},onKeyDown:function(x){if(x.key==='Enter'&&!formResult){x.preventDefault();checkFormPractice();}},dir:target.rtl?'rtl':'ltr',lang:target.code,autoComplete:'off',className:selectClass}),
+                  e('input',{id:'lingua-form-answer',type:'text',value:formAnswer,disabled:!!formResult,maxLength:260,onChange:function(x){setFormAnswer(x.target.value.slice(0,260));},onSelect:function(x){rememberTypingSelection('lingua-form-answer',x);},onKeyDown:function(x){if(x&&!x.isComposing&&x.keyCode!==229&&!x.ctrlKey&&!x.metaKey&&!x.altKey&&x.key==='Enter'&&!formResult){x.preventDefault();checkFormPractice();}},dir:target.rtl?'rtl':'ltr',lang:target.code,autoComplete:'off',className:selectClass}),
                   !formResult?typingPalette('lingua-form-answer',formAnswer,setFormAnswer,260,{context:[displayedFormItem.form,displayedFormItem.example],language:target}):null,
                   !formResult?e('div',{className:'flex flex-wrap justify-end gap-2 mt-4'},
                     e('button',{type:'button',onClick:revealFormPractice,className:'h-10 px-4 rounded-lg border border-slate-300 text-sm font-bold'+focusClass},tr('forms_reveal')),
@@ -5341,7 +5392,7 @@ useEffect(function(){
                     }))
                   ):e('div',{className:'mt-6'},
                     e('label',{htmlFor:'lingua-listening-answer',className:'block text-sm font-bold text-slate-700 mb-2'},tr('listening_type',{lang:profile.target})),
-                    e('input',{id:'lingua-listening-answer',type:'text',value:labAnswer,disabled:!!labResult,onChange:function(x){setLabAnswer(x.target.value.slice(0,500));},onSelect:function(x){rememberTypingSelection('lingua-listening-answer',x);},onKeyDown:function(x){if(x.key==='Enter'){x.preventDefault();checkLabDictation();}},placeholder:tr('listening_placeholder'),dir:target.rtl?'rtl':'ltr',lang:target.code,className:selectClass}),
+                    e('input',{id:'lingua-listening-answer',type:'text',value:labAnswer,disabled:!!labResult,onChange:function(x){setLabAnswer(x.target.value.slice(0,500));},onSelect:function(x){rememberTypingSelection('lingua-listening-answer',x);},onKeyDown:function(x){if(x&&!x.isComposing&&x.keyCode!==229&&!x.ctrlKey&&!x.metaKey&&!x.altKey&&x.key==='Enter'){x.preventDefault();checkLabDictation();}},placeholder:tr('listening_placeholder'),dir:target.rtl?'rtl':'ltr',lang:target.code,className:selectClass}),
                     !labResult?typingPalette('lingua-listening-answer',labAnswer,setLabAnswer,500,{context:labItem.target,language:target}):null,
                     e('div',{className:'flex justify-end mt-3'},e('button',{type:'button',disabled:!labAnswer.trim()||!!labResult,onClick:checkLabDictation,className:primaryClass},tr('listening_check')))
                   ),
@@ -5477,7 +5528,7 @@ useEffect(function(){
                 e('label',{htmlFor:'lingua-chat-input',className:'sr-only'},tr('chat_msg_label',{lang:profile.target})),
                 e('div',{className:'flex items-end gap-2'},
                   e('div',{className:'relative flex-1'},
-                    e('textarea',{id:'lingua-chat-input',value:chatInput,onChange:function(x){setChatInput(x.target.value);},onSelect:function(x){rememberTypingSelection('lingua-chat-input',x);},onKeyDown:function(x){if(x.key==='Enter'&&!x.shiftKey){x.preventDefault();sendChat();}},rows:2,dir:target.rtl?'rtl':'ltr',lang:target.code,placeholder:tr('chat_reply_placeholder',{lang:profile.target}),className:'w-full rounded-lg border border-slate-300 p-3 '+(target.rtl?'pl-12':'pr-12')+' text-base resize-none'+focusClass}),
+                    e('textarea',{id:'lingua-chat-input',value:chatInput,onChange:function(x){setChatInput(x.target.value);},onSelect:function(x){rememberTypingSelection('lingua-chat-input',x);},onKeyDown:function(x){if(x&&!x.isComposing&&x.keyCode!==229&&!x.ctrlKey&&!x.metaKey&&!x.altKey&&x.key==='Enter'&&!x.shiftKey){x.preventDefault();sendChat();}},rows:2,dir:target.rtl?'rtl':'ltr',lang:target.code,placeholder:tr('chat_reply_placeholder',{lang:profile.target}),className:'w-full rounded-lg border border-slate-300 p-3 '+(target.rtl?'pl-12':'pr-12')+' text-base resize-none'+focusClass}),
                     e('div',{className:'absolute '+(target.rtl?'left-2':'right-2')+' bottom-2'},e(IconButton,{title:tr('speak_reply'),pressed:chatListening,onClick:chatListen},chatListening?'■':'●'))
                   ),
                   e('button',{type:'button',onClick:sendChat,disabled:chatBusy||!chatInput.trim(),'aria-busy':chatBusy,className:primaryClass},tr('send'))

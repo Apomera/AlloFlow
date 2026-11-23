@@ -342,8 +342,8 @@
     @media (prefers-reduced-motion: reduce) {
       .launch-btn, .browser-app-btn, .secondary-btn, .secondary-link { transition: none; }
     }
-    .skip-link { position: absolute; left: -9999px; top: 8px; z-index: 999; background: #1e1b4b; color: #ffffff; padding: 10px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; }
-    .skip-link:focus { left: 12px; outline: 3px solid #facc15; outline-offset: 2px; }
+    .skip-link { position: absolute; inset-inline-start: 8px; top: 8px; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; pointer-events: none; z-index: 999; background: #1e1b4b; color: #ffffff; padding: 10px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; }
+    .skip-link:focus { inset-inline-start: 12px; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; pointer-events: auto; outline: 3px solid #facc15; outline-offset: 2px; }
     @media (forced-colors: active) {
       body, .card, .tagline, .status, .status[data-state="live"], .status[data-state="fallback"], .tool-note, .tool-note strong, .browser-access h2, .browser-access-intro, .browser-ai-note, .browser-ai-note strong, .ai-access-details, .ai-access-details summary, .ai-access-details-content, .copy-feedback, footer, .interstitial-card, .interstitial-card h2, .interstitial-card p, .interstitial-card strong, .interstitial-countdown { background: Canvas !important; color: CanvasText !important; border-color: CanvasText !important; box-shadow: none !important; }
       .brand { -webkit-text-fill-color: CanvasText; color: CanvasText; background: none; }

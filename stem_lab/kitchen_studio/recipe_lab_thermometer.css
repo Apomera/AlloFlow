@@ -18,4 +18,5 @@
 .thermometer-readings span,.thermometer-readings small,.water-thermometer .thermometer-note{font-size:.75rem}
 .thermometer-readings strong{font-size:1.75rem;line-height:1.4}
 .water-thermometer .thermometer-phase{font-size:.875rem;font-weight:700;padding:.5rem .75rem;border:1px solid #a4bba7;border-radius:.5rem;background:#fffdf2;color:#254535}
+@media(prefers-reduced-motion:reduce){.water-thermometer,.water-thermometer *{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 @media(forced-colors:active){.water-thermometer button:disabled{opacity:1;color:GrayText;border-color:GrayText}}

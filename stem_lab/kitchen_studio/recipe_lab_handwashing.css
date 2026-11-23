@@ -1,6 +1,6 @@
 /* A quiet lesson panel keeps the active handwashing movement easy to follow. */
 .handwashing-lesson{margin:14px 0;border:1px solid #93af9c;border-radius:16px;background:#fffdf5;color:#244c3c;overflow:hidden}
-.handwashing-lesson>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;cursor:pointer;background:#edf4e8;list-style:none}
+.handwashing-lesson>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;box-sizing:border-box;padding:16px 18px;cursor:pointer;background:#edf4e8;list-style:none}
 .handwashing-lesson>summary::-webkit-details-marker{display:none}
 .handwashing-lesson>summary strong{display:block;font-size:1.05rem;line-height:1.3}
 .handwashing-lesson>summary small{display:block;margin-top:4px;font-size:.8rem;line-height:1.4;color:#486c56}
@@ -43,7 +43,7 @@
 .kitchen-gesture-coach[data-tool=wash]>strong{font-size:13px}
 .kitchen-gesture-coach[data-tool=wash]>p{margin:5px 0 7px;font-variant-numeric:tabular-nums}
 @media(max-width:500px){.handwashing-lesson>summary{padding:13px;gap:9px}.handwashing-body{padding:13px}.handwashing-phases{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.handwashing-phases>*{min-height:34px;font-size:.72rem}.handwashing-actions{gap:7px}.handwashing-actions button{flex:1 1 125px}#washRubHold{flex-basis:100%;min-height:64px}.handwashing-transfer{padding:12px}#washCoverage{gap:4px}#washCoverage>*{font-size:.68rem;padding:8px 3px}.handwashing-progress{grid-template-columns:1fr}.kitchen-gesture-coach[data-tool=wash]{left:10px;bottom:9px;width:calc(100% - 20px);max-width:calc(100% - 20px);padding:9px 11px}.kitchen-gesture-coach[data-tool=wash]>strong{font-size:12px}.kitchen-gesture-coach[data-tool=wash] .gesture-heading{margin-bottom:4px}.kitchen-gesture-coach[data-tool=wash]>p{font-size:10px;line-height:1.35}.kitchen-gesture-coach[data-tool=wash] .gesture-exit{margin-top:5px}}
-@media(prefers-reduced-motion:reduce){.handwashing-lesson *{scroll-behavior:auto}}
+@media(prefers-reduced-motion:reduce){.handwashing-lesson,.handwashing-lesson *{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 @media(forced-colors:active){.handwashing-lesson,.handwashing-lesson>summary,.handwashing-transfer,#washControl,#washObservation,.handwashing-phases>*,#washCoverage>*{background:Canvas;color:CanvasText;border-color:CanvasText}.handwashing-lesson button,.handwashing-lesson button:disabled{background:ButtonFace;color:ButtonText;border-color:ButtonText}.handwashing-lesson :focus-visible{outline-color:Highlight}.handwashing-lesson>summary small,#washKeys,#washTimeReading,#washPoseReading,.handwashing-transfer a{color:CanvasText}.handwashing-phases>[aria-current=step],#washCoverage>[aria-current=true],#washCoverage>[aria-current=step],#washRubHold[aria-pressed=true],#washRubHold[data-held=true]{border-color:Highlight}.handwashing-phases>[data-complete=true],#washCoverage>[data-complete=true]{border-color:CanvasText;background:Canvas;color:CanvasText}#washProgress{border:1px solid CanvasText}.handwashing-transfer a{color:LinkText}}
 @media print{.handwashing-actions,#washKeyboardPanel,.handwashing-lesson button{display:none!important}.handwashing-lesson,.handwashing-transfer{break-inside:avoid;border-color:#777;background:#fff;color:#222}}
 

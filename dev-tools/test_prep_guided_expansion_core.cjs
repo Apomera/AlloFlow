@@ -18,8 +18,10 @@ const feedbackCode = String.raw`
       .replace(/^the option stating\s+/i, '')
       .replace(/\s+\((?:in the context of|in this case|as presented|for this item|under these facts|as described|for the scenario)[^)]*\)/ig, '')
       .replace(/\s+(?:in this case|as presented|for this item|in context|under these facts|as described|for the scenario)\b.*$/i, '')
+      .replace(/[.?!]+$/, '')
       .trim();
-    return 'the option stating ' + (cleaned.split(/\s+/).filter(Boolean).slice(0, 8).join(' ') || 'this response');
+    const snippet = (cleaned.split(/\s+/).filter(Boolean).slice(0, 8).join(' ') || 'this response').replace(/[.?!]+$/, '');
+    return 'the option stating ' + snippet;
   }
   function collapseDescriptors(value) {
     let output = feedbackRaw(value);
@@ -28,7 +30,11 @@ const feedbackCode = String.raw`
     do { next = output.replace(repeated, '$1'); } while (next !== output && (output = next));
     return output;
   }
-  const collapseRepeatedWords = value => String(value || '').replace(/\b([A-Za-z]+)(?:\s+\1)+\b/gi, '$1');
+  const cleanDoublePunct = value => String(value || '')
+    .replace(/(?<!\.)\.\.(?!\.)/g, '.')
+    .replace(/\?\./g, '?')
+    .replace(/!\./g, '!');
+  const collapseRepeatedWords = value => cleanDoublePunct(String(value || '').replace(/\b([A-Za-z]+)(?:\s+\1)+\b/gi, '$1'));
   const canonicalTokenRegex = token => escapeFeedbackRegex(token).split('').join("['’]?");
   function replaceCanonicalPhrase(text, phrase, replacement) {
     const normalized = feedbackCanonical(phrase);
@@ -92,28 +98,62 @@ const feedbackCode = String.raw`
     if (!item || !Array.isArray(item.choices) || item.choices.length !== 4 || !Number.isInteger(item.answerIndex)
         || !Array.isArray(item.choiceRationales) || item.choiceRationales.length !== 4) return item;
     let changed = false;
-    let prompt = feedbackRaw(item.prompt);
+    let prompt = cleanDoublePunct(feedbackRaw(item.prompt));
     if (prompt.length < 35) { prompt = prompt + ' Select the best-supported answer.'; changed = true; }
+    let rationale = typeof item.rationale === 'string' ? cleanDoublePunct(item.rationale) : item.rationale;
+    if (rationale !== item.rationale) changed = true;
+    const cleanedChoices = item.choices.map((c) => {
+      const next = cleanDoublePunct(c);
+      if (next !== c) changed = true;
+      return next;
+    });
     let choiceRationales = item.choiceRationales.map((feedback, index) => {
       const next = index === item.answerIndex ? feedback : enrichFeedback(feedback, item, index);
       const collapsed = collapseRepeatedWords(next);
       if (collapsed !== feedback) changed = true;
       return collapsed;
     });
-    const key = feedbackCanonical(item.choices?.[item.answerIndex] || '');
+    const key = feedbackCanonical(cleanedChoices?.[item.answerIndex] || '');
     if (key.length >= 25) {
       const tokens = key.split(' ').filter(Boolean);
       const pattern = new RegExp('\\b' + tokens.map(canonicalTokenRegex).join('\\W+') + '\\b', 'ig');
       const finalRationales = choiceRationales.map((feedback, index) => {
         if (index === item.answerIndex) return feedback;
-        const next = String(feedback).replace(pattern, 'the selected feedback');
+        const next = cleanDoublePunct(String(feedback).replace(pattern, 'the selected feedback'));
         if (next !== feedback) changed = true;
         return next;
       });
       choiceRationales = finalRationales;
     }
+    const wrongIndexes = [0, 1, 2, 3].filter((idx) => idx !== item.answerIndex);
+    const wrongSet = new Set(wrongIndexes.map((idx) => feedbackCanonical(choiceRationales[idx])));
+    if (wrongSet.size < wrongIndexes.length) {
+      choiceRationales = choiceRationales.map((feedback, idx) => {
+        if (idx === item.answerIndex) return feedback;
+        const choice = cleanedChoices[idx] || '';
+        const quotedLead = choice.match(/^["\u201c]([^"\u201d]+)["\u201d]/);
+        const label = quotedLead ? '\u201c' + quotedLead[1] + '\u201d' : choiceDescriptor(choice);
+        let next = String(feedback);
+        if (/This pairing assigns the affirmative evidence to a response/i.test(next)) {
+          next = next.replace(
+            /This pairing assigns the affirmative evidence to a response/i,
+            'Pairing the affirmative evidence with ' + label + ' assigns it to a response',
+          );
+        } else if (/This comparison misassigns the source evidence to a response/i.test(next)) {
+          next = next.replace(
+            /This comparison misassigns the source evidence to a response/i,
+            'Comparing ' + label + ' as better supported misassigns the source evidence to a response',
+          );
+        } else {
+          next = next + ' Here, ' + label + ' does not match the required rule.';
+        }
+        next = cleanDoublePunct(next);
+        if (next !== feedback) changed = true;
+        return next;
+      });
+    }
     if (!changed) return item;
-    return { ...item, prompt, choiceRationales, feedbackQualityNormalizationVersion: 'feedback-quality-normalization-v1' };
+    return { ...item, prompt, rationale, choices: cleanedChoices, choiceRationales, feedbackQualityNormalizationVersion: 'feedback-quality-normalization-v1' };
   }
 `;
 

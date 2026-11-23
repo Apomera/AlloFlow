@@ -155,7 +155,12 @@
     "refine_go": "Dábàá àtúnkọ",
     "refining": "Ó ń kọ àbá…",
     "made_from_version": "A ṣe é láti inú ẹ̀dà {version} ti orísun rẹ",
-    "remake": "Tún un ṣe láti inú ẹ̀dà lọ́wọ́lọ́wọ́"
+    "remake": "Tún un ṣe láti inú ẹ̀dà lọ́wọ́lọ́wọ́",
+    "dictate": "Sọ kí ó kọ",
+    "close_dictate": "Pa ìsọkọ tì",
+    "send_read_along": "Firánṣẹ́ sí Àpò Ìkàwé-Alábàákà",
+    "upload_verify_banner": "A ti kọ ohùn/fídíò sílẹ̀ lórí ẹ̀rọ pẹ̀lú Whisper (a pa ìpín {count} mọ́ sínú ìrántí)",
+    "clear_audio": "Pa ohùn rẹ́"
   },
   "sel": {
     "peersupport": {
@@ -5996,7 +6001,10 @@
     "source_choice_ambiguous": "Yan ẹ̀dà ìkàwé kan nínú “Ó dá lórí” ṣáájú kí o tó ṣẹ̀dá. Ẹ̀dà ìkàwé ju ọ̀kan lọ ló wà.",
     "source_choices_load_failed": "Àwọn àṣàyàn ẹ̀dà ìkàwé kò lè gbé wọlé. Jọ̀wọ́ gbìyànjú lẹ́ẹ̀kan sí i.",
     "submission_tools_still_loading": "Àwọn irinṣẹ́ ìfisílẹ̀ ṣì ń gbé wọlé. Tún tẹ Fi ránṣẹ́ lẹ́ẹ̀kan sí i.",
-    "blank_created": "A ti ṣẹ̀dá {title} òfìfo. Kún un kí o tó pín in."
+    "blank_created": "A ti ṣẹ̀dá {title} òfìfo. Kún un kí o tó pín in.",
+    "sent_to_read_along": "A ti fi àyọkà ránṣẹ́ sí Àpò Ìkàwé-Alábàákà ní ojú-ìwé tuntun.",
+    "read_along_handoff_failed": "Kò ṣeé ṣe láti fi àkọsílẹ̀ ránṣẹ́ sí Àpò Ìkàwé-Alábàákà.",
+    "read_along_no_text": "Fi ọ̀rọ̀ orísun kún un tàbí sọ ọ́ kí ó kọ ṣáájú kí o tó firánṣẹ́ sí Àpò Ìkàwé-Alábàákà."
   },
   "large_file": {
     "modal_title": "Mu wa Large ohun faili",
@@ -6013,7 +6021,8 @@
     "chunk_info": "A ń pín ohùn sí àwọn apá ìṣẹ́jú 5 fún ìṣiṣẹ́",
     "chunk_progress": "Chunk {current} ti {total}",
     "audio_only_error": "Lọ́wọ́lọ́wọ́, àwọn fáìlì ohùn (MP3, WAV, àti bẹ́ẹ̀ bẹ́ẹ̀ lọ) nìkan ni a lè fi ṣe ìfọ̀rọ̀sílẹ̀ apá-sí-apá.",
-    "starting": "Ó ń bẹ̀rẹ̀..."
+    "starting": "Ó ń bẹ̀rẹ̀...",
+    "engine_legend": "Ẹ̀rọ Ìkọ-Ohùn-Sílẹ̀"
   },
   "formatting": {
     "bold": "Bold (**ọrọ**)",
@@ -6417,7 +6426,8 @@
       "analyzing_short": "Ń ṣàyẹ̀wò...",
       "generate_short": "Ṣẹda",
       "books_short": "Àwọn ìwé",
-      "books_hint": "Ṣí àwọn ìwé àwòrán: ìwé èyíkéyìí lè di ọ̀rọ̀ orísun rẹ"
+      "books_hint": "Ṣí àwọn ìwé àwòrán: ìwé èyíkéyìí lè di ọ̀rọ̀ orísun rẹ",
+      "dictate_hint": "Sọ ọ̀rọ̀ orísun rẹ kí ó kọ pẹ̀lú Whisper lórí ẹ̀rọ àti àyẹ̀wò Gemini bí o bá fẹ́"
     },
     "status_generating": "Generating orisun ọrọ...",
     "success_long_form": "gigun-form ọrọ ti ṣẹda successfully!",
@@ -6467,7 +6477,8 @@
     "empty_desc_teacher": "Fi àyọkà kan kún un, lẹ́yìn náà yan àwọn irinṣẹ́ tí yóò mú un bá àwọn akẹ́kọ̀ọ́ rẹ mu.",
     "empty_desc_family": "Fi ohun tí ọmọ rẹ ń kà kún un, lẹ́yìn náà yan bí o ṣe fẹ́ ràn án lọ́wọ́.",
     "reading_catalog": "Àkójọ ìwé kíkà",
-    "find_online": "Wá lórí ayélujára"
+    "find_online": "Wá lórí ayélujára",
+    "dictate_or_record": "Sọ kí ó kọ tàbí gba ohùn sílẹ̀"
   },
   "wizard": {
     "title": "yara Bẹrẹ",
@@ -6601,7 +6612,12 @@
     "paste_word_count": "Ọ̀rọ̀ {count}",
     "length_custom": "Ti ara rẹ…",
     "length_custom_label": "Iye ọ̀rọ̀",
-    "length_custom_hint": "Ọ̀rọ̀ 50 sí 5,000"
+    "length_custom_hint": "Ọ̀rọ̀ 50 sí 5,000",
+    "dictate_desc": "Ìsọkọ ohùn Whisper abẹ́lé àti àyẹ̀wò àṣàyàn",
+    "dictate_title": "Sọ kí ó kọ tàbí gba ọ̀rọ̀ orísun rẹ sílẹ̀",
+    "dictate_helper": "Ó bẹ̀rẹ̀ pẹ̀lú ìsọkọ ohùn Whisper àṣírí lórí ẹ̀rọ. Ṣàtúnṣe bí o ṣe fẹ́, tún ọ̀rọ̀ ṣe bí o bá fẹ́, tàbí fi wé ohùn tí o gbà sílẹ̀ pẹ̀lú Gemini.",
+    "dictate_loading": "Ilé-iṣẹ́ Ìsọkọ (Whisper abẹ́lé) ń ṣí… O tún lè tẹ̀wé tàbí ṣàtúnṣe nísàlẹ̀ nígbà tí ó ń ṣí.",
+    "words_dictated_unit": "àwọn ọ̀rọ̀ tí a sọkọ"
   },
   "settings": {
     "immersive_options": "Immersive ṣayan",
@@ -106858,5 +106874,68 @@
     "sc_findText": "Wá ọ̀rọ̀ nínú ìṣètò",
     "sc_commandPalette": "Ṣí àwọn iṣẹ́ kíákíá",
     "sc_help": "Fi àtòjọ ọ̀nà àbùjá yìí hàn"
+  },
+  "dictation": {
+    "badge_desktop": "Whisper Kọ̀ǹpútà Ti Ṣetán",
+    "badge_download_needed": "Whisper Abẹ́lé · Ìgbàsílẹ̀ Àkọ́kọ́",
+    "badge_local_ready": "Whisper Abẹ́lé Ti Ṣetán · {name}",
+    "cleanup_apply": "Lo àtúnṣe mímọ́",
+    "cleanup_failed": "Kò ṣeé ṣe láti tún ọ̀rọ̀ ṣe báyìí.",
+    "cleanup_fillers": "Dín àwọn ọ̀rọ̀ àṣejù kù",
+    "cleanup_heading": "Àtúnṣe ọ̀rọ̀ AI (àṣàyàn)",
+    "cleanup_keep": "Pa ti ìṣáájú mọ́",
+    "cleanup_no_changes": "Kò sí àyípadà tí a dámọ̀ràn fún àkọsílẹ̀ yìí.",
+    "cleanup_notes": "Ṣètò rẹ̀ bí àkọsílẹ̀ kíláàsì",
+    "cleanup_punctuation": "Tún àmì-ìkọ̀wé àti ìtòlẹ́sẹẹsẹ ṣe",
+    "cleanup_review_title": "Àbá àtúnṣe ti ṣetán — àkọsílẹ̀ rẹ kò tíì yí padà",
+    "cleanup_text_only": "ọ̀rọ̀ nìkan — a kò fi ohùn kankan ránṣẹ́",
+    "cleanup_unavailable": "Àtúnṣe ọ̀rọ̀ AI kò sí lọ́wọ́lọ́wọ́.",
+    "cleanup_undo": "Dá àtúnṣe padà",
+    "cleanup_working": "Ń tún un ṣe…",
+    "clear_audio": "Pa ohùn tí a gbà sílẹ̀ rẹ́ ({mb} MB)",
+    "crosscheck_all_resolved": "A ti ṣàyẹ̀wò gbogbo ibi tí a sàmì sí.",
+    "crosscheck_btn": "Fi wé ohùn pẹ̀lú Gemini",
+    "crosscheck_count": "Ibi {count} tí a sàmì sí láti ṣàyẹ̀wò:",
+    "crosscheck_disabled_note": "Kò sí lọ́wọ́lọ́wọ́ (tí a pa ní ipò àìsí-íńtánẹ́ẹ̀tì / AI akẹ́kọ̀ọ́ tí a pa tàbí láìsí kọ́kọ́rọ́ Gemini). Ìsọkọ Whisper abẹ́lé rẹ ṣì ń ṣiṣẹ́ dáadáa láìsí íńtánẹ́ẹ̀tì.",
+    "crosscheck_disclosure": "Yóò ṣiṣẹ́ nìkan tí o bá tẹ ìsàlẹ̀: ó ń fi àwọn ìpín ohùn inú ìrántí àti àkọsílẹ̀ ọ̀rọ̀ ránṣẹ́ sí Gemini láti sàmì sí àṣìṣe ọ̀rọ̀ tó ṣeé ṣe.",
+    "crosscheck_failed": "Àyẹ̀wò ohùn Gemini kò parí. Àkọsílẹ̀ abẹ́lé rẹ wà bí ó ṣe wà.",
+    "crosscheck_heading": "Ìfiwéra pẹ̀lú ohùn nípa Gemini (Àṣàyàn)",
+    "crosscheck_none": "Kò sí ìyàtọ̀ pàtàkì tí a rí láàárín Whisper Abẹ́lé àti Gemini Audio.",
+    "crosscheck_running": "Ń ṣàyẹ̀wò pẹ̀lú ohùn…",
+    "crosscheck_unavailable": "Ìfiwéra ohùn Gemini kò sí lọ́wọ́lọ́wọ́.",
+    "download_now": "Gba Whisper Abẹ́lé sílẹ̀ ({size} MB)",
+    "download_warning": "Ìkìlọ̀ ìgbàsílẹ̀: Whisper Abẹ́lé ń lo ìdámọ̀ ọ̀rọ̀ àṣírí lórí ẹ̀rọ. Gígbà àwòṣe {name} sílẹ̀ ń gba ~{size} MB lẹ́ẹ̀kan ṣoṣo (ìṣẹ́jú ~1–2 ní ìbámu pẹ̀lú ìsopọ̀), ó ń fipamọ́ láìsí íńtánẹ́ẹ̀tì sínú aṣàwákiri rẹ, ó sì ń pa ohùn rẹ mọ́ sórí ẹ̀rọ yìí.",
+    "draft_label": "Àkọsílẹ̀ ìsọkọ (ṣeé ṣàtúnṣe)",
+    "draft_placeholder": "Tẹ Bẹ̀rẹ̀ ìsọkọ lókè, tàbí tẹ̀wé/ṣàtúnṣe àkọsílẹ̀ rẹ tààrà níbí…",
+    "guide_both_body": "Bẹ̀rẹ̀ ní àṣírí pẹ̀lú Whisper Abẹ́lé kí ìsọkọ rẹ lè yára kí ó sì ṣiṣẹ́ láìsí íńtánẹ́ẹ̀tì. Tí o bá fẹ́ èrò kejì lórí àwọn ọ̀rọ̀ tó le tàbí orúkọ, yan ìfiwéra Gemini láti fi àwòṣe méjì ọtọ̀ọ̀tọ̀ wé ohùn rẹ kí o sì tún gbọ́ ìpín ìṣẹ́jú-àáyá 5 ní ibikíbi tí a sàmì sí.",
+    "guide_both_label": "Ìdí láti lo méjèèjì (Ìfiwéra):",
+    "guide_gemini_body": "Kò nílò ìgbàsílẹ̀ àwòṣe. Ó lágbára jù lórí àwọn ọ̀rọ̀ pàtàkì, orúkọ ènìyàn àti ibi, ìpèdè ọ̀tọ̀ọ̀tọ̀, kíláàsì aláriwo, àti àmì-ìkọ̀wé — ó ń fi ìpín ohùn ránṣẹ́ sí Gemini nìkan tí o bá yàn án.",
+    "guide_gemini_title": "Gemini Audio (Àyẹ̀wò àṣàyàn)",
+    "guide_summary": "Whisper Abẹ́lé vs. Gemini Audio — agbára àti ìdí láti lo méjèèjì",
+    "guide_whisper_body": "Àṣírí àti àìsí-íńtánẹ́ẹ̀tì lẹ́yìn ìgbàsílẹ̀ ẹ̀ẹ̀kan (~39–73 MB). Kò sí ohùn tó ń kúrò lórí ẹ̀rọ rẹ, kò nílò kọ́kọ́rọ́ API tàbí ìwọ̀n, ìsọkọ gígùn títẹ̀síwájú sì ń ṣiṣẹ́ dáadáa.",
+    "guide_whisper_title": "Whisper Abẹ́lé (Àkọ́kọ́)",
+    "ios_canvas_blocked": "A dá Whisper Abẹ́lé dúró lórí iPhone/iPad nínú Gemini Canvas. Tẹ̀wé tààrà nísàlẹ̀ tàbí ṣí AlloFlow nínú aṣàwákiri kọ̀ǹpútà.",
+    "ios_canvas_hint": "O lè tẹ̀wé tààrà nísàlẹ̀, ṣí AlloFlow nínú aṣàwákiri kọ̀ǹpútà fún Whisper Abẹ́lé, tàbí lo Gemini Audio tí a bá ti ṣètò rẹ̀.",
+    "ios_canvas_title": "A dá Whisper lórí ẹ̀rọ dúró lórí iPhone/iPad nínú Gemini Canvas",
+    "listening_local": "Ń tẹ́tí sílẹ̀ lórí ẹ̀rọ pẹ̀lú Whisper… sinmi díẹ̀ tàbí máa sọ̀rọ̀ lọ láti fi ọ̀rọ̀ kún un.",
+    "mic_start_failed": "Kò ṣeé ṣe láti bẹ̀rẹ̀ gbohùngbohùn. Ṣàyẹ̀wò àwọn ìyọ̀ǹda aṣàwákiri.",
+    "model_size_label": "Ìwọ̀n àwòṣe Whisper Abẹ́lé",
+    "pause_recording": "Dá dúró díẹ̀",
+    "paused_note": "A dá a dúró díẹ̀. O lè ṣàtúnṣe àkọsílẹ̀ nísàlẹ̀ tàbí tẹ Tẹ̀síwájú láti máa sọkọ lọ.",
+    "privacy_tag": "Àṣírí · Láìsí íńtánẹ́ẹ̀tì lẹ́yìn ìgbàsílẹ̀ · Kò nílò kọ́kọ́rọ́ API",
+    "resume_recording": "Tẹ̀síwájú",
+    "send_read_along": "Firánṣẹ́ sí Àpò Ìkàwé-Alábàákà",
+    "speech_settings": "Ètò ọ̀rọ̀ sísọ",
+    "speed_badge_lesson": "Àyẹ̀wò: ó yára ju ọ̀rọ̀ sísọ lọ ní {speed}x · Dára fún ìsọkọ gígùn",
+    "speed_badge_short": "Àyẹ̀wò: ó yára ju ọ̀rọ̀ sísọ lọ ní {speed}x · Dára jù fún ìpín kúkúrú",
+    "speed_badge_slow": "Àyẹ̀wò: {speed}x · Ó lọ́ra ju àkókò gidi lọ (retí ìdádúró díẹ̀)",
+    "speed_badge_upgrade": "Àyẹ̀wò: ó yára ju ọ̀rọ̀ sísọ lọ ní {speed}x · Dára fún ìsọkọ gígùn (o tún lè dán {name} wò)",
+    "start_recording": "Bẹ̀rẹ̀ ìsọkọ (Whisper Abẹ́lé)",
+    "stop_recording": "Dúró",
+    "studio_title": "Ilé-iṣẹ́ Ìsọkọ",
+    "test_mic": "Dán gbohùngbohùn wò (4s)",
+    "upload_media": "Kọ fáìlì ohùn/fídíò sílẹ̀",
+    "use_text": "Lo ọ̀rọ̀ tí a sọkọ",
+    "voice_unavailable": "Agbóhùnsílẹ̀ ṣì ń ṣí. Jọ̀wọ́ gbìyànjú lẹ́ẹ̀kan sí i ní ìṣẹ́jú díẹ̀."
   }
 }

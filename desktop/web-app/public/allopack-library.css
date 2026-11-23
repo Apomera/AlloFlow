@@ -8,7 +8,7 @@
 .pack-filters { display:grid; grid-template-columns:minmax(200px,2fr) 1fr 110px auto; gap:14px; align-items:end; padding:20px; margin:24px 0 12px; background:#eef2ff; border-radius:14px; }
 .pack-filters label { display:flex; flex-direction:column; gap:6px; font-weight:650; font-size:14px; }
 .pack-filters input, .pack-filters select, .pack-copy-fallback input { min-height:44px; width:100%; padding:9px; border:1px solid #94a3b8; border-radius:7px; font:inherit; background:#fff; color:#0f172a; }
-.pack-filters button, .pack-actions button, .pack-actions a { min-height:44px; padding:10px 12px; border:1px solid #a5b4fc; border-radius:8px; font:inherit; font-size:14px; font-weight:650; cursor:pointer; background:#fff; color:#3730a3; }
+.pack-filters button, .pack-actions button, .pack-actions a { display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:10px 12px; border:1px solid #a5b4fc; border-radius:8px; font:inherit; font-size:14px; font-weight:650; cursor:pointer; background:#fff; color:#3730a3; }
 .pack-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; margin-top:18px; }
 .pack-topic { border:1px solid #cbd5e1; border-radius:16px; padding:22px; background:#fff; min-width:0; }
 .pack-topic h3 { font-size:1.15rem; line-height:1.4; margin:6px 0 18px; overflow-wrap:anywhere; }
@@ -42,3 +42,9 @@
 .pack-directory :focus-visible { outline:3px solid #2563eb; outline-offset:3px; }
 @media(max-width:1000px) { .pack-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .pack-filters { grid-template-columns:1fr 1fr; } }
 @media(max-width:600px) { .pack-grid, .pack-filters { grid-template-columns:1fr; } .pack-topic { padding:18px; } }
+@media(prefers-reduced-motion:reduce) { .pack-directory, .pack-directory * { animation-duration:.01ms !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
+@media(forced-colors:active) {
+  .pack-filters, .pack-topic, .pack-gemini-help, .pack-sources, .pack-core-route { background:Canvas; color:CanvasText; border:1px solid CanvasText; }
+  .pack-actions .pack-open { background:Highlight; color:HighlightText; border-color:Highlight; }
+  .pack-directory :focus-visible { outline:3px solid Highlight !important; outline-offset:3px !important; }
+}

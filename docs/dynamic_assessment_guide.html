@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dynamic Assessment Studio — Clinician User Guide | AlloFlow</title>
 <meta name="description" content="A clinician's guide to AlloFlow's Dynamic Assessment Studio: running a pretest-mediation-posttest cycle, interpreting the Modifiability Index, the access-contrast framework for multilingual learners, and responsible-use limitations.">
@@ -24,45 +25,79 @@
 <meta name="twitter:image" content="https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png">
 <meta name="twitter:image:alt" content="AlloFlow: open tools for learning, access, and creation.">
 <style>
-:root{--ink:#0f172a;--soft:#475569;--line:#e2e8f0;--accent:#4f46e5;--accent-soft:#eef2ff;--warn-bg:#fffbeb;--warn-bd:#fcd34d;--warn-ink:#92400e;--bg:#f8fafc;}
+:root{--fs:1;--ink:#0f172a;--body:#1e293b;--soft:#475569;--line:#e2e8f0;--panel:#ffffff;--code-bg:#f1f5f9;--accent:#4338ca;--accent-ink:#312e81;--accent-soft:#eef2ff;--accent-bd:#c7d2fe;--warn-bg:#fffbeb;--warn-bd:#fcd34d;--warn-ink:#92400e;--bg:#f8fafc;}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#e8eefc;--body:#d3ddf0;--soft:#9aa9c4;--line:#28354e;--panel:#141d30;--code-bg:#1b2740;--accent:#a5b4fc;--accent-ink:#c7d2fe;--accent-soft:#18233d;--accent-bd:#33456e;--warn-bg:#2c2410;--warn-bd:#6d5716;--warn-ink:#f6d894;--bg:#0b1220;}}
 *{box-sizing:border-box;}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.65;}
+body{margin:0;background:var(--bg);color:var(--body);font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.65;font-size:calc(16px * var(--fs));}
 .wrap{max-width:820px;margin:0 auto;padding:32px 22px 80px;}
-.banner{background:var(--accent-soft);border:1px solid #c7d2fe;border-radius:14px;padding:14px 18px;margin:0 0 28px;font-size:14px;color:#3730a3;}
-h1{font-size:30px;font-weight:900;letter-spacing:-0.5px;line-height:1.2;margin:0 0 10px;}
-h2{font-size:22px;font-weight:800;margin:38px 0 10px;padding-top:12px;border-top:1px solid var(--line);}
-h3{font-size:16px;font-weight:800;color:#1e293b;margin:24px 0 6px;}
-p{margin:0 0 14px;color:#1e293b;}
-a{color:#4338ca;}
-a:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:3px;}
+.banner{background:var(--accent-soft);border:1px solid var(--accent-bd);border-radius:14px;padding:14px 18px;margin:0 0 28px;font-size:calc(14px * var(--fs));color:var(--accent-ink);}
+h1{font-size:calc(30px * var(--fs));font-weight:900;letter-spacing:-0.5px;line-height:1.2;margin:0 0 10px;color:var(--ink);}
+h2{font-size:calc(22px * var(--fs));font-weight:800;margin:38px 0 10px;padding-top:12px;border-top:1px solid var(--line);color:var(--ink);scroll-margin-top:76px;}
+h3{font-size:calc(16px * var(--fs));font-weight:800;color:var(--ink);margin:24px 0 6px;}
+p{margin:0 0 14px;color:var(--body);}
+a{color:var(--accent);}
+a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:3px;}
 ul{margin:0 0 16px;padding-left:22px;}
-li{margin:0 0 7px;color:#1e293b;}
-strong{font-weight:700;}
-code{background:#f1f5f9;border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.88em;}
+li{margin:0 0 7px;color:var(--body);}
+strong{font-weight:700;color:var(--ink);}
+code{background:var(--code-bg);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.88em;color:var(--ink);}
 hr{border:0;border-top:1px solid var(--line);margin:30px 0;}
 blockquote{margin:18px 0;padding:12px 16px;background:var(--warn-bg);border:1px solid var(--warn-bd);border-left:4px solid #f59e0b;border-radius:10px;}
-blockquote p{margin:0;color:var(--warn-ink);font-size:14.5px;}
-.manual-home{margin:0 0 18px;font-weight:800;}
-.manual-home a{display:inline-flex;align-items:center;min-height:28px;padding:4px 0;}
-.guide-meta{color:var(--soft);font-size:13.5px;}
-.toc{margin:22px 0 30px;padding:16px 18px;background:#fff;border:1px solid var(--line);border-radius:12px;}
+blockquote p{margin:0;color:var(--warn-ink);font-size:calc(14.5px * var(--fs));}
+.guide-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin:0 0 18px;}
+.manual-home{margin:0;font-weight:800;}
+.manual-home a{display:inline-flex;align-items:center;min-height:44px;padding:4px 0;}
+.print-btn{display:inline-flex;align-items:center;min-height:44px;padding:8px 16px;border:1px solid var(--accent-bd);border-radius:999px;background:var(--accent-soft);color:var(--accent-ink);font:700 calc(14px * var(--fs))/1 ui-sans-serif,system-ui,sans-serif;cursor:pointer;}
+.print-btn:hover{border-color:var(--accent);}
+.guide-meta{color:var(--soft);font-size:calc(13.5px * var(--fs));}
+.toc{margin:22px 0 30px;padding:16px 18px;background:var(--panel);border:1px solid var(--line);border-radius:12px;}
 .toc strong{display:block;margin-bottom:6px;}
 .toc ul{columns:2;column-gap:26px;margin:0;padding-left:20px;}
 .toc li{break-inside:avoid;margin-bottom:4px;}
-footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:var(--soft);font-size:12.5px;}
-.skip-link{position:absolute;left:-9999px;top:8px;z-index:9999;background:var(--accent);color:#fff;padding:10px 16px;border-radius:8px;font-weight:700;text-decoration:none;}
-.skip-link:focus{position:static;display:inline-block;margin:12px 0 0 16px;}
+.toc a{display:inline-flex;align-items:center;min-height:44px;}
+.toc a[aria-current="location"]{font-weight:800;text-decoration:underline;text-underline-offset:3px;}
+.rtools{position:sticky;top:0;z-index:50;background:var(--panel);border-bottom:1px solid var(--line);line-height:1.3;letter-spacing:normal;}
+.rtools-in{max-width:820px;margin:0 auto;padding:7px 22px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;}
+.rtools-toggle{font:700 12.5px/1 ui-sans-serif,system-ui,sans-serif;color:var(--accent-ink);background:var(--accent-soft);border:1px solid var(--accent-bd);border-radius:999px;min-height:44px;padding:8px 14px;cursor:pointer;}
+.rtools-toggle:hover{border-color:var(--accent);}
+.rtools-panel{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font:600 12.5px/1 ui-sans-serif,system-ui,sans-serif;color:var(--soft);}
+.rtools-panel[hidden]{display:none;}
+.rtools-panel label{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
+.rtools select,.rtools input[type=range],.rtools-panel button{font:inherit;}
+.rtools select{color:var(--body);background:var(--bg);border:1px solid var(--line);border-radius:7px;min-height:36px;padding:4px 8px;}
+.rtools input[type=range]{width:86px;accent-color:var(--accent);padding:0;}
+.rtools-panel button{color:var(--body);background:var(--bg);border:1px solid var(--line);border-radius:7px;min-height:44px;padding:6px 11px;cursor:pointer;}
+.rtools-panel button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink);}
+.rtools-status{font:600 12px/1.3 ui-sans-serif,system-ui,sans-serif;color:var(--accent-ink);}
+.rtools :focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
+#rtools-ruler{position:fixed;left:0;width:100%;height:2.4em;background:rgba(250,204,21,.16);border-top:2px solid rgba(250,204,21,.65);border-bottom:2px solid rgba(250,204,21,.65);pointer-events:none;z-index:49;display:none;}
+html[data-allo-ruler="1"] #rtools-ruler{display:block;}
+html:root[data-allo-theme="warm"]{--bg:#fdf3dd;--panel:#fffcf3;--ink:#432c10;--body:#573a1c;--soft:#7a5a34;--line:#e6d3ae;--code-bg:#f7ecd5;--accent:#9a3412;--accent-ink:#7c2d12;--accent-soft:#fbeadb;--accent-bd:#e4c3a6;}
+html:root[data-allo-theme="sepia"]{--bg:#f4ecd8;--panel:#fdf8ec;--ink:#3f2d18;--body:#5c4033;--soft:#7b5f45;--line:#ddcdb0;--code-bg:#f0e6d0;--accent:#8a4b1e;--accent-ink:#6f3c18;--accent-soft:#f7edda;--accent-bd:#dcc3a2;}
+html:root[data-allo-theme="dark"]{--bg:#12121f;--panel:#1e1e33;--ink:#f1f5fb;--body:#d8e0ee;--soft:#a3b0c8;--line:#343a55;--code-bg:#242440;--accent:#8ab4ff;--accent-ink:#c4d9ff;--accent-soft:#1c2947;--accent-bd:#33507f;--warn-bg:#2c2410;--warn-bd:#6d5716;--warn-ink:#f6d894;}
+html:root[data-allo-theme="highContrast"]{--bg:#000;--panel:#000;--ink:#ff0;--body:#ff0;--soft:#ff0;--line:#ff0;--code-bg:#000;--accent:#ff0;--accent-ink:#ff0;--accent-soft:#000;--accent-bd:#ff0;--warn-bg:#000;--warn-bd:#ff0;--warn-ink:#ff0;}
+html:root[data-allo-theme="blue"]{--bg:#d9e9f6;--panel:#f0f7fd;--ink:#0d1f2e;--body:#1b2631;--soft:#41566a;--line:#b2cfe5;--code-bg:#e2eff9;--accent:#0b4f7a;--accent-ink:#083b5c;--accent-soft:#e4f0fa;--accent-bd:#a8c9e2;}
+html:root[data-allo-theme="green"]{--bg:#e6f4e7;--panel:#f4fbf5;--ink:#0f3016;--body:#1b5e20;--soft:#3d6b42;--line:#c0dfc3;--code-bg:#ecf7ed;--accent:#1b5e20;--accent-ink:#12441a;--accent-soft:#e9f6ea;--accent-bd:#b5d8b8;}
+html:root[data-allo-theme="rose"]{--bg:#fbe2ea;--panel:#fef3f7;--ink:#4f0a29;--body:#7c0d47;--soft:#8d4064;--line:#f0c0d2;--code-bg:#fbe8ef;--accent:#9d1148;--accent-ink:#7c0d38;--accent-soft:#fceaf1;--accent-bd:#eebccd;}
+html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f;--body:#26324a;--soft:#57637d;--line:#e2ddc8;--code-bg:#f3f0e2;--accent:#1d4ed8;--accent-ink:#1e3a8a;--accent-soft:#eef3fe;--accent-bd:#c6d3f2;}
+footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:var(--soft);font-size:calc(12.5px * var(--fs));}
+.skip-link{position:absolute;inset-inline-start:8px;top:8px;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;pointer-events:none;z-index:9999;background:var(--accent);color:#fff;padding:10px 16px;border-radius:8px;font-weight:700;text-decoration:none;}
+.skip-link:focus{position:static;display:inline-block;width:auto;height:auto;overflow:visible;clip-path:none;white-space:normal;pointer-events:auto;margin:12px 0 0 16px;}
 main:focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important;scroll-behavior:auto!important;}}
-@media (forced-colors:active){.banner,.toc,blockquote{border:1px solid CanvasText;}a:focus-visible,main:focus-visible{outline:3px solid Highlight;outline-offset:3px;}}
-@media (max-width:600px){.wrap{padding:20px 16px 60px;}h1{font-size:25px;}.toc ul{columns:1;}}
+@media (forced-colors:active){.banner,.toc,blockquote,.print-btn,.rtools-toggle,.rtools-panel button{border:2px solid CanvasText;}a:focus-visible,button:focus-visible,main:focus-visible{outline:3px solid Highlight;outline-offset:3px;}}
+@media (max-width:600px){.wrap{padding:20px 16px 60px;}h1{font-size:calc(25px * var(--fs));}.toc ul{columns:1;}}
+@media print{html:root[data-allo-theme]{--bg:#fff;--panel:#fff;--ink:#000;--body:#000;--soft:#333;--line:#999;--code-bg:#f2f2f2;--accent:#000;--accent-ink:#000;--accent-soft:#fff;--accent-bd:#999;--warn-bg:#fff;--warn-bd:#999;--warn-ink:#000;}body{background:#fff;color:#000;}.rtools,#rtools-ruler,.skip-link,.no-print{display:none!important;}.wrap{max-width:none;padding:0;}blockquote{break-inside:avoid;page-break-inside:avoid;}h2{break-after:avoid;page-break-after:avoid;}a{color:#000;text-decoration:underline;}}
 </style>
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to main content</a>
 <main id="main-content" class="wrap" tabindex="-1">
+<div class="guide-actions">
 <p class="manual-home"><a href="../manuals.html">← All manuals and guides</a></p>
-<div class="banner">🔬 <strong>Clinical tool · v1.</strong> Dynamic Assessment is a structured clinical observation of how a student responds to teaching — <strong>not a normed or standardized test</strong>, and not a basis for eligibility on its own. Use it to plan intervention and generate hypotheses, alongside other evidence.</div>
+<button type="button" class="print-btn no-print" onclick="window.print()">Print guide</button>
+</div>
+<div class="banner"><span aria-hidden="true">🔬</span> <strong>Clinical tool · v1.</strong> Dynamic Assessment is a structured clinical observation of how a student responds to teaching — <strong>not a normed or standardized test</strong>, and not a basis for eligibility on its own. Use it to plan intervention and generate hypotheses, alongside other evidence.</div>
 <article>
 <h1>AlloFlow Dynamic Assessment Studio — Clinician User Guide</h1>
 <p class="guide-meta">Clinical workflow reference · reviewed August 20, 2026 · operational guidance, not legal advice</p>
@@ -262,5 +297,169 @@ main:focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 </article>
 <footer>AlloFlow — Dynamic Assessment Studio. This guide describes a clinical-observation tool; it is not a substitute for training in dynamic-assessment methodology or for a comprehensive, standardized evaluation.</footer>
 </main>
+<script>
+(function () {
+  'use strict';
+  var d = document, root = d.documentElement, LS = 'allo-reader-prefs';
+  var prefs = {};
+  try {
+    var parsed = JSON.parse(localStorage.getItem(LS) || '{}', function (k, v) {
+      return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+    });
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) prefs = parsed;
+  } catch (_e) { prefs = {}; }
+  function save() { try { localStorage.setItem(LS, JSON.stringify(prefs)); } catch (_e) {} }
+  function el(tag, attrs, kids) {
+    var n = d.createElement(tag);
+    Object.keys(attrs || {}).forEach(function (k) {
+      if (k === 'text') n.textContent = attrs[k]; else n.setAttribute(k, attrs[k]);
+    });
+    (kids || []).forEach(function (c) { n.appendChild(c); });
+    return n;
+  }
+  function $(id) { return d.getElementById(id); }
+  function select(id, label, pairs) {
+    var s = el('select', { id: id, 'aria-label': label });
+    pairs.forEach(function (p) { s.appendChild(el('option', { value: p[0], text: p[1] })); });
+    return el('label', {}, [d.createTextNode(label + ' '), s]);
+  }
+  function range(id, label, min, max, step) {
+    var r = el('input', { type: 'range', id: id, min: min, max: max, step: step, 'aria-label': label });
+    return el('label', {}, [d.createTextNode(label + ' '), r]);
+  }
+  var FONTS = [
+    ['', 'Original'],
+    ['Inter, ui-sans-serif, system-ui, sans-serif', 'Sans-serif'],
+    ["Georgia, 'Times New Roman', serif", 'Serif'],
+    ["'OpenDyslexic','Comic Sans MS','Trebuchet MS',sans-serif", 'Dyslexia-friendly'],
+    ['ui-monospace, Menlo, Consolas, monospace', 'Monospace']
+  ];
+  var THEMES = [
+    ['default', 'Default'], ['warm', 'Warm'], ['sepia', 'Sepia'], ['dark', 'Dark'],
+    ['highContrast', 'High contrast'], ['blue', 'Blue'], ['green', 'Green'],
+    ['rose', 'Rose'], ['easyread', 'Easy read']
+  ];
+  var status = el('span', { id: 'rt-status', class: 'rtools-status', role: 'status', 'aria-live': 'polite' });
+  var panel = el('div', { class: 'rtools-panel', id: 'rtools-panel', hidden: '' }, [
+    select('rt-font', 'Font', FONTS),
+    range('rt-size', 'Size', '0.85', '1.6', '0.05'),
+    range('rt-line', 'Line', '1.2', '2.4', '0.1'),
+    range('rt-letter', 'Letter', '0', '0.14', '0.01'),
+    select('rt-theme', 'Theme', THEMES),
+    el('button', { type: 'button', id: 'rt-ruler', 'aria-pressed': 'false', 'aria-keyshortcuts': 'ArrowUp ArrowDown', text: 'Reading ruler' }),
+    el('button', { type: 'button', id: 'rt-reset', text: 'Reset' }),
+    status
+  ]);
+  var toggle = el('button', {
+    type: 'button', id: 'rt-toggle', class: 'rtools-toggle',
+    'aria-expanded': 'false', 'aria-controls': 'rtools-panel', text: 'Reading tools'
+  });
+  var bar = el('div', { class: 'rtools no-print', id: 'rtools', lang: 'en', role: 'region', 'aria-label': 'Reading tools' }, [
+    el('div', { class: 'rtools-in' }, [toggle, panel])
+  ]);
+  d.body.insertBefore(bar, d.body.firstChild);
+  d.body.appendChild(el('div', { id: 'rtools-ruler', 'aria-hidden': 'true' }));
+
+  function announce(msg) { if (status) status.textContent = msg; }
+  function apply() {
+    var sizeVal = Number.isFinite(Number(prefs.size)) && Number(prefs.size) >= 0.5 && Number(prefs.size) <= 3 ? Number(prefs.size) : 1;
+    var lineVal = Number.isFinite(Number(prefs.line)) && Number(prefs.line) >= 1 && Number(prefs.line) <= 4 ? Number(prefs.line) : 1.65;
+    var letterVal = Number.isFinite(Number(prefs.letter)) && Number(prefs.letter) >= 0 && Number(prefs.letter) <= 0.5 ? Number(prefs.letter) : 0;
+    d.body.style.fontFamily = typeof prefs.font === 'string' ? prefs.font : '';
+    d.body.style.lineHeight = prefs.line ? String(lineVal) : '';
+    d.body.style.letterSpacing = letterVal > 0 ? letterVal + 'em' : '';
+    root.style.setProperty('--fs', String(sizeVal));
+    if (typeof prefs.theme === 'string' && prefs.theme && prefs.theme !== 'default') root.setAttribute('data-allo-theme', prefs.theme);
+    else root.removeAttribute('data-allo-theme');
+    if (prefs.ruler) root.setAttribute('data-allo-ruler', '1');
+    else root.removeAttribute('data-allo-ruler');
+    $('rt-font').value = typeof prefs.font === 'string' ? prefs.font : '';
+    $('rt-size').value = sizeVal;
+    $('rt-size').setAttribute('aria-valuetext', Math.round(sizeVal * 100) + '% text size');
+    $('rt-line').value = lineVal;
+    $('rt-line').setAttribute('aria-valuetext', Number(lineVal).toFixed(2).replace(/\.?0+$/, '') + ' line spacing');
+    $('rt-letter').value = letterVal;
+    $('rt-letter').setAttribute('aria-valuetext', letterVal > 0 ? '+' + Number(letterVal).toFixed(2) + ' em letter spacing' : 'Default letter spacing');
+    $('rt-theme').value = typeof prefs.theme === 'string' && prefs.theme ? prefs.theme : 'default';
+    $('rt-ruler').setAttribute('aria-pressed', prefs.ruler ? 'true' : 'false');
+  }
+  function on(id, ev, fn) { var n = $(id); if (n) n.addEventListener(ev, fn); }
+  on('rt-font', 'change', function (e) { prefs.font = e.target.value; save(); apply(); });
+  on('rt-size', 'input', function (e) { prefs.size = parseFloat(e.target.value); save(); apply(); });
+  on('rt-line', 'input', function (e) { prefs.line = parseFloat(e.target.value); save(); apply(); });
+  on('rt-letter', 'input', function (e) { prefs.letter = parseFloat(e.target.value); save(); apply(); });
+  on('rt-theme', 'change', function (e) { prefs.theme = e.target.value; save(); apply(); });
+  on('rt-ruler', 'click', function () {
+    prefs.ruler = !prefs.ruler;
+    save();
+    apply();
+    if (prefs.ruler) moveRuler(rulerTop);
+    announce(prefs.ruler ? 'Reading ruler on. Use Up and Down arrows to move.' : 'Reading ruler off.');
+  });
+  on('rt-reset', 'click', function () {
+    prefs = {};
+    save();
+    apply();
+    announce('Reading tools reset to defaults.');
+  });
+  on('rt-toggle', 'click', function () {
+    var opening = panel.hasAttribute('hidden');
+    if (opening) panel.removeAttribute('hidden'); else panel.setAttribute('hidden', '');
+    toggle.setAttribute('aria-expanded', opening ? 'true' : 'false');
+  });
+  panel.addEventListener('keydown', function (e) {
+    if (e.isComposing || e.keyCode === 229) return;
+    if (e.key === 'Escape' && !panel.hasAttribute('hidden')) {
+      e.preventDefault();
+      panel.setAttribute('hidden', '');
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.focus();
+    }
+  });
+  var ruler = $('rtools-ruler');
+  var rulerTop = Math.max(0, Math.round(window.innerHeight / 2));
+  function moveRuler(top) {
+    if (!ruler) return;
+    rulerTop = Math.max(0, Math.min(window.innerHeight - ruler.offsetHeight, top));
+    ruler.style.top = rulerTop + 'px';
+  }
+  d.addEventListener('mousemove', function (e) {
+    if (ruler && root.getAttribute('data-allo-ruler') === '1') moveRuler(e.clientY - ruler.offsetHeight / 2);
+  });
+  d.addEventListener('focusin', function (e) {
+    if (!ruler || root.getAttribute('data-allo-ruler') !== '1' || !e.target || !e.target.getBoundingClientRect) return;
+    var rect = e.target.getBoundingClientRect();
+    moveRuler(rect.top + rect.height / 2 - ruler.offsetHeight / 2);
+  });
+  on('rt-ruler', 'keydown', function (e) {
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+    e.preventDefault();
+    if (!prefs.ruler) { prefs.ruler = true; save(); apply(); }
+    moveRuler(rulerTop + (e.key === 'ArrowDown' ? 20 : -20));
+  });
+  apply();
+
+  var tocLinks = Array.prototype.slice.call(d.querySelectorAll('.toc a[href^="#"]'));
+  var pairs = tocLinks.map(function (link) {
+    var id = String(link.getAttribute('href') || '').slice(1);
+    return { link: link, target: id ? d.getElementById(id) : null };
+  }).filter(function (p) { return Boolean(p.target); });
+  if (pairs.length) {
+    var syncToc = function () {
+      var cur = pairs[0].link;
+      for (var i = 0; i < pairs.length; i++) {
+        if (pairs[i].target.getBoundingClientRect().top <= 120) cur = pairs[i].link;
+      }
+      pairs.forEach(function (p) {
+        if (p.link === cur) p.link.setAttribute('aria-current', 'location');
+        else p.link.removeAttribute('aria-current');
+      });
+    };
+    window.addEventListener('scroll', syncToc, { passive: true });
+    window.addEventListener('hashchange', syncToc);
+    syncToc();
+  }
+}());
+</script>
 </body>
 </html>

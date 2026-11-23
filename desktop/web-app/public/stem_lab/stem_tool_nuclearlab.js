@@ -6587,8 +6587,8 @@
           '.nk-readable .nk-chart-table:focus-visible{outline:3px solid var(--nk-focus);outline-offset:3px}' +
           '.nk-readable #nk-index-body:focus-visible{outline:3px solid var(--nk-focus);outline-offset:-3px}' +
           '.nk-readable #nk-index-body{scrollbar-gutter:stable}' +
-          '.nk-readable .nk-skip-link{position:absolute;left:-9999px;top:.5rem;z-index:60;min-height:44px;padding:.5rem .75rem;border-radius:.5rem;background:#fbbf24;color:#0b1020;font-weight:800;border:2px solid #0b1020}' +
-          '.nk-readable .nk-skip-link:focus{left:.5rem}' +
+          '.nk-readable .nk-skip-link{position:absolute;inset-inline-start:.5rem;top:.5rem;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;pointer-events:none;z-index:60;min-height:44px;padding:.5rem .75rem;border-radius:.5rem;background:#fbbf24;color:#0b1020;font-weight:800;border:2px solid #0b1020}' +
+          '.nk-readable .nk-skip-link:focus{inset-inline-start:.5rem;width:auto;height:auto;overflow:visible;clip-path:none;white-space:normal;pointer-events:auto}' +
           '.nk-readable .text-\\[11px\\]{font-size:.8125rem!important;line-height:1.25rem!important}' +
           '.nk-readable .text-\\[10px\\]{font-size:.75rem!important;line-height:1.125rem!important}' +
           '.nk-readable .nk-section-heading{font-size:1.0625rem!important;line-height:1.55rem!important}' +

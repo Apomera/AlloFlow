@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<!-- The product name is written once on this page, in #product-name. packets-page.js puts it in front of this title. -->
+<title>About</title>
+<meta name="description" content="What Packets is, who makes it, how to report a problem or ask a question, the license, and what happens to student data. Runs without AI. No accounts.">
+<link rel="icon" type="image/svg+xml" href="packets-mark.svg">
+<link rel="stylesheet" href="packets.css">
+<script src="packets-page.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the main part</a>
+
+<header class="top">
+  <div class="wrap top-row">
+    <a class="brand" href="packets.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 3 7.5l9 4.5 9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
+      <span id="product-name">AlloFlow Packets</span>
+    </a>
+    <a class="top-link" href="packets-it.html">For school IT</a>
+  </div>
+<details class="proof">
+  <summary class="wrap">
+    <span class="proof-line">This page runs without AI. No account. It is a page to read: nothing you do here is sent or kept.</span>
+    <span class="proof-open proof-open-closed">See the details</span>
+    <span class="proof-open proof-open-opened">Hide the details</span>
+  </summary>
+  <div class="wrap proof-body">
+    <ul>
+      <li>This page loads four files, all from this site: the page itself, one stylesheet (<code>packets.css</code>), one small script (<code>packets-page.js</code>) and the icon in the browser tab. It loads no fonts, no trackers and nothing from another site.</li>
+      <li>It sets no cookies and stores nothing on your device.</li>
+      <li>It has two links to another site, GitHub: the public source code and the list of reported problems. Nothing is asked of that site unless you follow a link.</li>
+      <li>Like any website, the server that sends these files can see that your browser asked for them. It receives nothing else.</li>
+    </ul>
+    <p>The rule this page gives your browser. The browser refuses anything the rule does not allow:
+      <code class="rule-text" data-show-rule>It is the Content-Security-Policy line near the top of this page's source.</code>
+    </p>
+  </div>
+</details>
+</header>
+
+<main id="main" tabindex="-1" class="maker">
+  <div class="wrap wrap-narrow">
+    <h1>About</h1>
+    <p class="lead">Packets makes short practice activities and short checks for students. Each one is a single HTML file that runs in a web browser with no internet connection. At the end the student saves a results file, and the teacher adds up the results in a spreadsheet or on the <a href="packets-results.html">Add up results</a> page.</p>
+
+    <section class="strand" aria-labelledby="who-title">
+      <h2 id="who-title">Who makes it</h2>
+      <p class="sheet-intro">AlloFlow, an open-source project. The code is public: <a href="https://github.com/Apomera/AlloFlow" rel="noopener noreferrer">AlloFlow on GitHub</a>.</p>
+    </section>
+
+    <section class="strand" aria-labelledby="report-title">
+      <h2 id="report-title">Report a problem or ask a question</h2>
+      <p class="sheet-intro">Open an issue on GitHub: <a href="https://github.com/Apomera/AlloFlow/issues" rel="noopener noreferrer">AlloFlow issues</a>. Posting there needs a GitHub account, and what you post can be read by anyone.</p>
+      <p class="sheet-intro">Do not put student information in a report: no names, no code names, no results files and no pictures of a screen that shows them. Say what you did, what you expected and what happened instead, and which browser and device you used.</p>
+    </section>
+
+    <section class="strand" aria-labelledby="license-title">
+      <h2 id="license-title">License</h2>
+      <p class="sheet-intro">The code and built-in AlloFlow Curriculum Diagrams are free to use under the GNU Affero General Public License, version 3 (AGPL-3.0). The content of each file has its own credits, and the file lists them inside itself, in About this file.</p>
+    </section>
+
+    <section class="strand" aria-labelledby="privacy-title">
+      <h2 id="privacy-title">Student data</h2>
+      <p class="sheet-intro">These pages have no accounts, no cookies and no analytics. A practice file or check keeps the student's place and answers in the browser on the student's device, and in any results file the student saves. Nothing is sent to this site, and a results file goes only where a person takes it. Optional sealed QR codes encrypt on the student's device and open only with the teacher's private key in Collect by sealed QR, with no internet. Standard practice files and checks never use the microphone; only a read-along file where the teacher turns on optional Student Voice Practice can ask for it, and audio stays in browser memory only. There is one exception for student files: a practice file made inside the AlloFlow app with a class mailbox sends the results to that teacher's mailbox when the student presses Send. A few teacher pages can reach another site, only when the teacher asks: Find a picture searches picture services, Look up a word online asks a dictionary, and the two pages that make recordings with a computer voice download the voice runtime and voice. The guide <a href="packets-it.html">For school IT</a> lists every one, and what each sends.</p>
+    </section>
+
+    <p class="aside-note">Last updated: <time datetime="2026-11-22">2026-11-22</time>.</p>
+    <p class="actions"><a class="btn btn-primary" href="packets.html">Back to Packets</a></p>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-row">
+    <p>Free to use. Open source, license AGPL-3.0.</p>
+    <p><a href="./">More from AlloFlow</a></p>
+  </div>
+</footer>
+</body>
+</html>

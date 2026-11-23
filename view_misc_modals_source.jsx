@@ -20,6 +20,64 @@ const CANVAS_FALLBACK_URL = 'https://alloflow-cdn.pages.dev/launch';
 const CANVAS_RELEASE_JSON_URL = 'https://alloflow-cdn.pages.dev/release.json';
 const CANVAS_SHARE_URL_RE = /^https:\/\/(?:gemini\.google\.com\/share\/[a-f0-9]+|share\.gemini\.google\/[A-Za-z0-9]+)$/;
 
+const _vmHasOwn = Object.prototype.hasOwnProperty;
+const _vmIsBlockedKey = (k) => k === '__proto__' || k === 'constructor' || k === 'prototype';
+const _vmSafeJsonParse = (raw, fallback) => {
+  if (typeof raw !== 'string' || !raw) return fallback;
+  try {
+    const parsed = JSON.parse(raw, (k, v) => (_vmIsBlockedKey(k) ? undefined : v));
+    return parsed === undefined ? fallback : parsed;
+  } catch (_) {
+    return fallback;
+  }
+};
+const _vmHardAiPolicyBlocked = () => {
+  if (typeof window === 'undefined') return false;
+  try {
+    if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true
+      || window.__alloQrStudentMode === true || window.__alloOfflineOnly === true) {
+      return true;
+    }
+    const mp = window.ALLOFLOW_MANAGED_AI_POLICY;
+    if (mp && typeof mp === 'object' && (mp.enabled === false || (Array.isArray(mp.connections) && mp.connections.length === 0))) {
+      return true;
+    }
+    const sp = window.AlloModules && window.AlloModules.StudentPolicy;
+    if (sp && typeof sp === 'object' && (sp.aiDisabled === true || sp.aiEnabled === false)) return true;
+  } catch (_) {
+    return true;
+  }
+  return false;
+};
+const _VM_CRISIS_RE = /\b(?:kill\s+my\s*self|end\s+my\s+life|want\s+to\s+die|want\s+to\s+kill\s+myself|commit\s+suicide|suicidal|hurt\s+myself|harm\s+myself|self[\s-]?harm|cut\s+myself|overdose\s+on)\b/i;
+const _VM_CRISIS_MSG = 'If you or someone you know is in crisis or thinking about self-harm, please pause and reach out to a trusted adult or professional right away. Call or text 988 (Suicide & Crisis Lifeline), text HOME to 741741 (Crisis Text Line), or call 911 in an emergency.';
+const _vmScreenCrisis = (text) => {
+  const s = String(text || '').trim();
+  if (!s) return null;
+  try {
+    const checker = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SafetyContentChecker;
+    if (checker && typeof checker.check === 'function') {
+      const res = checker.check(s);
+      if (res && (res.severity === 'crisis' || res.category === 'self_harm' || res.crisis === true || res.blocked === true)) {
+        return { blocked: true, message: _VM_CRISIS_MSG };
+      }
+    }
+  } catch (_) {}
+  if (_VM_CRISIS_RE.test(s)) return { blocked: true, message: _VM_CRISIS_MSG };
+  return null;
+};
+const _vmSanitizeSearchEntryPoint = (raw) => {
+  let html = String(raw || '').slice(0, 20000);
+  if (!html) return '';
+  html = html
+    .replace(/<\s*(?:script|iframe|object|embed|applet|meta|base|link|form|svg|math|img)\b[^>]*>[\s\S]*?<\s*\/\s*(?:script|iframe|object|embed|applet|meta|base|link|form|svg|math|img)\s*>/gi, '')
+    .replace(/<\s*(?:script|iframe|object|embed|applet|meta|base|link|form|svg|math|img)\b[^>]*\/?>/gi, '')
+    .replace(/\s+on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+    .replace(/(?:javascript|vbscript|data\s*:\s*text\/html)\s*:/gi, 'blocked:')
+    .replace(/url\s*\(\s*["']?\s*(?:https?:|\/\/|javascript:)[^)]*\)/gi, 'none');
+  return html;
+};
+
 function AllobotEvidenceCard({ evidence, tx, renderFormattedText }) {
   if (!evidence) return null;
   const safe = value => { try { const u = new URL(value); return u.protocol === 'https:' && !u.username && !u.password ? u.href : ''; } catch (_) { return ''; } };
@@ -55,7 +113,7 @@ function AllobotEvidenceCard({ evidence, tx, renderFormattedText }) {
       {evidence.searchEntryPoint && <iframe title={tx('chat_guide.evidence_google_suggestions', 'Google Search suggestions')}
         className="w-full border-0 mt-2" style={{ height: 180 }} referrerPolicy="no-referrer"
         sandbox="allow-popups allow-popups-to-escape-sandbox"
-        srcDoc={'<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; img-src https: data:; base-uri \'none\'; form-action \'none\'">' + evidence.searchEntryPoint} />}
+        srcDoc={'<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; img-src data:; base-uri \'none\'; form-action \'none\'">' + _vmSanitizeSearchEntryPoint(evidence.searchEntryPoint)} />}
     </>}
   </section>;
 }
@@ -198,6 +256,7 @@ function AllobotLessonRevision({ revision, operationId, tx, disabled, styles, on
   const [selection, setSelection] = React.useState(() => revision?.selectedIds || []);
   const [instruction, setInstruction] = React.useState(() => revision?.instruction || '');
   const [followup, setFollowup] = React.useState(() => revision?.followupText || '');
+  const [crisisAlert, setCrisisAlert] = React.useState('');
   const headingRef = React.useRef(null);
   React.useEffect(() => {
     setSelection(revision?.selectedIds || []);
@@ -223,18 +282,29 @@ function AllobotLessonRevision({ revision, operationId, tx, disabled, styles, on
     ...(action === 'undo' ? { undoToken: revision.undoToken, ...(revision.mode === 'select' ? { resourceIds: selection, instruction } : {}), followupText: followup } : {}), ...values });
   const humanLabel = value => String(value || '').replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/[_-]+/g, ' ').toLowerCase()
     .replace(/(^|:\s*)([a-z])/g, (_, prefix, first) => prefix + first.toUpperCase());
-  const fieldLabel = key => ({ question: 'Question', expectedAnswer: 'Expected answer', correctAnswer: 'Correct answer', options: 'Answer choices',
-    def: 'Definition', definition: 'Definition', text: 'Prompt', tier: 'Vocabulary category' }[key] || humanLabel(key));
-  const display = value => {
+  const FIELD_LABELS = { question: 'Question', expectedAnswer: 'Expected answer', correctAnswer: 'Correct answer', options: 'Answer choices',
+    def: 'Definition', definition: 'Definition', text: 'Prompt', tier: 'Vocabulary category' };
+  const RESPONSE_TYPES = { mcq: 'Multiple choice', 'short-answer': 'Written response', shortAnswer: 'Written response' };
+  const fieldLabel = key => (_vmHasOwn.call(FIELD_LABELS, key) ? FIELD_LABELS[key] : humanLabel(key));
+  const display = (value, depth = 0, seen = new WeakSet()) => {
     if (typeof value === 'string') return value;
     if (value == null) return tx('chat_guide.revision_new_item', 'New item; no existing content is replaced.');
-    if (Array.isArray(value)) return value.map(item => '• ' + display(item)).join('\n');
     if (typeof value !== 'object') return String(value);
-    const entries = Object.entries(value).filter(([key]) => !/^(?:id|type|kind)$/i.test(key));
+    if (depth >= 6 || seen.has(value)) return '…';
+    seen.add(value);
+    if (Array.isArray(value)) return value.slice(0, 50).map(item => '• ' + display(item, depth + 1, seen)).join('\n');
+    const entries = Object.entries(value).filter(([key]) => !_vmIsBlockedKey(key) && !/^(?:id|type|kind)$/i.test(key));
     if (!entries.length || entries.every(([, child]) => child === '')) return tx('chat_guide.revision_blank_writing', 'Blank writing field for the learner.');
-    const responseType = { mcq: 'Multiple choice', 'short-answer': 'Written response', shortAnswer: 'Written response' }[value.type];
+    const responseType = typeof value.type === 'string' && _vmHasOwn.call(RESPONSE_TYPES, value.type) ? RESPONSE_TYPES[value.type] : '';
     return [responseType ? tx('chat_guide.revision_response_type', 'Response type') + ': ' + responseType : '', ...entries.map(([key, child]) =>
-      fieldLabel(key) + ': ' + (child === '' ? tx('chat_guide.revision_blank_writing', 'Blank writing field for the learner.') : (Array.isArray(child) ? '\n' : '') + display(child)))].filter(Boolean).join('\n\n');
+      fieldLabel(key) + ': ' + (child === '' ? tx('chat_guide.revision_blank_writing', 'Blank writing field for the learner.') : (Array.isArray(child) ? '\n' : '') + display(child, depth + 1, seen)))].filter(Boolean).join('\n\n');
+  };
+  const chooseScreened = (action, values = {}) => {
+    const checkText = values && typeof values.instruction === 'string' ? values.instruction : '';
+    const crisis = checkText ? _vmScreenCrisis(checkText) : null;
+    if (crisis) { setCrisisAlert(crisis.message); return; }
+    if (crisisAlert) setCrisisAlert('');
+    choose(action, values);
   };
   const warningText = warning => typeof warning === 'string' ? warning : warning?.message || warning?.label || '';
   return <section className="min-w-0 mt-3 space-y-3" data-testid="lesson-revision" aria-label={tx('chat_guide.revision_title', 'Revise existing lesson')}>
@@ -244,6 +314,7 @@ function AllobotLessonRevision({ revision, operationId, tx, disabled, styles, on
         : revision.mode === 'undone' ? tx('chat_guide.revision_undone', 'Revision undone')
         : tx('chat_guide.revision_title', 'Revise existing lesson')}
     </h3>
+    {crisisAlert && <p role="alert" className="rounded-lg border border-rose-300 bg-rose-50 p-2 text-xs font-semibold text-rose-950 break-words">{crisisAlert}</p>}
     {revision.error && <p role="alert" className="text-sm break-words" style={{ overflowWrap: 'anywhere' }}>{revision.error}</p>}
     {revision.canUndo && <div className="space-y-1" data-testid="lesson-revision-undo">
       <button type="button" disabled={['applying', 'undoing'].includes(revision.mode) || disabled && !pendingRequest} style={{ minHeight: 44 }} className={button}
@@ -251,7 +322,7 @@ function AllobotLessonRevision({ revision, operationId, tx, disabled, styles, on
       <p className={`text-xs ${styles.subText}`}>{tx('chat_guide.revision_undo_last_help', 'Restores the last changes you applied. Any pending revision request is stopped and set aside.')}</p>
     </div>}
     {revision.mode === 'select' && <form className="space-y-3" aria-label={tx('chat_guide.revision_request', 'Lesson revision request')}
-      onSubmit={event => { event.preventDefault(); if (!blocked && selection.length && instruction.trim()) choose('prepare', { resourceIds: selection, instruction }); }}>
+      onSubmit={event => { event.preventDefault(); if (!blocked && selection.length && instruction.trim()) chooseScreened('prepare', { resourceIds: selection, instruction }); }}>
       <p className={`text-xs ${styles.subText}`}>{tx('chat_guide.revision_scope', 'Edit text or add prompts and items; existing response fields stay in place.')}</p>
       <fieldset disabled={blocked} className="min-w-0 space-y-2">
         <legend className="text-xs font-semibold mb-2">{tx('chat_guide.revision_resources', 'Choose material to revise (required)')}</legend>
@@ -319,9 +390,9 @@ function AllobotLessonRevision({ revision, operationId, tx, disabled, styles, on
         </label>
         <p className={`text-xs ${styles.subText}`}>{tx('chat_guide.revision_followup_scope', 'Refine returns a new proposal for review. Ask answers about this proposal without editing it. Both use only the selected material and proposed edits with your configured AI provider.')}</p>
         <button type="button" disabled={blocked || !followup.trim()} style={{ minHeight: 44 }} className={button}
-          onClick={() => choose('refine', { instruction: followup })}>{tx('chat_guide.revision_refine', 'Refine proposal')}</button>
+          onClick={() => chooseScreened('refine', { instruction: followup })}>{tx('chat_guide.revision_refine', 'Refine proposal')}</button>
         <button type="button" disabled={blocked || !followup.trim()} style={{ minHeight: 44 }} className={button}
-          onClick={() => choose('question', { instruction: followup })}>{tx('chat_guide.revision_ask', 'Ask about proposal')}</button>
+          onClick={() => chooseScreened('question', { instruction: followup })}>{tx('chat_guide.revision_ask', 'Ask about proposal')}</button>
       </form>}
       <button type="button" disabled={blocked || !revision.changes?.length} style={{ minHeight: 44 }} className={button} onClick={() => choose('apply')}>{tx('chat_guide.revision_apply', 'Apply edits')}</button>
       <button type="button" disabled={blocked} style={{ minHeight: 44 }} className={button} onClick={() => choose('edit')}>{tx('chat_guide.revision_change_request', 'Change the request')}</button>
@@ -391,11 +462,11 @@ function UDLGuideModal(props) {
     // handler leaves the conversation open — one press closes one layer.
     const onKey = (ev) => {
       if (ev.key === 'Escape') {
-        if (ev.isComposing || ev.keyCode === 229) return;
+        if (ev.ctrlKey || ev.metaKey || ev.altKey || ev.isComposing || ev.keyCode === 229) return;
         ev.preventDefault();
         setChatMenuOpen(false);
         // 2.4.3: dismissing a menu must not drop focus to <body>.
-        try { chatMenuTriggerRef.current?.focus(); } catch (_) {}
+        try { if (chatMenuTriggerRef.current && chatMenuTriggerRef.current.isConnected) chatMenuTriggerRef.current?.focus(); } catch (_) {}
       }
     };
     // The dismiss listener fired on ANY mousedown, including one landing on a
@@ -439,9 +510,31 @@ function UDLGuideModal(props) {
     t, theme, udlInput, udlInputRef,
     udlMessages, udlScrollRef, udlStandardFramework, udlStandardGrade
   } = props;
+  const safeUdlMessages = Array.isArray(udlMessages) ? udlMessages : [];
+  const safeUdlInput = typeof udlInput === 'string' ? udlInput : '';
+  const safeAiStandardQuery = typeof aiStandardQuery === 'string' ? aiStandardQuery : '';
+  const safeSuggestedStandards = Array.isArray(suggestedStandards) ? suggestedStandards : [];
+  const [udlCrisisBanner, setUdlCrisisBanner] = React.useState('');
+  const sendUdlMessageSafe = React.useCallback((payload) => {
+    const candidateText = typeof payload === 'string'
+      ? payload
+      : (payload && typeof payload === 'object'
+        ? (typeof payload.text === 'string' ? payload.text : (typeof payload.instruction === 'string' ? payload.instruction : ''))
+        : safeUdlInput);
+    const crisis = candidateText ? _vmScreenCrisis(candidateText) : null;
+    if (crisis) {
+      setUdlCrisisBanner(crisis.message);
+      return;
+    }
+    if (udlCrisisBanner) setUdlCrisisBanner('');
+    if (typeof handleSendUDLMessage === 'function') {
+      return arguments.length ? handleSendUDLMessage(payload) : handleSendUDLMessage();
+    }
+  }, [handleSendUDLMessage, safeUdlInput, udlCrisisBanner]);
   // Host doorway for AI-only actions; chat stays open because local commands work without AI.
-  let aiDoor = null; try { if (typeof window.__alloAiSetupDoorway === 'function') aiDoor = window.__alloAiSetupDoorway('text', t); } catch (_) {}
-  const aiOff = !!(aiDoor && aiDoor.disabled), aiTitle = aiOff ? aiDoor.title : undefined, AiNotice = aiOff && typeof window.AlloAiSetupNotice === 'function' ? window.AlloAiSetupNotice : null;
+  const hardAiBlocked = _vmHardAiPolicyBlocked();
+  let aiDoor = null; try { if (!hardAiBlocked && typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function') aiDoor = window.__alloAiSetupDoorway('text', t); } catch (_) {}
+  const aiOff = hardAiBlocked || !!(aiDoor && aiDoor.disabled), aiTitle = hardAiBlocked ? 'AI is disabled by current privacy or offline policy.' : (aiOff ? aiDoor.title : undefined), AiNotice = !hardAiBlocked && aiOff && typeof window !== 'undefined' && typeof window.AlloAiSetupNotice === 'function' ? window.AlloAiSetupNotice : null;
   // The global command listener and legacy free-form dictation are separate
   // microphone owners. Talk is command mode only: always tear down dictation
   // before starting, pausing, stopping, or hiding the Talk surface. The shared
@@ -490,7 +583,7 @@ function UDLGuideModal(props) {
       trapStack.push(trap);
       const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
       const focusable = () => Array.from(overlay.querySelectorAll(
-          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])'
       )).filter(el => {
           if (el.hidden || el.getAttribute('aria-hidden') === 'true' || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
           for (let cur = el; cur && cur !== overlay; cur = cur.parentElement) {
@@ -502,7 +595,7 @@ function UDLGuideModal(props) {
       (focusable()[0] || overlay).focus();
       const onKey = (ev) => {
           if (!isTopTrap()) return;
-          if (ev.key === 'Escape') {
+          if (ev.key === 'Escape' && !ev.ctrlKey && !ev.metaKey && !ev.altKey) {
               if (ev.isComposing || ev.nativeEvent?.isComposing || ev.keyCode === 229) return;
               // Consume it so the panel-level handler does not also close the
               // whole conversation on the same press.
@@ -1160,10 +1253,10 @@ function UDLGuideModal(props) {
                   />
                   <input aria-label={isIndependentMode ? t('wizard.independent_learning_goal') : t('wizard.skill_search_placeholder')}
                       type="text"
-                      value={aiStandardQuery}
+                      value={safeAiStandardQuery}
                       onChange={(e) => setAiStandardQuery(e.target.value)}
                       onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.isComposing && !e.nativeEvent?.isComposing && e.keyCode !== 229 && !isFindingStandards && aiStandardQuery.trim() && !aiOff) {
+                          if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.isComposing && !e.nativeEvent?.isComposing && e.keyCode !== 229 && !isFindingStandards && safeAiStandardQuery.trim() && !aiOff) {
                               e.preventDefault();
                               handleFindStandards();
                           }
@@ -1173,7 +1266,7 @@ function UDLGuideModal(props) {
                   />
                   <button type="button"
                       onClick={handleFindStandards}
-                      disabled={isFindingStandards || !aiStandardQuery.trim() || aiOff}
+                      disabled={isFindingStandards || !safeAiStandardQuery.trim() || aiOff}
                       aria-busy={isFindingStandards ? 'true' : undefined}
                       className={`min-w-11 min-h-11 inline-flex items-center justify-center p-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 shadow-sm ${chatStyles.button}`}
                       title={aiTitle || t('standards.search_button_title')}
@@ -1301,21 +1394,22 @@ function UDLGuideModal(props) {
             {tx('chat_guide.revision_title', 'Revise existing lesson')}
           </button>}
           </>}
+          {udlCrisisBanner && <div role="alert" className="mb-2 rounded-lg border border-rose-300 bg-rose-50 p-2 text-xs font-semibold text-rose-950">{udlCrisisBanner}</div>}
           {AiNotice && <div className="mb-2"><AiNotice t={t} /></div>}
           <div className="flex gap-2">
              <input aria-label={tx('chat_guide.input_aria', 'Ask the UDL guide a question')}
                 ref={udlInputRef}
                 type="text"
-                value={udlInput}
+                value={safeUdlInput}
                 onChange={(e) => setUdlInput(e.target.value)}
                 onKeyDown={(e) => {
-                    if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+                    if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                     if (e.key !== 'Enter') return;
                     e.preventDefault();
                     // Match the Send button's gate. A disabled button alone
                     // does not stop Enter on the still-editable composer, which
                     // previously launched overlapping model/Blueprint turns.
-                    if (!isChatProcessing && udlInput.trim()) handleSendUDLMessage();
+                    if (!isChatProcessing && safeUdlInput.trim()) sendUdlMessageSafe();
                 }}
                 placeholder={isShowMeMode ? t('chat_guide.input_placeholder_showme') : t('chat_guide.input_placeholder_default')}
                 className={`flex-grow min-h-11 text-sm p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none ${chatStyles.input}`}
@@ -1326,8 +1420,8 @@ function UDLGuideModal(props) {
                      ? tx('chat_guide.send_showme_aria', 'Show me where this is on screen')
                      : tx('chat_guide.send_aria', 'Send message')}
                 aria-busy={isChatProcessing ? 'true' : undefined}
-                onClick={() => handleSendUDLMessage()}
-                disabled={!udlInput.trim() || isChatProcessing}
+                onClick={() => sendUdlMessageSafe()}
+                disabled={!safeUdlInput.trim() || isChatProcessing}
                 className={`min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${chatStyles.button}`}
                 data-help-key="chat_send"
              >
@@ -1417,10 +1511,10 @@ function PlatformDiagnosticsSection(props) {
       } catch (e) { add('First page error', 'info', 'unreadable: ' + e.message); }
 
       try {
-        const w = window.open('', '_blank', 'width=80,height=60');
+        const w = window.open('', '_blank', 'noopener,noreferrer,width=80,height=60');
         if (w) { try { w.opener = null; } catch (_) {} try { w.close(); } catch (_) {} add('Pop-up windows', 'pass', 'window.open works — compare view + Save-as-PDF can open'); }
         else add('Pop-up windows', 'fail', 'window.open returned null — the compare view and print flow cannot open here');
-      } catch (e) { add('Pop-up windows', 'fail', 'window.open threw: ' + e.message); }
+      } catch (e) { add('Pop-up windows', 'fail', 'window.open threw: ' + (e && e.message)); }
 
       try {
         new WebAssembly.Module(new Uint8Array([0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00]));
@@ -1513,31 +1607,39 @@ function PlatformDiagnosticsSection(props) {
 
       add('Dialogs (confirm/prompt)', 'info', 'typeof confirm = ' + (typeof window.confirm) + ' — use “Test dialog” for the real answer (a sandbox can define it but silently return false)');
 
-      const cdns = [
-        ['jsDelivr', 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/package.json'],
-        ['unpkg', 'https://unpkg.com/pdf-lib@1.17.1/package.json'],
-        ['cdnjs', 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'],
-        ['Google Fonts', 'https://fonts.googleapis.com/css2?family=Lexend&display=swap']
-      ];
-      for (const pair of cdns) {
+      if (typeof window !== 'undefined' && window.__alloOfflineOnly === true) {
+        add('CDN & external cache probes', 'info', 'skipped because offline-only mode is active');
+      } else {
+        const cdns = [
+          ['jsDelivr', 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/package.json'],
+          ['unpkg', 'https://unpkg.com/pdf-lib@1.17.1/package.json'],
+          ['cdnjs', 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'],
+          ['Google Fonts', 'https://fonts.googleapis.com/css2?family=Lexend&display=swap']
+        ];
+        for (const pair of cdns) {
+          let tid = null;
+          try {
+            const t0 = Date.now();
+            const ac = typeof AbortController === 'function' ? new AbortController() : null;
+            tid = ac ? setTimeout(() => { try { ac.abort(); } catch (_) {} }, 6000) : null;
+            const r = await fetch(pair[1], Object.assign({ credentials: 'omit', referrerPolicy: 'no-referrer' }, ac ? { signal: ac.signal } : {}));
+            add('CDN: ' + pair[0], r.ok ? 'pass' : 'warn', 'HTTP ' + r.status + ' in ' + (Date.now() - t0) + 'ms');
+          } catch (e) {
+            add('CDN: ' + pair[0], 'fail', 'unreachable: ' + (e && e.message));
+          } finally {
+            if (tid) clearTimeout(tid);
+          }
+        }
+
         try {
           const t0 = Date.now();
-          const ac = typeof AbortController === 'function' ? new AbortController() : null;
-          const tid = ac ? setTimeout(() => { try { ac.abort(); } catch (_) {} }, 6000) : null;
-          const r = await fetch(pair[1], Object.assign({ credentials: 'omit', referrerPolicy: 'no-referrer' }, ac ? { signal: ac.signal } : {}));
-          if (tid) clearTimeout(tid);
-          add('CDN: ' + pair[0], r.ok ? 'pass' : 'warn', 'HTTP ' + r.status + ' in ' + (Date.now() - t0) + 'ms');
-        } catch (e) { add('CDN: ' + pair[0], 'fail', 'unreachable: ' + (e && e.message)); }
+          const r = await fetch('https://cdn.jsdelivr.net/npm/harper.js@2.4.0/dist/harper_wasm_bg.wasm', { cache: 'force-cache', credentials: 'omit', referrerPolicy: 'no-referrer' });
+          if (r.ok) {
+            await r.arrayBuffer();
+            add('Writing-Check cache (10 MB WASM)', 'info', 'fetched in ' + (Date.now() - t0) + 'ms — under ~500ms means the HTTP cache held it; re-run in a fresh session to test cross-session caching');
+          } else add('Writing-Check cache (10 MB WASM)', 'warn', 'HTTP ' + r.status);
+        } catch (e) { add('Writing-Check cache (10 MB WASM)', 'warn', e && e.message); }
       }
-
-      try {
-        const t0 = Date.now();
-        const r = await fetch('https://cdn.jsdelivr.net/npm/harper.js@2.4.0/dist/harper_wasm_bg.wasm', { cache: 'force-cache', credentials: 'omit', referrerPolicy: 'no-referrer' });
-        if (r.ok) {
-          await r.arrayBuffer();
-          add('Writing-Check cache (10 MB WASM)', 'info', 'fetched in ' + (Date.now() - t0) + 'ms — under ~500ms means the HTTP cache held it; re-run in a fresh session to test cross-session caching');
-        } else add('Writing-Check cache (10 MB WASM)', 'warn', 'HTTP ' + r.status);
-      } catch (e) { add('Writing-Check cache (10 MB WASM)', 'warn', e.message); }
     } finally {
       setPlatProbe({ when: new Date().toLocaleString(), rows });
       setProbeRunning(false);
@@ -1680,7 +1782,7 @@ function ModelDiagnosticsSection(props) {
   // the definitive signal and show it with the reset convention. No invented
   // cap numbers — limits vary by account/plan and would be fabrication risk.
   const _sessionTotals = (() => {
-    const by = {};
+    const by = Object.create(null);
     for (const e of usageEntries) { const m = e.served || e.requested || '(unknown)'; by[m] = (by[m] || 0) + (e.count || 0); }
     return Object.entries(by).sort((a, b) => b[1] - a[1]);
   })();
@@ -1694,7 +1796,10 @@ function ModelDiagnosticsSection(props) {
   const slots = ['default', 'fallback', 'flash', 'image', 'vision', 'tts', 'quality', 'safety'];
 
   const storedOverrides = (() => {
-    try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').models || {}; }
+    try {
+      const cfg = _vmSafeJsonParse(localStorage.getItem('alloflow_ai_config') || '{}', {});
+      return (cfg && cfg.models && typeof cfg.models === 'object' && !Array.isArray(cfg.models)) ? cfg.models : {};
+    }
     catch (_) { return {}; }
   })();
 
@@ -1708,9 +1813,17 @@ function ModelDiagnosticsSection(props) {
         setCatalogLoading(false);
         return;
       }
+      const _redactCatalogErr = (raw) => {
+        if (typeof window !== 'undefined' && typeof window.__alloRedactSecrets === 'function') return window.__alloRedactSecrets(raw);
+        return String(raw == null ? '' : raw)
+          .replace(/AIza[0-9A-Za-z_-]{20,}/g, '[redacted-key]')
+          .replace(/\bsk-(?:ant-|proj-|live-|test-)?[0-9A-Za-z_-]{16,}/g, '[redacted-key]')
+          .replace(/(\bBearer\s+)[A-Za-z0-9._~+/=-]{8,}/gi, '$1[redacted]')
+          .replace(/([?&#](?:key|api_?key|token|access_token|auth|allo_mbp|allo_pack)=)[^&\s#'"]+/gi, '$1[redacted]');
+      };
       const result = await fn();
       if (result.error) {
-        setCatalogError(result.error);
+        setCatalogError(_redactCatalogErr(result.error));
         setCatalog([]);
       } else {
         setCatalog(result.models || []);
@@ -1718,7 +1831,10 @@ function ModelDiagnosticsSection(props) {
       }
       setCatalogFetched(true);
     } catch (e) {
-      setCatalogError((e && e.message) || 'Unknown error');
+      const _msg = (e && e.message) || 'Unknown error';
+      setCatalogError(typeof window !== 'undefined' && typeof window.__alloRedactSecrets === 'function'
+        ? window.__alloRedactSecrets(_msg)
+        : String(_msg).replace(/AIza[0-9A-Za-z_-]{20,}/g, '[redacted-key]').replace(/\bsk-(?:ant-|proj-|live-|test-)?[0-9A-Za-z_-]{16,}/g, '[redacted-key]').replace(/([?&#](?:key|api_?key|token|access_token|auth|allo_mbp|allo_pack)=)[^&\s#'"]+/gi, '$1[redacted]'));
       setCatalog([]);
     }
     setCatalogLoading(false);
@@ -1726,8 +1842,9 @@ function ModelDiagnosticsSection(props) {
 
   const saveOverride = (slot, value) => {
     try {
-      const current = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
-      const models = { ...(current.models || {}) };
+      if (_vmIsBlockedKey(slot)) return;
+      const current = _vmSafeJsonParse(localStorage.getItem('alloflow_ai_config') || '{}', {}) || {};
+      const models = { ...(current.models && typeof current.models === 'object' ? current.models : {}) };
       if (value) models[slot] = value;
       else delete models[slot];
       const next = { ...current, models };
@@ -1741,7 +1858,7 @@ function ModelDiagnosticsSection(props) {
 
   const clearAllOverrides = () => {
     try {
-      const current = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
+      const current = _vmSafeJsonParse(localStorage.getItem('alloflow_ai_config') || '{}', {}) || {};
       delete current.models;
       localStorage.setItem('alloflow_ai_config', JSON.stringify(current));
       setRefreshKey(k => k + 1);
@@ -1749,9 +1866,10 @@ function ModelDiagnosticsSection(props) {
   };
 
   const formatRelativeTime = (ts) => {
-    if (!ts) return '—';
+    const n = Number(ts);
+    if (!Number.isFinite(n) || n <= 0) return '—';
     const now = (typeof Date !== 'undefined' && Date.now) ? Date.now() : 0;
-    const ago = now - ts;
+    const ago = now - n;
     if (ago < 60_000) return Math.max(1, Math.floor(ago / 1000)) + 's ago';
     if (ago < 3_600_000) return Math.floor(ago / 60_000) + 'm ago';
     return Math.floor(ago / 3_600_000) + 'h ago';
@@ -2003,7 +2121,7 @@ function AIBackendModalBody(props) {
   const handleAIBackendDialogKeyDown = (event) => {
     const trapStack = window.__alloFocusTrapStack;
     if (Array.isArray(trapStack) && trapStack.length > 0 && aiBackendTrapRef.current && trapStack[trapStack.length - 1] !== aiBackendTrapRef.current) return;
-    if (event.key === 'Escape') {
+    if (event.key === 'Escape' && !event.ctrlKey && !event.metaKey && !event.altKey) {
       if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
       event.preventDefault();
       event.stopPropagation();
@@ -2014,7 +2132,7 @@ function AIBackendModalBody(props) {
     const dialog = aiBackendDialogRef.current;
     if (!dialog) return;
     const focusable = Array.from(dialog.querySelectorAll(
-      'button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+      'button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), summary, [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
     )).filter((element) => {
       if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
       let node = element;
@@ -2042,6 +2160,16 @@ function AIBackendModalBody(props) {
     }
   };
   const isStudentAiSetup = Boolean(typeof window !== 'undefined' && window.__alloStudentAiSetupAllowed && window.__alloQrStudentMode);
+  const isStudentModeBlocked = Boolean(typeof window !== 'undefined' && (
+    (window.__alloQrStudentMode === true && !window.__alloStudentAiSetupAllowed)
+    || (window.__alloStudentAiDisabled === true && !isStudentAiSetup)
+  ));
+  const diagnosticsBlocked = Boolean(typeof window !== 'undefined' && (
+    window.__alloOfflineOnly === true
+    || window.__alloAiSecretsLocked === true
+    || window.__alloQrStudentMode === true
+    || window.__alloStudentAiDisabled === true
+  ));
   const requestedSettingsSection = (() => {
     try { return String(window.__alloAISettingsRequestedSection || ''); }
     catch (_) { return ''; }
@@ -2066,7 +2194,7 @@ function AIBackendModalBody(props) {
   const [canvasShareUrl, setCanvasShareUrl] = React.useState(CANVAS_FALLBACK_URL);
   React.useEffect(() => {
     let alive = true;
-    if (typeof fetch !== 'function') return undefined;
+    if (typeof fetch !== 'function' || (typeof window !== 'undefined' && window.__alloOfflineOnly === true)) return undefined;
     fetch(CANVAS_RELEASE_JSON_URL + '?t=' + Date.now(), { cache: 'no-store' })
       .then((res) => (res && res.ok ? res.json() : null))
       .then((release) => {
@@ -2082,11 +2210,18 @@ function AIBackendModalBody(props) {
     // 2026-08-10; do not regress it).
     if (prevGuidedViewRef.current === guidedView) return;
     prevGuidedViewRef.current = guidedView;
-    try { if (guidedHeadingRef.current) guidedHeadingRef.current.focus(); } catch (_) {}
+    try { if (guidedHeadingRef.current && guidedHeadingRef.current.isConnected) guidedHeadingRef.current.focus(); } catch (_) {}
   }, [guidedView]);
-  const configStorage = isStudentAiSetup ? window.sessionStorage : window.localStorage;
+  const configStorage = (() => {
+    try {
+      if (typeof window === 'undefined') return null;
+      return isStudentAiSetup ? window.sessionStorage : window.localStorage;
+    } catch (_) {
+      return null;
+    }
+  })();
   const configStorageKey = isStudentAiSetup ? 'alloflow_qr_student_ai_config' : 'alloflow_ai_config';
-  const aiBackendDefaults = {
+  const aiBackendDefaults = Object.assign(Object.create(null), {
     gemini: '',
     'alloflow-local': 'http://localhost:32173',
     lmstudio: 'http://localhost:1234',
@@ -2096,7 +2231,8 @@ function AIBackendModalBody(props) {
     claude: 'https://api.anthropic.com',
     'onnx-npu': 'http://localhost:11435',
     custom: 'http://localhost:8080'
-  };
+  });
+  const aiBackendDefaultUrl = (b) => (_vmHasOwn.call(aiBackendDefaults, b) ? aiBackendDefaults[b] : '');
   const aiCredentialDestination = (config) => {
     try {
       const backend = String(config.backend || 'gemini');
@@ -2139,8 +2275,9 @@ function AIBackendModalBody(props) {
   const readAIBackendConfig = () => {
     try {
       // A teacher's key is unlocked into this tab, not stored in the config.
-      const hostRead = !isStudentAiSetup ? window.__alloReadStoredAiConfig : null;
-      const config = (typeof hostRead === 'function' ? hostRead() : JSON.parse(configStorage.getItem(configStorageKey) || '{}')) || {};
+      const hostRead = !isStudentAiSetup && typeof window !== 'undefined' ? window.__alloReadStoredAiConfig : null;
+      const raw = typeof hostRead === 'function' ? hostRead() : (configStorage ? _vmSafeJsonParse(configStorage.getItem(configStorageKey) || '{}', {}) : {});
+      const config = raw || {};
       if (!config || typeof config !== 'object' || Array.isArray(config)) return {};
       if (config.apiKeyDestination && config.apiKeyDestination !== aiCredentialDestination(config)) return { ...config, apiKey: '' };
       return config;
@@ -2234,12 +2371,13 @@ function AIBackendModalBody(props) {
   // the file's DOM idiom. On desktop the app is served BY the runtime, so the
   // engine API is same-origin; elsewhere the strip explains where to get it.
   const stopEngineStripPoll = () => {
-    if (window.__alloEngineStripPoll) { clearInterval(window.__alloEngineStripPoll); window.__alloEngineStripPoll = null; }
+    if (typeof window !== 'undefined' && window.__alloEngineStripPoll) { clearInterval(window.__alloEngineStripPoll); window.__alloEngineStripPoll = null; }
   };
+  React.useEffect(() => () => stopEngineStripPoll(), []);
   const startEngineStripPoll = () => {
-    if (window.__alloEngineStripPoll) return;
+    if (typeof window === 'undefined' || window.__alloEngineStripPoll) return;
     window.__alloEngineStripPoll = setInterval(() => {
-      if (!document.getElementById('ai-backend-engine-strip')) { stopEngineStripPoll(); return; }
+      if (typeof document === 'undefined' || !document.getElementById('ai-backend-engine-strip')) { stopEngineStripPoll(); return; }
       refreshEngineStrip();
     }, 2000);
   };
@@ -2386,9 +2524,13 @@ function AIBackendModalBody(props) {
         return;
       }
       let line = t('ai_backend.engine_stopped') || 'Engine is not running.';
-      const busy = Boolean(engineStatus.download && engineStatus.download.totalBytes) || engineStatus.phase === 'starting' || engineStatus.phase === 'downloading-binary' || engineStatus.phase === 'downloading-model';
-      if (engineStatus.download && engineStatus.download.totalBytes) {
-        line = (t('ai_backend.engine_downloading') || 'Downloading') + ' ' + engineStatus.download.file + ' — ' + Math.round((engineStatus.download.receivedBytes / engineStatus.download.totalBytes) * 100) + '%';
+      const dlTotal = Number(engineStatus.download && engineStatus.download.totalBytes);
+      const dlRecv = Number(engineStatus.download && engineStatus.download.receivedBytes) || 0;
+      const hasDownload = Number.isFinite(dlTotal) && dlTotal > 0;
+      const busy = hasDownload || engineStatus.phase === 'starting' || engineStatus.phase === 'downloading-binary' || engineStatus.phase === 'downloading-model';
+      if (hasDownload) {
+        const dlPct = Math.max(0, Math.min(100, Math.round((dlRecv / dlTotal) * 100)));
+        line = (t('ai_backend.engine_downloading') || 'Downloading') + ' ' + String(engineStatus.download.file || '') + ' — ' + dlPct + '%';
       } else if (engineStatus.phase === 'starting') {
         line = t('ai_backend.engine_starting') || 'Starting the engine…';
       } else if (engineStatus.lastError) {
@@ -2419,7 +2561,7 @@ function AIBackendModalBody(props) {
     return new Provider({
       backend,
       apiKey: cfg.apiKey ?? inheritedApiKey ?? '',
-      baseUrl: cfg.baseUrl || aiBackendDefaults[backend] || '',
+      baseUrl: cfg.baseUrl || aiBackendDefaultUrl(backend) || '',
       models: cfg.models || inheritedModels || {},
       ttsProvider: cfg.ttsProvider || 'auto',
       imageProvider: cfg.imageProvider || 'auto',
@@ -2433,7 +2575,7 @@ function AIBackendModalBody(props) {
   // favor of the step copy.
   const applyBackendChoice = (backend, { showStatus = false } = {}) => {
     const current = readAIBackendConfig();
-    const updated = updateAIBackendRoute(current, { backend, baseUrl: aiBackendDefaults[backend] || '' });
+    const updated = updateAIBackendRoute(current, { backend, baseUrl: aiBackendDefaultUrl(backend) || '' });
     if (backend !== current.backend) delete updated.models;
     writeAIBackendConfig(updated);
     const urlEl = document.getElementById('ai-backend-url');
@@ -2521,7 +2663,8 @@ function AIBackendModalBody(props) {
       return <p id="ai-backend-key-lock-state" role="status" className="mt-2 text-xs font-bold text-emerald-800">{t('ai_backend.key_lock_saved_state') || 'Saved on this device and locked with your educator access code.'}</p>;
     }
     if (!status.unsaved && !status.plaintextOnDevice) return null;
-    const configured = keyLockApi().isConfigured();
+    const lockApi = keyLockApi();
+    const configured = Boolean(lockApi && typeof lockApi.isConfigured === 'function' && lockApi.isConfigured());
     const save = () => runKeyLock((api, code) => api.protectAiKey(code), t('ai_backend.key_lock_saved_msg') || 'Your key is saved and locked.');
     return (
       <div id="ai-backend-key-lock" className="mt-2 rounded-xl border-2 border-amber-200 bg-amber-50/70 p-3">
@@ -2631,7 +2774,7 @@ function AIBackendModalBody(props) {
           {confirmForgetCloudKey ? 'Confirm forget saved Gemini key' : 'Forget saved Gemini key'}
         </button>
         <p id="ai-backend-gemini-services-help" className="mt-1 text-xs leading-relaxed text-sky-900">
-          Used only for Gemini cloud features you explicitly select, including Gemini voice transcription. Your primary text AI remains {GUIDED_BACKEND_LABELS[String(cfg.backend || '')] || String(cfg.backend || 'the selected backend')}.
+          Used only for Gemini cloud features you explicitly select, including Gemini voice transcription. Your primary text AI remains {(_vmHasOwn.call(GUIDED_BACKEND_LABELS, String(cfg.backend || '')) ? GUIDED_BACKEND_LABELS[String(cfg.backend || '')] : String(cfg.backend || 'the selected backend'))}.
         </p>
       </div>
     );
@@ -2772,7 +2915,7 @@ function AIBackendModalBody(props) {
       <div className="space-y-3">
         {guidedStepHeading(t('ai_backend.guided_choose_kicker') || 'First-time setup · Choose your AI')}
         <p className="text-xs text-slate-600 leading-relaxed">{t('ai_backend.guided_intro') || "AlloFlow uses an AI engine to create lessons, read aloud, and answer questions. Pick how you'd like it to work — you can change this any time."}</p>
-        {connected && <p className="text-xs font-bold text-green-800 bg-green-50 border border-green-100 rounded-xl p-2">✅ {(t('ai_backend.guided_connected_chip') || 'Connected —') + ' ' + (GUIDED_BACKEND_LABELS[currentBackend] || currentBackend)}</p>}
+        {connected && <p className="text-xs font-bold text-green-800 bg-green-50 border border-green-100 rounded-xl p-2">✅ {(t('ai_backend.guided_connected_chip') || 'Connected —') + ' ' + (_vmHasOwn.call(GUIDED_BACKEND_LABELS, currentBackend) ? GUIDED_BACKEND_LABELS[currentBackend] : currentBackend)}</p>}
         {/* Canvas-first card (W7, 2026-08-16): the zero-setup path. A visitor who
             arrived keyless (deep link, shared shell) is one click from the full
             free experience instead of a key hunt. The share URL comes from
@@ -2780,7 +2923,7 @@ function AIBackendModalBody(props) {
             No quota numbers or plan pricing here on purpose — they rot into
             false claims; "your plan's daily quota" plus Google's own page. */}
         {!connected && guidedCard({ 'data-help-key': 'ai_backend_guided_card_canvas' },
-          () => { try { window.open(canvasShareUrl, '_blank', 'noopener'); } catch (e) {} },
+          () => { try { window.open(canvasShareUrl, '_blank', 'noopener,noreferrer'); } catch (e) {} },
           '🚀', t('ai_backend.guided_card_canvas_title') || 'Use AlloFlow inside Gemini Canvas',
           t('ai_backend.guided_card_canvas_badge') || 'No setup',
           t('ai_backend.guided_card_canvas_body') || 'The easiest way to get AI: open AlloFlow inside Google Gemini. Free with a Google account, using your Gemini plan’s daily quota (personal, Education, or paid plans all work). Nothing to install and no key to manage.',
@@ -2844,6 +2987,31 @@ function AIBackendModalBody(props) {
     // wrong screen; the probe now has its own labelled button in Platform Diagnostics.
     try { console.warn('[Storage] Storage and recovery manager bridge unavailable on this host build.'); } catch (_) {}
   };
+  // Student-mode lock: never fall through to teacher AI settings, keys, or diagnostics
+  // when QR student mode is active without explicit student setup permission or student AI is disabled.
+  if (isStudentModeBlocked) {
+    return (
+      <div
+        data-ai-backend-modal-overlay="true"
+        style={{ zIndex: aiBackendOverlayZ }}
+        className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300"
+        onMouseDown={(e) => { aiBackendBackdropDownRef.current = (e.target === e.currentTarget); }}
+        onClick={(e) => {
+          const allow = aiBackendBackdropDownRef.current !== false;
+          aiBackendBackdropDownRef.current = null;
+          if (e.target === e.currentTarget && allow) setShowAIBackendModal(false);
+        }}>
+        <div ref={aiBackendDialogRef} data-help-key="ai_backend_modal_panel" data-student-ai-blocked="true" className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="ai-backend-title" tabIndex={-1} onKeyDown={handleAIBackendDialogKeyDown} onClick={e => e.stopPropagation()}>
+          <button type="button" onClick={() => setShowAIBackendModal(false)} className="absolute top-3 right-3 min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-700 hover:text-slate-900 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 z-10" aria-label={t('common.close') || 'Close'}><X size={20} aria-hidden="true"/></button>
+          <div className="flex items-center gap-2 mb-4 text-violet-900">
+            <div className="bg-violet-100 p-2 rounded-full" aria-hidden="true"><Unplug size={20} className="text-violet-600" aria-hidden="true"/></div>
+            <h3 id="ai-backend-title" className="font-black text-lg">{t('ai_backend.student_blocked_title') || 'AI settings are managed by your teacher'}</h3>
+          </div>
+          <p className="text-sm leading-relaxed text-slate-700">{t('ai_backend.student_blocked_body') || 'AI settings and API keys are turned off for this student session. You can continue using all offline and teacher-prepared learning activities.'}</p>
+        </div>
+      </div>
+    );
+  }
   // A locked key hides every setting: this window opens from the Launch Pad before
   // any role is chosen, so it is the one lock that covers every way in.
   const initialKeyLockStatus = keyLockStatus();
@@ -3113,10 +3281,16 @@ function AIBackendModalBody(props) {
                                         populateModelSelect(fallbackSelect, 'Same as default', result.models, refreshedCfg.models?.fallback || '');
                                     }
                                 } else {
-                                    if (status) { status.textContent = '❌ Failed: ' + result.error; status.className = 'text-xs font-bold mt-2 text-red-800 bg-red-50 p-2.5 rounded-xl border border-red-100'; }
+                                    const _safeErr = typeof window !== 'undefined' && typeof window.__alloRedactSecrets === 'function'
+                                        ? window.__alloRedactSecrets(result.error)
+                                        : String(result.error || '').replace(/AIza[0-9A-Za-z_-]{20,}/g, '[redacted-key]').replace(/\bsk-(?:ant-|proj-|live-|test-)?[0-9A-Za-z_-]{16,}/g, '[redacted-key]').replace(/([?&#](?:key|api_?key|token|access_token|auth|allo_mbp|allo_pack)=)[^&\s#'"]+/gi, '$1[redacted]');
+                                    if (status) { status.textContent = '❌ Failed: ' + _safeErr; status.className = 'text-xs font-bold mt-2 text-red-800 bg-red-50 p-2.5 rounded-xl border border-red-100'; }
                                 }
                             } catch (err) {
-                                if (status) { status.textContent = '❌ Error: ' + err.message; status.className = 'text-xs font-bold mt-2 text-red-800 bg-red-50 p-2.5 rounded-xl border border-red-100'; }
+                                const _safeCatch = typeof window !== 'undefined' && typeof window.__alloRedactSecrets === 'function'
+                                    ? window.__alloRedactSecrets(err && err.message ? err.message : err)
+                                    : String(err && err.message ? err.message : err || '').replace(/AIza[0-9A-Za-z_-]{20,}/g, '[redacted-key]').replace(/\bsk-(?:ant-|proj-|live-|test-)?[0-9A-Za-z_-]{16,}/g, '[redacted-key]').replace(/([?&#](?:key|api_?key|token|access_token|auth|allo_mbp|allo_pack)=)[^&\s#'"]+/gi, '$1[redacted]');
+                                if (status) { status.textContent = '❌ Error: ' + _safeCatch; status.className = 'text-xs font-bold mt-2 text-red-800 bg-red-50 p-2.5 rounded-xl border border-red-100'; }
                             }
                             lockedControls.forEach(control => { control.disabled = false; });
                             btn.removeAttribute('aria-disabled');
@@ -3272,9 +3446,9 @@ function AIBackendModalBody(props) {
                 </div>
 
                 {/* ─── Section 5: AI Model Diagnostics (shared with Canvas modal) ─── */}
-                {!isStudentAiSetup && !(typeof window !== 'undefined' && (window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window.__alloStudentAiDisabled === true)) && <AllobotSearchSettings t={t} />}
-                {!isStudentAiSetup && <ModelDiagnosticsSection t={t} _isCanvasEnv={_isCanvasEnv} GEMINI_MODELS={GEMINI_MODELS} />}
-                {!isStudentAiSetup && <PlatformDiagnosticsSection t={t} onCloseModal={() => { if (typeof setShowAIBackendModal === 'function') setShowAIBackendModal(false); }} />}
+                {!isStudentAiSetup && !diagnosticsBlocked && <AllobotSearchSettings t={t} />}
+                {!isStudentAiSetup && !diagnosticsBlocked && <ModelDiagnosticsSection t={t} _isCanvasEnv={_isCanvasEnv} GEMINI_MODELS={GEMINI_MODELS} />}
+                {!isStudentAiSetup && !diagnosticsBlocked && <PlatformDiagnosticsSection t={t} onCloseModal={() => { if (typeof setShowAIBackendModal === 'function') setShowAIBackendModal(false); }} />}
 
                 {/* ─── Section 6: Device Storage (parity with the Canvas Advanced
                      Settings modal, 2026-07-14) — opens the on-device storage

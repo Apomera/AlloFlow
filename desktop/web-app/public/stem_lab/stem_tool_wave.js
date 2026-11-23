@@ -34,6 +34,21 @@ window.StemLab = window.StemLab || {
       stDark.id = 'allo-wave-dark-remap-css';
       stDark.textContent =
         ".theme-dark [data-stem-tool-shell=\"wave\"] :is(.text-amber-900,.text-amber-950){color:#fef3c7!important}" +
+        ".theme-dark [data-stem-tool-shell=\"wave\"] .bg-amber-50{background-color:#291d0e!important;border-color:#92400e!important}" +
+        ".theme-dark [data-stem-tool-shell=\"wave\"] .bg-amber-50 :is(.text-slate-700,.text-slate-800,.text-amber-800),.theme-dark [data-stem-tool-shell=\"wave\"] .bg-amber-50.text-amber-800{color:#fef3c7!important}" +
+        ".theme-dark [data-stem-tool-shell=\"wave\"] .bg-cyan-50{background-color:#0c2330!important;border-color:#155e75!important}" +
+        ".theme-dark [data-stem-tool-shell=\"wave\"] .bg-cyan-50 button.bg-white{background-color:#1e293b!important;border-color:#475569!important}" +
+        ".theme-dark [data-stem-tool-shell=\"wave\"] .bg-cyan-50.text-cyan-800,.theme-dark [data-stem-tool-shell=\"wave\"] .bg-cyan-50 .text-cyan-800{color:#cffafe!important}" +
+        ".theme-dark [data-stem-tool-shell=\"wave\"] .bg-sky-50{background-color:#0e2234!important;border-color:#075985!important}" +
+        ".theme-dark [data-stem-tool-shell=\"wave\"] .bg-sky-50.text-sky-800,.theme-dark [data-stem-tool-shell=\"wave\"] .bg-sky-50 .text-sky-800{color:#e0f2fe!important}" +
+        ".theme-dark [data-stem-tool-shell=\"wave\"] .bg-indigo-50{background-color:#1c1b3a!important;border-color:#3730a3!important}" +
+        ".theme-dark [data-stem-tool-shell=\"wave\"] .bg-indigo-50.text-indigo-800,.theme-dark [data-stem-tool-shell=\"wave\"] .bg-indigo-50 .text-indigo-800{color:#e0e7ff!important}" +
+        ".theme-dark [data-stem-tool-shell=\"wave\"] .bg-fuchsia-50{background-color:#2e1432!important;border-color:#86198f!important}" +
+        ".theme-dark [data-stem-tool-shell=\"wave\"] .bg-fuchsia-50.text-fuchsia-800,.theme-dark [data-stem-tool-shell=\"wave\"] .bg-fuchsia-50 .text-fuchsia-800{color:#fae8ff!important}" +
+        ".theme-dark [data-stem-tool-shell=\"wave\"] :is(.bg-emerald-50,.bg-teal-50){background-color:#0d281f!important;border-color:#065f46!important}" +
+        ".theme-dark [data-stem-tool-shell=\"wave\"] :is(.bg-emerald-50,.bg-teal-50):is(.text-emerald-800,.text-teal-800),.theme-dark [data-stem-tool-shell=\"wave\"] :is(.bg-emerald-50,.bg-teal-50) :is(.text-emerald-800,.text-teal-800){color:#d1fae5!important}" +
+        ".theme-dark [data-stem-tool-shell=\"wave\"] :is(.bg-rose-50,.bg-pink-50,.bg-red-50){background-color:#32141a!important;border-color:#9f1239!important}" +
+        ".theme-dark [data-stem-tool-shell=\"wave\"] :is(.bg-rose-50,.bg-pink-50,.bg-red-50):is(.text-rose-800,.text-pink-800,.text-red-800),.theme-dark [data-stem-tool-shell=\"wave\"] :is(.bg-rose-50,.bg-pink-50,.bg-red-50) :is(.text-rose-800,.text-pink-800,.text-red-800){color:#ffe4e6!important}" +
         ".theme-dark [data-stem-tool-shell=\"wave\"] :is(.text-cyan-900,.text-cyan-950){color:#cffafe!important}" +
         ".theme-dark [data-stem-tool-shell=\"wave\"] :is(.text-sky-900,.text-sky-950){color:#e0f2fe!important}" +
         ".theme-dark [data-stem-tool-shell=\"wave\"] :is(.text-indigo-900,.text-indigo-950){color:#e0e7ff!important}" +
@@ -44,7 +59,7 @@ window.StemLab = window.StemLab || {
         ".theme-dark [data-wave-workspace-bar]{background:#0f172a!important;border-color:#334155!important;color:#e2e8f0!important}" +
         ".theme-dark [data-wave-workspace-bar] [role=\"tab\"][aria-selected=\"false\"]{background:#1e293b!important;border-color:#334155!important;color:#e2e8f0!important}" +
         ".theme-dark [data-wave-workspace-bar] [role=\"tab\"][aria-selected=\"false\"]:hover{background:#273549!important;border-color:#38bdf8!important}" +
-        ".theme-dark [data-wave-workspace-bar] [role=\"tab\"][aria-selected=\"true\"]{background:#0284c7!important;border-color:#38bdf8!important;color:#ffffff!important}" +
+        ".theme-dark [data-wave-workspace-bar] [role=\"tab\"][aria-selected=\"true\"]{background:#0369a1!important;border-color:#38bdf8!important;color:#ffffff!important}" +
         ".theme-dark [data-wave-band][aria-pressed=\"false\"]{background:#1e293b!important;border-color:#334155!important;color:#e2e8f0!important}" +
         ".theme-dark [data-wave-coach-banner]{background:rgba(14,116,144,0.22)!important;border-color:rgba(56,189,248,0.4)!important;color:#e0f2fe!important}" +
         ".theme-dark [data-wave-coach-banner] strong{color:#67e8f9!important}" +
@@ -6890,7 +6905,7 @@ window.StemLab = window.StemLab || {
                   React.createElement("button", {
                     type: 'button',
                     'data-wave-tts-btn': 'true',
-                    'aria-label': __alloT('stem.wave.aria_read_aloud', 'Read current wave summary and guidance aloud'),
+                    title: __alloT('stem.wave.aria_read_aloud', 'Read current wave summary and guidance aloud'),
                     style: { minHeight: 44 },
                     onClick: readWaveAloud,
                     className: "px-3 py-2 rounded-lg text-xs font-bold bg-indigo-700 text-white hover:bg-indigo-800 transition-colors"

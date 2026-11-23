@@ -120,22 +120,18 @@
       "knowledgeChecks": 15,
       "flashcards": 15,
       "memoryAids": 5,
-      "diagrams": 0,
-      "diagramPlacements": 0,
-      "glossaryTerms": 0,
+      "diagrams": 5,
+      "diagramPlacements": 5,
+      "glossaryTerms": 25,
       "constructedResponseWorkshops": 5,
       "topicDiagnosticRoutes": 0,
-      "remediationPlaybooks": 0,
+      "remediationPlaybooks": 6,
       "studySessionPlans": 0,
       "spacedReviewPlans": 0,
       "sourceCatalog": 4
     },
     "emptyLibraryLayers": [
-      "diagrams",
-      "diagramPlacements",
-      "glossaryTerms",
       "topicDiagnosticRoutes",
-      "remediationPlaybooks",
       "studySessionPlans",
       "spacedReviewPlans"
     ],
@@ -320,8 +316,8 @@
       "asset": "learning-library",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "693b1fa931d740c5bcdb099c1ab0e079cf4f1ec42dbe5d3e2f39e385693e5e74",
-      "deploySha256": "693b1fa931d740c5bcdb099c1ab0e079cf4f1ec42dbe5d3e2f39e385693e5e74",
+      "sourceSha256": "8ac35fdc75520b69b1ce0f259350d5d07806a2c4bc5eb76e8df866c497ea689a",
+      "deploySha256": "8ac35fdc75520b69b1ce0f259350d5d07806a2c4bc5eb76e8df866c497ea689a",
       "note": "Source and deployment bytes are identical."
     }
   ],

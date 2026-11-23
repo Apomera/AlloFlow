@@ -30,7 +30,7 @@
     }
     @media (prefers-color-scheme: dark) {
       :root:not([data-theme="light"]) {
-        --paper: #161f21; --ground: #10171a; --ink: #e5ecec; --muted: #9aabad;
+        --paper: #161f21; --ground: #10171a; --ink: #e5ecec; --muted: #cbd5e1;
         --rule: #2a3a3c; --accent: #5cb5b0; --accent-ink: #0b1618;
         --frozen: #1d2119; --frozen-rule: #4a442f;
         --warn: #e8bb72; --warn-bg: #2b2317; --stop: #f0a09a; --stop-bg: #2d1a19;
@@ -60,14 +60,14 @@
     .banner .sep { opacity: .55; font-weight: 400; }
 
     .banner-live { background: var(--go-bg); color: var(--go); }
-    .check { display: flex; gap: .5rem; align-items: flex-start; font-size: .88rem; margin: .4rem 0; }
-    .check input { width: 1.1rem; height: 1.1rem; flex: 0 0 auto; margin-top: .15rem; }
-    select { width: 100%; padding: .45rem .6rem; border: 1px solid var(--rule); border-radius: 5px; background: var(--paper); color: var(--ink); font: inherit; font-size: .88rem; }
+    .check { display: flex; gap: .5rem; align-items: flex-start; min-height: 44px; font-size: .88rem; margin: .4rem 0; }
+    .check input { width: 1.25rem; height: 1.25rem; flex: 0 0 auto; margin-top: .15rem; }
+    select { width: 100%; min-height: 44px; padding: .5rem .65rem; border: 1px solid var(--rule); border-radius: 5px; background: var(--paper); color: var(--ink); font: inherit; font-size: .88rem; }
     .stages { display: flex; flex-wrap: wrap; gap: .4rem; margin: 0 0 1.1rem; padding: 0; list-style: none; }
     .stages li { flex: 1 1 9rem; }
     .stages button {
-      width: 100%; text-align: left; background: var(--paper); color: var(--muted);
-      border: 1px solid var(--rule); border-radius: 6px; padding: .5rem .7rem;
+      width: 100%; min-height: 44px; text-align: left; background: var(--paper); color: var(--muted);
+      border: 1px solid var(--rule); border-radius: 6px; padding: .55rem .7rem;
       font: inherit; font-size: .84rem; cursor: pointer;
     }
     .stages button[aria-current="step"] { border-color: var(--accent); color: var(--ink); box-shadow: inset 3px 0 0 var(--accent); }
@@ -91,15 +91,15 @@
       font: .9rem/1.55 ui-monospace, Consolas, monospace; resize: vertical;
     }
     input[type="text"], input[type="password"], input[type="email"] {
-      width: 100%; padding: .45rem .6rem; border: 1px solid var(--rule);
+      width: 100%; min-height: 44px; padding: .5rem .65rem; border: 1px solid var(--rule);
       border-radius: 5px; background: var(--paper); color: var(--ink); font: inherit; font-size: .88rem;
     }
     label { display: block; font-size: .8rem; font-weight: 600; margin: 0 0 .25rem; }
     .field { margin: 0 0 .7rem; }
 
     button.act {
-      font: inherit; font-size: .87rem; font-weight: 600; cursor: pointer;
-      border-radius: 6px; padding: .48rem .85rem; border: 1px solid var(--rule);
+      min-height: 44px; font: inherit; font-size: .87rem; font-weight: 600; cursor: pointer;
+      border-radius: 6px; padding: .55rem .9rem; border: 1px solid var(--rule);
       background: var(--paper); color: var(--ink);
     }
     button.act.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
@@ -143,7 +143,7 @@
     .progress { font-size: .84rem; font-weight: 700; color: var(--accent); margin: 0 0 .5rem; }
     .tiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: .7rem; margin: .3rem 0 0; }
     .tier { border: 1px solid var(--rule); border-radius: 7px; padding: .7rem; background: var(--paper); }
-    .tier h4 { margin: 0 0 .15rem; font-size: .92rem; }
+    .tier h3, .tier h4 { margin: 0 0 .15rem; font-size: .92rem; }
     .tier-cost { font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 700; margin: 0 0 .4rem; }
     .tier-active { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
     .tier-connected { border-color: var(--go); box-shadow: inset 3px 0 0 var(--go); }
@@ -153,9 +153,15 @@
     .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
     .note { font-size: .84rem; color: var(--muted); }
     footer { margin: 2rem 0 0; padding-top: .9rem; border-top: 1px solid var(--rule); font-size: .8rem; color: var(--muted); }
-    .skip-link { position: absolute; left: -9999px; top: 8px; z-index: 999; background: #1e293b; color: #ffffff; padding: 10px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; }
-    .skip-link:focus { left: 12px; outline: 3px solid #facc15; outline-offset: 2px; }
-    @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+    .skip-link { position: absolute; inset-inline-start: 8px; top: 8px; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; pointer-events: none; z-index: 999; min-height: 44px; display: inline-flex; align-items: center; background: #1e293b; color: #ffffff; padding: 10px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; }
+    .skip-link:focus { inset-inline-start: 12px; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; pointer-events: auto; outline: 3px solid #facc15; outline-offset: 2px; }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+    @media (forced-colors: active) {
+      body, .card, .banner, .sugg, .out, .tier, .skip-link:focus { background: Canvas !important; color: CanvasText !important; border: 1px solid CanvasText !important; }
+      button.act, .stages button, input, select, textarea { background: ButtonFace !important; color: ButtonText !important; border: 1px solid ButtonText !important; }
+      button.act.primary, .stages button[aria-current="step"] { background: Highlight !important; color: HighlightText !important; border-color: Highlight !important; }
+      :focus-visible, .skip-link:focus { outline: 3px solid Highlight !important; outline-offset: 2px !important; }
+    }
   </style>
 </head>
 <body>

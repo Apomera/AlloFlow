@@ -34,7 +34,11 @@ window.SelHub = window.SelHub || {
     if (document.getElementById('allo-decisions-rm-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-decisions-rm-css';
-    st.textContent = '@media (prefers-reduced-motion: reduce) { [data-sel-tool-shell="decisions"] *, [data-sel-tool-shell="decisions"] *::before, [data-sel-tool-shell="decisions"] *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    st.textContent = [
+      '@media (prefers-reduced-motion: reduce) { [data-sel-tool-shell="decisions"] *, [data-sel-tool-shell="decisions"] *::before, [data-sel-tool-shell="decisions"] *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }',
+      '[data-sel-tool-shell="decisions"] button:focus-visible, [data-sel-tool-shell="decisions"] input:focus-visible, [data-sel-tool-shell="decisions"] textarea:focus-visible, [data-sel-tool-shell="decisions"] select:focus-visible, [data-sel-tool-shell="decisions"] a:focus-visible, [data-sel-tool-shell="decisions"] [tabindex]:focus-visible { outline: 3px solid #f59e0b !important; outline-offset: 2px !important; }',
+      '@media (forced-colors: active) { [data-sel-tool-shell="decisions"] button:focus-visible, [data-sel-tool-shell="decisions"] input:focus-visible, [data-sel-tool-shell="decisions"] textarea:focus-visible, [data-sel-tool-shell="decisions"] select:focus-visible, [data-sel-tool-shell="decisions"] a:focus-visible, [data-sel-tool-shell="decisions"] [tabindex]:focus-visible { outline: 2px solid Highlight !important; outline-offset: 2px !important; } }'
+    ].join('\n');
     document.head.appendChild(st);
   })();
 
@@ -1357,7 +1361,7 @@ window.SelHub = window.SelHub || {
       var _decT = (ctx && ctx.theme) || {};
       var _decHC = !!_decT.isContrast, _decL = !_decHC && !_decT.isDark;
       var _dec_BGL = {'#1e293b':'#ffffff','#0f172a':'#f8fafc','#334155':'#e2e8f0'}, _dec_BGH = {'#1e293b':'#000000','#0f172a':'#000000','#15803d':'#000000','#334155':'#000000','#ffffff':'#000000','#fffbeb':'#000000','#f1f5f9':'#000000'};
-      var _dec_FGL = {'#94a3b8':'#64748b','#cbd5e1':'#334155','#f1f5f9':'#0f172a','#e2e8f0':'#1e293b','#818cf8':'#4338ca','#f87171':'#b91c1c','#fbbf24':'#854d0e'}, _dec_FGH = {'#94a3b8':'#ffff00','#0f172a':'#ffff00','#cbd5e1':'#ffff00','#f1f5f9':'#ffff00','#e2e8f0':'#ffff00','#fff':'#ffff00','#818cf8':'#ffff00','#60a5fa':'#ffff00','#f87171':'#ffff00','#fbbf24':'#ffff00','#fb923c':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00','#8b5cf6':'#ffff00','#ef4444':'#ffff00','#3b82f6':'#ffff00','#78350f':'#ffff00','#475569':'#ffff00'};
+      var _dec_FGL = {'#94a3b8':'#475569','#64748b':'#475569','#cbd5e1':'#334155','#f1f5f9':'#0f172a','#e2e8f0':'#1e293b','#818cf8':'#4338ca','#f87171':'#b91c1c','#fbbf24':'#854d0e'}, _dec_FGH = {'#94a3b8':'#ffff00','#0f172a':'#ffff00','#cbd5e1':'#ffff00','#f1f5f9':'#ffff00','#e2e8f0':'#ffff00','#fff':'#ffff00','#818cf8':'#ffff00','#60a5fa':'#ffff00','#f87171':'#ffff00','#fbbf24':'#ffff00','#fb923c':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00','#8b5cf6':'#ffff00','#ef4444':'#ffff00','#3b82f6':'#ffff00','#78350f':'#ffff00','#475569':'#ffff00'};
       var _dec_FGD = {'#94a3b8':'#cbd5e1'}, _dec_BDL = {'#334155':'#e2e8f0','#0f172a':'#cbd5e1'}, _dec_BDH = {'#334155':'#ffff00','#f59e0b':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00','#fcd34d':'#ffff00','#cbd5e1':'#ffff00'};
       var _decBg = function(h){ return _decHC ? (_dec_BGH[h]||h) : (_decL ? (_dec_BGL[h]||h) : h); };
       var _decFg = function(h){ return _decHC ? (_dec_FGH[h]||h) : (_decL ? (_dec_FGL[h]||h) : (_dec_FGD[h]||h)); };
@@ -1489,7 +1493,12 @@ window.SelHub = window.SelHub || {
           );
         }
 
+        function isImeComposing(e) {
+          return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+        }
+
         function handleDecisionBadgeDialogKeyDown(event) {
+          if (isImeComposing(event)) return;
           if (event.key === 'Escape') {
             event.preventDefault();
             event.stopPropagation();
@@ -1590,20 +1599,43 @@ window.SelHub = window.SelHub || {
         { id: 'print',    label: '\uD83D\uDDA8 Print' }
       ].filter(function (tb) { return _dcAiOn || tb.id !== 'advisor'; });
 
+      function isDecImeComposing(e) {
+        return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+      }
       var tabBar = h('div', {
-        style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
+        style: { display: 'flex', gap: 4, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch', alignItems: 'center' }
       },
-        h('div', { role: 'tablist', 'aria-label': 'Decision Making tabs', style: { display: 'flex', gap: 2 } },
-          tabs.map(function(t) {
+        h('div', { role: 'tablist', 'aria-label': 'Decision Making tabs', style: { display: 'flex', gap: 4 } },
+          tabs.map(function(t, tabIdx) {
           var isActive = activeTab === t.id;
-          return h('button', { 'aria-label': t.label,
+          return h('button', { type: 'button', 'aria-label': t.label,
             key: t.id,
+            id: 'dec-tab-' + t.id,
             onClick: function() { upd('activeTab', t.id); if (soundEnabled) sfxClick(); },
+            onKeyDown: function(e) {
+              if (isDecImeComposing(e) || e.ctrlKey || e.metaKey || e.altKey) return;
+              var next = null;
+              if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (tabIdx + 1) % tabs.length;
+              else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (tabIdx - 1 + tabs.length) % tabs.length;
+              else if (e.key === 'Home') next = 0;
+              else if (e.key === 'End') next = tabs.length - 1;
+              if (next === null) return;
+              e.preventDefault();
+              var targetId = tabs[next].id;
+              upd('activeTab', targetId);
+              if (soundEnabled) sfxClick();
+              setTimeout(function() {
+                var el = typeof document !== 'undefined' && document.getElementById('dec-tab-' + targetId);
+                if (el && el.focus) el.focus();
+              }, 0);
+            },
             onFocus: function(ev) { if (ev.currentTarget && ev.currentTarget.scrollIntoView) ev.currentTarget.scrollIntoView({ block: 'nearest', inline: 'nearest' }); },
             'aria-selected': isActive,
+            'aria-controls': 'dec-panel-' + t.id,
+            tabIndex: isActive ? 0 : -1,
             role: 'tab',
             style: {
-              padding: '6px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: isActive ? 700 : 500, whiteSpace: 'nowrap',
+              padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: isActive ? 700 : 500, whiteSpace: 'nowrap',
               background: isActive ? ACCENT_DIM : 'transparent', color: isActive ? _decFg(ACCENT) : _decFg('#94a3b8'),
               transition: 'all 0.15s'
             }
@@ -1611,15 +1643,15 @@ window.SelHub = window.SelHub || {
           })
         ),
         // Sound toggle
-        h('button', { 'aria-label': 'Sound effects', 'aria-pressed': !!soundEnabled,
+        h('button', { type: 'button', 'aria-label': 'Sound effects', 'aria-pressed': !!soundEnabled,
           onClick: function() { upd('soundEnabled', !soundEnabled); },
-          style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _decFg('#94a3b8') },
+          style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '8px 10px', minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: _decFg('#94a3b8') },
           title: soundEnabled ? 'Mute sounds' : 'Enable sounds'
         }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
         // Badge counter
-        h('button', { 'aria-label': Object.keys(earnedBadges).length + '/' + shownBadges.length + ' badges earned', 'aria-expanded': !!showBadgesPanel,
+        h('button', { type: 'button', 'aria-label': Object.keys(earnedBadges).length + '/' + shownBadges.length + ' badges earned', 'aria-expanded': !!showBadgesPanel,
           onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
-          style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _decFg('#94a3b8'), position: 'relative' }
+          style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '8px 10px', minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: _decFg('#94a3b8'), position: 'relative' }
         },
           '\uD83C\uDFC5',
           Object.keys(earnedBadges).length > 0 && h('span', {             style: { position: 'absolute', top: 0, right: 0, background: ACCENT, color: _decFg(ACCENT_TEXT), borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }
@@ -1642,13 +1674,16 @@ window.SelHub = window.SelHub || {
         };
         var _selHdrInk = function(c) { if (!/^#[0-9a-fA-F]{6}$/.test(c || '')) return c; var p = [1, 3, 5].map(function(i) { return parseInt(c.slice(i, i + 2), 16); }); var L = function(a) { return a.reduce(function(s, v, i) { v /= 255; v = v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); return s + [0.2126, 0.7152, 0.0722][i] * v; }, 0); }; var lb = L(p.map(function(v, i) { return v * 0.25 + [15, 23, 42][i] * 0.75; })); for (var m = 0; m <= 1; m += 0.04) { var q = p.map(function(v) { return Math.round(v + (255 - v) * m); }); if ((L(q) + 0.05) / (lb + 0.05) >= 4.6) return m ? 'rgb(' + q.join(',') + ')' : c; } return '#ffffff'; }; // section title ink on the tinted dark card (1.4.3)
         var meta = TAB_META[activeTab] || TAB_META.decision;
+        var heroEdge = '1px solid ' + meta.accent + '55';
         return h('div', {
           style: {
             margin: '8px 12px 12px',
             padding: '12px 14px',
             borderRadius: 12,
             background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
-            border: '1px solid ' + meta.accent + '55',
+            borderTop: heroEdge,
+            borderRight: heroEdge,
+            borderBottom: heroEdge,
             borderLeft: '4px solid ' + meta.accent,
             display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
           }
@@ -1668,7 +1703,7 @@ window.SelHub = window.SelHub || {
         if (popBadge) {
           badgePopup = h('div', { ref: decisionBadgeDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'decision-badge-earned-title', 'aria-describedby': 'decision-badge-earned-desc', tabIndex: -1, style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, background: 'rgba(0,0,0,0.6)' }, onClick: function(e) { if (e.target === e.currentTarget) closeDecisionBadgeDialogs(); } },
             h('div', { style: { position: 'relative', background: _decBg('#1e293b'), border: '2px solid ' + ACCENT, borderRadius: 20, padding: '32px 40px', textAlign: 'center', animation: 'fadeIn 0.3s', maxWidth: 300 } },
-              h('button', { 'aria-label': 'Close badge announcement', onClick: closeDecisionBadgeDialogs, style: { position: 'absolute', top: 8, right: 8, width: 44, height: 44, borderRadius: 22, background: _decBg('#334155'), color: _decFg('#cbd5e1'), border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
+              h('button', { type: 'button', 'aria-label': 'Close badge announcement', onClick: closeDecisionBadgeDialogs, style: { position: 'absolute', top: 8, right: 8, width: 44, height: 44, borderRadius: 22, background: _decBg('#334155'), color: _decFg('#cbd5e1'), border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
               h('div', { style: { fontSize: 56, marginBottom: 10 }, 'aria-hidden': 'true' }, popBadge.icon),
               h('h3', { id: 'decision-badge-earned-title', style: { fontSize: 18, fontWeight: 700, color: _decFg('#f1f5f9'), margin: '0 0 6px' } }, 'Badge earned: ' + popBadge.name),
               h('div', { id: 'decision-badge-earned-desc', style: { fontSize: 12, color: _decFg('#94a3b8') } }, popBadge.desc)
@@ -1681,7 +1716,7 @@ window.SelHub = window.SelHub || {
       if (showBadgesPanel) {
         badgePopup = h('div', { ref: decisionBadgeDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'decision-badges-panel-title', tabIndex: -1, style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9998, background: 'rgba(0,0,0,0.5)' }, onClick: function(e) { if (e.target === e.currentTarget) closeDecisionBadgeDialogs(); } },
           h('div', { style: { position: 'relative', background: _decBg('#1e293b'), border: '1px solid #334155', borderRadius: 16, padding: 24, width: '90%', maxWidth: 400, maxHeight: '70vh', overflow: 'auto' } },
-            h('button', { 'aria-label': 'Close badges panel', onClick: closeDecisionBadgeDialogs, style: { position: 'absolute', top: 8, right: 8, width: 44, height: 44, borderRadius: 22, background: _decBg('#334155'), color: _decFg('#cbd5e1'), border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
+            h('button', { type: 'button', 'aria-label': 'Close badges panel', onClick: closeDecisionBadgeDialogs, style: { position: 'absolute', top: 8, right: 8, width: 44, height: 44, borderRadius: 22, background: _decBg('#334155'), color: _decFg('#cbd5e1'), border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
             h('h3', { id: 'decision-badges-panel-title', style: { textAlign: 'center', color: _decFg('#f1f5f9'), marginBottom: 16, fontSize: 16 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + shownBadges.length + ')'),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
               shownBadges.map(function(b) {
@@ -2782,7 +2817,7 @@ window.SelHub = window.SelHub || {
             'A one-page structured-decision worksheet you can carry. Apply it to anything from "what classes do I sign up for?" to "do I confront this friend?" The structure slows down the choice enough that the wise answer can show up.'
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
-            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #92400e 0%, #b45309 100%)', color: _decFg('#fff'), fontWeight: 800, fontSize: 13 } }, '\uD83D\uDDA8 Print / Save as PDF')
+            h('button', { type: 'button', onClick: function() { try { window.print(); } catch (e) {} }, style: { padding: '10px 18px', minHeight: 44, borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #92400e 0%, #b45309 100%)', color: _decFg('#fff'), fontWeight: 800, fontSize: 13 } }, '\uD83D\uDDA8 Print / Save as PDF')
           ),
           h('style', null,
             '@media print { body * { visibility: hidden !important; } ' +
@@ -2881,7 +2916,7 @@ window.SelHub = window.SelHub || {
         tabBar,
         heroBand,
         badgePopup,
-        h('div', { style: { flex: 1, overflow: 'auto' } }, content)
+        h('div', { id: 'dec-panel-' + activeTab, role: 'tabpanel', 'aria-labelledby': 'dec-tab-' + activeTab, style: { flex: 1, overflow: 'auto' } }, content)
       );
     }
   });

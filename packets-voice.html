@@ -28,6 +28,19 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 3 7.5l9 4.5 9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
       <span id="product-name">AlloFlow Packets</span>
     </a>
+    <details class="top-menu">
+      <summary>Switch maker</summary>
+      <nav aria-label="Other Packets tools">
+        <a href="packets-make.html">Word Sounds</a>
+        <a href="packets-vocab.html">Vocabulary</a>
+        <a href="packets-math-practice.html">Math Fact Practice</a>
+        <a href="packets-check.html">Math Check</a>
+        <a href="packets-read-along.html">Read-Along</a>
+        <a href="packets-symbol-runner.html">Symbol Runner</a>
+        <a href="packets-present-export.html">Present &amp; print</a>
+        <a href="packets-results.html">Add up results</a>
+      </nav>
+    </details>
     <a class="top-link" href="packets-make.html">Make Word Sounds practice</a>
   </div>
 <details class="proof">
@@ -72,6 +85,7 @@
         <textarea id="f-words" rows="4" spellcheck="false" autocapitalize="none" autocomplete="off" aria-describedby="words-hint words-said"></textarea>
         <span class="hint" id="words-said" role="status"></span>
       </div>
+      <p id="rows-said" class="result-sub voice-rows-said" role="status"></p>
       <ul id="word-rows" class="voice-rows" aria-label="Your words and their recordings"></ul>
     </section>
 
@@ -80,13 +94,44 @@
       <h2 id="voice-title">The voice</h2>
       <div class="field">
         <label for="f-voice">Which voice</label>
-        <select id="f-voice" aria-describedby="voice-hint">
-          <option value="af_heart">Heart, a woman's voice (US English)</option>
-          <option value="af_bella">Bella, a woman's voice (US English)</option>
-          <option value="am_adam">Adam, a man's voice (US English)</option>
-          <option value="am_michael">Michael, a man's voice (US English)</option>
-        </select>
+        <div class="ra-voice-row">
+          <select id="f-voice" aria-describedby="voice-hint">
+            <optgroup label="Recommended">
+              <option value="af_heart">Heart, a warm woman's voice (US English)</option>
+              <option value="af_bella">Bella, a woman's voice (US English)</option>
+              <option value="am_adam">Adam, a man's voice (US English)</option>
+              <option value="bf_emma">Emma, a woman's voice (British English)</option>
+            </optgroup>
+            <optgroup label="More US voices">
+              <option value="af_nova">Nova, a clear woman's voice (US English)</option>
+              <option value="af_sky">Sky, a bright woman's voice (US English)</option>
+              <option value="af_sarah">Sarah, a gentle woman's voice (US English)</option>
+              <option value="af_nicole">Nicole, a soft woman's voice (US English)</option>
+              <option value="af_alloy">Alloy, a balanced woman's voice (US English)</option>
+              <option value="af_aoede">Aoede, a melodic woman's voice (US English)</option>
+              <option value="af_jessica">Jessica, a friendly woman's voice (US English)</option>
+              <option value="af_kore">Kore, a calm woman's voice (US English)</option>
+              <option value="af_river">River, a smooth woman's voice (US English)</option>
+              <option value="am_michael">Michael, a deep man's voice (US English)</option>
+              <option value="am_echo">Echo, a resonant man's voice (US English)</option>
+              <option value="am_eric">Eric, a steady man's voice (US English)</option>
+              <option value="am_fenrir">Fenrir, a bold man's voice (US English)</option>
+              <option value="am_liam">Liam, a calm man's voice (US English)</option>
+              <option value="am_onyx">Onyx, a rich man's voice (US English)</option>
+              <option value="am_puck">Puck, a lively man's voice (US English)</option>
+            </optgroup>
+            <optgroup label="More British voices">
+              <option value="bf_isabella">Isabella, a woman's voice (British English)</option>
+              <option value="bf_alice">Alice, a woman's voice (British English)</option>
+              <option value="bf_lily">Lily, a woman's voice (British English)</option>
+              <option value="bm_george">George, a man's voice (British English)</option>
+              <option value="bm_lewis">Lewis, a man's voice (British English)</option>
+            </optgroup>
+          </select>
+          <button type="button" class="btn btn-small" id="hear-sample" disabled>Hear sample</button>
+        </div>
         <span class="hint" id="voice-hint">The word recordings that come with Packets were made with a Kokoro voice too.</span>
+        <span class="hint" id="sample-said" role="status"></span>
       </div>
       <p class="row voice-get">
         <button type="button" class="btn" id="get-voice" aria-describedby="get-voice-hint">Get the voice (about 88 MB)</button>

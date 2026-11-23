@@ -38580,7 +38580,7 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
                 React.createElement("span", { className: "wc-studio-pill" }, "\u2600\uFE0F " + t('stem.watercycle.telemetry_solar', 'Solar: ') + currentSolar.toFixed(1) + "\u00D7"),
                 React.createElement("span", { className: "wc-studio-pill" }, "\uD83D\uDCA8 " + t('stem.watercycle.telemetry_wind', 'Wind: ') + currentWind.toFixed(1) + "\u00D7"),
                 React.createElement("span", { className: "wc-studio-pill" }, "\uD83C\uDF27\uFE0F " + t('stem.watercycle.telemetry_rain', 'Rain: ') + landRainIntensity + "%"),
-                React.createElement("span", { className: "wc-studio-pill" }, "\uD83D\uDCA7 " + t('stem.watercycle.telemetry_focus', 'Focus: ') + ((STAGES.find(function(s) { return s.id === resolvedStageId; }) || STAGES[0]).name))
+                React.createElement("span", { className: "wc-studio-pill" }, "\uD83D\uDCA7 " + t('stem.watercycle.telemetry_focus', 'Focus: ') + ((STAGES.find(function(s) { return s.id === resolvedStageId; }) || STAGES[0]).label || (STAGES.find(function(s) { return s.id === resolvedStageId; }) || STAGES[0]).name || 'Evaporation'))
               ),
 
               // Live 6-stage Hydrologic Cycle Overview Diagram (inline SVG, >=10.5px labels, theme-safe)
@@ -38675,13 +38675,13 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
                   className: "wc-compare-trigger",
                   id: "wcSetScenarioBaseline",
                   "data-tooltip": wcScenarioBaseline ? t('stem.watercycle.update_scenario_baseline', "Update scenario baseline") : t('stem.watercycle.save_current_scenario_as_baseline', "Save current scenario as baseline"),
-                  "aria-label": wcScenarioBaseline ? t('stem.watercycle.update_scenario_comparison_baseline', "Update scenario comparison baseline") : t('stem.watercycle.save_current_scenario_as_comparison', "Save current scenario as comparison baseline"),
+                  title: wcScenarioBaseline ? t('stem.watercycle.update_scenario_comparison_baseline', "Update scenario comparison baseline") : t('stem.watercycle.save_current_scenario_as_comparison', "Save current scenario as comparison baseline"),
                   onClick: captureWcScenarioBaseline
                 }, wcScenarioBaseline ? t('stem.watercycle.baseline_button', "\u21BB Baseline") : t('stem.watercycle.set_baseline_button', "\u2295 Set baseline")),                journeyView === '3d' && React.createElement("button", {
                   type: "button",
                   className: "wc-camera-reset",
                   "data-tooltip": "Resume guided camera",
-                  "aria-label": __alloT('stem.watercycle.a11y_resume_guided_camera', 'Resume guided camera'),
+                  title: __alloT('stem.watercycle.a11y_resume_guided_camera', 'Resume guided camera'),
                   onClick: function() {
                     var journeyCanvas = document.getElementById('wcJourney3d');
                     if (journeyCanvas && journeyCanvas._wc3dResetCamera) journeyCanvas._wc3dResetCamera();

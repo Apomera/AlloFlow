@@ -13,6 +13,7 @@ const {
   applyApStatsChoiceOverride,
   buildTransferCheckChoices,
 } = require('./ap_statistics_choice_overrides/index.cjs');
+const AP_STATS_RICH_SECTIONS = require('./learning_library_study_tools_polish/ap_stats_sections_15.cjs');
 
 const root = path.resolve(__dirname, '..');
 const packPath = path.join(root, 'test_prep', 'ap_statistics_foundation_pilot.json');
@@ -828,21 +829,26 @@ function buildLibrary(objectiveCatalog) {
         transferItemCount: sectionPracticeItems.filter((candidate) => candidate.practiceSlice === 'transfer-slice').length,
         studyMove: 'Complete one foundation item, explain the statistical target in your own words, then use a depth item and a transfer item to apply the same reasoning in a new context.',
       };
-      const retrievalPrompts = [
-        'Which parameter, variable, or distribution is the question about?',
-        'Which calculation, representation, or condition supports the claim?',
-        'What limitation keeps the conclusion from being broader than the design and evidence?',
-      ];
+      const sectionId = chapterId + '-section-' + String(sectionIndex + 1).padStart(2, '0');
+      const richSection = AP_STATS_RICH_SECTIONS[sectionId];
+      if (!richSection) throw new Error('Missing rich AP Statistics section spec for ' + sectionId);
+      const examples = richSection.examples;
+      const workedDataExample = richSection.workedDataExample;
+      const retrievalPrompts = richSection.retrievalPrompts;
+      const transferMove = richSection.transferMove;
       const contentBlocks = [
         paragraph(seed[1] + ' ' + unit.summary),
-        paragraph('Reasoning move: identify the target, match the statistical method, verify the relevant conditions, and interpret the result in context.'),
+        paragraph('Worked examples: connect each statistical method directly to its data context and conditions.'),
+        list(examples),
+        paragraph('Common pitfalls and boundaries:'),
         list(seed[3]),
-        paragraph('Worked check: ' + seed[1] + ' Start by naming the target quantity and the evidence available before calculating.'),
+        paragraph('Worked comparison (' + workedDataExample.headers.join(' vs. ') + '):'),
+        list(workedDataExample.rows.map((row) => row[0] + ': ' + row[1])),
         paragraph('Retrieval practice: answer each prompt before opening the related internal item bank.'),
         list(retrievalPrompts, true),
       ];
       return {
-        id: chapterId + '-section-' + String(sectionIndex + 1).padStart(2, '0'),
+        id: sectionId,
         heading: seed[0],
         content: seed[1],
         keyTerms: seed[2],
@@ -850,15 +856,12 @@ function buildLibrary(objectiveCatalog) {
         practiceRoute,
         references: [CED_URL, COURSE_URL, OPENSTAX_URL],
         contentBlocks,
-        examples: ['Name the statistical target before choosing a formula.', 'Link the numerical result to the population, sample, or study design in the prompt.'],
+        examples,
         nonExamples: seed[3],
         commonMisconceptions: seed[3],
-        workedDataExample: {
-          headers: ['Study move', 'Question to ask'],
-          rows: [['Target', 'What variable, parameter, or relationship is being studied?'], ['Method', 'Which procedure or display matches the design?'], ['Scope', 'What can the evidence support, and what remains unknown?']],
-        },
+        workedDataExample,
         retrievalPrompts,
-        transferMove: 'Transfer the same target-method-condition-conclusion sequence to a new statistical context.',
+        transferMove,
         reviewStatus: 'source-reviewed-editorial-pass',
         reviewNote: 'Original AP Statistics foundation lesson; independent subject-expert, accessibility, rights, production, and psychometric review remain pending.',
         expertReviewStatus: 'pending',

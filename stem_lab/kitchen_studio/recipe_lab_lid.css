@@ -1,5 +1,5 @@
 .pot-lid-tools{margin:12px 0;border:1px solid #adc3ad;border-radius:14px;background:#fbfcf2;color:#284b3a;overflow:hidden}
-.pot-lid-tools>summary{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:14px 16px;cursor:pointer}
+.pot-lid-tools>summary{display:flex;justify-content:space-between;gap:16px;align-items:center;min-height:44px;box-sizing:border-box;padding:14px 16px;cursor:pointer}
 .pot-lid-tools>summary strong,.pot-lid-tools>summary small{display:block}
 .pot-lid-tools>summary small{font-size:.8rem;margin-top:3px;color:#526b5b}
 .pot-lid-tools>summary>span:last-child{font-size:.85rem;text-align:right}
@@ -25,4 +25,5 @@
 .pot-lid-tools>summary>span:first-child{flex:1 1 10rem;min-width:0}
 .pot-lid-tools>summary>span:last-child{max-width:100%;text-align:left}
 .pot-lid-actions button{max-width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere;line-height:1.5}
+@media(prefers-reduced-motion:reduce){.pot-lid-tools,.pot-lid-tools *{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 @media(forced-colors:active){.pot-lid-actions button:disabled{opacity:1;color:GrayText;border-color:GrayText}}

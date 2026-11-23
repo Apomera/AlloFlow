@@ -17,7 +17,8 @@ describe('AlloHaven validation notification accessibility', () => {
   });
 
   it('routes every memory-aid validation failure through the accessible helper', () => {
-    expect(source.match(/notifyAlloHaven\([^\n]+, 'warning'\);/g)).toHaveLength(5);
+    expect(source.match(/notifyAlloHaven\('[^']+', 'warning'\);/g)).toHaveLength(5);
+    expect(source.match(/notifyAlloHaven\(_HAVEN_CRISIS_NOTICE, 'warning'\);/g)).toHaveLength(2);
     expect(source).not.toMatch(/else alert\s*\(/);
     expect(source).toContain("notifyAlloHaven('Add at least one card with both a front and back.', 'warning')");
     expect(source).toContain("notifyAlloHaven('Write a short association — what does this remind you of?', 'warning')");

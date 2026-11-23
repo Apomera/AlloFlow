@@ -1,9 +1,45 @@
 var _lazyIcon = function (name) {
     return function (props) {
-      var I = window.AlloIcons && window.AlloIcons[name];
+      var I = typeof window !== 'undefined' && window.AlloIcons && window.AlloIcons[name];
       return I ? <I {...props} /> : null;
     };
   };
+  function _arIsBlockedKey(key) {
+    return key === '__proto__' || key === 'constructor' || key === 'prototype';
+  }
+  function _arSafeSourceUrl(raw) {
+    var str = String(raw || '').trim();
+    if (!str || /[\u0000-\u001f\u007f]/.test(str)) return '';
+    try {
+      var parsed = new URL(str);
+      if ((parsed.protocol !== 'https:' && parsed.protocol !== 'http:') || parsed.username || parsed.password) return '';
+      return parsed.href;
+    } catch (_) {
+      return '';
+    }
+  }
+  function _arHardAiBlocked() {
+    if (typeof window === 'undefined') return true;
+    try {
+      if (window.__alloStudentAiDisabled === true) return true;
+      if (window.__alloAiSecretsLocked === true) return true;
+      if (window.__alloQrStudentMode === true) return true;
+      if (window.__alloOfflineOnly === true) return true;
+      var mp = window.ALLOFLOW_MANAGED_AI_POLICY;
+      if (mp && typeof mp === 'object') {
+        if (mp.disabled === true || mp.allowAi === false) return true;
+        if (Array.isArray(mp.allowedBackends) && mp.allowedBackends.length === 0) return true;
+      }
+      var sp = window.AlloModules && window.AlloModules.StudentPolicy;
+      if (sp && typeof sp === 'object') {
+        if (sp.disabled === true || sp.allowAi === false || sp.aiEnabled === false) return true;
+        if (typeof sp.isAiBlocked === 'function' && sp.isAiBlocked()) return true;
+      }
+    } catch (_) {
+      return true;
+    }
+    return false;
+  }
   var ShieldCheck = _lazyIcon('ShieldCheck');
   var BookOpen = _lazyIcon('BookOpen');
   var Quote = _lazyIcon('Quote');
@@ -51,7 +87,10 @@ var _lazyIcon = function (name) {
     udl: 'UDL principles', accuracy: 'Content accuracy', differentiation: 'Differentiation coverage', cognitiveLoad: 'Cognitive load / pacing',
     culturalResponsiveness: 'Cultural responsiveness'
   };
-  function dimLabel(key) { return atr('dim_' + key, AUDIT_DIMENSION_FALLBACKS[key] || key); }
+  function dimLabel(key) {
+    var fallback = Object.prototype.hasOwnProperty.call(AUDIT_DIMENSION_FALLBACKS, key) ? AUDIT_DIMENSION_FALLBACKS[key] : String(key || '');
+    return atr('dim_' + key, fallback);
+  }
   // Say where the DOK numbers came from and how many quiz items they cover.
   function dokHeading(e) {
     var measured = Number(e && e.dokTotal) || 0;
@@ -91,7 +130,7 @@ var _lazyIcon = function (name) {
     if (/european.*portuguese|portuguese.*portugal/.test(name)) return 'pt-PT';
     if (/traditional.*chinese|chinese.*traditional/.test(name)) return 'zh-Hant';
     if (/simplified.*chinese|chinese.*simplified/.test(name)) return 'zh-Hans';
-    if (REPORT_LANGUAGE_NAME_TAGS[name]) return REPORT_LANGUAGE_NAME_TAGS[name];
+    if (Object.prototype.hasOwnProperty.call(REPORT_LANGUAGE_NAME_TAGS, name)) return REPORT_LANGUAGE_NAME_TAGS[name];
     var names = Object.keys(REPORT_LANGUAGE_NAME_TAGS).sort(function (a, b) { return b.length - a.length; });
     for (var i = 0; i < names.length; i++) {
       var languageName = names[i];
@@ -159,10 +198,10 @@ var _lazyIcon = function (name) {
   }
   function alignmentMapGraph(standards, auditScope, savedGraph) {
     if (savedGraph && savedGraph.version === 'acg/v1' && Array.isArray(savedGraph.nodes) && Array.isArray(savedGraph.edges)) return savedGraph;
-    var E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+    var E = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ConceptGraphEngine;
     if (!E || typeof E.fromAlignmentAudit !== 'function') return null;
     try {
-      var P = window.AlloModules && window.AlloModules.StandardsProvider;
+      var P = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.StandardsProvider;
       var provider = P && typeof P.getRegisteredProvider === 'function' ? P.getRegisteredProvider() : null;
       return E.fromAlignmentAudit({ standards: standards }, { standardsProvider: provider, auditScope: auditScope });
     } catch (e) {
@@ -174,7 +213,7 @@ var _lazyIcon = function (name) {
     // are source-provided buildsTowards edges, never model inference. Null
     // (provider absent) renders nothing rather than an empty claim.
     try {
-      var P = window.AlloModules && window.AlloModules.StandardsProvider;
+      var P = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.StandardsProvider;
       var provider = P && typeof P.getRegisteredProvider === 'function' ? P.getRegisteredProvider() : null;
       if (!provider || typeof provider.getPrerequisiteGaps !== 'function') return null;
       var codes = reports.map(function (report) { return report && report.standard; }).filter(Boolean);
@@ -187,7 +226,7 @@ var _lazyIcon = function (name) {
     // source hasChild edges. Standards without components are omitted, not
     // shown as "0% covered".
     try {
-      var P = window.AlloModules && window.AlloModules.StandardsProvider;
+      var P = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.StandardsProvider;
       var provider = P && typeof P.getRegisteredProvider === 'function' ? P.getRegisteredProvider() : null;
       if (!provider || typeof provider.getComponentCoverage !== 'function') return null;
       var codes = reports.map(function (report) { return report && report.standard; }).filter(Boolean);
@@ -199,19 +238,19 @@ var _lazyIcon = function (name) {
   function alignmentMapEntries(standards, graph, auditScope) {
     var reports = Array.isArray(standards && standards.perStandard) ? standards.perStandard : [];
     var standardNodes = graph && Array.isArray(graph.nodes) ? graph.nodes.filter(function (node) { return node && node.type === 'standard'; }) : [];
-    var nodeById = {};
-    var artifactById = {};
+    var nodeById = Object.create(null);
+    var artifactById = Object.create(null);
     if (graph && Array.isArray(graph.nodes)) graph.nodes.forEach(function (node) {
       if (!node) return;
-      if (node.id) nodeById[node.id] = node;
-      if (node.type === 'auditArtifact' && node.artifactId) artifactById[node.artifactId] = node;
+      if (node.id && !_arIsBlockedKey(String(node.id))) nodeById[String(node.id)] = node;
+      if (node.type === 'auditArtifact' && node.artifactId && !_arIsBlockedKey(String(node.artifactId))) artifactById[String(node.artifactId)] = node;
     });
     if (!Object.keys(artifactById).length && auditScope && typeof auditScope === 'object') {
       var scopeItems = Array.isArray(auditScope.includedArtifacts) ? auditScope.includedArtifacts.slice(0, 100) : Array.isArray(auditScope.includedArtifactIds) ? auditScope.includedArtifactIds.slice(0, 100).map(function (id) { return { id: id }; }) : [];
       scopeItems.forEach(function (item) {
         item = item && typeof item === 'object' ? item : { id: item };
         var artifactId = String(item.id || '').trim();
-        if (artifactId) artifactById[artifactId] = { artifactId: artifactId, label: item.title || 'Audited artifact ' + artifactId, artifactType: item.type || 'unknown' };
+        if (artifactId && !_arIsBlockedKey(artifactId)) artifactById[artifactId] = { artifactId: artifactId, label: item.title || 'Audited artifact ' + artifactId, artifactType: item.type || 'unknown' };
       });
     }
     function evidenceArtifacts(ids) {
@@ -416,7 +455,7 @@ var _lazyIcon = function (name) {
         var headingId = 'audit-alignment-standard-' + index;
         var ctxRecord = (entry.context && entry.context.record && typeof entry.context.record === 'object') ? entry.context.record : {};
         return <li key={entry.id} className="rounded-lg border border-indigo-200 bg-white p-3"><article aria-labelledby={headingId}><div className="flex items-start justify-between gap-3"><h4 id={headingId} className="font-bold text-slate-900">{entry.label}</h4><span role="group" className={'flex-shrink-0 text-xs uppercase font-bold px-2 py-1 rounded ' + alignmentMapBadgeClass(entry.status)} aria-label={'Overall status: ' + alignmentMapStatus(entry.status)}>{alignmentMapStatus(entry.status)}</span></div>
-          {entry.context && <div role="group" className="mt-2 rounded border border-indigo-100 bg-indigo-50 p-2 text-xs" aria-label={'Standards context for ' + entry.label}><div className="font-bold text-indigo-900">Standards context: {ctxRecord.code || ctxRecord.label || entry.label}{ctxRecord.framework ? ' · ' + ctxRecord.framework : ''}{ctxRecord.sourceUrl ? ' · Source verified' : ''}</div>{entry.context.related.length > 0 ? <ul className="mt-1 list-disc ml-5 text-indigo-950">{entry.context.related.slice(0, 12).map(function (item) { return <li key={item.id}><details><summary className="cursor-pointer min-h-11 flex items-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700">{item.direction === 'incoming' ? 'Parent/group: ' : 'Child/related: '}{item.code ? item.code + ' · ' : ''}{item.label}{item.kind && item.kind !== 'standard' ? ' (' + item.kind + ')' : ''}</summary>{item.text ? <p className="mt-1 text-indigo-900">{item.text}</p> : null}{item.sourceUrl && /^https?:\/\//i.test(String(item.sourceUrl).trim()) ? <a className="mt-1 inline-flex min-h-11 items-center text-indigo-700 underline rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700" href={String(item.sourceUrl).trim()} target="_blank" rel="noopener noreferrer">Open source record</a> : null}</details></li>; })}</ul> : <p className="mt-1 text-indigo-900">No bounded graph neighbors returned.</p>}</div>}
+          {entry.context && <div role="group" className="mt-2 rounded border border-indigo-100 bg-indigo-50 p-2 text-xs" aria-label={'Standards context for ' + entry.label}><div className="font-bold text-indigo-900">Standards context: {ctxRecord.code || ctxRecord.label || entry.label}{ctxRecord.framework ? ' · ' + ctxRecord.framework : ''}{ctxRecord.sourceUrl ? ' · Source verified' : ''}</div>{entry.context.related.length > 0 ? <ul className="mt-1 list-disc ml-5 text-indigo-950">{entry.context.related.slice(0, 12).map(function (item) { var safeUrl = _arSafeSourceUrl(item && item.sourceUrl); return <li key={item.id}><details><summary className="cursor-pointer min-h-11 flex items-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700">{item.direction === 'incoming' ? 'Parent/group: ' : 'Child/related: '}{item.code ? item.code + ' · ' : ''}{auditText(item.label)}{item.kind && item.kind !== 'standard' ? ' (' + auditText(item.kind) + ')' : ''}</summary>{auditText(item.text) ? <p className="mt-1 text-indigo-900">{auditText(item.text)}</p> : null}{safeUrl ? <a className="mt-1 inline-flex min-h-11 items-center text-indigo-700 underline rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700" href={safeUrl} target="_blank" rel="noopener noreferrer">Open source record</a> : null}</details></li>; })}</ul> : <p className="mt-1 text-indigo-900">No bounded graph neighbors returned.</p>}</div>}
           <ul className="mt-2 space-y-2 text-xs" aria-label={'Evidence for ' + entry.label}>{entry.evidence.map(function (item, evidenceIndex) { return <li key={item.label + '-' + evidenceIndex} className="border-t border-slate-100 pt-2"><div className="flex items-center gap-2"><strong>{item.label}</strong><span className={'text-xs uppercase font-bold px-1.5 py-0.5 rounded ' + alignmentMapBadgeClass(item.status)}>{alignmentMapStatus(item.status)}</span></div><p className="mt-1 text-slate-700">{item.evidence || 'No evidence recorded.'}</p>{item.notes ? <p className="mt-1 text-slate-600 italic">Note: {item.notes}</p> : null}{AlignmentEvidenceSources(item, confirmAttribution)}</li>; })}</ul>
           {entry.findings.length > 0 && <div className="mt-3 border-t border-rose-100 pt-2"><h5 className="text-xs font-bold text-rose-800">{atr('open_findings', 'Open findings')}</h5><ul className="mt-1 list-disc ml-5 text-xs text-rose-900">{entry.findings.map(function (finding, findingIndex) { return <li key={findingIndex}>{finding && typeof finding === 'object' ? finding.text : String(finding || '')}{AlignmentFindingSources(finding, confirmAttribution)}</li>; })}</ul></div>}
           {entry.recommendations.length > 0 && <div className="mt-3 border-t border-indigo-100 pt-2 text-xs"><strong className="text-indigo-800">Recommendation: </strong>{entry.recommendations.join(' ')}</div>}
@@ -434,26 +473,32 @@ var _lazyIcon = function (name) {
       perStandard.length > 0 && <div className="space-y-3">{perStandard.map(function (report, idx) {
           var passColor = report && report.overallDetermination === 'Pass';
           var pendingColor = report && report.overallDetermination === 'Not evaluated';
-          return <details key={idx} open={!passColor} className={'rounded-lg border ' + (passColor ? 'border-emerald-200 bg-emerald-50' : pendingColor ? 'border-slate-300 bg-slate-50' : 'border-rose-200 bg-rose-50')}><summary className={'min-h-11 px-3 py-2 cursor-pointer font-semibold text-sm select-none flex items-center justify-between gap-2 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 ' + (passColor ? 'text-emerald-800 hover:bg-emerald-100' : pendingColor ? 'text-slate-800 hover:bg-slate-100' : 'text-rose-800 hover:bg-rose-100')}><span className="flex-1 min-w-0 break-words">{report && report.standard || 'Standard ' + (idx + 1)}</span><span className={'text-xs uppercase font-bold px-2 py-0.5 rounded ' + (passColor ? 'bg-emerald-200 text-emerald-900' : pendingColor ? 'bg-slate-200 text-slate-900' : 'bg-rose-200 text-rose-900')}>{report && report.overallDetermination || 'Not evaluated'}</span></summary><div className="px-3 pb-3 pt-2 bg-white rounded-b-lg space-y-2 text-xs">{report && report.standardBreakdown && (report.standardBreakdown.cognitiveDemand || report.standardBreakdown.contentFocus) && <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2 pb-2 border-b border-slate-200">{report.standardBreakdown.cognitiveDemand && <div><span className="font-bold uppercase text-slate-600">Cognitive demand: </span><span className="text-slate-800">{report.standardBreakdown.cognitiveDemand}</span></div>}{report.standardBreakdown.contentFocus && <div><span className="font-bold uppercase text-slate-600">Content focus: </span><span className="text-slate-800">{report.standardBreakdown.contentFocus}</span></div>}</div>}{['textAlignment', 'activityAlignment', 'assessmentAlignment'].map(function (key) {
+          return <details key={idx} open={!passColor} className={'rounded-lg border ' + (passColor ? 'border-emerald-200 bg-emerald-50' : pendingColor ? 'border-slate-300 bg-slate-50' : 'border-rose-200 bg-rose-50')}><summary className={'min-h-11 px-3 py-2 cursor-pointer font-semibold text-sm select-none flex items-center justify-between gap-2 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 ' + (passColor ? 'text-emerald-800 hover:bg-emerald-100' : pendingColor ? 'text-slate-800 hover:bg-slate-100' : 'text-rose-800 hover:bg-rose-100')}><span className="flex-1 min-w-0 break-words">{auditText(report && report.standard) || 'Standard ' + (idx + 1)}</span><span className={'text-xs uppercase font-bold px-2 py-0.5 rounded ' + (passColor ? 'bg-emerald-200 text-emerald-900' : pendingColor ? 'bg-slate-200 text-slate-900' : 'bg-rose-200 text-rose-900')}>{auditText(report && report.overallDetermination) || 'Not evaluated'}</span></summary><div className="px-3 pb-3 pt-2 bg-white rounded-b-lg space-y-2 text-xs">{report && report.standardBreakdown && (auditText(report.standardBreakdown.cognitiveDemand) || auditText(report.standardBreakdown.contentFocus)) && <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2 pb-2 border-b border-slate-200">{auditText(report.standardBreakdown.cognitiveDemand) && <div><span className="font-bold uppercase text-slate-600">Cognitive demand: </span><span className="text-slate-800">{auditText(report.standardBreakdown.cognitiveDemand)}</span></div>}{auditText(report.standardBreakdown.contentFocus) && <div><span className="font-bold uppercase text-slate-600">Content focus: </span><span className="text-slate-800">{auditText(report.standardBreakdown.contentFocus)}</span></div>}</div>}{['textAlignment', 'activityAlignment', 'assessmentAlignment'].map(function (key) {
                 var sec = report && report.analysis && report.analysis[key];
                 if (!sec) return null;
                 var lbl = key === 'textAlignment' ? 'Text' : key === 'activityAlignment' ? 'Activities' : 'Assessment';
-                var stat = sec.status || 'N/A';
+                var stat = auditText(sec.status) || 'N/A';
+                var evText = auditText(sec.evidence);
                 return <div key={key} className="flex items-start gap-2"><span className={'flex-shrink-0 text-xs uppercase font-bold px-2 py-0.5 rounded ' + statusBadgeClass(stat)} style={{
                     minWidth: '90px',
                     textAlign: 'center'
-                  }}>{lbl + ' · ' + stat}</span><span className="text-slate-700 italic">{sec.evidence ? '"' + sec.evidence + '"' : '—'}</span></div>;
-              })}{report && report.adminRecommendation && <div className="mt-2 pt-2 border-t border-slate-200"><span className="text-xs uppercase font-bold text-indigo-700">Recommendation: </span><span className="text-slate-800">{report.adminRecommendation}</span></div>}</div></details>;
-        })}</div>}{s.notes && <div className="mt-3 text-xs text-slate-600 italic">{s.notes}</div>}{AlignmentEvidenceMap({ standards: s, auditScope: p.auditScope, alignmentMapGraph: p.alignmentMapGraph, onConfirmAttribution: p.onConfirmAttribution, onExportAlignmentGraph: p.onExportAlignmentGraph, onOpenArtifact: p.onOpenArtifact })}</ComprehensiveSection>;
+                  }}>{lbl + ' · ' + stat}</span><span className="text-slate-700 italic">{evText ? '"' + evText + '"' : '—'}</span></div>;
+              })}{auditText(report && report.adminRecommendation) && <div className="mt-2 pt-2 border-t border-slate-200"><span className="text-xs uppercase font-bold text-indigo-700">Recommendation: </span><span className="text-slate-800">{auditText(report.adminRecommendation)}</span></div>}</div></details>;
+        })}</div>}{auditText(s.notes) && <div className="mt-3 text-xs text-slate-600 italic">{auditText(s.notes)}</div>}{AlignmentEvidenceMap({ standards: s, auditScope: p.auditScope, alignmentMapGraph: p.alignmentMapGraph, onConfirmAttribution: p.onConfirmAttribution, onExportAlignmentGraph: p.onExportAlignmentGraph, onOpenArtifact: p.onOpenArtifact })}</ComprehensiveSection>;
   }
   function VocabularySection(p) {
     var v = p.vocab;
     if (!v) return null;
     // Backward-compat: older saved audits only have totalWords; show that as auditedTextWords.
-    var sourceWords = typeof v.sourceWords === 'number' ? v.sourceWords : null;
-    var auditedTextWords = typeof v.auditedTextWords === 'number' ? v.auditedTextWords : v.totalWords;
-    var scaleNote = v.expected && v.expected.scale && v.expected.scale > 1.5 ? '(rescaled ×' + v.expected.scale + ' for bundle size)' : '';
-    return <ComprehensiveSection id="audit-vocabulary" icon="📚" title={dimLabel('vocabulary')} status={v.status}><div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"><div className="p-3 bg-slate-50 rounded text-center" title={sourceWords !== null ? 'Source words: words in the primary lesson source (matches your "lesson length" intuition).\nAudited: words across the full bundle (every artifact), used for tier classification.' : ''}>{sourceWords !== null ? <><div className="text-2xl font-bold text-slate-800">{sourceWords}</div><div className="text-xs text-slate-600">Source words</div><div className="text-xs text-slate-600 mt-1">{auditedTextWords + ' across bundle'}</div></> : <><div className="text-2xl font-bold text-slate-800">{auditedTextWords}</div><div className="text-xs text-slate-600">Total words</div></>}</div><div className="p-3 bg-blue-50 rounded text-center"><div className="text-2xl font-bold text-blue-800">{v.tier2Count}</div><div className="text-xs text-blue-700">Tier 2 (academic)</div><div className="text-xs text-slate-600 mt-1">{'expected ~' + (v.expected && v.expected.tier2) + ' ' + scaleNote}</div></div><div className="p-3 bg-purple-50 rounded text-center"><div className="text-2xl font-bold text-purple-800">{v.tier3Count}</div><div className="text-xs text-purple-700">Tier 3 (domain)</div><div className="text-xs text-slate-600 mt-1">{'expected ~' + (v.expected && v.expected.tier3) + ' ' + scaleNote}</div></div><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{v.glossaryTermsCount}</div><div className="text-xs text-slate-600">Glossary terms</div></div></div>{v.tier2Examples && v.tier2Examples.length > 0 && <div className="mb-3"><div className="text-xs font-semibold text-blue-800 mb-1">Tier 2 examples found:</div><div className="flex flex-wrap gap-1">{v.tier2Examples.map(function (w, i) {
+    var sourceWords = finiteReportNumber(v.sourceWords);
+    var auditedTextWords = finiteReportNumber(v.auditedTextWords) !== null ? finiteReportNumber(v.auditedTextWords) : (finiteReportNumber(v.totalWords) !== null ? finiteReportNumber(v.totalWords) : 0);
+    var tier2Count = finiteReportNumber(v.tier2Count) !== null ? finiteReportNumber(v.tier2Count) : 0;
+    var tier3Count = finiteReportNumber(v.tier3Count) !== null ? finiteReportNumber(v.tier3Count) : 0;
+    var glossaryTermsCount = finiteReportNumber(v.glossaryTermsCount) !== null ? finiteReportNumber(v.glossaryTermsCount) : 0;
+    var expectedTier2 = v.expected && v.expected.tier2 != null ? v.expected.tier2 : 'n/a';
+    var expectedTier3 = v.expected && v.expected.tier3 != null ? v.expected.tier3 : 'n/a';
+    var scaleNote = v.expected && finiteReportNumber(v.expected.scale) !== null && v.expected.scale > 1.5 ? '(rescaled ×' + v.expected.scale + ' for bundle size)' : '';
+    return <ComprehensiveSection id="audit-vocabulary" icon="📚" title={dimLabel('vocabulary')} status={v.status}><div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"><div className="p-3 bg-slate-50 rounded text-center" title={sourceWords !== null ? 'Source words: words in the primary lesson source (matches your "lesson length" intuition).\nAudited: words across the full bundle (every artifact), used for tier classification.' : ''}>{sourceWords !== null ? <><div className="text-2xl font-bold text-slate-800">{sourceWords}</div><div className="text-xs text-slate-600">Source words</div><div className="text-xs text-slate-600 mt-1">{auditedTextWords + ' across bundle'}</div></> : <><div className="text-2xl font-bold text-slate-800">{auditedTextWords}</div><div className="text-xs text-slate-600">Total words</div></>}</div><div className="p-3 bg-blue-50 rounded text-center"><div className="text-2xl font-bold text-blue-800">{tier2Count}</div><div className="text-xs text-blue-700">Tier 2 (academic)</div><div className="text-xs text-slate-600 mt-1">{'expected ~' + expectedTier2 + (scaleNote ? ' ' + scaleNote : '')}</div></div><div className="p-3 bg-purple-50 rounded text-center"><div className="text-2xl font-bold text-purple-800">{tier3Count}</div><div className="text-xs text-purple-700">Tier 3 (domain)</div><div className="text-xs text-slate-600 mt-1">{'expected ~' + expectedTier3 + (scaleNote ? ' ' + scaleNote : '')}</div></div><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{glossaryTermsCount}</div><div className="text-xs text-slate-600">Glossary terms</div></div></div>{v.tier2Examples && v.tier2Examples.length > 0 && <div className="mb-3"><div className="text-xs font-semibold text-blue-800 mb-1">Tier 2 examples found:</div><div className="flex flex-wrap gap-1">{v.tier2Examples.map(function (w, i) {
             return <span key={i} className="text-xs px-2 py-0.5 bg-blue-100 text-blue-900 rounded">{auditText(w)}</span>;
           })}</div></div>}{v.tier3Examples && v.tier3Examples.length > 0 && <div className="mb-3"><div className="text-xs font-semibold text-purple-800 mb-1">Tier 3 examples found:</div><div className="flex flex-wrap gap-1">{v.tier3Examples.map(function (w, i) {
             return <span key={i} className="text-xs px-2 py-0.5 bg-purple-100 text-purple-900 rounded">{auditText(w)}</span>;
@@ -472,7 +517,7 @@ var _lazyIcon = function (name) {
               return <span key={i} className="text-xs px-2 py-0.5 bg-blue-100 text-blue-900 rounded">{auditText(w)}</span>;
             })}</div></div>}{v.llmReview.recommendations && v.llmReview.recommendations.length > 0 && <div><div className="text-xs font-semibold text-indigo-800 mb-1">Suggested Tier 2 words to add for this topic + grade:</div><div className="flex flex-wrap gap-1">{v.llmReview.recommendations.map(function (w, i) {
               return <span key={i} className="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-900 rounded font-semibold">{'+ ' + auditText(w)}</span>;
-            })}</div></div>}</div>}<div className="text-xs text-slate-600 italic">{v.notes || ''}</div></ComprehensiveSection>;
+            })}</div></div>}</div>}<div className="text-xs text-slate-600 italic">{auditText(v.notes)}</div></ComprehensiveSection>;
   }
   function EngagementSection(p) {
     var e = p.eng;
@@ -514,9 +559,9 @@ var _lazyIcon = function (name) {
             return <li key={i}>{auditText(r)}</li>;
           })}</ul></div>}{
       // LLM review
-      e.llmReview && <div className="p-3 bg-indigo-50 border border-indigo-200 rounded mb-3"><div className="text-xs font-semibold text-indigo-900 mb-2 flex items-center gap-2"><span aria-hidden="true">🤖</span> {atr('ai_udl_dok', 'UDL + DOK review (AI)')}</div>{auditText(e.llmReview.narrative) && <p className="text-sm text-indigo-900 mb-2">{auditText(e.llmReview.narrative)}</p>}{e.llmReview.dokAssessment && <p className="text-sm text-indigo-900 mb-2 italic">{'"' + e.llmReview.dokAssessment + '"'}</p>}{e.llmReview.formatGaps && e.llmReview.formatGaps.length > 0 && <div><div className="text-xs font-semibold text-indigo-800 mb-1">Suggested format additions:</div><ul className="list-disc ml-5 text-sm text-indigo-900 space-y-1">{e.llmReview.formatGaps.map(function (g, i) {
+      e.llmReview && <div className="p-3 bg-indigo-50 border border-indigo-200 rounded mb-3"><div className="text-xs font-semibold text-indigo-900 mb-2 flex items-center gap-2"><span aria-hidden="true">🤖</span> {atr('ai_udl_dok', 'UDL + DOK review (AI)')}</div>{auditText(e.llmReview.narrative) && <p className="text-sm text-indigo-900 mb-2">{auditText(e.llmReview.narrative)}</p>}{auditText(e.llmReview.dokAssessment) && <p className="text-sm text-indigo-900 mb-2 italic">{'"' + auditText(e.llmReview.dokAssessment) + '"'}</p>}{e.llmReview.formatGaps && e.llmReview.formatGaps.length > 0 && <div><div className="text-xs font-semibold text-indigo-800 mb-1">Suggested format additions:</div><ul className="list-disc ml-5 text-sm text-indigo-900 space-y-1">{e.llmReview.formatGaps.map(function (g, i) {
               return <li key={i}>{auditText(g)}</li>;
-            })}</ul></div>}</div>}<div className="text-xs text-slate-600 italic">{e.notes || ''}</div></ComprehensiveSection>;
+            })}</ul></div>}</div>}<div className="text-xs text-slate-600 italic">{auditText(e.notes)}</div></ComprehensiveSection>;
   }
   function AccessibilitySection(p) {
     var a = p.access;
@@ -527,16 +572,17 @@ var _lazyIcon = function (name) {
       amber: { box: 'bg-amber-50 border border-amber-200', val: 'text-amber-800', lbl: 'text-amber-700' },
       rose: { box: 'bg-rose-50 border border-rose-200', val: 'text-rose-800', lbl: 'text-rose-700' }
     };
-    var altPctStyle = ALT_PCT_STYLES[a.altCoveragePct === null ? 'slate' : a.altCoveragePct >= 80 ? 'emerald' : a.altCoveragePct >= 50 ? 'amber' : 'rose'];
+    var altPct = boundedReportPercent(a.altCoveragePct);
+    var altPctStyle = ALT_PCT_STYLES[altPct === null ? 'slate' : altPct >= 80 ? 'emerald' : altPct >= 50 ? 'amber' : 'rose'];
     return <ComprehensiveSection id="audit-accessibility" icon="♿" title={dimLabel('accessibility')} status={a.status}>{/* Top stat row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{a.totalImages}</div><div className="text-xs text-slate-600">Images</div></div><div className={'p-3 rounded text-center ' + altPctStyle.box}><div className={'text-2xl font-bold ' + altPctStyle.val}>{a.altCoveragePct === null ? 'n/a' : a.altCoveragePct + '%'}</div><div className={'text-xs ' + altPctStyle.lbl}>Alt-text coverage</div></div><div className={'p-3 rounded text-center ' + (a.colorOnlyCount > 0 ? 'bg-rose-50 border border-rose-200' : 'bg-emerald-50 border border-emerald-200')}><div className={'text-2xl font-bold ' + (a.colorOnlyCount > 0 ? 'text-rose-800' : 'text-emerald-800')}>{a.colorOnlyCount}</div><div className={'text-xs ' + (a.colorOnlyCount > 0 ? 'text-rose-700' : 'text-emerald-700')}>Color-only refs</div></div><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{a.longestUnbrokenPassage}</div><div className="text-xs text-slate-600">Longest passage (words)</div></div></div>{
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{boundedReportCount(a.totalImages, 0)}</div><div className="text-xs text-slate-600">Images</div></div><div className={'p-3 rounded text-center ' + altPctStyle.box}><div className={'text-2xl font-bold ' + altPctStyle.val}>{altPct === null ? 'n/a' : altPct + '%'}</div><div className={'text-xs ' + altPctStyle.lbl}>Alt-text coverage</div></div><div className={'p-3 rounded text-center ' + ((a.colorOnlyCount || 0) > 0 ? 'bg-rose-50 border border-rose-200' : 'bg-emerald-50 border border-emerald-200')}><div className={'text-2xl font-bold ' + ((a.colorOnlyCount || 0) > 0 ? 'text-rose-800' : 'text-emerald-800')}>{boundedReportCount(a.colorOnlyCount, 0)}</div><div className={'text-xs ' + ((a.colorOnlyCount || 0) > 0 ? 'text-rose-700' : 'text-emerald-700')}>Color-only refs</div></div><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{boundedReportCount(a.longestUnbrokenPassage, 0)}</div><div className="text-xs text-slate-600">Longest passage (words)</div></div></div>{
       // Color-only examples
       a.colorOnlyExamples && a.colorOnlyExamples.length > 0 && <div className="mb-3"><div className="text-xs font-semibold text-rose-800 mb-1">Color-only language found (students with color blindness cannot follow these):</div><ul className="list-disc ml-5 text-xs text-rose-900 space-y-0.5">{a.colorOnlyExamples.slice(0, 6).map(function (ex, i) {
-            return <li key={i} className="font-mono italic">{'"' + ex + '"'}</li>;
+            return <li key={i} className="font-mono italic">{'"' + auditText(ex) + '"'}</li>;
           })}</ul></div>}{
       // Implicit image references
       a.implicitImageExamples && a.implicitImageExamples.length > 0 && <div className="mb-3"><div className="text-xs font-semibold text-amber-800 mb-1">References to images (verify each has descriptive alt text):</div><ul className="list-disc ml-5 text-xs text-amber-900 space-y-0.5">{a.implicitImageExamples.slice(0, 6).map(function (ex, i) {
-            return <li key={i} className="font-mono italic">{'"' + ex + '"'}</li>;
+            return <li key={i} className="font-mono italic">{'"' + auditText(ex) + '"'}</li>;
           })}</ul></div>}{
       // Heuristic recommendations
       a.recommendations && a.recommendations.length > 0 && <div className="p-3 bg-amber-50 border border-amber-200 rounded mb-3"><div className="text-xs font-semibold text-amber-900 mb-1">{atr('heuristic_recommendations', 'Heuristic recommendations:')}</div><ul className="list-disc ml-5 text-sm text-amber-900 space-y-1">{a.recommendations.map(function (r, i) {
@@ -547,7 +593,7 @@ var _lazyIcon = function (name) {
               return <li key={i}>{auditText(s)}</li>;
             })}</ul></div>}{a.llmReview.fixes && a.llmReview.fixes.length > 0 && <div><div className="text-xs font-semibold text-indigo-800 mb-1">Suggested fixes:</div><ul className="list-disc ml-5 text-sm text-indigo-900 space-y-1">{a.llmReview.fixes.map(function (f, i) {
               return <li key={i}>{auditText(f)}</li>;
-            })}</ul></div>}</div>}<div className="text-xs text-slate-600 italic">{a.notes || ''}</div></ComprehensiveSection>;
+            })}</ul></div>}</div>}<div className="text-xs text-slate-600 italic">{auditText(a.notes)}</div></ComprehensiveSection>;
   }
   function UdlPillar(p) {
     var pillar = p.pillar;
@@ -582,11 +628,15 @@ var _lazyIcon = function (name) {
       amber: 'bg-amber-100 text-amber-800'
     };
     return <ComprehensiveSection id="audit-accuracy" icon="✅" title={dimLabel('accuracy')} status={a.status}>{/* Top stat row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{a.totalAnalyses}</div><div className="text-xs text-slate-600">Analyses run</div></div><div className="p-3 bg-emerald-50 rounded text-center border border-emerald-200"><div className="text-2xl font-bold text-emerald-800">{a.totalVerifiedFacts}</div><div className="text-xs text-emerald-700">Verified facts</div></div><div className={'p-3 rounded text-center ' + (a.totalDiscrepancies > 0 ? 'bg-rose-50 border border-rose-200' : 'bg-slate-50 border border-slate-200')}><div className={'text-2xl font-bold ' + (a.totalDiscrepancies > 0 ? 'text-rose-800' : 'text-slate-800')}>{a.totalDiscrepancies}</div><div className={'text-xs ' + (a.totalDiscrepancies > 0 ? 'text-rose-700' : 'text-slate-600')}>Discrepancies</div></div><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{counts.high + 'H/' + counts.medium + 'M/' + counts.low + 'L'}</div><div className="text-xs text-slate-600">Rating mix</div></div></div>{
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{boundedReportCount(a.totalAnalyses, 0)}</div><div className="text-xs text-slate-600">Analyses run</div></div><div className="p-3 bg-emerald-50 rounded text-center border border-emerald-200"><div className="text-2xl font-bold text-emerald-800">{boundedReportCount(a.totalVerifiedFacts, 0)}</div><div className="text-xs text-emerald-700">Verified facts</div></div><div className={'p-3 rounded text-center ' + ((a.totalDiscrepancies || 0) > 0 ? 'bg-rose-50 border border-rose-200' : 'bg-slate-50 border border-slate-200')}><div className={'text-2xl font-bold ' + ((a.totalDiscrepancies || 0) > 0 ? 'text-rose-800' : 'text-slate-800')}>{boundedReportCount(a.totalDiscrepancies, 0)}</div><div className={'text-xs ' + ((a.totalDiscrepancies || 0) > 0 ? 'text-rose-700' : 'text-slate-600')}>Discrepancies</div></div><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{boundedReportCount(counts.high, 0) + 'H/' + boundedReportCount(counts.medium, 0) + 'M/' + boundedReportCount(counts.low, 0) + 'L'}</div><div className="text-xs text-slate-600">Rating mix</div></div></div>{
       // Sample verifications
       a.sampleVerifications && a.sampleVerifications.length > 0 && <details className="mb-3 bg-slate-50 border border-slate-200 rounded p-3"><summary className="cursor-pointer min-h-11 flex items-center text-sm font-semibold text-slate-800 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700">{'Per-analysis details (' + a.sampleVerifications.length + ')'}</summary><ul className="mt-2 space-y-2">{a.sampleVerifications.map(function (s, i) {
-            var ratingColor = (s.rating || '').toLowerCase().indexOf('high') >= 0 ? 'emerald' : (s.rating || '').toLowerCase().indexOf('low') >= 0 ? 'rose' : 'amber';
-            return <li key={i} className="p-2 bg-white border border-slate-200 rounded"><div className="flex items-center gap-2 mb-1"><span className={'text-xs font-bold uppercase px-2 py-0.5 rounded ' + RATING_BADGE_CLASSES[ratingColor]}>{s.rating || 'Unknown'}</span><span className="text-xs text-slate-600">{s.verifiedFactCount + ' verified, ' + s.discrepancyCount + ' discrepanc' + (s.discrepancyCount === 1 ? 'y' : 'ies')}</span></div>{s.reason && <p className="text-xs text-slate-700">{s.reason}</p>}</li>;
+            var ratingStr = auditText(s && s.rating);
+            var ratingColor = ratingStr.toLowerCase().indexOf('high') >= 0 ? 'emerald' : ratingStr.toLowerCase().indexOf('low') >= 0 ? 'rose' : 'amber';
+            var vCount = boundedReportCount(s && s.verifiedFactCount, 0);
+            var dCount = boundedReportCount(s && s.discrepancyCount, 0);
+            var reasonStr = auditText(s && s.reason);
+            return <li key={i} className="p-2 bg-white border border-slate-200 rounded"><div className="flex items-center gap-2 mb-1"><span className={'text-xs font-bold uppercase px-2 py-0.5 rounded ' + RATING_BADGE_CLASSES[ratingColor]}>{ratingStr || 'Unknown'}</span><span className="text-xs text-slate-600">{vCount + ' verified, ' + dCount + ' discrepanc' + (dCount === 1 ? 'y' : 'ies')}</span></div>{reasonStr && <p className="text-xs text-slate-700">{reasonStr}</p>}</li>;
           })}</ul></details>}{
       // Heuristic recommendations
       a.recommendations && a.recommendations.length > 0 && <div className="p-3 bg-amber-50 border border-amber-200 rounded mb-3"><div className="text-xs font-semibold text-amber-900 mb-1">{atr('heuristic_recommendations', 'Heuristic recommendations:')}</div><ul className="list-disc ml-5 text-sm text-amber-900 space-y-1">{a.recommendations.map(function (r, i) {
@@ -597,7 +647,7 @@ var _lazyIcon = function (name) {
               return <li key={i} className="italic">{'\"' + auditText(c) + '\"'}</li>;
             })}</ul></div>}{a.llmReview.fixes && a.llmReview.fixes.length > 0 && <div><div className="text-xs font-semibold text-indigo-800 mb-1">Suggested improvements:</div><ul className="list-disc ml-5 text-sm text-indigo-900 space-y-1">{a.llmReview.fixes.map(function (f, i) {
               return <li key={i}>{auditText(f)}</li>;
-            })}</ul></div>}</div>}<div className="text-xs text-slate-600 italic">{a.notes || ''}</div></ComprehensiveSection>;
+            })}</ul></div>}</div>}<div className="text-xs text-slate-600 italic">{auditText(a.notes)}</div></ComprehensiveSection>;
   }
 
   // ─── DifferentiationSection ───────────────────────────────────────────
@@ -620,17 +670,21 @@ var _lazyIcon = function (name) {
       visualOrImage: 'Image / visual',
       audioPath: 'Audio narration'
     };
-    return <ComprehensiveSection id="audit-differentiation" icon="🎚️" title={dimLabel('differentiation')} status={d.status}><div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{d.coverage + '%'}</div><div className="text-xs text-slate-600">Access-path coverage</div></div><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{d.presentCount + '/' + d.totalAccommodationTypes}</div><div className="text-xs text-slate-600">Scored access paths</div></div><div className="p-3 bg-emerald-50 rounded text-center border border-emerald-200"><div className="text-2xl font-bold text-emerald-800">{d.presentCount}</div><div className="text-xs text-emerald-700">Present</div></div><div className={'p-3 rounded text-center ' + (d.missing && d.missing.length > 0 ? 'bg-rose-50 border border-rose-200' : 'bg-slate-50 border border-slate-200')}><div className={'text-2xl font-bold ' + (d.missing && d.missing.length > 0 ? 'text-rose-800' : 'text-slate-800')}>{d.missing && d.missing.length || 0}</div><div className={'text-xs ' + (d.missing && d.missing.length > 0 ? 'text-rose-700' : 'text-slate-600')}>Missing</div></div></div>{/* Inventory grid */}
+    var diffCoverage = boundedReportPercent(d.coverage);
+    var diffPresent = boundedReportCount(d.presentCount, 0);
+    var diffTotal = boundedReportCount(d.totalAccommodationTypes, 0);
+    return <ComprehensiveSection id="audit-differentiation" icon="🎚️" title={dimLabel('differentiation')} status={d.status}><div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{diffCoverage === null ? 'n/a' : diffCoverage + '%'}</div><div className="text-xs text-slate-600">Access-path coverage</div></div><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{diffPresent + '/' + diffTotal}</div><div className="text-xs text-slate-600">Scored access paths</div></div><div className="p-3 bg-emerald-50 rounded text-center border border-emerald-200"><div className="text-2xl font-bold text-emerald-800">{diffPresent}</div><div className="text-xs text-emerald-700">Present</div></div><div className={'p-3 rounded text-center ' + (d.missing && d.missing.length > 0 ? 'bg-rose-50 border border-rose-200' : 'bg-slate-50 border border-slate-200')}><div className={'text-2xl font-bold ' + (d.missing && d.missing.length > 0 ? 'text-rose-800' : 'text-slate-800')}>{d.missing && d.missing.length || 0}</div><div className={'text-xs ' + (d.missing && d.missing.length > 0 ? 'text-rose-700' : 'text-slate-600')}>Missing</div></div></div>{/* Inventory grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-1.5 mb-3">{Object.keys(flags).map(function (k) {
           var on = flags[k];
-          return <div key={k} className={'flex items-center gap-2 text-xs px-2 py-1.5 rounded border ' + (on ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-slate-50 border-slate-200 text-slate-600')}><span aria-hidden="true" className="flex-shrink-0">{on ? '✓' : '○'}</span><span className="min-w-0 break-words">{labelMap[k] || k}</span></div>;
+          var lbl = Object.prototype.hasOwnProperty.call(labelMap, k) ? labelMap[k] : k;
+          return <div key={k} className={'flex items-center gap-2 text-xs px-2 py-1.5 rounded border ' + (on ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-slate-50 border-slate-200 text-slate-600')}><span aria-hidden="true" className="flex-shrink-0">{on ? '✓' : '○'}</span><span className="min-w-0 break-words">{lbl}</span></div>;
         })}</div>{d.textAccess && <div className="p-3 bg-blue-50 border border-blue-200 rounded mb-3"><div className="text-xs font-semibold text-blue-950 mb-1">Primary-text access evidence</div><p className="text-sm text-blue-950">{d.textAccess.hasPrimary ? 'A designated primary text is present.' : d.textAccess.hasLegacySource ? 'An analyzed source is available, but its instructional role has not been confirmed.' : 'No primary text is identified in this audit scope.'}</p><p className="mt-1 text-xs text-blue-900">{'Supplemental adapted: ' + (d.textAccess.supplementalArtifactIds || []).length + ' · Same-text supported primary: ' + (d.textAccess.supportedPrimaryArtifactIds || []).length + ' · Explicit educator-authorized replacement: ' + (d.textAccess.authorizedModifiedArtifactIds || []).length + ' · Current level evidence: ' + (d.textAccess.primaryWithCurrentComplexityEvidenceIds || []).length + ' · Stale level evidence: ' + (d.textAccess.stalePrimaryComplexityEvidenceIds || []).length}</p></div>}{d.recommendations && d.recommendations.length > 0 && <div className="p-3 bg-amber-50 border border-amber-200 rounded mb-3"><div className="text-xs font-semibold text-amber-900 mb-1">{atr('heuristic_recommendations', 'Heuristic recommendations:')}</div><ul className="list-disc ml-5 text-sm text-amber-900 space-y-1">{d.recommendations.map(function (r, i) {
             return <li key={i}>{auditText(r)}</li>;
           })}</ul></div>}{d.llmReview && <div className="p-3 bg-indigo-50 border border-indigo-200 rounded mb-3"><div className="text-xs font-semibold text-indigo-900 mb-2 flex items-center gap-2"><span aria-hidden="true">🤖</span> {atr('ai_udl_review', 'UDL specialist review (AI)')}</div>{auditText(d.llmReview.narrative) && <p className="text-sm text-indigo-900 mb-2">{auditText(d.llmReview.narrative)}</p>}{d.llmReview.priorityAdditions && d.llmReview.priorityAdditions.length > 0 && <div className="mb-2"><div className="text-xs font-semibold text-indigo-800 mb-1">Priority additions:</div><ul className="list-disc ml-5 text-sm text-indigo-900 space-y-1">{d.llmReview.priorityAdditions.map(function (r, i) {
               return <li key={i}>{auditText(r)}</li>;
             })}</ul></div>}{d.llmReview.qualityFlags && d.llmReview.qualityFlags.length > 0 && <div><div className="text-xs font-semibold text-indigo-800 mb-1">Quality flags:</div><ul className="list-disc ml-5 text-sm text-indigo-900 space-y-1">{d.llmReview.qualityFlags.map(function (r, i) {
               return <li key={i}>{auditText(r)}</li>;
-            })}</ul></div>}</div>}<div className="text-xs text-slate-600 italic">{d.notes || ''}</div></ComprehensiveSection>;
+            })}</ul></div>}</div>}<div className="text-xs text-slate-600 italic">{auditText(d.notes)}</div></ComprehensiveSection>;
   }
 
   // ─── CognitiveLoadSection ─────────────────────────────────────────────
@@ -638,29 +692,34 @@ var _lazyIcon = function (name) {
     var c = p.load;
     if (!c) return null;
     var b = c.breakdown || {};
-    var ratioTone = c.ratio === null ? 'slate' : c.ratio >= 0.7 && c.ratio <= 1.4 ? 'emerald' : c.ratio >= 0.4 && c.ratio <= 2.0 ? 'amber' : 'rose';
+    var ratioNum = finiteReportNumber(c.ratio);
+    var claimedMin = finiteReportNumber(c.claimedTotalMinutes);
+    var estimatedMin = finiteReportNumber(c.estimatedTotalMinutes);
+    var ratioTone = ratioNum === null ? 'slate' : ratioNum >= 0.7 && ratioNum <= 1.4 ? 'emerald' : ratioNum >= 0.4 && ratioNum <= 2.0 ? 'amber' : 'rose';
     var ratioToneStyles = {
       slate: { card: 'bg-slate-50 border border-slate-200', value: 'text-slate-800', label: 'text-slate-700' },
       emerald: { card: 'bg-emerald-50 border border-emerald-200', value: 'text-emerald-800', label: 'text-emerald-700' },
       amber: { card: 'bg-amber-50 border border-amber-200', value: 'text-amber-800', label: 'text-amber-700' },
       rose: { card: 'bg-rose-50 border border-rose-200', value: 'text-rose-800', label: 'text-rose-700' }
     }[ratioTone];
-    return <ComprehensiveSection id="audit-cognitiveLoad" icon="⏱️" title={dimLabel('cognitiveLoad')} status={c.status}><div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{c.claimedTotalMinutes + 'm'}</div><div className="text-xs text-slate-600">Claimed</div></div><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{c.estimatedTotalMinutes + 'm'}</div><div className="text-xs text-slate-600">Estimated</div></div><div className={'p-3 rounded text-center ' + ratioToneStyles.card}><div className={'text-2xl font-bold ' + ratioToneStyles.value}>{c.ratio === null ? 'n/a' : c.ratio + 'x'}</div><div className={'text-xs ' + ratioToneStyles.label}>Estimated / Claimed</div></div><div className="p-3 bg-slate-50 rounded text-center"><div className="text-xs font-bold text-slate-800 leading-tight pt-1">{'R: ' + b.reading + 'm · Q: ' + b.quiz + 'm · A: ' + b.activities + 'm'}</div><div className="text-xs text-slate-600 mt-1">{'Reading at ' + b.wpmAssumption + ' wpm'}</div></div></div>{
+    return <ComprehensiveSection id="audit-cognitiveLoad" icon="⏱️" title={dimLabel('cognitiveLoad')} status={c.status}><div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{claimedMin === null ? 'n/a' : claimedMin + 'm'}</div><div className="text-xs text-slate-600">Claimed</div></div><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{estimatedMin === null ? 'n/a' : estimatedMin + 'm'}</div><div className="text-xs text-slate-600">Estimated</div></div><div className={'p-3 rounded text-center ' + ratioToneStyles.card}><div className={'text-2xl font-bold ' + ratioToneStyles.value}>{ratioNum === null ? 'n/a' : ratioNum + 'x'}</div><div className={'text-xs ' + ratioToneStyles.label}>Estimated / Claimed</div></div><div className="p-3 bg-slate-50 rounded text-center"><div className="text-xs font-bold text-slate-800 leading-tight pt-1">{'R: ' + boundedReportCount(b.reading, 0) + 'm · Q: ' + boundedReportCount(b.quiz, 0) + 'm · A: ' + boundedReportCount(b.activities, 0) + 'm'}</div><div className="text-xs text-slate-600 mt-1">{'Reading at ' + boundedReportCount(b.wpmAssumption, 0) + ' wpm'}</div></div></div>{
       // Per-segment breakdown
       Array.isArray(c.perSegment) && c.perSegment.length > 0 && <div className="mb-3"><div className="text-xs font-semibold text-slate-700 mb-1">Lesson plan segments:</div><ul className="space-y-0.5 text-sm text-slate-700">{c.perSegment.map(function (s, i) {
-            return <li key={i} className="flex items-center justify-between gap-2"><span>{s.label}</span><span className={'font-mono text-xs ' + (s.claimedMinutes !== null ? 'text-slate-800' : 'text-slate-600 italic')}>{s.claimedMinutes !== null ? s.claimedMinutes + ' min' : '(no time given)'}</span></li>;
+            var segMin = finiteReportNumber(s && s.claimedMinutes);
+            return <li key={i} className="flex items-center justify-between gap-2"><span>{auditText(s && s.label)}</span><span className={'font-mono text-xs ' + (segMin !== null ? 'text-slate-800' : 'text-slate-600 italic')}>{segMin !== null ? segMin + ' min' : '(no time given)'}</span></li>;
           })}</ul></div>}{c.recommendations && c.recommendations.length > 0 && <div className="p-3 bg-amber-50 border border-amber-200 rounded mb-3"><div className="text-xs font-semibold text-amber-900 mb-1">{atr('heuristic_recommendations', 'Heuristic recommendations:')}</div><ul className="list-disc ml-5 text-sm text-amber-900 space-y-1">{c.recommendations.map(function (r, i) {
             return <li key={i}>{auditText(r)}</li>;
           })}</ul></div>}{c.llmReview && <div className="p-3 bg-indigo-50 border border-indigo-200 rounded mb-3"><div className="text-xs font-semibold text-indigo-900 mb-2 flex items-center gap-2"><span aria-hidden="true">🤖</span> {atr('ai_pacing', 'Pacing review (AI)')}</div>{auditText(c.llmReview.narrative) && <p className="text-sm text-indigo-900 mb-2">{auditText(c.llmReview.narrative)}</p>}{c.llmReview.specificAdjustments && c.llmReview.specificAdjustments.length > 0 && <div><div className="text-xs font-semibold text-indigo-800 mb-1">Specific adjustments:</div><ul className="list-disc ml-5 text-sm text-indigo-900 space-y-1">{c.llmReview.specificAdjustments.map(function (r, i) {
               return <li key={i}>{auditText(r)}</li>;
-            })}</ul></div>}</div>}<div className="text-xs text-slate-600 italic">{c.notes || ''}</div></ComprehensiveSection>;
+            })}</ul></div>}</div>}<div className="text-xs text-slate-600 italic">{auditText(c.notes)}</div></ComprehensiveSection>;
   }
 
   // ─── CulturalResponsivenessSection ────────────────────────────────────
   function CulturalResponsivenessSection(p) {
     var c = p.cr;
     if (!c) return null;
-    return <ComprehensiveSection id="audit-culturalResponsiveness" icon="🤝" title={dimLabel('culturalResponsiveness')} status={c.status}>{c.narrative && <p className="text-sm text-slate-800 mb-3 leading-relaxed">{c.narrative}</p>}{
+    var crNarrative = auditText(c.narrative);
+    return <ComprehensiveSection id="audit-culturalResponsiveness" icon="🤝" title={dimLabel('culturalResponsiveness')} status={c.status}>{crNarrative && <p className="text-sm text-slate-800 mb-3 leading-relaxed">{crNarrative}</p>}{
       // Strengths
       Array.isArray(c.strengths) && c.strengths.length > 0 && <div className="p-3 bg-emerald-50 border border-emerald-200 rounded mb-2"><div className="text-xs font-semibold text-emerald-900 mb-1">Strengths:</div><ul className="list-disc ml-5 text-sm text-emerald-900 space-y-1">{c.strengths.map(function (r, i) {
             return <li key={i}>{auditText(r)}</li>;
@@ -672,7 +731,7 @@ var _lazyIcon = function (name) {
       // Additions (the actionable list)
       Array.isArray(c.additions) && c.additions.length > 0 && <div className="p-3 bg-indigo-50 border border-indigo-200 rounded mb-2"><div className="text-xs font-semibold text-indigo-900 mb-1">Suggested additions:</div><ul className="list-disc ml-5 text-sm text-indigo-900 space-y-1">{c.additions.map(function (r, i) {
             return <li key={i}>{auditText(r)}</li>;
-          })}</ul></div>}<div className="text-xs text-slate-600 italic mt-2">{c.notes || ''}</div></ComprehensiveSection>;
+          })}</ul></div>}<div className="text-xs text-slate-600 italic mt-2">{auditText(c.notes)}</div></ComprehensiveSection>;
   }
   var READINESS_DIMENSION_LABELS = {
     standards: 'Standards',
@@ -695,7 +754,7 @@ var _lazyIcon = function (name) {
       // Older saved audits may not include dimensionScores. Preserve all nine
       // navigation targets and infer only what their recorded percentage proves.
       var status = dimData.status || (dimData.computeFailed ? 'Compute failed' : dimData.notApplicable ? 'Not applicable' : dimData.notEvaluated ? 'Not evaluated' : pctValue === 100 ? 'Aligned' : pctValue === 0 ? 'Not Aligned' : pctValue !== null ? 'Partially Aligned' : 'Not evaluated');
-      var label = atr('nav_' + dim, READINESS_DIMENSION_LABELS[dim] || dim);
+      var label = atr('nav_' + dim, Object.prototype.hasOwnProperty.call(READINESS_DIMENSION_LABELS, dim) ? READINESS_DIMENSION_LABELS[dim] : dim);
       var chipColor = status === 'Aligned' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : status === 'Not Aligned' ? 'bg-rose-100 text-rose-800 border-rose-300' : status === 'Partially Aligned' ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-slate-100 text-slate-800 border-slate-300';
       return <li key={dim}><a href={'#audit-' + dim} aria-label={label + ': ' + status + (pct ? ', ' + pct : '')} className={'min-h-11 inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-full border no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ' + chipColor}><span>{label}</span><span aria-hidden="true">·</span><span>{status}</span>{pct && <><span aria-hidden="true">·</span><span className="font-bold">{pct}</span></>}</a></li>;
     })}</ul></nav>;
@@ -804,7 +863,7 @@ var _lazyIcon = function (name) {
         all.push({
           priority: 0,
           dimension: dimLabelStr,
-          dimensionKey: labelToKey[dimLabelStr] || null,
+          dimensionKey: Object.prototype.hasOwnProperty.call(labelToKey, dimLabelStr) ? labelToKey[dimLabelStr] : null,
           text: issueText
         });
       });
@@ -813,7 +872,7 @@ var _lazyIcon = function (name) {
       var d = comprehensive[dim];
       if (!d || d.computeFailed || d.notApplicable || d.status === 'Aligned') return;
       var priority = d.status === 'Not Aligned' ? 1 : 2;
-      var label = dimLabel[dim] || dim;
+      var label = Object.prototype.hasOwnProperty.call(dimLabel, dim) ? dimLabel[dim] : dim;
       if (Array.isArray(d.recommendations)) d.recommendations.forEach(function (r) {
         if (typeof r === 'string') all.push({
           priority: priority,
@@ -912,9 +971,14 @@ var _lazyIcon = function (name) {
     var copyTimerRef = (typeof React !== 'undefined' && typeof React.useRef === 'function')
       ? React.useRef(null)
       : { current: null };
+    var mountedRef = (typeof React !== 'undefined' && typeof React.useRef === 'function')
+      ? React.useRef(true)
+      : { current: true };
     if (typeof React !== 'undefined' && typeof React.useEffect === 'function') {
       React.useEffect(function () {
+        mountedRef.current = true;
         return function () {
+          mountedRef.current = false;
           if (copyTimerRef.current) {
             clearTimeout(copyTimerRef.current);
             copyTimerRef.current = null;
@@ -981,11 +1045,12 @@ var _lazyIcon = function (name) {
       accent: 'rose'
     };
     var textDoor = typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway('text', t) : null;
-    var aiBusyOrBlocked = !!p.isProcessing || !!(textDoor && textDoor.disabled);
+    var aiBusyOrBlocked = !!p.isProcessing || _arHardAiBlocked() || !!(textDoor && textDoor.disabled);
     var buildAdminSummaryText = function () {
       var lines = [];
       lines.push('AlloFlow Curriculum Audit Summary');
-      if (score !== null && dimEvaluated > 0) lines.push('Readiness Score: ' + score + '/100' + (scoreIsProvisional ? ' (Provisional)' : '') + (overall.label ? ' — ' + overall.label : ''));
+      var overallLabel = auditText(overall.label);
+      if (score !== null && dimEvaluated > 0) lines.push('Readiness Score: ' + score + '/100' + (scoreIsProvisional ? ' (Provisional)' : '') + (overallLabel ? ' — ' + overallLabel : ''));
       lines.push('Dimensions evaluated: ' + dimEvaluated + ' of ' + dimApplicable + ' applicable (' + dimTotal + ' total)' + (standardsReportCount > 0 ? ' · ' + standardsReportCount + ' standard(s) audited' : ''));
       if (failedDims.length > 0) lines.push('Failed to compute: ' + failedDims.map(dimLabel).join(', '));
       var dimScores = overall.perDimensionPercent || {};
@@ -1006,22 +1071,26 @@ var _lazyIcon = function (name) {
       var summary = buildAdminSummaryText();
       if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
         navigator.clipboard.writeText(summary).then(function () {
+          if (!mountedRef.current) return;
           setCopyStatus(atr('summary_copied', 'Admin summary copied.'));
           if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
-          copyTimerRef.current = setTimeout(function () { copyTimerRef.current = null; setCopyStatus(''); }, 2500);
+          copyTimerRef.current = setTimeout(function () { copyTimerRef.current = null; if (mountedRef.current) setCopyStatus(''); }, 2500);
         }).catch(function () {
-          setCopyStatus(atr('summary_copy_failed', 'Could not copy summary.'));
+          if (mountedRef.current) setCopyStatus(atr('summary_copy_failed', 'Could not copy summary.'));
         });
+      } else if (mountedRef.current) {
+        setCopyStatus(atr('summary_copy_failed', 'Could not copy summary.'));
       }
     };
     var handlePrintAuditSummary = function () {
       if (typeof window === 'undefined' || typeof window.open !== 'function') return;
-      var esc = function (v) { return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
+      var esc = function (v) { return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
       var popup = window.open('', '_blank', 'width=850,height=700');
       if (!popup) return;
       try { popup.opener = null; } catch (_) {}
+      var reportLang = resolveAuditLanguageTag(c);
       var summaryHtml = buildAdminSummaryText().split('\n').map(function (line) { return '<p style="margin:4px 0">' + esc(line) + '</p>'; }).join('');
-      popup.document.write('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\';"><title>Curriculum Audit Summary</title><style>body{font-family:system-ui,-apple-system,sans-serif;max-width:800px;margin:0 auto;padding:24px;color:#0f172a;line-height:1.5}h1{font-size:20px;border-bottom:2px solid #4f46e5;padding-bottom:8px}</style></head><body><h1>Curriculum Audit Summary</h1>' + summaryHtml + '</body></html>');
+      popup.document.write('<!doctype html><html lang="' + esc(reportLang && reportLang !== 'und' ? reportLang : 'en') + '"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; base-uri \'none\'; form-action \'none\';"><title>Curriculum Audit Summary</title><style>body{font-family:system-ui,-apple-system,sans-serif;max-width:800px;margin:0 auto;padding:24px;color:#0f172a;line-height:1.5}h1{font-size:20px;border-bottom:2px solid #4f46e5;padding-bottom:8px}</style></head><body><h1>Curriculum Audit Summary</h1>' + summaryHtml + '</body></html>');
       popup.document.close();
       try { popup.focus(); popup.print(); } catch (_) {}
     };
@@ -1040,7 +1109,7 @@ var _lazyIcon = function (name) {
             color: statusClr.text
           }}>{atr('curriculum_audit', 'Curriculum Audit')}</div><h2 className="text-xl font-black mb-1" style={{
             color: statusClr.text
-          }}>{score !== null && dimEvaluated > 0 ? overall.label || score + ' / 100' : dimEvaluated === 0 ? atr('no_dimensions', 'No comprehensive dimensions evaluated') : atr('audit_summary', 'Audit summary')}</h2><div className="text-xs" style={{
+          }}>{score !== null && dimEvaluated > 0 ? auditText(overall.label) || score + ' / 100' : dimEvaluated === 0 ? atr('no_dimensions', 'No comprehensive dimensions evaluated') : atr('audit_summary', 'Audit summary')}</h2><div className="text-xs" style={{
             color: statusClr.text
           }}>{standardsReportCount > 0 ? standardsReportCount + ' standard' + (standardsReportCount === 1 ? '' : 's') + ' audited · ' : ''}{dimEvaluated + ' of ' + dimApplicable + ' applicable comprehensive dimension' + (dimApplicable === 1 ? '' : 's') + ' evaluated · ' + dimTotal + ' total'}{failedDims.length > 0 ? ' · ' + failedDims.length + ' failed to compute' : ''}{generatedDateLabel ? <><span> · Generated </span><time dateTime={generatedAt}>{generatedDateLabel}</time></> : null}</div></div>{
         // Apply fixes button
@@ -1087,7 +1156,7 @@ var _lazyIcon = function (name) {
                   el.style.transition = 'box-shadow 800ms ease-out';
                   el.style.boxShadow = '0 0 0 4px rgba(99, 102, 241, 0.4)';
                   setTimeout(function () {
-                    el.style.boxShadow = '';
+                    if (el && el.isConnected) el.style.boxShadow = '';
                   }, 1200);
                 }
               }
@@ -1145,7 +1214,9 @@ var _lazyIcon = function (name) {
     var label = p.label;
     if (!d || !d.computeFailed) return null;
     var headingId = p.id ? p.id + '-heading' : undefined;
-    return <section id={p.id || undefined} aria-labelledby={headingId} tabIndex={-1} className="bg-amber-50 p-4 rounded-xl border border-amber-300 shadow-sm mb-6 scroll-mt-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"><div className="flex items-center gap-2 mb-2"><span aria-hidden="true" className="text-lg">⚠</span><h3 id={headingId} className="font-bold text-amber-900">{atr('could_not_compute', '{label}: could not be computed', { label: label })}</h3><span className="ml-auto text-xs uppercase font-bold px-2 py-0.5 rounded bg-amber-200 text-amber-900">{atr('badge_failed', 'Failed')}</span></div>{d.notes && <p className="text-sm text-amber-900 mb-2">{d.notes}</p>}{d.error && <details className="text-xs text-amber-800"><summary className="cursor-pointer min-h-11 flex items-center font-semibold rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{atr('show_error', 'Show error')}</summary><pre className="mt-1 p-2 bg-amber-100 rounded overflow-x-auto whitespace-pre-wrap">{d.error}</pre></details>}</section>;
+    var notesText = auditText(d.notes);
+    var errText = auditText(d.error);
+    return <section id={p.id || undefined} aria-labelledby={headingId} tabIndex={-1} className="bg-amber-50 p-4 rounded-xl border border-amber-300 shadow-sm mb-6 scroll-mt-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"><div className="flex items-center gap-2 mb-2"><span aria-hidden="true" className="text-lg">⚠</span><h3 id={headingId} className="font-bold text-amber-900">{atr('could_not_compute', '{label}: could not be computed', { label: label })}</h3><span className="ml-auto text-xs uppercase font-bold px-2 py-0.5 rounded bg-amber-200 text-amber-900">{atr('badge_failed', 'Failed')}</span></div>{notesText && <p className="text-sm text-amber-900 mb-2">{notesText}</p>}{errText && <details className="text-xs text-amber-800"><summary className="cursor-pointer min-h-11 flex items-center font-semibold rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{atr('show_error', 'Show error')}</summary><pre className="mt-1 p-2 bg-amber-100 rounded overflow-x-auto whitespace-pre-wrap">{errText}</pre></details>}</section>;
   }
 
   function NotEvaluatedCard(p) {
@@ -1171,7 +1242,8 @@ var _lazyIcon = function (name) {
     var label = p.label;
     if (!d || !d.notApplicable) return null;
     var headingId = p.id ? p.id + '-heading' : undefined;
-    return <section id={p.id || undefined} aria-labelledby={headingId} tabIndex={-1} className="bg-slate-50 p-4 rounded-xl border border-dashed border-slate-300 shadow-sm mb-6 scroll-mt-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"><div className="flex items-center gap-2 mb-2"><span aria-hidden="true" className="text-lg">➖</span><h3 id={headingId} className="font-bold text-slate-700">{label}</h3><span className="ml-auto text-xs uppercase font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-700">{atr('badge_not_applicable', 'Not applicable')}</span></div>{d.reason && <p className="text-sm text-slate-600">{d.reason}</p>}</section>;
+    var reasonText = auditText(d.reason);
+    return <section id={p.id || undefined} aria-labelledby={headingId} tabIndex={-1} className="bg-slate-50 p-4 rounded-xl border border-dashed border-slate-300 shadow-sm mb-6 scroll-mt-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"><div className="flex items-center gap-2 mb-2"><span aria-hidden="true" className="text-lg">➖</span><h3 id={headingId} className="font-bold text-slate-700">{label}</h3><span className="ml-auto text-xs uppercase font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-700">{atr('badge_not_applicable', 'Not applicable')}</span></div>{reasonText && <p className="text-sm text-slate-600">{reasonText}</p>}</section>;
   }
   // Each dimension card renders inside its own boundary, so one bad AI field degrades to a
   // single "could not be displayed" card instead of tripping the error boundary above the
@@ -1195,7 +1267,7 @@ var _lazyIcon = function (name) {
     return { failed: true, message: error && error.message ? String(error.message).slice(0, 240) : 'The section could not be rendered.' };
   };
   DimensionBoundary.prototype.componentDidCatch = function (error) {
-    try { (window.warnLog || console.warn)('[Alignment] ' + this.props.label + ' section failed to render: ' + (error && error.message ? error.message : error)); } catch (_) {}
+    try { ((typeof window !== 'undefined' && window.warnLog) || console.warn)('[Alignment] ' + this.props.label + ' section failed to render: ' + (error && error.message ? error.message : error)); } catch (_) {}
   };
   DimensionBoundary.prototype.render = function () {
     if (!this.state.failed) return this.props.children;
@@ -1245,8 +1317,8 @@ var _lazyIcon = function (name) {
       // Plan R+ new dimensions
       showDim('differentiation') && <DimensionBoundary key={_dimensionBoundaryKey(c, "audit-differentiation")} id="audit-differentiation" label={dimLabel('differentiation')}>{c.differentiation ? (c.differentiation.computeFailed ? <FailedDimensionCard id="audit-differentiation" data={c.differentiation} label={dimLabel('differentiation')} /> : c.differentiation.notEvaluated ? <NotEvaluatedCard id="audit-differentiation" data={c.differentiation} label={dimLabel('differentiation')} /> : <DifferentiationSection diff={c.differentiation} />) : <MissingDimensionCard id="audit-differentiation" label={dimLabel('differentiation')} />}</DimensionBoundary>}{showDim('cognitiveLoad') && <DimensionBoundary key={_dimensionBoundaryKey(c, "audit-cognitiveLoad")} id="audit-cognitiveLoad" label={dimLabel('cognitiveLoad')}>{c.cognitiveLoad ? (c.cognitiveLoad.computeFailed ? <FailedDimensionCard id="audit-cognitiveLoad" data={c.cognitiveLoad} label={dimLabel('cognitiveLoad')} /> : c.cognitiveLoad.notApplicable ? <NotApplicableCard id="audit-cognitiveLoad" data={c.cognitiveLoad} label={dimLabel('cognitiveLoad')} /> : c.cognitiveLoad.notEvaluated ? <NotEvaluatedCard id="audit-cognitiveLoad" data={c.cognitiveLoad} label={dimLabel('cognitiveLoad')} /> : <CognitiveLoadSection load={c.cognitiveLoad} />) : <MissingDimensionCard id="audit-cognitiveLoad" label={dimLabel('cognitiveLoad')} />}</DimensionBoundary>}{showDim('culturalResponsiveness') && <DimensionBoundary key={_dimensionBoundaryKey(c, "audit-culturalResponsiveness")} id="audit-culturalResponsiveness" label={dimLabel('culturalResponsiveness')}>{c.culturalResponsiveness ? (c.culturalResponsiveness.computeFailed ? <FailedDimensionCard id="audit-culturalResponsiveness" data={c.culturalResponsiveness} label={dimLabel('culturalResponsiveness')} /> : c.culturalResponsiveness.notApplicable ? <NotApplicableCard id="audit-culturalResponsiveness" data={c.culturalResponsiveness} label={dimLabel('culturalResponsiveness')} /> : c.culturalResponsiveness.notEvaluated ? <NotEvaluatedCard id="audit-culturalResponsiveness" data={c.culturalResponsiveness} label={dimLabel('culturalResponsiveness')} /> : <CulturalResponsivenessSection cr={c.culturalResponsiveness} />) : <MissingDimensionCard id="audit-culturalResponsiveness" label={dimLabel('culturalResponsiveness')} />}</DimensionBoundary>}</section>;
   }
-  function auditResourceFingerprint(resource) { return window.AlloModules?.ResourceContentFingerprint?.fingerprint(resource) || null; }
-  function auditResourceSnapshot(resources) { return window.AlloModules?.ResourceContentFingerprint?.snapshot(resources) || {}; }
+  function auditResourceFingerprint(resource) { return (typeof window !== 'undefined' && window.AlloModules?.ResourceContentFingerprint?.fingerprint(resource)) || null; }
+  function auditResourceSnapshot(resources) { return (typeof window !== 'undefined' && window.AlloModules?.ResourceContentFingerprint?.snapshot(resources)) || {}; }
   // Types the audit never scores; a new one of these does not make a report stale.
   var FRESHNESS_IGNORED_TYPES = { 'alignment-report': true, 'udl-advice': true };
   function computeAuditFreshness(generatedContent, history) {
@@ -1255,28 +1327,37 @@ var _lazyIcon = function (name) {
     var generatedAt = comp.auditMetadata && comp.auditMetadata.generatedAt ? Date.parse(comp.auditMetadata.generatedAt) : NaN;
     if (isNaN(generatedAt)) generatedAt = generatedContent.timestamp ? Date.parse(generatedContent.timestamp) : NaN;
     var unknownDate = isNaN(generatedAt);
-    var included = {};
+    var included = Object.create(null);
     var includedIds = comp.auditScope && Array.isArray(comp.auditScope.includedArtifactIds) ? comp.auditScope.includedArtifactIds : [];
-    includedIds.forEach(function (id) { included[String(id)] = true; });
+    includedIds.forEach(function (id) { var sid = String(id); if (!_arIsBlockedKey(sid)) included[sid] = true; });
     var auditId = String(generatedContent.id || '');
-    var present = {};
+    var present = Object.create(null);
     var added = [], modified = [], unverified = 0;
-    var fingerprints = comp.auditScope?.artifactFingerprints || {};
-    (comp.auditScope?.includedArtifacts || []).forEach(item=>{ if (!item || typeof item !== 'object') return; if (item.contentFingerprint && !fingerprints[item.id]) fingerprints = { ...fingerprints, [item.id]:item.contentFingerprint }; });
+    var fingerprints = Object.create(null);
+    var rawFingerprints = comp.auditScope && comp.auditScope.artifactFingerprints;
+    if (rawFingerprints && typeof rawFingerprints === 'object') {
+      Object.keys(rawFingerprints).forEach(function (k) { if (!_arIsBlockedKey(k)) fingerprints[k] = rawFingerprints[k]; });
+    }
+    (Array.isArray(comp.auditScope?.includedArtifacts) ? comp.auditScope.includedArtifacts : []).forEach(item => {
+      if (!item || typeof item !== 'object') return;
+      var sid = String(item.id || '');
+      if (sid && !_arIsBlockedKey(sid) && item.contentFingerprint && !fingerprints[sid]) fingerprints[sid] = item.contentFingerprint;
+    });
     history.forEach(function (item) {
-      if (!item || !item.type || FRESHNESS_IGNORED_TYPES[item.type]) return;
+      if (!item || !item.type || Object.prototype.hasOwnProperty.call(FRESHNESS_IGNORED_TYPES, item.type)) return;
       var id = String(item.id || '');
-      if (id) present[id] = true;
-      if (id && included[id]) {
-        if (fingerprints[id] && auditResourceFingerprint(item)) { if (fingerprints[id] !== auditResourceFingerprint(item)) modified.push(item.title || item.type); }
-        else { const changedAt=Date.parse(item.updatedAt || item.timestamp || ''); if (!isNaN(changedAt) && changedAt>generatedAt) modified.push(item.title || item.type); else unverified++; }
+      if (id && !_arIsBlockedKey(id)) present[id] = true;
+      if (id && !_arIsBlockedKey(id) && included[id]) {
+        var fp = auditResourceFingerprint(item);
+        if (fingerprints[id] && fp) { if (fingerprints[id] !== fp) modified.push(item.title || item.type); }
+        else { const changedAt = Date.parse(item.updatedAt || item.timestamp || ''); if (!isNaN(changedAt) && changedAt > generatedAt) modified.push(item.title || item.type); else unverified++; }
         return;
       }
       if (id && id === auditId) return;
       var ts = item.timestamp ? Date.parse(item.timestamp) : NaN;
       if (!isNaN(ts) && ts > generatedAt) added.push(item.title || item.type);
     });
-    var removed = includedIds.filter(function (id) { return !present[String(id)]; }).length;
+    var removed = includedIds.filter(function (id) { var sid = String(id); return !_arIsBlockedKey(sid) && !present[sid]; }).length;
     return { added: added, removed: removed, modified: modified, unverified: unverified, unknownDate: unknownDate, stale: added.length > 0 || removed > 0 || modified.length > 0 };
   }
   // Re-run with the scope this audit recorded. Explicit id sets and curriculum
@@ -1285,11 +1366,11 @@ var _lazyIcon = function (name) {
   function auditRerunScope(generatedContent, history) {
     var scope = generatedContent && generatedContent.data && generatedContent.data.comprehensive && generatedContent.data.comprehensive.auditScope;
     if (!scope || typeof scope !== 'object') return { config: {}, kind: 'rederive' };
-    var present = {};
-    (Array.isArray(history) ? history : []).forEach(function (item) { if (item && item.id != null) present[String(item.id)] = true; });
+    var present = Object.create(null);
+    (Array.isArray(history) ? history : []).forEach(function (item) { if (item && item.id != null) { var sid = String(item.id); if (!_arIsBlockedKey(sid)) present[sid] = true; } });
     if (scope.selectionMode === 'explicit artifact IDs') {
       var saved = Array.isArray(scope.requestedArtifactIds) && scope.requestedArtifactIds.length ? scope.requestedArtifactIds : (Array.isArray(scope.includedArtifactIds) ? scope.includedArtifactIds : []);
-      var ids = saved.map(String).filter(function (id) { return present[id]; });
+      var ids = saved.map(String).filter(function (id) { return !_arIsBlockedKey(id) && present[id]; });
       if (ids.length) return { config: { artifactIds: ids }, kind: 'ids', count: ids.length };
     }
     if (scope.selectionMode === 'curriculum identifier' && scope.curriculumId) return { config: { curriculumId: String(scope.curriculumId) }, kind: 'curriculum' };
@@ -1310,13 +1391,30 @@ var _lazyIcon = function (name) {
       : rerun.kind === 'curriculum' ? atr('rerun_scope_curriculum', 'Re-run audits the same curriculum this audit selected.')
       : atr('rerun_scope_rederive', 'Re-run selects resources from the current lesson again, by the same rule this audit used.');
     var textDoor = typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway('text', _auditT) : null;
-    var rerunDisabled = !!p.isProcessing || !!(textDoor && textDoor.disabled);
+    var rerunDisabled = !!p.isProcessing || _arHardAiBlocked() || !!(textDoor && textDoor.disabled);
     return <div role="status" className="p-3 rounded-lg border border-amber-300 bg-amber-50 flex flex-wrap items-center gap-3 print:hidden">
       <p className="text-sm text-amber-950 flex-1 min-w-[16rem] m-0"><strong>{f.stale ? atr('out_of_date', 'This audit may be out of date.') : atr('verify_older', 'Verify this older audit.')}</strong> {parts.join('; ')}. {f.stale ? atr('stale_note', 'Findings and the score do not reflect those changes.') : (f.unverified ? atr('unverified_note', 'Content versions were not stored with this report.') : atr('checked_note', 'Existing resource versions were checked where available.'))}</p>
       {typeof p.onRerunAudit === 'function' && <div className="flex flex-col items-end gap-1 flex-shrink-0"><button type="button" onClick={function () { p.onRerunAudit(rerun.config); }} disabled={rerunDisabled} title={(textDoor && textDoor.title) || undefined} aria-describedby="audit-rerun-scope-note" className="min-h-11 px-3 py-1.5 rounded-md bg-amber-700 text-white text-sm font-semibold hover:bg-amber-800 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2">{p.isProcessing ? atr('rerunning', 'Re-running…') : atr('rerun', 'Re-run audit')}</button><p id="audit-rerun-scope-note" className="m-0 max-w-xs text-right text-xs text-amber-950" data-audit-rerun-scope={rerun.kind}>{scopeNote}</p></div>}
     </div>;
   }
   function AlignmentReportView(props) {
+    props = props && typeof props === 'object' ? props : {};
+    var _aiPolicyTick = (typeof React !== 'undefined' && typeof React.useState === 'function') ? React.useState(0) : [0, function () {}];
+    var setAiPolicyTick = _aiPolicyTick[1];
+    if (typeof React !== 'undefined' && typeof React.useEffect === 'function') {
+      React.useEffect(function () {
+        if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return;
+        var bump = function () { setAiPolicyTick(function (n) { return n + 1; }); };
+        window.addEventListener('alloflow:ai-config-changed', bump);
+        window.addEventListener('alloflow:student-ai-config-changed', bump);
+        window.addEventListener('alloflow:ai-key-lock-changed', bump);
+        return function () {
+          window.removeEventListener('alloflow:ai-config-changed', bump);
+          window.removeEventListener('alloflow:student-ai-config-changed', bump);
+          window.removeEventListener('alloflow:ai-key-lock-changed', bump);
+        };
+      }, []);
+    }
     var t = props.t;
     _auditT = typeof t === 'function' ? t : null;
     var generatedContent = props.generatedContent;
@@ -1326,11 +1424,12 @@ var _lazyIcon = function (name) {
     var canonicalPerStandard = comprehensive && comprehensive.standards && Array.isArray(comprehensive.standards.perStandard) ? comprehensive.standards.perStandard : [];
     var standardsReportCount = canonicalPerStandard.length || (comprehensive && comprehensive.standards && typeof comprehensive.standards.totalStandards === 'number' ? comprehensive.standards.totalStandards : 0) || reports.length;
     var textDoor = typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway('text', t) : null;
+    var showAiNotice = (_arHardAiBlocked() || !!(textDoor && textDoor.disabled)) && typeof window !== 'undefined' && window.AlloAiSetupNotice;
     // All-chrome empty state: follows the page language when its strings are translated.
     var emptyTranslated = typeof t === 'function' && typeof t('audit_report.unavailable_title') === 'string' && t('audit_report.unavailable_title') !== 'audit_report.unavailable_title';
     if (!comprehensive) return <section className="curriculum-audit-report max-w-4xl mx-auto h-full overflow-y-auto p-6" role="region" aria-labelledby="curriculum-audit-report-heading" tabIndex={0} lang={emptyTranslated ? undefined : 'en'}><h1 id="curriculum-audit-report-heading" className="text-xl font-black text-slate-800">{atr('report_title', 'Curriculum audit report')}</h1><div role="status" className="mt-4 rounded-xl border border-slate-300 bg-slate-50 p-4"><h2 className="font-bold text-slate-800">{atr('unavailable_title', 'Audit details are unavailable')}</h2><p className="mt-1 text-sm text-slate-700">{atr('unavailable_body', 'This saved resource does not contain the comprehensive audit data needed to render the report. Regenerate the curriculum audit to restore all nine evidence dimensions.')}</p></div></section>;
     return <section className="curriculum-audit-report space-y-8 max-w-4xl mx-auto h-full overflow-y-auto pr-2 pb-10 print:h-auto print:overflow-visible print:pr-0" role="region" aria-labelledby="curriculum-audit-report-heading" tabIndex={0} lang={resolveAuditLanguageTag(comprehensive)}><h1 id="curriculum-audit-report-heading" className="sr-only">{atr('report_title', 'Curriculum audit report')}</h1>{
-      textDoor && textDoor.disabled && typeof window !== 'undefined' && window.AlloAiSetupNotice ? React.createElement(window.AlloAiSetupNotice, { t: t, kind: 'text' }) : null}{
+      showAiNotice ? React.createElement(window.AlloAiSetupNotice, { t: t, kind: 'text' }) : null}{
       // Executive summary banner — readiness score + top fixes + Apply button.
       <AuditFreshnessNotice freshness={freshness} onRerunAudit={props.onRerunAudit} isProcessing={props.isProcessing} rerunScope={auditRerunScope(generatedContent, props.history)} />}{
       comprehensive && <ExecutiveSummary t={t} comp={comprehensive} isProcessing={props.isProcessing} standardsReportCount={standardsReportCount} onApplyFixes={props.onApplyFixes} onGeneratePreCheck={props.onGeneratePreCheck} />}{

@@ -22,6 +22,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
   'use strict';
 
   (function() {
+    if (typeof document === 'undefined' || !document.body) return;
     if (document.getElementById('allo-live-via')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-via';
@@ -32,6 +33,23 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
     liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(liveRegion);
   })();
+
+  (function() {
+    if (typeof document === 'undefined' || !document.head) return;
+    if (document.getElementById('allo-via-a11y-css')) return;
+    var s = document.createElement('style');
+    s.id = 'allo-via-a11y-css';
+    s.textContent =
+      '.selh-via button:focus-visible,.selh-via a:focus-visible,.selh-via textarea:focus-visible,.selh-via [tabindex]:focus-visible{outline:3px solid #f59e0b;outline-offset:2px;}' +
+      '.selh-via button{transition:background-color 140ms ease,border-color 140ms ease,color 140ms ease;}' +
+      '@media (prefers-reduced-motion: reduce){.selh-via,.selh-via *{transition:none !important;animation:none !important;}}' +
+      '@media (forced-colors: active){.selh-via button:focus-visible,.selh-via a:focus-visible,.selh-via textarea:focus-visible{outline:2px solid Highlight !important;}.selh-via button,.selh-via [role="tab"],.selh-via [role="radio"]{forced-color-adjust:auto;}}';
+    document.head.appendChild(s);
+  })();
+
+  function isImeComposing(e) {
+    return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+  }
 
   // The 24 character strengths organized under 6 virtue categories
   // (Peterson & Seligman 2004; VIA Institute classification).
@@ -125,7 +143,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
       var _viaT = (ctx && ctx.theme) || {};
       var _viaHC = !!_viaT.isContrast, _viaL = !_viaHC && !_viaT.isDark;
       var _via_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _via_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#fff':'#000000','#d97706':'#000000','#92400e':'#000000'};
-      var _via_FGL = {'#cbd5e1':'#334155','#fcd34d':'#78350f','#94a3b8':'#475569','#fde68a':'#92400e','#e2e8f0':'#1e293b'}, _via_FGH = {'#cbd5e1':'#ffff00','#fcd34d':'#ffff00','#94a3b8':'#ffff00','#fde68a':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00'};
+      var _via_FGL = {'#cbd5e1':'#334155','#fcd34d':'#78350f','#94a3b8':'#475569','#fde68a':'#92400e','#e2e8f0':'#1e293b','#64748b':'#475569'}, _via_FGH = {'#cbd5e1':'#ffff00','#fcd34d':'#ffff00','#94a3b8':'#ffff00','#fde68a':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00'};
       var _via_BDL = {'#334155':'#cbd5e1','#1e293b':'#e2e8f0','#475569':'#94a3b8','#fcd34d':'#b45309'}, _via_BDH = {'#334155':'#ffff00','#f59e0b':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#d97706':'#ffff00','#fcd34d':'#ffff00','#92400e':'#ffff00'};
       var _viaBg = function(h){ return _viaHC ? (_via_BGH[h]||h) : (_viaL ? (_via_BGL[h]||h) : h); };
       var _viaFg = function(h){ return _viaHC ? (_via_FGH[h]||h) : (_viaL ? (_via_FGL[h]||h) : h); };
@@ -139,6 +157,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
       var announceToSR = ctx.announceToSR;
       var onSafetyFlag = ctx.onSafetyFlag || null;
       var _viaBand = (ctx && ctx.gradeBand) || 'high';
+      function announceVIA(msg) {
+        if (!msg) return;
+        if (typeof announceToSR === 'function') { try { announceToSR(msg); return; } catch (_) {} }
+        if (typeof document !== 'undefined') {
+          var live = document.getElementById('allo-live-via');
+          if (live) {
+            live.textContent = '';
+            setTimeout(function() { live.textContent = msg; }, 20);
+          }
+        }
+      }
 
       var VIA_VIEWS = ['overview', 'sort', 'reflect', 'print', 'about'];
       var STRENGTH_IDS = {};
@@ -220,8 +249,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
-          h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid ' + _viaBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _viaFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+          h('button', { type: 'button', onClick: function() { if (typeof setSelHubTool === 'function') setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
+            style: { background: _viaHC ? '#000000' : (_viaL ? '#f1f5f9' : 'rgba(255,255,255,0.05)'), border: '1px solid ' + _viaBd('#334155'), borderRadius: 8, padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', color: _viaFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _viaFg('#fcd34d'), fontSize: 22, fontWeight: 900 } }, '🌟 VIA Strengths'),
             h('div', { style: { fontSize: 12, color: _viaFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A reflection on the 24 VIA Character Strengths.')
@@ -247,6 +276,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
               return h('button', {
                 key: t.id,
                 id: 'via-tab-' + t.id,
+                type: 'button',
                 'data-via-tab': t.id,
                 'aria-label': t.label,
                 'aria-controls': 'via-tab-panel',
@@ -255,6 +285,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
                 tabIndex: active ? 0 : -1,
                 onClick: function() { goto(t.id); },
                 onKeyDown: function(e) {
+                  if (isImeComposing(e)) return;
                   var currentIndex = tabs.indexOf(t);
                   var nextIndex = currentIndex;
                   if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (currentIndex + 1) % tabs.length;
@@ -265,13 +296,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
                   e.preventDefault();
                   var nextTab = tabs[nextIndex];
                   goto(nextTab.id);
-                  setTimeout(function() {
-                    var target = document.querySelector('[data-via-tab="' + nextTab.id + '"]');
-                    if (target) target.focus();
-                  }, 0);
+                  if (typeof document !== 'undefined') {
+                    setTimeout(function() {
+                      var target = document.querySelector('[data-via-tab="' + nextTab.id + '"]');
+                      if (target && typeof target.focus === 'function') target.focus();
+                    }, 0);
+                  }
                 },
-                style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? _viaBd('#f59e0b') : _viaBd('#334155')),
-                  background: active ? (_viaHC ? '#000000' : 'rgba(245,158,11,0.18)') : _viaBg('#1e293b'),
+                style: { padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + (active ? _viaBd('#f59e0b') : _viaBd('#334155')),
+                  background: active ? (_viaHC ? '#000000' : (_viaL ? '#fef3c7' : 'rgba(245,158,11,0.18)')) : _viaBg('#1e293b'),
                   color: active ? _viaFg('#fde68a') : _viaFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 }
               }, t.icon + ' ' + t.label);
             })
@@ -279,7 +312,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
         );
       }
       function authoritativeBanner() {
-        return h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: _viaHC ? '#000000' : 'rgba(245,158,11,0.10)', borderTop: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.4)'), borderRight: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.4)'), borderBottom: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.4)'), borderLeft: '3px solid ' + _viaBd('#f59e0b'), marginBottom: 12, fontSize: 12.5, color: _viaFg('#fde68a'), lineHeight: 1.65 } },
+        return h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: _viaHC ? '#000000' : (_viaL ? '#fffbeb' : 'rgba(245,158,11,0.10)'), borderTop: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.4)'), borderRight: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.4)'), borderBottom: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.4)'), borderLeft: '3px solid ' + _viaBd('#f59e0b'), marginBottom: 12, fontSize: 12.5, color: _viaFg('#fde68a'), lineHeight: 1.65 } },
           h('strong', null, '📚 The authoritative VIA Survey is free at '),
           h('a', { href: 'https://www.viacharacter.org/', target: '_blank', rel: 'noopener noreferrer',
             style: { color: _viaFg('#fcd34d'), textDecoration: 'underline', fontWeight: 800 } }, 'viacharacter.org'),
@@ -289,7 +322,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
 
       function softPointer() {
         return h('div', { className: 'no-print',
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _viaBg('#0f172a'), border: '1px solid ' + _viaBd('#334155'), fontSize: 11, color: _viaFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _viaBg('#0f172a'), border: '1px solid ' + _viaBd('#334155'), fontSize: 12, color: _viaFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'Strengths-spotting is a reflective practice. It is not a psychological diagnosis and it does not replace counseling or therapy. Crisis Text Line: text HOME to 741741.'
         );
@@ -320,17 +353,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
                 var s = STRENGTHS.find(function(x) { return x.id === id; });
                 if (!s) return null;
                 return h('div', { key: id, style: { padding: 10, borderRadius: 8, background: _viaBg('#1e293b'), border: '1px solid ' + (_viaHC ? '#ffff00' : '#f59e0b66') } },
-                  h('div', { style: { fontSize: 26, marginBottom: 4 } }, s.icon),
+                  h('div', { style: { fontSize: 26, marginBottom: 4 }, 'aria-hidden': true }, s.icon),
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: _viaFg('#fde68a') } }, s.label),
-                  h('div', { style: { fontSize: 10, color: _viaFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5 } }, s.virtue)
+                  h('div', { style: { fontSize: 11, color: _viaFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5 } }, s.virtue)
                 );
               })
             )
           ) : h('div', { style: { padding: 14, borderRadius: 10, background: _viaBg('#0f172a'), border: '1px solid ' + _viaBd('#1e293b'), marginBottom: 14, textAlign: 'center' } },
             h('p', { style: { margin: '0 0 10px', color: _viaFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
               'Rate the 24 strengths to identify your top 5 signature strengths.'),
-            h('button', { onClick: function() { goto('sort'); }, 'aria-label': 'Start the self-sort',
-              style: { padding: '8px 18px', borderRadius: 8, border: _viaHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _viaHC ? '#000000' : 'linear-gradient(135deg, #92400e 0%, #b45309 100%)', color: _viaFg('#fff'), fontWeight: 800, fontSize: 13 } }, '→ Start the self-sort')
+            h('button', { type: 'button', onClick: function() { goto('sort'); }, 'aria-label': 'Start the self-sort',
+              style: { padding: '10px 18px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: _viaHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _viaHC ? '#000000' : 'linear-gradient(135deg, #92400e 0%, #b45309 100%)', color: _viaFg('#fff'), fontWeight: 800, fontSize: 13 } }, '→ Start the self-sort')
           ),
 
           // Brief overview of all 24 by virtue
@@ -348,15 +381,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
         });
         return h('div', null,
           Object.keys(virtues).map(function(v) {
-            return h('div', { key: v, style: { padding: 12, borderRadius: 10, background: _viaBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 8 } },
-              h('div', { style: { fontSize: 11, color: _viaFg('#fcd34d'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, v),
+            return h('div', { key: v, style: { padding: 12, borderRadius: 10, background: _viaBg('#0f172a'), border: '1px solid ' + _viaBd('#1e293b'), marginBottom: 8 } },
+              h('div', { style: { fontSize: 12, color: _viaFg('#fcd34d'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, v),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 6 } },
                 virtues[v].map(function(s) {
                   var r = ratingOf(s.id);
                   return h('div', { key: s.id, style: { display: 'flex', alignItems: 'center', gap: 6, padding: 8, borderRadius: 6, background: _viaBg('#1e293b') } },
-                    h('span', { style: { fontSize: 18 } }, s.icon),
+                    h('span', { style: { fontSize: 18 }, 'aria-hidden': true }, s.icon),
                     h('span', { style: { flex: 1, fontSize: 12, color: _viaFg('#e2e8f0'), fontWeight: 600 } }, s.label),
-                    r > 0 ? h('span', { style: { fontSize: 10, color: _viaFg('#fcd34d'), fontWeight: 800 } }, r) : null
+                    r > 0 ? h('span', { style: { fontSize: 11, color: _viaFg('#fcd34d'), fontWeight: 800 } }, r) : null
                   );
                 })
               )
@@ -377,9 +410,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
           });
           var strength = STRENGTHS.find(function(item) { return item.id === id; });
           if (announceToSR && strength) announceToSR(strength.label + ' rated ' + value + ' out of 5');
+          else if (strength) announceVIA(strength.label + ' rated ' + value + ' out of 5');
         }
         function toggleTop(id) {
-          var hitLimit = false;
+          var wasTop = d.topFive.indexOf(id) !== -1;
+          var atLimit = !wasTop && d.topFive.length >= 5;
+          var strength = STRENGTHS.find(function(item) { return item.id === id; });
+          if (atLimit) {
+            if (addToast) addToast('You already have 5 signature strengths. Remove one to add another.', 'info');
+            announceVIA('You already have 5 signature strengths.');
+            return;
+          }
           setVS(function(prior) {
             var top = cleanTopFive(prior.topFive);
             var idx = top.indexOf(id);
@@ -388,12 +429,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
             } else if (top.length < 5) {
               top.push(id);
             } else {
-              hitLimit = true;
               return {};
             }
             return { topFive: top };
           });
-          if (hitLimit && addToast) addToast('You already have 5 signature strengths. Remove one to add another.', 'info');
+          if (strength) {
+            announceVIA(!wasTop ? ('Added ' + strength.label + ' to signature strengths.') : ('Removed ' + strength.label + ' from signature strengths.'));
+          }
         }
 
         var virtues = {};
@@ -405,7 +447,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
 
         return h('div', null,
           authoritativeBanner(),
-          h('div', { style: { padding: 12, borderRadius: 10, background: _viaHC ? '#000000' : 'rgba(245,158,11,0.10)', borderTop: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderRight: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderBottom: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderLeft: '3px solid ' + _viaBd('#f59e0b'), marginBottom: 14, fontSize: 12.5, color: _viaFg('#fde68a'), lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: _viaHC ? '#000000' : (_viaL ? '#fffbeb' : 'rgba(245,158,11,0.10)'), borderTop: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderRight: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderBottom: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderLeft: '3px solid ' + _viaBd('#f59e0b'), marginBottom: 14, fontSize: 12.5, color: _viaFg('#fde68a'), lineHeight: 1.65 } },
             h('strong', null, '✏️ How this works: '),
             'For each of the 24 strengths, rate how much it sounds like you (1 = not really me, 5 = really me). Then click the star icon on up to 5 strengths to mark them as your signature strengths.'
           ),
@@ -414,30 +456,49 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
             h('div', { role: 'progressbar', 'aria-label': 'Self-sort progress', 'aria-valuemin': 0, 'aria-valuemax': 24, 'aria-valuenow': ratedCount, 'aria-valuetext': ratedCount + ' of 24 strengths rated', style: { height: 7, borderRadius: 4, background: _viaBg('#1e293b'), overflow: 'hidden', border: _viaHC ? '1px solid #ffff00' : 'none' } },
               h('div', { style: { height: '100%', width: Math.round((ratedCount / 24) * 100) + '%', borderRadius: 4, background: _viaHC ? '#ffff00' : '#f59e0b', transition: 'width 0.2s' } })
             ),
-            h('div', { role: 'status', style: { marginTop: 5, color: _viaFg('#fcd34d'), fontSize: 11, fontWeight: 700 } }, ratedCount + ' of 24 strengths rated')
+            h('div', { role: 'status', style: { marginTop: 5, color: _viaFg('#fcd34d'), fontSize: 12, fontWeight: 700 } }, ratedCount + ' of 24 strengths rated')
           ),
           Object.keys(virtues).map(function(v) {
             return h('div', { key: v, style: { padding: 12, borderRadius: 10, background: _viaBg('#0f172a'), border: '1px solid ' + _viaBd('#1e293b'), marginBottom: 10 } },
-              h('div', { style: { fontSize: 11, color: _viaFg('#fcd34d'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 } }, v),
+              h('div', { style: { fontSize: 12, color: _viaFg('#fcd34d'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 } }, v),
               virtues[v].map(function(s) {
                 var r = ratingOf(s.id);
                 var isTop = d.topFive.indexOf(s.id) !== -1;
                 return h('div', { key: s.id, style: { padding: 8, borderRadius: 6, background: _viaBg('#1e293b'), marginBottom: 4 } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
-                    h('span', { style: { fontSize: 22 } }, s.icon),
+                    h('span', { style: { fontSize: 22 }, 'aria-hidden': true }, s.icon),
                     h('div', { style: { flex: 1, minWidth: 180 } },
                       h('div', { style: { fontSize: 13, fontWeight: 700, color: _viaFg('#e2e8f0') } }, s.label),
-                      h('div', { style: { fontSize: 11, color: _viaFg('#94a3b8') } }, s.desc)
+                      h('div', { style: { fontSize: 12, color: _viaFg('#94a3b8') } }, s.desc)
                     ),
-                    h('div', { style: { display: 'flex', gap: 2 }, role: 'radiogroup', 'aria-label': 'Rate ' + s.label },
+                    h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' }, role: 'radiogroup', 'aria-label': 'Rate ' + s.label },
                       [1, 2, 3, 4, 5].map(function(n) {
                         var active = r === n;
-                        return h('button', { key: n, onClick: function() { rate(s.id, n); }, role: 'radio', 'aria-checked': active, 'aria-label': 'Rate ' + s.label + ' ' + n + ' out of 5',
-                          style: { padding: '4px 8px', borderRadius: 4, border: '1px solid ' + (active ? _viaBd('#f59e0b') : _viaBd('#475569')), background: active ? (_viaHC ? '#000000' : '#f59e0b') : 'transparent', color: active ? (_viaHC ? '#ffff00' : '#0f172a') : _viaFg('#94a3b8'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, n);
+                        var isFocusable = r ? active : (n === 1);
+                        return h('button', { key: n, id: 'via-rate-' + s.id + '-' + n, type: 'button', onClick: function() { rate(s.id, n); }, role: 'radio', 'aria-checked': active, tabIndex: isFocusable ? 0 : -1, 'aria-label': 'Rate ' + s.label + ' ' + n + ' out of 5',
+                          onKeyDown: function(e) {
+                            if (isImeComposing(e)) return;
+                            var next = null;
+                            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (n % 5) + 1;
+                            else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = ((n + 3) % 5) + 1;
+                            else if (e.key === 'Home') next = 1;
+                            else if (e.key === 'End') next = 5;
+                            if (next != null) {
+                              e.preventDefault();
+                              rate(s.id, next);
+                              if (typeof document !== 'undefined') {
+                                setTimeout(function() {
+                                  var btn = document.getElementById('via-rate-' + s.id + '-' + next);
+                                  if (btn && typeof btn.focus === 'function') btn.focus();
+                                }, 0);
+                              }
+                            }
+                          },
+                          style: { minWidth: 44, minHeight: 44, padding: '6px 10px', boxSizing: 'border-box', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, border: '1px solid ' + (active ? _viaBd('#f59e0b') : _viaBd('#475569')), background: active ? (_viaHC ? '#000000' : '#f59e0b') : 'transparent', color: active ? (_viaHC ? '#ffff00' : '#0f172a') : _viaFg('#94a3b8'), cursor: 'pointer', fontSize: 13, fontWeight: 700 } }, n);
                       })
                     ),
-                    h('button', { onClick: function() { toggleTop(s.id); }, 'aria-label': (isTop ? 'Remove ' : 'Add ') + s.label + (isTop ? ' from top 5' : ' to top 5'), 'aria-pressed': isTop,
-                      style: { padding: '4px 8px', borderRadius: 4, border: '1px solid ' + (isTop ? _viaBd('#fcd34d') : _viaBd('#475569')), background: isTop ? (_viaHC ? '#000000' : 'rgba(252,211,77,0.18)') : 'transparent', color: isTop ? _viaFg('#fcd34d') : _viaFg('#94a3b8'), cursor: 'pointer', fontSize: 14 } }, isTop ? '⭐' : '☆')
+                    h('button', { type: 'button', onClick: function() { toggleTop(s.id); }, 'aria-label': (isTop ? 'Remove ' : 'Add ') + s.label + (isTop ? ' from top 5' : ' to top 5'), 'aria-pressed': isTop,
+                      style: { minWidth: 44, minHeight: 44, padding: '6px 10px', boxSizing: 'border-box', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, border: '1px solid ' + (isTop ? _viaBd('#fcd34d') : _viaBd('#475569')), background: isTop ? (_viaHC ? '#000000' : (_viaL ? '#fef3c7' : 'rgba(252,211,77,0.18)')) : 'transparent', color: isTop ? _viaFg('#fcd34d') : _viaFg('#94a3b8'), cursor: 'pointer', fontSize: 16 } }, isTop ? '⭐' : '☆')
                   )
                 );
               })
@@ -456,11 +517,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
         if (topFive.length === 0) {
           return h('div', null,
             h('div', { style: { padding: 20, borderRadius: 12, background: _viaBg('#0f172a'), border: '1px solid ' + _viaBd('#1e293b'), textAlign: 'center' } },
-              h('div', { style: { fontSize: 36, marginBottom: 8 } }, '⭐'),
+              h('div', { style: { fontSize: 36, marginBottom: 8 }, 'aria-hidden': true }, '⭐'),
               h('div', { style: { color: _viaFg('#cbd5e1'), fontSize: 14, marginBottom: 4 } }, 'Pick your top 5 first'),
               h('div', { style: { color: _viaFg('#94a3b8'), fontSize: 12 } }, 'In the Self-Sort view, star up to 5 strengths to mark them as signature.'),
-              h('button', { onClick: function() { goto('sort'); }, 'aria-label': 'Go to self-sort',
-                style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid ' + _viaBd('#f59e0b'), background: _viaHC ? '#000000' : 'rgba(245,158,11,0.18)', color: _viaFg('#fde68a'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Self-Sort')
+              h('button', { type: 'button', onClick: function() { goto('sort'); }, 'aria-label': 'Go to self-sort',
+                style: { marginTop: 12, padding: '10px 16px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + _viaBd('#f59e0b'), background: _viaHC ? '#000000' : (_viaL ? '#fef3c7' : 'rgba(245,158,11,0.18)'), color: _viaFg('#fde68a'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Self-Sort')
             )
           );
         }
@@ -474,7 +535,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
         }
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: _viaFg('#fde68a'), lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: _viaHC ? '#000000' : (_viaL ? '#fffbeb' : 'rgba(245,158,11,0.08)'), borderTop: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderRight: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderBottom: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderLeft: '3px solid ' + _viaBd('#f59e0b'), marginBottom: 14, fontSize: 12.5, color: _viaFg('#fde68a'), lineHeight: 1.65 } },
             h('strong', null, '💭 Reflect on each signature strength. '),
             'A signature strength is one that feels essential to you, that energizes you when you use it. For each one: when did you most recently use it well? What would it look like to use it MORE on purpose this month?'
           ),
@@ -484,12 +545,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
             if (!s) return null;
             var ref = (d.reflections || {})[id] || '';
             var refId = 'via-ref-' + id;
-            return h('div', { key: id, style: { padding: 14, borderRadius: 10, background: _viaBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
+            return h('div', { key: id, style: { padding: 14, borderRadius: 10, background: _viaBg('#0f172a'), borderTop: '1px solid ' + _viaBd('#1e293b'), borderRight: '1px solid ' + _viaBd('#1e293b'), borderBottom: '1px solid ' + _viaBd('#1e293b'), borderLeft: '3px solid ' + _viaBd('#f59e0b'), marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
-                h('span', { style: { fontSize: 28 } }, s.icon),
+                h('span', { style: { fontSize: 28 }, 'aria-hidden': true }, s.icon),
                 h('div', null,
                   h('div', { style: { fontSize: 14, fontWeight: 800, color: _viaFg('#fde68a') } }, s.label),
-                  h('div', { style: { fontSize: 11, color: _viaFg('#94a3b8') } }, s.desc)
+                  h('div', { style: { fontSize: 12, color: _viaFg('#94a3b8') } }, s.desc)
                 )
               ),
               h('label', { htmlFor: refId, className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } }, 'Reflect on ' + s.label),
@@ -497,7 +558,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
                 placeholder: 'When have you used this well? How will you use it more on purpose?',
                 onChange: function(e) { setReflection(id, e.target.value); },
                 onBlur: function(e) { scanViaText(e.target.value); },
-                style: { width: '100%', minHeight: 70, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _viaBg('#1e293b'), color: _viaFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical' } })
+                style: { width: '100%', minHeight: 70, padding: 10, boxSizing: 'border-box', borderRadius: 6, border: '1px solid ' + _viaBd('#334155'), background: _viaBg('#1e293b'), color: _viaFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical' } })
             );
           }),
 
@@ -511,13 +572,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
       function renderPrintView() {
         var topFive = d.topFive;
         return h('div', null,
-          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: _viaHC ? '#000000' : 'rgba(245,158,11,0.10)', borderRadius: 8, border: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.3)') } },
+          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: _viaHC ? '#000000' : (_viaL ? '#fffbeb' : 'rgba(245,158,11,0.10)'), borderRadius: 8, border: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.3)') } },
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _viaFg('#fde68a'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _viaHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _viaHC ? '#000000' : 'linear-gradient(135deg, #92400e 0%, #b45309 100%)', color: _viaFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
-            h('button', { onClick: function() { goto('overview'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _viaBd('#475569'), background: _viaBg('#1e293b'), color: _viaFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+            h('button', { type: 'button', onClick: printNow, style: { padding: '10px 18px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: _viaHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _viaHC ? '#000000' : 'linear-gradient(135deg, #92400e 0%, #b45309 100%)', color: _viaFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { type: 'button', onClick: function() { goto('overview'); }, 'aria-label': 'Back',
+              style: { padding: '10px 18px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + _viaBd('#475569'), background: _viaBg('#1e293b'), color: _viaFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
@@ -534,7 +595,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
             ),
 
             h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid ' + _viaBd('#92400e') } },
-              h('div', { style: { fontSize: 10, color: _viaFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'VIA Character Strengths · Self-Reflection'),
+              h('div', { style: { fontSize: 12, color: _viaFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'VIA Character Strengths · Self-Reflection'),
               h('h1', { style: { margin: 0, fontSize: 28, fontWeight: 900 } }, 'My Signature Strengths'),
               d.lastUpdated ? h('div', { style: { fontSize: 12, color: _viaFg('#475569'), marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
             ),
@@ -546,9 +607,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
                   var ref = d.reflections[id] || '';
                   return h('div', { key: id, style: { marginBottom: 18, pageBreakInside: 'avoid' } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderRadius: 4, marginBottom: 8, background: _viaBg('#92400e'), color: _viaFg('#fff'), border: _viaHC ? '1px solid #ffff00' : 'none' } },
-                      h('span', { style: { fontSize: 18 } }, s.icon),
+                      h('span', { style: { fontSize: 18 }, 'aria-hidden': true }, s.icon),
                       h('span', { style: { fontSize: 14, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, s.label),
-                      h('span', { style: { fontSize: 10, marginLeft: 'auto', opacity: 0.85 } }, s.virtue)
+                      h('span', { style: { fontSize: 11, marginLeft: 'auto', opacity: 0.9 } }, s.virtue)
                     ),
                     h('div', { style: { padding: '0 8px', fontSize: 12, color: _viaFg('#475569'), marginBottom: 6, fontStyle: 'italic' } }, s.desc),
                     ref ? h('p', { style: { margin: '0 8px', color: _viaFg('#0f172a'), fontSize: 13, lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, ref) : null
@@ -556,7 +617,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
                 })
               : h('div', { style: { padding: 14, fontSize: 12, color: _viaFg('#475569'), fontStyle: 'italic' } }, 'No signature strengths selected yet.'),
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _viaFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid ' + _viaBd('#cbd5e1'), fontSize: 12, color: _viaFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
               'Strengths from Peterson, C. and Seligman, M. E. P. (2004), Character Strengths and Virtues, Oxford University Press. ',
               'For the authoritative free survey: viacharacter.org. Created with AlloFlow SEL Hub.'
             )
@@ -573,7 +634,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
         return h('div', null,
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('viaStrengths', h, ctx) : null),
           // Authoritative pointer
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.4)', borderRight: '1px solid rgba(245,158,11,0.4)', borderBottom: '1px solid rgba(245,158,11,0.4)', borderLeft: '4px solid #f59e0b', marginBottom: 14 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _viaHC ? '#000000' : (_viaL ? '#fffbeb' : 'rgba(245,158,11,0.10)'), borderTop: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.4)'), borderRight: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.4)'), borderBottom: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.4)'), borderLeft: '4px solid ' + _viaBd('#f59e0b'), marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', color: _viaFg('#fcd34d'), fontSize: 16 } }, '📚 The authoritative VIA Survey'),
             h('p', { style: { margin: 0, color: _viaFg('#fde68a'), fontSize: 13.5, lineHeight: 1.7 } },
               'The VIA Institute on Character offers the validated VIA Survey free at ',
@@ -583,7 +644,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
             )
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: _viaBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _viaBg('#0f172a'), border: '1px solid ' + _viaBd('#1e293b'), marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _viaFg('#fcd34d'), fontSize: 16 } }, 'What VIA Character Strengths is'),
             h('p', { style: { margin: '0 0 10px', color: _viaFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
               'VIA (Values In Action) is a classification of 24 character strengths organized under 6 broader virtue categories (Wisdom, Courage, Humanity, Justice, Temperance, Transcendence). The 24 strengths were derived by Christopher Peterson and Martin Seligman through a multi-year project examining what major philosophical and religious traditions across human history considered virtuous. The strengths that appeared in nearly all traditions made the list.'
@@ -593,7 +654,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
             )
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: _viaBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _viaBg('#0f172a'), border: '1px solid ' + _viaBd('#1e293b'), marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _viaFg('#fcd34d'), fontSize: 16 } }, 'Signature strengths'),
             h('p', { style: { margin: 0, color: _viaFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
               'Of the 24 strengths, the 5 that feel most central to who you are are called your "signature strengths." Signature strengths share three features: (1) you recognize yourself in them, (2) they energize you when you use them, and (3) using them makes you feel more like yourself. The interesting research finding is that consciously using a signature strength in a new way each day for a week reliably increases happiness and decreases depressive symptoms (Seligman et al., 2005).'
@@ -601,7 +662,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
           ),
 
           // Sources
-          h('div', { style: { padding: 16, borderRadius: 12, background: _viaBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _viaBg('#0f172a'), border: '1px solid ' + _viaBd('#1e293b'), marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _viaFg('#fcd34d'), fontSize: 16 } }, '📚 Sources and learn more'),
             h('div', { style: { fontSize: 12, color: _viaFg('#94a3b8'), marginBottom: 10, lineHeight: 1.55 } }, 'Authoritative resources for the VIA framework.'),
             sourceCard('Peterson, C. and Seligman, M. E. P. (2004)', 'Character Strengths and Virtues: A Handbook and Classification, Oxford University Press', 'The 800-page foundational handbook. Defines the 24 strengths, their cross-cultural basis, and the supporting evidence.', null),
@@ -611,7 +672,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
           ),
 
           // Honest limits
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _viaHC ? '#000000' : (_viaL ? '#fffbeb' : 'rgba(245,158,11,0.08)'), borderTop: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderRight: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderBottom: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderLeft: '3px solid ' + _viaBd('#f59e0b'), marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _viaFg('#fcd34d'), fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _viaFg('#fde68a'), fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'The 24-strength list is the result of cross-cultural philosophical analysis. It is not a neutral, value-free measure; it reflects choices about what counts as a strength. Other classifications would yield other lists.'),
@@ -621,7 +682,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', fontSize: 12.5, color: _viaFg('#fde68a'), lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: _viaHC ? '#000000' : (_viaL ? '#fffbeb' : 'rgba(245,158,11,0.10)'), borderTop: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderRight: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderBottom: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderLeft: '3px solid ' + _viaBd('#f59e0b'), fontSize: 12.5, color: _viaFg('#fde68a'), lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'For a class activity, point students to the free VIA Survey at viacharacter.org first; use this tool for follow-up reflection and ongoing reference. A productive Crew or advisory conversation: "Pick one of your signature strengths and tell us about one time you used it well in the last week." Strengths-spotting in other students is a powerful Crew practice if framed carefully.'
           ),
@@ -631,11 +692,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
       }
 
       function sourceCard(authorYear, title, blurb, url) {
-        return h('div', { style: { padding: 10, borderRadius: 8, background: _viaBg('#1e293b'), border: '1px solid #334155', marginBottom: 8 } },
-          h('div', { style: { fontSize: 11, color: _viaFg('#fcd34d'), fontWeight: 700, marginBottom: 2 } }, authorYear),
+        return h('div', { style: { padding: 10, borderRadius: 8, background: _viaBg('#1e293b'), border: '1px solid ' + _viaBd('#334155'), marginBottom: 8 } },
+          h('div', { style: { fontSize: 12, color: _viaFg('#fcd34d'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: _viaFg('#fde68a'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+                style: { fontSize: 13, color: _viaFg('#fde68a'), fontWeight: 700, textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', minHeight: 44, marginBottom: 4 } }, title + ' ↗')
             : h('div', { style: { fontSize: 13, color: _viaFg('#fde68a'), fontWeight: 700, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _viaFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );
@@ -648,7 +709,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
       else if (view === 'about') body = renderAbout();
       else body = renderOverview();
 
-      return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'VIA Character Strengths' },
+      return h('div', { className: 'selh-via', style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'VIA Character Strengths' },
         header(),
         navTabs(),
         (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')

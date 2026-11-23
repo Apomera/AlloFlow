@@ -51,7 +51,7 @@ const GlossaryPrintStyles = () => <style>{`
 // print fires no beforeprint, so the user is told instead of left guessing.
 const printGlossarySheet = (node, labels = {}) => {
   if (!node || typeof document === 'undefined') return false;
-  const esc = value => String(value == null ? '' : value).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+  const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
   const tell = message => {
     if (!message) return;
     if (window.AlloFlowUX && typeof window.AlloFlowUX.toast === 'function') window.AlloFlowUX.toast(message, 'error');
@@ -63,7 +63,7 @@ const printGlossarySheet = (node, labels = {}) => {
     try { win.opener = null; } catch (_) {}
     try {
       const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
-        .map(el => el.tagName === 'LINK' ? '<link rel="stylesheet" href="' + esc(el.href) + '">' : el.outerHTML).join('');
+        .map(el => el.tagName === 'LINK' ? (/^(?:https?:|\/|blob:)/i.test(String(el.href || '')) ? '<link rel="stylesheet" href="' + esc(el.href) + '">' : '') : el.outerHTML).join('');
       const root = document.documentElement;
       win.document.open();
       win.document.write('<!DOCTYPE html><html lang="' + esc(root.lang || 'en') + '" dir="' + esc(root.dir || 'ltr') + '"><head><meta charset="utf-8"><title>' + esc(labels.title || '') + '</title>' + styles +
@@ -1691,8 +1691,25 @@ const indexTimelineItems = (itemsArray) => itemsArray.map((item, i) => ({
 }));
 // AI-off sweep: "Explain why" needs usable text AI (host capability + student policy).
 const gamesTextAiOff = () => {
-  try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !window.__alloAiUsable('text'); } catch (_) {}
-  return typeof window !== 'undefined' && window.__alloStudentAiDisabled === true;
+  if (typeof window === 'undefined') return true;
+  try { if (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text')) return true; } catch (_) { return true; }
+  if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true) return true;
+  if (window.hideStudentAiFeatures === true || !!window.__alloQrStudentMode) return true;
+  if (window.StudentPolicy && typeof window.StudentPolicy.isAiDisabled === 'function' && window.StudentPolicy.isAiDisabled()) return true;
+  if (window.AlloModules && window.AlloModules.StudentPolicy && typeof window.AlloModules.StudentPolicy.isAiDisabled === 'function' && window.AlloModules.StudentPolicy.isAiDisabled()) return true;
+  return false;
+};
+const _gamesCheckCrisisText = (rawText) => {
+  const s = String(rawText || '').trim();
+  if (!s) return false;
+  try {
+    const checker = typeof window !== 'undefined' && (window.AlloModules?.SafetyContentChecker || window.SafetyContentChecker);
+    if (checker && typeof checker.check === 'function') {
+      const res = checker.check(s);
+      if (res && (res.blocked || res.crisis || res.level === 'critical' || res.severity === 'critical')) return true;
+    }
+  } catch (_) {}
+  return /\b(kill\s+my\s*self|suicid\w*|end\s+my\s+life|want\s+to\s+die|hurt\s+my\s*self|self[\s-]*harm|cut\s+my\s*self)\b/i.test(s);
 };
 const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, onExplainIncorrect, initialImageSize }) => {
   const { t } = useContext(LanguageContext);
@@ -1917,7 +1934,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
           const currentPosition = items.findIndex(i => i.originalIndex === item.originalIndex);
           const correctPosition = item.originalIndex;
           const sortedByCorrect = [...normalizedItemsRef.current];
-          const text = await onExplainIncorrect(item, correctPosition, currentPosition, progressionLabel, sortedByCorrect);
+          const text = await Promise.resolve(onExplainIncorrect(item, correctPosition, currentPosition, progressionLabel, sortedByCorrect));
           setExplanations(prev => ({ ...prev, [key]: text || t('timeline.game.why_none') || 'No explanation available.' }));
       } catch (e) {
           setExplanations(prev => ({ ...prev, [key]: t('timeline.game.why_failed') || "Couldn't generate an explanation right now." }));
@@ -2442,15 +2459,21 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
   }, [keyboardSelectedItemId]);
   const handleAddItem = async () => {
       if (!newItemText.trim()) return;
-      if (!onGenerateItem) {
+      if (_gamesCheckCrisisText(newItemText)) {
+          const crisisMsg = 'You matter, and help is available right now. Call or text 988 (Suicide & Crisis Lifeline), text HOME to 741741, or call 911 in an emergency. Please reach out to a trusted adult.';
+          setAnnouncement(crisisMsg);
+          if (typeof window !== 'undefined' && window.AlloFlowUX && typeof window.AlloFlowUX.toast === 'function') window.AlloFlowUX.toast(crisisMsg, 'warning');
+          return;
+      }
+      if (!onGenerateItem || gamesTextAiOff()) {
           const message = t('common.coming_soon') || 'This feature is coming soon.';
           setAnnouncement(message);
-          if (window.AlloFlowUX && typeof window.AlloFlowUX.toast === 'function') window.AlloFlowUX.toast(message, 'info');
+          if (typeof window !== 'undefined' && window.AlloFlowUX && typeof window.AlloFlowUX.toast === 'function') window.AlloFlowUX.toast(message, 'info');
           return;
       }
       setIsAdding(true);
       try {
-          const newItem = await onGenerateItem(newItemText, buckets);
+          const newItem = await Promise.resolve(onGenerateItem(newItemText, buckets));
           const home = newItem ? buckets.find(b => String(b.id) === String(newItem.categoryId)) : null;
           if (newItem && !home) {
               const message = t('concept_sort.add_item_no_category') || 'That card could not be matched to one of these categories. Try different words.';
@@ -2576,7 +2599,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
       try {
           const correct = buckets.find(b => b.id === item.categoryId);
           const chosen = buckets.find(b => b.id === item.currentContainer);
-          const text = await onExplainIncorrect(item, correct, chosen);
+          const text = await Promise.resolve(onExplainIncorrect(item, correct, chosen));
           setExplanations(prev => ({ ...prev, [item.id]: text || t('concept_sort.why_none') || "No explanation available." }));
       } catch (e) {
           setExplanations(prev => ({ ...prev, [item.id]: t('concept_sort.why_failed') || "Couldn't generate an explanation right now." }));
@@ -3876,7 +3899,6 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                   <button
                       ref={causeEffectCloseRef}
                        type="button"
-                       aria-label={t('common.close') || 'Close'}
                       onClick={onClose}
                       className="min-h-11 flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30 focus:ring-2 focus:ring-white"
                   >
@@ -4300,7 +4322,6 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
           <button
             ref={tChartCloseRef}
              type="button"
-             aria-label={t('common.close') || 'Close'}
             onClick={onClose}
             className="min-h-11 flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30 focus:ring-2 focus:ring-white"
           >
@@ -4621,7 +4642,7 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
         <div className="flex flex-wrap items-center gap-3">
           <div className="min-h-11 flex items-center bg-white/30 px-4 py-1 rounded-full font-bold text-yellow-200 border border-white/40">{t('common.score') || 'Score'}: {score}</div>
           <GameThemeToggle />
-          <button ref={multiBucketCloseRef} type="button" aria-label={t('common.close') || 'Close'} onClick={onClose} className="min-h-11 flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30 focus:ring-2 focus:ring-white">
+          <button ref={multiBucketCloseRef} type="button" onClick={onClose} className="min-h-11 flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30 focus:ring-2 focus:ring-white">
             <ArrowDown className="rotate-90" size={14} aria-hidden="true"/> {t('concept_map.venn.back_to_editor') || 'Back'}
           </button>
         </div>
@@ -5264,11 +5285,10 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
           <button
             ref={pipelineCloseRef}
              type="button"
-             aria-label={t('common.close') || 'Close'}
             onClick={onClose}
             className="min-h-11 flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30 focus:ring-2 focus:ring-white"
           >
-            <ArrowDown className="rotate-90" size={14}/> {t('concept_map.venn.back_to_editor') || 'Back'}
+            <ArrowDown className="rotate-90" size={14} aria-hidden="true"/> {t('concept_map.venn.back_to_editor') || 'Back'}
           </button>
         </div>
       </div>
@@ -5729,7 +5749,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
     }
   };
   const handleKeyDown = (e) => {
-    if (!selectedCell || isWon || e.isComposing || e.keyCode === 229) return;
+    if (!selectedCell || isWon || e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.key === 'Backspace' || e.key.startsWith('Arrow') || isCrosswordLetterKey(e.key)) e.preventDefault();
     const { r, c } = selectedCell;
     if (e.key === 'Backspace') {
@@ -6411,7 +6431,10 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                if (!url) url = await onGenerateAudio(textToRead, selectedVoice);
                if (callerPlaybackSessionRef.current !== sessionId) return;
           }
-          if (url) {
+          const isMuted = typeof window !== 'undefined' && (typeof window.__alloIsGlobalMuted === 'function' ? !!window.__alloIsGlobalMuted() : (!!window.__alloGlobalMute || !!window._alloGlobalMute));
+          if (isMuted) {
+               if (callerPlaybackSessionRef.current === sessionId) setIsAudioPlaying(false);
+          } else if (url) {
                const audio = new Audio(url);
                callerAudioRef.current = audio;
                audio.onended = () => {
@@ -6426,10 +6449,9 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                const playPromise = audio.play();
                if (playPromise !== undefined) await playPromise;
           } else {
-               const isMuted = typeof window !== 'undefined' && (typeof window.__alloIsGlobalMuted === 'function' ? !!window.__alloIsGlobalMuted() : !!window._alloGlobalMute);
-               if (!isMuted && typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') {
+               if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') {
                    await Promise.resolve(window.AlloSpeechPlayer.speak(textToRead)).catch(() => {});
-               } else if (!isMuted && typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+               } else if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
                    window.speechSynthesis.cancel();
                    await new Promise((resolve) => {
                        const u = new window.SpeechSynthesisUtterance(textToRead);
@@ -6495,9 +6517,22 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
       };
   }, [isAudioPlaying, isAutoPlaying, currentCallIndex, callDelay]);
   useEffect(() => {
-      return () => {
+      const handleMuteChanged = (ev) => {
+          const muted = ev && ev.detail && typeof ev.detail.muted === 'boolean'
+              ? ev.detail.muted
+              : (typeof window !== 'undefined' && (typeof window.__alloIsGlobalMuted === 'function' ? !!window.__alloIsGlobalMuted() : (!!window.__alloGlobalMute || !!window._alloGlobalMute)));
+          if (!muted) return;
           callerPlaybackSessionRef.current += 1;
-          if (callerAudioRef.current) callerAudioRef.current.pause();
+          if (callerAudioRef.current) { try { callerAudioRef.current.pause(); } catch (_) {} }
+          if (typeof window !== 'undefined' && window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch (_) {} }
+          setIsAudioPlaying(false);
+      };
+      if (typeof window !== 'undefined') window.addEventListener('alloflow-mute-changed', handleMuteChanged);
+      return () => {
+          if (typeof window !== 'undefined') window.removeEventListener('alloflow-mute-changed', handleMuteChanged);
+          callerPlaybackSessionRef.current += 1;
+          if (callerAudioRef.current) { try { callerAudioRef.current.pause(); } catch (_) {} }
+          if (typeof window !== 'undefined' && window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch (_) {} }
           if (autoPlayTimerRef.current) clearTimeout(autoPlayTimerRef.current);
       };
   }, []);
@@ -7500,7 +7535,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
                                 type="text"
                                 value={guess}
                                 onChange={(e) => setGuess(e.target.value)}
-                                onKeyDown={(e) => { if (e.key === 'Enter' && !e.nativeEvent.isComposing) handleCheck(); }}
+                                onKeyDown={(e) => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; if (e.key === 'Enter') handleCheck(); }}
                                 className={`w-full text-center text-2xl font-black p-3 rounded-xl border-4 focus:ring-2 focus:ring-indigo-400 transition-all uppercase tracking-widest ${
                                     feedback === 'correct' ? 'border-green-500 bg-green-50 text-green-800' :
                                     feedback === 'incorrect' ? 'border-red-400 bg-red-50 text-red-800 motion-safe:animate-shake' :

@@ -13,10 +13,14 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const dir = resolve(process.cwd(), 'allopacks');
-const files = readdirSync(dir).filter((f) => f.endsWith('.allopack.json'));
+const dir = resolve(process.cwd(), 'allopacks', 'current');
+const files = readdirSync(dir).filter((f) => f.endsWith('.allopack.json')).sort();
 
 describe('AlloPack ids are unique across the whole catalog', () => {
+  it('scans the active AlloPack collection instead of an empty retired directory', () => {
+    expect(files.length).toBeGreaterThanOrEqual(67);
+  });
+
   it('no two packs use the same resource id', () => {
     const owner = new Map();
     const clashes = [];
@@ -44,17 +48,25 @@ describe('AlloPack ids are unique across the whole catalog', () => {
     expect(clashes, 'objective ids shared between packs:\n' + clashes.join('\n')).toEqual([]);
   });
 
-  it('each pack uses one id prefix, and no other pack uses it', () => {
-    const prefixOwner = new Map();
-    const problems = [];
+  it('every pack keeps resource ids and objective ids unique within itself', () => {
+    // Illustrated editions legitimately add a secondary prefix for visual companions
+    // (e.g. ag/agx, bs/bix), so whole-id uniqueness (cross-pack above + intra-pack here)
+    // is the contract.
+    const dupes = [];
     for (const f of files) {
       const pack = JSON.parse(readFileSync(resolve(dir, f), 'utf8').replace(/^﻿/, ''));
-      const prefixes = new Set(pack.history.map((r) => r.id.split('-')[0]));
-      expect(prefixes.size, f + ' mixes id prefixes: ' + [...prefixes].join(', ')).toBe(1);
-      const [prefix] = [...prefixes];
-      if (prefixOwner.has(prefix)) problems.push('prefix "' + prefix + '" used by ' + prefixOwner.get(prefix) + ' and ' + f);
-      else prefixOwner.set(prefix, f);
+      const seenRes = new Set();
+      for (const r of pack.history) {
+        if (seenRes.has(r.id)) dupes.push(f + ' duplicate resource id: ' + r.id);
+        seenRes.add(r.id);
+      }
+      const d = pack.history.find((r) => r.type === 'directions');
+      const seenObj = new Set();
+      for (const o of (d && d.data && d.data.objectives) || []) {
+        if (seenObj.has(o.id)) dupes.push(f + ' duplicate objective id: ' + o.id);
+        seenObj.add(o.id);
+      }
     }
-    expect(problems, problems.join('\n')).toEqual([]);
+    expect(dupes, dupes.join('\n')).toEqual([]);
   });
 });

@@ -1,5 +1,32 @@
 (function () {
   'use strict';
+  if (typeof window === 'undefined' || typeof document === 'undefined') return;
+  function safeJsonParse(raw) {
+    return JSON.parse(raw, function (k, v) {
+      return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+    });
+  }
+  function isGlobalMuted() {
+    try {
+      if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+      if (typeof window.isAlloMuted === 'function' && window.isAlloMuted()) return true;
+      if (window._alloGlobalMute || window._alloGlobalMuted || window.__alloFlowMuted || window.__alloSoundMuted) return true;
+      if (storage && (storage.getItem('alloflow-global-muted') === 'true' || storage.getItem('alloflow_muted') === '1')) return true;
+    } catch (_) {}
+    return false;
+  }
+  function isAiAllowed() {
+    try {
+      var mp = window.ALLOFLOW_MANAGED_AI_POLICY;
+      if (mp && (mp.enabled === false || mp.allowAi === false || mp.aiEnabled === false || mp.disabled === true || mp.mode === 'disabled' || mp.mode === 'off' || (Array.isArray(mp.connections) && mp.connections.length === 0))) return false;
+      var sp = window.StudentPolicy;
+      if (sp && (sp.allowAi === false || sp.aiEnabled === false || sp.aiDisabled === true || (typeof sp.isAiEnabled === 'function' && sp.isAiEnabled() === false) || (typeof sp.isAiAllowed === 'function' && !sp.isAiAllowed('text')))) return false;
+      var qm = window.__alloQrStudentMode;
+      if (qm === true || (qm && typeof qm === 'object' && (qm.active === true || qm.aiDisabled === true || qm.aiPolicy === 'off' || qm.allowAi === false || qm.aiEnabled === false))) return false;
+      if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true) return false;
+    } catch (_) {}
+    return true;
+  }
   var E = window.AlloOutingEngine;
   var byId = function (id) { return document.getElementById(id); };
   var text = function (id, value) { byId(id).textContent = value || ''; };
@@ -68,12 +95,12 @@
     try {
       var local = notes[run.runId], raw = local ? local.plan : storage && storage.getItem(PLAN_PREFIX + run.runId);
       if (!raw) return {value:null,notice:''};
-      if (typeof raw === 'string') { if (raw.length > 10000) throw new Error('Plan too large'); raw = JSON.parse(raw); }
+      if (typeof raw === 'string') { if (raw.length > 10000) throw new Error('Plan too large'); raw = safeJsonParse(raw); }
       return {value:E.validatePlan(run,raw),notice:''};
     } catch (_) { return {value:null,notice:'The saved plan could not be read. The practice steps can still be opened.'}; }
   }
   function savedSnapshot(key) {
-    var stored = E.readRun(storage,key), run = stored.runId === current.runId ? current : stored;
+    var stored = E.readRun(storage,key,learnerScope), run = stored.runId === current.runId ? current : stored;
     return {key:key,run:run,signature:JSON.stringify(stored),plan:savedPlan(run)};
   }
   function renderSavedPreview(snapshot) {
@@ -127,7 +154,7 @@
   }
   function refreshSaved() {
     var select = byId('savedRuns'), entries = savedRuns();
-    var preferred = !byId('settings').hidden && savedPreview ? select.value : E.saveKey(current);
+    var preferred = !byId('settings').hidden && savedPreview ? select.value : E.saveKey(current, learnerScope);
     select.replaceChildren();
     entries.forEach(function(entry){
       var option=node('option');option.value=entry.key;
@@ -219,13 +246,13 @@
       try { savedNotes.reflection = storage && storage.getItem(REFLECTION_PREFIX + run.runId) || ''; } catch (_) {}
       try {
         var storedComparison = storage && storage.getItem(COMPARISON_PREFIX + run.runId);
-        if (storedComparison && storedComparison.length <= 300000) savedNotes.comparison = E.validateComparison(run, JSON.parse(storedComparison));
+        if (storedComparison && storedComparison.length <= 300000) savedNotes.comparison = E.validateComparison(run, safeJsonParse(storedComparison));
       } catch (_) { text('backupStatus', 'The saved comparison could not be read. Your practice can still continue.'); }
       try {
         var storedPlan = storage && storage.getItem(PLAN_PREFIX + run.runId);
         if (storedPlan) {
           if (storedPlan.length > 10000) throw new Error('Invalid plan size');
-          savedNotes.plan = E.validatePlan(run, JSON.parse(storedPlan));
+          savedNotes.plan = E.validatePlan(run, safeJsonParse(storedPlan));
         }
       } catch (_) { text('backupStatus', 'The saved plan could not be read. Your practice can still continue.'); }
     }
@@ -664,6 +691,7 @@
   }
   function readAloud(scope) {
     if (!readService) return;
+    if (isGlobalMuted()) { stopReading('Audio is muted.'); return; }
     if (readUtterance && readScope === scope) { stopReading('Reading stopped.'); return; }
     stopReading(); var content = readingText(scope);
     if (!content) return;
@@ -959,7 +987,7 @@
     var chosen = examples[0].timing.travel.routes.find(function (route) { return route.selected; });
     var longest = Math.max.apply(null, examples.map(function (example) { return example.timing.minutes; }));
     var busMinutes = chosen && chosen.scheduledDeparture !== null ? chosen.scheduledDeparture - currentMinute : null;
-    var span = Math.max(longest, busMinutes || 0);
+    var span = Math.max(1, longest, busMinutes || 0);
     var axis = byId('wardrobeComparisonAxis'); axis.replaceChildren();
     axis.appendChild(node('span', '', 'Now ' + examples[0].timing.before));
     axis.appendChild(node('span', '', busMinutes !== null && busMinutes >= longest ? chosen.label + ' leaves' : examples.find(function (example) { return example.timing.minutes === longest; }).timing.after));
@@ -1030,7 +1058,7 @@
     byId('wardrobeReady').hidden = !ready;
     if (ready) {
       var choice = E.history(current).find(function (entry) { return entry.actionId === 'wear_ready' || entry.actionId === 'prepare_clothes'; });
-      text('wardrobeReadyCopy', choice.label + '. Your clothes were ready at ' + choice.clock + '. Review this choice in your history if you want to try another way.');
+      text('wardrobeReadyCopy', choice ? (choice.label + '. Your clothes were ready at ' + choice.clock + '. Review this choice in your history if you want to try another way.') : 'Your clothes are ready. Review your history if you want to try another way.');
       clearWardrobe(false); return;
     }
     byId('wardrobePreviewResult').hidden = !wardrobePreview;
@@ -1373,7 +1401,7 @@
   function renderStory() {
     var entries = current.content || [];
     if (latestView && latestView.completed) text('debriefSummary', latestView.summary + ' Optional story moments saved: ' + entries.length + '.');
-    text('storyAvailability', client && client.available() ? 'Optional generated wording is available. The plan and room always follow the practice rules.' : 'Prepared story available. An AI connection is optional.');
+    text('storyAvailability', client && isAiAllowed() && client.available() ? 'Optional generated wording is available. The plan and room always follow the practice rules.' : 'Prepared story available. An AI connection is optional.');
     var keyFor = function (button) { return button.id === 'introButton' ? 'intro' : 'dialogue-' + button.dataset.intent; };
     document.querySelectorAll('.story-buttons button').forEach(function (button) {
       var saved = entries.some(function (entry) { return entry.id === keyFor(button); });
@@ -1423,8 +1451,8 @@
     } else if (topic === 'bag') {
       choices = outing.entries.filter(function (entry) { return /^(fill_water|pack_water|pack_document|pack_raincoat|pack_hat|inspect_forecast)$/.test(entry.actionId); });
       title = 'Your bag and the received forecast';
-      facts = ['You filled the water bottle before packing it.', 'You left with ' + latestView.inventory.map(function (item) { return item.label; }).join(', ') + '.',
-        'At ' + received.clock + ', the forecast changed from ' + received.beforeWeather + ' to ' + (received.afterWeather === 'warm' ? 'warm sunshine' : received.afterWeather) + '. Your final weather item matched that received forecast.'];
+      facts = ['You filled the water bottle before packing it.', 'You left with ' + latestView.inventory.map(function (item) { return item.label; }).join(', ') + '.'];
+      if (received) facts.push('At ' + received.clock + ', the forecast changed from ' + received.beforeWeather + ' to ' + (received.afterWeather === 'warm' ? 'warm sunshine' : received.afterWeather) + '. Your final weather item matched that received forecast.');
       prompt = 'For a real outing, what information would you check, and what might you pack differently?';
     } else if (topic === 'travel') {
       choices = outing.entries.filter(function (entry) { return /^choose_/.test(entry.actionId); });
@@ -1432,7 +1460,7 @@
       facts = ['Your final route: ' + outing.route.label + '.',
         'You left home at ' + outing.timing.departure + ' and arrived at ' + outing.route.arrival + '.' + (outing.route.waitingMinutes ? ' This included ' + outing.route.waitingMinutes + ' minutes waiting for the bus and ' + outing.route.travelMinutes + ' minutes travelling.' : ' Travelling took ' + outing.route.travelMinutes + ' minutes.'),
         'The outing started at ' + outing.timing.deadline + '. You arrived ' + outing.route.minutesBeforeStart + ' minutes before the start.'];
-      if (received.beforeBus !== received.afterBus) facts.push('The received update changed the 09:20 bus arrival from ' + received.beforeBus + ' to ' + received.afterBus + '.');
+      if (received && received.beforeBus !== received.afterBus) facts.push('The received update changed the 09:20 bus arrival from ' + received.beforeBus + ' to ' + received.afterBus + '.');
       prompt = 'For another outing, how would you check timing, comfort, access and available support?';
     } else return null;
     return {title:title, facts:facts, prompt:prompt, choice:choices[choices.length - 1]};
@@ -1628,9 +1656,10 @@
       var item = node('div'); item.append(node('dt','',pair[0]),node('dd','',pair[1])); milestones.appendChild(item);
     });
     var bar = node('div','comparison-timebar'); bar.setAttribute('aria-hidden','true');
+    var safeDeadline = outing.state.deadline > 0 ? outing.state.deadline : 1;
     [['preparation',outing.state.minutes],['waiting',outing.route.waitingMinutes],['travel',outing.route.travelMinutes],['spare',outing.route.minutesBeforeStart]].forEach(function (part) {
       if (!part[1]) return;
-      var segment = node('span','journey-segment journey-'+part[0]); segment.style.width = (part[1] / outing.state.deadline * 100) + '%'; segment.dataset.minutes = String(part[1]); bar.appendChild(segment);
+      var segment = node('span','journey-segment journey-'+part[0]); segment.style.width = (part[1] / safeDeadline * 100) + '%'; segment.dataset.minutes = String(part[1]); bar.appendChild(segment);
     });
     var timing = outing.state.minutes + ' min preparing · ' + (outing.route.waitingMinutes ? outing.route.waitingMinutes + ' min waiting for the bus · ' : '') + outing.route.travelMinutes + ' min travelling · ' + outing.route.minutesBeforeStart + ' min before the start.';
     card.append(heading,node('p','comparison-journey-route',outing.route.label),milestones,bar,node('p','comparison-journey-timing',timing)); return card;
@@ -1807,11 +1836,12 @@
     var diagram=node('div','timeline-diagram');diagram.setAttribute('aria-hidden','true');
     var axis=node('div','timeline-axis');axis.append(node('span','','09:00'),node('span','timeline-start','09:35'),node('span','','10:20'));diagram.appendChild(axis);
     var track=node('div','timeline-track');
-    var marker=node('span','timeline-deadline');marker.style.left=(100*timing.deadlineMinute/timing.axisEnd)+'%';track.appendChild(marker);
+    var axisEnd = timing.axisEnd > 0 ? timing.axisEnd : 1;
+    var marker=node('span','timeline-deadline');marker.style.left=(100*timing.deadlineMinute/axisEnd)+'%';track.appendChild(marker);
     if(route.available){
-      if(route.waitingMinutes){var wait=node('span','timeline-wait');wait.style.left=(100*timing.departureMinute/timing.axisEnd)+'%';wait.style.width=(100*route.waitingMinutes/timing.axisEnd)+'%';track.appendChild(wait);}
-      var journey=node('span','timeline-journey');journey.style.left=(100*(timing.departureMinute+route.waitingMinutes)/timing.axisEnd)+'%';journey.style.width=(100*route.travelMinutes/timing.axisEnd)+'%';track.appendChild(journey);
-      var leave=node('span','timeline-leave');leave.style.left=(100*timing.departureMinute/timing.axisEnd)+'%';track.appendChild(leave);
+      if(route.waitingMinutes){var wait=node('span','timeline-wait');wait.style.left=(100*timing.departureMinute/axisEnd)+'%';wait.style.width=(100*route.waitingMinutes/axisEnd)+'%';track.appendChild(wait);}
+      var journey=node('span','timeline-journey');journey.style.left=(100*(timing.departureMinute+route.waitingMinutes)/axisEnd)+'%';journey.style.width=(100*route.travelMinutes/axisEnd)+'%';track.appendChild(journey);
+      var leave=node('span','timeline-leave');leave.style.left=(100*timing.departureMinute/axisEnd)+'%';track.appendChild(leave);
     }
     diagram.appendChild(track);return diagram;
   }
@@ -1909,7 +1939,7 @@
     pendingController = new AbortController();
     var signal = pendingController.signal;
     busy = true; contentNotice = ''; renderStory();
-    var request = client ? client.request(payload, { signal: signal }) : Promise.resolve({ text: latestView.intro, status: 'authored' });
+    var request = (client && isAiAllowed()) ? client.request(payload, { signal: signal }) : Promise.resolve({ text: latestView.intro, status: 'authored' });
     Promise.resolve(request).then(function (result) {
       if (signal.aborted || owner.serial !== requestSerial || owner.runId !== current.runId || owner.revision !== current.commands.length) return;
       if (!result || typeof result.text !== 'string' || !result.text.trim() || result.text.length > 1200 || ['generated', 'authored', 'fallback'].indexOf(result.status) < 0) throw new Error('The story response was not usable.');
@@ -2169,7 +2199,7 @@
     // The canvas can regain focus when the original pointer event finishes.
     if (window.requestAnimationFrame) window.requestAnimationFrame(function () {
       var active = document.activeElement, scene = byId('outingScene');
-      if (owner === current && selection === selectedObject && focused && focused.isConnected && (active === document.body || active === scene.canvas)) focused.focus();
+      if (owner === current && selection === selectedObject && focused && focused.isConnected && (active === document.body || (scene && active === scene.canvas))) focused.focus();
     });
   }
 
@@ -2206,7 +2236,13 @@
   byId('savedRuns').addEventListener('change',function(){stopReading();previewSavedSelection();});
   byId('readSavedPreview').addEventListener('click',function(){readAloud('saved');});
   byId('resumeButton').addEventListener('click',resumeSavedPractice);
+  function onGlobalMuteChanged(ev) {
+    var muted = (ev && ev.detail && typeof ev.detail.muted === 'boolean') ? ev.detail.muted : isGlobalMuted();
+    if (muted) stopReading('Audio is muted.');
+  }
+  window.addEventListener('alloflow-mute-changed', onGlobalMuteChanged);
   window.addEventListener('storage',function(event){
+    if(event && (event.key === 'alloflow-global-muted' || event.key === 'alloflow_muted') && isGlobalMuted()) stopReading('Audio is muted.');
     if(!current || presentationDisposed || byId('settings').hidden)return;
     if(event.key === null || typeof event.key === 'string' && (event.key.indexOf(E.PREFIX) === 0 || event.key.indexOf(PLAN_PREFIX) === 0))refreshSaved();
   });
@@ -2392,7 +2428,7 @@
   });
   window.addEventListener('pagehide',function(){stopReading();presentationDisposed=true;});
   window.addEventListener('pageshow',function(){presentationDisposed=false;if(latestView)renderPresentation();});
-  window.addEventListener('beforeunload',function(){stopReading();presentationDisposed=true;abortStory();clearWaterMotion();if(motionPreference&&motionPreference.removeEventListener)motionPreference.removeEventListener('change',motionPreferenceChanged);if(client)client.destroy();});
+  window.addEventListener('beforeunload',function(){stopReading();presentationDisposed=true;abortStory();clearWaterMotion();window.removeEventListener('alloflow-mute-changed',onGlobalMuteChanged);if(motionPreference&&motionPreference.removeEventListener)motionPreference.removeEventListener('change',motionPreferenceChanged);if(client)client.destroy();});
   var restored;
   try{var key=storage&&storage.getItem(ACTIVE_KEY);if(key)restored=E.readRun(storage,key,learnerScope);}catch(_){}
   if(!restored){var valid=savedRuns().find(function(entry){return entry.run;});if(valid)restored=valid.run;}

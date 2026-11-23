@@ -169,6 +169,9 @@ h3 {
   top: 0.5rem;
   left: 0.5rem;
   z-index: 20;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
   padding: 0.7rem 1rem;
   background: var(--focus);
   color: #000000;
@@ -1541,11 +1544,44 @@ footer a {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }
+
+  .skip-link {
+    transition: none !important;
+  }
 }
 
 @media (forced-colors: active) {
+  :root,
+  :root[data-theme="dark"],
+  :root[data-theme="light"],
+  :root[data-theme="contrast"] {
+    --bg: Canvas;
+    --surface: Canvas;
+    --surface-2: Canvas;
+    --surface-3: Canvas;
+    --text: CanvasText;
+    --muted: CanvasText;
+    --line: CanvasText;
+    --accent: Highlight;
+    --accent-strong: Highlight;
+    --accent-text: HighlightText;
+    --good: CanvasText;
+    --warn: CanvasText;
+    --danger: CanvasText;
+    --focus: Highlight;
+    --shadow: none;
+  }
+
+  .privacy-banner,
+  .privacy-banner strong {
+    background: Canvas !important;
+    color: CanvasText !important;
+    border-color: CanvasText !important;
+  }
+
   :focus-visible {
-    outline-color: Highlight;
+    outline: 3px solid Highlight !important;
+    outline-offset: 2px;
   }
 
   .canvas-fallback,

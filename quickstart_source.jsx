@@ -443,7 +443,7 @@ function quickStartImportSummary(outcome, text) {
     .replace(/\{(saved|replaced|skipped|failed)\}/g, (_, key) => String(counts[key]));
 }
 
-const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, canContinueGuided, onUpload, onLookupStandards, onCallGemini, onWebSearch, addToast, isParentMode, isIndependentMode, isHelpMode, setIsHelpMode, initialSourceMode, onInitialModeConsumed }) => {
+const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, canContinueGuided, onUpload, onLookupStandards, onCallGemini, onWebSearch, addToast, isParentMode, isIndependentMode, isHelpMode, setIsHelpMode, initialSourceMode, onInitialModeConsumed, onCleanupDictation, onCrossCheckDictation }) => {
   const [step, setStep] = useState(1);
   const { t } = useContext(LanguageContext);
   // Guarded fallback for keys newer than the lang packs (raw-key echo counts
@@ -454,7 +454,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, canContinueG
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return undefined;
     const refresh = () => setAiConfigTick(n => n + 1);
-    const events = ['alloflow:ai-config-changed', 'alloflow:student-ai-config-changed', 'alloflow:ai-key-lock-changed'];
+    const events = ['alloflow:ai-config-changed', 'alloflow:student-ai-config-changed', 'alloflow:ai-key-lock-changed', 'alloflow:module-registry-changed'];
     events.forEach(ev => window.addEventListener(ev, refresh));
     return () => { events.forEach(ev => window.removeEventListener(ev, refresh)); };
   }, []);
@@ -703,6 +703,12 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, canContinueG
       setStep(1);
     }
   }, [isOpen]);
+  useEffect(() => {
+    if (!isOpen || localData.sourceMode !== 'dictate') return;
+    if (typeof window !== 'undefined' && !(window.AlloModules && window.AlloModules.SpeechSetup && window.AlloModules.SpeechSetup.DictationStudio)) {
+      try { if (typeof window.__alloLazySpeechSetup === 'function') window.__alloLazySpeechSetup(); } catch (_) {}
+    }
+  }, [isOpen, localData.sourceMode]);
   if (!isOpen) return null;
   const handleSkip = (event) => {
     safeSetItem('allo_wizard_completed', 'true');
@@ -1234,6 +1240,19 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, canContinueG
                                 </div>
                                 <span className="font-bold text-slate-700 group-hover:text-purple-700 text-lg">{wt('input.actions.write_with_ai', 'Write with AI')}</span>
                                 <span className="text-xs text-slate-600 mt-1">{t('wizard.generate_desc')}</span>
+                              </button>
+                              <button type="button" data-help-key="wizard_dictate_source"
+                                onClick={() => {
+                                    setLocalData(prev => ({ ...prev, sourceMode: 'dictate', fetchedContent: '', resourceMeta: null, storybookRef: null, searchOptions: [] }));
+                                    setStep(3);
+                                }}
+                                className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 transition-all motion-reduce:transition-none group bg-white h-40"
+                              >
+                                <div className="bg-emerald-50 p-4 rounded-full shadow-sm mb-3 group-hover:bg-white">
+                                    <span className="text-[32px] leading-none" aria-hidden="true">🎙️</span>
+                                </div>
+                                <span className="font-bold text-slate-700 group-hover:text-emerald-800 text-lg">{wt('input.dictate_or_record', 'Dictate or record')}</span>
+                                <span className="text-xs text-slate-600 mt-1">{wt('wizard.dictate_desc', 'Local Whisper voice dictation & optional check')}</span>
                               </button>
                           </div>
                       </div>
@@ -1895,6 +1914,51 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, canContinueG
                           </div>
                           );
                       })()}
+                      {localData.sourceMode === 'dictate' && (() => {
+                          const DictationStudio = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SpeechSetup && window.AlloModules.SpeechSetup.DictationStudio;
+                          return (
+                          <div data-wizard-dictate="" className="space-y-4">
+                              <div>
+                                  <h3 className="text-lg font-bold text-slate-800">{wt('wizard.dictate_title', 'Dictate or record your source text')}</h3>
+                                  <p className="text-sm text-slate-600">{wt('wizard.dictate_helper', 'Defaults to private on-device Whisper dictation. Edit freely, optionally clean up text, or cross-check against your recording with Gemini.')}</p>
+                              </div>
+                              {DictationStudio ? (
+                                  <DictationStudio
+                                      t={t}
+                                      value={localData.pastedText}
+                                      onChange={(nextText) => setLocalData(prev => ({ ...prev, pastedText: nextText }))}
+                                      onUploadMedia={() => onComplete({ ...localData, sourceMode: 'file', materialType: 'file' })}
+                                      onCleanupText={onCleanupDictation}
+                                      onCrossCheckAudio={onCrossCheckDictation}
+                                      aiTextAvailable={!aiOff}
+                                  />
+                              ) : (
+                                  <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                                      <p className="text-xs font-semibold text-slate-700" role="status">{wt('wizard.dictate_loading', 'Loading Dictation Studio (Local Whisper)… You can also type or edit below while it loads.')}</p>
+                                      <textarea
+                                          id="wizard-dictate-fallback"
+                                          dir="auto"
+                                          rows={8}
+                                          value={localData.pastedText}
+                                          onChange={(e) => setLocalData(prev => ({ ...prev, pastedText: e.target.value }))}
+                                          aria-label={wt('dictation.draft_label', 'Transcript draft (editable)')}
+                                          placeholder={wt('dictation.draft_placeholder', 'Type or edit your transcript here…')}
+                                          className="w-full rounded-xl border-2 border-slate-200 bg-white p-3 text-sm text-slate-900"
+                                      />
+                                  </div>
+                              )}
+                              <button type="button"
+                                  aria-label={t('common.next')}
+                                  data-help-key="wizard_dictate_next"
+                                  onClick={() => setStep(4)}
+                                  disabled={!localData.pastedText.trim()}
+                                  className="w-full min-h-11 bg-emerald-700 text-white font-bold py-3 rounded-xl hover:bg-emerald-800 disabled:opacity-50 flex items-center justify-center gap-2"
+                              >
+                                  {t('common.next')} <ArrowRight size={18} />
+                              </button>
+                          </div>
+                          );
+                      })()}
                       {localData.sourceMode === 'file' && (
                           <div className="text-center py-8">
                               <div className="inline-block p-6 bg-indigo-50 rounded-full mb-4 border-2 border-indigo-100">
@@ -1920,7 +1984,9 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, canContinueG
                       ? localData.resourceMeta.title
                       : localData.sourceMode === 'paste'
                           ? `${(localData.pastedText.trim().match(/\S+/g) || []).length} ${wt('wizard.words_unit', 'words pasted')}`
-                          : localData.sourceMode === 'generate'
+                          : localData.sourceMode === 'dictate'
+                              ? `${(localData.pastedText.trim().match(/\S+/g) || []).length} ${wt('wizard.words_dictated_unit', 'words dictated')}`
+                              : localData.sourceMode === 'generate'
                               ? (localData.topic ? `${wt('input.actions.write_with_ai', 'Write with AI')}: ${localData.topic}` : wt('input.actions.write_with_ai', 'Write with AI'))
                               : localData.sourceMode === 'storybook'
                                   ? wt('input.reading_catalog', 'Reading catalog')

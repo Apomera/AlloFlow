@@ -38,6 +38,31 @@
 function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
 (function () {
   'use strict';
+  if (typeof window === 'undefined') return;
+  var _SX_CRISIS_RE = /\b(?:kill\s+myself|end\s+my\s+life|commit\s+suicide|suicid(?:e|al)|want\s+to\s+die|hurt\s+myself|self[\s-]?harm|cut\s+myself|overdose\s+on)\b/i;
+  function _sxIsGlobalMuted() {
+    if (typeof window === 'undefined') return false;
+    if (window.__alloGlobalMuted === true || window.__alloSoundMuted === true) return true;
+    try { if (window.localStorage && window.localStorage.getItem('allo_global_muted') === '1') return true; } catch (_) {}
+    return false;
+  }
+  function _sxScreenCrisis(text) {
+    var sample = String(text || '').trim();
+    if (!sample) return false;
+    try {
+      if (window.SafetyContentChecker && typeof window.SafetyContentChecker.checkSelfHarm === 'function') {
+        var res = window.SafetyContentChecker.checkSelfHarm(sample);
+        if (res && (res.flagged || res.isSelfHarm || res.detected || res.matched || res.crisis)) return true;
+      }
+    } catch (_) {}
+    return _SX_CRISIS_RE.test(sample);
+  }
+  function _sxCrisisBanner(h) {
+    return h('div', {
+      role: 'alert',
+      style: { marginTop: 6, padding: '8px 10px', borderRadius: 8, border: '1px solid #fda4af', background: '#fff1f2', color: '#881337', fontSize: '.75rem', lineHeight: 1.5 }
+    }, 'You matter, and help is available right now. Please talk with a trusted adult, teacher, or counselor. Call or text 988 (Suicide & Crisis Lifeline), text HOME to 741741 (Crisis Text Line), or call 911.');
+  }
   // A shared link (?tool=...) requests this plugin before stem_lab_module.js has
   // run, so window.StemLab may not exist yet. Returning here made the host show
   // "The plugin loaded but did not register" on every deep link (found
@@ -62,7 +87,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
   };
   if (typeof window.StemLab.registerTool !== 'function') return;
   var atlasAssetBase = 'stem_lab/assets/astronomy/';
-  try { if (document.currentScript && document.currentScript.src) atlasAssetBase = new URL('assets/astronomy/', document.currentScript.src).href; } catch (_) {}
+  try { if (typeof document !== 'undefined' && document.currentScript && document.currentScript.src) atlasAssetBase = new URL('assets/astronomy/', document.currentScript.src).href; } catch (_) {}
 
   // ── The ladder ────────────────────────────────────────────────────────
   // size: metres. dim: which dimension the size refers to.
@@ -4567,7 +4592,12 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
     if (typeof text !== 'string') return { error: 'invalid' };
     if (text.length > NOTEBOOK_BACKUP_BYTES) return { error: 'size' };
     var raw;
-    try { raw = JSON.parse(text); } catch (_) { return { error: 'invalid' }; }
+    try {
+      raw = JSON.parse(text, function (k, v) {
+        if (k === '__proto__' || k === 'constructor' || k === 'prototype') return undefined;
+        return v;
+      });
+    } catch (_) { return { error: 'invalid' }; }
     if (!raw || typeof raw !== 'object' || Array.isArray(raw) || raw.format !== NOTEBOOK_BACKUP_FORMAT) return { error: 'format' };
     if (raw.version !== 1) return { error: 'version' };
     var data = raw.notebook;
@@ -13609,7 +13639,7 @@ return plaza;
       airPose.heading=((airPose.heading+horizontal)%360+360)%360;airPose.pitch=clamp(airPose.pitch+vertical,-.7,.6);invalidate();
     }
     function airKeyDown(ev){
-      if(!movementReady()||ev.ctrlKey||ev.metaKey||ev.altKey)return;
+      if(!movementReady()||ev.isComposing||(ev.nativeEvent&&ev.nativeEvent.isComposing)||ev.keyCode===229||ev.ctrlKey||ev.metaKey||ev.altKey)return;
       var code=ev.code;
       if(code==='Escape'&&nebulaReady()){ev.preventDefault();ev.stopPropagation();stopAir();pick('orion-nebula','nebula-exit');return;}
       if(code==='Escape'){ev.preventDefault();ev.stopPropagation();stopAir();var point=airPose||everestFlightPose();pick('everest','everest-explore',{east:point.east,north:point.north});return;}
@@ -13626,7 +13656,9 @@ return plaza;
       if(panel!==airHudNode||airHudKey!==key){airHudNode=panel;airHudKey=key;airFields={};panel.querySelectorAll('[data-air-stat]').forEach(function(node){airFields[node.dataset.airStat]=node;});airLastHud=0;}
       if(airMoving&&now-airLastHud<120)return;airLastHud=now;
       var ground=everestHeight(data,airPose.east/8849,-airPose.north/8849)*8849,
-        heading=Math.round(airPose.heading)%360,cardinals=JSON.parse(panel.dataset.airCardinals),edge=Math.abs(airPose.east)>=8749.9||Math.abs(airPose.north)>=8749.9;
+        heading=Math.round(airPose.heading)%360,
+        cardinals=(function(){try{var p=JSON.parse(panel.dataset.airCardinals||'[]');return Array.isArray(p)&&p.length>=8?p:['N','NE','E','SE','S','SW','W','NW'];}catch(_){return ['N','NE','E','SE','S','SW','W','NW'];}})(),
+        edge=Math.abs(airPose.east)>=8749.9||Math.abs(airPose.north)>=8749.9;
       var values={heading:('00'+heading).slice(-3)+'° '+cardinals[Math.round(heading/45)%8],clearance:Math.round(airPose.altitude-ground).toLocaleString()+' m',
         altitude:Math.round(airPose.altitude).toLocaleString()+' m',status:edge?panel.dataset.airEdge:airMoving?panel.dataset.airMoving:panel.dataset.airReady};
       if(airGuide){
@@ -14240,10 +14272,10 @@ return plaza;
         if (workspace !== 'all') selectWorkspace(key);
         setTimeout(function () {
           var node = ref && ref.current;
-          if (!node) return;
+          if (!node || !node.isConnected) return;
           if (node.tagName === 'DETAILS') node.open = true;
           var target = selector ? node.querySelector(selector) : node;
-          if (target) { target.scrollIntoView({ block: 'nearest' }); target.focus({ preventScroll: true }); }
+          if (target && target.isConnected) { try { target.scrollIntoView({ block: 'nearest' }); target.focus({ preventScroll: true }); } catch (_) {} }
         }, 0);
       }
       function workspacePanel(key, child) {
@@ -14261,7 +14293,7 @@ return plaza;
                 var next = event.key === 'ArrowRight' ? (index + 1) % WORKSPACE_VIEWS.length : event.key === 'ArrowLeft' ? (index + WORKSPACE_VIEWS.length - 1) % WORKSPACE_VIEWS.length : event.key === 'Home' ? 0 : event.key === 'End' ? WORKSPACE_VIEWS.length - 1 : -1;
                 if (next < 0) return;
                 event.preventDefault(); selectWorkspace(WORKSPACE_VIEWS[next]);
-                setTimeout(function () { var tab = workspaceRef.current && workspaceRef.current.querySelector('[id="' + descId + '-tab-' + WORKSPACE_VIEWS[next] + '"]'); if (tab) tab.focus({ preventScroll: true }); }, 0);
+                setTimeout(function () { var tab = workspaceRef.current && workspaceRef.current.querySelector('[id="' + descId + '-tab-' + WORKSPACE_VIEWS[next] + '"]'); if (tab && tab.isConnected) { try { tab.focus({ preventScroll: true }); } catch (_) {} } }, 0);
               } }, workspaceLabel(key));
           })),
           h('button', { type: 'button', style: Object.assign({}, btn, { fontSize: '.75rem' }), 'aria-pressed': workspace === 'all', onClick: function () { selectWorkspace(workspace === 'all' ? 'explore' : 'all'); } },
@@ -14272,7 +14304,7 @@ return plaza;
         return items.slice().sort(function (a, b) { return b.size - a.size; });
       }, [items]);
       var byId = React.useMemo(function () {
-        var m = {}; items.forEach(function (i) { m[i.id] = i; }); return m;
+        var m = Object.create(null); items.forEach(function (i) { m[i.id] = i; }); return m;
       }, [items]);
       var compare = React.useMemo(function () { return compareMeasurements(byId[cmpA], byId[cmpB]); }, [cmpA, cmpB, byId]);
       var bridge = React.useMemo(function () { return scaleBridge(compare, sorted); }, [compare, sorted]);
@@ -14329,7 +14361,7 @@ return plaza;
         setObservations(next);
         setObservationDrafts(function (prev) { var drafts = Object.assign({}, prev); delete drafts[key]; return drafts; });
         updateSlice(function (cur) { cur.observations = next; var drafts = readObservationDrafts(cur.observationDrafts); delete drafts[key]; cur.observationDrafts = drafts; });
-        if (savedObservationsRef.current) savedObservationsRef.current.querySelector('summary').focus({ preventScroll: true });
+        if (savedObservationsRef.current) { var _sum = savedObservationsRef.current.querySelector('summary'); if (_sum && _sum.isConnected) { try { _sum.focus({ preventScroll: true }); } catch (_) {} } }
         setNotebookMessage(S('atlas_observation_removed', 'Observation removed.'));
       }
       function revisitObservation(entry) {
@@ -14514,6 +14546,7 @@ return plaza;
           reportNotebook ? h('div', { className: 'sx-report-review' },
             h('label', { style: { fontSize: '.75rem' } }, S('atlas_report_title', 'Report title'),
               h('input', { ref: reportTitleRef, type: 'text', value: reportTitle, maxLength: 160, onChange: function (event) { setReportTitle(event.target.value); setReportMessage(''); }, style: Object.assign({}, sel, { display: 'block', width: '100%', boxSizing: 'border-box', marginTop: 5 }) })),
+            _sxScreenCrisis(reportTitle) ? _sxCrisisBanner(h) : null,
             h('p', { style: { margin: '8px 0', fontSize: '.6875rem', color: P.dim } }, S('atlas_report_saved_only', 'Choose from the saved notebook captured when you prepared this report. Save current drafts before including them.')),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
               h('button', { type: 'button', style: btn, disabled: !reportRows.length, onClick: function () { var next = {}; reportRows.forEach(function (row) { next[row.key] = true; }); setReportChoices(next); setReportMessage(''); } }, S('atlas_report_select_all', 'Select all records')),
@@ -14571,7 +14604,7 @@ return plaza;
           if (result.error) { setBackupMessage(backupError(result.error)); return; }
           setBackupPreview({ name: file.name.slice(0, 250), notebook: result.notebook, recovered: result.recovered });
           setBackupMessage(S('atlas_backup_review_ready', 'Backup ready to review. Select the records you want to restore.'));
-          setTimeout(function () { if (backupReadRef.current === request && backupPreviewRef.current) backupPreviewRef.current.focus(); }, 0);
+          setTimeout(function () { if (backupReadRef.current === request && backupPreviewRef.current && backupPreviewRef.current.isConnected) { try { backupPreviewRef.current.focus(); } catch (_) {} } }, 0);
         }).catch(function () {
           if (backupReadRef.current !== request) return;
           setBackupReading(false); setBackupMessage(backupError('invalid'));
@@ -16179,6 +16212,10 @@ return plaza;
       function step() {
         var ts = performance.now();
         rafRef.current = 0;
+        if (typeof document !== 'undefined' && document.hidden) {
+          rafRef.current = requestAnimationFrame(step);
+          return;
+        }
         var cur = expRef.current, target = targetRef.current;
         var d = target - cur;
         var progress = clamp((ts - cameraMoveRef.current.at) / (cameraMoveRef.current.duration||650), 0, 1),flight=scaleFlightRef.current;
@@ -16269,6 +16306,11 @@ return plaza;
         filmRafRef.current = 0;
         var f = filmRef.current;
         if (!f.dir) return;
+        if (typeof document !== 'undefined' && document.hidden) {
+          f.last = ts;
+          filmRafRef.current = requestAnimationFrame(filmStep);
+          return;
+        }
         var dt = f.last ? Math.min(0.1, (ts - f.last) / 1000) : 0;
         f.last = ts;
         var rate = FILM_RATE[filmSpeedRef.current] || FILM_RATE.normal;
@@ -16294,6 +16336,7 @@ return plaza;
         journeyDirRef.current = dir;
         setJourney(dir);
         var stepOnce = function () {
+          if (typeof document !== 'undefined' && document.hidden) return;
           var next = targetRef.current + dir;
           var atEnd = dir > 0 ? next >= MAX_EXP : next <= MIN_EXP;
           goTo(next);
@@ -16764,20 +16807,37 @@ return plaza;
           var host = canvasRef.current && canvasRef.current.parentElement;
           if (host && window.ResizeObserver) { ro = new ResizeObserver(function () { draw(); }); ro.observe(host); }
         } catch (_) {}
+        var onMuteChanged = function () {
+          if (_sxIsGlobalMuted()) {
+            speakTokenRef.current++;
+            clearTimeout(speakTimerRef.current);
+            setSpeaking('');
+            try { if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel(); } catch (_) {}
+          }
+        };
+        if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+          window.addEventListener('alloflow-mute-changed', onMuteChanged);
+        }
         return function () {
           window.removeEventListener('resize', onResize);
+          if (typeof window !== 'undefined' && typeof window.removeEventListener === 'function') {
+            window.removeEventListener('alloflow-mute-changed', onMuteChanged);
+          }
           if (ro) { try { ro.disconnect(); } catch (_) {} }
           if (rafRef.current) cancelAnimationFrame(rafRef.current);
           if (filmRafRef.current) cancelAnimationFrame(filmRafRef.current);
           if (journeyRef.current) clearInterval(journeyRef.current);
           clearTimeout(speakTimerRef.current);
           clearTimeout(linkTimerRef.current);
+          try { if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel(); } catch (_) {}
         };
       }, []);
       React.useEffect(function () { draw(); }, [theme, focusId, uiLang, sci, items]);
 
       // ── Keyboard on the canvas ──────────────────────────────────────────
       function onCanvasKey(ev) {
+        if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229) return;
+        if (ev.key !== 'Escape' && (ev.ctrlKey || ev.metaKey || ev.altKey)) return;
         if(viewMode==='atlas'&&!comparisonActive&&nebulaInside){if(ev.key==='Escape')leaveNebula();if(ev.key!=='Tab'&&!ev.ctrlKey&&!ev.metaKey&&!ev.altKey)ev.preventDefault();return;}
         if(viewMode==='atlas'&&!comparisonActive&&detailId==='everest-flight'){
           if(ev.key==='Escape')leaveTerrainFlight();
@@ -16814,7 +16874,7 @@ return plaza;
 
       // ── Read aloud (explicit action only; hidden when the host cannot) ──
       function speak(key, text) {
-        if (typeof ctx.callTTS !== 'function' || !text || speaking) return;
+        if (_sxIsGlobalMuted() || typeof ctx.callTTS !== 'function' || !text || speaking) return;
         var token = ++speakTokenRef.current;
         var settle = function (failed) {
           if (speakTokenRef.current !== token) return;
@@ -17229,6 +17289,7 @@ return plaza;
             h('p', { style: { margin: 0, fontSize: '.75rem', color: P.dim, lineHeight: 1.5 } }, S('atlas_scaling_scope', 'These are copies of the same cube. Every corresponding edge changes by the same factor. A length ratio between different objects does not establish their area, volume or mass.')),
             h('label', { style: { fontSize: '.75rem' } }, S('atlas_scaling_reflection', 'My model explanation'),
               h('textarea', { value: scalingReflection, rows: 3, maxLength: NOTE_LIMIT, onChange: function (event) { setScalingReflection(event.target.value); setScalingMessage(''); }, style: Object.assign({}, sel, { display: 'block', width: '100%', marginTop: 4, resize: 'vertical' }) })),
+            _sxScreenCrisis(scalingReflection) ? _sxCrisisBanner(h) : null,
             h('button', { type: 'button', style: goBtn, disabled: !model, onClick: saveScalingModel }, scalingRecord ? S('atlas_scaling_update', 'Update model evidence') : S('atlas_scaling_save', 'Save model evidence')),
             scalingRecord ? h('div', { className: 'sx-scaling-saved', style: { fontSize: '.75rem', lineHeight: 1.5 } },
               h('p', null, S('atlas_scaling_saved_summary', 'Saved model: edge ×{edge}; face area ×{area}; volume ×{volume}.', { edge: scalingValue(Number(scalingRecord.factor)), area: scalingValue(geometricScale(scalingRecord.factor).faceArea), volume: scalingValue(geometricScale(scalingRecord.factor).volume) })),
@@ -17376,6 +17437,7 @@ return plaza;
               h('p', { style: { fontSize: '.6875rem', lineHeight: 1.5, color: P.dim } }, drawingScope())) : null,
             h('label', { style: { fontSize: '.75rem' } }, S('atlas_drawing_note', 'My drawing plan'), h('textarea', { value: drawingDraft.note, rows: 3, maxLength: NOTE_LIMIT,
               onChange: function (event) { editDrawing({ note: event.target.value.slice(0, NOTE_LIMIT) }); }, style: Object.assign({}, sel, { display: 'block', width: '100%', marginTop: 4, resize: 'vertical', minHeight: 76, font: 'inherit' }) })),
+            _sxScreenCrisis(drawingDraft.note) ? _sxCrisisBanner(h) : null,
             h('button', { type: 'button', style: goBtn, disabled: !model, onClick: saveDrawing }, drawingRecord ? S('atlas_drawing_update', 'Update drawing plan') : S('atlas_drawing_save', 'Save drawing plan')),
             saved ? h('div', { className: 'sx-drawing-saved', style: { fontSize: '.75rem', lineHeight: 1.5 } },
               h('p', null, S('atlas_drawing_saved_summary', 'Saved drawing: {first} → {a}; {second} → {b}.', { first: itemText(saved.reference, 'name'), a: drawingPhysical(saved.referenceMM), second: itemText(saved.target, 'name'), b: drawingPhysical(saved.targetMM) })),
@@ -17638,7 +17700,7 @@ return plaza;
               h('div', { style: { minWidth: 0 } },
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginBottom: 3 } },
                   h('span', { style: { fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: P.dim } }, S('atlas_eyebrow', 'An atlas of everything')),
-                  h('span', { style: { fontSize: '0.6875rem', fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: P.selBg, color: P.selFg, border: '1px solid ' + P.accent } }, S('workbench_badge', 'Physics & Astronomy · 42 Powers of Ten'))
+                  h('span', { style: { fontSize: '0.6875rem', fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: theme === 'contrast' ? '#000000' : P.selBg, color: theme === 'contrast' ? '#ffff00' : P.selFg, border: '1px solid ' + P.accent } }, S('workbench_badge', 'Physics & Astronomy · 42 Powers of Ten'))
                 ),
                 h('h2', { style: { margin: 0, fontSize: '1.5rem', fontWeight: 650, letterSpacing: '-0.035em', color: P.text } }, S('atlas_title', 'Scale Explorer'))
               )
@@ -18070,10 +18132,10 @@ return plaza;
               var atEnd = tour && stopIdx >= tour.stops.length - 1;
               return h('div', { role: 'group', 'aria-label': S('tour_group', 'Guided tours'), style: Object.assign({}, card, { display: 'flex', flexDirection: 'column', gap: 6 }) },
                 h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' } },
-                  h('label', { style: { display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.71875rem', color: P.dim } },
+                  h('label', { style: { display: 'inline-flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, maxWidth: '100%', fontSize: '0.71875rem', color: P.dim } },
                     '🧭 ' + S('tour_label', 'Guided tour'),
                     h('select', { value: tourId, 'aria-label': S('tour_select_aria', 'Choose a guided tour'), onChange: function (e) { startTour(e.target.value); },
-                      style: Object.assign({}, sel, { padding: '4px 6px', fontSize: '0.75rem' }) },
+                      style: Object.assign({}, sel, { padding: '4px 6px', fontSize: '0.75rem', maxWidth: '100%' }) },
                       h('option', { value: '' }, S('tour_none', 'Choose a tour…')),
                       TOURS.map(function (x) { return h('option', { key: x.id, value: x.id }, x.emoji + ' ' + tourText(x, 'title')); }))),
                   tour ? h('button', { type: 'button', style: btn, disabled: stopIdx <= 0, onClick: function () { goToStop(tour, stopIdx - 1); } }, S('tour_prev', '◀ Back')) : null,
@@ -18200,6 +18262,7 @@ return plaza;
               h('label', { style: { fontSize: '0.75rem' } }, S('atlas_notebook_prompt', 'What do you notice?'),
                 h('textarea', { value: observationDraft, onChange: function (e) { editObservation(e.target.value); }, rows: 3, maxLength: NOTE_LIMIT,
                   style: Object.assign({}, sel, { display: 'block', width: '100%', boxSizing: 'border-box', marginTop: 5, resize: 'vertical', font: 'inherit', minHeight: 76 }) })),
+              _sxScreenCrisis(observationDraft) ? _sxCrisisBanner(h) : null,
               h('p', { style: { margin: 0, fontSize: '0.6875rem', color: P.dim } }, S('atlas_notebook_hint', 'Drafts stay with their specimen or landmark. Save an observation to include it in your download.')),
               comparisonActive ? h('p', { style: { margin: 0, color: P.dim, fontSize: '.75rem' } }, S('atlas_comparison_observe', 'Inspect a specimen to save its view and observation in your notebook.')) : null,
               h('button', { type: 'button', style: goBtn, disabled: comparisonActive || (!savedObservation && observations.length >= NOTEBOOK_LIMIT), onClick: saveObservation },
@@ -18240,6 +18303,7 @@ return plaza;
                   h('input', { type: 'text', value: pair.question || '', maxLength: 400, placeholder: S('atlas_workspace_question_hint', 'Use the suggested question or write your own'),
                     onChange: function (event) { var text = event.target.value; setPair(function (prev) { return Object.assign({}, prev, { question: text }); }); setInquiryMessage(''); },
                     style: Object.assign({}, sel, { width: '100%', marginTop: 4 }) })),
+                _sxScreenCrisis(pair.question) ? _sxCrisisBanner(h) : null,
                 h('label', { style: { fontSize: '0.71875rem', color: P.dim } },
                   S('est_label', 'Your estimate, in powers of ten'),
                   h('input', { type: 'number', inputMode: 'decimal', step: '.1', min: '0', max: ESTIMATE_MAX, value: guess, disabled: revealed,
@@ -18266,6 +18330,7 @@ return plaza;
                   h('label', { style: { fontSize: '.75rem' } }, S('atlas_inquiry_reflection', 'My reflection'),
                     h('textarea', { value: reflection, maxLength: NOTE_LIMIT, rows: 3, onChange: function (event) { setReflection(event.target.value); setInquiryMessage(''); },
                       style: Object.assign({}, sel, { display: 'block', width: '100%', marginTop: 4, resize: 'vertical' }) })),
+                  _sxScreenCrisis(reflection) ? _sxCrisisBanner(h) : null,
                   h('button', { type: 'button', style: Object.assign({}, goBtn, { marginTop: 8 }), disabled: !savedInvestigation && investigations.length >= INQUIRY_LIMIT, onClick: saveInvestigation },
                     savedInvestigation ? S('atlas_inquiry_update', 'Update investigation') : S('atlas_inquiry_save', 'Save investigation')),
                   !savedInvestigation && investigations.length >= INQUIRY_LIMIT ? h('p', { style: { color: P.warn, fontSize: '.75rem' } }, S('atlas_inquiry_full', 'You have 12 saved investigations. Remove one to save another; existing investigations can still be updated.')) : null) : null,

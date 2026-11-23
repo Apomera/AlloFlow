@@ -269,7 +269,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
           h('div', { style: { padding: 14, borderRadius: 10, background: _perBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _perFg('#fde68a'), marginBottom: 8 } }, '✏️ Take the self-check'),
             h('div', { style: { fontSize: 12, color: _perFg('#94a3b8'), marginBottom: 8, lineHeight: 1.5 } }, '24 items, 0-10 scale, ~5 minutes. You can stop and come back.'),
-            h('button', { onClick: function() { goto('check'); }, 'aria-label': 'Take self-check',
+            h('button', { onClick: function() { goto('check'); }, 'aria-label': complete ? 'Re-take self-check' : 'Start self-check',
               style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #92400e 0%, #b45309 100%)', color: _perFg('#fff'), fontWeight: 800, fontSize: 13 } },
               complete ? '✏️ Re-take' : '+ Start')
           ),

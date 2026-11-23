@@ -89,6 +89,18 @@
     } catch (_) {}
     return out;
   }
+  function keptCount() {
+    var s = storage();
+    if (!s) return 0;
+    var n = 0;
+    try {
+      for (var i = 0; i < s.length; i++) {
+        var key = s.key(i);
+        if (key && key.indexOf(KEY_PREFIX) === 0) n++;
+      }
+    } catch (_) {}
+    return n;
+  }
   function forgetAll() {
     var s = storage();
     if (!s) return false;
@@ -266,10 +278,64 @@
     $('found').focus();
     say(about.label + ': ' + current.title + '. Press Start.');
   }
+  var FORGET_LABEL = 'Forget the places kept on this device';
+  var forgetConfirm = false;
+  var forgetTimer = null;
+
+  function syncForget() {
+    var btn = $('forget');
+    if (!btn) return;
+    var n = keptCount();
+    if (!n) {
+      if (forgetTimer) { window.clearTimeout(forgetTimer); forgetTimer = null; }
+      forgetConfirm = false;
+      btn.textContent = FORGET_LABEL;
+      btn.classList.remove('is-confirming');
+      btn.disabled = true;
+      return;
+    }
+    btn.disabled = false;
+    if (!forgetConfirm) {
+      btn.textContent = 'Forget ' + count(n, 'saved place', 'saved places') + ' on this device';
+      btn.classList.remove('is-confirming');
+    }
+  }
+  function resetForgetConfirm() {
+    if (forgetTimer) { window.clearTimeout(forgetTimer); forgetTimer = null; }
+    forgetConfirm = false;
+    syncForget();
+    var said = $('forget-said');
+    if (said && said.textContent && said.textContent.indexOf('Tap again to forget ') === 0) said.textContent = '';
+  }
+
+  function placeSummary(file, keptMap) {
+    var keys = Object.keys(keptMap);
+    if (!keys.length) return '';
+    var fallback = 'Your place in this file is kept on this device. Start goes on from there.';
+    if (keys.length > 1) return fallback;
+    var parsed = null;
+    try { parsed = JSON.parse(keptMap[keys[0]]); } catch (_) { parsed = null; }
+    if (!isObject(parsed)) return fallback;
+    if (parsed.finishedAt || (isObject(parsed.check) && parsed.check.phase === 'done')) {
+      return 'Finished \u2014 open to see or save results.';
+    }
+    var total = Array.isArray(parsed.items) && parsed.items.length > 0
+      ? parsed.items.length
+      : (file && file.about ? (file.about.items || file.about.pages || 0) : 0);
+    var at = Number.isInteger(parsed.index) && parsed.index >= 0 ? parsed.index + 1 : 0;
+    if (at > 0 && total > 0) {
+      var shownAt = Math.min(total, at);
+      var unit = file && file.kind === 'read' ? 'page ' : 'question ';
+      return 'Saved at ' + unit + shownAt + ' of ' + total + '. Start goes on from there.';
+    }
+    return fallback;
+  }
   function drawPlace() {
-    var kept = current && current.bridged ? Object.keys(keptFor(current)).length : 0;
-    setText('place-line', kept ? 'Your place in this file is kept on this device. Start goes on from there.' : '');
-    show('place-line', kept > 0);
+    var keptMap = current && current.bridged ? keptFor(current) : Object.create(null);
+    var line = placeSummary(current, keptMap);
+    setText('place-line', line);
+    show('place-line', !!line);
+    syncForget();
   }
 
   // ---------------------------------------------------------------------------
@@ -301,6 +367,36 @@
     });
   }
 
+  var CLOSE_ASK = 'This file is not finished yet. Tap again to close.';
+
+  function resetCloseConfirm() {
+    if (session && session.confirmTimer) {
+      window.clearTimeout(session.confirmTimer);
+      session.confirmTimer = null;
+    }
+    if (session) session.confirmClose = false;
+    var btn = $('run-close');
+    if (btn) {
+      btn.textContent = 'Close';
+      btn.classList.remove('is-confirming');
+    }
+    var said = $('run-said');
+    if (said && said.textContent === CLOSE_ASK) said.textContent = '';
+  }
+
+  function requestClose() {
+    if (!session) return;
+    if (session.finished || session.confirmClose) { stop(false); return; }
+    session.confirmClose = true;
+    var btn = $('run-close');
+    if (btn) {
+      btn.textContent = 'Tap again to close';
+      btn.classList.add('is-confirming');
+    }
+    note(CLOSE_ASK);
+    session.confirmTimer = window.setTimeout(resetCloseConfirm, 4000);
+  }
+
   function start() {
     if (!current || session) return;
     var frame = doc.createElement('iframe');
@@ -308,12 +404,14 @@
     frame.title = current.title;
     frame.setAttribute('sandbox', 'allow-scripts allow-downloads');
     frame.setAttribute('allow', 'autoplay; clipboard-write');
-    session = { frame: frame, keys: Object.create(null), count: 0, lastSave: 0, file: null, warned: false, of: current };
+    session = { frame: frame, keys: Object.create(null), count: 0, lastSave: 0, file: null, warned: false, finished: false, confirmClose: false, confirmTimer: null, of: current };
     frame.srcdoc = current.bridged ? withSnapshot(current.html, keptFor(current)) : current.html;
     setText('run-title', current.title);
     setText('run-said', '');
     show('run-again', false);
     show('run-share', false);
+    if ($('run-share')) $('run-share').classList.remove('btn-primary');
+    resetCloseConfirm();
     $('run-host').appendChild(frame);
     setBackgroundInert(true);
     show('run', true);
@@ -324,6 +422,8 @@
 
   function stop(fromHistory) {
     if (!session) return;
+    resetCloseConfirm();
+    if ($('run-share')) $('run-share').classList.remove('btn-primary');
     session.frame.remove();
     session = null;
     show('run', false);
@@ -344,7 +444,16 @@
     var file = session.of, key = data.key, value = data.value;
     if (!ours(file, key) || !file.fingerprint) return;
     if (value !== null && (typeof value !== 'string' || value.length > MAX_VALUE)) return;
-    if (value !== null) { try { if (!isObject(JSON.parse(value))) return; } catch (_) { return; } }
+    var parsed = null;
+    if (value !== null) {
+      try { parsed = JSON.parse(value); if (!isObject(parsed)) return; } catch (_) { return; }
+    }
+    if (value === null) {
+      session.finished = false;
+    } else if (parsed && (parsed.finishedAt || (isObject(parsed.check) && parsed.check.phase === 'done'))) {
+      session.finished = true;
+      resetCloseConfirm();
+    }
     var s = storage(), map = owners();
     if (map[key] && map[key] !== file.fingerprint) {
       // Another file keeps its place under this name: it is left as it is.
@@ -355,6 +464,7 @@
       if (!s) throw new Error('no storage');
       if (value === null) { s.removeItem(key); delete map[key]; } else { s.setItem(key, value); map[key] = file.fingerprint; }
       keepOwners(map);
+      syncForget();
     } catch (_) {
       if (!session.warned) { session.warned = true; note('This browser could not keep your place. Finish in one go.'); }
     }
@@ -407,13 +517,17 @@
     var now = Date.now();
     if (now - session.lastSave < 800) return;
     session.lastSave = now;
+    session.finished = true;
+    resetCloseConfirm();
     session.file = { name: name, text: data.text, type: data.type };
     // Saved at once after a press in the file; otherwise only when the student presses Save it again.
     var pressed = !navigator.userActivation || navigator.userActivation.isActive;
     if (pressed) download(session.file);
     note(pressed ? saving(name) : 'Press Save it again to save ' + name + '.');
     show('run-again', true);
-    show('run-share', !!shareableFile(session.file));
+    var canShare = !!shareableFile(session.file);
+    show('run-share', canShare);
+    if ($('run-share')) $('run-share').classList.toggle('btn-primary', canShare);
   }
 
   window.addEventListener('message', function (event) {
@@ -459,7 +573,7 @@
     $('another').addEventListener('click', function () { $('file').click(); });
     $('start').addEventListener('click', start);
     $('change').addEventListener('click', change);
-    $('run-close').addEventListener('click', function () { stop(false); });
+    $('run-close').addEventListener('click', requestClose);
     $('run-again').addEventListener('click', function () { if (session && session.file) { download(session.file); note(saving(session.file.name)); } });
     if ($('run-share')) $('run-share').addEventListener('click', shareSaved);
     $('problem-link').addEventListener('click', function (event) {
@@ -468,16 +582,44 @@
       var target = pendingProblemFile;
       handoff.redirect(target.file, target.href, target.hash).catch(function () { window.location.href = target.href; });
     });
-    doc.addEventListener('keydown', function (event) { if (session && event.key === 'Escape' && doc.activeElement !== session.frame) stop(false); });
+    doc.addEventListener('keydown', function (event) { if (session && event.key === 'Escape' && doc.activeElement !== session.frame) requestClose(); });
     window.addEventListener('popstate', function () { if (session) stop(true); });
     $('forget').addEventListener('click', function () {
       if (session) return;
+      var n = keptCount();
+      if (!n) {
+        resetForgetConfirm();
+        setText('forget-said', 'This browser keeps no places for this page.');
+        return;
+      }
+      if (!forgetConfirm) {
+        forgetConfirm = true;
+        var ask = 'Tap again to forget ' + count(n, 'saved place', 'saved places');
+        var btn = $('forget');
+        if (btn) {
+          btn.textContent = ask;
+          btn.classList.add('is-confirming');
+        }
+        setText('forget-said', ask + ' on this device.');
+        forgetTimer = window.setTimeout(resetForgetConfirm, 4000);
+        return;
+      }
+      resetForgetConfirm();
       setText('forget-said', forgetAll() ? 'Done. No places are kept on this device now.' : 'This browser keeps no places for this page.');
+      syncForget();
       if (current) drawPlace();
     });
     // A file dropped anywhere on the page.
     var main = $('main');
     var isFiles = function (event) { var types = event.dataTransfer && event.dataTransfer.types; return !!types && Array.prototype.indexOf.call(types, 'Files') >= 0; };
+    var dragDepth = 0;
+    main.addEventListener('dragenter', function (event) {
+      if (!isFiles(event)) return;
+      event.preventDefault();
+      if (session) return;
+      dragDepth++;
+      show('drop-over', true);
+    });
     main.addEventListener('dragover', function (event) {
       if (!isFiles(event)) return;
       event.preventDefault();
@@ -485,8 +627,12 @@
       try { event.dataTransfer.dropEffect = 'copy'; } catch (_) {}
       show('drop-over', true);
     });
-    main.addEventListener('dragleave', function (event) { if (!event.relatedTarget || !main.contains(event.relatedTarget)) show('drop-over', false); });
+    main.addEventListener('dragleave', function () {
+      dragDepth = Math.max(0, dragDepth - 1);
+      if (!dragDepth) show('drop-over', false);
+    });
     main.addEventListener('drop', function (event) {
+      dragDepth = 0;
       show('drop-over', false);
       if (!isFiles(event)) return;
       event.preventDefault();
@@ -505,6 +651,7 @@
       return;
     }
     wire();
+    syncForget();
     window.addEventListener('pagehide', revokeAllDownloadUrls);
   }
   begin();

@@ -69,7 +69,7 @@
 <style>
   :root {
     --bg: #0f172a; --panel: #1e293b; --panel2: #273449; --line: #334155; --control-line: #64748b;
-    --text: #e2e8f0; --dim: #94a3b8; --accent: #fb7185; --accent2: #be123c; --ok: #4ade80;
+    --text: #e2e8f0; --dim: #cbd5e1; --accent: #fb7185; --accent2: #be123c; --ok: #4ade80;
   }
   :root[data-theme="light"] {
     --bg: #f8fafc; --panel: #ffffff; --panel2: #f1f5f9; --stage: #e2e8f0;
@@ -93,8 +93,8 @@
   :root[data-theme="contrast"] button.go { background: var(--accent2); color: #000; }
   :focus-visible { outline: 3px solid #facc15 !important; outline-offset: 2px; }
   :root[data-theme="light"] :focus-visible { outline-color: #1d4ed8 !important; }
-  .skip-link { position: absolute; left: -9999px; top: 8px; z-index: 9999; background: #1e293b; color: #f8fafc; padding: 8px 14px; border-radius: 8px; border: 2px solid #facc15; font-weight: 700; text-decoration: none; }
-  .skip-link:focus { left: 8px; }
+  .skip-link { position: absolute; inset-inline-start: 8px; top: 8px; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; pointer-events: none; z-index: 9999; min-height: 44px; display: inline-flex; align-items: center; background: #1e293b; color: #f8fafc; padding: 10px 14px; border-radius: 8px; border: 2px solid #facc15; font-weight: 700; text-decoration: none; }
+  .skip-link:focus { inset-inline-start: 8px; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; pointer-events: auto; }
   @media (forced-colors: active) {
     :root, :root[data-theme] {
       --bg: Canvas; --panel: Canvas; --panel2: Canvas; --stage: Canvas; --line: CanvasText; --control-line: CanvasText; --line2: CanvasText;
@@ -111,7 +111,7 @@
   header h1 { font-size: 15px; margin: 0; font-weight: 700; }
   header .sub { color: var(--dim); font-size: 11.5px; }
   header .spacer { margin-left: auto; }
-  header button { background: var(--panel2); color: var(--text); border: 1px solid var(--control-line); border-radius: 8px; padding: 6px 10px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  header button { min-height: 44px; background: var(--panel2); color: var(--text); border: 1px solid var(--control-line); border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
   header button:hover { border-color: var(--accent); }
   #timeline-embed { flex: 1 1 auto; min-height: 0; background: #fff; }
   .empty { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; color: var(--dim); text-align: center; padding: 24px; }
@@ -126,11 +126,11 @@
   .drawer .drawer-close:hover { border-color: var(--accent); }
   .drawer .body { padding: 6px 14px 16px; display: flex; flex-direction: column; gap: 8px; }
   .drawer label { font-size: 11px; color: var(--dim); font-weight: 700; }
-  .drawer input, .drawer textarea { width: 100%; background: var(--bg); border: 1px solid var(--control-line); color: var(--text); border-radius: 8px; padding: 7px 9px; font-size: 13px; font-family: inherit; }
+  .drawer input, .drawer textarea { width: 100%; min-height: 44px; background: var(--bg); border: 1px solid var(--control-line); color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 13px; font-family: inherit; }
   .drawer textarea { resize: vertical; min-height: 60px; }
   .row { display: flex; gap: 6px; }
   .row > div { flex: 1; }
-  button.go { background: var(--accent2); color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 700; cursor: pointer; }
+  button.go { min-height: 44px; background: var(--accent2); color: #fff; border: none; border-radius: 8px; padding: 10px 14px; font-size: 13px; font-weight: 700; cursor: pointer; }
   .evlist { font-size: 12px; color: var(--dim); }
   .evlist .ev { padding: 5px 0; border-bottom: 1px solid var(--line); }
   .privacy { padding: 8px 14px; border-top: 1px solid var(--line); font-size: 10.5px; color: var(--dim); line-height: 1.45; margin-top: auto; }
@@ -140,10 +140,10 @@
 <body>
 <a class="skip-link" href="#main">Skip to timeline</a>
 <header>
-  <h1>🕰️ Timeline Studio</h1>
+  <h1><span aria-hidden="true">🕰️ </span>Timeline Studio</h1>
   <span class="sub">TimelineJS by Knight Lab (open source, MPL) + AlloFlow</span>
   <span class="spacer"></span>
-  <button id="builderBtn" type="button" aria-expanded="false" aria-controls="drawer">✍️ Add events</button>
+  <button id="builderBtn" type="button" aria-expanded="false" aria-controls="drawer"><span aria-hidden="true">✍️ </span>Add events</button>
 </header>
 <main id="main" tabindex="-1" style="flex:1 1 auto;display:flex;flex-direction:column;min-height:0">
 <div id="timeline-embed"></div>
@@ -174,7 +174,7 @@
       <label for="mText">Description (optional)</label>
       <textarea id="mText" placeholder="One or two sentences about what happened."></textarea>
     </div>
-    <button class="go" id="addEventBtn" type="button">＋ Add to timeline</button>
+    <button class="go" id="addEventBtn" type="button"><span aria-hidden="true">＋ </span>Add to timeline</button>
     <div id="drawerStatus" class="privacy" style="border-top:0;padding:0;margin:0" role="status" aria-live="polite"></div>
     <div class="evlist" id="evList"></div>
   </div>
@@ -453,7 +453,22 @@
   // Escape closes the drawer from anywhere inside it; the open panel covers
   // the header toggle, so this and the close button are the mouse-free ways out
   document.addEventListener('keydown', function (ev) {
+    if (ev.isComposing || ev.keyCode === 229) return;
     if (ev.key === 'Escape' && drawer.classList.contains('open')) { ev.preventDefault(); setDrawer(false); }
+    else if (ev.key === 'Tab' && drawer.classList.contains('open')) {
+      var focusables = Array.prototype.slice.call(drawer.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+      if (!focusables.length) return;
+      var idx = focusables.indexOf(document.activeElement);
+      if (ev.shiftKey && idx <= 0) { ev.preventDefault(); focusables[focusables.length - 1].focus(); }
+      else if (!ev.shiftKey && (idx === -1 || idx === focusables.length - 1)) { ev.preventDefault(); focusables[0].focus(); }
+    }
+  });
+  ['mHeadline', 'mYear', 'mMonth', 'mDay'].forEach(function (id) {
+    var inp = document.getElementById(id);
+    if (inp) inp.addEventListener('keydown', function (ev) {
+      if (ev.isComposing || ev.keyCode === 229) return;
+      if (ev.key === 'Enter') { ev.preventDefault(); addEventBtn.click(); }
+    });
   });
   addEventBtn.addEventListener('click', function () {
     var drawerStatus = document.getElementById('drawerStatus');

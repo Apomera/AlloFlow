@@ -2303,7 +2303,7 @@ window.StemLab = window.StemLab || {
       } : {
         bg: '#ffffff', surface: '#ffffff', minor: '#7c8aa0', axis: '#334155', label: '#475569', point: '#0e7490', pointStroke: '#ffffff',
         cursor: '#c2410c', mystery: '#c2410c', image: '#6d28d9', line: '#4338ca', rise: '#b91c1c', run: '#1d4ed8', poly: '#15803d',
-        polyFill: 'rgba(21,128,61,0.12)', ink: '#0f172a', muted: '#475569', card: '#f8fafc', cardBorder: '#94a3b8', good: '#15803d', bad: '#b91c1c', btnBg: '#ffffff', btnInk: '#0e7490', btnBorder: '#0e7490', accent: '#0e7490'
+        polyFill: 'rgba(21,128,61,0.12)', ink: '#0f172a', muted: '#475569', card: '#f8fafc', cardBorder: '#94a3b8', good: '#15803d', bad: '#b91c1c', btnBg: '#ffffff', btnInk: '#155e75', btnBorder: '#155e75', accent: '#155e75'
       };
       var cardStyle = { background: GP.card, color: GP.ink, border: '1px solid ' + GP.cardBorder, borderRadius: 12, padding: 12 };
       var btnStyle = { minHeight: 44, minWidth: 44, padding: '6px 12px', borderRadius: 8, border: '2px solid ' + GP.btnBorder, background: GP.btnBg, color: GP.btnInk, fontWeight: 700, fontSize: 13, cursor: 'pointer' };
@@ -7046,7 +7046,7 @@ window.StemLab = window.StemLab || {
             }, t2.icon + ' ' + t2.label);
           })
         ),
-        h('p', { id: 'coordgrid-tabs-note', style: { margin: '-8px 0 0', fontSize: 12, color: themeInk } }, TABS_NOTE[cgLevel] || TABS_NOTE.g6),
+        h('p', { id: 'coordgrid-tabs-note', style: { margin: '2px 0 0', fontSize: 12, color: themeInk } }, TABS_NOTE[cgLevel] || TABS_NOTE.g6),
 
         // EXPLORE TAB content
         cgTab === 'explore' && renderExplore(),

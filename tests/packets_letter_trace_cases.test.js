@@ -114,7 +114,7 @@ describe('capital and lowercase', () => {
     expect(t.d.querySelector('[data-trace-word]').textContent).toBe('The word: cat');
     expect(t.d.querySelector('[data-trace-word] span').getAttribute('lang')).toBe('en');
     expect(t.d.querySelector('[data-trace-pen]').getAttribute('aria-label')).toBe('Tracing area for the capital letter C');
-    expect(t.d.querySelector('[data-trace-how]').textContent).toBe('Start at the green dot. Follow the arrow.');
+    expect(t.d.querySelector('[data-trace-how]').textContent).toBe('Start at the green dot 1. Follow the arrow.');
     expect(t.d.querySelector('[data-trace-skip-lowercase]').hidden).toBe(true);
     expect(t.button('Hear the letter')).toBeTruthy();
     t.button('I traced it').click();
@@ -232,13 +232,12 @@ describe('the start dots and arrows', () => {
     }
   });
 
-  it('dot 1 is at the real start, drawn last; numbers only when there are several strokes', () => {
+  it('dot 1 is at the real start, drawn last; every stroke dot is numbered (WCAG 1.4.1)', () => {
     for (const letter of letters) {
       const { dots, texts, start, strokes } = drawn(letter);
       const one = dots[dots.length - 1];
       expect(Math.hypot(one[0] - start[0], one[1] - start[1]), letter).toBeLessThan(0.01);
-      if (strokes === 1) { expect(texts, letter).toEqual([]); continue; }
-      // Each number sits in its own dot, last first.
+      // Each number sits in its own dot, last first (including '1' on single-stroke letters).
       expect(texts.map((t) => t.text), letter).toEqual(Array.from({ length: strokes }, (_, i) => String(strokes - i)));
       texts.forEach((t, i) => expect(Math.hypot(t.x - dots[i][0], t.y - 1 - dots[i][1]), letter).toBeLessThan(0.01));
     }

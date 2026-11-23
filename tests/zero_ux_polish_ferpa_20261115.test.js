@@ -127,6 +127,7 @@ describe('Pass 7 Track 1: Zero-UX Security, FERPA & Reliability Polish', () => {
     expect(studentHtml).toContain('blob:https://alloflow.example/local-img');
 
     liveRef.current = makeLive({ isTeacherMode: true, isStudentMode: false });
+    window.__alloAiUsable = vi.fn(() => true);
     const countBeforeTeacher = capturedBlobs.length;
     const teacherOk = await handleExportStorybook({ includeImages: true, includeNarration: false, keepModalOpen: true });
     expect(teacherOk).toBe(true);

@@ -7,6 +7,7 @@
 
 // ═══ Defensive StemLab guard ═══
 function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
+if (typeof window !== 'undefined') {
 window.StemLab = window.StemLab || {
   _registry: {},
   _order: [],
@@ -28,12 +29,46 @@ window.StemLab = window.StemLab || {
     try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
   }
 };
+}
 // ═══ End Guard ═══
 
-if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
+if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
 (function() {
   'use strict';
+  function _singSafeJsonParse(raw, fallback) {
+    try {
+      return JSON.parse(String(raw), function(k, v) {
+        return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+      });
+    } catch (_) { return fallback; }
+  }
+  function _singIsGlobalMuted() {
+    try {
+      if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+      if (typeof window.isAlloMuted === 'function' && window.isAlloMuted()) return true;
+      if (window._alloGlobalMute === true) return true;
+      if (window.localStorage && (window.localStorage.getItem('alloflow-global-muted') === '1' || window.localStorage.getItem('alloflow_muted') === '1' || window.localStorage.getItem('alloflow_muted') === 'true')) return true;
+    } catch (_) {}
+    return false;
+  }
+  function _singIsAiBlocked(callGeminiFn) {
+    if (typeof callGeminiFn !== 'function' || callGeminiFn._alloQrBlocked === true) return true;
+    if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true) return true;
+    var qr = window.__alloQrStudentMode;
+    if (qr === true || (qr && typeof qr === 'object' && qr.active !== false && qr.allowAi !== true)) return true;
+    var mp = window.ALLOFLOW_MANAGED_AI_POLICY;
+    if (mp && typeof mp === 'object' && (mp.enabled === false || (Array.isArray(mp.connections) && mp.connections.length === 0))) return true;
+    var sp = window.StudentPolicy;
+    if (sp && typeof sp === 'object') {
+      if (sp.aiEnabled === false || sp.allowAi === false || sp.disableAi === true) return true;
+      if (typeof sp.isAiAllowed === 'function') { try { if (!sp.isAiAllowed('text')) return true; } catch (_) { return true; } }
+    }
+    if (typeof window.__alloAiUsable === 'function') {
+      try { if (!window.__alloAiUsable('text', callGeminiFn)) return true; } catch (_) { return true; }
+    }
+    return false;
+  }
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   // WCAG 1.4.3 high contrast (generated by gen_hc.cjs)
   (function() {
@@ -79,7 +114,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     document.head.appendChild(st);
   })();
   (function() {
-    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-stem-motion-reduce-css';
     st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
@@ -88,7 +123,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
   // ── Accessibility live region (WCAG 4.1.3) ──
   (function() {
-    if (document.getElementById('allo-live-singing')) return;
+    if (typeof document === 'undefined' || !document.body || document.getElementById('allo-live-singing')) return;
     var lr = document.createElement('div');
     lr.id = 'allo-live-singing';
     lr.setAttribute('aria-live', 'polite');
@@ -334,12 +369,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
   var _activeOscillator = null;
   var _activeGain = null;
 
+  if (typeof window.addEventListener === 'function') {
+    window.addEventListener('alloflow-mute-changed', function() {
+      if (_singIsGlobalMuted()) {
+        stopRefTone();
+        try { if (_sharedAudioCtx && _sharedAudioCtx.state === 'running' && typeof _sharedAudioCtx.suspend === 'function') Promise.resolve(_sharedAudioCtx.suspend()).catch(function() {}); } catch (_) {}
+      }
+    });
+  }
+
   function getSharedAudioCtx() {
     if (!_sharedAudioCtx || _sharedAudioCtx.state === 'closed') {
       _sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
     if (_sharedAudioCtx.state === 'suspended') {
-      _sharedAudioCtx.resume();
+      try { Promise.resolve(_sharedAudioCtx.resume()).catch(function() {}); } catch (_) {}
     }
     return _sharedAudioCtx;
   }
@@ -362,6 +406,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
    */
   function playRefTone(freq, duration, volume) {
     stopRefTone();
+    if (_singIsGlobalMuted()) return null;
     var ctx = getSharedAudioCtx();
     var osc = ctx.createOscillator();
     var gain = ctx.createGain();
@@ -6866,12 +6911,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         try {
           if (navigator.audioSession) navigator.audioSession.type = 'play-and-record';
         } catch {}
-        this.stream = await navigator.mediaDevices.getUserMedia({
+        const prevStream = this.stream;
+        const nextStream = await navigator.mediaDevices.getUserMedia({
           audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
         });
-        const ctx = this._context();
-        if (ctx.state !== 'running') await ctx.resume();
-        await this.connectSource(ctx.createMediaStreamSource(this.stream));
+        if (prevStream && prevStream !== nextStream) {
+          try { prevStream.getTracks().forEach((tr) => tr.stop()); } catch (_) {}
+        }
+        this.stream = nextStream;
+        try {
+          const ctx = this._context();
+          if (ctx.state !== 'running') await ctx.resume();
+          await this.connectSource(ctx.createMediaStreamSource(this.stream));
+        } catch (err) {
+          try { nextStream.getTracks().forEach((tr) => tr.stop()); } catch (_) {}
+          if (this.stream === nextStream) this.stream = null;
+          throw err;
+        }
       }
 
       /**
@@ -9808,7 +9864,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           indexPromise = (async () => {
             const buf = await getBuffer('songs.json', 'the song index');
             let idx;
-            try { idx = JSON.parse(new TextDecoder().decode(buf)); } catch { throw fail('BAD_INDEX', 'songs.json is not valid JSON'); }
+            try { idx = JSON.parse(new TextDecoder().decode(buf), (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v); } catch { throw fail('BAD_INDEX', 'songs.json is not valid JSON'); }
             if (!idx || idx.v !== 1 || !Array.isArray(idx.packs) || !Array.isArray(idx.songs)) throw fail('BAD_INDEX', 'songs.json has an unexpected shape');
             byId = new Map(idx.songs.map((s) => [s.id, s]));
             return idx;
@@ -9856,7 +9912,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           const buf = await getBuffer(x.f, 'a data file');
           if (buf.byteLength !== x.bytes) throw fail('SIZE', `${x.f}: ${buf.byteLength} bytes, expected ${x.bytes}`);
           if (checkHash && toHex(await subtle.digest('SHA-256', buf)) !== x.sha256) throw fail('HASH', `${x.f}: contents do not match the index`);
-          return JSON.parse(new TextDecoder().decode(buf));
+          return JSON.parse(new TextDecoder().decode(buf), (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
         },
         /** Pack files currently held in memory (for tests). */
         cachedPacks: () => [...packs.keys()],
@@ -13208,11 +13264,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       if (playerRef.current) playerRef.current.clearVoiceNoteColors();
       setLive(null); setResult(null); setSpots([]);
     }
+    var micReqIdRef = React.useRef(0);
     function stopMic() {
+      micReqIdRef.current++;
       if (anRef.current) { try { anRef.current.stop(); } catch (e) { /* already stopped */ } anRef.current = null; }
     }
     function ensureMic() {
       if (anRef.current) return Promise.resolve(anRef.current);
+      var reqId = ++micReqIdRef.current;
       var a = new VS.VoiceAnalyzer({ mode: 'voice' });
       a.setIgnore(function () { return playerRef.current ? playerRef.current.sounding() : false; }); // the starting note is not the singer
       a.onFrame(function (f) {
@@ -13229,7 +13288,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         if (laneRef.current) laneRef.current.pushPitch(tm, midi, f.rawMidi);
         if (scopeRef.current) scopeRef.current.push(tm, midi);
       });
-      return a.startMicrophone().then(function () { anRef.current = a; return a; });
+      return a.startMicrophone().then(function () {
+        if (reqId !== micReqIdRef.current) {
+          try { a.stop(); } catch (_) {}
+          return null;
+        }
+        anRef.current = a;
+        return a;
+      });
     }
 
     function stopAll() {
@@ -13787,12 +13853,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       var awardStemXP = ctx.awardXP;
       var stemCelebrate = ctx.celebrate;
       var stemBeep = ctx.beep;
-      // Student AI-off: null unless text AI is usable, so the AI exercise tab and Vocal Health Tips hide.
-      var _aiUsable = function (kind, fn) {
-        try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
-        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
-      };
-      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
+      var callGemini = (ctx.aiAvailable !== false && !_singIsAiBlocked(ctx.callGemini)) ? ctx.callGemini : null;
       var callTTS = ctx.callTTS;
       var gradeLevel = ctx.gradeLevel;
       var isDark = ctx.isDark;
@@ -13808,12 +13869,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           var _k = {};
           _k[key] = val;
           setLabToolData(function(prev) {
-            return Object.assign({}, prev, { singing: Object.assign({}, prev.singing || {}, _k) });
+            var base = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+            var prevSing = (base.singing && typeof base.singing === 'object' && !Array.isArray(base.singing)) ? base.singing : {};
+            return Object.assign({}, base, { singing: Object.assign({}, prevSing, _k) });
           });
         };
         var updAll = function(patch) {
           setLabToolData(function(prev) {
-            return Object.assign({}, prev, { singing: Object.assign({}, prev.singing || {}, patch) });
+            var base = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+            var prevSing = (base.singing && typeof base.singing === 'object' && !Array.isArray(base.singing)) ? base.singing : {};
+            return Object.assign({}, base, { singing: Object.assign({}, prevSing, patch) });
           });
         };
 
@@ -14110,7 +14175,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               streamRef.current = stream;
               var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
               audioCtxRef.current = audioCtx;
-              if (audioCtx.state === 'suspended') audioCtx.resume();
+              if (audioCtx.state === 'suspended') { try { Promise.resolve(audioCtx.resume()).catch(function() {}); } catch (_) {} }
               var source = audioCtx.createMediaStreamSource(stream);
               sourceRef.current = source;
               var analyser = audioCtx.createAnalyser();
@@ -14141,6 +14206,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               function analyzeLoop(frameTime) {
                 if (!analyserRef.current) return;
                 animFrameRef.current = requestAnimationFrame(analyzeLoop);
+                if (typeof document !== 'undefined' && document.hidden) return;
 
                 var stamp = typeof frameTime === 'number' ? frameTime : 0;
                 if (stamp - lastAnalysis < ANALYSIS_MS) return;
@@ -14362,6 +14428,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
           function tick(timestamp) {
             if (!running) return;
+            if (typeof document !== 'undefined' && document.hidden) {
+              anatomyRafRef.current = requestAnimationFrame(tick);
+              return;
+            }
             anatomyAnimFrameRef.current++;
             var frame = anatomyAnimFrameRef.current;
 
@@ -15008,6 +15078,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   var cvs = rangeKeyboardCanvasRef.current;
                   if (!cvs || !cvs._keyRects) return;
                   var rect = cvs.getBoundingClientRect();
+                  if (!rect || rect.width <= 0 || rect.height <= 0) return;
                   var scaleX = cvs.width / rect.width;
                   var scaleY = cvs.height / rect.height;
                   var cx = (e.clientX - rect.left) * scaleX;
@@ -15028,6 +15099,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   }
                 },
                 onKeyDown: function(e) {
+                  if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                   var cvs = rangeKeyboardCanvasRef.current;
                   if (!cvs || !cvs._keyRects || cvs._keyRects.length === 0) return;
                   // Initialize focused key index if not set
@@ -15542,6 +15614,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                     onClick: function(e) {
                       // Click-to-select region based on canvas position
                       var rect = e.target.getBoundingClientRect();
+                      if (!rect || rect.width <= 0 || rect.height <= 0) return;
                       var x = (e.clientX - rect.left) / rect.width * 500;
                       var y = (e.clientY - rect.top) / rect.height * 400;
                       // Hit test regions by approximate bounding boxes
@@ -15555,6 +15628,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                       setAnatomyRegion(hit === anatomyRegion ? null : hit);
                     },
                     onKeyDown: function(e) {
+                      if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                       var regionIds = ANATOMY_REGIONS.map(function(r) { return r.id; });
                       var currentIdx = anatomyRegion ? regionIds.indexOf(anatomyRegion) : -1;
                       if (e.key === 'ArrowRight') {
@@ -16039,9 +16113,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 var jsonStr = response;
                 var match = response.match(/\[[\s\S]*\]/);
                 if (match) jsonStr = match[0];
-                var parsed = JSON.parse(jsonStr);
-                if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].midi) {
-                  setSrNotes(parsed);
+                var parsed = _singSafeJsonParse(jsonStr, null);
+                var validNotes = Array.isArray(parsed) ? parsed.filter(function(n) {
+                  return n && typeof n === 'object' && Number.isFinite(Number(n.midi)) && Number(n.midi) >= 21 && Number(n.midi) <= 108;
+                }).map(function(n) {
+                  return { midi: Math.round(Number(n.midi)), dur: (Number.isFinite(Number(n.dur)) && Number(n.dur) > 0) ? Math.min(8, Number(n.dur)) : 1 };
+                }) : [];
+                if (validNotes.length > 0) {
+                  setSrNotes(validNotes);
                   setSrMode('idle');
                   setSrCurrentIdx(-1);
                   setSrResults([]);
@@ -16586,6 +16665,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                     : (isDark ? 'transition-colors text-slate-200 hover:bg-slate-700 hover:text-white active:scale-[0.97]' : 'transition-colors text-slate-600 hover:text-slate-700')),
                 onClick: function() { setActiveTab(tab.id); },
                 onKeyDown: function(e) {
+                  if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                   var tabIds = TABS.map(function(t) { return t.id; });
                   var idx = tabIds.indexOf(tab.id);
                   if (e.key === 'ArrowRight') {

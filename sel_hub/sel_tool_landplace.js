@@ -21,6 +21,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
 
   // ── WCAG 4.1.3: live region ──
   (function() {
+    if (typeof document === 'undefined' || !document.body) return;
     if (document.getElementById('allo-live-landplace')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-landplace';
@@ -31,6 +32,23 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
     liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(liveRegion);
   })();
+
+  (function() {
+    if (typeof document === 'undefined' || !document.head) return;
+    if (document.getElementById('allo-landplace-a11y-css')) return;
+    var s = document.createElement('style');
+    s.id = 'allo-landplace-a11y-css';
+    s.textContent =
+      '.selh-landplace button:focus-visible,.selh-landplace a:focus-visible,.selh-landplace input:focus-visible,.selh-landplace textarea:focus-visible,.selh-landplace summary:focus-visible,.selh-landplace [tabindex]:focus-visible{outline:3px solid #86efac;outline-offset:2px;}' +
+      '.selh-landplace button{transition:background-color 140ms ease,border-color 140ms ease,color 140ms ease;}' +
+      '@media (prefers-reduced-motion: reduce){.selh-landplace,.selh-landplace *{transition:none !important;animation:none !important;}}' +
+      '@media (forced-colors: active){.selh-landplace button:focus-visible,.selh-landplace a:focus-visible,.selh-landplace input:focus-visible,.selh-landplace textarea:focus-visible,.selh-landplace summary:focus-visible{outline:2px solid Highlight !important;}.selh-landplace button,.selh-landplace [role="tab"]{forced-color-adjust:auto;}}';
+    document.head.appendChild(s);
+  })();
+
+  function isImeComposing(e) {
+    return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+  }
 
   // ═══════════════════════════════════════════════════════════
   // WABANAKI CONFEDERACY DATA
@@ -145,6 +163,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
       var announceToSR = ctx.announceToSR;
       var onSafetyFlag = ctx.onSafetyFlag || null;
       var _lanBand = (ctx && ctx.gradeBand) || 'high';
+      function announceLP(msg) {
+        if (!msg) return;
+        if (typeof announceToSR === 'function') { try { announceToSR(msg); return; } catch (_) {} }
+        if (typeof document !== 'undefined') {
+          var live = document.getElementById('allo-live-landplace');
+          if (live) {
+            live.textContent = '';
+            setTimeout(function() { live.textContent = msg; }, 20);
+          }
+        }
+      }
 
       var rawLP = (labToolData.landPlace && typeof labToolData.landPlace === 'object' && !Array.isArray(labToolData.landPlace)) ? labToolData.landPlace : {};
       var d = Object.assign(defaultState(), rawLP);
@@ -194,8 +223,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
       // ─── Header + nav ───
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
-          h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid ' + _lanBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _lanFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+          h('button', { type: 'button', onClick: function() { if (typeof setSelHubTool === 'function') setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
+            style: { background: _lanHC ? '#000000' : (_lanL ? '#f1f5f9' : 'rgba(255,255,255,0.05)'), border: '1px solid ' + _lanBd('#334155'), borderRadius: 8, padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', color: _lanFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _lanFg('#86efac'), fontSize: 22, fontWeight: 900 } }, '🌱 Land & Place: Stewardship Studio'),
             h('div', { style: { fontSize: 12, color: _lanFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A practice for ongoing relationship with the land you live on. Not a template to recite.')
@@ -215,10 +244,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
           tabs.map(function(t, idx) {
             var active = view === t.id;
-            return h('button', { key: t.id, id: 'landplace-tab-' + t.id, 'aria-controls': 'landplace-panel-' + t.id,
+            return h('button', { key: t.id, id: 'landplace-tab-' + t.id, type: 'button', 'aria-controls': 'landplace-panel-' + t.id,
               tabIndex: active ? 0 : -1,
-              onClick: function() { goto(t.id); },
+              onClick: function() { goto(t.id); announceLP('Switched to ' + t.label + '.'); },
               onKeyDown: function(e) {
+                if (isImeComposing(e)) return;
                 var nextIdx = idx;
                 if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIdx = (idx + 1) % tabs.length;
                 else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIdx = (idx - 1 + tabs.length) % tabs.length;
@@ -226,13 +256,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
                 else if (e.key === 'End') nextIdx = tabs.length - 1;
                 else return;
                 e.preventDefault();
-                goto(tabs[nextIdx].id);
-                var target = document.getElementById('landplace-tab-' + tabs[nextIdx].id);
-                if (target && typeof target.focus === 'function') target.focus();
+                var nextTab = tabs[nextIdx];
+                goto(nextTab.id);
+                announceLP('Switched to ' + nextTab.label + '.');
+                if (typeof document !== 'undefined') {
+                  setTimeout(function() {
+                    var target = document.getElementById('landplace-tab-' + nextTab.id);
+                    if (target && typeof target.focus === 'function') target.focus();
+                  }, 0);
+                }
               },
               role: 'tab', 'aria-selected': active,
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? _lanBd('#86efac') : _lanBd('#334155')),
-                background: active ? (_lanHC ? '#000000' : 'rgba(134,239,172,0.18)') : _lanBg('#1e293b'),
+              style: { padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + (active ? _lanBd('#86efac') : _lanBd('#334155')),
+                background: active ? (_lanHC ? '#000000' : (_lanL ? '#dcfce7' : 'rgba(134,239,172,0.18)')) : _lanBg('#1e293b'),
                 color: active ? _lanFg('#bbf7d0') : _lanFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
@@ -242,7 +278,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
       // ─── Soft pointer at the bottom of every view ───
       function authoritativeVoicePointer() {
         return h('div', { className: 'no-print',
-          style: { marginTop: 18, padding: 12, borderRadius: 10, background: _lanHC ? '#000000' : 'rgba(168,85,247,0.08)', borderTop: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(168,85,247,0.3)'), borderRight: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(168,85,247,0.3)'), borderBottom: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(168,85,247,0.3)'), borderLeft: '3px solid ' + _lanBd('#a855f7'), fontSize: 12.5, color: _lanFg('#e9d5ff'), lineHeight: 1.55 }
+          style: { marginTop: 18, padding: 12, borderRadius: 10, background: _lanHC ? '#000000' : (_lanL ? '#faf5ff' : 'rgba(168,85,247,0.08)'), borderTop: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(168,85,247,0.3)'), borderRight: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(168,85,247,0.3)'), borderBottom: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(168,85,247,0.3)'), borderLeft: '3px solid ' + _lanBd('#a855f7'), fontSize: 12.5, color: _lanFg('#e9d5ff'), lineHeight: 1.55 }
         },
           h('strong', { style: { color: _lanFg('#a855f7') } }, '🪶 This tool is a learning scaffold, not an authoritative voice. '),
           'For real understanding of Wabanaki nations, follow and learn directly from Wabanaki Public Health and Wellness, Maine Indian Basketmakers Alliance, the Penobscot Nation Cultural and Historic Preservation Department, the Passamaquoddy Cultural Heritage Museum, First Light Learning Journey, and the University of Maine Wabanaki Center.'
@@ -255,7 +291,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
       function renderOverview() {
         return h('div', null,
           // Framing
-          h('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(134,239,172,0.16) 0%, rgba(56,189,248,0.06) 100%)', borderTop: '1px solid rgba(134,239,172,0.4)', borderRight: '1px solid rgba(134,239,172,0.4)', borderBottom: '1px solid rgba(134,239,172,0.4)', borderLeft: '4px solid #86efac', marginBottom: 14, fontSize: 14, color: _lanFg('#e2e8f0'), lineHeight: 1.65 } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: _lanHC ? '#000000' : (_lanL ? '#f0fdf4' : 'linear-gradient(135deg, rgba(134,239,172,0.16) 0%, rgba(56,189,248,0.06) 100%)'), borderTop: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(134,239,172,0.4)'), borderRight: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(134,239,172,0.4)'), borderBottom: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(134,239,172,0.4)'), borderLeft: '4px solid ' + _lanBd('#86efac'), marginBottom: 14, fontSize: 14, color: _lanFg('#e2e8f0'), lineHeight: 1.65 } },
             h('strong', { style: { color: _lanFg('#bbf7d0') } }, 'You are reading this from somewhere. '),
             'Whose land is it? Who lived here before, and who lives here now? What grew here, what was taken, what is recovering? These are not abstract questions. They have specific answers in specific places.'
           ),
@@ -293,7 +329,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
           ),
 
           // Maine LD 291 context
-          h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', fontSize: 12.5, color: _lanFg('#fde68a'), lineHeight: 1.55, marginBottom: 14 } },
+          h('div', { style: { padding: 10, borderRadius: 8, background: _lanHC ? '#000000' : (_lanL ? '#fffbeb' : 'rgba(245,158,11,0.10)'), borderTop: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderRight: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderBottom: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderLeft: '3px solid ' + _lanBd('#f59e0b'), fontSize: 12.5, color: _lanFg('#fde68a'), lineHeight: 1.55, marginBottom: 14 } },
             h('strong', null, '📜 Maine LD 291 (2001): '),
             'Maine state law requires that Wabanaki history, culture, and government be taught in K-12 public schools. This tool can support that work, but it cannot replace the Wabanaki Studies curriculum and the Wabanaki educators who teach it. If your school does not have a Wabanaki Studies program, ask why.'
           ),
@@ -349,33 +385,33 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
         }
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: _lanHC ? '#000000' : 'rgba(134,239,172,0.10)', borderTop: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(134,239,172,0.3)'), borderRight: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(134,239,172,0.3)'), borderBottom: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(134,239,172,0.3)'), borderLeft: '3px solid ' + _lanBd('#86efac'), marginBottom: 14, fontSize: 13, color: _lanFg('#bbf7d0'), lineHeight: 1.55 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: _lanHC ? '#000000' : (_lanL ? '#f0fdf4' : 'rgba(134,239,172,0.10)'), borderTop: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(134,239,172,0.3)'), borderRight: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(134,239,172,0.3)'), borderBottom: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(134,239,172,0.3)'), borderLeft: '3px solid ' + _lanBd('#86efac'), marginBottom: 14, fontSize: 13, color: _lanFg('#bbf7d0'), lineHeight: 1.55 } },
             '🧵 Three threads of relationship with place. Work through them at your own pace. None of these has a quick answer; that is the point.'
           ),
           threads.map(function(t) {
             var threadInputId = 'land-thread-' + t.id;
             return h('div', { key: t.id, style: { padding: 14, borderRadius: 10, background: _lanBg('#0f172a'), borderTop: '1px solid ' + _lanBd('#1e293b'), borderRight: '1px solid ' + _lanBd('#1e293b'), borderBottom: '1px solid ' + _lanBd('#1e293b'), borderLeft: '3px solid ' + _lanBd(t.color), marginBottom: 12 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
-                h('span', { style: { fontSize: 24 } }, t.icon),
+                h('span', { style: { fontSize: 24 }, 'aria-hidden': true }, t.icon),
                 h('div', null,
                   h('strong', { style: { color: _lanFg(t.color), fontSize: 15 } }, t.label),
                   h('div', { style: { fontSize: 12, color: _lanFg('#94a3b8'), lineHeight: 1.5, marginTop: 2 } }, t.framing)
                 )
               ),
               h('div', { style: { marginTop: 10, paddingLeft: 12, borderLeft: '2px dashed ' + (_lanHC ? '#ffff00' : _lanBd(t.color) + '66') } },
-                h('div', { style: { fontSize: 11, color: _lanFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6, fontWeight: 700 } }, 'Prompts'),
+                h('div', { style: { fontSize: 12, color: _lanFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6, fontWeight: 700 } }, 'Prompts'),
                 t.prompts.map(function(p, i) {
                   return h('div', { key: i, style: { fontSize: 12.5, color: _lanFg('#cbd5e1'), marginBottom: 4, lineHeight: 1.5 } }, '· ' + p);
                 })
               ),
-              h('label', { htmlFor: threadInputId, style: { display: 'block', marginTop: 10, marginBottom: 4, fontSize: 11, color: _lanFg('#94a3b8'), fontWeight: 700 } }, 'Your notes on ' + t.label.toLowerCase()),
+              h('label', { htmlFor: threadInputId, style: { display: 'block', marginTop: 10, marginBottom: 4, fontSize: 12, color: _lanFg('#94a3b8'), fontWeight: 700 } }, 'Your notes on ' + t.label.toLowerCase()),
               h('textarea', {
                 id: threadInputId,
                 value: d.threadNotes[t.id] || '',
                 onChange: function(e) { updateNote(t.id, e.target.value); },
                 onBlur: function(e) { scanLandText(e.target.value); },
                 placeholder: 'Write what you have learned, what you do not know yet, what you want to keep finding out.',
-                style: { width: '100%', minHeight: 80, padding: 8, borderRadius: 6, border: '1px solid ' + _lanBd('#334155'), background: _lanBg('#1e293b'), color: _lanFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.5, resize: 'vertical' }
+                style: { width: '100%', minHeight: 80, padding: 8, boxSizing: 'border-box', borderRadius: 6, border: '1px solid ' + _lanBd('#334155'), background: _lanBg('#1e293b'), color: _lanFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.5, resize: 'vertical' }
               })
             );
           }),
@@ -403,7 +439,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
 
         return h('div', null,
           // The critique up front
-          h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '4px solid #ef4444', marginBottom: 14 } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: _lanHC ? '#000000' : (_lanL ? '#fef2f2' : 'rgba(239,68,68,0.10)'), borderTop: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(239,68,68,0.4)'), borderRight: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(239,68,68,0.4)'), borderBottom: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(239,68,68,0.4)'), borderLeft: '4px solid ' + _lanBd('#ef4444'), marginBottom: 14 } },
             h('strong', { style: { color: _lanFg('#fca5a5'), fontSize: 14, display: 'block', marginBottom: 6 } }, '⚠ The critique to take seriously'),
             h('p', { style: { margin: 0, color: _lanFg('#fecaca'), fontSize: 13, lineHeight: 1.65 } },
               'Many Indigenous people and scholars have argued that land acknowledgments without action are worse than useless: they let non-Indigenous people perform care without doing the work. ',
@@ -417,49 +453,49 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
             h('div', { style: { fontSize: 12, color: _lanFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, 'Build it in four parts'),
 
             // Part 1: Where
-            h('div', { style: { marginBottom: 10, padding: 10, background: _lanBg('#0f172a'), borderRadius: 8, borderLeft: '3px solid #0ea5e9' } },
+            h('div', { style: { marginBottom: 10, padding: 10, background: _lanBg('#0f172a'), borderRadius: 8, borderTop: '1px solid ' + _lanBd('#1e293b'), borderRight: '1px solid ' + _lanBd('#1e293b'), borderBottom: '1px solid ' + _lanBd('#1e293b'), borderLeft: '3px solid ' + _lanBd('#0ea5e9') } },
               h('label', { htmlFor: 'land-ack-where', style: { display: 'block', fontSize: 12, fontWeight: 700, color: _lanFg('#7dd3fc'), marginBottom: 4 } }, '1. Where you are'),
-              h('div', { id: 'land-ack-where-help', style: { fontSize: 11, color: _lanFg('#94a3b8'), marginBottom: 6 } }, 'Be specific. A town, a neighborhood, a building, a watershed.'),
+              h('div', { id: 'land-ack-where-help', style: { fontSize: 12, color: _lanFg('#94a3b8'), marginBottom: 6 } }, 'Be specific. A town, a neighborhood, a building, a watershed.'),
               h('textarea', { id: 'land-ack-where', 'aria-describedby': 'land-ack-where-help', value: ack.where, onChange: function(e) { updateAck('where', e.target.value); }, onBlur: function(e) { scanLandText(e.target.value); },
                 placeholder: 'I am writing this from...',
-                style: { width: '100%', minHeight: 40, padding: 6, borderRadius: 6, border: '1px solid #334155', background: _lanBg('#1e293b'), color: _lanFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.5, resize: 'vertical' }
+                style: { width: '100%', minHeight: 44, padding: 8, boxSizing: 'border-box', borderRadius: 6, border: '1px solid ' + _lanBd('#334155'), background: _lanBg('#1e293b'), color: _lanFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.5, resize: 'vertical' }
               })
             ),
 
             // Part 2: Whose land
-            h('div', { style: { marginBottom: 10, padding: 10, background: _lanBg('#0f172a'), borderRadius: 8, borderLeft: '3px solid #16a34a' } },
+            h('div', { style: { marginBottom: 10, padding: 10, background: _lanBg('#0f172a'), borderRadius: 8, borderTop: '1px solid ' + _lanBd('#1e293b'), borderRight: '1px solid ' + _lanBd('#1e293b'), borderBottom: '1px solid ' + _lanBd('#1e293b'), borderLeft: '3px solid ' + _lanBd('#16a34a') } },
               h('label', { htmlFor: 'land-ack-whose', style: { display: 'block', fontSize: 12, fontWeight: 700, color: _lanFg('#86efac'), marginBottom: 4 } }, '2. Whose land it is'),
-              h('div', { id: 'land-ack-whose-help', style: { fontSize: 11, color: _lanFg('#94a3b8'), marginBottom: 6 } }, 'Name the nation(s). For Maine: the Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, or Abenaki, depending on where you specifically are. Multiple nations may have ties to the same place.'),
+              h('div', { id: 'land-ack-whose-help', style: { fontSize: 12, color: _lanFg('#94a3b8'), marginBottom: 6 } }, 'Name the nation(s). For Maine: the Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, or Abenaki, depending on where you specifically are. Multiple nations may have ties to the same place.'),
               h('textarea', { id: 'land-ack-whose', 'aria-describedby': 'land-ack-whose-help', value: ack.whose, onChange: function(e) { updateAck('whose', e.target.value); }, onBlur: function(e) { scanLandText(e.target.value); },
                 placeholder: 'This is the ancestral homeland of...',
-                style: { width: '100%', minHeight: 40, padding: 6, borderRadius: 6, border: '1px solid #334155', background: _lanBg('#1e293b'), color: _lanFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.5, resize: 'vertical' }
+                style: { width: '100%', minHeight: 44, padding: 8, boxSizing: 'border-box', borderRadius: 6, border: '1px solid ' + _lanBd('#334155'), background: _lanBg('#1e293b'), color: _lanFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.5, resize: 'vertical' }
               })
             ),
 
             // Part 3: Honesty
-            h('div', { style: { marginBottom: 10, padding: 10, background: _lanBg('#0f172a'), borderRadius: 8, borderLeft: '3px solid #f59e0b' } },
+            h('div', { style: { marginBottom: 10, padding: 10, background: _lanBg('#0f172a'), borderRadius: 8, borderTop: '1px solid ' + _lanBd('#1e293b'), borderRight: '1px solid ' + _lanBd('#1e293b'), borderBottom: '1px solid ' + _lanBd('#1e293b'), borderLeft: '3px solid ' + _lanBd('#f59e0b') } },
               h('label', { htmlFor: 'land-ack-honesty', style: { display: 'block', fontSize: 12, fontWeight: 700, color: _lanFg('#fbbf24'), marginBottom: 4 } }, '3. Honesty about what acknowledgment is'),
-              h('div', { id: 'land-ack-honesty-help', style: { fontSize: 11, color: _lanFg('#94a3b8'), marginBottom: 6 } }, 'Name that an acknowledgment is not the same as returning land or honoring treaties. Refuse to use this moment to feel good without committing to anything.'),
+              h('div', { id: 'land-ack-honesty-help', style: { fontSize: 12, color: _lanFg('#94a3b8'), marginBottom: 6 } }, 'Name that an acknowledgment is not the same as returning land or honoring treaties. Refuse to use this moment to feel good without committing to anything.'),
               h('textarea', { id: 'land-ack-honesty', 'aria-describedby': 'land-ack-honesty-help', value: ack.honesty, onChange: function(e) { updateAck('honesty', e.target.value); }, onBlur: function(e) { scanLandText(e.target.value); },
                 placeholder: 'I want to be honest that an acknowledgment by itself...',
-                style: { width: '100%', minHeight: 50, padding: 6, borderRadius: 6, border: '1px solid #334155', background: _lanBg('#1e293b'), color: _lanFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.5, resize: 'vertical' }
+                style: { width: '100%', minHeight: 50, padding: 8, boxSizing: 'border-box', borderRadius: 6, border: '1px solid ' + _lanBd('#334155'), background: _lanBg('#1e293b'), color: _lanFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.5, resize: 'vertical' }
               })
             ),
 
             // Part 4: Commitment
-            h('div', { style: { marginBottom: 10, padding: 10, background: _lanBg('#0f172a'), borderRadius: 8, borderLeft: '3px solid #a855f7' } },
+            h('div', { style: { marginBottom: 10, padding: 10, background: _lanBg('#0f172a'), borderRadius: 8, borderTop: '1px solid ' + _lanBd('#1e293b'), borderRight: '1px solid ' + _lanBd('#1e293b'), borderBottom: '1px solid ' + _lanBd('#1e293b'), borderLeft: '3px solid ' + _lanBd('#a855f7') } },
               h('label', { htmlFor: 'land-ack-commit', style: { display: 'block', fontSize: 12, fontWeight: 700, color: _lanFg('#c4b5fd'), marginBottom: 4 } }, '4. A specific commitment you can keep'),
-              h('div', { id: 'land-ack-commit-help', style: { fontSize: 11, color: _lanFg('#94a3b8'), marginBottom: 6 } }, 'One concrete action. Follow a Wabanaki-led organization, donate, attend an event, support a policy, learn the treaty history. Specific is better than grand.'),
+              h('div', { id: 'land-ack-commit-help', style: { fontSize: 12, color: _lanFg('#94a3b8'), marginBottom: 6 } }, 'One concrete action. Follow a Wabanaki-led organization, donate, attend an event, support a policy, learn the treaty history. Specific is better than grand.'),
               h('textarea', { id: 'land-ack-commit', 'aria-describedby': 'land-ack-commit-help', value: ack.commit, onChange: function(e) { updateAck('commit', e.target.value); }, onBlur: function(e) { scanLandText(e.target.value); },
                 placeholder: 'I am committing to...',
-                style: { width: '100%', minHeight: 50, padding: 6, borderRadius: 6, border: '1px solid #334155', background: _lanBg('#1e293b'), color: _lanFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.5, resize: 'vertical' }
+                style: { width: '100%', minHeight: 50, padding: 8, boxSizing: 'border-box', borderRadius: 6, border: '1px solid ' + _lanBd('#334155'), background: _lanBg('#1e293b'), color: _lanFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.5, resize: 'vertical' }
               })
             )
           ),
 
           // Composed preview
           h('div', { style: { padding: 14, borderRadius: 10, background: _lanBg('#0f172a'), border: '1px solid ' + _lanBd('#334155'), marginBottom: 14 } },
-            h('div', { style: { fontSize: 11, color: _lanFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, '✏ Your acknowledgment, drafted'),
+            h('div', { style: { fontSize: 12, color: _lanFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, '✏ Your acknowledgment, drafted'),
             h('p', { style: { margin: 0, color: _lanFg('#e2e8f0'), fontSize: 14, lineHeight: 1.7, fontStyle: ack.where || ack.whose || ack.honesty || ack.commit ? 'normal' : 'italic' } },
               ack.where || ack.whose || ack.honesty || ack.commit
                 ? composed.replace(/\s+/g, ' ').trim()
@@ -469,7 +505,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
 
           // Worked example, collapsible
           h('details', { style: { padding: 10, background: _lanBg('#0f172a'), border: '1px solid ' + _lanBd('#1e293b'), borderRadius: 8, marginBottom: 14 } },
-            h('summary', { style: { cursor: 'pointer', fontSize: 12, fontWeight: 700, color: _lanFg('#94a3b8') } }, '📖 See a worked example (do not copy)'),
+            h('summary', { style: { cursor: 'pointer', minHeight: 44, display: 'flex', alignItems: 'center', fontSize: 12, fontWeight: 700, color: _lanFg('#94a3b8') } }, '📖 See a worked example (do not copy)'),
             h('p', { style: { margin: '8px 0 0', color: _lanFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.7 } }, EXAMPLE_ACKNOWLEDGMENT),
             h('div', { style: { marginTop: 8, fontSize: 11, color: _lanFg('#fbbf24'), fontStyle: 'italic' } },
               'Note: this is an example of FORM, not of CONTENT. Yours should be different because you are different and your place is different.'
@@ -485,7 +521,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
       // ═══════════════════════════════════════════════════════
       function renderBeyond() {
         return h('div', null,
-          h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(167,139,250,0.10)', borderTop: '1px solid rgba(167,139,250,0.4)', borderRight: '1px solid rgba(167,139,250,0.4)', borderBottom: '1px solid rgba(167,139,250,0.4)', borderLeft: '4px solid #a78bfa', marginBottom: 14, fontSize: 14, color: _lanFg('#e9d5ff'), lineHeight: 1.65 } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: _lanHC ? '#000000' : (_lanL ? '#f5f3ff' : 'rgba(167,139,250,0.10)'), borderTop: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(167,139,250,0.4)'), borderRight: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(167,139,250,0.4)'), borderBottom: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(167,139,250,0.4)'), borderLeft: '4px solid ' + _lanBd('#a78bfa'), marginBottom: 14, fontSize: 14, color: _lanFg('#e9d5ff'), lineHeight: 1.65 } },
             h('strong', { style: { color: _lanFg('#c4b5fd') } }, '🚶 Acknowledgment is not the work. '),
             'These are the people, organizations, and actions through which the actual work happens. Pick one or two to start.'
           ),
@@ -494,16 +530,16 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
 
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 10, marginBottom: 14 } },
             WABANAKI_ORGS.map(function(org, i) {
-              return h('div', { key: i, style: { padding: 12, borderRadius: 8, background: _lanBg('#0f172a'), borderLeft: '3px solid #86efac' } },
+              return h('div', { key: i, style: { padding: 12, borderRadius: 8, background: _lanBg('#0f172a'), borderTop: '1px solid ' + _lanBd('#1e293b'), borderRight: '1px solid ' + _lanBd('#1e293b'), borderBottom: '1px solid ' + _lanBd('#1e293b'), borderLeft: '3px solid ' + _lanBd('#86efac') } },
                 h('div', { style: { fontWeight: 800, color: _lanFg('#bbf7d0'), fontSize: 13, marginBottom: 4 } }, org.name),
-                h('div', { style: { fontSize: 11, color: _lanFg('#fbbf24'), fontFamily: 'ui-monospace, monospace', marginBottom: 6 } }, org.url),
+                h('div', { style: { fontSize: 12, color: _lanFg('#fbbf24'), fontFamily: 'ui-monospace, monospace', marginBottom: 6 } }, org.url),
                 h('div', { style: { fontSize: 12.5, color: _lanFg('#cbd5e1'), lineHeight: 1.55 } }, org.focus)
               );
             })
           ),
 
           // Action menu
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _lanHC ? '#000000' : (_lanL ? '#fffbeb' : 'rgba(245,158,11,0.08)'), borderTop: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderRight: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderBottom: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderLeft: '3px solid ' + _lanBd('#f59e0b'), marginBottom: 14 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _lanFg('#fbbf24'), marginBottom: 8 } }, '✦ Concrete actions, in roughly increasing order of commitment'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _lanFg('#fde68a'), fontSize: 12.5, lineHeight: 1.8 } },
               h('li', null, 'Follow one of these organizations on social media. Listen for six months before forming opinions.'),
@@ -519,7 +555,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
           ),
 
           // The critical-reflection step
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.06)', borderTop: '1px solid rgba(239,68,68,0.25)', borderRight: '1px solid rgba(239,68,68,0.25)', borderBottom: '1px solid rgba(239,68,68,0.25)', borderLeft: '3px solid #ef4444', marginBottom: 14 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: _lanHC ? '#000000' : (_lanL ? '#fef2f2' : 'rgba(239,68,68,0.06)'), borderTop: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(239,68,68,0.25)'), borderRight: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(239,68,68,0.25)'), borderBottom: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(239,68,68,0.25)'), borderLeft: '3px solid ' + _lanBd('#ef4444'), marginBottom: 14 } },
             h('strong', { style: { color: _lanFg('#fca5a5'), fontSize: 13 } }, '🔍 Honest self-check'),
             h('p', { style: { margin: '6px 0 0', color: _lanFg('#fecaca'), fontSize: 12.5, lineHeight: 1.6 } },
               'Of the actions above, which one have you actually done in the past 12 months? Which one will you actually do in the next 30 days? If your answer is "none and none," your land acknowledgment is not finished.'
@@ -536,6 +572,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
       function renderJournal() {
         var journal = d.journal;
         function addEntry() {
+          if (typeof document === 'undefined') return;
           var text = document.getElementById('landplace-new-entry');
           if (!text || !text.value.trim()) { if (typeof addToast === 'function') addToast('Write something first, then press the button again.', 'info'); return; }
           var entry = { date: new Date().toISOString().split('T')[0], text: text.value.trim() };
@@ -545,7 +582,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
             return { journal: priorJournal.concat([entry]) };
           });
           text.value = '';
-          if (announceToSR) announceToSR('Journal entry saved.');
+          announceLP('Journal entry saved.');
           if (addToast) addToast('Saved.', 'success');
         }
         function deleteEntry(index) {
@@ -556,10 +593,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
             newJournal.splice(index, 1);
             return { journal: newJournal };
           });
+          announceLP('Journal entry deleted.');
         }
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: _lanHC ? '#000000' : 'rgba(56,189,248,0.10)', borderTop: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(56,189,248,0.3)'), borderRight: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(56,189,248,0.3)'), borderBottom: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(56,189,248,0.3)'), borderLeft: '3px solid ' + _lanBd('#38bdf8'), marginBottom: 14, fontSize: 13, color: _lanFg('#bae6fd'), lineHeight: 1.55 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: _lanHC ? '#000000' : (_lanL ? '#f0f9ff' : 'rgba(56,189,248,0.10)'), borderTop: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(56,189,248,0.3)'), borderRight: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(56,189,248,0.3)'), borderBottom: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(56,189,248,0.3)'), borderLeft: '3px solid ' + _lanBd('#38bdf8'), marginBottom: 14, fontSize: 13, color: _lanFg('#bae6fd'), lineHeight: 1.55 } },
             '📓 An ongoing journal for what you are noticing, learning, getting confused about. Date-stamped. Private to you.'
           ),
 
@@ -569,10 +607,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
             h('textarea', { id: 'landplace-new-entry',
               placeholder: 'What did you notice this week about the place you live? What did you learn? What are you still confused about?',
               onBlur: function(e) { scanLandText(e.target.value); },
-              style: { width: '100%', minHeight: 100, padding: 8, borderRadius: 6, border: '1px solid ' + _lanBd('#334155'), background: _lanBg('#1e293b'), color: _lanFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical', marginBottom: 8 }
+              style: { width: '100%', minHeight: 100, padding: 8, boxSizing: 'border-box', borderRadius: 6, border: '1px solid ' + _lanBd('#334155'), background: _lanBg('#1e293b'), color: _lanFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical', marginBottom: 8 }
             }),
-            h('button', { onClick: addEntry, 'aria-label': 'Save journal entry',
-              style: { padding: '8px 16px', borderRadius: 8, border: _lanHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _lanBg(_lanSolid('#0ea5e9')), color: _lanFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Save entry')
+            h('button', { type: 'button', onClick: addEntry, 'aria-label': 'Save journal entry',
+              style: { padding: '10px 16px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: _lanHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _lanBg(_lanSolid('#0ea5e9')), color: _lanFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Save entry')
           ),
 
           // Existing entries (newest first)
@@ -582,9 +620,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
               var realIdx = journal.length - 1 - ri;
               return h('div', { key: realIdx, style: { padding: 12, borderRadius: 8, background: _lanBg('#0f172a'), borderTop: '1px solid ' + _lanBd('#1e293b'), borderRight: '1px solid ' + _lanBd('#1e293b'), borderBottom: '1px solid ' + _lanBd('#1e293b'), borderLeft: '3px solid ' + _lanBd('#38bdf8'), marginBottom: 8 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
-                  h('div', { style: { fontSize: 11, color: _lanFg('#38bdf8'), fontWeight: 700, fontFamily: 'ui-monospace, monospace' } }, entry.date),
-                  h('button', { onClick: function() { deleteEntry(realIdx); }, 'aria-label': 'Delete entry from ' + (entry.date || 'journal'),
-                    style: { marginLeft: 'auto', background: 'transparent', border: '1px solid ' + _lanBd('#475569'), color: _lanFg('#94a3b8'), borderRadius: 6, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
+                  h('div', { style: { fontSize: 12, color: _lanFg('#38bdf8'), fontWeight: 700, fontFamily: 'ui-monospace, monospace' } }, entry.date),
+                  h('button', { type: 'button', onClick: function() { deleteEntry(realIdx); }, 'aria-label': 'Delete entry from ' + (entry.date || 'journal'),
+                    style: { marginLeft: 'auto', background: 'transparent', border: '1px solid ' + _lanBd('#475569'), color: _lanFg('#94a3b8'), borderRadius: 6, minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '4px 8px', cursor: 'pointer', fontSize: 13 } }, '✕')
                 ),
                 h('p', { style: { margin: 0, color: _lanFg('#cbd5e1'), fontSize: 13, lineHeight: 1.65, whiteSpace: 'pre-wrap' } }, entry.text)
               );
@@ -605,7 +643,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
       else if (view === 'journal') body = renderJournal();
       else body = renderOverview();
 
-      return h('div', { style: { maxWidth: 840, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Land and Place Stewardship Studio' },
+      return h('div', { className: 'selh-landplace', style: { maxWidth: 840, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Land and Place Stewardship Studio' },
         header(),
         (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('landPlace', h, ctx) : null),
         navTabs(),

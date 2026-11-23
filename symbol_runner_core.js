@@ -538,8 +538,14 @@
     var raw = String(item.answer || item.display || '').trim();
     var low = raw.toLowerCase();
     if (!low) return '';
+    var disp = item.display != null ? String(item.display).trim().toLowerCase() : '';
+    var digitSpoken = Object.prototype.hasOwnProperty.call(DIGIT_WORDS, low) ? DIGIT_WORDS[low] : low;
     if (cat === 'color_stroop') return opts.allowStroop === true ? low : '';
-    if (cat === 'number' || item.dots > 0 || /^\d{1,2}$/.test(low)) return Object.prototype.hasOwnProperty.call(DIGIT_WORDS, low) ? DIGIT_WORDS[low] : low;
+    if (cat === 'size_stroop' || cat === 'quantity_stroop') return opts.allowStroop === true ? digitSpoken : '';
+    if (!item.dots && disp && disp !== low && (cat === 'number' || /^\d{1,3}$/.test(low))) {
+      return opts.allowStroop === true ? digitSpoken : '';
+    }
+    if (cat === 'number' || item.dots > 0 || /^\d{1,2}$/.test(low)) return digitSpoken;
     if (cat === 'word' || cat === 'chunk') return low;
     if (/^(red|blue|green|yellow|purple|orange)$/.test(low)) return low;
     return '';
@@ -754,8 +760,20 @@
     var slowThresholdMs = Math.max(400, Math.min(10000, Number(opts.slowThresholdMs) || 1800));
     var spacingSteps = [1, 2, 4, 8];
 
-    var byKey = Object.create(null);
-    pool.forEach(function (it) { byKey[it.answer.toLowerCase()] = it; });
+    var byKeyList = Object.create(null);
+    pool.forEach(function (it) {
+      var k = String(it.answer || '').toLowerCase();
+      if (!byKeyList[k]) byKeyList[k] = [];
+      byKeyList[k].push(it);
+    });
+    var keyRotate = Object.create(null);
+    function nextCardForKey(k) {
+      var list = byKeyList[k];
+      if (!list || !list.length) return null;
+      var idx = keyRotate[k] || 0;
+      keyRotate[k] = (idx + 1) % list.length;
+      return list[idx];
+    }
 
     // Order letters/numbers (and color badges for 3-way RAS) when RAS mode is active.
     function orderedBaseList() {
@@ -786,10 +804,18 @@
         }
       }
       var deck = [];
-      var focusList = Array.isArray(opts.focusAnswers) ? opts.focusAnswers.map(function (a) { return String(a).toLowerCase(); }) : [];
+      var focusList = [];
       var focusSet = Object.create(null);
-      focusList.forEach(function (f) { if (byKey[f]) focusSet[f] = true; });
-      var knownPool = pool.filter(function (it) { return !focusSet[it.answer.toLowerCase()]; });
+      if (Array.isArray(opts.focusAnswers)) {
+        opts.focusAnswers.forEach(function (a) {
+          var fk = String(a == null ? '' : a).trim().toLowerCase();
+          if (fk && byKeyList[fk] && !focusSet[fk]) {
+            focusSet[fk] = true;
+            focusList.push(fk);
+          }
+        });
+      }
+      var knownPool = pool.filter(function (it) { return !focusSet[String(it.answer || '').toLowerCase()]; });
       if (!knownPool.length) knownPool = pool;
 
       if (focusList.length && knownPool.length) {
@@ -797,11 +823,17 @@
         var focusIdx = 0;
         while (deck.length < count) {
           var fk = focusList[focusIdx % focusList.length];
-          var focusItem = byKey[fk] || pool[0];
+          var focusItem = nextCardForKey(fk);
+          if (!focusItem) { focusIdx++; continue; }
           deck.push({ base: focusItem, role: 'new', study: focusIdx < focusList.length });
           var gap = spacingSteps[Math.min(spacingSteps.length - 1, Math.floor(focusIdx / focusList.length))];
           for (var g = 0; g < gap && deck.length < count; g++) {
-            var known = knownPool[Math.floor(rng() * knownPool.length)];
+            var prevAns = deck.length ? String(deck[deck.length - 1].base.answer || '').toLowerCase() : '';
+            var diffKnown = knownPool.length > 1
+              ? knownPool.filter(function (it) { return String(it.answer || '').toLowerCase() !== prevAns; })
+              : knownPool;
+            var pickFrom = diffKnown.length ? diffKnown : knownPool;
+            var known = pickFrom[Math.floor(rng() * pickFrom.length)];
             deck.push({ base: known, role: 'known', study: false });
           }
           focusIdx++;
@@ -817,9 +849,15 @@
         }
         for (var m = 0; m < copy.length && deck.length < count; m++) {
           if (deck.length && deck[deck.length - 1].base.answer === copy[m].answer && copy.length > 1) {
-            var alt = copy[(m + 1) % copy.length];
-            copy[(m + 1) % copy.length] = copy[m];
-            copy[m] = alt;
+            var swapIdx = -1;
+            for (var s = m + 1; s < copy.length; s++) {
+              if (copy[s].answer !== copy[m].answer) { swapIdx = s; break; }
+            }
+            if (swapIdx >= 0) {
+              var alt = copy[swapIdx];
+              copy[swapIdx] = copy[m];
+              copy[m] = alt;
+            }
           }
           deck.push({ base: copy[m], role: 'practice', study: false });
         }
@@ -1123,6 +1161,7 @@
       '.asr-lock-pill[data-locked="true"]{background:#15803d;color:#fff}',
       '.asr-lock-pill[data-locked="false"]{background:#b45309;color:#fff}',
       '.asr-ran-grid{width:100%;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;padding:12px;box-sizing:border-box}',
+      '@media (max-width:480px){.asr-ran-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}',
       '.asr-ran-grid[hidden]{display:none}',
       // 2026-11-17: a part set hidden stays hidden, whatever display rule it has (lane row, color key, summary, canvas).
       '.asr-wrap [hidden]{display:none!important}',
@@ -1314,12 +1353,18 @@
     function stopClip() {
       if (activeClip) { try { activeClip.pause(); } catch (_) {} activeClip = null; }
     }
+    function cancelSpeech() {
+      if (root.speechSynthesis && typeof root.speechSynthesis.cancel === 'function') {
+        try { root.speechSynthesis.cancel(); } catch (_) {}
+      }
+    }
     function playAnchorAudio(item, opts) {
       if (soundMuted || destroyed) return false;
       var uri = resolveItemAudio(item);
       if (uri && typeof root.Audio === 'function') {
         try {
           stopClip();
+          cancelSpeech();
           var clip = new root.Audio(uri);
           activeClip = clip;
           if (opts && opts.restartClock && current && item && current.id === item.id && typeof clip.addEventListener === 'function') {
@@ -1336,11 +1381,16 @@
       var voice = spoken ? pickLocalSpeechVoice() : null;
       if (!spoken || !voice) return false;
       try {
-        if (typeof root.speechSynthesis.cancel === 'function') root.speechSynthesis.cancel();
+        stopClip();
+        cancelSpeech();
         var utt = new root.SpeechSynthesisUtterance(spoken);
         utt.voice = voice;
         utt.lang = voice.lang || 'en-US';
         utt.rate = 0.95;
+        if (opts && opts.restartClock && current && item && current.id === item.id) {
+          var forSpeechCard = item.id;
+          utt.onend = function () { if (!destroyed && current && current.id === forSpeechCard) cardStartMs = Date.now(); };
+        }
         root.speechSynthesis.speak(utt);
         return true;
       } catch (_) {
@@ -1452,6 +1502,10 @@
       soundMuted = !soundMuted;
       soundBtn.textContent = soundMuted ? T('sound_off') : T('sound_on');
       soundBtn.setAttribute('aria-pressed', !soundMuted ? 'true' : 'false');
+      if (soundMuted) {
+        stopClip();
+        cancelSpeech();
+      }
     });
 
     if (!cfg.hostControls) {
@@ -1601,15 +1655,27 @@
       locked = controlMode !== 'lockon' || viewMode === 'grid' || aimLane === current.lane;
     }
 
+    function syncLockUi() {
+      if (!current) return;
+      lockPill.setAttribute('data-locked', locked ? 'true' : 'false');
+      // Only the aiming mode has something to say here.
+      lockPill.hidden = controlMode !== 'lockon';
+      lockPill.textContent = controlMode === 'lockon' ? (locked ? T('locked') : T('aim')) : '';
+      laneButtons.forEach(function (b, idx) {
+        b.setAttribute('aria-pressed', aimLane === idx ? 'true' : 'false');
+        b.className = 'asr-lane-btn' + (aimLane === idx && current && current.lane === idx ? ' asr-lane-locked' : '');
+      });
+    }
+
     function setAimLane(laneIdx) {
       aimLane = Math.max(0, Math.min(2, Number(laneIdx) || 0));
       var wasLocked = locked;
       syncLockState();
       // Said only when it changes: moving the pointer over the lanes does not repeat it.
-      if (controlMode === 'lockon' && viewMode !== 'grid' && (locked !== wasLocked || !statusSaid.textContent)) {
+      if (current && controlMode === 'lockon' && viewMode !== 'grid' && (locked !== wasLocked || !statusSaid.textContent)) {
         say(locked ? T('locked_now') : T('move_to', { lane: laneIn[current.lane] }));
       }
-      updateUi();
+      syncLockUi();
       draw();
     }
 
@@ -1669,6 +1735,8 @@
 
     function finishRun() {
       stopVoice();
+      stopClip();
+      cancelSpeech();
       if (rafId) { try { root.cancelAnimationFrame(rafId); } catch (_) {} rafId = 0; }
       var st = scheduler.stats();
       say(T('round_done', { first: st.firstTryCorrect, total: st.total }));
@@ -1773,10 +1841,7 @@
       streakPill.setAttribute('aria-label', T('stars_aria', { n: st.firstTryCorrect }));
       speedPill.textContent = st.meanMs ? T('about_each', { time: secs(st.medianMs || st.meanMs) }) : T('ready');
       if (current) {
-        lockPill.setAttribute('data-locked', locked ? 'true' : 'false');
-        // Only the aiming mode has something to say here.
-        lockPill.hidden = controlMode !== 'lockon';
-        lockPill.textContent = controlMode === 'lockon' ? (locked ? T('locked') : T('aim')) : '';
+        syncLockUi();
         catBadge.textContent = T(current.category === 'flanker' ? 'b_flanker'
           : current.category === 'quantity_stroop' ? 'b_count'
           : current.category === 'size_stroop' ? 'b_size'
@@ -1804,10 +1869,6 @@
         // Before Start the card line is hidden too: it names the first symbol, and the clock has not started.
         cueBar.hidden = !started;
         inputRow.hidden = !started;
-        laneButtons.forEach(function (b, idx) {
-          b.setAttribute('aria-pressed', aimLane === idx ? 'true' : 'false');
-          b.className = 'asr-lane-btn' + (aimLane === idx && current && current.lane === idx ? ' asr-lane-locked' : '');
-        });
         // The keys are drawn again for each card. If the focus was on one, it goes back to the key in the same place.
         var focusedKey = doc.activeElement && doc.activeElement.parentNode === keypad ? Array.prototype.indexOf.call(keypad.children, doc.activeElement) : -1;
         keypad.replaceChildren();
@@ -2102,7 +2163,7 @@
       ctx.font = '800 ' + fontSize + 'px system-ui, -apple-system, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(item.display, cx, cy);
+      ctx.fillText(item.display, cx, cy, Math.max(24, bw - 16));
     }
 
     function tick() {
@@ -2115,8 +2176,8 @@
       if (typeof root.requestAnimationFrame === 'function') rafId = root.requestAnimationFrame(tick);
     }
 
-    canvas.addEventListener('mousemove', function (e) {
-      if (!current || controlMode !== 'lockon') return;
+    function aimFromPointer(e) {
+      if (!current || !started || controlMode !== 'lockon') return;
       var rect = canvas.getBoundingClientRect ? canvas.getBoundingClientRect() : null;
       var x = rect && rect.width ? ((e.clientX - rect.left) / rect.width) * canvas.width : (e.offsetX != null ? e.offsetX : (e.clientX || 0));
       var y = rect && rect.height ? ((e.clientY - rect.top) / rect.height) * canvas.height : (e.offsetY != null ? e.offsetY : (e.clientY || 0));
@@ -2127,7 +2188,9 @@
       } else if (laneGuess !== aimLane) {
         setAimLane(laneGuess);
       }
-    });
+    }
+    canvas.addEventListener('mousemove', aimFromPointer);
+    canvas.addEventListener('pointerdown', aimFromPointer);
 
     var singleKeyRe = (function () {
       try { return new RegExp("^[\\p{L}\\p{N}'\\u2019-]$", 'u'); } catch (_) { return /^[A-Za-z0-9'\u2019-]$/; }
@@ -2153,7 +2216,27 @@
         return;
       }
       if (e.ctrlKey || e.metaKey || e.altKey) return;
-      if (e.target && e.target.closest && e.target.closest('button, summary, select, a[href], textarea, input')) return;
+      if (e.target && e.target.closest) {
+        if (e.target.closest('summary, select, a[href], textarea, input')) return;
+        var hitBtn = e.target.closest('button');
+        if (hitBtn && !hitBtn.classList.contains('asr-key') && !hitBtn.classList.contains('asr-lane-btn')) return;
+      }
+      if (e.key === 'Backspace') {
+        if (keyBuffer.length || typeInput.value) {
+          e.preventDefault();
+          keyBuffer = (keyBuffer || typeInput.value).slice(0, -1);
+          typeInput.value = keyBuffer;
+        }
+        return;
+      }
+      if (e.key === 'Escape') {
+        if (keyBuffer.length || typeInput.value) {
+          e.preventDefault();
+          keyBuffer = '';
+          typeInput.value = '';
+        }
+        return;
+      }
       if (typeof e.key === 'string' && e.key.length === 1 && singleKeyRe.test(e.key)) {
         e.preventDefault();
         keyBuffer += e.key;

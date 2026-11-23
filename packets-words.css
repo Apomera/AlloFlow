@@ -37,7 +37,7 @@
 .wp-picks li { display: inline-flex; align-items: center; gap: 0.15rem; padding: 0.2rem 0.2rem 0.2rem 0.5rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); counter-increment: wp; max-width: 100%; }
 .wp-picks li::before { content: counter(wp); font-size: 0.8125rem; font-weight: 700; color: var(--muted); margin-right: 0.3rem; }
 .wp-picks select { min-height: 2.75rem; max-width: 13rem; padding: 0.3rem 0.4rem; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface); color: var(--ink); }
-.wp-x { width: 2.75rem; padding: 0; border-color: transparent; background: none; font-size: 1.25rem; color: var(--muted); }
+.wp-x { width: 2.75rem; min-height: 2.75rem; padding: 0; border-color: transparent; background: none; font-size: 1.25rem; color: var(--muted); }
 .wp-x:disabled { opacity: 0.35; cursor: default; }
 .wp-field { margin-top: 0.9rem; max-width: 26rem; }
 
@@ -49,13 +49,19 @@
 
 /* My words on this device: one quiet, closed line in step 2, shown only when the store holds a word */
 .my-words { margin-top: 1.5rem; padding-top: 0.25rem; border-top: 1px solid var(--line); font-size: 0.9375rem; color: var(--muted); }
-.my-words > summary { width: fit-content; padding: 0.75rem 0.25rem 0.75rem 0; cursor: pointer; font-weight: 600; color: var(--muted); }
+.my-words > summary { display: inline-flex; align-items: center; min-height: 2.75rem; width: fit-content; padding: 0.5rem 0.25rem 0.5rem 0; cursor: pointer; font-weight: 600; color: var(--muted); }
 .my-words > summary:hover, .my-words[open] > summary { color: var(--ink); }
 .my-words-body { padding-bottom: 0.5rem; }
+.my-words-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-top: 0.6rem; }
+.my-words-tools input[type="search"], .my-words-tools select { min-height: 2.75rem; padding: 0.35rem 0.65rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--ink); font: inherit; }
+.my-words-tools input[type="search"] { flex: 1 1 12rem; min-width: 0; }
+.my-words-tools select { flex: 0 1 12rem; max-width: 100%; }
 .my-words-list { margin-top: 0.5rem; border-top: 1px solid var(--line); }
-.my-words-list li { display: flex; flex-wrap: wrap; align-items: center; gap: 0 0.75rem; padding: 0.25rem 0; border-bottom: 1px solid var(--line); }
+.my-words-list li { display: flex; flex-wrap: wrap; align-items: center; gap: 0.15rem 0.75rem; padding: 0.25rem 0; border-bottom: 1px solid var(--line); }
 .mw-word { font-weight: 700; color: var(--ink); min-width: 6rem; overflow-wrap: anywhere; }
 .mw-what { flex: 1 1 10rem; }
+.mw-actions { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.75rem; }
+.mw-empty { padding: 0.6rem 0; color: var(--muted); }
 .my-words .row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; margin-top: 0.75rem; }
 
 /* "Choose the words yourself": one closed box under the picked words; the list of every word that fits */
@@ -78,7 +84,7 @@
 .wl-pick { display: flex; align-items: center; gap: 0.6rem; min-height: 2.75rem; padding: 0.2rem 0.4rem 0.2rem 0.2rem; border-radius: 6px; cursor: pointer; font-weight: 700; color: var(--ink); }
 .wl-pick input { flex: none; width: 1.25rem; height: 1.25rem; margin: 0; accent-color: var(--accent); }
 .wl-pick:focus-within { outline: 3px solid var(--accent); outline-offset: 0; }
-.wl-pick input:focus-visible { outline: none; }
+.wl-pick input:focus-visible { outline: 2px solid transparent; }
 .wl-word { overflow-wrap: anywhere; }
 .wl-facts { font-size: 0.9375rem; color: var(--muted); }
 .wl.is-typed .wl-word::after { content: " (typed)"; font-weight: 400; color: var(--muted); }
@@ -107,4 +113,5 @@
 
 @media (forced-colors: active) {
   .chip.is-editing { border-width: 3px; }
+  .wl-pick:focus-within { outline: 3px solid Highlight; }
 }

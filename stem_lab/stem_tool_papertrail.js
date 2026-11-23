@@ -704,7 +704,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
                 h('span', {
                   style: {
                     fontSize: 11, fontWeight: 800, padding: '1px 6px', borderRadius: 999,
-                    background: selected ? (isContrast ? '#000000' : 'rgba(255,255,255,0.22)') : pal.panelAlt,
+                    background: selected ? (isContrast ? '#000000' : 'rgba(0,0,0,0.24)') : pal.panelAlt,
                     color: selected ? (isContrast ? '#ffff00' : '#ffffff') : pal.muted,
                     border: isContrast ? '1px solid #ffff00' : 'none'
                   }

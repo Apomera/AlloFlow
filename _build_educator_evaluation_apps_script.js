@@ -42,8 +42,8 @@ const indexHtml = `<!doctype html>
     .ae-portal-boot{box-sizing:border-box;min-height:100vh;display:grid;place-items:center;padding:24px;text-align:center;font:16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#24324a}
     .ae-portal-boot strong{display:block;margin-bottom:6px;font-size:22px;color:#173e70}
     .ae-portal-noscript{max-width:680px;margin:40px auto;padding:20px;border:1px solid #d8deea;border-radius:14px;background:#fff;font:16px/1.5 system-ui;color:#24324a}
-    .skip-link{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
-    .skip-link:focus{position:fixed;left:12px;top:12px;width:auto;height:auto;padding:10px 14px;background:#10233f;color:#fff;border-radius:8px;z-index:9999;font:700 14px/1.2 system-ui,sans-serif;text-decoration:none;outline:3px solid #60a5fa;outline-offset:2px}
+    .skip-link{position:absolute;inset-inline-start:8px;top:8px;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+    .skip-link:focus{position:fixed;inset-inline-start:12px;top:12px;width:auto;height:auto;overflow:visible;clip-path:none;white-space:normal;padding:10px 14px;background:#10233f;color:#fff;border-radius:8px;z-index:9999;font:700 14px/1.2 system-ui,sans-serif;text-decoration:none;outline:3px solid #60a5fa;outline-offset:2px}
   </style>
 </head>
 <body>

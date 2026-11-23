@@ -3293,7 +3293,10 @@
     "adventure_resumed_level": "Resumed Adventure (Level {level})",
     "source_choice_ambiguous": "Choose a reading in Based on before generating. More than one reading is available.",
     "source_choices_load_failed": "Reading choices could not load. Please try again.",
-    "submission_tools_still_loading": "Submission tools are still loading. Try Submit again."
+    "submission_tools_still_loading": "Submission tools are still loading. Try Submit again.",
+    "sent_to_read_along": "ဆှၢလံာ်ကူာ်ဆူ ဖးသကိးလံာ်ကတီၤ လၢတဲးဘ်အသီတဘ့ၣ်လံ.",
+    "read_along_handoff_failed": "ဆှၢလံာ်ကွဲးသီဆူ ဖးသကိးလံာ်ကတီၤ တန့ၢ်ဘၣ်.",
+    "read_along_no_text": "ထၢနုာ်မ့တမ့ၢ်ကတိၤကွဲးလံာ်အခီၣ်ထံးတချုးဆှၢဆူ ဖးသကိးလံာ်ကတီၤတက့ၢ်."
   },
   "large_file": {
     "modal_title": "Import Large Audio File",
@@ -3310,7 +3313,8 @@
     "chunk_info": "Audio မ့ၢ် split into 5-minute chunks လ၁် processing",
     "chunk_progress": "Chunk {current} အ {total}",
     "audio_only_error": "Currently only audio files (MP3, WAV, etc.) မ့ၢ် supported လ၁် chunked transcription.",
-    "starting": "စးထီၣ်ဝဲ..."
+    "starting": "စးထီၣ်ဝဲ...",
+    "engine_legend": "စဲးကွဲးထီၣ်တၢ်သီၣ်"
   },
   "formatting": {
     "bold": "Bold (**text**)",
@@ -3622,7 +3626,8 @@
       "analyzing_short": "ဆၢကသၢၣ်ဝဲ...",
       "generate_short": "တ့ထီၣ်",
       "books_short": "လံာ်",
-      "books_hint": "အိးထီၣ်လံာ်ဂီၤ - လံာ်မနုၤဂ့ၤမနုၤဂ့ၤ ကဲထီၣ်နတၢ်ဂ့ၢ်ခီၣ်ထံးသ့"
+      "books_hint": "အိးထီၣ်လံာ်ဂီၤ - လံာ်မနုၤဂ့ၤမနုၤဂ့ၤ ကဲထီၣ်နတၢ်ဂ့ၢ်ခီၣ်ထံးသ့",
+      "dictate_hint": "ကတိၤကွဲးနလံာ်အခီၣ်ထံးလၢစဲးပူၤ Whisper ဒီးတၢ်သမံသမိး Gemini လၢနဃုထၢန့ၢ်"
     },
     "status_generating": "Generating source text...",
     "success_long_form": "Long-form text ဘှီထီၣ် successfully!",
@@ -3665,7 +3670,8 @@
     "qs_find": "ဃုတၢ်မၤစၢၤလၢအ့ထၢၣ်နဲးအပူၤ",
     "qs_find_sub": "ဘျးစဲလ့ၣ်ခ် မ့တမ့ၢ် ပျဲ AI ဃုန့ၢ်",
     "qs_generate": "မၤကဲထီၣ်လၢတၢ်ဂ့ၢ်ခိၣ်တီအပူၤ",
-    "qs_generate_sub": "AI ကကွဲးန့ၢ်နၤ"
+    "qs_generate_sub": "AI ကကွဲးန့ၢ်နၤ",
+    "dictate_or_record": "ကတိၤကွဲး မ့တမ့ၢ် မၤနီၣ်တၢ်သီၣ်"
   },
   "wizard": {
     "title": "Quick စးထီၣ်",
@@ -3790,7 +3796,12 @@
     "step_status": "အဆီ",
     "progress": "တၢ်စးထီၣ်ချ့ အတၢ်လဲၤထီၣ်",
     "progress_value": "အဆီ {current} လၢ {total} အကျါ",
-    "help_click_element": "စံၢ်လီၤတၢ်တမံၤမံၤလၢလာ် ဒ်သိးကထံၣ်တၢ်တဲနၢ်ပၢၢ်လီၤတံၢ်အဂီၢ်"
+    "help_click_element": "စံၢ်လီၤတၢ်တမံၤမံၤလၢလာ် ဒ်သိးကထံၣ်တၢ်တဲနၢ်ပၢၢ်လီၤတံၢ်အဂီၢ်",
+    "dictate_desc": "ကတိၤကွဲးလၢစဲးပူၤ Whisper ဒီးတၢ်သမံသမိးလၢနဃုထၢန့ၢ်",
+    "dictate_title": "ကတိၤကွဲး မ့တမ့ၢ် မၤနီၣ်နလံာ်အခီၣ်ထံး",
+    "dictate_helper": "စူးကါစဲးပူၤ Whisper ကတိၤကွဲးလၢအခူသူၣ်တၢ်ဒ်တၢ်ပာ်ပနီၣ်အသိး. ဘှီဘၣ်နီၢ်ကစၢ်, မၤကဆှီလံာ်, မ့တမ့ၢ် သမံသမိးထွဲဒီးနတၢ်မၤနီၣ်သီၣ်လၢ Gemini န့ၢ်လီၤ.",
+    "dictate_loading": "ဟဲထီၣ်ကတိၤကွဲးစတူၤဒံၣ်ယိၣ် (စဲးပူၤ Whisper)… ဖဲအဟဲထီၣ်အခါနကွဲးမ့တမ့ၢ်ဘှီဘၣ်လၢလာ်န့ၢ်စ့ၢ်ကီးလီၤ.",
+    "words_dictated_unit": "တၢ်ကတိၤဖျၢၣ်လၢကတိၤကွဲး"
   },
   "settings": {
     "immersive_options": "Immersive Options",
@@ -101948,5 +101959,75 @@
     "a11y_unverified_clinical_deletion": "Unverified clinical deletion",
     "a11y_review_protected_clinical_record_deletion": "Review protected clinical record deletion",
     "a11y_protected_record_security": "Protected record security"
+  },
+  "source_view": {
+    "dictate": "ကတိၤကွဲး",
+    "close_dictate": "ကးတံာ်ကတိၤကွဲး",
+    "send_read_along": "ဆှၢဆူ ဖးသကိးလံာ်ကတီၤ",
+    "upload_verify_banner": "တၢ်ကွဲးထီၣ်တၢ်သီၣ်/ဘံၣ်ဒံၣ်အိၣ်လၢစဲးပူၤဒီး Whisper ({count} ကူာ်ပာ်တ့ၢ်လၢတၢ်နီၣ်ပူၤ)",
+    "clear_audio": "ထုးကွံာ်တၢ်သီၣ်"
+  },
+  "dictation": {
+    "badge_desktop": "Desktop Whisper အိၣ်ကတဲာ်ကတီၤလံ",
+    "badge_download_needed": "စဲးပူၤ Whisper · ဒီလိးအဆိကတၢၢ်",
+    "badge_local_ready": "စဲးပူၤ Whisper အိၣ်ကတဲာ်ကတီၤလံ · {name}",
+    "cleanup_apply": "စူးကါတၢ်မၤကဆှီ",
+    "cleanup_failed": "မၤကဆှီလံာ်ခဲအံၤတန့ၢ်ဘၣ်.",
+    "cleanup_fillers": "ထုးကွံာ်တၢ်ကတိၤလၢတလိၣ်ဘၣ်",
+    "cleanup_heading": "AI မၤကဆှီလံာ်လၢနဃုထၢန့ၢ်",
+    "cleanup_keep": "ပာ်တ့ၢ်အခီၣ်ထံး",
+    "cleanup_no_changes": "တၢ်ဟ့ၣ်ကူၣ်လၢကဆီတလဲလံာ်ကွဲးသီအံၤတအိၣ်ဘၣ်.",
+    "cleanup_notes": "ရဲၣ်ကျဲၤဒ်တီၤပူၤတၢ်ကွဲးနီၣ်",
+    "cleanup_punctuation": "မၤကဆှီတၢ်ပနီၣ်ဒီးတၢ်ရဲၣ်ကျဲၤ",
+    "cleanup_review_title": "တၢ်ဟ့ၣ်ကူၣ်မၤကဆှီအိၣ်ကတဲာ်ကတီၤလံ — နလံာ်ကွဲးသီတဆီတလဲဒံးဘၣ်",
+    "cleanup_text_only": "လံာ်တမံၤဧိၤ — တဆှၢတၢ်သီၣ်ဘၣ်",
+    "cleanup_unavailable": "AI မၤကဆှီလံာ်တအိၣ်ခဲအံၤဘၣ်.",
+    "cleanup_undo": "မၤက့ၤတၢ်မၤကဆှီ",
+    "cleanup_working": "မၤကဆှီတၢ်…",
+    "clear_audio": "ထုးကွံာ်တၢ်သီၣ်လၢမၤနီၣ် ({mb} MB)",
+    "crosscheck_all_resolved": "သမံသမိးတၢ်လီၢ်လၢတၢ်ပာ်ပနီၣ်ခဲလၢာ်ဝံၤလံ.",
+    "crosscheck_btn": "သမံသမိးထွဲဒီးတၢ်သီၣ်လၢ Gemini",
+    "crosscheck_count": "တၢ်လီၢ်လၢတၢ်ပာ်ပနီၣ် {count} တီၤလၢကသမံသမိး:",
+    "crosscheck_disabled_note": "တအိၣ်ခဲအံၤဘၣ် (တၢ်ပတုာ်လၢအီးဖ်လဲၣ် / ကၠိဖိ AI-ပတုာ် မ့တမ့ၢ် တအိၣ်ဒီး Gemini နီၣ်ဂံၢ်ဘၣ်). နစဲးပူၤ Whisper ကတိၤကွဲးမၤတၢ်လၢအီးဖ်လဲၣ်န့ၢ်လၢာ်လီၤ.",
+    "crosscheck_disclosure": "မၤတၢ်ထဲဖဲနစံၣ်လၢလာ်ဧိၤ: ဆှၢနတၢ်သီၣ်ကူာ်လၢတၢ်နီၣ်ပူၤဒီးလံာ်ကွဲးသီဆူ Gemini ဒ်သိးကပာ်ပနီၣ်တၢ်ကတိၤဖျၢၣ်လၢဘၣ်တဘၣ်ကမၣ်.",
+    "crosscheck_failed": "Gemini တၢ်သမံသမိးတၢ်သီၣ်တဝံၤဘၣ်. နလံာ်ကွဲးထီၣ်လၢစဲးပူၤအိၣ်ဒ်အလီၢ်လီၤ.",
+    "crosscheck_heading": "သမံသမိးထွဲဒီးတၢ်သီၣ်လၢ Gemini (ဃုထၢန့ၢ်)",
+    "crosscheck_none": "တထံၣ်န့ၢ်တၢ်လီၤဆီလၢအရ့ဒိၣ်လၢ စဲးပူၤ Whisper ဒီး Gemini Audio အဘၢၣ်စၢၤဘၣ်.",
+    "crosscheck_running": "သမံသမိးထွဲဒီးတၢ်သီၣ်…",
+    "crosscheck_unavailable": "Gemini တၢ်သမံသမိးထွဲတၢ်သီၣ်တအိၣ်ခဲအံၤဘၣ်.",
+    "download_now": "ဒီလိးစဲးပူၤ Whisper ({size} MB)",
+    "download_warning": "တၢ်ဘိးဘၣ်သ့ၣ်ညါဒီလိး: စဲးပူၤ Whisper စူးကါတၢ်သ့ၣ်ညါကလုၢ်လၢအခူသူၣ်လၢစဲးပူၤ. ဒီလိးမီၤဒၢၣ် {name} လိၣ်ဘၣ် ~{size} MB တဘျီ (~၁–၂ မံးနံးဒ်အ့ၤတၢၣ်နဲးအသိး), ပာ်တ့ၢ်လၢနဘရီၤစၢၣ်ပူၤလၢအီးဖ်လဲၣ်ဒီးပာ်နတၢ်မၤနီၣ်ကလုၢ်လၢစဲးအံၤပူၤလီၤ.",
+    "draft_label": "လံာ်ကွဲးထီၣ်သီ (ဘှီဘၣ်န့ၢ်)",
+    "draft_placeholder": "စံၣ် စးထီၣ်ကတိၤကွဲး လၢထး, မ့တမ့ၢ် ကွဲး/ဘှီဘၣ်နလံာ်ကွဲးထီၣ်လၢအံၤတဘျီဃီ…",
+    "guide_both_body": "စးထီၣ်လၢစဲးပူၤ Whisper လၢအခူသူၣ်ဒ်သိးနကတိၤကွဲးကချ့ဒီးမၤတၢ်လၢအီးဖ်လဲၣ်. နမ့ၢ်အဲၣ်ဒိးတၢ်သမံသမိးခံဘျီတဘျီလၢတၢ်ကတိၤကီမ့တမ့ၢ်မံၤတဖၣ်အဂီၢ်, ဃုထၢ Gemini တၢ်သမံသမိးထွဲဒ်သိးကထိၣ်သတြီၤမီၤဒၢၣ်ခံခါဒီးနတၢ်သီၣ်ဒီးကနၣ်ကဒါက့ၤ ၅ စဲးကၢၣ်ဖဲတၢ်လီၢ်လၢတၢ်ပာ်ပနီၣ်တက့ၢ်.",
+    "guide_both_label": "ဘၣ်မနုၤလၢစူးကါခံခါလၢာ် (တၢ်သမံသမိးထွဲ):",
+    "guide_gemini_body": "တလိၣ်ဒီလိးမီၤဒၢၣ်ဘၣ်. ဂ့ၤဒိၣ်လၢတၢ်ကတိၤလီၤဆီ, မံၤတဖၣ်, ကလုၢ်လီၤဆီ, တီၤပူၤလၢအသီၣ်သဲဒီးတၢ်ပနီၣ် — ဆှၢတၢ်သီၣ်ကူာ်ဆူ Gemini ထဲဖဲနဃုထၢဧိၤလီၤ.",
+    "guide_gemini_title": "Gemini Audio (တၢ်သမံသမိးလၢဃုထၢန့ၢ်)",
+    "guide_summary": "စဲးပူၤ Whisper ဒီး Gemini Audio — တၢ်ဂ့ၤဒီးဘၣ်မနုၤလၢစူးကါခံခါလၢာ်",
+    "guide_whisper_body": "ခူသူၣ်ဒီးအီးဖ်လဲၣ်ဖဲဒီလိးတဘျီဝံၤ (~39–73 MB). တၢ်သီၣ်တဟးထီၣ်လၢနစဲးဘၣ်, တလိၣ် API နီၣ်ဂံၢ်ဘၣ်, ဒီးကတိၤကွဲးယံာ်ယံာ်မၤတၢ်ဂ့ၤလီၤ.",
+    "guide_whisper_title": "စဲးပူၤ Whisper (တၢ်ပာ်ပနီၣ်)",
+    "ios_canvas_blocked": "စဲးပူၤ Whisper ပတုာ်တစိၢ်ဖိလၢ iPhone/iPad လၢ Gemini Canvas ပူၤ. ကွဲးလၢလာ်တဘျီဃီ မ့တမ့ၢ် အိးထီၣ် AlloFlow လၢခီၣ်ဖၠူၤတၢၣ်ဘရီၤစၢၣ်တက့ၢ်.",
+    "ios_canvas_hint": "နကွဲးလၢလာ်တဘျီဃီန့ၢ်, အိးထီၣ် AlloFlow လၢခီၣ်ဖၠူၤတၢၣ်ဘရီၤစၢၣ်လၢစဲးပူၤ Whisper အဂီၢ်, မ့တမ့ၢ် စူးကါ Gemini Audio ဖဲတၢ်ရဲၣ်ကျဲၤပာ်အခါ.",
+    "ios_canvas_title": "စဲးပူၤ Whisper ပတုာ်တစိၢ်ဖိလၢ iPhone/iPad လၢ Gemini Canvas ပူၤ",
+    "listening_local": "ကနၣ်တၢ်လၢစဲးပူၤဒီး Whisper… ပတုာ်တစိၢ်ဖိမ့တမ့ၢ်ကတိၤဆူညါဒ်သိးကထၢနုာ်လံာ်.",
+    "mic_start_failed": "စးထီၣ်မဲးခရိၣ်ဖိၣ်တန့ၢ်ဘၣ်. သမံသမိးဘရီၤစၢၣ်တၢ်ဟ့ၣ်အခွဲးတက့ၢ်.",
+    "model_size_label": "စဲးပူၤ Whisper မီၤဒၢၣ်အဒိၣ်အဆံး",
+    "pause_recording": "ပတုာ်တစိၢ်ဖိ",
+    "paused_note": "ပတုာ်တစိၢ်ဖိလံ. နဘှီဘၣ်လံာ်ကွဲးထီၣ်လၢလာ်မ့တမ့ၢ်စံၣ် မၤဆူညါ ဒ်သိးကကတိၤကွဲးဆူညါန့ၢ်လီၤ.",
+    "privacy_tag": "ခူသူၣ် · အီးဖ်လဲၣ်ဖဲဒီလိးဝံၤ · တလိၣ် API နီၣ်ဂံၢ်ဘၣ်",
+    "resume_recording": "မၤဆူညါ",
+    "send_read_along": "ဆှၢဆူ ဖးသကိးလံာ်ကတီၤ",
+    "speech_settings": "တၢ်ရဲၣ်ကျဲၤတၢ်ကတိၤ",
+    "speed_badge_lesson": "မၤကွၢ်ဝံၤလံ: ချ့န့ၢ်တၢ်ကတိၤ {speed}x · ဂ့ၤလၢကတိၤကွဲးယံာ်",
+    "speed_badge_short": "မၤကွၢ်ဝံၤလံ: ချ့န့ၢ်တၢ်ကတိၤ {speed}x · ဂ့ၤကတၢၢ်လၢတၢ်သီၣ်ဖုၣ်",
+    "speed_badge_slow": "မၤကွၢ်ဝံၤလံ: {speed}x · ကယီန့ၢ်တၢ်ကတိၤအခါ (ကအိၣ်ဒီးတၢ်ပတုာ်တစိၢ်ဖိ)",
+    "speed_badge_upgrade": "မၤကွၢ်ဝံၤလံ: ချ့န့ၢ်တၢ်ကတိၤ {speed}x · ဂ့ၤလၢကတိၤကွဲးယံာ် (မၤကွၢ် {name} န့ၢ်စ့ၢ်ကီး)",
+    "start_recording": "စးထီၣ်ကတိၤကွဲး (စဲးပူၤ Whisper)",
+    "stop_recording": "ပတုာ်",
+    "studio_title": "ကတိၤကွဲးစတူၤဒံၣ်ယိၣ်",
+    "test_mic": "မၤကွၢ်မဲး (4 စဲးကၢၣ်)",
+    "upload_media": "ကွဲးထီၣ်တၢ်သီၣ်/ဘံၣ်ဒံၣ်အိၣ်ဖဲၣ်",
+    "use_text": "စူးကါလံာ်လၢကတိၤကွဲး",
+    "voice_unavailable": "စဲးမၤနီၣ်ကလုၢ်ဟဲထီၣ်ဒံးလီၤ. ဝံသးစူၤမၤကွၢ်ကဒါက့ၤတစိၢ်ဖိတက့ၢ်."
   }
 }

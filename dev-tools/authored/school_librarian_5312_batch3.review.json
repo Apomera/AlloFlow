@@ -20,6 +20,10 @@
       "scope": "batch-level answer-length clue",
       "issue": "The keyed response was the longest or tied-longest option in 96 of 100 items even though no individual item crossed the shared severe-length threshold.",
       "resolution": "Expanded one plausible misconception-based distractor in 70 items; keyed-longest prevalence is now 26 of 100 without moving a key or changing a tested concept."
+    },
+    {
+      "issue": "Non-EPPP editorial screening flagged residual lexical-leakage, brief distractor-rationale, or asymmetric-extreme-distractor warnings in 20 item(s).",
+      "change": "Remediated 20 item(s) by hand via dev-tools/non_eppp_authored_remediation/length_balance_wave2_part1.cjs without changing any answerIndex, domainId, rationale, or references. All editorial warning checks now report 0 findings across the batch."
     }
   ],
   "checks": {
@@ -277,7 +281,7 @@
   },
   "artifactBinding": {
     "algorithm": "sha256",
-    "sha256": "75a49d1a6ef60eb63f6db8310a986eca493edaf3cb5ab0cf4cdda2649cd37765"
+    "sha256": "862ea889c76db048a38658f65e5020b6a5fc674fd521941dbbf62dfa58b49ee4"
   },
   "integration": {
     "packId": "praxis-school-librarian-5312",
@@ -303,5 +307,18 @@
     "sharedExpansionScriptMutated": false,
     "releaseBuilderMutated": false,
     "releasedPackMutated": false
-  }
+  },
+  "sourceSha256": "862ea889c76db048a38658f65e5020b6a5fc674fd521941dbbf62dfa58b49ee4",
+  "remediation": [
+    {
+      "at": "2026-11-21",
+      "by": "Antigravity — AlloFlow test-prep warning remediation pass",
+      "scope": "editorial warning remediation (lexical leakage / distractor feedback depth / extreme-qualifier balance)",
+      "itemsChanged": 20,
+      "ledger": "dev-tools/non_eppp_authored_remediation/length_balance_wave2_part1.cjs",
+      "priorSha256": "75a49d1a6ef60eb63f6db8310a986eca493edaf3cb5ab0cf4cdda2649cd37765",
+      "sha256": "862ea889c76db048a38658f65e5020b6a5fc674fd521941dbbf62dfa58b49ee4",
+      "note": "Edited after the independent cross-review to eliminate editorial warning findings while preserving tested constructs and answer positions. The binding was renewed so the artifact stays self-consistent; the original reviewer did not review these replacements."
+    }
+  ]
 }

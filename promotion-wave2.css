@@ -358,8 +358,11 @@
 }
 
 .path-card a {
+    align-items: center;
+    display: inline-flex;
     font-weight: 800;
     margin-top: 18px;
+    min-height: 44px;
 }
 
 .path-label,
@@ -591,9 +594,12 @@
 }
 
 .home-deadline-note a {
+    align-items: center;
     color: #ffffff;
+    display: inline-flex;
     flex: 0 0 auto;
     font-weight: 800;
+    min-height: 44px;
     text-decoration: underline;
     text-underline-offset: 0.2em;
 }
@@ -628,11 +634,14 @@
     color: var(--promo-muted);
     display: grid;
     font-size: 0.87rem;
-    gap: 9px;
+    gap: 4px;
     padding-left: 18px;
 }
 
 .paper-toc a {
+    align-items: center;
+    display: inline-flex;
+    min-height: 44px;
     text-decoration: underline;
     text-underline-offset: 0.16em;
 }
@@ -666,7 +675,7 @@
 }
 
 .paper-meta {
-    color: #64748b;
+    color: #475569;
     font-size: 0.88rem;
     margin-top: 20px;
 }
@@ -760,10 +769,20 @@
 }
 
 .paper-download-inner a {
+    align-items: center;
     color: #ffffff;
+    display: inline-flex;
     flex: 0 0 auto;
     font-weight: 800;
+    min-height: 44px;
     text-decoration: underline;
+}
+
+.deadline-panel :focus-visible,
+.home-deadline-note :focus-visible,
+.paper-download-bar :focus-visible {
+    outline: 3px solid #fbbf24;
+    outline-offset: 2px;
 }
 
 @media (max-width: 1200px) {
@@ -934,5 +953,14 @@
     .deadline-panel a,
     .home-deadline-note a {
         color: LinkText;
+    }
+
+    .promo-page :focus-visible,
+    .paper-shell :focus-visible,
+    .paper-download-bar :focus-visible,
+    .deadline-panel :focus-visible,
+    .home-deadline-note :focus-visible {
+        outline: 3px solid Highlight !important;
+        outline-offset: 2px;
     }
 }

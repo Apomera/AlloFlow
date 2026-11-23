@@ -21,6 +21,7 @@
   var PAD_MS = 90;           // kept before and after the word when the quiet is trimmed
   var FADE_MS = 8;
   var PICTURES_PAGE = 'packets-pictures.html';
+  var VOICE_PAGE = 'packets-voice.html';
   var TEXT = {
     title: 'Edit this word: {word}',
     close: 'Close',
@@ -55,12 +56,15 @@
     removedSoundsNone: 'Removed.',
     recording: 'Recording',
     yourRecording: 'Your recording, {s} seconds.',
+    computerRecording: 'Computer voice, {s} seconds.',
     bankRecording: 'Recording from the word bank.',
     noRecording: 'No recording yet.',
     play: 'Play',
     record: 'Record it yourself',
     recordAgain: 'Record it again',
     removeRecording: 'Remove my recording',
+    removeComputerRecording: 'Remove computer voice',
+    makeVoice: 'Make with computer voice',
     recordNote: 'The recording stays on this device. The microphone is used only while you record.',
     asking: 'Asking the browser for the microphone.',
     recordingNow: 'Recording. Say the word once, then press Stop.',
@@ -569,7 +573,8 @@
           cancel.addEventListener('click', function () { state.rec = null; said(clipPart, ''); drawClip('record'); });
           [listen, keepIt, again, cancel].forEach(function (node) { row.appendChild(node); });
         } else {
-          body.appendChild(el('p', 'wp-line', mine ? fmt(TEXT.yourRecording, { s: ((Number(mine.ms) || 0) / 1000).toFixed(1) }) : bank ? TEXT.bankRecording : TEXT.noRecording));
+          var isComputer = !!(mine && mine.source === 'computer-voice');
+          body.appendChild(el('p', 'wp-line', mine ? fmt(isComputer ? TEXT.computerRecording : TEXT.yourRecording, { s: ((Number(mine.ms) || 0) / 1000).toFixed(1) }) : bank ? TEXT.bankRecording : TEXT.noRecording));
           if (mine || bank) {
             var hear = button(TEXT.play);
             hear.setAttribute('data-wp', 'play');
@@ -579,14 +584,23 @@
             });
             row.appendChild(hear);
           }
-          var start = button(mine ? TEXT.recordAgain : TEXT.record);
+          var start = button(mine && !isComputer ? TEXT.recordAgain : TEXT.record);
           start.setAttribute('data-wp', 'record');
           start.setAttribute('aria-describedby', id + '-record-note');
           start.disabled = !canKeep;
           start.addEventListener('click', record);
           row.appendChild(start);
+          if (!mine && !bank && /^[a-z]{2,24}$/.test(word)) {
+            var voiceLink = el('a', 'btn btn-text btn-small', TEXT.makeVoice);
+            voiceLink.href = VOICE_PAGE + '#words=' + word;
+            voiceLink.target = '_blank';
+            voiceLink.rel = 'noopener';
+            voiceLink.setAttribute('data-wp', 'make-voice');
+            voiceLink.appendChild(el('span', 'sr-only', ' ' + TEXT.newTab));
+            row.appendChild(voiceLink);
+          }
           if (mine) {
-            var remove = button(TEXT.removeRecording);
+            var remove = button(isComputer ? TEXT.removeComputerRecording : TEXT.removeRecording);
             remove.setAttribute('data-wp', 'remove-clip');
             remove.addEventListener('click', function () { stopAudio(); put({ clip: null }, clipPart, TEXT.removedRecording).then(function () { drawClip('record'); }); });
             row.appendChild(remove);

@@ -9115,7 +9115,7 @@
                         value: plan.uses[id],
                         'aria-label': fmt(t('stem.citylab.use_select_aria', 'Land use for parcel {parcel}'), { parcel: id }),
                         onChange: function (e) { parcelAction('use', id, { useId: e.target.value }); },
-                        className: 'text-[0.625rem] rounded border px-1',
+                        className: 'text-[0.625rem] rounded border px-1 min-h-[24px]',
                         style: { background: panelBg, color: ink, borderColor: panelBorder }
                       }, PALETTE_IDS.map(function (uid) {
                         return h('option', { key: uid, value: uid }, useLabel(uid, plan));

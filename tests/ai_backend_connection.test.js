@@ -116,4 +116,16 @@ describe('AIProvider connection verification', () => {
       error: 'The provider returned an empty text response.',
     });
   });
+
+  it('redacts API keys, bearer tokens, and query secrets from connection test error messages', async () => {
+    const leakyErr = 'HTTP 401 at https://api.example/v1?key=AIzaSySecretKey1234567890abcd with Bearer sk-proj-VerySecretToken9876543210';
+    vi.stubGlobal('fetch', vi.fn(async () => { throw new Error(leakyErr); }));
+    const ai = provider('openai', async () => { throw new Error(leakyErr); });
+
+    const result = await ai.testConnection();
+    expect(result.success).toBe(false);
+    expect(result.error).not.toContain('AIzaSySecretKey1234567890abcd');
+    expect(result.error).not.toContain('sk-proj-VerySecretToken9876543210');
+    expect(result.error).toContain('[redacted');
+  });
 });

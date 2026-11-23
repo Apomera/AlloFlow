@@ -5,6 +5,7 @@
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.StudentSaveAdventurePanel) {
     console.log('[CDN] StudentSaveAdventurePanel already loaded, skipping');
     return;
@@ -12,14 +13,29 @@
   var React = window.React;
   if (!React) { console.error('[StudentSaveAdventurePanel] React not found on window'); return; }
 
-const StudentSaveThemeFallbackContext = window.React && window.React.createContext ? window.React.createContext({ theme: "light", colorOverlay: "none" }) : null;
+const StudentSaveThemeFallbackContext = typeof window !== "undefined" && window.React && window.React.createContext ? window.React.createContext({ theme: "light", colorOverlay: "none" }) : typeof React !== "undefined" && React && React.createContext ? React.createContext({ theme: "light", colorOverlay: "none" }) : null;
 const cx = (...parts) => parts.filter(Boolean).join(" ");
-function _aiUsable(kind, fn) {
-  if (typeof window !== "undefined" && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true || window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false)) return false;
+function _aiUsable(kind, fn, studentProjectSettings) {
+  if (studentProjectSettings && studentProjectSettings.hideStudentAiFeatures === true) return false;
+  if (typeof window !== "undefined") {
+    const qr = window.__alloQrStudentMode;
+    const qrBlocksAi = qr === true || qr && typeof qr === "object" && (qr.aiDisabled === true || qr.aiPolicy === "off");
+    if (window.__alloOfflineOnly === true || window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || qrBlocksAi || window._alloQrBlocked === true || window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false) return false;
+    try {
+      const policy = window.AlloModules && window.AlloModules.StudentPolicy;
+      if (policy && typeof policy.getDecision === "function") {
+        const decision = policy.getDecision(kind || "text");
+        if (decision && decision.allowed === false) return false;
+      }
+    } catch (_) {
+      return false;
+    }
+  }
   if (fn && fn._alloQrBlocked === true) return false;
   try {
     if (typeof window !== "undefined" && typeof window.__alloAiUsable === "function") return Boolean(window.__alloAiUsable(kind, fn));
   } catch (_) {
+    return false;
   }
   return typeof fn === "function";
 }
@@ -157,7 +173,7 @@ function StudentSaveAdventurePanel({
   t
 }) {
   const noop = () => null;
-  const icon = (name) => window.AlloIcons && window.AlloIcons[name] || window[name] || noop;
+  const icon = (name) => typeof window !== "undefined" && (window.AlloIcons && window.AlloIcons[name] || window[name]) || noop;
   const Save = icon("Save");
   const FolderOpen = icon("FolderOpen");
   const Download = icon("Download");
@@ -175,6 +191,15 @@ function StudentSaveAdventurePanel({
   const adventureTitleId = "student-adventure-panel-title";
   const adventureProgressId = "student-adventure-progress-label";
   const [, setAiPolicyTick] = React.useState(0);
+  const storyCloseTimerRef = React.useRef(null);
+  React.useEffect(() => {
+    return () => {
+      if (storyCloseTimerRef.current) {
+        clearTimeout(storyCloseTimerRef.current);
+        storyCloseTimerRef.current = null;
+      }
+    };
+  }, []);
   React.useEffect(() => {
     if (typeof window === "undefined" || typeof window.addEventListener !== "function") return void 0;
     const bump = () => setAiPolicyTick((n) => (n + 1) % 1e6);
@@ -182,8 +207,10 @@ function StudentSaveAdventurePanel({
     evs.forEach((ev) => window.addEventListener(ev, bump));
     return () => evs.forEach((ev) => window.removeEventListener(ev, bump));
   }, []);
-  const safePoints = Math.max(0, Number(globalPoints) || 0);
-  const rawUnlockXp = Math.max(0, Number(studentProjectSettings?.adventureUnlockXP ?? 0) || 0);
+  const parsedPoints = Number(globalPoints);
+  const safePoints = Number.isFinite(parsedPoints) ? Math.max(0, parsedPoints) : 0;
+  const parsedUnlockXp = Number(studentProjectSettings?.adventureUnlockXP ?? 0);
+  const rawUnlockXp = Number.isFinite(parsedUnlockXp) ? Math.max(0, parsedUnlockXp) : 0;
   const unlockXp = Math.max(1, rawUnlockXp || 1);
   const boundedPoints = Math.max(0, Math.min(safePoints, unlockXp));
   const adventureProgress = Math.min(100, boundedPoints / unlockXp * 100);
@@ -202,26 +229,18 @@ function StudentSaveAdventurePanel({
     }
   };
   const adventureAvailable = isAdventureAvailable !== false;
-  const soloAdventureAiOff = !activeSessionCode && !_aiUsable("text", typeof window !== "undefined" ? window.callGemini : void 0);
+  const soloAdventureAiOff = !activeSessionCode && !_aiUsable("text", typeof window !== "undefined" ? window.callGemini : void 0, studentProjectSettings);
   const offlineAdventurePlay = !activeSessionCode && !!offlineAdventure && (soloAdventureAiOff || offlineAdventure.offlineOnly === true);
-  const soloAiNeededText = (() => {
-    const key = "adventure.learning_settings.solo_needs_ai";
-    const value = typeof t === "function" ? t(key) : "";
-    return value && value !== key ? value : "Adventure needs AI, which isn't available here. Join your teacher's live adventure to play.";
-  })();
-  const themeContext = React.useContext(window.AlloThemeContext || StudentSaveThemeFallbackContext);
+  const soloAiNeededText = tr("adventure.learning_settings.solo_needs_ai", "Adventure needs AI, which isn't available here. Join your teacher's live adventure to play.");
+  const themeContext = React.useContext(typeof window !== "undefined" && window.AlloThemeContext || StudentSaveThemeFallbackContext);
   const styles = getStudentSaveThemeStyles(themeContext);
   const [showStoryAuthor, setShowStoryAuthor] = React.useState(false);
   const storyBtnRef = React.useRef(null);
-  const offlineApi = window.AlloModules && window.AlloModules.AdventureOffline;
+  const offlineApi = typeof window !== "undefined" && window.AlloModules && window.AlloModules.AdventureOffline;
   const StoryPanel = offlineApi && typeof offlineApi.Panel === "function" ? offlineApi.Panel : null;
   const studentStoryAllowed = !activeSessionCode && typeof setHistory === "function" && !!StoryPanel && !(studentProjectSettings && studentProjectSettings.allowStudentStories === false);
   const hasStudentStory = studentStoryAllowed && typeof offlineApi.findStudentStory === "function" && !!offlineApi.findStudentStory(history);
-  const studentStoryText = (() => {
-    const key = "adventure.offline.student_button";
-    const value = typeof t === "function" ? t(key) : "";
-    return value && value !== key ? value : "Write your own adventure";
-  })();
+  const studentStoryText = tr("adventure.offline.student_button", "Write your own adventure");
   const Pencil = icon("Pencil");
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("style", null, STUDENT_SAVE_ANIMATION_CSS), /* @__PURE__ */ React.createElement(
     "section",
@@ -229,46 +248,50 @@ function StudentSaveAdventurePanel({
       className: cx(styles.savePanel, "rounded-3xl p-4 mb-4 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in slide-in-from-left-4 motion-reduce:animate-none shadow-lg"),
       "aria-labelledby": saveTitleId
     },
-    /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: cx(styles.saveIcon, "p-2 rounded-full"), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Save, { size: 20 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { id: saveTitleId, className: cx("font-bold text-sm", styles.saveTitle) }, t("student.save_banner_title")), /* @__PURE__ */ React.createElement("p", { className: cx("text-xs", styles.saveText) }, t("student.save_banner_desc")), hasSaveableWork === false && /* @__PURE__ */ React.createElement("p", { "data-student-save-empty-hint": "true", className: cx("text-[11px] mt-1 font-medium", styles.muted) }, tr("student.save_empty_hint", "Open or complete an activity first to enable saving.")))),
+    /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: cx(styles.saveIcon, "p-2 rounded-full"), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Save, { size: 20 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { id: saveTitleId, className: cx("font-bold text-sm", styles.saveTitle) }, tr("student.save_banner_title", "Save your work")), /* @__PURE__ */ React.createElement("p", { className: cx("text-xs", styles.saveText) }, tr("student.save_banner_desc", "Save a copy to your device or submit when ready.")), hasSaveableWork === false && /* @__PURE__ */ React.createElement("p", { "data-student-save-empty-hint": "true", className: cx("text-[11px] mt-1 font-medium", styles.muted) }, tr("student.save_empty_hint", "Open or complete an activity first to enable saving.")))),
     /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
-        "aria-label": t("student.load_file"),
+        "aria-label": tr("student.load_file", "Load file"),
         "data-help-key": "student_load_file",
         onClick: () => projectFileInputRef?.current?.click(),
         className: cx("min-h-11 px-4 py-2 font-bold text-xs rounded-xl transition-colors motion-reduce:transition-none flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.secondary, styles.focusTeal, styles.focusOffset)
       },
       /* @__PURE__ */ React.createElement(FolderOpen, { size: 14, "aria-hidden": "true" }),
       " ",
-      t("student.load_file")
+      tr("student.load_file", "Load file")
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
-        "aria-label": t("student.save_drive"),
+        "aria-label": tr("student.save_drive", "Save to device"),
         "data-help-key": "student_save_work",
         disabled: hasSaveableWork === false,
-        onClick: initiateSaveStudentProject,
+        onClick: () => {
+          if (typeof initiateSaveStudentProject === "function") initiateSaveStudentProject();
+        },
         className: cx("min-h-11 px-4 py-2 font-bold text-xs rounded-xl transition-colors motion-reduce:transition-none flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.primaryTeal, styles.focusTeal, styles.focusOffset, "disabled:cursor-not-allowed disabled:opacity-50", isSaveActionPulsing ? "student-save-history-pulse shadow-teal-500/50" : "")
       },
       /* @__PURE__ */ React.createElement(Download, { size: 14, "aria-hidden": "true" }),
       " ",
-      t("student.save_drive")
+      tr("student.save_drive", "Save to device")
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
         "data-help-key": "student_submit_work",
-        onClick: handleSetShowSubmitModalToTrue,
+        onClick: () => {
+          if (typeof handleSetShowSubmitModalToTrue === "function") handleSetShowSubmitModalToTrue();
+        },
         className: cx("min-h-11 px-4 py-2 font-bold text-xs rounded-xl transition-colors motion-reduce:transition-none flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.primaryIndigo, styles.focusIndigo, styles.focusOffset),
-        title: t("common.export_for_grading")
+        title: tr("common.export_for_grading", "Export for grading")
       },
       /* @__PURE__ */ React.createElement(Send, { size: 14, "aria-hidden": "true" }),
       " ",
-      t("common.submit")
+      tr("common.submit", "Submit")
     ))
-  ), adventureAvailable && /* @__PURE__ */ React.createElement("section", { className: cx(styles.adventurePanel, "rounded-3xl shadow-lg overflow-hidden shrink-0 mb-4"), "aria-labelledby": adventureTitleId }, /* @__PURE__ */ React.createElement("div", { className: cx(styles.adventureHeader, "p-3 flex justify-between items-center") }, /* @__PURE__ */ React.createElement("div", { id: adventureTitleId, className: cx("text-sm font-bold flex items-center gap-2", styles.adventureTitle) }, /* @__PURE__ */ React.createElement(MapIcon, { size: 16, "aria-hidden": "true" }), " ", t("adventure.title")), safePoints >= rawUnlockXp && /* @__PURE__ */ React.createElement("span", { className: cx("text-[11px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1", styles.unlockedBadge), role: "status" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 10, "aria-hidden": "true" }), " ", t("adventure.unlocked"))), /* @__PURE__ */ React.createElement("div", { className: "p-4" }, safePoints < rawUnlockXp ? /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-3 mb-2", styles.muted) }, /* @__PURE__ */ React.createElement("div", { className: cx("p-2 rounded-full", styles.iconBubble), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Lock, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "text-xs" }, /* @__PURE__ */ React.createElement("strong", { className: cx("block", styles.adventureTitle) }, t("adventure.locked_status")), t("adventure.earn"), " ", /* @__PURE__ */ React.createElement("span", { className: cx("font-bold", styles.accentText) }, rawUnlockXp, " XP"), " ", t("adventure.to_unlock"))), /* @__PURE__ */ React.createElement(
+  ), adventureAvailable && /* @__PURE__ */ React.createElement("section", { className: cx(styles.adventurePanel, "rounded-3xl shadow-lg overflow-hidden shrink-0 mb-4"), "aria-labelledby": adventureTitleId }, /* @__PURE__ */ React.createElement("div", { className: cx(styles.adventureHeader, "p-3 flex justify-between items-center") }, /* @__PURE__ */ React.createElement("div", { id: adventureTitleId, className: cx("text-sm font-bold flex items-center gap-2", styles.adventureTitle) }, /* @__PURE__ */ React.createElement(MapIcon, { size: 16, "aria-hidden": "true" }), " ", tr("adventure.title", "Adventure")), safePoints >= rawUnlockXp && /* @__PURE__ */ React.createElement("span", { className: cx("text-[11px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1", styles.unlockedBadge), role: "status" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 10, "aria-hidden": "true" }), " ", tr("adventure.unlocked", "Unlocked"))), /* @__PURE__ */ React.createElement("div", { className: "p-4" }, safePoints < rawUnlockXp ? /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-3 mb-2", styles.muted) }, /* @__PURE__ */ React.createElement("div", { className: cx("p-2 rounded-full", styles.iconBubble), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Lock, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "text-xs" }, /* @__PURE__ */ React.createElement("strong", { className: cx("block", styles.adventureTitle) }, tr("adventure.locked_status", "Adventure locked")), tr("adventure.earn", "Earn"), " ", /* @__PURE__ */ React.createElement("span", { className: cx("font-bold", styles.accentText) }, rawUnlockXp, " XP"), " ", tr("adventure.to_unlock", "to unlock"))), /* @__PURE__ */ React.createElement(
     "div",
     {
       className: cx("w-full rounded-full h-2.5 overflow-hidden", styles.progressTrack),
@@ -291,52 +314,61 @@ function StudentSaveAdventurePanel({
       type: "button",
       "data-help-key": "adventure_start_btn",
       "data-adventure-offline-start": true,
-      onClick: handleStartAdventure,
+      onClick: () => {
+        if (typeof handleStartAdventure === "function") handleStartAdventure();
+      },
       className: cx("min-h-11 w-full py-3 rounded-2xl font-bold transition-all motion-reduce:transition-none active:scale-95 motion-reduce:transform-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.primaryPurple, styles.focusPurple, styles.focusOffset)
     },
     /* @__PURE__ */ React.createElement(MapIcon, { size: 18, "aria-hidden": "true" }),
     " ",
-    t("adventure.start")
+    tr("adventure.start", "Start Adventure")
   ) : soloAdventureAiOff ? /* @__PURE__ */ React.createElement("p", { "data-adventure-solo-ai-off": true, className: cx("text-xs leading-relaxed", styles.muted) }, soloAiNeededText) : !activeSessionCode ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, hasSavedAdventure ? /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       "data-help-key": "adventure_resume_btn",
-      onClick: handleResumeAdventure,
+      onClick: () => {
+        if (typeof handleResumeAdventure === "function") handleResumeAdventure();
+      },
       disabled: isResumingAdventure,
       className: cx("min-h-11 w-full py-3 rounded-xl font-bold transition-all motion-reduce:transition-none active:scale-95 motion-reduce:transform-none flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.primaryPurple, styles.focusPurple, styles.focusOffset)
     },
     isResumingAdventure ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 18, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(History, { size: 18, "aria-hidden": "true" }),
-    t("adventure.resume")
+    tr("adventure.resume", "Resume")
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       "data-help-key": "adventure_start_btn",
-      onClick: handleStartAdventure,
+      onClick: () => {
+        if (typeof handleStartAdventure === "function") handleStartAdventure();
+      },
       disabled: isResumingAdventure,
       className: cx("min-h-11 w-full py-3 rounded-xl font-bold shadow-sm transition-all motion-reduce:transition-none active:scale-95 motion-reduce:transform-none flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.secondaryPurple, styles.focusPurple, styles.focusOffset)
     },
     /* @__PURE__ */ React.createElement(Sparkles, { size: 18, "aria-hidden": "true" }),
     " ",
-    t("adventure.new_game")
+    tr("adventure.new_game", "New game")
   )) : /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       "data-help-key": "adventure_start_btn",
-      onClick: handleStartAdventure,
+      onClick: () => {
+        if (typeof handleStartAdventure === "function") handleStartAdventure();
+      },
       className: cx("min-h-11 w-full py-3 rounded-2xl font-bold transition-all motion-reduce:transition-none active:scale-95 motion-reduce:transform-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.primaryPurple, styles.focusPurple, styles.focusOffset)
     },
     /* @__PURE__ */ React.createElement(Sparkles, { size: 18, "aria-hidden": "true" }),
     " ",
-    t("adventure.start")
-  )) : /* @__PURE__ */ React.createElement("div", { className: cx("p-4 rounded-xl text-center", styles.livePanel), role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("p", { className: cx("text-sm font-bold mb-1", styles.liveTitle) }, /* @__PURE__ */ React.createElement(Wifi, { size: 16, className: "inline mr-1 animate-pulse motion-reduce:animate-none", "aria-hidden": "true" }), " ", t("session.live_active")), /* @__PURE__ */ React.createElement("p", { className: cx("text-xs", styles.liveText) }, sessionData?.democracy?.isActive ? t("session.vote_prompt") : t("session.watch_prompt"))), studentStoryAllowed && /* @__PURE__ */ React.createElement(
+    tr("adventure.start", "Start Adventure")
+  )) : /* @__PURE__ */ React.createElement("div", { className: cx("p-4 rounded-xl text-center", styles.livePanel), role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("p", { className: cx("text-sm font-bold mb-1", styles.liveTitle) }, /* @__PURE__ */ React.createElement(Wifi, { size: 16, className: "inline mr-1 animate-pulse motion-reduce:animate-none", "aria-hidden": "true" }), " ", tr("session.live_active", "Live session active")), /* @__PURE__ */ React.createElement("p", { className: cx("text-xs", styles.liveText) }, sessionData?.democracy?.isActive ? tr("session.vote_prompt", "Vote on the next step") : tr("session.watch_prompt", "Watch the shared adventure"))), studentStoryAllowed && /* @__PURE__ */ React.createElement(
     "button",
     {
       ref: storyBtnRef,
       type: "button",
       "aria-haspopup": "dialog",
+      "aria-expanded": showStoryAuthor,
       "data-adventure-student-story-open": true,
       onClick: () => setShowStoryAuthor(true),
       className: cx("mt-3 min-h-11 w-full py-3 rounded-2xl font-bold transition-colors motion-reduce:transition-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.secondaryPurple, styles.focusPurple, styles.focusOffset)
@@ -347,9 +379,13 @@ function StudentSaveAdventurePanel({
     hasStudentStory ? " \u2713" : ""
   ))), showStoryAuthor && studentStoryAllowed && /* @__PURE__ */ React.createElement(StoryPanel, { studentMode: true, history, setHistory, t, theme: themeContext && themeContext.theme, onClose: () => {
     setShowStoryAuthor(false);
-    setTimeout(() => {
+    if (storyCloseTimerRef.current) clearTimeout(storyCloseTimerRef.current);
+    storyCloseTimerRef.current = setTimeout(() => {
+      storyCloseTimerRef.current = null;
       try {
-        if (storyBtnRef.current && storyBtnRef.current !== document.body && storyBtnRef.current !== document.documentElement && storyBtnRef.current.isConnected) storyBtnRef.current?.focus();
+        if (typeof document !== "undefined" && storyBtnRef.current && storyBtnRef.current !== document.body && storyBtnRef.current !== document.documentElement && storyBtnRef.current.isConnected) {
+          storyBtnRef.current.focus();
+        }
       } catch (_) {
       }
     }, 0);

@@ -155,7 +155,12 @@
     "refine_go": "Yeniden yazım öner",
     "refining": "Öneri yazılıyor…",
     "made_from_version": "Kaynağınızın {version}. sürümünden oluşturuldu",
-    "remake": "Geçerli sürümden yeniden oluştur"
+    "remake": "Geçerli sürümden yeniden oluştur",
+    "dictate": "Dikte et",
+    "close_dictate": "Dikteyi kapat",
+    "send_read_along": "Birlikte Okuma Paketine Gönder",
+    "upload_verify_banner": "Ses/video yerel olarak Whisper ile metne dönüştürüldü ({count} bölüm bellekte tutuluyor)",
+    "clear_audio": "Sesi temizle"
   },
   "sel": {
     "peersupport": {
@@ -5994,7 +5999,10 @@
     "source_choice_ambiguous": "Oluşturmadan önce “Temel alınan” bölümünde bir okuma seçin. Birden fazla okuma var.",
     "source_choices_load_failed": "Okuma seçenekleri yüklenemedi. Lütfen yeniden deneyin.",
     "submission_tools_still_loading": "Gönderme araçları hâlâ yükleniyor. Göndermeyi yeniden deneyin.",
-    "blank_created": "Boş {title} oluşturuldu. Paylaşmadan önce doldurun."
+    "blank_created": "Boş {title} oluşturuldu. Paylaşmadan önce doldurun.",
+    "sent_to_read_along": "Metin yeni sekmede Birlikte Okuma Paketine gönderildi.",
+    "read_along_handoff_failed": "Taslak Birlikte Okuma Paketine aktarılamadı.",
+    "read_along_no_text": "Birlikte Okuma Paketine göndermeden önce kaynak metin ekleyin veya dikte edin."
   },
   "large_file": {
     "modal_title": "Büyük Ses Dosyası İçe Aktar",
@@ -6011,7 +6019,8 @@
     "chunk_info": "Ses, işlenmek üzere 5 dakikalık parçalara bölünür",
     "chunk_progress": "Parça {current} / {total}",
     "audio_only_error": "Şu anda parçalı yazıya dökme için yalnızca ses dosyaları (MP3, WAV vb.) desteklenmektedir.",
-    "starting": "Başlatılıyor..."
+    "starting": "Başlatılıyor...",
+    "engine_legend": "Metne Dönüştürme Motoru"
   },
   "voice_engine": {
     "preparing": "Ses motoru hazırlanıyor...",
@@ -6426,7 +6435,8 @@
       "analyzing_short": "Analiz ediliyor...",
       "generate_short": "Üret",
       "books_short": "Kitaplar",
-      "books_hint": "Resimli kitapları açın: her kitap kaynak metniniz olabilir"
+      "books_hint": "Resimli kitapları açın: her kitap kaynak metniniz olabilir",
+      "dictate_hint": "Cihaz içi Whisper ve isteğe bağlı Gemini kontrolü ile kaynak metninizi dikte edin"
     },
     "status_generating": "Kaynak metin üretiliyor...",
     "success_long_form": "Uzun biçimli metin başarıyla üretildi!",
@@ -6476,7 +6486,8 @@
     "empty_desc_teacher": "Bir metin ekleyin, sonra onu öğrencileriniz için uyarlayan araçları seçin.",
     "empty_desc_family": "Çocuğunuzun okuduğu bir şey ekleyin, sonra nasıl yardım etmek istediğinizi seçin.",
     "reading_catalog": "Okuma kataloğu",
-    "find_online": "Çevrimiçi bul"
+    "find_online": "Çevrimiçi bul",
+    "dictate_or_record": "Dikte et veya kaydet"
   },
   "wizard": {
     "title": "Hızlı Başlangıç",
@@ -6610,7 +6621,12 @@
     "paste_word_count": "{count} kelime",
     "length_custom": "Özel…",
     "length_custom_label": "Kelime sayısı",
-    "length_custom_hint": "50 ile 5.000 arasında kelime"
+    "length_custom_hint": "50 ile 5.000 arasında kelime",
+    "dictate_desc": "Yerel Whisper sesli dikte ve isteğe bağlı kontrol",
+    "dictate_title": "Kaynak metninizi dikte edin veya kaydedin",
+    "dictate_helper": "Varsayılan olarak gizli cihaz içi Whisper diktesini kullanır. Özgürce düzenleyin, isterseniz metni temizleyin veya Gemini ile kaydınızla karşılaştırın.",
+    "dictate_loading": "Dikte Stüdyosu (Local Whisper) yükleniyor… Yüklenirken aşağıda yazabilir veya düzenleme yapabilirsiniz.",
+    "words_dictated_unit": "kelime dikte edildi"
   },
   "settings": {
     "immersive_options": "Sürükleyici Seçenekler",
@@ -108791,5 +108807,68 @@
     "sc_findText": "Tasarımda metin bul",
     "sc_commandPalette": "Hızlı eylemleri aç",
     "sc_help": "Bu kısayol listesini göster"
+  },
+  "dictation": {
+    "badge_desktop": "Masaüstü Whisper Hazır",
+    "badge_download_needed": "Local Whisper · İlk Kez İndirme Gerekli",
+    "badge_local_ready": "Local Whisper Hazır · {name}",
+    "cleanup_apply": "Düzenlemeyi uygula",
+    "cleanup_failed": "Metin şu anda temizlenemedi.",
+    "cleanup_fillers": "Dolgu sözcükleri azalt",
+    "cleanup_heading": "İsteğe bağlı yapay zekâ metin temizleme",
+    "cleanup_keep": "Orijinali koru",
+    "cleanup_no_changes": "Bu taslak için herhangi bir değişiklik önerilmedi.",
+    "cleanup_notes": "Sınıf notları biçiminde düzenle",
+    "cleanup_punctuation": "Noktalama ve biçimlendirmeyi düzelt",
+    "cleanup_review_title": "Önerilen temizleme hazır — taslağınız henüz değişmedi",
+    "cleanup_text_only": "yalnızca metin — hiçbir ses gönderilmez",
+    "cleanup_unavailable": "Yapay zekâ metin temizleme şu anda kullanılamıyor.",
+    "cleanup_undo": "Temizlemeyi geri al",
+    "cleanup_working": "Temizleniyor…",
+    "clear_audio": "Kaydedilen sesi temizle ({mb} MB)",
+    "crosscheck_all_resolved": "İşaretlenen tüm noktalar incelendi.",
+    "crosscheck_btn": "Gemini ile ses kaydından doğrula",
+    "crosscheck_count": "İncelenecek {count} işaretli nokta:",
+    "crosscheck_disabled_note": "Şu anda kullanılamıyor (çevrimdışı / öğrenci yapay zekâ kapalı modunda veya Gemini anahtarı olmadan devre dışı). Local Whisper dikteniz tamamen çevrimdışı çalışmaya devam eder.",
+    "crosscheck_disclosure": "Yalnızca aşağıya tıkladığınızda çalışır: olası kelime hatalarını işaretlemek için bellekteki ses kayıt bölümlerinizi ve taslak metninizi Gemini'ye gönderir.",
+    "crosscheck_failed": "Gemini ses kontrolü tamamlanamadı. Yerel dökümünüz değişmeden korundu.",
+    "crosscheck_heading": "Gemini ile ses üzerinden çapraz doğrulama (İsteğe bağlı)",
+    "crosscheck_none": "Local Whisper ile Gemini Audio arasında önemli bir fark bulunmadı.",
+    "crosscheck_running": "Ses kaydıyla karşılaştırılıyor…",
+    "crosscheck_unavailable": "Gemini ses çapraz doğrulaması şu anda kullanılamıyor.",
+    "download_now": "Local Whisper'ı indir ({size} MB)",
+    "download_warning": "İndirme bildirimi: Local Whisper varsayılan olarak gizli cihaz içi konuşma tanıma kullanır. {name} modelini bir kez indirmek ~{size} MB tutar (bağlantıya göre ~1–2 dakika), tarayıcınızda çevrimdışı önbelleğe alınır ve ses kayıtlarınız bu cihazda kalır.",
+    "draft_label": "Metin taslağı (düzenlenebilir)",
+    "draft_placeholder": "Yukarıdaki «Dikteyi başlat» düğmesine basın veya metninizi doğrudan buraya yazın/düzenleyin…",
+    "guide_both_body": "Diktenizin hızlı ve çevrimdışı öncelikli kalması için Local Whisper ile gizli olarak başlayın. Zor terimler veya özel adlar için ikinci bir görüş isterseniz, iki bağımsız modeli sesinizle karşılaştırmak ve işaretlenen her noktada 5 saniyelik klipleri yeniden dinlemek için Gemini çapraz doğrulamasını seçin.",
+    "guide_both_label": "Neden ikisini birden kullanmalı (Çapraz Doğrulama):",
+    "guide_gemini_body": "Model indirmeye gerek yoktur. Uzmanlık sözcükleri, özel adlar, farklı aksanlar, gürültülü sınıflar ve noktalama işaretlerinde daha güçlüdür — kaydedilen ses parçalarını yalnızca siz onaylarsanız Gemini'ye gönderir.",
+    "guide_gemini_title": "Gemini Audio (İsteğe bağlı kontrol)",
+    "guide_summary": "Local Whisper ve Gemini Audio — güçlü yönler ve ikisini birlikte kullanma nedeni",
+    "guide_whisper_body": "Tek seferlik indirmeden (~39–73 MB) sonra gizli ve çevrimdışı. Cihazınızdan hiçbir ses çıkmaz, API anahtarı veya kota gerekmez ve uzun kesintisiz dikte güvenilir biçimde çalışır.",
+    "guide_whisper_title": "Local Whisper (Varsayılan)",
+    "ios_canvas_blocked": "Local Whisper, Gemini Canvas içindeki iPhone/iPad cihazlarda duraklatıldı. Doğrudan aşağıya yazın veya AlloFlow'u bir masaüstü tarayıcısında açın.",
+    "ios_canvas_hint": "Doğrudan aşağıya yazabilir, Local Whisper için AlloFlow'u masaüstü tarayıcısında açabilir veya yapılandırıldıysa Gemini Audio kullanabilirsiniz.",
+    "ios_canvas_title": "Cihaz içi Whisper, Gemini Canvas içindeki iPhone/iPad'de duraklatıldı",
+    "listening_local": "Whisper ile yerel olarak dinleniyor… metin eklemek için kısa bir ara verin veya konuşmaya devam edin.",
+    "mic_start_failed": "Mikrofon başlatılamadı. Tarayıcı izinlerini kontrol edin.",
+    "model_size_label": "Local Whisper model boyutu",
+    "pause_recording": "Duraklat",
+    "paused_note": "Duraklatıldı. Aşağıda metni düzenleyebilir veya dikteye devam etmek için «Devam et» düğmesine basabilirsiniz.",
+    "privacy_tag": "Gizli · İndirdikten sonra çevrimdışı · API anahtarı gerekmez",
+    "resume_recording": "Devam et",
+    "send_read_along": "Birlikte Okuma Paketine Gönder",
+    "speech_settings": "Konuşma ayarları",
+    "speed_badge_lesson": "Test edildi: konuşmadan {speed}x daha hızlı · Uzun dikte için uygun",
+    "speed_badge_short": "Test edildi: konuşmadan {speed}x daha hızlı · Kısa klipler için en iyi",
+    "speed_badge_slow": "Test edildi: {speed}x · Gerçek zamandan daha yavaş (duraklamalar olabilir)",
+    "speed_badge_upgrade": "Test edildi: konuşmadan {speed}x daha hızlı · Uzun dikte için uygun ({name} de denenebilir)",
+    "start_recording": "Dikteyi başlat (Local Whisper)",
+    "stop_recording": "Durdur",
+    "studio_title": "Dikte Stüdyosu",
+    "test_mic": "Mikrofonu test et (4 sn)",
+    "upload_media": "Ses/video dosyasını metne dönüştür",
+    "use_text": "Dikte edilen metni kullan",
+    "voice_unavailable": "Ses kaydedici hâlâ yükleniyor. Lütfen biraz sonra tekrar deneyin."
   }
 }

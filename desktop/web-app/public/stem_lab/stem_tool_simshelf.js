@@ -309,7 +309,7 @@
       return h('div', {
         'data-simshelf-workbench': 'true',
         'data-simshelf-contrast': isContrast ? 'true' : undefined,
-        className: 'flex flex-col gap-4 animate-in fade-in duration-300 w-full max-w-3xl',
+        className: 'flex flex-col gap-4 animate-in fade-in duration-300 w-full max-w-3xl mx-auto',
         style: {
           backgroundColor: pal.shellBg,
           border: (isContrast ? '2px' : '1px') + ' solid ' + pal.shellBorder,
@@ -560,7 +560,7 @@
                 border: (isContrast ? '2px' : '1px') + ' solid ' + pal.ctaBorder,
                 boxShadow: isContrast ? 'none' : '0 6px 16px -4px rgba(180, 83, 9, 0.45)'
               },
-              'aria-label': t('stem.simShelf.open_title', 'Open the Sim Shelf in a new window (PhET simulations with the Predict-Explore-Explain coach)')
+              title: t('stem.simShelf.open_title', 'Open the Sim Shelf in a new window (PhET simulations with the Predict-Explore-Explain coach)')
             }, selectedSlug
               ? (t('stem.simShelf.open_selected_prefix', '🧪 Launch: ') + selectedStarter.label)
               : t('stem.simShelf.open', '🧪 Open Sim Shelf')),

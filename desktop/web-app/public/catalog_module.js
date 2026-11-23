@@ -25,6 +25,7 @@
 (function () {
   'use strict';
 
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.CommunityCatalog) {
     console.log('[CDN] CommunityCatalog already loaded, skipping');
     return;
@@ -39,7 +40,15 @@
 
   // Student AI-off: host-blocked fns are truthy, so ask the host (old-host fallback).
   function _aiUsable(kind, fn) {
-    if (typeof window !== 'undefined' && (window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true)) return false;
+    if (typeof window !== 'undefined') {
+      var mp = window.ALLOFLOW_MANAGED_AI_POLICY;
+      if (mp && (mp.enabled === false || mp.allowAi === false || mp.aiEnabled === false || mp.disabled === true || mp.mode === 'disabled' || mp.mode === 'off')) return false;
+      var sp = window.StudentPolicy;
+      if (sp && (sp.allowAi === false || sp.aiEnabled === false || sp.aiDisabled === true || (typeof sp.isAiAllowed === 'function' && !sp.isAiAllowed(kind || 'text')))) return false;
+      var qm = window.__alloQrStudentMode;
+      var qrBlocked = qm === true || (qm && typeof qm === 'object' && (qm.active === true || qm.aiEnabled === false || qm.allowAi === false || qm.aiDisabled === true || qm.aiPolicy === 'off'));
+      if (window.__alloAiSecretsLocked === true || qrBlocked) return false;
+    }
     try {
       if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
     } catch (_) {}
@@ -55,7 +64,10 @@
     return JSON.parse(s, _catSafeJsonReviver);
   }
   function _catFenceUntrusted(tag, val, maxLen) {
-    var clean = String(val == null ? '' : val).replace(/<\/?UNTRUSTED_[A-Z0-9_]*>/gi, '').slice(0, maxLen || 6000);
+    var clean = String(val == null ? '' : val)
+      .replace(/<\s*\/?\s*UNTRUSTED_[A-Z0-9_]*[^>]*>/gi, '')
+      .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, ' ')
+      .slice(0, maxLen || 6000);
     return '<UNTRUSTED_' + tag + '>\n' + clean + '\n</UNTRUSTED_' + tag + '>';
   }
   function safeExternalHref(url) {
@@ -351,7 +363,7 @@
   }
   function loadPdMyModules() {
     try {
-      var parsed = JSON.parse(localStorage.getItem(PD_MY_MODULES_KEY) || '[]');
+      var parsed = _catSafeJsonParse(localStorage.getItem(PD_MY_MODULES_KEY) || '[]');
       if (!Array.isArray(parsed)) return [];
       return parsed.filter(function (d) {
         return d && typeof d === 'object' && typeof d.draftId === 'string' && d.module && typeof d.module === 'object';
@@ -2438,7 +2450,7 @@
               id: act.id + '-chat', rows: 2, value: draft,
               disabled: status === 'waiting',
               onChange: function (ev) { setDraft(ev.target.value); },
-              onKeyDown: function (ev) { if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); send(); } },
+              onKeyDown: function (ev) { if (ev && !ev.isComposing && ev.keyCode !== 229 && ev.key === 'Enter' && !ev.shiftKey && !ev.ctrlKey && !ev.metaKey && !ev.altKey) { ev.preventDefault(); send(); } },
               className: 'w-full px-3 py-2 border border-slate-300 rounded-md text-sm bg-white',
               placeholder: msgs.length ? tr('catalog_reply_in_character_as_yourself', 'Reply…') : tr('catalog_open_the_conversation', 'Open the conversation…'),
             })
@@ -3641,15 +3653,15 @@
             e('textarea', { id: act.id + '-bgraph', rows: 12, className: inputClass + ' font-mono text-xs', spellCheck: false, defaultValue: JSON.stringify({ start: c.start, nodes: c.nodes || {} }, null, 2), onChange: function (ev) {
               var text = ev.target.value;
               var parsed;
-              try { parsed = JSON.parse(text); } catch (err) {
-                setJsonErrs(function (prev) { var n = Object.assign({}, prev); n[act.id] = 'Not valid JSON yet: ' + err.message; return n; });
+              try { parsed = _catSafeJsonParse(text); } catch (err) {
+                if (!_catUnsafeKey(act.id)) setJsonErrs(function (prev) { var n = Object.assign({}, prev); n[act.id] = 'Not valid JSON yet: ' + err.message; return n; });
                 return;
               }
               if (!parsed || typeof parsed !== 'object' || !parsed.nodes || typeof parsed.nodes !== 'object') {
-                setJsonErrs(function (prev) { var n = Object.assign({}, prev); n[act.id] = tr('catalog_expected_start_nodes_shape', 'Expected the shape { "start": "...", "nodes": { ... } }.'); return n; });
+                if (!_catUnsafeKey(act.id)) setJsonErrs(function (prev) { var n = Object.assign({}, prev); n[act.id] = tr('catalog_expected_start_nodes_shape', 'Expected the shape { "start": "...", "nodes": { ... } }.'); return n; });
                 return;
               }
-              setJsonErrs(function (prev) { var n = Object.assign({}, prev); delete n[act.id]; return n; });
+              if (!_catUnsafeKey(act.id)) setJsonErrs(function (prev) { var n = Object.assign({}, prev); delete n[act.id]; return n; });
               upd(function (m) { var cc = m.sections[si].activities[ai].content; cc.start = parsed.start; cc.nodes = parsed.nodes; });
             } }),
             berr && e('p', { className: 'text-xs text-amber-800 mt-1', role: 'status' }, berr),
@@ -4620,26 +4632,47 @@
   // ----- Top-level component --------------------------------------------------
 
   function CommunityCatalog(props) {
-    if (!props.isOpen) return null;
-
     // Read prefilled submission staged by the Share button on history items
     var prefill$ = useState(function () {
+      if (!props.isOpen) return null;
       try {
         var raw = localStorage.getItem(PENDING_SUBMISSION_KEY);
         if (!raw) return null;
-        var parsed = JSON.parse(raw);
+        var parsed = _catSafeJsonParse(raw);
         localStorage.removeItem(PENDING_SUBMISSION_KEY);
         return parsed;
       } catch (err) { return null; }
     });
-    var prefill = prefill$[0];
+    var prefill = prefill$[0], setPrefill = prefill$[1];
 
-    var pdIntent$ = useState(function () { return prefill ? false : readPdIntent(); });
+    var pdIntent$ = useState(function () { return !props.isOpen ? false : (prefill ? false : readPdIntent()); });
     var pdIntent = pdIntent$[0];
     var tab$ = useState(props.selectedSlug ? 'browse' : (prefill ? 'submit' : (pdIntent ? 'pd' : 'browse')));
     var tab = tab$[0], setTab = tab$[1];
     var dialogRef = React.useRef ? React.useRef(null) : { current: null };
-    useEffect(function () { var el = dialogRef.current; if (el && el.focus) { try { el.focus(); } catch (_e) { /* no-op */ } } }, []);
+    useEffect(function () {
+      if (!props.isOpen) return undefined;
+      if (!prefill) {
+        try {
+          var raw = localStorage.getItem(PENDING_SUBMISSION_KEY);
+          if (raw) {
+            var parsed = _catSafeJsonParse(raw);
+            localStorage.removeItem(PENDING_SUBMISSION_KEY);
+            if (parsed) { setPrefill(parsed); if (!props.selectedSlug) setTab('submit'); }
+          }
+        } catch (_e) {}
+      }
+      var prevFocus = (typeof document !== 'undefined') ? document.activeElement : null;
+      var el = dialogRef.current;
+      if (el && el.focus) { try { el.focus(); } catch (_e) { /* no-op */ } }
+      return function () {
+        if (prevFocus && prevFocus.isConnected && typeof prevFocus.focus === 'function') {
+          try { prevFocus.focus(); } catch (_e) {}
+        }
+      };
+    }, [props.isOpen]);
+
+    if (!props.isOpen) return null;
 
     var initialJson = prefill && prefill.payload ? JSON.stringify(prefill.payload, null, 2) :
                       prefill && prefill.lesson_payload ? JSON.stringify(prefill.lesson_payload, null, 2) : '';
@@ -4663,12 +4696,21 @@
         'data-allo-catalog': '',
         tabIndex: -1, ref: dialogRef,
         onKeyDown: function (ev) {
-          if (ev.key === 'Escape') { ev.stopPropagation(); props.onClose(); return; }
+          if (!ev || ev.isComposing || ev.keyCode === 229) return;
+          if (ev.key === 'Escape' && !ev.ctrlKey && !ev.metaKey && !ev.altKey) { ev.preventDefault(); ev.stopPropagation(); props.onClose(); return; }
           if (ev.key !== 'Tab') return;
           // Keep keyboard focus inside the modal (focus trap).
           var root = dialogRef.current;
           if (!root || !root.querySelectorAll) return;
-          var f = root.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])');
+          var rawF = root.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])');
+          var f = Array.prototype.slice.call(rawF).filter(function (node) {
+            if (!node || node.hidden || node.getAttribute('aria-hidden') === 'true') return false;
+            try {
+              var cs = typeof window !== 'undefined' && typeof window.getComputedStyle === 'function' ? window.getComputedStyle(node) : null;
+              if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) return false;
+            } catch (_) {}
+            return true;
+          });
           if (!f.length) return;
           var first = f[0], last = f[f.length - 1];
           var active = (typeof document !== 'undefined') ? document.activeElement : null;
@@ -4697,6 +4739,7 @@
               // Roving-tabindex tab semantics: arrows/Home/End move AND focus;
               // only the active tab is in the Tab order (WAI-ARIA tabs pattern).
               onKeyDown: function (ev) {
+                if (!ev || ev.isComposing || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
                 var order = ['browse', 'submit', 'pd'];
                 var idx = order.indexOf(tab);
                 var next = null;

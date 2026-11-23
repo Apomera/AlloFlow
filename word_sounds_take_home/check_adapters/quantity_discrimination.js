@@ -20,23 +20,24 @@ module.exports = {
   // form whose own answer disagrees is refused.
   prepare: function (p) {
     p = p || {};
-    var whole = function (v) { return v != null && v !== '' && Number.isSafeInteger(Number(v)) && Math.abs(Number(v)) <= 99999999; };
+    var whole = function (v) { return (typeof v === 'number' || (typeof v === 'string' && v.trim() !== '')) && Number.isSafeInteger(Number(v)) && Math.abs(Number(v)) <= 99999999; };
     if (!whole(p.left) || !whole(p.right)) return { missing: ['two whole numbers'] };
     var left = Number(p.left), right = Number(p.right);
     if (left === right) return { missing: ['two different numbers'] };
     var bigger = Math.max(left, right);
-    if (p.answer != null && Number(p.answer) !== bigger) return { missing: ['an answer that is the bigger number'] };
+    if (p.answer != null && (!whole(p.answer) || Number(p.answer) !== bigger)) return { missing: ['an answer that is the bigger number'] };
     return { item: { word: left + ' or ' + right, left: left, right: right, answer: String(bigger) } };
   },
   render: function (item, ctx) {
     var buttons = [];
+    var qId = 'qd-q-' + String(item && item.id || '0').replace(/[^A-Za-z0-9_-]/g, '');
     var make = function (value) {
-      var b = ctx.el('button', { type: 'button', 'data-choice': String(value), on: { click: function () { ctx.answer(String(value)); } }, text: String(value) });
+      var b = ctx.el('button', { type: 'button', 'data-choice': String(value), on: { click: function () { if (ctx.isDone() || b.getAttribute('aria-disabled') === 'true') return; ctx.answer(String(value)); } }, text: String(value) });
       buttons.push(b);
       return ctx.el('li', {}, [b]);
     };
-    ctx.root.appendChild(ctx.el('p', { class: 'letters', style: 'text-align:center', text: ctx.L.quantity_discrimination_question }));
-    ctx.root.appendChild(ctx.el('ul', { class: 'pair' }, [make(item.left), make(item.right)]));
+    ctx.root.appendChild(ctx.el('p', { id: qId, class: 'letters', style: 'text-align:center', text: ctx.L.quantity_discrimination_question }));
+    ctx.root.appendChild(ctx.el('ul', { class: 'pair', 'aria-labelledby': qId }, [make(item.left), make(item.right)]));
     // Keys 1 and 2 pick the first and the second number; Left/Right arrows move focus without submitting.
     ctx.keys(function (key) {
       if (ctx.isDone()) return false;

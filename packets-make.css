@@ -37,8 +37,35 @@
 .stage-key-list li { margin-top: 0.15rem; }
 .stage-key-list b { font-weight: 600; color: var(--ink); }
 
-/* 2026-11-18: "Mix the activities" (step 1) and "Question order" (step 3): numbered rows, each with Move up and Move down. */
-.mix-field { margin: 0 0 0.75rem; max-width: 36rem; }
+/* 2026-11-18 / 2026-11-21: "Mix the activities" (step 1) / "Mix the question types" (vocab) and "Question order" (step 3). */
+.mix-field { margin: 0.9rem 0 0; max-width: 38rem; }
+.mix-field .row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.75rem; margin: 0; }
+.mix-field .row .radio { margin: 0; }
+.mix-field .hint { display: block; margin-top: 0.25rem; }
+
+/* 2026-11-21: compact checkbox pills for Sound patterns and multi-level selection in step 2. */
+.stage-pick-field { margin-top: 1.5rem; }
+.stage-pick-field select { max-width: 30rem; }
+.multi-toggle { margin-top: 0.5rem; }
+.multi-toggle .radio { margin: 0; }
+.pill-group { margin-top: 0.75rem; padding: 0; border: 0; }
+.pill-group > legend { padding: 0; font-weight: 600; color: var(--ink); }
+.pill-group > .hint { display: block; margin-top: 0.15rem; }
+.pill-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.6rem; margin-top: 0.35rem; font-size: 0.9375rem; color: var(--muted); }
+.pill-meta .btn-text { padding-left: 0.25rem; padding-right: 0.25rem; min-height: 2.25rem; }
+.pill-list { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.5rem; }
+.pill { display: inline-flex; align-items: center; gap: 0.4rem; min-height: 2.75rem; padding: 0.35rem 0.75rem; border: 1.5px solid var(--line-strong); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; font-size: 0.9375rem; line-height: 1.3; }
+.pill:hover { border-color: var(--accent); }
+.pill:focus-within { outline: 3px solid var(--accent); outline-offset: 2px; }
+.pill.is-on { border-color: var(--accent); background: var(--accent-soft); }
+.pill input[type="checkbox"] { width: 1.1rem; height: 1.1rem; margin: 0; accent-color: var(--accent); }
+.pill-name { font-weight: 600; }
+.pill-ex { color: var(--muted); font-size: 0.875rem; }
+.own-limit-note { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.75rem; margin-top: 0.5rem; }
+.example-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.75rem; margin-top: 0.45rem; }
+.starter-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.75rem; margin-top: 0.6rem; }
+.starter-row label { font-size: 0.9375rem; font-weight: 600; color: var(--ink); }
+.starter-row select { width: auto; max-width: 100%; min-height: 2.75rem; margin-top: 0; }
 .order-title { font-weight: 600; color: var(--ink); }
 .order-title span { font-weight: 400; }
 .order-editor { margin-top: 0.5rem; }
@@ -57,6 +84,9 @@
 .quick { margin-top: 1rem; padding: 0.85rem 1rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--accent-soft); }
 .quick .btn { margin: 0; }
 .quick .hint { display: block; margin-top: 0.4rem; }
+.quick-recipes { display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem; margin-top: 0.7rem; padding-top: 0.65rem; border-top: 1px solid var(--line); }
+.quick-recipes-label { font-size: 0.875rem; font-weight: 600; color: var(--muted); margin-right: 0.15rem; }
+.quick-recipes .btn[aria-pressed="true"] { border-color: var(--accent); background: var(--surface); box-shadow: inset 0 0 0 1px var(--accent); }
 
 .more { margin-top: 1.25rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); }
 .more > summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.15rem 0.75rem; min-height: 3rem; padding: 0.6rem 1rem; cursor: pointer; }
@@ -114,6 +144,12 @@ details.strand > :last-child { margin-bottom: 0.75rem; }
 .group-row { padding: 0.5rem 0.75rem 0.4rem; }
 .group-row legend { font-size: 0.95rem; }
 .group-row .group-fields { gap: 0.5rem 0.75rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 29.99rem) {
+  .group-row .group-fields { grid-template-columns: 1fr; }
+  #f-shapes.pill-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.35rem; }
+  #f-shapes .pill { padding: 0.35rem 0.55rem; font-size: 0.875rem; flex-wrap: wrap; gap: 0.15rem 0.35rem; }
+  #f-shapes .pill-ex { font-size: 0.8125rem; }
+}
 @media (min-width: 44rem) { .group-row .group-fields { grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr) minmax(0, 1.2fr) minmax(0, 1.2fr) 4.5rem; } }
 .group-foot { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.25rem 0.75rem; }
 .group-foot .group-said { margin: 0.4rem 0 0; }

@@ -1746,7 +1746,7 @@ window.SelHub = window.SelHub || {
               // Skills involved
               h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
                 curCh.skills.map(function(s) {
-                  return h('span', { key: s, style: { padding: '3px 10px', borderRadius: 20, background: _teaBg('#334155'), color: _teaFg('#94a3b8'), fontSize: 11 } }, s);
+                  return h('span', { key: s, style: { padding: '3px 10px', borderRadius: 20, background: _teaBg('#334155'), color: _teaFg('#e2e8f0'), fontSize: 11 } }, s);
                 })
               ),
 

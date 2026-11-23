@@ -6665,7 +6665,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   h('div', { className: 'text-3xl font-black text-orange-800 leading-none', style: isContrast ? { color: '#ffffff' } : undefined }, foundDefectTypes + ' / ' + totalDefectTypes),
                   h('div', { className: 'text-[0.625rem] uppercase tracking-widest text-slate-700 font-bold mt-1', style: isContrast ? { color: '#ffffff' } : undefined }, __alloT('stem.weldlab.defect_types_found', 'Defect types found'))
                 ),
-                h('div', { className: 'flex-1 min-w-0' },
+                h('div', { className: 'flex-1', style: { minWidth: 'min(100%, 170px)' } },
                   h('div', { className: 'flex items-center gap-2 mb-1' },
                     h('span', { 'aria-hidden': true, className: 'text-xl' }, '📔'),
                     h('h2', { className: 'text-base font-black text-slate-800', style: isContrast ? { color: '#ffffff' } : undefined }, __alloT('stem.weldlab.welder_s_defect_catalog_2', "Welder's Defect Catalog"))

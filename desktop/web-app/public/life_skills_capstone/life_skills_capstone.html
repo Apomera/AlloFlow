@@ -41,6 +41,10 @@
   :root[data-theme="light"] .tool.primary { background: #075985; color: #ffffff; border-color: #075985; }
   :root[data-theme="light"] .stem-lens-button, :root[data-theme="light"] .stem-lens-text { background: #e0f2fe; color: #0c4a6e; border-color: #0284c7; }
   :root[data-theme="light"] .context-badge[data-shifted="true"] { color: #713f12; background: #fef9c3; border-color: #ca8a04; }
+  :root[data-theme="light"] .feedback.good { color: var(--good); background: rgba(22,101,52,.10); }
+  :root[data-theme="light"] .feedback.error { color: var(--danger); background: rgba(159,18,57,.10); }
+  :root[data-theme="light"] .procedure-stage.current { color: #713f12; background: #fef9c3; border-color: #ca8a04; }
+  :root[data-theme="light"] .teachback::placeholder { color: #475569; opacity: 1; }
   :root[data-theme="contrast"] body, :root[data-theme="contrast"] html { background: #000000; color: #ffffff; }
   :root[data-theme="contrast"] header, :root[data-theme="contrast"] .panel, :root[data-theme="contrast"] .scene-panel, :root[data-theme="contrast"] .mission-banner, :root[data-theme="contrast"] .transfer-summary, :root[data-theme="contrast"] .debrief, :root[data-theme="contrast"] .progress-line, :root[data-theme="contrast"] .feedback, :root[data-theme="contrast"] .teachback, :root[data-theme="contrast"] .choice, :root[data-theme="contrast"] .tool, :root[data-theme="contrast"] .view, :root[data-theme="contrast"] .badge, :root[data-theme="contrast"] .support-badge, :root[data-theme="contrast"] .context-badge, :root[data-theme="contrast"] .evidence-count, :root[data-theme="contrast"] .procedure-stage { background: #000000; color: #ffffff; border-color: #ffffff; box-shadow: none; }
   :root[data-theme="contrast"] .tool.primary { background: #ffff00; color: #000000; border-color: #ffffff; }
@@ -65,7 +69,7 @@
   .support-badge { flex:0 0 auto; padding:4px 7px; border:1px solid rgba(103,232,249,.38); border-radius:999px; color:var(--accent); background:rgba(8,19,33,.42); font-size:9px; font-weight:900; white-space:nowrap; }
   #progressValue { color:var(--accent); font-variant-numeric:tabular-nums; }
   .steps { list-style:none; padding:0; margin:0 0 13px; display:grid; gap:5px; }
-  .step { display:flex; width:100%; align-items:center; gap:7px; padding:7px 8px; border:1px solid #365575; border-radius:8px; background:transparent; color:var(--muted); font:inherit; font-size:11px; font-weight:700; cursor:pointer; text-align:left; }
+  .step { display:flex; width:100%; min-height:44px; align-items:center; gap:7px; padding:7px 8px; border:1px solid #365575; border-radius:8px; background:transparent; color:var(--muted); font:inherit; font-size:11px; font-weight:700; cursor:pointer; text-align:left; }
   .step.current { border-color:var(--warn); color:var(--text); background:rgba(250,204,21,.1); }
   .step.done { border-color:var(--good); color:var(--good); background:rgba(74,222,128,.08); }
   .step-dot { width:9px; height:9px; border-radius:50%; background:#5b7894; flex:0 0 auto; }
@@ -86,11 +90,11 @@
   .instruction { color:var(--text); font-weight:750; }
   .choices { display:grid; gap:7px; }
   button { font:inherit; }
-  .choice, .tool, .view { appearance:none; border:1px solid #547b9d; background:#152d48; color:var(--text); border-radius:9px; padding:9px 10px; text-align:left; cursor:pointer; font-size:12px; font-weight:700; line-height:1.35; }
+  .choice, .tool, .view { appearance:none; min-height:44px; border:1px solid #547b9d; background:#152d48; color:var(--text); border-radius:9px; padding:9px 10px; text-align:left; cursor:pointer; font-size:12px; font-weight:700; line-height:1.35; }
   .choice:hover, .tool:hover, .view:hover { border-color:var(--accent); background:#1b3b5c; }
   .choice:disabled { cursor:not-allowed; opacity:.72; }
   .choice.safe { border-color:var(--good); background:rgba(74,222,128,.1); }
-  .hint { display:block; width:100%; margin-top:9px; border:1px solid transparent; border-radius:7px; background:rgba(250,204,21,.07); color:var(--warn); padding:6px 7px; text-align:left; cursor:pointer; font-size:11px; font-weight:800; }
+  .hint { display:block; width:100%; min-height:44px; margin-top:9px; border:1px solid transparent; border-radius:7px; background:rgba(250,204,21,.07); color:var(--warn); padding:6px 7px; text-align:left; cursor:pointer; font-size:11px; font-weight:800; }
   .hint:hover { border-color:var(--warn); }
   .feedback { min-height:42px; margin:9px 0 0; padding:8px; border-radius:8px; background:#0b1b2d; color:var(--muted); font-size:12px; line-height:1.4; }
   .feedback.good { color:var(--good); background:rgba(74,222,128,.1); }
@@ -127,7 +131,7 @@
   .debrief-feedback { min-height:18px; color:var(--good); font-size:11px; line-height:1.35; margin:7px 0 0; }
   .debrief-label { display:block; color:var(--text); font-size:11px; line-height:1.35; margin:0 0 5px; }
   .teachback { display:block; width:100%; box-sizing:border-box; min-height:68px; resize:vertical; border:1px solid #547b9d; border-radius:8px; background:#0b1b2d; color:var(--text); padding:8px; font:inherit; font-size:12px; line-height:1.4; }
-  .teachback::placeholder { color:#8ca6be; }
+  .teachback::placeholder { color:#cbd5e1; opacity:1; }
   .debrief-actions { display:flex; flex-wrap:wrap; align-items:center; gap:7px; margin-top:7px; }
   .debrief-count { color:var(--muted); font-size:11px; }
   .tools, .views { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
@@ -141,7 +145,7 @@
   .scene-fallback { display:none; padding:20px; color:var(--muted); }
   .scene-panel.no-aframe a-scene { display:none; }
   .scene-panel.no-aframe .scene-fallback { display:block; }
-  button:focus-visible, textarea:focus-visible { outline:3px solid var(--warn); outline-offset:2px; box-shadow:0 0 0 5px rgba(250,204,21,.2); }
+  button:focus-visible, textarea:focus-visible, select:focus-visible, a:focus-visible, main:focus-visible { outline:3px solid var(--warn); outline-offset:2px; box-shadow:0 0 0 5px rgba(250,204,21,.2); }
   @media (max-width: 850px) { body { padding:10px; } .layout { grid-template-columns:1fr; } .scene-panel, a-scene { min-height:480px; } }
   @media (max-width: 480px) { .panel { padding:12px; } .scene-panel, a-scene { min-height:390px; } }
 
@@ -171,8 +175,8 @@
   .choice:hover, .tool:hover, .view:hover { transform: translateY(-1px); box-shadow: 0 7px 16px rgba(0,0,0,.14); }
   .debrief { box-shadow: 0 10px 24px rgba(0,0,0,.14); }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
-  .skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 10000; }
-  .skip-link:focus { position: fixed; left: 8px; top: 8px; width: auto; height: auto; padding: 10px 18px; background: #0f172a; color: #f8fafc; font: 700 14px system-ui, sans-serif; border-radius: 8px; outline: 3px solid #facc15; text-decoration: none; }
+  .skip-link { position: absolute; inset-inline-start: 8px; top: 8px; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; z-index: 10000; }
+  .skip-link:focus { position: fixed; inset-inline-start: 8px; top: 8px; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; min-height: 44px; display: inline-flex; align-items: center; padding: 10px 18px; background: #0f172a; color: #f8fafc; font: 700 14px system-ui, sans-serif; border-radius: 8px; outline: 3px solid #facc15; text-decoration: none; }
   @media (forced-colors: active) {
     :root, :root[data-theme] { --bg: Canvas; --panel: Canvas; --panel2: Canvas; --line: CanvasText; --text: CanvasText; --muted: CanvasText; --accent: LinkText; --good: CanvasText; --warn: CanvasText; --danger: CanvasText; }
     html, body, header, .panel, .scene-panel, .mission-banner, .transfer-summary, .debrief, .progress-line, .feedback, .teachback, .choice, .tool, .view, .badge, .support-badge, .context-badge, .evidence-count, .procedure-stage, .step, .hint, .stem-lens-button, .stem-lens-text, .skip-link:focus { background: Canvas !important; color: CanvasText !important; border-color: CanvasText !important; box-shadow: none !important; }
@@ -224,7 +228,7 @@
         <button class="tool" id="challengeButton" type="button" disabled>Start transfer challenge</button>
         <button class="tool" id="resetButton" type="button">Start over</button>
       </div>
-      <button class="tool stem-lens-button" id="stemLensButton" type="button" aria-pressed="false">&#128300; 3D STEM Lens: Off</button>
+      <button class="tool stem-lens-button" id="stemLensButton" type="button" aria-pressed="false" aria-expanded="false" aria-controls="stemLensText"><span aria-hidden="true">&#128300;</span> 3D STEM Lens: Off</button>
       <p id="stemLensText" class="stem-lens-text" role="status" aria-live="polite" hidden></p>
       <p id="challengeNote" class="hint-text" role="status" aria-live="polite" hidden></p>
       <section id="transferSummary" class="transfer-summary" aria-labelledby="transferSummaryTitle" hidden>
@@ -676,7 +680,8 @@
     if (overlay) overlay.setAttribute('visible', String(stemLensOn));
     if (btn) {
       btn.setAttribute('aria-pressed', String(stemLensOn));
-      btn.textContent = '\uD83D\uDD2C 3D STEM Lens: ' + (stemLensOn ? 'On' : 'Off');
+      btn.setAttribute('aria-expanded', String(stemLensOn));
+      btn.innerHTML = '<span aria-hidden="true">&#128300;</span> 3D STEM Lens: ' + (stemLensOn ? 'On' : 'Off');
     }
     updateStemLensReadout();
     postToOpener({ type: 'alloflow-life-capstone-3d-stem-lens', enabled: stemLensOn, station: focusId });
@@ -966,6 +971,7 @@
   document.querySelectorAll('[data-confidence]').forEach(function (button) { button.addEventListener('click', function () { recordDebrief('confidence', button.getAttribute('data-confidence')); }); });
   document.querySelectorAll('[data-next-step]').forEach(function (button) { button.addEventListener('click', function () { recordDebrief('nextStep', button.getAttribute('data-next-step')); }); });
   document.getElementById('teachBackInput').addEventListener('input', function () { state.debriefDraft = this.value.slice(0, 180); state.teachBackMessage = ''; document.getElementById('teachBackCount').textContent = state.debriefDraft.length + ' / 180'; document.getElementById('teachBackFeedback').textContent = state.debriefDraft !== state.debrief.teachBack ? 'Draft ready. Save when it says what you would do first.' : state.debrief.teachBack ? 'Teach-back saved.' : 'Optional practice; not saved yet.'; });
+  document.getElementById('teachBackInput').addEventListener('keydown', function (e) { if (e.isComposing || e.keyCode === 229) return; if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); saveTeachBack(); } });
   document.getElementById('saveTeachBackButton').addEventListener('click', saveTeachBack);
   document.getElementById('resetButton').addEventListener('click', function () { state.missionFocus = requestedFocus; state.support = requestedSupport; state.mode = 'guided'; state.order = missionFor(state.missionFocus).order.slice(); state.challengeChoices = {}; state.contexts = {}; state.contextTransfers = {}; state.procedures = {}; state.procedureChoices = {}; state.procedureMistakes = {}; state.procedureTarget = ''; state.procedureStep = 0; state.procedureError = false; state.procedureWrongSlot = -1; state.procedureUsed3d = false; state.risk = {}; state.attempts = {}; state.hinted = {}; state.outcomes = {}; state.replayTarget = ''; state.replayFrom = ''; state.replayContextFrom = ''; state.debrief = { confidence: '', nextStep: '', teachBack: '' }; state.debriefDraft = ''; state.teachBackMessage = ''; state.done = {}; state.missteps = 0; state.hints = 0; state.activeIndex = 0; state.focused = state.order[0]; state.hintShown = false; setFeedback('Fresh adaptive mission. Choose the safer response for the highlighted station.'); saveState(); render(); renderScene(); postProgressSnapshot(); postToOpener({ type: 'alloflow-life-capstone-3d-reset', missionFocus: state.missionFocus, support: state.support }); announce('Adaptive capstone mission reset.'); });
   document.querySelectorAll('[data-view]').forEach(function (button) { button.addEventListener('click', function () { setView(button.getAttribute('data-view')); }); });

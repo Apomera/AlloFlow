@@ -165,6 +165,13 @@ module.exports = {
           undo.click();
           return true;
         }
+        if (k === 'Enter') {
+          var ae2 = doc && doc.activeElement;
+          var onBtn = !!(ae2 && String(ae2.tagName || '').toUpperCase() === 'BUTTON' && ae2 !== submit && !ae2.closest('[hidden]') && !ae2.disabled && ae2.getAttribute('aria-disabled') !== 'true');
+          if (onBtn || !canSubmit()) return false;
+          submit.click();
+          return true;
+        }
         return false;
       });
     }

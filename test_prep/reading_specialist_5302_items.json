@@ -1891,7 +1891,7 @@
       "Score supported listening tasks as unaided decoding measures so progress reports stay consistent over time."
     ],
     "answerIndex": 0,
-    "rationale": "Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
+    "rationale": "Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
     "references": [
       "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
       "https://www.literacyworldwide.org/docs/default-source/resource-documents/standards-appendix-A.pdf",
@@ -1906,7 +1906,7 @@
     "qaStatus": "qa-passed",
     "qaReviewedAt": "2026-07-14",
     "choiceRationales": [
-      "Correct. Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
+      "Correct. Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
       "Withholding access tools limits participation in grade-level content while decoding develops, which widens knowledge and vocabulary gaps.",
       "Text-to-speech supports content access but does not teach decoding, so explicit word-level instruction should continue alongside the tool.",
       "Supported listening measures comprehension of spoken text, so reporting it as unaided decoding misrepresents the student’s current skills."
@@ -2610,7 +2610,7 @@
     "type": "single-choice",
     "domainId": "assessment",
     "difficulty": "application",
-    "prompt": "How should a multilingual student?s reading errors be evaluated?",
+    "prompt": "How should a multilingual student's reading errors be evaluated?",
     "choices": [
       "Identify a reading disability from English reading errors alone once they persist for several months.",
       "Disregard persistent reading concerns because they are expected for students learning English as a new language.",
@@ -3741,7 +3741,7 @@
     "type": "single-choice",
     "domainId": "professional-leadership",
     "difficulty": "application",
-    "prompt": "What is the reading specialist?s role in MTSS leadership?",
+    "prompt": "What is the reading specialist's role in MTSS leadership?",
     "choices": [
       "Assign students permanently to intervention tiers based on fall screening results so building schedules and staffing remain stable.",
       "Use tiered intervention as a substitute for special-education evaluation whenever families submit a written request for an evaluation.",
@@ -5880,7 +5880,7 @@
       "Score supported listening tasks as unaided decoding measures so progress reports stay consistent over time."
     ],
     "answerIndex": 0,
-    "rationale": "Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
+    "rationale": "Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
     "references": [
       "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
       "https://www.literacyworldwide.org/docs/default-source/resource-documents/standards-appendix-A.pdf",
@@ -5895,7 +5895,7 @@
     "qaStatus": "qa-passed",
     "qaReviewedAt": "2026-07-14",
     "choiceRationales": [
-      "Correct. Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
+      "Correct. Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
       "Withholding access tools limits participation in grade-level content while decoding develops, which widens knowledge and vocabulary gaps.",
       "Text-to-speech supports content access but does not teach decoding, so explicit word-level instruction should continue alongside the tool.",
       "Supported listening measures comprehension of spoken text, so reporting it as unaided decoding misrepresents the student’s current skills."
@@ -6072,7 +6072,7 @@
     "type": "single-choice",
     "domainId": "assessment",
     "difficulty": "application",
-    "prompt": "A district evaluates a screener?s ability to identify students at risk without referring too many students who are not at risk. What is being balanced?",
+    "prompt": "A district evaluates a screener's ability to identify students at risk without referring too many students who are not at risk. What is being balanced?",
     "choices": [
       "Interrater reliability among scorers and the handwriting speed of students on written responses.",
       "Correctly identifying students who need support and correctly excluding students who do not.",
@@ -6681,7 +6681,7 @@
     "type": "single-choice",
     "domainId": "assessment",
     "difficulty": "application",
-    "prompt": "A student?s essay receives one holistic score. What evidence would better guide instruction?",
+    "prompt": "A student's essay receives one holistic score. What evidence would better guide instruction?",
     "choices": [
       "Transcription, sentences, vocabulary, organization, genre, support, revision, and conditions used.",
       "Pen color, neatness of margins, and the overall visual appearance of the finished written product.",
@@ -6883,7 +6883,7 @@
     "type": "single-choice",
     "domainId": "assessment",
     "difficulty": "application",
-    "prompt": "A student?s recent scores are below goal but increasing faster than before. What should the team examine?",
+    "prompt": "A student's recent scores are below goal but increasing faster than before. What should the team examine?",
     "choices": [
       "Disregard the trend line because the most recent score falls below the goal established for the student.",
       "Current level, rate and stability of growth, remaining time, goal relevance, fidelity, and diagnostic data together.",
@@ -7003,7 +7003,7 @@
     "type": "single-choice",
     "domainId": "assessment",
     "difficulty": "application",
-    "prompt": "A learner?s trend remains below the goal despite a well-implemented intervention. What follows?",
+    "prompt": "A learner's trend remains below the goal despite a well-implemented intervention. What follows?",
     "choices": [
       "Review diagnostic data, form a hypothesis, adapt the plan, document the change, and keep monitoring.",
       "Continue the current plan indefinitely because the intervention was delivered with adequate fidelity.",
@@ -7163,7 +7163,7 @@
     "type": "single-choice",
     "domainId": "professional-leadership",
     "difficulty": "application",
-    "prompt": "A team describes a student?s home-language knowledge only as interference. What should the specialist add?",
+    "prompt": "A team describes a student's home-language knowledge only as interference. What should the specialist add?",
     "choices": [
       "Identify linguistic, cultural, and conceptual resources supporting English growth while teaching new forms.",
       "Set aside English instructional needs so learners can focus mainly on developing their home language first.",
@@ -7450,7 +7450,7 @@
     "type": "single-choice",
     "domainId": "professional-leadership",
     "difficulty": "application",
-    "prompt": "A teacher is unsure whether a reading specialist?s observation is evaluative. What is the best first step?",
+    "prompt": "A teacher is unsure whether a reading specialist's observation is evaluative. What is the best first step?",
     "choices": [
       "Begin recording the teacher’s lessons without discussing the purpose so instruction appears natural on video.",
       "Promise the teacher complete confidentiality for every observation regardless of district policy or duties.",
@@ -7856,7 +7856,7 @@
     "type": "single-choice",
     "domainId": "professional-leadership",
     "difficulty": "application",
-    "prompt": "A coach wants to email a student?s detailed reading profile to a broad staff list. What should happen?",
+    "prompt": "A coach wants to email a student's detailed reading profile to a broad staff list. What should happen?",
     "choices": [
       "Share the data freely by email because every district employee works on behalf of students and needs full access to records.",
       "Verify legitimate educational interest, FERPA and policy, consent, a secure method, and minimum information needed.",
@@ -10536,12 +10536,12 @@
     "prompt": "A learner is working through this task: \"How should accessibility be incorporated into literacy instruction?\" A candidate selects \"Withhold the access tool until the student decodes grade-level text proficiently without any support\". Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "Withholding access tools limits participation in grade-level content while decoding develops, which widens knowledge and vocabulary gaps.",
-      "Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured (in the context of access grade level)",
+      "Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured (in the context of access grade level)",
       "Text-to-speech supports content access but does not teach decoding, so explicit word-level instruction should continue alongside the tool (in the context of access grade level) for this item in context under these facts as described",
       "Supported listening measures comprehension of spoken text, so reporting it as unaided decoding misrepresents the student’s current skills (in the context of access grade level) in context under these facts as described for the scenario"
     ],
     "answerIndex": 0,
-    "rationale": "The candidate selected \"Withhold the access tool until the student decodes grade-level text proficiently without any support\". Withholding access tools limits participation in grade-level content while decoding develops, which widens knowledge and vocabulary gaps. This feedback directly evaluates the selected response. \"Provide the access tool for content goals while continuing direct teaching and measurement of decoding\" remains the source-supported response. Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
+    "rationale": "The candidate selected \"Withhold the access tool until the student decodes grade-level text proficiently without any support\". Withholding access tools limits participation in grade-level content while decoding develops, which widens knowledge and vocabulary gaps. This feedback directly evaluates the selected response. \"Provide the access tool for content goals while continuing direct teaching and measurement of decoding\" remains the source-supported response. Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
     "references": [
       "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
       "https://www.literacyworldwide.org/docs/default-source/resource-documents/standards-appendix-A.pdf",
@@ -10556,10 +10556,10 @@
     "qaStatus": "structural-qa-passed-guided-practice-only",
     "qaReviewedAt": "2026-07-14",
     "choiceRationales": [
-      "Correct. The candidate selected \"Withhold the access tool until the student decodes grade-level text proficiently without any support\". Withholding access tools limits participation in grade-level content while decoding develops, which widens knowledge and vocabulary gaps. This feedback directly evaluates the selected response. \"Provide the access tool for content goals while continuing direct teaching and measurement of decoding\" remains the source-supported response. Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
-      "Not the best answer. This option does not identify the response that the item asks the learner to evaluate. The selected response is \"Withhold the access tool until the student decodes grade-level text proficiently without any support\". the option stating Access and remediation can occur together when the. The explanation should match the response under review. \"Provide the access tool for content goals while continuing direct teaching and measurement of decoding\" remains the option stating Access and remediation can occur together when the. Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
-      "Not the best answer. This option does not identify the response that the item asks the learner to evaluate. The selected response is \"Withhold the access tool until the student decodes grade-level text proficiently without any support\". the option stating Text-to-speech supports content access but does not teach. The explanation should match the response under review. \"Provide the access tool for content goals while continuing direct teaching and measurement of decoding\" remains the option stating Text-to-speech supports content access but does not teach. Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
-      "Not the best answer. This option does not identify the response that the item asks the learner to evaluate. The selected response is \"Withhold the access tool until the student decodes grade-level text proficiently without any support\". the option stating Supported listening measures comprehension of spoken text, so. The explanation should match the response under review. \"Provide the access tool for content goals while continuing direct teaching and measurement of decoding\" remains the option stating Supported listening measures comprehension of spoken text, so. Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured."
+      "Correct. The candidate selected \"Withhold the access tool until the student decodes grade-level text proficiently without any support\". Withholding access tools limits participation in grade-level content while decoding develops, which widens knowledge and vocabulary gaps. This feedback directly evaluates the selected response. \"Provide the access tool for content goals while continuing direct teaching and measurement of decoding\" remains the source-supported response. Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
+      "Not the best answer. This option does not identify the response that the item asks the learner to evaluate. The selected response is \"Withhold the access tool until the student decodes grade-level text proficiently without any support\". the option stating Access and remediation can occur together when the. The explanation should match the response under review. \"Provide the access tool for content goals while continuing direct teaching and measurement of decoding\" remains the option stating Access and remediation can occur together when the. Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
+      "Not the best answer. This option does not identify the response that the item asks the learner to evaluate. The selected response is \"Withhold the access tool until the student decodes grade-level text proficiently without any support\". the option stating Text-to-speech supports content access but does not teach. The explanation should match the response under review. \"Provide the access tool for content goals while continuing direct teaching and measurement of decoding\" remains the option stating Text-to-speech supports content access but does not teach. Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
+      "Not the best answer. This option does not identify the response that the item asks the learner to evaluate. The selected response is \"Withhold the access tool until the student decodes grade-level text proficiently without any support\". the option stating Supported listening measures comprehension of spoken text, so. The explanation should match the response under review. \"Provide the access tool for content goals while continuing direct teaching and measurement of decoding\" remains the option stating Supported listening measures comprehension of spoken text, so. Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured."
     ],
     "skillIds": [
       "instructional-design-differentiation-engagement"
@@ -11512,7 +11512,7 @@
     "type": "single-choice",
     "domainId": "assessment",
     "difficulty": "application",
-    "prompt": "A learner is working through this task: \"How should a multilingual student?s reading errors be evaluated?\" A candidate selects \"Identify a reading disability from English reading errors alone once they persist for several months\". Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A learner is working through this task: \"How should a multilingual student's reading errors be evaluated?\" A candidate selects \"Identify a reading disability from English reading errors alone once they persist for several months\". Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "Valid differential reasoning distinguishes language difference and developing English from disability using qualified multilingual evidence and converging patterns (in the context of errors disability English alone)",
       "Persistent concerns still deserve careful investigation; assuming they reflect language learning can delay needed support for a real difficulty (in the context of errors disability English alone) as presented for this item",
@@ -13035,7 +13035,7 @@
     "type": "single-choice",
     "domainId": "professional-leadership",
     "difficulty": "application",
-    "prompt": "A learner is working through this task: \"What is the reading specialist?s role in MTSS leadership?\" A candidate selects \"Assign students permanently to intervention tiers based on fall screening results so building schedules and staffing remain stable\". Which feedback most directly identifies the problem with that selection?",
+    "prompt": "A learner is working through this task: \"What is the reading specialist's role in MTSS leadership?\" A candidate selects \"Assign students permanently to intervention tiers based on fall screening results so building schedules and staffing remain stable\". Which feedback most directly identifies the problem with that selection?",
     "choices": [
       "MTSS is a prevention and support framework involving system quality and increasingly intensive response, not a static placement or reason to delay required evaluation (in the context of students)",
       "Federal guidance prohibits using intervention to delay or deny a warranted evaluation, so tiers cannot replace the evaluation process (in the context of students) as presented for this item in context",
@@ -15924,13 +15924,13 @@
     "difficulty": "analysis",
     "prompt": "A learner needs text-to-speech for content access while also receiving decoding intervention. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
-      "\"Provide the access tool for academic goals while continuing direct teaching and tracking of decoding\" — Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
-      "\"Withhold the access tool until the student decodes grade-level text proficiently without any support\" — Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured (in the context of decoding)",
-      "\"Use text-to-speech as evidence that decoding instruction is no longer needed for the student this year\" — Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured for this item in context",
-      "\"Score supported listening tasks as unaided decoding measures so progress reports stay consistent over time\" — Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured in context under these facts"
+      "\"Provide the access tool for academic goals while continuing direct teaching and tracking of decoding\" — Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
+      "\"Withhold the access tool until the student decodes grade-level text proficiently without any support\" — Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured (in the context of decoding)",
+      "\"Use text-to-speech as evidence that decoding instruction is no longer needed for the student this year\" — Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured for this item in context",
+      "\"Score supported listening tasks as unaided decoding measures so progress reports stay consistent over time\" — Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured in context under these facts"
     ],
     "answerIndex": 0,
-    "rationale": "The evidence statement accurately describes \"Provide the access tool for academic goals while continuing direct teaching and tracking of decoding\". Pairing that same evidence with another response creates a mismatch. Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
+    "rationale": "The evidence statement accurately describes \"Provide the access tool for academic goals while continuing direct teaching and tracking of decoding\". Pairing that same evidence with another response creates a mismatch. Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
     "references": [
       "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
       "https://www.literacyworldwide.org/docs/default-source/resource-documents/standards-appendix-A.pdf",
@@ -15945,10 +15945,10 @@
     "qaStatus": "structural-qa-passed-guided-practice-only",
     "qaReviewedAt": "2026-07-14",
     "choiceRationales": [
-      "Correct. The evidence statement accurately describes \"Provide the access tool for academic goals while continuing direct teaching and tracking of decoding\". Pairing that same evidence with another response creates a mismatch. Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
-      "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes the option stating \"Withhold the access tool until the student decodes. Pairing that same evidence with another response creates a mismatch. Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
-      "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes the option stating \"Use text-to-speech as evidence that decoding instruction is. Pairing that same evidence with another response creates a mismatch. Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
-      "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes the option stating \"Score supported listening tasks as unaided decoding measures. Pairing that same evidence with another response creates a mismatch. Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured."
+      "Correct. The evidence statement accurately describes \"Provide the access tool for academic goals while continuing direct teaching and tracking of decoding\". Pairing that same evidence with another response creates a mismatch. Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
+      "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes the option stating \"Withhold the access tool until the student decodes. Pairing that same evidence with another response creates a mismatch. Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
+      "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes the option stating \"Use text-to-speech as evidence that decoding instruction is. Pairing that same evidence with another response creates a mismatch. Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
+      "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes the option stating \"Score supported listening tasks as unaided decoding measures. Pairing that same evidence with another response creates a mismatch. Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured."
     ],
     "skillIds": [
       "instructional-design-differentiation-engagement"
@@ -16191,7 +16191,7 @@
     "type": "single-choice",
     "domainId": "assessment",
     "difficulty": "analysis",
-    "prompt": "A district evaluates a screener?s ability to identify students at risk without referring too many students who are not at risk. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "A district evaluates a screener's ability to identify students at risk without referring too many students who are not at risk. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "\"Interrater reliability among scorers and the handwriting speed of students on written responses\" — Sensitivity and specificity describe classification accuracy; thresholds should reflect prevalence, consequences, resources, equity, and the follow-up pathway in this case as presented for this item",
       "\"Correctly identifying students who need support and correctly excluding students who do not\" — Sensitivity and specificity describe classification accuracy; thresholds should reflect prevalence, consequences, resources, equity, and the follow-up pathway.",
@@ -17010,7 +17010,7 @@
     "type": "single-choice",
     "domainId": "assessment",
     "difficulty": "analysis",
-    "prompt": "A student?s essay receives one holistic score. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "A student's essay receives one holistic score. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "\"Transcription, sentences, vocabulary, organization, genre, support, revision, and conditions used\" — Analytic and process evidence separates spelling and handwriting demands from language and composition and identifies teachable patterns.",
       "\"Pen color, neatness of margins, and the overall visual appearance of the finished written product\" — Analytic and process evidence separates spelling and handwriting demands from language and composition and identifies teachable patterns as presented",
@@ -17282,7 +17282,7 @@
     "type": "single-choice",
     "domainId": "assessment",
     "difficulty": "analysis",
-    "prompt": "A student?s recent scores are below goal but increasing faster than before. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "A student's recent scores are below goal but increasing faster than before. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "\"Disregard the trend line because the most recent score falls below the goal established for the student\" — Level describes current performance and slope describes change; a sound decision uses the full series and preestablished rules rather than one point in this case as presented",
       "\"Current level, rate and stability of growth, remaining time, goal relevance, fidelity, and diagnostic data together\" — Level describes current performance and slope describes change; a sound decision uses the full series and preestablished rules rather than one point.",
@@ -17444,7 +17444,7 @@
     "type": "single-choice",
     "domainId": "assessment",
     "difficulty": "analysis",
-    "prompt": "A learner?s trend remains below the goal despite a well-implemented intervention. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "A learner's trend remains below the goal despite a well-implemented intervention. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "\"Review diagnostic data, form a hypothesis, adapt the plan, document the change, and keep monitoring\" — Data-based individualization is an iterative cycle of validated intervention, progress data, diagnostic analysis, purposeful adaptation, and evaluation.",
       "\"Continue the current plan indefinitely because the intervention was delivered with adequate fidelity\" — Data-based individualization is an iterative cycle of validated intervention, progress data, diagnostic analysis, purposeful adaptation, and evaluation.",
@@ -17660,7 +17660,7 @@
     "type": "single-choice",
     "domainId": "professional-leadership",
     "difficulty": "analysis",
-    "prompt": "A team describes a student?s home-language knowledge only as interference. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "A team describes a student's home-language knowledge only as interference. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "\"Identify linguistic, cultural, and conceptual resources supporting English growth while teaching new forms\" — Asset-based practice recognizes transferable knowledge and identity while examining language-specific differences, opportunity, explicit instruction, and individual performance.",
       "\"Set aside English instructional needs so learners can focus mainly on developing their home language first\" — Asset-based practice recognizes transferable knowledge and identity while examining language-specific differences, opportunity, explicit instruction, and individual performance as presented",
@@ -18045,7 +18045,7 @@
     "type": "single-choice",
     "domainId": "professional-leadership",
     "difficulty": "analysis",
-    "prompt": "A teacher is unsure whether a reading specialist?s observation is evaluative. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "A teacher is unsure whether a reading specialist's observation is evaluative. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "\"Begin recording the teacher’s lessons without discussing the purpose so instruction appears natural on video\" — Role clarity and informed agreements build trust and prevent coaching evidence from being used in ways participants did not understand.",
       "\"Promise the teacher complete confidentiality for every observation regardless of district policy or duties\" — Role clarity and informed agreements build trust and prevent coaching evidence from being used in ways participants did not understand as presented",
@@ -18591,7 +18591,7 @@
     "type": "single-choice",
     "domainId": "professional-leadership",
     "difficulty": "analysis",
-    "prompt": "A coach wants to email a student?s detailed reading profile to a broad staff list. Which response-and-evidence pairing is internally consistent with the case?",
+    "prompt": "A coach wants to email a student's detailed reading profile to a broad staff list. Which response-and-evidence pairing is internally consistent with the case?",
     "choices": [
       "\"Share the data freely by email because every district employee works on behalf of students and needs full access to records\" — Education records require role-based, purpose-limited, secure handling under current law and policy; professional curiosity is not the same as legitimate educational interest.",
       "\"Verify legitimate educational interest, FERPA and policy, consent, a secure method, and minimum information needed\" — Education records require role-based, purpose-limited, secure handling under current law and policy; professional curiosity is not the same as legitimate educational interest.",
@@ -21312,13 +21312,13 @@
     "difficulty": "analysis",
     "prompt": "A learner is working through this task: \"How should accessibility be incorporated into literacy instruction?\" A team compares \"Provide the access tool for content goals while continuing direct teaching and measurement of decoding\" with \"Withhold the access tool until the student decodes grade-level text proficiently without any support\". Which evaluation most accurately distinguishes them?",
     "choices": [
-      "\"Provide the access tool for content goals while continuing direct teaching and measurement of decoding\" is better supported: Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured. In contrast, \"Withhold the access tool until the student decodes grade-level text proficiently without any support\" is not supported: Withholding access tools limits participation in grade-level content while decoding develops, which widens knowledge and vocabulary gaps.",
-      "\"Withhold the access tool until the student decodes grade-level text proficiently without any support\" is better supported: Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured. In contrast, its competing response is not supported: Withholding access tools limits participation in grade-level content while decoding develops, which widens knowledge and vocabulary gaps (in the context of Provide tool content goals continuing direct teaching measurement Withhold decodes grade level proficiently without support) as presented",
-      "\"Use text-to-speech as evidence that decoding instruction is no longer needed for the student this year\" is better supported: Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured. In contrast, its competing response is not supported: Text-to-speech supports content access but does not teach decoding, so explicit word-level instruction should continue alongside the tool (in the context of Provide tool content goals continuing direct teaching measurement Withhold decodes grade level proficiently without support) for this item",
-      "\"Score supported listening tasks as unaided decoding measures so progress reports stay consistent over time\" is better supported: Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured. In contrast, its competing response is not supported: Supported listening measures comprehension of spoken text, so reporting it as unaided decoding misrepresents the student’s current skills (in the context of Provide tool content goals continuing direct teaching measurement Withhold decodes grade level proficiently without support)"
+      "\"Provide the access tool for content goals while continuing direct teaching and measurement of decoding\" is better supported: Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured. In contrast, \"Withhold the access tool until the student decodes grade-level text proficiently without any support\" is not supported: Withholding access tools limits participation in grade-level content while decoding develops, which widens knowledge and vocabulary gaps.",
+      "\"Withhold the access tool until the student decodes grade-level text proficiently without any support\" is better supported: Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured. In contrast, its competing response is not supported: Withholding access tools limits participation in grade-level content while decoding develops, which widens knowledge and vocabulary gaps (in the context of Provide tool content goals continuing direct teaching measurement Withhold decodes grade level proficiently without support) as presented",
+      "\"Use text-to-speech as evidence that decoding instruction is no longer needed for the student this year\" is better supported: Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured. In contrast, its competing response is not supported: Text-to-speech supports content access but does not teach decoding, so explicit word-level instruction should continue alongside the tool (in the context of Provide tool content goals continuing direct teaching measurement Withhold decodes grade level proficiently without support) for this item",
+      "\"Score supported listening tasks as unaided decoding measures so progress reports stay consistent over time\" is better supported: Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured. In contrast, its competing response is not supported: Supported listening measures comprehension of spoken text, so reporting it as unaided decoding misrepresents the student’s current skills (in the context of Provide tool content goals continuing direct teaching measurement Withhold decodes grade level proficiently without support)"
     ],
     "answerIndex": 0,
-    "rationale": "The accurate comparison assigns the affirmative source feedback to \"Provide the access tool for content goals while continuing direct teaching and measurement of decoding\" and the item-specific limitation to \"Withhold the access tool until the student decodes grade-level text proficiently without any support\". Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
+    "rationale": "The accurate comparison assigns the affirmative source feedback to \"Provide the access tool for content goals while continuing direct teaching and measurement of decoding\" and the item-specific limitation to \"Withhold the access tool until the student decodes grade-level text proficiently without any support\". Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
     "references": [
       "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
       "https://www.literacyworldwide.org/docs/default-source/resource-documents/standards-appendix-A.pdf",
@@ -21333,10 +21333,10 @@
     "qaStatus": "structural-qa-passed-guided-practice-only",
     "qaReviewedAt": "2026-07-14",
     "choiceRationales": [
-      "Correct. The accurate comparison assigns the affirmative source feedback to \"Provide the access tool for content goals while continuing direct teaching and measurement of decoding\" and the item-specific limitation to \"Withhold the access tool until the student decodes grade-level text proficiently without any support\". Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
-      "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to the option stating \"Withhold the access tool until the student decodes and the item-specific limitation to the option stating \"Withhold the access tool until the student decodes. Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
-      "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to the option stating \"Use text-to-speech as evidence that decoding instruction is and the item-specific limitation to \"Withhold the access tool until the student decodes grade-level text proficiently without any support\". Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
-      "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to the option stating \"Score supported listening tasks as unaided decoding measures and the item-specific limitation to \"Withhold the access tool until the student decodes grade-level text proficiently without any support\". Access and remediation can occur together when the team defines each task?s construct, documents supports, and avoids confusing assisted performance with the skill being directly measured."
+      "Correct. The accurate comparison assigns the affirmative source feedback to \"Provide the access tool for content goals while continuing direct teaching and measurement of decoding\" and the item-specific limitation to \"Withhold the access tool until the student decodes grade-level text proficiently without any support\". Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
+      "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to the option stating \"Withhold the access tool until the student decodes and the item-specific limitation to the option stating \"Withhold the access tool until the student decodes. Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
+      "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to the option stating \"Use text-to-speech as evidence that decoding instruction is and the item-specific limitation to \"Withhold the access tool until the student decodes grade-level text proficiently without any support\". Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured.",
+      "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to the option stating \"Score supported listening tasks as unaided decoding measures and the item-specific limitation to \"Withhold the access tool until the student decodes grade-level text proficiently without any support\". Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured."
     ],
     "skillIds": [
       "instructional-design-differentiation-engagement"
@@ -22289,7 +22289,7 @@
     "type": "single-choice",
     "domainId": "assessment",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: \"How should a multilingual student?s reading errors be evaluated?\" A team compares \"Gather evidence across languages, contexts, instruction, English development, and response to teaching first\" with \"Identify a reading disability from English reading errors alone once they persist for several months\". Which evaluation most accurately distinguishes them?",
+    "prompt": "A learner is working through this task: \"How should a multilingual student's reading errors be evaluated?\" A team compares \"Gather evidence across languages, contexts, instruction, English development, and response to teaching first\" with \"Identify a reading disability from English reading errors alone once they persist for several months\". Which evaluation most accurately distinguishes them?",
     "choices": [
       "\"Identify a reading disability from English reading errors alone once they persist for several months\" is better supported: Valid differential reasoning distinguishes language difference and developing English from disability using qualified multilingual evidence and converging patterns. In contrast, its competing response is not supported: English errors alone cannot distinguish language development from disability, so conclusions require evidence across languages and instructional history (in the context of errors Gather across languages contexts instruction development teaching first Identify alone once persist several months) in this case",
       "\"Disregard persistent reading concerns because they are expected for students learning English as a new language\" is better supported: Valid differential reasoning distinguishes language difference and developing English from disability using qualified multilingual evidence and converging patterns. In contrast, its competing response is not supported: Persistent concerns still deserve careful investigation; assuming they reflect language learning can delay needed support for a real difficulty (in the context of errors Gather across languages contexts instruction development teaching first Identify alone once persist several months)",
@@ -23812,7 +23812,7 @@
     "type": "single-choice",
     "domainId": "professional-leadership",
     "difficulty": "analysis",
-    "prompt": "A learner is working through this task: \"What is the reading specialist?s role in MTSS leadership?\" A team compares \"Coordinate core instruction, screening, support, monitoring, and teams; tiered support must not delay or deny evaluation\" with \"Assign students permanently to intervention tiers based on fall screening results so building schedules and staffing remain stable\". Which evaluation most accurately distinguishes them?",
+    "prompt": "A learner is working through this task: \"What is the reading specialist's role in MTSS leadership?\" A team compares \"Coordinate core instruction, screening, support, monitoring, and teams; tiered support must not delay or deny evaluation\" with \"Assign students permanently to intervention tiers based on fall screening results so building schedules and staffing remain stable\". Which evaluation most accurately distinguishes them?",
     "choices": [
       "\"Assign students permanently to intervention tiers based on fall screening results so building schedules and staffing remain stable\" is better supported: MTSS is a prevention and support framework involving system quality and increasingly intensive response, not a static placement or reason to delay required evaluation. In contrast, its competing response is not supported: Tier placement should change with progress data; permanent assignment ignores growth and can keep students in support they no longer need (in the context of Coordinate core instruction screening monitoring teams tiered must deny Assign students permanently intervention tiers based fall results building schedules staffing remain stable) in this case",
       "\"Use tiered intervention as a substitute for special-education evaluation whenever families submit a written request for an evaluation\" is better supported: MTSS is a prevention and support framework involving system quality and increasingly intensive response, not a static placement or reason to delay required evaluation. In contrast, its competing response is not supported: Federal guidance prohibits using intervention to delay or deny a warranted evaluation, so tiers cannot replace the evaluation process (in the context of Coordinate core instruction screening monitoring teams tiered must deny Assign students permanently intervention tiers based fall results building schedules staffing remain stable) as presented",

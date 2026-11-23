@@ -2520,6 +2520,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       '[data-command-preview] { display:block; min-height:1.9em; }' +
       '[data-beehive-root="true"] :is([data-beehive-canvas],[data-beehive-queen-canvas],[data-beehive-drone-canvas]) { filter:saturate(1.07) contrast(1.025); }' +
       '[data-beehive-root="true"] :is([data-beehive-scene-hud],[data-beehive-battlefield-overlay]) > * { box-shadow:0 10px 28px rgba(2,6,23,.34) !important; }' +
+      '@media (max-width: 639px) { [data-beehive-root="true"] [data-beehive-scene-hud="true"] { max-width:calc(100% - 172px) !important; flex-wrap:wrap !important; white-space:normal !important; overflow:visible !important; border-radius:12px !important; row-gap:2px !important; column-gap:6px !important; } }' +
       '[data-beehive-root="true"] :is([data-command-ready="true"],[data-structure-ready="true"],[data-action-ready="true"]) { box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 7px 18px rgba(var(--bee-accent-rgb),.07); }' +
       '[data-beehive-root="true"] :is([data-command-ready="true"],[data-structure-ready="true"],[data-action-ready="true"]):hover { transform:translateY(-2px); box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 12px 24px rgba(var(--bee-accent-rgb),.14); }' +
       '[data-beehive-root="true"] [role="progressbar"] > * { position:relative; overflow:hidden; }' +
@@ -2542,6 +2543,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     st.textContent = `
       [data-beehive-discovery-shell] [data-beehive-hero="true"] { flex-direction:row; flex-wrap:wrap; align-items:center; gap:10px 18px; padding:10px 14px; }
       [data-beehive-discovery-shell] [data-beehive-hero="true"] .bee-hero-heading { flex:1 1 19rem; }
+      [data-beehive-discovery-shell] [data-beehive-hero="true"] [data-beehive-telemetry-strip] { flex:1 1 100%; }
       [data-beehive-discovery-shell] [data-beehive-hero="true"] .bee-toolbox { flex:1 1 100%; width:auto; display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; border-top:0; padding-top:0; }
       [data-beehive-discovery-shell] .bee-toolbox-heading { margin:0; font-size:.875rem; gap:8px; }
       [data-beehive-discovery-shell] .bee-toolbox-grid { display:flex; flex-wrap:wrap; gap:6px; flex:1 1 auto; }
@@ -2552,6 +2554,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       [data-beehive-discovery-shell] .bee-perspectives .bee-perspective-options { gap:8px; }
       [data-beehive-discovery-shell] .bee-perspectives [data-beehive-mode-tab] { flex-direction:row; flex-wrap:wrap; align-items:baseline; column-gap:.5rem; row-gap:.1rem; padding:.55rem .85rem .6rem; }
       [data-beehive-discovery-shell] .bee-perspectives .bee-perspective-top { flex:1 1 100%; }
+      [data-beehive-discovery-shell] .bee-perspectives [data-beehive-mode-eyebrow] { flex:1 1 100%; }
       [data-beehive-discovery-shell] .bee-perspectives [data-perspective-purpose] { flex:1 1 12rem; }
       [data-beehive-discovery-shell] .bee-perspectives [data-perspective-status] { flex:1 1 100%; margin-top:0; padding-top:0; border-top:0; }
       [data-beehive-discovery-shell] .bee-perspectives .bee-perspective-meter { flex:1 1 100%; width:100%; margin-top:.35rem; }
@@ -44886,17 +44889,17 @@ var i = 0;
                 : { backgroundColor: dk ? 'rgba(2,6,23,0.62)' : '#1c1408', border: '1px solid ' + (dk ? 'rgba(251,191,36,0.28)' : 'rgba(217,119,6,0.35)') }
             },
               h('svg', {
-                viewBox: '0 0 640 44',
+                viewBox: '0 0 920 40',
                 className: 'w-full h-auto block',
                 role: 'img',
                 'aria-label': 'Colony telemetry: ' + (seasonNames[season] || 'Spring') + ' Day ' + day + ', ' + Math.round(workers).toLocaleString() + ' workers, ' + Math.round(honey) + ' pounds food stores, ' + Math.round(colonyHealth) + ' percent colony stability'
               },
-                h('text', { x: 10, y: 17, fill: isContrast ? '#ffff00' : '#fde68a', fontSize: 11, fontWeight: 800 }, (seasonNames[season] || 'Spring') + ' · Day ' + day),
-                h('text', { x: 200, y: 17, fill: '#f8fafc', fontSize: 11, fontWeight: 700 }, 'Workers: ' + Math.round(workers).toLocaleString()),
-                h('text', { x: 375, y: 17, fill: isContrast ? '#00ffff' : '#7dd3fc', fontSize: 11, fontWeight: 700 }, 'Stores: ' + Math.round(honey) + ' lb'),
-                h('text', { x: 630, y: 17, textAnchor: 'end', fill: isContrast ? '#66ff66' : '#86efac', fontSize: 11, fontWeight: 700 }, 'Stability: ' + Math.round(colonyHealth) + '%'),
-                h('rect', { x: 10, y: 26, width: 620, height: 10, rx: 5, fill: '#1e293b', stroke: isContrast ? '#ffffff' : '#475569', strokeWidth: 1 }),
-                h('rect', { x: 10, y: 26, width: Math.max(8, Math.round(Math.max(0, Math.min(100, colonyHealth)) / 100 * 620)), height: 10, rx: 5, fill: isContrast ? '#ffff00' : (colonyHealth >= 70 ? '#10b981' : colonyHealth >= 40 ? '#f59e0b' : '#ef4444') })
+                h('text', { x: 12, y: 16, fill: isContrast ? '#ffff00' : '#fde68a', fontSize: 12, fontWeight: 800 }, (seasonNames[season] || 'Spring') + ' · Day ' + day),
+                h('text', { x: 300, y: 16, fill: '#f8fafc', fontSize: 12, fontWeight: 700 }, 'Workers: ' + Math.round(workers).toLocaleString()),
+                h('text', { x: 580, y: 16, fill: isContrast ? '#00ffff' : '#7dd3fc', fontSize: 12, fontWeight: 700 }, 'Stores: ' + Math.round(honey) + ' lb'),
+                h('text', { x: 908, y: 16, textAnchor: 'end', fill: isContrast ? '#66ff66' : '#86efac', fontSize: 12, fontWeight: 700 }, 'Stability: ' + Math.round(colonyHealth) + '%'),
+                h('rect', { x: 12, y: 24, width: 896, height: 9, rx: 4.5, fill: '#1e293b', stroke: isContrast ? '#ffffff' : '#475569', strokeWidth: 1 }),
+                h('rect', { x: 12, y: 24, width: Math.max(8, Math.round(Math.max(0, Math.min(100, colonyHealth)) / 100 * 896)), height: 9, rx: 4.5, fill: isContrast ? '#ffff00' : (colonyHealth >= 70 ? '#10b981' : colonyHealth >= 40 ? '#f59e0b' : '#ef4444') })
               )
             ),
             // Named tools keep their existing panel and focus lifecycles.

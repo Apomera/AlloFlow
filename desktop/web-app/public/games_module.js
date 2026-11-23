@@ -8,13 +8,13 @@
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
 
   // ── Duplicate-load guard ──
   if (window.__gamesModuleLoaded) {
     console.warn('[GamesBundle] Already loaded — skipping');
     return;
   }
-  window.__gamesModuleLoaded = true;
 
   // ── React dependencies ──
   var React = window.React;
@@ -121,7 +121,7 @@ const GlossaryPrintStyles = () => /* @__PURE__ */ React.createElement("style", n
 `);
 const printGlossarySheet = (node, labels = {}) => {
   if (!node || typeof document === "undefined") return false;
-  const esc = (value) => String(value == null ? "" : value).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[ch]);
+  const esc = (value) => String(value == null ? "" : value).replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]);
   const tell = (message) => {
     if (!message) return;
     if (window.AlloFlowUX && typeof window.AlloFlowUX.toast === "function") window.AlloFlowUX.toast(message, "error");
@@ -139,7 +139,7 @@ const printGlossarySheet = (node, labels = {}) => {
     } catch (_) {
     }
     try {
-      const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]')).map((el) => el.tagName === "LINK" ? '<link rel="stylesheet" href="' + esc(el.href) + '">' : el.outerHTML).join("");
+      const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]')).map((el) => el.tagName === "LINK" ? /^(?:https?:|\/|blob:)/i.test(String(el.href || "")) ? '<link rel="stylesheet" href="' + esc(el.href) + '">' : "" : el.outerHTML).join("");
       const root = document.documentElement;
       win.document.open();
       win.document.write('<!DOCTYPE html><html lang="' + esc(root.lang || "en") + '" dir="' + esc(root.dir || "ltr") + '"><head><meta charset="utf-8"><title>' + esc(labels.title || "") + "</title>" + styles + '<style>.allo-print-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:12px 16px;font:14px system-ui,sans-serif;background:#fff;color:#111;position:relative;z-index:2147483647}.allo-print-bar button{font:600 15px system-ui,sans-serif;padding:10px 18px;border:0;border-radius:8px;background:#1e40af;color:#fff;cursor:pointer}@media print{.allo-print-bar{display:none!important}}</style></head><body><div class="allo-print-bar"><button type="button" onclick="window.print()">' + esc(labels.print || "Print") + "</button><span>" + esc(labels.hint || "") + "</span></div>" + node.outerHTML + "</body></html>");
@@ -1512,11 +1512,30 @@ const indexTimelineItems = (itemsArray) => itemsArray.map((item, i) => ({
   colorIdx: Math.floor(Math.random() * TIMELINE_PASTEL_COLORS.length)
 }));
 const gamesTextAiOff = () => {
+  if (typeof window === "undefined") return true;
   try {
-    if (typeof window !== "undefined" && typeof window.__alloAiUsable === "function") return !window.__alloAiUsable("text");
+    if (typeof window.__alloAiUsable === "function" && !window.__alloAiUsable("text")) return true;
+  } catch (_) {
+    return true;
+  }
+  if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true) return true;
+  if (window.hideStudentAiFeatures === true || !!window.__alloQrStudentMode) return true;
+  if (window.StudentPolicy && typeof window.StudentPolicy.isAiDisabled === "function" && window.StudentPolicy.isAiDisabled()) return true;
+  if (window.AlloModules && window.AlloModules.StudentPolicy && typeof window.AlloModules.StudentPolicy.isAiDisabled === "function" && window.AlloModules.StudentPolicy.isAiDisabled()) return true;
+  return false;
+};
+const _gamesCheckCrisisText = (rawText) => {
+  const s = String(rawText || "").trim();
+  if (!s) return false;
+  try {
+    const checker = typeof window !== "undefined" && (window.AlloModules?.SafetyContentChecker || window.SafetyContentChecker);
+    if (checker && typeof checker.check === "function") {
+      const res = checker.check(s);
+      if (res && (res.blocked || res.crisis || res.level === "critical" || res.severity === "critical")) return true;
+    }
   } catch (_) {
   }
-  return typeof window !== "undefined" && window.__alloStudentAiDisabled === true;
+  return /\b(kill\s+my\s*self|suicid\w*|end\s+my\s+life|want\s+to\s+die|hurt\s+my\s*self|self[\s-]*harm|cut\s+my\s*self)\b/i.test(s);
 };
 const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, onExplainIncorrect, initialImageSize }) => {
   const { t } = useContext(LanguageContext);
@@ -1740,7 +1759,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
       const currentPosition = items.findIndex((i) => i.originalIndex === item.originalIndex);
       const correctPosition = item.originalIndex;
       const sortedByCorrect = [...normalizedItemsRef.current];
-      const text = await onExplainIncorrect(item, correctPosition, currentPosition, progressionLabel, sortedByCorrect);
+      const text = await Promise.resolve(onExplainIncorrect(item, correctPosition, currentPosition, progressionLabel, sortedByCorrect));
       setExplanations((prev) => ({ ...prev, [key]: text || t("timeline.game.why_none") || "No explanation available." }));
     } catch (e) {
       setExplanations((prev) => ({ ...prev, [key]: t("timeline.game.why_failed") || "Couldn't generate an explanation right now." }));
@@ -2122,15 +2141,21 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
   }, [keyboardSelectedItemId]);
   const handleAddItem = async () => {
     if (!newItemText.trim()) return;
-    if (!onGenerateItem) {
+    if (_gamesCheckCrisisText(newItemText)) {
+      const crisisMsg = "You matter, and help is available right now. Call or text 988 (Suicide & Crisis Lifeline), text HOME to 741741, or call 911 in an emergency. Please reach out to a trusted adult.";
+      setAnnouncement(crisisMsg);
+      if (typeof window !== "undefined" && window.AlloFlowUX && typeof window.AlloFlowUX.toast === "function") window.AlloFlowUX.toast(crisisMsg, "warning");
+      return;
+    }
+    if (!onGenerateItem || gamesTextAiOff()) {
       const message = t("common.coming_soon") || "This feature is coming soon.";
       setAnnouncement(message);
-      if (window.AlloFlowUX && typeof window.AlloFlowUX.toast === "function") window.AlloFlowUX.toast(message, "info");
+      if (typeof window !== "undefined" && window.AlloFlowUX && typeof window.AlloFlowUX.toast === "function") window.AlloFlowUX.toast(message, "info");
       return;
     }
     setIsAdding(true);
     try {
-      const newItem = await onGenerateItem(newItemText, buckets);
+      const newItem = await Promise.resolve(onGenerateItem(newItemText, buckets));
       const home = newItem ? buckets.find((b) => String(b.id) === String(newItem.categoryId)) : null;
       if (newItem && !home) {
         const message = t("concept_sort.add_item_no_category") || "That card could not be matched to one of these categories. Try different words.";
@@ -2247,7 +2272,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
     try {
       const correct = buckets.find((b) => b.id === item.categoryId);
       const chosen = buckets.find((b) => b.id === item.currentContainer);
-      const text = await onExplainIncorrect(item, correct, chosen);
+      const text = await Promise.resolve(onExplainIncorrect(item, correct, chosen));
       setExplanations((prev) => ({ ...prev, [item.id]: text || t("concept_sort.why_none") || "No explanation available." }));
     } catch (e) {
       setExplanations((prev) => ({ ...prev, [item.id]: t("concept_sort.why_failed") || "Couldn't generate an explanation right now." }));
@@ -3393,7 +3418,6 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
     {
       ref: causeEffectCloseRef,
       type: "button",
-      "aria-label": t("common.close") || "Close",
       onClick: onClose,
       className: "min-h-11 flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30 focus:ring-2 focus:ring-white"
     },
@@ -3762,7 +3786,6 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
     {
       ref: tChartCloseRef,
       type: "button",
-      "aria-label": t("common.close") || "Close",
       onClick: onClose,
       className: "min-h-11 flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30 focus:ring-2 focus:ring-white"
     },
@@ -4076,7 +4099,7 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
       /* @__PURE__ */ React.createElement(SpeakButton, { text: item.text, size: 11 })
     );
   };
-  return /* @__PURE__ */ React.createElement("div", { ref: gameContainerRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "multi-bucket-game-title", className: `fixed inset-0 z-[200] bg-slate-50 flex flex-col${reducedMotion ? "" : " animate-in motion-reduce:animate-none zoom-in-95"}` }, /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite" }, announcement), /* @__PURE__ */ React.createElement("div", { className: `bg-gradient-to-r ${headerGradient} p-4 text-white flex flex-wrap justify-between items-center gap-3 shadow-md z-30` }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "multi-bucket-game-title", className: "font-bold text-xl flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ArrowRight, { size: 24, "aria-hidden": "true" }), " ", titleText), topicTitle && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-white/70 mt-0.5" }, topicTitle)), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-h-11 flex items-center bg-white/30 px-4 py-1 rounded-full font-bold text-yellow-200 border border-white/40" }, t("common.score") || "Score", ": ", score), /* @__PURE__ */ React.createElement(GameThemeToggle, null), /* @__PURE__ */ React.createElement("button", { ref: multiBucketCloseRef, type: "button", "aria-label": t("common.close") || "Close", onClick: onClose, className: "min-h-11 flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30 focus:ring-2 focus:ring-white" }, /* @__PURE__ */ React.createElement(ArrowDown, { className: "rotate-90", size: 14, "aria-hidden": "true" }), " ", t("concept_map.venn.back_to_editor") || "Back"))), !isWon && !keyboardSelectedItemId && /* @__PURE__ */ React.createElement(DiagramSortTip, { hints: sortHints, onToggle: () => setAnnouncement(sortHints.toggle()), t }), /* @__PURE__ */ React.createElement("div", { className: "flex-grow relative overflow-y-auto" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none" }), isWon && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { ref: gameContainerRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "multi-bucket-game-title", className: `fixed inset-0 z-[200] bg-slate-50 flex flex-col${reducedMotion ? "" : " animate-in motion-reduce:animate-none zoom-in-95"}` }, /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite" }, announcement), /* @__PURE__ */ React.createElement("div", { className: `bg-gradient-to-r ${headerGradient} p-4 text-white flex flex-wrap justify-between items-center gap-3 shadow-md z-30` }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "multi-bucket-game-title", className: "font-bold text-xl flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ArrowRight, { size: 24, "aria-hidden": "true" }), " ", titleText), topicTitle && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-white/70 mt-0.5" }, topicTitle)), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-h-11 flex items-center bg-white/30 px-4 py-1 rounded-full font-bold text-yellow-200 border border-white/40" }, t("common.score") || "Score", ": ", score), /* @__PURE__ */ React.createElement(GameThemeToggle, null), /* @__PURE__ */ React.createElement("button", { ref: multiBucketCloseRef, type: "button", onClick: onClose, className: "min-h-11 flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30 focus:ring-2 focus:ring-white" }, /* @__PURE__ */ React.createElement(ArrowDown, { className: "rotate-90", size: 14, "aria-hidden": "true" }), " ", t("concept_map.venn.back_to_editor") || "Back"))), !isWon && !keyboardSelectedItemId && /* @__PURE__ */ React.createElement(DiagramSortTip, { hints: sortHints, onToggle: () => setAnnouncement(sortHints.toggle()), t }), /* @__PURE__ */ React.createElement("div", { className: "flex-grow relative overflow-y-auto" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none" }), isWon && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" }, /* @__PURE__ */ React.createElement(
     "div",
     {
       ref: multiBucketWinRef,
@@ -4625,11 +4648,10 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
     {
       ref: pipelineCloseRef,
       type: "button",
-      "aria-label": t("common.close") || "Close",
       onClick: onClose,
       className: "min-h-11 flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30 focus:ring-2 focus:ring-white"
     },
-    /* @__PURE__ */ React.createElement(ArrowDown, { className: "rotate-90", size: 14 }),
+    /* @__PURE__ */ React.createElement(ArrowDown, { className: "rotate-90", size: 14, "aria-hidden": "true" }),
     " ",
     t("concept_map.venn.back_to_editor") || "Back"
   ))), /* @__PURE__ */ React.createElement("div", { className: "flex-grow relative overflow-auto" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none" }), isComplete && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" }, /* @__PURE__ */ React.createElement(
@@ -5023,7 +5045,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
     }
   };
   const handleKeyDown = (e) => {
-    if (!selectedCell || isWon || e.isComposing || e.keyCode === 229) return;
+    if (!selectedCell || isWon || e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.key === "Backspace" || e.key.startsWith("Arrow") || isCrosswordLetterKey(e.key)) e.preventDefault();
     const { r, c } = selectedCell;
     if (e.key === "Backspace") {
@@ -5582,7 +5604,10 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
         if (!url) url = await onGenerateAudio(textToRead, selectedVoice);
         if (callerPlaybackSessionRef.current !== sessionId) return;
       }
-      if (url) {
+      const isMuted = typeof window !== "undefined" && (typeof window.__alloIsGlobalMuted === "function" ? !!window.__alloIsGlobalMuted() : !!window.__alloGlobalMute || !!window._alloGlobalMute);
+      if (isMuted) {
+        if (callerPlaybackSessionRef.current === sessionId) setIsAudioPlaying(false);
+      } else if (url) {
         const audio = new Audio(url);
         callerAudioRef.current = audio;
         audio.onended = () => {
@@ -5597,11 +5622,10 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
         const playPromise = audio.play();
         if (playPromise !== void 0) await playPromise;
       } else {
-        const isMuted = typeof window !== "undefined" && (typeof window.__alloIsGlobalMuted === "function" ? !!window.__alloIsGlobalMuted() : !!window._alloGlobalMute);
-        if (!isMuted && typeof window !== "undefined" && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === "function") {
+        if (typeof window !== "undefined" && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === "function") {
           await Promise.resolve(window.AlloSpeechPlayer.speak(textToRead)).catch(() => {
           });
-        } else if (!isMuted && typeof window !== "undefined" && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === "function") {
+        } else if (typeof window !== "undefined" && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === "function") {
           window.speechSynthesis.cancel();
           await new Promise((resolve) => {
             const u = new window.SpeechSynthesisUtterance(textToRead);
@@ -5673,9 +5697,40 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
     };
   }, [isAudioPlaying, isAutoPlaying, currentCallIndex, callDelay]);
   useEffect(() => {
-    return () => {
+    const handleMuteChanged = (ev) => {
+      const muted = ev && ev.detail && typeof ev.detail.muted === "boolean" ? ev.detail.muted : typeof window !== "undefined" && (typeof window.__alloIsGlobalMuted === "function" ? !!window.__alloIsGlobalMuted() : !!window.__alloGlobalMute || !!window._alloGlobalMute);
+      if (!muted) return;
       callerPlaybackSessionRef.current += 1;
-      if (callerAudioRef.current) callerAudioRef.current.pause();
+      if (callerAudioRef.current) {
+        try {
+          callerAudioRef.current.pause();
+        } catch (_) {
+        }
+      }
+      if (typeof window !== "undefined" && window.speechSynthesis) {
+        try {
+          window.speechSynthesis.cancel();
+        } catch (_) {
+        }
+      }
+      setIsAudioPlaying(false);
+    };
+    if (typeof window !== "undefined") window.addEventListener("alloflow-mute-changed", handleMuteChanged);
+    return () => {
+      if (typeof window !== "undefined") window.removeEventListener("alloflow-mute-changed", handleMuteChanged);
+      callerPlaybackSessionRef.current += 1;
+      if (callerAudioRef.current) {
+        try {
+          callerAudioRef.current.pause();
+        } catch (_) {
+        }
+      }
+      if (typeof window !== "undefined" && window.speechSynthesis) {
+        try {
+          window.speechSynthesis.cancel();
+        } catch (_) {
+        }
+      }
       if (autoPlayTimerRef.current) clearTimeout(autoPlayTimerRef.current);
     };
   }, []);
@@ -6493,7 +6548,8 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
       value: guess,
       onChange: (e) => setGuess(e.target.value),
       onKeyDown: (e) => {
-        if (e.key === "Enter" && !e.nativeEvent.isComposing) handleCheck();
+        if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+        if (e.key === "Enter") handleCheck();
       },
       className: `w-full text-center text-2xl font-black p-3 rounded-xl border-4 focus:ring-2 focus:ring-indigo-400 transition-all uppercase tracking-widest ${feedback === "correct" ? "border-green-500 bg-green-50 text-green-800" : feedback === "incorrect" ? "border-red-400 bg-red-50 text-red-800 motion-safe:animate-shake" : "border-indigo-200 focus:border-indigo-400 text-indigo-900 bg-white"}`,
       placeholder: t("games.scramble.input_placeholder"),
@@ -7355,5 +7411,6 @@ window.AlloModules.VocabDistractorChecks = {
   window.AlloModules.SeeThinkWonderSortGame = SeeThinkWonderSortGame;
   window.AlloModules.StoryMapSortGame = StoryMapSortGame;
   window.AlloModules.GamesBundle = true;
+  window.__gamesModuleLoaded = true;
   console.log('[GamesBundle] 22 game components registered');
 })();

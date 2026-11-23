@@ -6,13 +6,17 @@
 // cholera map, Fleming's penicillin, MRSA, COVID, fecal transplants).
 (function() {
   'use strict';
+  var _mbWin = typeof window !== 'undefined' ? window : null;
+  function _mbPlainObj(v) { return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {}; }
   // ═══ Defensive StemLab guard ═══
-  window.StemLab = window.StemLab || {
-    _registry: {}, _order: [],
-    registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
-    isRegistered: function(id) { return !!this._registry[id]; },
-    renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
-  };
+  if (_mbWin) {
+    _mbWin.StemLab = _mbWin.StemLab || {
+      _registry: {}, _order: [],
+      registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
+      isRegistered: function(id) { return !!this._registry[id]; },
+      renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
+    };
+  }
 
   // ★DARK-BY-DESIGN PALETTE PIN. The tool root paints #0f172a in every theme
   // (see `var BG` in render) and its content is authored for that ground, but
@@ -864,8 +868,10 @@
       normalizeComparison: normalizeComparison, comparisonOwner: comparisonOwner, changeComparison: changeComparison, compare: compare, comparisonHistory: comparisonHistory, exportText: exportText, exportCSV: exportCSV,
       exportComparisonText: exportComparisonText, exportComparisonCSV: exportComparisonCSV, maxRecords: MAX_RECORDS });
   })();
-  window.__MicrobiologyCore = { getResistanceKillProbabilities: getResistanceKillProbabilities, classifyResistanceTrend: classifyResistanceTrend, evaluateResistancePrediction: evaluateResistancePrediction, evaluateResistanceExplanation: evaluateResistanceExplanation, createResistancePopulation: createResistancePopulation, normalizeResistanceInvestigation: normalizeResistanceInvestigation };
-  window.__MicrobiologyCore.resistance = MicroResistanceNotebook;
+  if (_mbWin) {
+    _mbWin.__MicrobiologyCore = { getResistanceKillProbabilities: getResistanceKillProbabilities, classifyResistanceTrend: classifyResistanceTrend, evaluateResistancePrediction: evaluateResistancePrediction, evaluateResistanceExplanation: evaluateResistanceExplanation, createResistancePopulation: createResistancePopulation, normalizeResistanceInvestigation: normalizeResistanceInvestigation };
+    _mbWin.__MicrobiologyCore.resistance = MicroResistanceNotebook;
+  }
 
   // -- Accent hues as readable TEXT, per substrate --------------------------
   // Content tabs are dark-authored (pastel accents) over THEME-following
@@ -2070,8 +2076,10 @@
     }
     return { sizes: sizes, normalize: normalize, finiteEstimate: finiteEstimate, parseEstimate: parseEstimate, convertEstimate: convertEstimate, pending: pending, sameResult: sameResult, draftReview: draftReview, normalizeEvidenceView: normalizeEvidenceView, exportRows: exportRows, exportCSV: exportCSV };
   })();
-  window.__MicrobiologyCore = window.__MicrobiologyCore || {};
-  window.__MicrobiologyCore.measurements = MicroMeasurements;
+  if (_mbWin) {
+    _mbWin.__MicrobiologyCore = _mbWin.__MicrobiologyCore || {};
+    _mbWin.__MicrobiologyCore.measurements = MicroMeasurements;
+  }
   function VirtualMicroscope(props) {
     if (!R) return null;
     var awardXP = props.awardXP;
@@ -3126,11 +3134,13 @@
     });
   })();
 
-  window.__MicrobiologyCore = window.__MicrobiologyCore || {};
-  window.__MicrobiologyCore.growth = MicroGrowth;
+  if (_mbWin) {
+    _mbWin.__MicrobiologyCore = _mbWin.__MicrobiologyCore || {};
+    _mbWin.__MicrobiologyCore.growth = MicroGrowth;
+  }
 
   function __alloMicroGrowthQueueFocus(owner, anchor, selector, matches) {
-    if (!owner || !anchor) return;
+    if (!owner || !anchor || typeof document === 'undefined') return;
     var request = {}, updateVersion = __alloMBUpdateVersion;
     var originalTab = document.getElementById('micro-tab-growthLab');
     owner.__microGrowthFocusRequest = request;
@@ -3555,7 +3565,7 @@
     }
     return { ids: ids.slice(), claims: claims.slice(), normalize: normalize, evaluate: evaluate, catalog: catalog, reportChanges: reportChanges, hasPendingRevision: hasPendingRevision, historyComparison: historyComparison };
   })();
-  window.__MicrobiologyCore.mystery = MicroMystery;
+  if (_mbWin) { _mbWin.__MicrobiologyCore = _mbWin.__MicrobiologyCore || {}; _mbWin.__MicrobiologyCore.mystery = MicroMystery; }
 
   function MicroMysteryDownload(props) {
     var React = props.React, h = React.createElement;
@@ -3635,7 +3645,7 @@
     }
     return { normalize: normalize, evaluate: evaluate, report: report, sameReport: sameReport, saveReport: saveReport, restoreReport: restoreReport };
   })();
-  window.__MicrobiologyCore.gram = MicroGram;
+  if (_mbWin) { _mbWin.__MicrobiologyCore = _mbWin.__MicrobiologyCore || {}; _mbWin.__MicrobiologyCore.gram = MicroGram; }
 
   function MicroGramHistory(props) {
     var React = props.React, h = React.createElement;
@@ -3755,7 +3765,7 @@
     }
     return { answers: answers, summarize: summarize, practice: practice, report: report, exportText: exportText };
   })();
-  window.__MicrobiologyCore.quiz = MicroQuiz;
+  if (_mbWin) { _mbWin.__MicrobiologyCore = _mbWin.__MicrobiologyCore || {}; _mbWin.__MicrobiologyCore.quiz = MicroQuiz; }
 
   function MicroQuizDownload(props) {
     var React = props.React, h = React.createElement;
@@ -3835,8 +3845,8 @@
       var legacyGrowth = raw.growthLab && typeof raw.growthLab === 'object' ? raw.growthLab : {};
       var legacyNotes = ['hypothesis', 'explanation'].some(function(key) { return typeof legacyGrowth[key] === 'string' && !!legacyGrowth[key].trim(); }) || (Array.isArray(legacyGrowth.log) && legacyGrowth.log.length > 0);
       var resistance = normalizeResistanceInvestigation(raw.resistanceInvestigation);
-      var resistanceBook = window.__MicrobiologyCore.resistance.normalizeNotebook(raw.resistanceNotebook);
-      var gramReview = window.__MicrobiologyCore.gram.evaluate(raw.gramInvestigation, raw.gramStep), gram = gramReview.state;
+      var resistanceBook = MicroResistanceNotebook.normalizeNotebook(raw.resistanceNotebook);
+      var gramReview = MicroGram.evaluate(raw.gramInvestigation, raw.gramStep), gram = gramReview.state;
       var mysteryRecorded = 0, mysteryDrafts = 0, mysteryRevisions = 0;
       MicroMystery.ids.forEach(function(id) {
         var entry = mysteries.cases[id];
@@ -3853,7 +3863,7 @@
         mystery: { records: mysteryRecorded, drafts: mysteryDrafts, revisions: mysteryRevisions, active: mysteries.active, started: mysteryRecorded + mysteryDrafts > 0 },
         microscope: { records: measured, drafts: measurementDrafts, started: measured + measurementDrafts > 0 },
         growth: { records: growth.trials.length, unexplained: growth.trials.filter(function(trial) { return !trial.explanation.trim(); }).length, removedId: growth.removed ? growth.removed.trial.id : null, sweep: !!growth.sweep, control: !!growth.control, legacyNotes: legacyNotes, started: !!(growth.removed || growth.trials.length || growth.sweep || growth.control || growth.prediction || growth.hypothesis.trim() || legacyNotes) },
-        resistance: { records: resistanceBook.records.length, unreflected: resistanceBook.records.filter(function(record) { return !record.reviewNote.trim(); }).length, removedId: resistanceBook.removed ? resistanceBook.removed.record.id : null, round: resistance.day, duration: resistance.duration, status: window.__MicrobiologyCore.resistance.status(resistance), started: !!(resistanceBook.removed || resistanceBook.records.length || resistance.day || resistance.prediction || resistance.notes) },
+        resistance: { records: resistanceBook.records.length, unreflected: resistanceBook.records.filter(function(record) { return !record.reviewNote.trim(); }).length, removedId: resistanceBook.removed ? resistanceBook.removed.record.id : null, round: resistance.day, duration: resistance.duration, status: MicroResistanceNotebook.status(resistance), started: !!(resistanceBook.removed || resistanceBook.records.length || resistance.day || resistance.prediction || resistance.notes) },
         quiz: { answered: quiz.answered, total: quiz.total, submitted: raw.quizSubmitted === true && quiz.missing.length === 0, correct: quiz.correct, missed: quiz.missed.length, practiced: practiced, started: quiz.answered > 0 },
         gram: { step: gram.step, observed: gram.maxStep, recorded: !!gram.record, revision: gramReview.pendingRevision, nextStep: gramReview.nextStep, started: !!(gram.record || gram.maxStep || gram.prediction || gram.interpretation || gram.explanation.trim()) }
       };
@@ -4055,7 +4065,7 @@
     }
     return { summarize: summarize, nextActions: nextActions, portfolio: portfolio, selectPortfolio: selectPortfolio };
   })();
-  window.__MicrobiologyCore.work = MicroWork;
+  if (_mbWin) { _mbWin.__MicrobiologyCore = _mbWin.__MicrobiologyCore || {}; _mbWin.__MicrobiologyCore.work = MicroWork; }
 
   // Portfolio viewing and download feedback never update persisted investigation data.
   function MicroEvidencePortfolio(props) {
@@ -4196,7 +4206,8 @@
     document.head.appendChild(st);
   })();
   // end WCAG 1.4.3 high contrast
-  window.StemLab.registerTool('microbiology', {
+  if (_mbWin && _mbWin.StemLab && typeof _mbWin.StemLab.registerTool === 'function') {
+  _mbWin.StemLab.registerTool('microbiology', {
     icon: '🦠',
     label: 'Microbiology Lab',
     desc: 'NGSS MS-LS1 + HS-LS1 + HS-LS3 + HS-LS4. The microbial world: bacteria (beneficial + pathogenic), viruses (incl. COVID, flu, HIV, phages, measles), microscopy (light + phase + fluorescent + EM + AFM, plus a virtual-microscope slide-swap with rendered E. coli / Streptococcus / Paramecium / Plasmodium / T4 phage), antibiotic resistance evolution (interactive petri-dish selection-pressure sim), the human + soil + ocean microbiome, immune system + vaccines, fermentation (sourdough, yogurt, kimchi, sauerkraut, kombucha, cheese), classic case studies (Snow\'s 1854 cholera map as walkable interactive, Fleming\'s penicillin, MRSA, COVID/mRNA, FMT), AP-style quiz, printable lab safety + key microbes card.',
@@ -4224,25 +4235,30 @@
       d.growthLab = Object.assign({}, DEFAULT_MICROBIOLOGY_STATE.growthLab, rawGrowthLab);
 
       function upd(patch) {
+        if (typeof setLabToolData !== 'function') return;
         // Mount effects persist the current culture and observed slides. These
         // background updates do not replace a learner's pending focus request.
         if (patch && Object.keys(patch).some(function(key) { return key !== 'resistanceInvestigation' && key !== 'microscopeSeenSlides'; })) __alloMBUpdateVersion++;
         setLabToolData(function(prev) {
-          var prior = Object.assign({}, DEFAULT_MICROBIOLOGY_STATE, (prev && prev.microbiology) || {});
-          var s = Object.assign({}, prior, patch);
+          var basePrev = _mbPlainObj(prev);
+          var prevSlice = _mbPlainObj(basePrev.microbiology);
+          var prior = Object.assign({}, DEFAULT_MICROBIOLOGY_STATE, prevSlice);
+          var s = Object.assign({}, prior, _mbPlainObj(patch));
           if (patch && patch.growthLab) {
-            s.growthLab = Object.assign({}, DEFAULT_MICROBIOLOGY_STATE.growthLab, prior.growthLab || {}, patch.growthLab);
+            s.growthLab = Object.assign({}, DEFAULT_MICROBIOLOGY_STATE.growthLab, _mbPlainObj(prior.growthLab), _mbPlainObj(patch.growthLab));
           }
-          return Object.assign({}, prev, { microbiology: s });
+          return Object.assign({}, basePrev, { microbiology: s });
         });
       }
 
       function convertWorkingMeasurement(request) {
+        if (typeof setLabToolData !== 'function') return;
         if (!request || !request.draft || !request.view || !request.calibration || !Object.prototype.hasOwnProperty.call(MicroMeasurements.sizes, request.id)) return;
         __alloMBUpdateVersion++;
         setLabToolData(function(previous) {
-          var current = previous && previous.microbiology;
-          if (!current || current.tab !== 'microscope') return previous;
+          var basePrev = _mbPlainObj(previous);
+          var current = basePrev.microbiology;
+          if (!current || typeof current !== 'object' || Array.isArray(current) || current.tab !== 'microscope') return previous;
           var view = Object.assign({}, DEFAULT_MICROBIOLOGY_STATE, current);
           var active = Object.prototype.hasOwnProperty.call(MicroMeasurements.sizes, view.scopeOrganism) ? view.scopeOrganism : 'ecoli';
           if (active !== request.id || ['scopeOrganism', 'selectedScope', 'magnification', 'microscopeZoom'].some(function(key) { return view[key] !== request.view[key]; })) return previous;
@@ -4258,50 +4274,56 @@
           if (!conversion.canConvert) return previous;
           var nextBook = Object.assign({}, book);
           nextBook[request.id] = Object.assign({}, entry, { draft: Object.assign({}, draft, { value: conversion.targetValue, unit: conversion.targetUnit }) });
-          return Object.assign({}, previous, { microbiology: Object.assign({}, current, { microscopeMeasurements: nextBook }) });
+          return Object.assign({}, basePrev, { microbiology: Object.assign({}, current, { microscopeMeasurements: nextBook }) });
         });
       }
 
       // Annotation edits use the latest raw notebook and never persist its display projection.
       function updateNotebookAnnotation(kind, id, value, owner) {
+        if (typeof setLabToolData !== 'function') return;
         if (!owner || (kind !== 'growth' && kind !== 'resistance')) return;
         var growth = kind === 'growth', field = growth ? 'growthInvestigation' : 'resistanceNotebook';
         var api = growth ? MicroGrowth : MicroResistanceNotebook;
         __alloMBUpdateVersion++;
         setLabToolData(function(previous) {
-          var current = previous && previous.microbiology;
-          if (!current || current.tab !== (growth ? 'growthLab' : 'resistance') || api.normalizeNotebook(current[field]).selectedId !== id) return previous;
+          var basePrev = _mbPlainObj(previous);
+          var current = basePrev.microbiology;
+          if (!current || typeof current !== 'object' || Array.isArray(current) || current.tab !== (growth ? 'growthLab' : 'resistance') || api.normalizeNotebook(current[field]).selectedId !== id) return previous;
           var result = growth ? api.changeExplanation(current[field], id, value, owner) : api.changeReviewNote(current[field], id, value, owner);
           if (!result.changed) return previous;
           var patch = {}; patch[field] = result.notebook;
-          return Object.assign({}, previous, { microbiology: Object.assign({}, current, patch) });
+          return Object.assign({}, basePrev, { microbiology: Object.assign({}, current, patch) });
         });
       }
 
       function updateNotebookSelection(kind, id, owner) {
+        if (typeof setLabToolData !== 'function') return;
         if (!owner || (kind !== 'growth' && kind !== 'resistance')) return;
         var growth = kind === 'growth', field = growth ? 'growthInvestigation' : 'resistanceNotebook';
         var api = growth ? MicroGrowth : MicroResistanceNotebook;
         __alloMBUpdateVersion++;
         setLabToolData(function(previous) {
-          var current = previous && previous.microbiology;
-          if (!current || current.tab !== (growth ? 'growthLab' : 'resistance')) return previous;
+          var basePrev = _mbPlainObj(previous);
+          var current = basePrev.microbiology;
+          if (!current || typeof current !== 'object' || Array.isArray(current) || current.tab !== (growth ? 'growthLab' : 'resistance')) return previous;
           var result = growth ? api.selectTrial(current[field], id, owner) : api.selectRecord(current[field], id, owner);
           if (!result.changed) return previous;
           var patch = {}; patch[field] = result.notebook;
-          return Object.assign({}, previous, { microbiology: Object.assign({}, current, patch) });
+          return Object.assign({}, basePrev, { microbiology: Object.assign({}, current, patch) });
         });
       }
 
       function updateResistanceComparison(key, value, owner) {
+        if (typeof setLabToolData !== 'function') return;
         if (!owner) return;
         __alloMBUpdateVersion++;
         setLabToolData(function(previous) {
-          var current = previous && previous.microbiology;
-          if (!current || current.tab !== 'resistance') return previous;
+          var basePrev = _mbPlainObj(previous);
+          var current = basePrev.microbiology;
+          if (!current || typeof current !== 'object' || Array.isArray(current) || current.tab !== 'resistance') return previous;
           var result = MicroResistanceNotebook.changeComparison(current.resistanceNotebook, current.resistanceComparison, key, value, owner);
           if (!result.changed) return previous;
-          return Object.assign({}, previous, { microbiology: Object.assign({}, current, {
+          return Object.assign({}, basePrev, { microbiology: Object.assign({}, current, {
             resistanceNotebook: result.notebook, resistanceComparison: result.comparison
           }) });
         });
@@ -4315,7 +4337,7 @@
           paramecium: { slide: 'parame', mag: 400, scope: 'lightbright' }
         };
 
-        var link = mapping[id];
+        var link = Object.prototype.hasOwnProperty.call(mapping, id) ? mapping[id] : null;
         if (!link) return null;
 
         var displayNames = {
@@ -4388,18 +4410,20 @@
         var work = MicroWork.summarize(d);
         var nextActions = MicroWork.nextActions(d);
         function openActivity(tab, anchor, destination, activity) {
-          var originalTab = document.getElementById('micro-tab-' + tab);
+          if (typeof setLabToolData !== 'function') return;
+          var originalTab = typeof document !== 'undefined' ? document.getElementById('micro-tab-' + tab) : null;
           var owner = originalTab && originalTab.closest('[data-microbiology-tool]'), request = {}, transitions = [];
           if (owner) owner.__microHomeFocusRequest = request;
           __alloMBUpdateVersion++;
           setLabToolData(function(previous) {
-            var latest = previous && previous.microbiology;
-            if (!latest || homeTab(latest) !== 'home' || (destination && !destination.matches(latest))) return previous;
+            var basePrev = _mbPlainObj(previous);
+            var latest = basePrev.microbiology;
+            if (!latest || typeof latest !== 'object' || Array.isArray(latest) || homeTab(latest) !== 'home' || (destination && !destination.matches(latest))) return previous;
             var patch = destination ? resumePatch(latest, activity, destination.next) : {};
             if (!patch) return previous;
             var next = Object.assign({}, latest, patch, { tab: tab });
             transitions.push(captureHomeOwner(next, activity, destination && destination.next));
-            return Object.assign({}, previous, { microbiology: next });
+            return Object.assign({}, basePrev, { microbiology: next });
           });
           var updateVersion = __alloMBUpdateVersion;
           setTimeout(function() {
@@ -4643,6 +4667,7 @@
           return h('button', { key: t.id, type: 'button', role: 'tab', 'aria-selected': active, 'aria-current': active ? 'page' : undefined, 'aria-label': t.label,
             id: 'micro-tab-' + t.id, 'aria-controls': 'micro-content', tabIndex: active ? 0 : -1,
             onKeyDown: function(event) {
+              if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
               var index = visibleMicroTabs.indexOf(t), next;
               if (event.key === 'ArrowRight') next = (index + 1) % visibleMicroTabs.length;
               else if (event.key === 'ArrowLeft') next = (index - 1 + visibleMicroTabs.length) % visibleMicroTabs.length;
@@ -5190,11 +5215,14 @@
                         if (ctx.setStemLabTab) {
                           ctx.setStemLabTab('explore');
                         }
-                        ctx.setToolData(function(prev) {
-                          var dnaState = Object.assign({}, (prev && prev.dnaLab) || {});
-                          dnaState.tab = 'crispr';
-                          return Object.assign({}, prev, { dnaLab: dnaState });
-                        });
+                        if (typeof ctx.setToolData === 'function') {
+                          ctx.setToolData(function(prev) {
+                            var basePrev = _mbPlainObj(prev);
+                            var dnaState = Object.assign({}, _mbPlainObj(basePrev.dnaLab));
+                            dnaState.tab = 'crispr';
+                            return Object.assign({}, basePrev, { dnaLab: dnaState });
+                          });
+                        }
                         if (ctx.addToast) {
                           ctx.addToast('✂️ Switched to DNA Lab CRISPR Gene Editor', 'success');
                         }
@@ -8303,10 +8331,12 @@
         var revisionPreviousSnapshot = snapshotFields(mysteryObject(revisionOwner) ? revisionOwner.previousRecord : undefined, ['claim', 'evidence', 'reasoning', 'limitation']);
         function updateMystery(change) {
           var transition = { books: [] };
+          if (typeof setLabToolData !== 'function') return transition;
           __alloMBUpdateVersion++;
           setLabToolData(function(previous) {
-            var latest = previous && previous.microbiology;
-            if (!latest || latest.tab !== 'mystery') return previous;
+            var basePrev = _mbPlainObj(previous);
+            var latest = basePrev.microbiology;
+            if (!latest || typeof latest !== 'object' || Array.isArray(latest) || latest.tab !== 'mystery') return previous;
             var book = latest.mysteryLab, entries = mysteryObject(book) ? book.cases : undefined;
             var entry = mysteryObject(entries) ? entries[state.active] : undefined;
             var projected = M.normalize(book);
@@ -8323,7 +8353,7 @@
               nextBook.cases = nextCases;
             }
             transition.books.push(nextBook);
-            return Object.assign({}, previous, { microbiology: Object.assign({}, latest, { mysteryLab: nextBook }) });
+            return Object.assign({}, basePrev, { microbiology: Object.assign({}, latest, { mysteryLab: nextBook }) });
           });
           return transition;
         }
@@ -8632,25 +8662,29 @@
         function gt(key, fallback) { return __alloT('stem.microbiology.investigation_' + key, fallback); }
         function cancelDeferredGrowthFocus(event) { event.currentTarget.__microGrowthFocusRequest = null; }
         function setGrowthReviewHour(hour) {
+          if (typeof setLabToolData !== 'function') return;
           if (typeof hour !== 'number' || !Number.isInteger(hour) || hour < 0 || hour > 24) return;
           __alloMBUpdateVersion++;
           setLabToolData(function(previous) {
-            var current = previous && previous.microbiology;
-            if (!current || current.tab !== 'growthLab') return previous;
+            var basePrev = _mbPlainObj(previous);
+            var current = basePrev.microbiology;
+            if (!current || typeof current !== 'object' || Array.isArray(current) || current.tab !== 'growthLab') return previous;
             // Inspection persists one preference in the latest raw state.
-            return Object.assign({}, previous, { microbiology: Object.assign({}, current, { growthReviewHour: hour }) });
+            return Object.assign({}, basePrev, { microbiology: Object.assign({}, current, { growthReviewHour: hour }) });
           });
         }
         function saveBook(patch) { upd({ growthInvestigation: Object.assign({}, book, patch) }); }
         function setConditions(patch) {
+          if (typeof setLabToolData !== 'function') return;
           __alloMBUpdateVersion++;
           setLabToolData(function(previous) {
-            var current = previous && previous.microbiology;
-            if (!current || current.tab !== 'growthLab') return previous;
+            var basePrev = _mbPlainObj(previous);
+            var current = basePrev.microbiology;
+            if (!current || typeof current !== 'object' || Array.isArray(current) || current.tab !== 'growthLab') return previous;
             var raw = current.growthLab && typeof current.growthLab === 'object' && !Array.isArray(current.growthLab) ? current.growthLab : {};
             var baseline = G.normalizeConditions(Object.assign({}, DEFAULT_MICROBIOLOGY_STATE.growthLab, raw));
             var next = G.normalizeConditions(Object.assign({}, baseline, patch));
-            return Object.assign({}, previous, { microbiology: Object.assign({}, current, { growthLab: Object.assign({}, raw, next) }) });
+            return Object.assign({}, basePrev, { microbiology: Object.assign({}, current, { growthLab: Object.assign({}, raw, next) }) });
           });
         }
         function name(c) { return G.profiles[c.profile].short; }
@@ -9193,6 +9227,7 @@
       );
     }
   });
+  }
 
   console.log('[StemLab] stem_tool_microbiology.js loaded - Microbiology Lab');
 })();

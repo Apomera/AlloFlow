@@ -3440,7 +3440,7 @@
                   (bgMusicPlaying ? "bg-green-700 text-white" : "bg-white/15 text-white hover:bg-white/25")
               }, bgMusicPlaying ? "🔊 Music" : "🔇 Music"),
               // Canvas Layer toggle
-              React.createElement("button", { "aria-label": t('stem.coding.toggle_drawing_layer_foreground_or_bac', "Toggle drawing layer (foreground or background)"),
+              React.createElement("button", { "aria-label": (canvasLayer === 'background' ? 'BG — ' : 'FG — ') + t('stem.coding.toggle_drawing_layer_foreground_or_bac', "Toggle drawing layer (foreground or background)"),
                 onClick: function() { upd('canvasLayer', canvasLayer === 'foreground' ? 'background' : 'foreground'); },
                 title: 'Drawing layer: ' + canvasLayer,
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " +
@@ -4134,12 +4134,12 @@
 
               // Options bar (turtle toggle + cumulative mode)
               React.createElement("div", { className: "flex items-center gap-3 flex-wrap" },
-                React.createElement("button", { "aria-label": t('stem.coding.toggle_turtle_cursor_visibility', "Toggle turtle cursor visibility"),
+                React.createElement("button", { title: t('stem.coding.toggle_turtle_cursor_visibility', "Toggle turtle cursor visibility"),
                   onClick: function () { upd('showTurtle', !showTurtle); },
                   className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all " +
                     (showTurtle ? 'bg-emerald-700 text-white hover:bg-emerald-800' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
                 }, showTurtle ? '🐢 Turtle On' : '▸ Cursor Only'),
-                React.createElement("button", { "aria-label": t('stem.coding.toggle_cumulative_drawing_mode', "Toggle cumulative drawing mode"),
+                React.createElement("button", { title: t('stem.coding.toggle_cumulative_drawing_mode', "Toggle cumulative drawing mode"),
                   onClick: function () { upd('cumulativeMode', !cumulativeMode); },
                   className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all " +
                     (cumulativeMode ? 'bg-amber-600/80 text-white hover:bg-amber-800 ring-1 ring-amber-400/50' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')

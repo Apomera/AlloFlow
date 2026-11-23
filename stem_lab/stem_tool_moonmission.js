@@ -12422,7 +12422,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       '.mm-starter-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:#bae6fd;margin-right:2px}',
       '.mm-starter-chip{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:44px;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:800;background:#1e293b;border:1px solid rgba(125,211,252,.45);color:#f8fafc;cursor:pointer;transition:background-color .15s,border-color .15s,color .15s}',
       '.mm-starter-chip:hover{background:#312e81;border-color:#7dd3fc;color:#ffffff}',
-      '.mm-starter-chip[aria-pressed="true"]{background:#0284c7;border-color:#bae6fd;color:#ffffff}',
+      '.mm-starter-chip[aria-pressed="true"]{background:#0369a1;border-color:#bae6fd;color:#ffffff}',
       '[data-moonmission-tool] button:focus-visible,[data-moonmission-tool] input:focus-visible,[data-moonmission-tool] select:focus-visible{outline:3px solid #38bdf8;outline-offset:2px}',
       '.theme-contrast .mm-hero-bar,.theme-contrast [data-moonmission-control],.theme-contrast .mm-trajectory-ribbon,.theme-contrast .mm-starter-bar{background:#000000!important;border:2px solid #00ff00!important;box-shadow:none!important;color:#ffffff!important}',
       '.theme-contrast .mm-hero-badge{background:#000000!important;border:1px solid #ffff00!important;color:#ffff00!important}',

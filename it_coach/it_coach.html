@@ -24,7 +24,7 @@
 -->
 <style>
   :root {
-    --bg: #0b1220; --panel: #111a2e; --text: #e6edf7; --dim: #93a3bd;
+    --bg: #0b1220; --panel: #111a2e; --text: #e6edf7; --dim: #cbd5e1;
     --line: #24314d; --control-line: #64748b; --accent: #6ea8ff; --warn: #f59e0b; --ok: #34d399;
   }
   * { box-sizing: border-box; }
@@ -35,17 +35,17 @@
   .badge { font-size: 12px; font-weight: 700; border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; color: var(--dim); }
   .card { border: 1px solid var(--line); background: var(--panel); border-radius: 12px; padding: 12px 14px; margin: 0 0 12px; }
   .card > summary { cursor: pointer; font-weight: 700; }
-  details > summary { padding-block: 4px; }
+  details > summary { min-height: 44px; display: inline-flex; align-items: center; padding-block: 6px; cursor: pointer; }
   .status { font-size: 13px; color: var(--dim); margin: 6px 0 0; }
   .status.warn { color: var(--warn); }
   .status.ok { color: var(--ok); }
   .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 8px 0 0; }
   label { font-size: 13px; }
-  button { font: inherit; min-height: 40px; padding: 8px 14px; border-radius: 9px; cursor: pointer; border: 1px solid var(--control-line); background: #1b2743; color: var(--text); }
+  button { font: inherit; min-height: 44px; padding: 10px 14px; border-radius: 9px; cursor: pointer; border: 1px solid var(--control-line); background: #1b2743; color: var(--text); }
   button.action { background: var(--accent); border-color: var(--accent); color: #06152e; font-weight: 700; }
   button:disabled { opacity: .55; cursor: not-allowed; }
   button[aria-disabled="true"] { opacity: .72; cursor: wait; }
-  input[type="text"], input[type="password"], select { font: inherit; background: var(--bg); color: var(--text); border: 1px solid var(--control-line); border-radius: 8px; padding: 8px 10px; min-height: 40px; }
+  input[type="text"], input[type="password"], select { font: inherit; background: var(--bg); color: var(--text); border: 1px solid var(--control-line); border-radius: 8px; padding: 8px 10px; min-height: 44px; }
   input[type="text"], input[type="password"] { flex-grow: 1; min-width: 180px; }
   fieldset.backend-fields { border: 0; padding: 0; margin: 0; min-inline-size: 0; }
   .stage { position: relative; background: #000; border-radius: 12px; overflow: hidden; min-height: 220px; display: flex; align-items: center; justify-content: center; }
@@ -82,10 +82,11 @@
   #reviewCanvas { touch-action:none; cursor:crosshair; }
   .review-coordinates { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0; }
   .review-coordinates label { display:flex; flex-direction:column; }
-  .review-coordinates input { width:78px; font:inherit; min-height:40px; }
+  .review-coordinates input { width:78px; font:inherit; min-height:44px; }
   :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-  .skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 10000; }
-  .skip-link:focus { position: fixed; left: 8px; top: 8px; width: auto; height: auto; padding: 10px 18px; background: #0f172a; color: #f8fafc; font: 700 14px system-ui, sans-serif; border-radius: 8px; outline: 3px solid #facc15; text-decoration: none; }
+  .skip-link { position: absolute; inset-inline-start: 8px; top: 8px; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; z-index: 10000; }
+  .skip-link:focus { position: fixed; inset-inline-start: 8px; top: 8px; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; min-height: 44px; display: inline-flex; align-items: center; padding: 10px 18px; background: #0f172a; color: #f8fafc; font: 700 14px system-ui, sans-serif; border-radius: 8px; outline: 3px solid #facc15; text-decoration: none; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
   @media (forced-colors: active) {
     :root { --bg: Canvas; --panel: Canvas; --text: CanvasText; --dim: CanvasText; --line: CanvasText; --control-line: CanvasText; --accent: LinkText; --warn: CanvasText; --ok: CanvasText; }
     body, .card, .badge, .stage, .stage .placeholder, .current-step, .chat-message, .chat-message.user, .chat-message.assistant, .chat-message.system, .skip-link:focus { background: Canvas !important; color: CanvasText !important; border-color: CanvasText !important; }
@@ -100,7 +101,7 @@
 <a class="skip-link" href="#main">Skip to main content</a>
 <main id="main" tabindex="-1" class="wrap">
   <header>
-    <h1>🧭 AlloBot Screen Coach</h1>
+    <h1><span aria-hidden="true">🧭 </span>AlloBot Screen Coach</h1>
     <span class="badge" id="postureBadge"></span>
   </header>
 
@@ -108,7 +109,7 @@
 
   <p class="status">Start here: connect your AI, share a tab or window, review its privacy, then ask for a step. You can also use text chat without sharing a screen.</p>
   <details class="card" id="setupPanel">
-    <summary>⚙️ AI backend</summary>
+    <summary><span aria-hidden="true">⚙️ </span>AI backend</summary>
     <p class="status">The coach needs a model that can look at a picture. The destination shown below tells you where each screenshot goes. Non-secret settings stay in this browser; API keys remain only in this open page and are never saved.</p>
     <fieldset class="backend-fields" id="beFields">
       <legend class="sr-only">Standalone AI backend settings</legend>
@@ -141,7 +142,7 @@
     <p class="status" id="coachProviderInfo"></p>
     <p class="status" id="beStatus" role="status" aria-live="polite" aria-atomic="true"></p>
     <p class="status" id="beTestStatus" role="status" aria-live="polite"></p>
-    <p class="status" id="beKeyWarning" hidden>🔐 This key is available only while this page remains open. Close or reload the page to forget it.</p>
+    <p class="status" id="beKeyWarning" hidden><span aria-hidden="true">🔐 </span>This key is available only while this page remains open. Close or reload the page to forget it.</p>
   </details>
 
   <section class="card">
@@ -151,13 +152,13 @@
     <label class="status" style="display:block;margin:8px 0"><input type="checkbox" id="coachReviewChk"> Review, crop, or hide private areas before sending each screenshot</label>
     <label class="status" style="display:block;margin:8px 0"><input type="checkbox" id="coachPrivacyAck" disabled> I checked that the image I will send contains no passwords, private messages, grades, health or student records, or other private information</label>
     <div class="row">
-      <button id="coachWatchBtn" type="button">👁 Start watching</button>
-      <button id="coachPipBtn" type="button" aria-pressed="false" title="Floating always-on-top mirror (Chromium only)">🪟 Float on top</button>
+      <button id="coachWatchBtn" type="button"><span aria-hidden="true">👁 </span>Start watching</button>
+      <button id="coachPipBtn" type="button" aria-pressed="false" title="Floating always-on-top mirror (Chromium only)"><span aria-hidden="true">🪟 </span>Float on top</button>
     </div>
     <div class="row">
       <label for="coachGoal">What are you trying to do?</label>
       <input type="text" id="coachGoal" maxlength="300" placeholder="What are you trying to do? e.g. turn on captions">
-      <button class="action" id="coachSuggestBtn" type="button">💡 Suggest next step</button>
+      <button class="action" id="coachSuggestBtn" type="button"><span aria-hidden="true">💡 </span>Suggest next step</button>
     </div>
     <details id="supportDetails"><summary>Describe the problem (optional)</summary>
       <div class="support-fields">
@@ -995,9 +996,13 @@
       pipWin = w;
       w.document.body.style.cssText = 'margin:0;background:#000;color:#e6edf7;font:13px system-ui,sans-serif';
       var cv = w.document.createElement('canvas');
+      cv.setAttribute('role', 'img');
+      cv.setAttribute('aria-label', 'AlloBot Screen Coach live mirrored screen');
       cv.style.cssText = 'display:block;width:100%';
       w.document.body.appendChild(cv);
       var bar = w.document.createElement('div');
+      bar.setAttribute('role', 'status');
+      bar.setAttribute('aria-live', 'polite');
       bar.style.cssText = 'padding:6px 8px;background:#111a2e;font-weight:600';
       bar.textContent = '🧭 Screen Coach: suggestions appear here.';
       w.document.body.appendChild(bar);
@@ -1089,6 +1094,7 @@
     if (!captureActive()) return null;
     var scale = Math.min(1, 1280 / v.videoWidth);
     var c = document.createElement('canvas');
+    c.setAttribute('aria-hidden', 'true');
     c.width = Math.max(2, Math.round(v.videoWidth * scale));
     c.height = Math.max(2, Math.round(v.videoHeight * scale));
     c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
@@ -1178,6 +1184,7 @@
     var imageHeight = v.height;
     var footerHeight = 104 + Math.ceil(String(guidance || '').length * 9 / Math.max(80, width - 36)) * 22;
     var c = document.createElement('canvas');
+    c.setAttribute('aria-hidden', 'true');
     c.width = width; c.height = imageHeight + footerHeight;
     var g = c.getContext('2d');
     g.drawImage(v, 0, 0, width, imageHeight);
@@ -1274,6 +1281,7 @@
     if (!captureActive()) return null;
     try {
       var c = document.createElement('canvas');
+      c.setAttribute('aria-hidden', 'true');
       c.width = 64; c.height = 36;
       var g = c.getContext('2d');
       g.drawImage(source || $('previewVideo'), 0, 0, c.width, c.height);
@@ -1908,6 +1916,33 @@
   var resetGoalContext = function () { resetCoachContext({ resetConsent: false }); };
   $('coachGoal').addEventListener('input', resetGoalContext);
   $('coachGoal').addEventListener('change', resetGoalContext);
+  $('coachGoal').addEventListener('keydown', function (event) {
+    if (event.isComposing || event.keyCode === 229) return;
+    if (event.key === 'Escape' && this.value) {
+      event.preventDefault();
+      this.value = '';
+      resetGoalContext();
+      setStatus($('coachStatus'), 'Goal cleared.');
+    }
+  });
+  $('coachChatInput').addEventListener('keydown', function (event) {
+    if (event.isComposing || event.keyCode === 229) return;
+    if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+      event.preventDefault();
+      sendChatMessage();
+    } else if (event.key === 'Escape' && this.value) {
+      event.preventDefault();
+      this.value = '';
+      setStatus($('coachChatStatus'), 'Chat draft cleared.');
+    }
+  });
+  document.addEventListener('keydown', function (event) {
+    if (event.isComposing || event.keyCode === 229) return;
+    if (event.key === 'Escape' && !$('screenReview').hidden) {
+      event.preventDefault();
+      $('reviewCancelBtn').click();
+    }
+  });
   $('coachSpeakChk').addEventListener('change', function () {
     if (!this.checked) { stopSpeaking(); resumeHandsFreeChat(); }
   });
@@ -1985,7 +2020,7 @@
     var timer = setTimeout(function () { request.controller.abort(); }, 20000);
     setStatus($('beTestStatus'), 'Testing the saved vision model with a synthetic image. No shared-screen content is sent.');
     try {
-      var c = document.createElement('canvas'); c.width = 320; c.height = 100;
+      var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true'); c.width = 320; c.height = 100;
       var g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, 320, 100); g.fillStyle = '#000'; g.font = 'bold 32px sans-serif'; g.fillText('COACH READY', 20, 60);
       var result = await abortable(p.analyzeImage('Read the two words in this image. Return only the visible words.', c.toDataURL('image/jpeg').split(',')[1], { mimeType: 'image/jpeg', signal: request.controller.signal }), request.controller.signal);
       if (backendCfg !== request.config) return;

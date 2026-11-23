@@ -40,6 +40,8 @@ module.exports = {
         files: [
             "./src/**/*.{js,jsx,ts,tsx}",
             "./public/**/*.{js,jsx,html}",
+            "!./public/lang/**",
+            "!./public/**/*.bak*",
         ],
         transform: { js: collapseLongRuns, jsx: collapseLongRuns, ts: collapseLongRuns, tsx: collapseLongRuns, html: collapseLongRuns },
     },

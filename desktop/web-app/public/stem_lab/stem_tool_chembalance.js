@@ -5110,7 +5110,7 @@
                   h('div', {
                     role: 'img',
                     'aria-label': __alloT('stem.chembalance.reaction_bench_visual', 'Reaction bench showing reactants, a reaction arrow, and products'),
-                    className: 'rounded-2xl border border-slate-200 bg-slate-950 p-4 text-white overflow-hidden flex flex-col justify-between'
+                    className: 'rounded-2xl border border-slate-200 bg-slate-950 p-4 text-white overflow-hidden flex flex-col gap-3 self-start'
                   },
                     h('div', null,
                       h('div', { className: 'flex items-center justify-between gap-2 mb-3' },

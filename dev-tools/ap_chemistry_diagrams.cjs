@@ -160,34 +160,77 @@ const AP_CHEMISTRY_DIAGRAM_SPECS = [
 ];
 
 function buildApChemistryDiagrams(chapters) {
-  const diagrams = AP_CHEMISTRY_DIAGRAM_SPECS.map((spec) => ({
-    id: `ap-chem-flow-${String(spec.unitNumber).padStart(2, '0')}`,
-    domainId: spec.domainId,
-    title: spec.title,
-    type: 'optional-concept-flow',
-    spec: {
-      nodes: spec.nodes,
-      edges: [
-        { from: spec.nodes[0].id, to: spec.nodes[1].id },
-        { from: spec.nodes[1].id, to: spec.nodes[2].id },
-        { from: spec.nodes[2].id, to: spec.nodes[3].id },
-      ],
-    },
-    accessibility: {
-      textEquivalent: spec.textEquivalent,
-      fallbackMode: 'ordered-text-equivalent',
-    },
-    unscored: true,
-    officialItem: false,
-    releaseEligible: false,
-  }));
+  const edgeLabels = ['establishes', 'determines', 'predicts'];
+  const diagrams = AP_CHEMISTRY_DIAGRAM_SPECS.map((spec, index) => {
+    const chapter = chapters[index];
+    const nodes = spec.nodes.map((node, nodeIndex) => ({
+      id: node.id,
+      label: node.label,
+      detail: spec.textEquivalent[nodeIndex] || node.label,
+    }));
+    const edges = [0, 1, 2].map((edgeIndex) => ({
+      id: `${nodes[edgeIndex].id}-to-${nodes[edgeIndex + 1].id}`,
+      from: nodes[edgeIndex].id,
+      to: nodes[edgeIndex + 1].id,
+      label: edgeLabels[edgeIndex],
+    }));
+    return {
+      id: `ap-chem-flow-${String(spec.unitNumber).padStart(2, '0')}`,
+      chapterId: chapter.id,
+      domainId: spec.domainId,
+      title: spec.title,
+      type: 'optional-concept-flow',
+      diagramType: 'directed-concept-flow',
+      learnerPurpose: `Connect particulate-level AP Chemistry Unit ${spec.unitNumber} principles to quantitative and macroscopic predictions.`,
+      caption: `An original AP Chemistry Unit ${spec.unitNumber} concept flow summarizing ${spec.title.toLowerCase()}.`,
+      spec: {
+        format: 'alloflow-diagram-v1',
+        layout: 'left-to-right',
+        nodes,
+        edges,
+        renderingHints: {
+          connectorStyle: 'arrow',
+          allowHorizontalScroll: true,
+          minimumTextSize: 'user-scalable',
+        },
+      },
+      accessibility: {
+        essentialVisualContent: false,
+        shortAlt: `Four-step AP Chemistry Unit ${spec.unitNumber} concept flow: ${nodes.map((n) => n.label).join(' -> ')}.`,
+        longDescription: `Read from left to right. ${spec.textEquivalent.join(' ')}`,
+        textEquivalent: spec.textEquivalent,
+        readingOrder: nodes.map((n) => n.id),
+        colorIndependent: true,
+        shapeIndependentLabels: true,
+        fallbackMode: 'ordered-text-equivalent',
+        independentReviewStatus: 'pending',
+      },
+      unscored: true,
+      officialItem: false,
+      releaseEligible: false,
+      reviewStatus: 'source-reviewed-editorial-pass',
+      expertReviewStatus: 'pending',
+      rights: {
+        originalSpecification: true,
+        officialFigureReproduced: false,
+        sourceFigureReproduced: false,
+        thirdPartyArtworkIncluded: false,
+      },
+    };
+  });
 
   const diagramPlacements = AP_CHEMISTRY_DIAGRAM_SPECS.map((spec, index) => ({
     id: `ap-chem-placement-${String(spec.unitNumber).padStart(2, '0')}`,
     diagramId: diagrams[index].id,
+    chapterId: chapters[index].id,
     sectionId: chapters[index].sections[0].id,
+    position: 'after-section-content',
+    learnerPurpose: diagrams[index].learnerPurpose,
     fallbackMode: 'diagram-text-equivalent',
     requiredForComprehension: false,
+    unscored: true,
+    reviewStatus: 'source-reviewed-editorial-pass',
+    accessibilityReviewStatus: 'pending-independent-review',
     releaseEligible: false,
   }));
 

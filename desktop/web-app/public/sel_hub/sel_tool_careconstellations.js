@@ -145,12 +145,24 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
       var VALID_VIEWS = { map: 1, pulse: 1, add: 1, reflect: 1, print: 1, about: 1 };
       var view = Object.prototype.hasOwnProperty.call(VALID_VIEWS, d.view) ? d.view : 'map';
       function goto(v) { setCC({ view: Object.prototype.hasOwnProperty.call(VALID_VIEWS, v) ? v : 'map' }); }
+      function isImeComposing(e) {
+        return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+      }
+      function announceCC(msg) {
+        if (typeof announceToSR === 'function') { try { announceToSR(msg); } catch (_) {} }
+        try {
+          var lr = document.getElementById('allo-live-careconst');
+          if (!lr) return;
+          lr.textContent = '';
+          setTimeout(function() { lr.textContent = String(msg || ''); }, 30);
+        } catch (_) {}
+      }
 
       // ─── Header + nav ───
       function header() {
         return h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
-          h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: _cnsBg('#1e293b'), border: '1px solid ' + _cnsBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _cnsFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+          h('button', { type: 'button', onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
+            style: { background: _cnsBg('#1e293b'), border: '1px solid ' + _cnsBd('#334155'), borderRadius: 8, padding: '10px 14px', minHeight: 44, cursor: 'pointer', color: _cnsFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _cnsFg('#fda4af'), fontSize: 22, fontWeight: 900 } }, '🌌 Care Constellations'),
             h('div', { style: { fontSize: 12, color: _cnsFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A relational map of who cares for you and who you care for.')
@@ -176,11 +188,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
             var tabIndex = tabs.indexOf(t);
             return h('button', {
               key: t.id,
+              type: 'button',
               id: 'cc-tab-' + t.id,
               'aria-controls': 'cc-panel-' + t.id,
               tabIndex: active ? 0 : -1,
               onClick: function() { goto(t.id); },
               onKeyDown: function(event) {
+                if (isImeComposing(event)) return;
                 var nextIndex = tabIndex;
                 if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (tabIndex + 1) % tabs.length;
                 else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (tabIndex - 1 + tabs.length) % tabs.length;
@@ -195,7 +209,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
                 }, 0);
               },
               role: 'tab', 'aria-selected': active,
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? _cnsFg('#fda4af') : '#334155'),
+              style: { padding: '10px 14px', minHeight: 44, borderRadius: 8, border: '1px solid ' + (active ? _cnsFg('#fda4af') : '#334155'),
                 background: active ? 'rgba(253,164,175,0.15)' : _cnsBg('#1e293b'),
                 color: active ? _cnsFg('#fecaca') : _cnsFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
@@ -256,8 +270,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
             h('strong', null, 'Your constellation is empty. '),
             'That is fine. Start with one connection that already exists in your life. The point is not to fill the map; the point is to make visible what is already there.',
             h('div', { style: { marginTop: 10 } },
-              h('button', { onClick: function() { goto('add'); },
-                style: { padding: '8px 14px', borderRadius: 8, border: _cnsHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _cnsBg('#f43f5e'), color: _cnsFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add your first connection')
+              h('button', { type: 'button', onClick: function() { goto('add'); },
+                style: { padding: '10px 16px', minHeight: 44, borderRadius: 8, border: _cnsHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _cnsBg('#f43f5e'), color: _cnsFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add your first connection')
             )
           ) : h('div', { style: { padding: 10, borderRadius: 8, background: _cnsHC ? '#000000' : 'rgba(253,164,175,0.08)', borderTop: '1px solid ' + (_cnsHC ? '#ffff00' : 'rgba(253,164,175,0.2)'), borderRight: '1px solid ' + (_cnsHC ? '#ffff00' : 'rgba(253,164,175,0.2)'), borderBottom: '1px solid ' + (_cnsHC ? '#ffff00' : 'rgba(253,164,175,0.2)'), borderLeft: '3px solid ' + _cnsBd('#fda4af'), marginBottom: 14, fontSize: 12.5, color: _cnsFg('#fecaca'), lineHeight: 1.55 } },
             h('strong', null, conns.length + ' connection' + (conns.length === 1 ? '' : 's') + ' mapped. '),
@@ -310,7 +324,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
                 var dashStyle = p.c.direction === 'to-me' ? '0' : (p.c.direction === 'from-me' ? '4 3' : '8 2 2 2');
                 return h('g', { key: p.c.id,
                   onClick: function() { setCC({ selectedConnId: p.c.id, view: 'add', drafts: { name: p.c.name, categoryId: p.c.categoryId, direction: p.c.direction, strength: p.strength, notes: p.c.notes || '' } }); },
-                  onKeyDown: function(ev) { if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') { ev.preventDefault(); ev.currentTarget.click(); } },
+                  onKeyDown: function(ev) { if (isImeComposing(ev)) return; if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') { ev.preventDefault(); ev.currentTarget.click(); } },
                   style: { cursor: 'pointer' },
                   role: 'button', tabIndex: 0,
                   'aria-label': p.c.name + ' (' + p.cat.label + ', strength ' + p.strength + ', ' + dirArrow(p.c.direction) + ')'
@@ -333,8 +347,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
           ),
 
           // Add CTA
-          h('button', { onClick: function() { goto('add'); },
-            style: { padding: '10px 18px', borderRadius: 10, border: _cnsHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _cnsHC ? '#000000' : 'linear-gradient(135deg, #e11d48 0%, #be123c 100%)', color: _cnsFg('#fff'), fontWeight: 700, fontSize: 13 } }, '+ Add a connection'),
+          h('button', { type: 'button', onClick: function() { goto('add'); },
+            style: { padding: '10px 18px', minHeight: 44, borderRadius: 10, border: _cnsHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _cnsHC ? '#000000' : 'linear-gradient(135deg, #e11d48 0%, #be123c 100%)', color: _cnsFg('#fff'), fontWeight: 700, fontSize: 13 } }, '+ Add a connection'),
 
           softPointer()
         );
@@ -417,14 +431,16 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
           ),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
             h('button', {
-              onClick: function() { goto('add'); if (announceToSR) announceToSR('Add a connection to explore the next care question.'); },
+              type: 'button',
+              onClick: function() { goto('add'); announceCC('Add a connection to explore the next care question.'); },
               'aria-label': 'Add a connection from Care Pulse',
-              style: { padding: '9px 14px', borderRadius: 8, border: _cnsHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _cnsBg('#f43f5e'), color: _cnsFg('#fff'), fontWeight: 800, fontSize: 12 }
+              style: { padding: '10px 16px', minHeight: 44, borderRadius: 8, border: _cnsHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _cnsBg('#f43f5e'), color: _cnsFg('#fff'), fontWeight: 800, fontSize: 12 }
             }, 'Add a connection'),
             h('button', {
-              onClick: function() { goto('reflect'); if (announceToSR) announceToSR('Reflection prompts opened from Care Pulse.'); },
+              type: 'button',
+              onClick: function() { goto('reflect'); announceCC('Reflection prompts opened from Care Pulse.'); },
               'aria-label': 'Open reflections from Care Pulse',
-              style: { padding: '9px 14px', borderRadius: 8, border: '1px solid ' + _cnsBd('#475569'), cursor: 'pointer', background: _cnsBg('#1e293b'), color: _cnsFg('#cbd5e1'), fontWeight: 800, fontSize: 12 }
+              style: { padding: '10px 16px', minHeight: 44, borderRadius: 8, border: '1px solid ' + _cnsBd('#475569'), cursor: 'pointer', background: _cnsBg('#1e293b'), color: _cnsFg('#cbd5e1'), fontWeight: 800, fontSize: 12 }
             }, 'Open reflections')
           )
         );
@@ -446,6 +462,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
         function save() {
           if (!drafts.name || !drafts.name.trim()) {
             if (addToast) addToast('Give the connection a name first.', 'warn');
+            announceCC('Give the connection a name first.');
             return;
           }
           scanCareText(drafts.name + ' ' + (drafts.notes || ''));
@@ -461,14 +478,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
               });
               return { connections: newConns, selectedConnId: null, view: 'map', drafts: defaultState().drafts };
             });
-            if (announceToSR) announceToSR('Connection updated.');
+            announceCC('Connection updated.');
           } else {
             var entry = { id: newId(), name: trimmedName, categoryId: drafts.categoryId, direction: drafts.direction, strength: finalStrength, notes: drafts.notes };
             setCC(function(prior) {
               var list = Array.isArray(prior.connections) ? prior.connections : [];
               return { connections: list.concat([entry]), view: 'map', drafts: defaultState().drafts };
             });
-            if (announceToSR) announceToSR('Connection added.');
+            announceCC('Connection added.');
             if (addToast) addToast('Added to your constellation.', 'success');
           }
         }
@@ -478,6 +495,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
             var list = Array.isArray(prior.connections) ? prior.connections : [];
             return { connections: list.filter(function(c) { return c.id !== targetId; }), selectedConnId: null, view: 'map', drafts: defaultState().drafts };
           });
+          announceCC('Connection removed.');
           if (addToast) addToast('Removed.', 'info');
         }
         function cancel() { setCC({ selectedConnId: null, view: 'map', drafts: defaultState().drafts }); }
@@ -494,9 +512,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
             h('div', null,
               h('label', { htmlFor: 'cc-name', style: { display: 'block', fontSize: 11, color: _cnsFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, 'Who or what is this?'),
               h('input', { id: 'cc-name', type: 'text', value: drafts.name, onChange: function(e) { update('name', e.target.value); },
+                onKeyDown: function(e) {
+                  if (isImeComposing(e)) return;
+                  if (e.key === 'Escape' && drafts.name) { e.preventDefault(); update('name', ''); }
+                },
                 onBlur: function(e) { scanCareText(e.target.value); },
                 placeholder: 'e.g. Mom, Ms. Carter, the river trail, my dog Lupin, mindful breathing, my future 22-year-old self',
-                style: { width: '100%', padding: 10, borderRadius: 6, border: '1px solid ' + _cnsBd('#334155'), background: _cnsBg('#1e293b'), color: _cnsFg('#e2e8f0'), fontSize: 13.5 }
+                style: { width: '100%', minHeight: 44, padding: 10, borderRadius: 6, border: '1px solid ' + _cnsBd('#334155'), background: _cnsBg('#1e293b'), color: _cnsFg('#e2e8f0'), fontSize: 13.5 }
               })
             ),
 
@@ -506,8 +528,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
               h('div', { role: 'group', 'aria-label': 'Connection category', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 6 } },
                 CARE_CATEGORIES.map(function(c) {
                   var picked = drafts.categoryId === c.id;
-                  return h('button', { key: c.id, onClick: function() { update('categoryId', c.id); }, 'aria-pressed': picked,
-                    style: { padding: 8, borderRadius: 6, border: '1.5px solid ' + (picked ? (_cnsHC ? '#ffff00' : c.color) : _cnsBd('#334155')),
+                  return h('button', { key: c.id, type: 'button', onClick: function() { update('categoryId', c.id); }, 'aria-pressed': picked,
+                    style: { minHeight: 44, padding: 8, borderRadius: 6, border: '1.5px solid ' + (picked ? (_cnsHC ? '#ffff00' : c.color) : _cnsBd('#334155')),
                       background: picked ? (_cnsHC ? '#000000' : c.color + '22') : _cnsBg('#1e293b'),
                       color: picked ? _cnsInk(_cnsFg(c.color)) : _cnsFg('#cbd5e1'), cursor: 'pointer', textAlign: 'left' } },
                     h('div', { 'aria-hidden': 'true', style: { fontSize: 14 } }, c.icon),
@@ -528,8 +550,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
                   { id: 'mutual', label: 'Mutual', desc: 'Care flows both ways. We tend to each other.' }
                 ].map(function(opt) {
                   var picked = drafts.direction === opt.id;
-                  return h('button', { key: opt.id, onClick: function() { update('direction', opt.id); }, 'aria-pressed': picked,
-                    style: { padding: 8, borderRadius: 6, border: '1.5px solid ' + (picked ? (_cnsHC ? '#ffff00' : cat.color) : _cnsBd('#334155')),
+                  return h('button', { key: opt.id, type: 'button', onClick: function() { update('direction', opt.id); }, 'aria-pressed': picked,
+                    style: { minHeight: 44, padding: 8, borderRadius: 6, border: '1.5px solid ' + (picked ? (_cnsHC ? '#ffff00' : cat.color) : _cnsBd('#334155')),
                       background: picked ? (_cnsHC ? '#000000' : cat.color + '22') : _cnsBg('#1e293b'),
                       color: picked ? _cnsInk(_cnsFg(cat.color)) : _cnsFg('#cbd5e1'), cursor: 'pointer', textAlign: 'left' } },
                     h('div', { style: { fontSize: 12, fontWeight: 800 } }, opt.label),
@@ -544,7 +566,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
               h('label', { htmlFor: 'cc-strength', style: { display: 'block', fontSize: 11, color: _cnsFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, 'Strength: ' + safeStrength + ' / 5'),
               h('input', { id: 'cc-strength', type: 'range', min: 1, max: 5, step: 1, value: safeStrength,
                 onChange: function(e) { update('strength', clampStrength(e.target.value)); },
-                style: { width: '100%' }, 'aria-label': 'Strength of connection 1 to 5'
+                style: { width: '100%', minHeight: 44 }, 'aria-label': 'Strength of connection 1 to 5', 'aria-valuetext': safeStrength + ' out of 5'
               }),
               h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: _cnsFg('#94a3b8'), marginTop: 2 } },
                 h('span', null, 'Newer / distant'),
@@ -565,9 +587,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
 
           // Buttons
           h('div', { style: { display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' } },
-            h('button', { onClick: save, style: { padding: '10px 18px', borderRadius: 8, border: _cnsHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _cnsBg('#f43f5e'), color: _cnsFg('#fff'), fontWeight: 700, fontSize: 13 } }, editing ? 'Save changes' : '+ Add to constellation'),
-            h('button', { onClick: cancel, style: { padding: '10px 14px', borderRadius: 8, border: '1px solid ' + _cnsBd('#475569'), cursor: 'pointer', background: _cnsBg('#1e293b'), color: _cnsFg('#cbd5e1'), fontWeight: 700, fontSize: 13 } }, 'Cancel'),
-            editing ? h('button', { onClick: remove, style: { padding: '10px 14px', borderRadius: 8, border: '1px solid ' + _cnsBd('#ef4444'), cursor: 'pointer', background: 'transparent', color: _cnsFg('#fca5a5'), fontWeight: 700, fontSize: 12 } }, 'Remove from map') : null
+            h('button', { type: 'button', onClick: save, style: { padding: '10px 18px', minHeight: 44, borderRadius: 8, border: _cnsHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _cnsBg('#f43f5e'), color: _cnsFg('#fff'), fontWeight: 700, fontSize: 13 } }, editing ? 'Save changes' : '+ Add to constellation'),
+            h('button', { type: 'button', onClick: cancel, style: { padding: '10px 14px', minHeight: 44, borderRadius: 8, border: '1px solid ' + _cnsBd('#475569'), cursor: 'pointer', background: _cnsBg('#1e293b'), color: _cnsFg('#cbd5e1'), fontWeight: 700, fontSize: 13 } }, 'Cancel'),
+            editing ? h('button', { type: 'button', onClick: remove, style: { padding: '10px 14px', minHeight: 44, borderRadius: 8, border: '1px solid ' + _cnsBd('#ef4444'), cursor: 'pointer', background: 'transparent', color: _cnsFg('#fca5a5'), fontWeight: 700, fontSize: 12 } }, 'Remove from map') : null
           )
         );
       }
@@ -729,7 +751,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
             'A relational artifact: who cares for me, who I care for, and the mutual care that runs both ways. Useful for IEPs, family meetings, intake with a new counselor, or just to remember on a thin day. Private; you decide who to share it with.'
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _cnsHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _cnsHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _cnsFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+            h('button', { type: 'button', onClick: printNow, style: { padding: '10px 18px', minHeight: 44, borderRadius: 8, border: _cnsHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _cnsHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _cnsFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
           ),
           h('style', null,
             '@media print { body * { visibility: hidden !important; } ' +

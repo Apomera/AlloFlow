@@ -213,6 +213,9 @@
 }
 
 .about-card > a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
     margin-top: 17px;
 }
 
@@ -245,6 +248,11 @@
 
 .about-section--dark a:not(.btn-primary):not(.btn-secondary) {
     color: #99f6e4;
+}
+
+.about-section--dark :focus-visible {
+    outline: 3px solid #fbbf24;
+    outline-offset: 3px;
 }
 
 .about-answer-list {
@@ -322,6 +330,15 @@
     }
 }
 
+@media (prefers-reduced-motion: reduce) {
+    .about-hero *,
+    .about-section * {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
 @media (forced-colors: active) {
     .about-card,
     .about-callout,
@@ -346,5 +363,11 @@
 
     .about-section--dark a:not(.btn-primary):not(.btn-secondary) {
         color: LinkText;
+    }
+
+    .about-hero :focus-visible,
+    .about-section :focus-visible {
+        outline: 3px solid Highlight !important;
+        outline-offset: 2px !important;
     }
 }

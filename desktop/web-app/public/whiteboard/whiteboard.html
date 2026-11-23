@@ -49,7 +49,7 @@
   .skip-link:focus { top: 10px; }
   :focus-visible, button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid #a5b4fc !important; outline-offset: 2px !important; }
   main { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } .skip-link { transition: none !important; } }
   @media (forced-colors: active) { :root { color-scheme: light dark; --bg: Canvas; --panel: Canvas; --line: CanvasText; --text: CanvasText; --dim: CanvasText; --accent: Highlight; --accent2: Highlight; } body, header, header .sub, .aibar, .aibar .ailabel, .aistatus, .tpl label, .loadmsg, footer.privacy, select, input.hdr, button.hdr { background: Canvas !important; color: CanvasText !important; border-color: CanvasText !important; } button.primary { background: Highlight !important; color: HighlightText !important; border-color: Highlight !important; } :focus-visible { outline: 3px solid Highlight !important; outline-offset: 2px !important; } }
   header { display: flex; align-items: center; gap: 10px; padding: 7px 12px; background: var(--panel); border-bottom: 1px solid var(--line); flex: 0 0 auto; flex-wrap: wrap; }
   header h1 { font-size: 14px; margin: 0; font-weight: 700; }
@@ -691,6 +691,7 @@
     var totalSec = drawSec + holdEnd;
 
     var cv = document.createElement('canvas');
+    cv.setAttribute('aria-hidden', 'true');
     cv.width = REC_W; cv.height = REC_H;
     var ctx = cv.getContext('2d');
     ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, REC_W, REC_H);
@@ -741,6 +742,7 @@
       if (!gifCanUse) return;
       while (gifFrames.length < GIF_FRAMES && elapsed >= gifTargets[gifFrames.length]) {
         var gc = document.createElement('canvas');
+        gc.setAttribute('aria-hidden', 'true');
         gc.width = GIF_W; gc.height = gifH;
         try { gc.getContext('2d').drawImage(cv, 0, 0, GIF_W, gifH); } catch (_) {}
         gifFrames.push(gc);
@@ -930,11 +932,22 @@
   (function () {
     var rec = document.getElementById('aiRecordBtn');
     if (!rec) return;
-    var ok = !!window.MediaRecorder && typeof document.createElement('canvas').captureStream === 'function';
+    var probeCanvas = document.createElement('canvas');
+    probeCanvas.setAttribute('aria-hidden', 'true');
+    var ok = !!window.MediaRecorder && typeof probeCanvas.captureStream === 'function';
     if (!ok) { rec.disabled = true; rec.title = 'This browser cannot record canvas video.'; }
   })();
+  var nameInputEl = document.getElementById('nameInput');
+  if (nameInputEl) nameInputEl.addEventListener('keydown', function (ev) {
+    if (ev.isComposing || ev.keyCode === 229) return;
+    if (ev.key === 'Escape' && nameInputEl.value) { ev.preventDefault(); nameInputEl.value = ''; flash('Sketch name cleared.', true); }
+  });
   var aiPromptEl = document.getElementById('aiPrompt');
-  if (aiPromptEl) aiPromptEl.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); aiRequest('diagram'); } });
+  if (aiPromptEl) aiPromptEl.addEventListener('keydown', function (ev) {
+    if (ev.isComposing || ev.keyCode === 229) return;
+    if (ev.key === 'Enter') { ev.preventDefault(); aiRequest('diagram'); }
+    else if (ev.key === 'Escape' && aiPromptEl.value) { ev.preventDefault(); aiPromptEl.value = ''; aiStatus('AI prompt cleared.', null); }
+  });
 
   // Inbound messages from the AlloFlow opener. Today this only completes the
   // handshake: the opener answers our hello with an ack, so we learn its origin

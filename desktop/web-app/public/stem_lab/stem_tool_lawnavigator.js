@@ -650,7 +650,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
         },
         className: 'inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold border transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
         style: { background: pal.panel, borderColor: pal.border, color: pal.text, minHeight: 44 },
-        'aria-label': __alloT('stem.lawNav.back', 'Back')
+        'aria-label': view === 'home' ? __alloT('stem.lawNav.tools', 'Tools') : __alloT('stem.lawNav.back', 'Back')
       }, '← ' + (view === 'home' ? __alloT('stem.lawNav.tools', 'Tools')
         : (view === 'section' && navStack.length ? __alloT('stem.lawNav.back_cite', 'Back to § ') + navStack[navStack.length - 1].section
           : __alloT('stem.lawNav.back_short', 'Back'))));

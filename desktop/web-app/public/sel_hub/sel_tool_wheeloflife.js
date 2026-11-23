@@ -31,6 +31,21 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
     document.body.appendChild(liveRegion);
   })();
 
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-wol-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-wol-a11y-css';
+    st.textContent =
+      '.selh-wol button:focus-visible, .selh-wol textarea:focus-visible, .selh-wol summary:focus-visible, .selh-wol a:focus-visible, .selh-wol [tabindex]:focus-visible { outline: 3px solid #f59e0b !important; outline-offset: 2px !important; }\n' +
+      '@media (prefers-reduced-motion: reduce) { .selh-wol *, .selh-wol *::before, .selh-wol *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }\n' +
+      '@media (forced-colors: active) { .selh-wol button, .selh-wol textarea, .selh-wol summary { forced-color-adjust: auto; } .selh-wol button:focus-visible, .selh-wol textarea:focus-visible, .selh-wol summary:focus-visible, .selh-wol a:focus-visible { outline: 2px solid Highlight !important; outline-offset: 2px !important; } }\n';
+    document.head.appendChild(st);
+  })();
+
+  function isImeComposing(e) {
+    return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+  }
+
   // 8 life domains (the most common Wheel of Life set).
   var DOMAINS = [
     { id: 'health',     icon: '🏃', label: 'Health and body',      color: '#ef4444' },
@@ -72,7 +87,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
       var _wlT = (ctx && ctx.theme) || {};
       var _wlHC = !!_wlT.isContrast, _wlL = !_wlHC && !_wlT.isDark;
       var _wl_BGL = {'#0b1220':'#f1f5f9','#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _wl_BGH = {'#0b1220':'#000000','#0f172a':'#000000','#1e293b':'#000000','#fff':'#000000','#f8fafc':'#000000'};
-      var _wl_FGL = {'#cbd5e1':'#334155','#fcd34d':'#78350f','#94a3b8':'#64748b','#fde68a':'#92400e','#e2e8f0':'#1e293b','#fecaca':'#b91c1c','#c7d2fe':'#312e81','#bbf7d0':'#166534'}, _wl_FGH = {'#cbd5e1':'#ffff00','#fcd34d':'#ffff00','#94a3b8':'#ffff00','#fde68a':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#bbf7d0':'#ffff00','#fecaca':'#ffff00','#c7d2fe':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00'};
+      var _wl_FGL = {'#cbd5e1':'#334155','#fcd34d':'#78350f','#94a3b8':'#475569','#64748b':'#475569','#fde68a':'#92400e','#e2e8f0':'#1e293b','#fecaca':'#b91c1c','#c7d2fe':'#312e81','#bbf7d0':'#166534'}, _wl_FGH = {'#cbd5e1':'#ffff00','#fcd34d':'#ffff00','#94a3b8':'#ffff00','#fde68a':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#bbf7d0':'#ffff00','#fecaca':'#ffff00','#c7d2fe':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00'};
       var _wl_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _wl_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#f59e0b':'#ffff00','#22c55e':'#ffff00','#ef4444':'#ffff00','#6366f1':'#ffff00','#cbd5e1':'#ffff00','#d97706':'#ffff00'};
       var _wlBg = function(h){ return _wlHC ? (_wl_BGH[h]||h) : (_wlL ? (_wl_BGL[h]||h) : h); };
       var _wlFg = function(h){ return _wlHC ? (_wl_FGH[h]||h) : (_wlL ? (_wl_FGL[h]||h) : h); };
@@ -129,13 +144,21 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
       }
       var VALID_VIEWS = ['wheel', 'rate', 'reflect', 'print', 'about'];
       var view = VALID_VIEWS.indexOf(d.view) !== -1 ? d.view : 'wheel';
+      function announceWOL(msg) {
+        if (!msg) return;
+        if (typeof announceToSR === 'function') { try { announceToSR(msg); } catch (_) {} }
+        if (typeof document !== 'undefined') {
+          var lr = document.getElementById('allo-live-wol');
+          if (lr) lr.textContent = msg;
+        }
+      }
       function goto(v) { setWOL({ view: v }); }
       function printNow() { try { window.print(); } catch (e) {} }
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
-          h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid ' + _wlBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _wlFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+          h('button', { type: 'button', onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
+            style: { background: _wlHC ? '#000000' : (_wlL ? '#ffffff' : 'rgba(255,255,255,0.05)'), border: '1px solid ' + _wlBd('#334155'), borderRadius: 8, padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', color: _wlFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _wlFg('#fcd34d'), fontSize: 22, fontWeight: 900 } }, '🛞 Wheel of Life'),
             h('div', { style: { fontSize: 12, color: _wlFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A self-portrait of 8 life domains, each rated 1 to 10.')
@@ -151,13 +174,30 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
           { id: 'print', label: 'Print view', icon: '🖨' },
           { id: 'about', label: 'About', icon: 'ℹ' }
         ];
+        function onTabKeyDown(e, idx) {
+          if (isImeComposing(e)) return;
+          var nextIdx = null;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIdx = (idx + 1) % tabs.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIdx = (idx - 1 + tabs.length) % tabs.length;
+          else if (e.key === 'Home') nextIdx = 0;
+          else if (e.key === 'End') nextIdx = tabs.length - 1;
+          if (nextIdx === null) return;
+          e.preventDefault();
+          var target = tabs[nextIdx];
+          goto(target.id);
+          setTimeout(function() {
+            var el = typeof document !== 'undefined' ? document.getElementById('wol-tab-' + target.id) : null;
+            if (el && typeof el.focus === 'function') el.focus();
+          }, 0);
+        }
         return h('div', { className: 'no-print', role: 'tablist', 'aria-label': 'Wheel of Life sections',
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
-          tabs.map(function(t) {
+          tabs.map(function(t, idx) {
             var active = view === t.id;
-            return h('button', { key: t.id, id: 'wol-tab-' + t.id, 'aria-controls': 'wol-tabpanel', onClick: function() { goto(t.id); },
-              role: 'tab', 'aria-selected': active,
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + _wlBd(active ? '#f59e0b' : '#334155'),
+            return h('button', { key: t.id, type: 'button', id: 'wol-tab-' + t.id, 'aria-controls': 'wol-tabpanel', onClick: function() { goto(t.id); },
+              onKeyDown: function(e) { onTabKeyDown(e, idx); },
+              role: 'tab', 'aria-selected': active, tabIndex: active ? 0 : -1,
+              style: { padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + _wlBd(active ? '#f59e0b' : '#334155'),
                 background: active ? (_wlHC ? '#000000' : 'rgba(245,158,11,0.18)') : _wlBg('#1e293b'),
                 color: active ? _wlFg('#fde68a') : _wlFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
@@ -199,8 +239,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
               h('h3', { style: { margin: '0 0 8px', color: _wlFg('#fde68a'), fontSize: 18 } }, 'Your Wheel is empty'),
               h('p', { style: { margin: '0 0 14px', color: _wlFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
                 'Rate each of the 8 life domains from 1 (very thin) to 10 (very full). The shape of your wheel will show you where life is rich and where it is hungry right now. There are no right answers.'),
-              h('button', { onClick: function() { goto('rate'); }, 'aria-label': 'Start rating',
-                style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #92400e 0%, #b45309 100%)', color: _wlFg('#fff'), fontWeight: 800, fontSize: 14 } },
+              h('button', { type: 'button', onClick: function() { goto('rate'); }, 'aria-label': 'Start rating',
+                style: { padding: '10px 22px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 10, border: _wlHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _wlHC ? '#000000' : 'linear-gradient(135deg, #92400e 0%, #b45309 100%)', color: _wlFg('#fff'), fontWeight: 800, fontSize: 14 } },
                 '+ Start rating')
             ),
             softPointer()
@@ -335,7 +375,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
 
           // Text-equivalent (accessible to all users; WCAG 1.1.1)
           h('details', { style: { marginBottom: 12 } },
-            h('summary', { style: { cursor: 'pointer', fontSize: 12, color: _wlFg('#fcd34d'), fontWeight: 700, padding: '6px 10px', borderRadius: 6, background: _wlBg('#0f172a'), border: '1px solid ' + _wlBd('#1e293b') } }, '🔤 Read this wheel as text'),
+            h('summary', { style: { cursor: 'pointer', fontSize: 12, color: _wlFg('#fcd34d'), fontWeight: 700, padding: '8px 12px', minHeight: 44, display: 'flex', alignItems: 'center', borderRadius: 6, background: _wlBg('#0f172a'), border: '1px solid ' + _wlBd('#1e293b') } }, '🔤 Read this wheel as text'),
             h('div', { style: { marginTop: 6, padding: 12, borderRadius: 8, background: _wlBg('#0f172a'), border: '1px solid ' + _wlBd('#1e293b') } },
               h('p', { style: { margin: '0 0 8px', color: _wlFg('#cbd5e1'), fontSize: 13, lineHeight: 1.65 } }, 'Ratings 0-10, where 0 means thin/empty in this area and 10 means full/thriving:'),
               h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: _wlFg('#e2e8f0'), fontSize: 13, lineHeight: 1.7 } },
@@ -351,13 +391,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
           ),
 
           h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
-            h('button', { onClick: function() { goto('rate'); }, 'aria-label': 'Adjust ratings',
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #92400e 0%, #b45309 100%)', color: _wlFg('#fff'), fontWeight: 800, fontSize: 14 } },
+            h('button', { type: 'button', onClick: function() { goto('rate'); }, 'aria-label': 'Adjust ratings',
+              style: { padding: '10px 20px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 10, border: _wlHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _wlHC ? '#000000' : 'linear-gradient(135deg, #92400e 0%, #b45309 100%)', color: _wlFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '✏️ Adjust ratings'),
-            h('button', { onClick: function() { goto('reflect'); }, 'aria-label': 'Reflect',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: _wlBg('#1e293b'), color: _wlFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '💭 Reflect'),
-            h('button', { onClick: function() { goto('print'); }, 'aria-label': 'Print',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: _wlBg('#1e293b'), color: _wlFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
+            h('button', { type: 'button', onClick: function() { goto('reflect'); }, 'aria-label': 'Reflect',
+              style: { padding: '10px 20px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 10, border: '1px solid ' + _wlBd('#475569'), background: _wlBg('#1e293b'), color: _wlFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '💭 Reflect'),
+            h('button', { type: 'button', onClick: function() { goto('print'); }, 'aria-label': 'Print',
+              style: { padding: '10px 20px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 10, border: '1px solid ' + _wlBd('#475569'), background: _wlBg('#1e293b'), color: _wlFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
           ),
           softPointer()
         );
@@ -367,13 +407,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
       // RATE
       // ═══════════════════════════════════════════════════════════
       function renderRate() {
-        function setRating(id, value) {
+        function setRating(id, value, label) {
           var n = typeof value === 'number' && isFinite(value) ? Math.max(1, Math.min(10, Math.round(value))) : 1;
           setWOL(function(prior) {
             var ratings = Object.assign({}, (prior && prior.ratings && typeof prior.ratings === 'object') ? prior.ratings : {});
             ratings[id] = n;
             return { ratings: ratings };
           });
+          if (label) announceWOL(label + ' rated ' + n + ' out of 10.');
         }
         function setNote(id, val) {
           setWOL(function(prior) {
@@ -395,19 +436,35 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
             var noteId = 'wol-note-' + dom.id;
             var domainColor = _wlDomain(dom.color);
             var activeDarkInk = (dom.color === '#6366f1' || dom.color === '#a855f7') ? '#ffffff' : '#0f172a';
+            function onRateKeyDown(e, n) {
+              if (isImeComposing(e)) return;
+              var nextN = null;
+              if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextN = n === 10 ? 1 : n + 1;
+              else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextN = n === 1 ? 10 : n - 1;
+              else if (e.key === 'Home') nextN = 1;
+              else if (e.key === 'End') nextN = 10;
+              if (nextN === null) return;
+              e.preventDefault();
+              setRating(dom.id, nextN, dom.label);
+              setTimeout(function() {
+                var el = typeof document !== 'undefined' ? document.getElementById('wol-rate-' + dom.id + '-' + nextN) : null;
+                if (el && typeof el.focus === 'function') el.focus();
+              }, 0);
+            }
             return h('div', { key: dom.id, style: { padding: 14, borderRadius: 10, background: _wlBg('#0f172a'), borderTop: '1px solid ' + _wlBd('#1e293b'), borderRight: '1px solid ' + _wlBd('#1e293b'), borderBottom: '1px solid ' + _wlBd('#1e293b'), borderLeft: '3px solid ' + domainColor, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' } },
-                h('span', { style: { fontSize: 26 } }, dom.icon),
+                h('span', { 'aria-hidden': 'true', style: { fontSize: 26 } }, dom.icon),
                 h('div', { style: { flex: 1, minWidth: 140 } },
                   h('div', { style: { fontSize: 14, fontWeight: 800, color: _wlInk(domainColor) } }, dom.label)
                 ),
                 h('div', { style: { fontSize: 22, fontWeight: 900, color: v > 0 ? _wlInk(domainColor) : _wlFg('#94a3b8') } }, v || '–')
               ),
-              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 10 }, role: 'radiogroup', 'aria-label': 'Rate ' + dom.label },
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }, role: 'radiogroup', 'aria-label': 'Rate ' + dom.label },
                 [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(function(n) {
                   var active = v === n;
-                  return h('button', { key: n, onClick: function() { setRating(dom.id, n); }, role: 'radio', 'aria-checked': active, 'aria-label': 'Rate ' + dom.label + ' ' + n + ' out of 10',
-                    style: { padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (active ? domainColor : _wlBd('#475569')), background: active ? domainColor : _wlBg('#1e293b'), color: active ? (_wlHC ? '#000000' : (_wlL ? '#ffffff' : activeDarkInk)) : _wlFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700, minWidth: 32 } }, n);
+                  var isTabStop = active || (!v && n === 1);
+                  return h('button', { key: n, type: 'button', id: 'wol-rate-' + dom.id + '-' + n, onClick: function() { setRating(dom.id, n, dom.label); }, onKeyDown: function(e) { onRateKeyDown(e, n); }, role: 'radio', 'aria-checked': active, tabIndex: isTabStop ? 0 : -1, 'aria-label': 'Rate ' + dom.label + ' ' + n + ' out of 10',
+                    style: { padding: '8px 10px', minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, border: '1px solid ' + (active ? domainColor : _wlBd('#475569')), background: active ? domainColor : _wlBg('#1e293b'), color: active ? (_wlHC ? '#000000' : (_wlL ? '#ffffff' : activeDarkInk)) : _wlFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, n);
                 })
               ),
               h('label', { htmlFor: noteId, style: { display: 'block', fontSize: 11, color: _wlFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Note (optional)'),
@@ -415,7 +472,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
                 placeholder: 'What is true about this area right now? Why this number?',
                 onChange: function(e) { setNote(dom.id, e.target.value); },
                 onBlur: function(e) { scanWheelText(e.target.value); },
-                style: { width: '100%', minHeight: 50, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _wlBg('#1e293b'), color: _wlFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.55, resize: 'vertical' } })
+                style: { width: '100%', boxSizing: 'border-box', minHeight: 50, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _wlBg('#1e293b'), color: _wlFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.55, resize: 'vertical' } })
             );
           }),
 
@@ -432,8 +489,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
           return h('div', null,
             h('div', { style: { padding: 20, borderRadius: 12, background: _wlBg('#0f172a'), border: '1px solid #1e293b', textAlign: 'center' } },
               h('div', { style: { color: _wlFg('#cbd5e1'), fontSize: 14, marginBottom: 4 } }, 'Rate at least a few domains first'),
-              h('button', { onClick: function() { goto('rate'); }, 'aria-label': 'Go to rate',
-                style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid #f59e0b', background: 'rgba(245,158,11,0.18)', color: _wlFg('#fde68a'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Rate')
+              h('button', { type: 'button', onClick: function() { goto('rate'); }, 'aria-label': 'Go to rate',
+                style: { marginTop: 12, padding: '10px 16px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + _wlBd('#f59e0b'), background: _wlHC ? '#000000' : 'rgba(245,158,11,0.18)', color: _wlFg('#fde68a'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Rate')
             )
           );
         }
@@ -447,7 +504,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
         function chooseFocus(dom) {
           if (d.focusDomain === dom.id) return;
           setWOL({ focusDomain: dom.id, nextStep: '' });
-          if (announceToSR) announceToSR(dom.label + ' selected as this week\'s focus');
+          announceWOL(dom.label + ' selected as this week\'s focus');
         }
         function setNextStep(value) { setWOL({ nextStep: value }); }
         var rawNextStep = safeNextStep();
@@ -489,8 +546,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
                 var selected = selectedFocus && selectedFocus.id === dom.id;
                 var color = _wlDomain(dom.color);
                 var textColor = _wlInk(color);
-                return h('button', { key: dom.id, onClick: function() { chooseFocus(dom); }, 'aria-pressed': selected,
-                  style: { padding: '8px 11px', borderRadius: 999, background: selected ? (_wlHC ? '#000000' : color + '22') : _wlBg('#1e293b'), border: '1px solid ' + (selected ? color : _wlBd('#475569')), color: selected ? textColor : _wlFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: selected ? 900 : 700 } },
+                return h('button', { key: dom.id, type: 'button', onClick: function() { chooseFocus(dom); }, 'aria-pressed': selected,
+                  style: { padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 999, background: selected ? (_wlHC ? '#000000' : color + '22') : _wlBg('#1e293b'), border: '1px solid ' + (selected ? color : _wlBd('#475569')), color: selected ? textColor : _wlFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: selected ? 900 : 700 } },
                   (selected ? '✓ ' : '') + dom.icon + ' ' + dom.label + ' · ' + ratingOf(dom.id));
               })
             ),
@@ -498,7 +555,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
               h('label', { htmlFor: 'wol-next-step', style: { display: 'block', color: _wlInk(_wlDomain(selectedFocus.color)), fontSize: 12.5, fontWeight: 900, marginBottom: 5 } }, selectedFocus.icon + ' One small move for ' + selectedFocus.label),
               h('textarea', { id: 'wol-next-step', value: rawNextStep, onChange: function(e) { setNextStep(e.target.value); }, onBlur: function(e) { scanWheelText(e.target.value); }, maxLength: 180,
                 placeholder: 'Example: Text one friend, take a 10-minute walk, or ask for one piece of help…',
-                style: { width: '100%', minHeight: 70, padding: 10, borderRadius: 8, border: '1px solid ' + _wlBd('#475569'), background: _wlBg('#1e293b'), color: _wlFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.55, resize: 'vertical' } }),
+                style: { width: '100%', boxSizing: 'border-box', minHeight: 70, padding: 10, borderRadius: 8, border: '1px solid ' + _wlBd('#475569'), background: _wlBg('#1e293b'), color: _wlFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.55, resize: 'vertical' } }),
               h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, marginTop: 6, color: _wlFg('#94a3b8'), fontSize: 10.5 } },
                 h('span', null, 'Small enough to try this week'),
                 h('span', null, String(rawNextStep.length) + ' / 180')
@@ -523,13 +580,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
       // ═══════════════════════════════════════════════════════════
       function renderPrintView() {
         return h('div', null,
-          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(245,158,11,0.10)', borderRadius: 8, border: '1px solid rgba(245,158,11,0.3)' } },
+          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: _wlHC ? '#000000' : 'rgba(245,158,11,0.10)', borderRadius: 8, border: '1px solid ' + (_wlHC ? '#ffff00' : 'rgba(245,158,11,0.3)') } },
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _wlFg('#fde68a'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #92400e 0%, #b45309 100%)', color: _wlFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
-            h('button', { onClick: function() { goto('wheel'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _wlBg('#1e293b'), color: _wlFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+            h('button', { type: 'button', onClick: printNow, style: { padding: '10px 18px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: _wlHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _wlHC ? '#000000' : 'linear-gradient(135deg, #92400e 0%, #b45309 100%)', color: _wlFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { type: 'button', onClick: function() { goto('wheel'); }, 'aria-label': 'Back',
+              style: { padding: '10px 18px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + _wlBd('#475569'), background: _wlBg('#1e293b'), color: _wlFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
@@ -632,7 +689,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
           h('div', { style: { fontSize: 11, color: _wlFg('#fcd34d'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: _wlFg('#fde68a'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+                style: { fontSize: 13, color: _wlFg('#fde68a'), fontWeight: 700, textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', minHeight: 44, marginBottom: 4 } }, title + ' ↗')
             : h('div', { style: { fontSize: 13, color: _wlFg('#fde68a'), fontWeight: 700, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _wlFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );
@@ -645,7 +702,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
       else if (view === 'about') body = renderAbout();
       else body = renderWheel();
 
-      return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Wheel of Life' },
+      return h('div', { className: 'selh-wol', style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Wheel of Life' },
         header(),
         navTabs(),
         (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')

@@ -863,7 +863,9 @@
     "contentCompleteSections": 27,
     "structuredContentSections": 27,
     "workedDataExamples": 27,
-    "sectionRetrievalChecks": 27
+    "sectionRetrievalChecks": 27,
+    "quickReferenceCards": 9,
+    "misconceptionPlaybooks": 6
   },
   "skills": [
     {
@@ -1548,7 +1550,26 @@
           "contentComplete": true,
           "contentWordCount": 92,
           "contentBlockCount": 6,
-          "chapterId": "apush-ch-01"
+          "chapterId": "apush-ch-01",
+          "workedExample": {
+            "prompt": "Compare how the Pueblo peoples of the arid Southwest and the Haudenosaunee (Iroquois) of the Eastern Woodlands adapted politically and economically to their environments before 1492.",
+            "steps": [
+              "Step 1: Contextualize pre-Columbian North America as home to hundreds of distinct Indigenous nations whose societies reflected both ecological adaptation and deliberate political choices.",
+              "Step 2: Apply historical comparison: Pueblo communities built irrigation canals and adobe towns anchored in maize farming, whereas the Haudenosaunee combined Three Sisters agriculture with hunting, longhouse villages, and a five-nation political confederacy.",
+              "Step 3: Conclude that maize spread supported sedentary life in both regions, yet distinct political institutions and resource strategies refute any single homogeneous model of \"Native society.\""
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Before 1492, Indigenous peoples across North America lived uniformly as small nomadic hunting bands.",
+              "repair": "Pre-Columbian societies ranged from permanent farming cities like Cahokia and Pueblo towns to semi-sedentary woodlands confederacies and mobile Plains hunters."
+            },
+            {
+              "misconception": "Environment alone completely determined every political and cultural practice of Indigenous nations.",
+              "repair": "Ecology shaped available resources, but Indigenous peoples actively modified landscapes (such as controlled burns and irrigation) and built varied diplomatic systems."
+            }
+          ]
         },
         {
           "id": "apush-ch-01-section-02",
@@ -1798,7 +1819,26 @@
           "contentComplete": true,
           "contentWordCount": 86,
           "contentBlockCount": 6,
-          "chapterId": "apush-ch-01"
+          "chapterId": "apush-ch-01",
+          "workedExample": {
+            "prompt": "A 1493 letter from Christopher Columbus to Spanish royal officials promises vast gold reserves and rapid Christian conversion in the Caribbean. Analyze how audience and purpose shape this source for an APUSH DBQ.",
+            "steps": [
+              "Step 1: Situate the letter within early European Atlantic expansion driven by state competition, bullion-seeking mercantilism, Catholic missionary zeal, and maritime innovations like the caravel and astrolabe.",
+              "Step 2: Apply HIPP sourcing (audience and purpose): writing directly to patrons King Ferdinand and Queen Isabella, Columbus had strong financial incentives to exaggerate gold abundance and portray Taíno peoples as easily subordinated.",
+              "Step 3: Conclude that while the letter accurately reveals Spanish imperial motives (\"gold, God, and glory\"), historians must cross-check its claims against evidence of Taíno resistance and demographic realities."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "European voyages to the Americas began simply out of disinterested scientific curiosity about geography.",
+              "repair": "Exploration was financed primarily by competing monarchs and merchants seeking Asian trade routes, precious metals, territorial prestige, and Catholic expansion."
+            },
+            {
+              "misconception": "European technological advantages meant Indigenous polities played no active role in early conquest.",
+              "repair": "Spanish forces relied heavily on Indigenous allies—such as Tlaxcalans opposing the Aztec Empire—alongside epidemic disease to topple major American states."
+            }
+          ]
         },
         {
           "id": "apush-ch-01-section-03",
@@ -2048,7 +2088,26 @@
           "contentComplete": true,
           "contentWordCount": 92,
           "contentBlockCount": 6,
-          "chapterId": "apush-ch-01"
+          "chapterId": "apush-ch-01",
+          "workedExample": {
+            "prompt": "Explain one demographic consequence in the Americas and one economic consequence in Europe or Africa resulting from the Columbian Exchange and Spanish colonial labor systems between 1492 and 1607.",
+            "steps": [
+              "Step 1: Identify the Columbian Exchange as an asymmetrical transatlantic transfer of pathogens, crops, livestock, and coerced labor linked directly to European conquest.",
+              "Step 2: Apply historical causation: Old World diseases such as smallpox decimated Indigenous populations lacking immunity, while American silver and nutrient-dense crops (potatoes, maize) fueled European population growth and helped drive demand for enslaved African labor as encomienda labor collapsed.",
+              "Step 3: Conclude that \"exchange\" obscures violent coercion: biological devastation, racialized casta hierarchies, and the transatlantic slave trade were intertwined engines of Atlantic colonial wealth."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "The Columbian Exchange benefited Indigenous Americans and Europeans roughly equally through mutual trade.",
+              "repair": "While New World crops boosted Old World populations, introduced Old World diseases and forced labor systems caused catastrophic Indigenous demographic collapse."
+            },
+            {
+              "misconception": "Spanish colonists abandoned coerced labor immediately after Bartolomé de las Casas criticized the encomienda.",
+              "repair": "Reform laws like the New Laws of 1542 faced colonial resistance; Spain shifted toward the repartimiento and expanded African chattel slavery rather than ending coercion."
+            }
+          ]
         }
       ],
       "knowledgeChecks": [
@@ -2419,7 +2478,26 @@
           "contentComplete": true,
           "contentWordCount": 80,
           "contentBlockCount": 6,
-          "chapterId": "apush-ch-02"
+          "chapterId": "apush-ch-02",
+          "workedExample": {
+            "prompt": "Compare the demographic patterns and labor economies of the Chesapeake and New England colonies between 1607 and 1700, explaining one major cause of their divergence.",
+            "steps": [
+              "Step 1: Anchor the comparison in Period 2 British colonial regionalization: Virginia/Maryland (Chesapeake) versus Massachusetts Bay/Plymouth (New England).",
+              "Step 2: Trace causal mechanisms: the Chesapeake's warm climate and fertile soil drew predominantly young single male migrants to cultivate cash-crop tobacco using indentured servants and increasingly enslaved Africans, while New England's rocky soil and Puritan religious motives produced family migration, longer lifespans, town meetings, and mixed farming/maritime trade.",
+              "Step 3: Conclude that differing founding motives, migration demographics, and local ecologies produced sharply contrasting social hierarchies and community institutions across British North America."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Puritans migrated to Massachusetts Bay to establish universal religious freedom for every denomination.",
+              "repair": "Puritans sought freedom to practice their own Reformed faith and expelled dissenters like Roger Williams and Anne Hutchinson to preserve religious orthodoxy."
+            },
+            {
+              "misconception": "Enslaved Africans formed the majority labor force in Jamestown immediately upon the colony's founding in 1607.",
+              "repair": "Chesapeake tobacco planters relied primarily on white indentured servants through most of the 1600s, shifting decisively to African chattel slavery after Bacon's Rebellion (1676)."
+            }
+          ]
         },
         {
           "id": "apush-ch-02-section-02",
@@ -2669,7 +2747,26 @@
           "contentComplete": true,
           "contentWordCount": 90,
           "contentBlockCount": 6,
-          "chapterId": "apush-ch-02"
+          "chapterId": "apush-ch-02",
+          "workedExample": {
+            "prompt": "Explain why British Navigation Acts passed in the 1650s–1660s did not prevent widespread colonial smuggling or the growth of colonial self-government before 1754.",
+            "steps": [
+              "Step 1: Define mercantilism as an imperial policy aiming to enrich the mother country by channeling colonial raw materials and trade exclusively through British ships and ports.",
+              "Step 2: Distinguish statutory regulation from actual enforcement: because Britain was preoccupied with European wars and domestic politics, it practiced \"salutary neglect,\" allowing colonial merchants to trade illicitly and colonial assemblies to exercise de facto tax power.",
+              "Step 3: Conclude that lax imperial enforcement before 1754 fostered colonial economic autonomy and political expectations of self-rule, setting up sharp conflict once Britain tightened enforcement after 1763."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Salutary neglect meant Britain had passed no trade regulations governing its American colonies before 1763.",
+              "repair": "Parliament enacted strict Navigation Acts starting in 1651, but imperial officials enforced them inconsistently during periods of salutary neglect."
+            },
+            {
+              "misconception": "Mercantilism encouraged free trade so colonies could buy and sell freely with any European empire.",
+              "repair": "Mercantilism restricted colonial commerce to benefit the imperial center, requiring enumerated goods like tobacco and sugar to ship through British ports."
+            }
+          ]
         },
         {
           "id": "apush-ch-02-section-03",
@@ -2919,7 +3016,26 @@
           "contentComplete": true,
           "contentWordCount": 89,
           "contentBlockCount": 6,
-          "chapterId": "apush-ch-02"
+          "chapterId": "apush-ch-02",
+          "workedExample": {
+            "prompt": "Analyze how Virginia's 1662 hereditary slavery statute and the 1739 Stono Rebellion together demonstrate both legal entrenchment of chattel slavery and enslaved people's resistance.",
+            "steps": [
+              "Step 1: Identify the legal transformation of slavery in British North America through statutes like Virginia's 1662 law (partus sequitur ventrem), which made a child's enslaved status follow the mother's condition.",
+              "Step 2: Balance structure with agency: codifying hereditary racialized bondage secured planter wealth, yet enslaved Africans resisted both overtly—as in South Carolina's armed 1739 Stono Rebellion—and covertly through work slowdowns, flight, and preserving Gullah linguistic and cultural traditions.",
+              "Step 3: Conclude that colonial slave codes grew harsher precisely in response to ongoing enslaved resistance, revealing a continuous struggle over labor, autonomy, and survival."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Slavery in colonial America was confined exclusively to the Southern plantation colonies.",
+              "repair": "Slavery was legal in all thirteen British colonies; Northern port cities like New York and Newport also relied on enslaved labor and profited heavily from Atlantic slave commerce."
+            },
+            {
+              "misconception": "Because armed revolts like Stono were rare, enslaved people generally accepted bondage without resistance.",
+              "repair": "Overt rebellions carried lethal odds, so enslaved people resisted daily through feigned illness, tool breaking, escape, clandestine literacy, and cultural retention."
+            }
+          ]
         }
       ],
       "knowledgeChecks": [
@@ -3290,7 +3406,26 @@
           "contentComplete": true,
           "contentWordCount": 87,
           "contentBlockCount": 6,
-          "chapterId": "apush-ch-03"
+          "chapterId": "apush-ch-03",
+          "workedExample": {
+            "prompt": "Explain how Britain's victory in the Seven Years' War (1754–1763) transformed imperial policy and turned colonial disputes over parliamentary taxation into a constitutional crisis.",
+            "steps": [
+              "Step 1: Contextualize the 1763 turning point: expelling France from mainland North America left Britain with massive war debt and vast western lands requiring defense against Indigenous coalitions like Pontiac's Rebellion.",
+              "Step 2: Trace causation: Britain ended salutary neglect through the Proclamation of 1763 and direct revenue taxes (Stamp Act, Townshend Acts), which colonists opposed by rejecting Parliament's claim of \"virtual representation\" in favor of consent through local assemblies.",
+              "Step 3: Conclude that colonial resistance escalated from petitions and boycotts to independence because colonists viewed unconsented taxation as a threat to English constitutional liberties, even while women, Indigenous nations, and enslaved people remained largely excluded."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "American colonists rebelled primarily because British tax rates were higher than taxes paid in Britain.",
+              "repair": "Colonists paid lower taxes than Britons at home; the core dispute was constitutional authority—whether an unrepresented Parliament could levy direct revenue taxes."
+            },
+            {
+              "misconception": "Most colonists demanded complete independence from Britain immediately after the Stamp Act of 1765.",
+              "repair": "Throughout the 1760s and early 1770s, most Patriots sought reconciliation and restoration of rights within the British Empire until bloodshed and Common Sense shifted opinion in 1776."
+            }
+          ]
         },
         {
           "id": "apush-ch-03-section-02",
@@ -3540,7 +3675,26 @@
           "contentComplete": true,
           "contentWordCount": 97,
           "contentBlockCount": 6,
-          "chapterId": "apush-ch-03"
+          "chapterId": "apush-ch-03",
+          "workedExample": {
+            "prompt": "Evaluate how Shays' Rebellion (1786–1787) exposed structural weaknesses of the Articles of Confederation and shaped the compromises embedded in the 1787 U.S. Constitution.",
+            "steps": [
+              "Step 1: Identify key structural limits of the Articles of Confederation: a unicameral Congress lacking the power to levy taxes, regulate interstate commerce, or maintain a standing national force—despite achieving the Northwest Ordinance of 1787.",
+              "Step 2: Connect Shays' Rebellion to constitutional reform: indebted Massachusetts farmers shutting down courts alarmed elites who feared federal helplessness, prompting the Philadelphia Convention to craft a stronger central government balanced by federalism, separation of powers, the Great Compromise, and the Three-Fifths Compromise.",
+              "Step 3: Conclude that while the Constitution stabilized national finance and authority, its compromises protected slavery and left political citizenship restricted mostly to propertied white men."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "The Articles of Confederation achieved nothing positive and failed in every policy domain before 1787.",
+              "repair": "Despite fiscal flaws, the Confederation Congress ended the Revolutionary War and passed the Northwest Ordinance (1787), organizing western lands and banning slavery there."
+            },
+            {
+              "misconception": "The Declaration of Independence served as the binding legal constitution of the United States after 1776.",
+              "repair": "The Declaration stated revolutionary ideals and justified separation; the Articles of Confederation (1781) and later the U.S. Constitution (1789) established national governing law."
+            }
+          ]
         },
         {
           "id": "apush-ch-03-section-03",
@@ -3790,7 +3944,26 @@
           "contentComplete": true,
           "contentWordCount": 81,
           "contentBlockCount": 6,
-          "chapterId": "apush-ch-03"
+          "chapterId": "apush-ch-03",
+          "workedExample": {
+            "prompt": "Compare the positions of Alexander Hamilton's Federalists and Thomas Jefferson's Democratic-Republicans regarding the First Bank of the United States and the French Revolution in the 1790s.",
+            "steps": [
+              "Step 1: Frame the First Party System around competing visions of constitutional interpretation, political economy, and foreign alignment during Washington's and Adams's presidencies.",
+              "Step 2: Compare both issues precisely: Hamilton invoked loose construction (Necessary and Proper Clause) to charter a national bank promoting commerce and favored British trade stability, whereas Jefferson favored strict construction, an agrarian republic, and sympathy for revolutionary France.",
+              "Step 3: Conclude that domestic economic policy and European wars reinforced each other to solidify durable political parties, culminating in the Alien and Sedition Acts crisis and the peaceful 1800 transfer of power."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "The Federalist Party of the 1790s and the Democratic-Republicans map neatly onto today's exact party platforms.",
+              "repair": "First Party System divisions centered on 1790s banking, strict vs. loose construction, and Britain vs. France, and should never be equated simplistically with modern parties."
+            },
+            {
+              "misconception": "George Washington's Farewell Address permanently kept the United States isolated from all international trade.",
+              "repair": "Washington warned against permanent political and military alliances—especially in European wars—while explicitly supporting commercial trade relations abroad."
+            }
+          ]
         }
       ],
       "knowledgeChecks": [
@@ -4161,7 +4334,26 @@
           "contentComplete": true,
           "contentWordCount": 78,
           "contentBlockCount": 6,
-          "chapterId": "apush-ch-04"
+          "chapterId": "apush-ch-04",
+          "workedExample": {
+            "prompt": "Analyze how the completion of the Erie Canal (1825) and the spread of the cotton gin reshaped regional economic specialization and household labor in the United States between 1800 and 1848.",
+            "steps": [
+              "Step 1: Define the Market Revolution as the integration of transportation (canals, steamboats, railroads), communication (telegraph), and factory production linking once-local economies into national markets.",
+              "Step 2: Trace regional causation: the Erie Canal slashed shipping costs between Midwestern grain farms and Northeastern cities like New York, while Eli Whitney's cotton gin expanded enslaved-labor cotton production in the South that supplied Northern textile mills such as Lowell.",
+              "Step 3: Conclude that market integration heightened regional interdependence while deepening sectional divides over wage labor versus enslaved labor and separating paid workplace production from the middle-class domestic sphere."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "The Market Revolution transformed only the industrial North while leaving the agricultural South isolated.",
+              "repair": "Southern cotton plantations were deeply integrated into the Market Revolution, supplying Northern and British mills and relying on Northern shipping, credit, and insurance."
+            },
+            {
+              "misconception": "Eli Whitney's cotton gin reduced the South's reliance on enslaved labor by making cotton processing easier.",
+              "repair": "By making short-staple cotton hugely profitable, the cotton gin dramatically accelerated westward plantation expansion and the domestic slave trade."
+            }
+          ]
         },
         {
           "id": "apush-ch-04-section-02",
@@ -4411,7 +4603,26 @@
           "contentComplete": true,
           "contentWordCount": 85,
           "contentBlockCount": 6,
-          "chapterId": "apush-ch-04"
+          "chapterId": "apush-ch-04",
+          "workedExample": {
+            "prompt": "Evaluate the extent to which the Age of Jackson (1824–1840) expanded American democracy, using universal white male suffrage, the Bank War, and the Indian Removal Act (1830) as evidence.",
+            "steps": [
+              "Step 1: Establish a nuanced APUSH thesis recognizing real democratic expansion for white men alongside sharp executive centralization and racial/gender exclusion.",
+              "Step 2: Weigh contrasting evidence: states dropped property requirements for white male voters and fostered mass campaigning, yet Jackson vetoed the Second Bank of the United States as an aristocratic monopoly while enforcing the Indian Removal Act despite Cherokee legal victory in Worcester v. Georgia (1832).",
+              "Step 3: Conclude that Jacksonian democracy widened white male political participation while simultaneously disenfranchising free Black men in several states, excluding women, and violently dispossessing Indigenous nations on the Trail of Tears."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Andrew Jackson supported weak executive power and strict states' rights in every constitutional conflict.",
+              "repair": "While Jackson opposed federal internal improvements and the national bank, he forcefully asserted federal supremacy against South Carolina during the Nullification Crisis."
+            },
+            {
+              "misconception": "Expanded white male suffrage during the 1820s–1830s coincided with expanding voting rights for free Black men and women.",
+              "repair": "As states eliminated property tests for white men, several Northern states simultaneously added explicit racial or gender restrictions stripping free Black men of the vote."
+            }
+          ]
         },
         {
           "id": "apush-ch-04-section-03",
@@ -4661,7 +4872,26 @@
           "contentComplete": true,
           "contentWordCount": 83,
           "contentBlockCount": 6,
-          "chapterId": "apush-ch-04"
+          "chapterId": "apush-ch-04",
+          "workedExample": {
+            "prompt": "Explain how the Second Great Awakening catalyzed both the immediate abolition movement and the early women's rights movement culminating in the 1848 Seneca Falls Convention.",
+            "steps": [
+              "Step 1: Contextualize the Second Great Awakening as an evangelical revival emphasizing free will, moral perfectionism, and individual responsibility to combat social sin.",
+              "Step 2: Trace causal links across reform networks: inspired by revivalist morality, activists like William Lloyd Garrison, Frederick Douglass, and Angelina Grimké formed voluntary societies demanding immediate emancipation, while women barred from speaking or leadership at antislavery conventions organized the Seneca Falls Declaration of Sentiments.",
+              "Step 3: Conclude that religious revivalism supplied rhetoric and organizational tools for antebellum reform, though entrenched legal patriarchy and Southern proslavery defense prevented immediate structural equality."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Most antebellum Northern whites supported immediate abolition and racial equality by the 1830s.",
+              "repair": "Immediate abolitionists were an unpopular minority even in the North, frequently facing anti-abolitionist mobs, press destruction, and congressional gag rules."
+            },
+            {
+              "misconception": "The Seneca Falls Convention of 1848 quickly secured women's suffrage across the Northern states.",
+              "repair": "Seneca Falls launched an organized national women's rights movement, but nationwide women's suffrage was not achieved until the Nineteenth Amendment in 1920."
+            }
+          ]
         }
       ],
       "knowledgeChecks": [
@@ -5032,7 +5262,26 @@
           "contentComplete": true,
           "contentWordCount": 71,
           "contentBlockCount": 6,
-          "chapterId": "apush-ch-05"
+          "chapterId": "apush-ch-05",
+          "workedExample": {
+            "prompt": "Explain how the Mexican-American War (1846–1848) and the Kansas-Nebraska Act (1854) turned territorial expansion into an irreconcilable sectional crisis over slavery.",
+            "steps": [
+              "Step 1: Contextualize Manifest Destiny as an ideology justifying westward expansion across Indigenous and Mexican lands, reopening the dormant federal question of slavery in new territories.",
+              "Step 2: Trace escalation: the Mexican Cession provoked the Wilmot Proviso and fragile Compromise of 1850 (with its harsh Fugitive Slave Act), while the 1854 Kansas-Nebraska Act repealed the Missouri Compromise line via popular sovereignty, triggering \"Bleeding Kansas\" and shattering the Second Party System.",
+              "Step 3: Conclude that legislative compromises temporarily postponed secession while inflaming distrust—especially after Dred Scott v. Sandford (1857) denied Congress power to ban slavery in territories and fueled the rise of the Republican Party."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "The Compromise of 1850 resolved sectional tensions permanently until Abraham Lincoln's election in 1860.",
+              "repair": "The Compromise of 1850 deepened Northern outrage through the stricter Fugitive Slave Act, and the 1854 Kansas-Nebraska Act quickly unraveled its fragile truce."
+            },
+            {
+              "misconception": "The newly formed Republican Party of the 1850s ran on immediately abolishing slavery inside Southern states.",
+              "repair": "The Free-Soil Republican platform opposed the expansion of slavery into western territories, stopping short of immediate constitutional abolition in existing slave states."
+            }
+          ]
         },
         {
           "id": "apush-ch-05-section-02",
@@ -5282,7 +5531,26 @@
           "contentComplete": true,
           "contentWordCount": 78,
           "contentBlockCount": 6,
-          "chapterId": "apush-ch-05"
+          "chapterId": "apush-ch-05",
+          "workedExample": {
+            "prompt": "Analyze how the Emancipation Proclamation (1863) and African American military service transformed Union war aims and laid the groundwork for the Thirteenth Amendment (1865).",
+            "steps": [
+              "Step 1: Situate Union war aims in 1861 as preserving the Union, before wartime realities and self-emancipation by enslaved people fleeing to Union lines forced policy evolution.",
+              "Step 2: Apply strategic and constitutional analysis: issued under Lincoln's commander-in-chief war powers, the Emancipation Proclamation freed enslaved people in rebelling states (sparing loyal border states), deterred British/French intervention, and authorized nearly 200,000 Black soldiers in the U.S. Colored Troops.",
+              "Step 3: Conclude that because a wartime proclamation might be challenged after peace, Congress and the states ratified the Thirteenth Amendment to abolish slavery permanently nationwide."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "The Emancipation Proclamation immediately freed every enslaved person across the entire United States in 1863.",
+              "repair": "As a military war measure, the Proclamation applied only to rebelling Confederate areas, excluding loyal Union border states until the Thirteenth Amendment passed in 1865."
+            },
+            {
+              "misconception": "Enslaved people waited passively for Union politicians to grant them freedom during the Civil War.",
+              "repair": "Hundreds of thousands self-emancipated by fleeing to Union lines (\"contrabands\"), depriving the Confederacy of labor and pressing federal officials toward emancipation."
+            }
+          ]
         },
         {
           "id": "apush-ch-05-section-03",
@@ -5532,7 +5800,26 @@
           "contentComplete": true,
           "contentWordCount": 83,
           "contentBlockCount": 6,
-          "chapterId": "apush-ch-05"
+          "chapterId": "apush-ch-05",
+          "workedExample": {
+            "prompt": "Evaluate continuity and change in the citizenship rights of African Americans during Reconstruction (1865–1877), contrasting constitutional amendments with postwar Southern realities.",
+            "steps": [
+              "Step 1: Identify transformative legal change: the Fourteenth Amendment guaranteed birthright citizenship and equal protection, while the Fifteenth Amendment barred racial restrictions on male suffrage, enabling Black voters to elect hundreds of officeholders and build churches and schools.",
+              "Step 2: Trace persistent structural limits and backlash: sharecropping trapped many freedpeople in debt, while Black Codes, Ku Klux Klan terror, restrictive Supreme Court rulings, and fading Northern resolve undermined enforcement.",
+              "Step 3: Conclude that although the Compromise of 1877 ended federal military protection and ushered in Jim Crow disenfranchisement, the Reconstruction Amendments remained enduring constitutional tools for twentieth-century civil rights victories."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "The Fifteenth Amendment granted voting rights to all formerly enslaved people regardless of gender.",
+              "repair": "The Fifteenth Amendment barred voting discrimination by race, color, or previous servitude, but omitted sex—splitting the women's suffrage movement over ratification."
+            },
+            {
+              "misconception": "Reconstruction failed simply because freedpeople lacked political organization or educational initiative.",
+              "repair": "Freedpeople rapidly built schools, churches, and high voter turnout; Reconstruction collapsed due to violent white Southern Redeemer terrorism and Northern political retreat."
+            }
+          ]
         }
       ],
       "knowledgeChecks": [
@@ -5903,7 +6190,26 @@
           "contentComplete": true,
           "contentWordCount": 69,
           "contentBlockCount": 6,
-          "chapterId": "apush-ch-06"
+          "chapterId": "apush-ch-06",
+          "workedExample": {
+            "prompt": "Explain how federal railroad subsidies, the Homestead Act (1862), and the Dawes Severalty Act (1887) worked together to transform the American West and erode Indigenous sovereignty.",
+            "steps": [
+              "Step 1: Reject the \"empty frontier\" myth by situating the post-Civil War West as home to sovereign Plains and Southwestern Indigenous nations targeted by coordinated federal expansion policies.",
+              "Step 2: Connect economic policy to dispossession: Pacific Railway Act land grants linked western ranches, mines, and Homestead farms to Eastern markets while accelerating bison slaughter, and the Dawes Act broke up communal tribal reservations into individual plots to force assimilation and sell \"surplus\" land to settlers.",
+              "Step 3: Conclude that western settlement was heavily state-sponsored rather than purely rugged individualism, stripping roughly two-thirds of remaining tribal lands by the early twentieth century despite Indigenous military and cultural resistance."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Western expansion succeeded purely through laissez-faire private initiative without federal government help.",
+              "repair": "Federal land grants to railroads, Homestead allotments, and U.S. Army campaigns against Indigenous nations were decisive state interventions driving western settlement."
+            },
+            {
+              "misconception": "The Dawes Act of 1887 protected tribal land ownership by guaranteeing communal reservations in perpetuity.",
+              "repair": "The Dawes Act dismantled communal tribal landholding into individual allotments to compel assimilation, transferring tens of millions of acres out of Indigenous control."
+            }
+          ]
         },
         {
           "id": "apush-ch-06-section-02",
@@ -6153,7 +6459,26 @@
           "contentComplete": true,
           "contentWordCount": 76,
           "contentBlockCount": 6,
-          "chapterId": "apush-ch-06"
+          "chapterId": "apush-ch-06",
+          "workedExample": {
+            "prompt": "Compare vertical integration under Andrew Carnegie with horizontal integration under John D. Rockefeller, and explain how rapid industrial growth reshaped Gilded Age cities.",
+            "steps": [
+              "Step 1: Define corporate consolidation strategies of the Second Industrial Revolution: Carnegie Steel controlled every production stage from iron mines to railroads (vertical integration), while Standard Oil absorbed rival refineries into a dominant trust (horizontal integration).",
+              "Step 2: Distinguish aggregate output from social distribution: mass production lowered consumer steel and kerosene prices and enriched industrialists defending Social Darwinism or the Gospel of Wealth, yet low wages, overcrowded urban tenements, and machine politics (such as Tammany Hall) spurred settlement-house reform like Jane Addams's Hull House.",
+              "Step 3: Conclude that Gilded Age industrial capitalism generated unprecedented national output while widening wealth inequality and fueling early calls for antitrust and municipal regulation."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Vertical integration and horizontal integration both mean buying out direct competitors in the same industry.",
+              "repair": "Buying out competing firms is horizontal integration (Rockefeller); vertical integration (Carnegie) means controlling supply, transport, and distribution stages of one product."
+            },
+            {
+              "misconception": "The Sherman Antitrust Act of 1890 immediately broke up major Gilded Age industrial trusts.",
+              "repair": "Early Supreme Court rulings like U.S. v. E.C. Knight weakened antitrust enforcement against manufacturers, and courts initially used the act more often against labor unions."
+            }
+          ]
         },
         {
           "id": "apush-ch-06-section-03",
@@ -6403,7 +6728,26 @@
           "contentComplete": true,
           "contentWordCount": 85,
           "contentBlockCount": 6,
-          "chapterId": "apush-ch-06"
+          "chapterId": "apush-ch-06",
+          "workedExample": {
+            "prompt": "Explain why industrial employers welcomed \"New Immigrants\" in the late nineteenth century even as nativist legislation like the Chinese Exclusion Act (1882) and anti-strike injunctions intensified.",
+            "steps": [
+              "Step 1: Contextualize post-1880 migration: millions of Southern and Eastern European immigrants and Asian laborers entered industrial factories, mines, and railroads, creating vibrant urban ethnic enclaves alongside nativist anxiety.",
+              "Step 2: Analyze the coexistence of labor demand and nativism: employers relied on abundant immigrant labor to keep wages low and fragment union solidarity, while native-born workers and political elites blamed newcomers for wage competition or radicalism—prompting the Chinese Exclusion Act (1882) and federal injunctions crushing strikes like Pullman (1894).",
+              "Step 3: Conclude that Gilded Age labor conflict pitted unions (inclusive Knights of Labor vs. skilled-craft AFL) against a business-friendly federal judiciary while exposing deep ethnic and racial divisions within the working class."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "The Knights of Labor and the American Federation of Labor shared identical membership rules and goals.",
+              "repair": "The Knights of Labor welcomed unskilled workers, women, and Black laborers for broad reform; the AFL organized mostly white male skilled craft workers for wages and hours."
+            },
+            {
+              "misconception": "Federal authorities stayed strictly neutral during major Gilded Age strikes such as 1877 and Pullman.",
+              "repair": "Presidents and federal courts repeatedly intervened on management's side by deploying federal troops and issuing anti-strike injunctions to keep railroads running."
+            }
+          ]
         }
       ],
       "knowledgeChecks": [
@@ -6774,7 +7118,26 @@
           "contentComplete": true,
           "contentWordCount": 79,
           "contentBlockCount": 6,
-          "chapterId": "apush-ch-07"
+          "chapterId": "apush-ch-07",
+          "workedExample": {
+            "prompt": "Evaluate how Progressive Era reforms (1890–1920) expanded federal and state regulatory capacity while simultaneously reflecting significant exclusions regarding race and social control.",
+            "steps": [
+              "Step 1: Identify Progressive goals: using investigative journalism (muckrakers like Upton Sinclair and Ida Tarbell) and expert-led government to curb corporate monopoly, unsafe products, and political corruption.",
+              "Step 2: Balance institutional achievements with exclusions: reforms produced the Pure Food and Drug Act, Federal Reserve, initiative/referendum, and the 16th–19th Amendments, yet most mainstream white Progressives ignored Jim Crow lynching—leaving Ida B. Wells and W.E.B. Du Bois's NAACP to fight racial terror—and some backed eugenics or restrictive literacy tests.",
+              "Step 3: Conclude that Progressivism permanently expanded the activist regulatory state, but its diverse coalitions pursued reform in ways that often reinforced racial segregation and elite control."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "The Progressive movement was a single unified party that championed racial integration and civil rights.",
+              "repair": "Progressives spanned both major parties and varied widely; many Southern and national Progressives accepted or actively defended Jim Crow segregation alongside economic reforms."
+            },
+            {
+              "misconception": "Muckrakers like Upton Sinclair aimed primarily to shut down the entire capitalist market system permanently.",
+              "repair": "Most Progressives sought to regulate and stabilize industrial capitalism through consumer safety, antitrust enforcement, and labor laws rather than abolish private enterprise."
+            }
+          ]
         },
         {
           "id": "apush-ch-07-section-02",
@@ -7024,7 +7387,26 @@
           "contentComplete": true,
           "contentWordCount": 74,
           "contentBlockCount": 6,
-          "chapterId": "apush-ch-07"
+          "chapterId": "apush-ch-07",
+          "workedExample": {
+            "prompt": "Compare the arguments of expansionists and the Anti-Imperialist League over U.S. annexation of the Philippines after the 1898 Spanish-American War, connecting the debate to national identity.",
+            "steps": [
+              "Step 1: Situate 1898 as a watershed in U.S. foreign policy when victory over Spain yielded Puerto Rico, Guam, and the Philippines, triggering a bloody Philippine-American War.",
+              "Step 2: Compare competing rationales: imperialists cited Alfred Thayer Mahan's naval power thesis, Asian export markets, and paternalistic racial duty, whereas Anti-Imperialist League critics argued ruling overseas subjects without consent violated the Declaration of Independence—though some critics also voiced nativist fears of nonwhite annexation.",
+              "Step 3: Conclude that overseas empire forced Americans to confront whether a constitutional republic could govern colonies, a tension echoed later in World War I debates over Wilson's League of Nations."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "All members of the Anti-Imperialist League opposed Philippine annexation out of commitment to racial equality.",
+              "repair": "Some anti-imperialists defended self-determination, but others opposed annexation out of nativist fears of incorporating nonwhite populations or competing Asian labor."
+            },
+            {
+              "misconception": "The United States retreated into complete global isolation with no international diplomacy during the 1920s.",
+              "repair": "Although the Senate rejected the League of Nations, the 1920s U.S. actively engaged abroad via the Washington Naval Conference, Dawes Plan loans, and Kellogg-Briand Pact."
+            }
+          ]
         },
         {
           "id": "apush-ch-07-section-03",
@@ -7274,7 +7656,26 @@
           "contentComplete": true,
           "contentWordCount": 86,
           "contentBlockCount": 6,
-          "chapterId": "apush-ch-07"
+          "chapterId": "apush-ch-07",
+          "workedExample": {
+            "prompt": "Analyze how the New Deal and World War II mobilization jointly expanded federal power and economic opportunity while producing sharp civil-liberties contradictions on the home front.",
+            "steps": [
+              "Step 1: Connect the 1930s New Deal (relief, recovery, reform via agencies like the WPA, FDIC, and Social Security) to the massive wartime industrial surge of World War II.",
+              "Step 2: Apply comparison and contradiction: New Deal social insurance reshaped the federal safety net yet excluded agricultural and domestic workers, while WWII mobilization ended the Depression and opened war jobs even as Executive Order 9066 incarcerated over 110,000 Japanese Americans.",
+              "Step 3: Conclude that the 1933–1945 era forged the modern federal welfare and national-security state, while home-front inequities spurred the Double V campaign and postwar civil rights organizing."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "New Deal programs alone ended the Great Depression and restored full employment by 1936.",
+              "repair": "The New Deal relieved suffering and reformed banking and labor, but mass unemployment persisted through the 1937 recession until WWII defense mobilization achieved full employment."
+            },
+            {
+              "misconception": "Executive Order 9066 detained only Japanese immigrants who lacked U.S. citizenship during World War II.",
+              "repair": "Roughly two-thirds of the over 110,000 people forcibly removed to incarceration camps were native-born U.S. citizens (Nisei), upheld at the time in Korematsu v. United States (1944)."
+            }
+          ]
         }
       ],
       "knowledgeChecks": [
@@ -7645,7 +8046,26 @@
           "contentComplete": true,
           "contentWordCount": 90,
           "contentBlockCount": 6,
-          "chapterId": "apush-ch-08"
+          "chapterId": "apush-ch-08",
+          "workedExample": {
+            "prompt": "Explain how U.S. containment policy evolved from economic aid in Western Europe to military and covert interventions in Asia and the Middle East between 1947 and 1975.",
+            "steps": [
+              "Step 1: Define containment (articulated by George Kennan and formalized in the 1947 Truman Doctrine) as the postwar strategy to prevent Soviet geopolitical and ideological expansion without direct superpower war.",
+              "Step 2: Trace regional variation: in Europe, the Marshall Plan and NATO rebuilt stable democratic allies, whereas in Korea, Vietnam, Iran (1953), and Guatemala (1954), U.S. policymakers applied military force or covert coups—often misreading local anti-colonial nationalism solely as Moscow-directed communism.",
+              "Step 3: Conclude that containment blended diplomacy, aid, alliances, and armed conflict across Cold War crises before Nixon's détente with China and the USSR signaled a pragmatic shift in the 1970s."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Containment policy meant invading the Soviet Union directly to roll back communism across Eastern Europe.",
+              "repair": "Containment aimed to block further Soviet expansion through alliances, aid, and proxy deterrence rather than launching direct military invasion of the Soviet bloc."
+            },
+            {
+              "misconception": "Cold War crises in developing nations were caused solely by Soviet manipulation rather than local politics.",
+              "repair": "Postcolonial leaders in Vietnam, Iran, and Latin America pursued local nationalist and land-reform agendas that superpowers often misinterpreted through a rigid bipolar lens."
+            }
+          ]
         },
         {
           "id": "apush-ch-08-section-02",
@@ -7895,7 +8315,26 @@
           "contentComplete": true,
           "contentWordCount": 74,
           "contentBlockCount": 6,
-          "chapterId": "apush-ch-08"
+          "chapterId": "apush-ch-08",
+          "workedExample": {
+            "prompt": "Evaluate how grassroots activism and federal intervention interacted to dismantle legal segregation between 1954 and 1965, and explain one major limitation that persisted afterward.",
+            "steps": [
+              "Step 1: Trace the two-track civil rights strategy: NAACP legal victories like Brown v. Board of Education (1954) paired with local direct action—the Montgomery Bus Boycott, SNCC sit-ins, Freedom Rides, Birmingham, and Selma.",
+              "Step 2: Show causation between grassroots pressure and federal law: televised violent backlash against peaceful marchers compelled Congress and President Johnson to pass the Civil Rights Act of 1964 and Voting Rights Act of 1965, inspiring parallel organizing by Chicano farmworkers (UFW), women (NOW), Indigenous activists (AIM), and LGBTQ+ activists.",
+              "Step 3: Conclude that while federal statutes ended de jure Jim Crow segregation, de facto residential segregation, redlining, and economic disparities persisted nationwide, fueling urban unrest and Black Power critiques."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Federal presidents and Congress initiated civil rights laws on their own without grassroots pressure.",
+              "repair": "Federal action followed sustained local organizing, boycotts, sit-ins, and voter drives whose public confrontations made inaction politically untenable."
+            },
+            {
+              "misconception": "Racial segregation and discrimination existed only under Southern Jim Crow laws prior to 1965.",
+              "repair": "Northern and Western cities enforced entrenched de facto segregation through federal redlining, restrictive housing covenants, and unequal school funding."
+            }
+          ]
         },
         {
           "id": "apush-ch-08-section-03",
@@ -8145,7 +8584,26 @@
           "contentComplete": true,
           "contentWordCount": 87,
           "contentBlockCount": 6,
-          "chapterId": "apush-ch-08"
+          "chapterId": "apush-ch-08",
+          "workedExample": {
+            "prompt": "Analyze how the Vietnam War and President Lyndon Johnson's Great Society jointly reshaped debates over executive authority, liberalism, and political coalitions between 1964 and 1974.",
+            "steps": [
+              "Step 1: Connect domestic and foreign policy in the 1960s: the Great Society expanded New Deal liberalism through Medicare, Medicaid, Head Start, and anti-poverty programs, while the 1964 Gulf of Tonkin Resolution authorized sweeping presidential escalation in Vietnam.",
+              "Step 2: Trace the resulting political realignment: mounting casualties, the 1968 Tet Offensive, and the Pentagon Papers produced a \"credibility gap\" prompting the 1973 War Powers Act, while war inflation squeezed Great Society funding and cultural clashes over antiwar protests and social norms fractured the New Deal Democratic coalition.",
+              "Step 3: Conclude that simultaneous Vietnam disillusionment, stagflation, and backlash against liberal social change eroded public trust in government and fueled conservative mobilization into the 1970s."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Congress formally declared war on North Vietnam before U.S. combat troops deployed in 1965.",
+              "repair": "Congress never formally declared war; the 1964 Gulf of Tonkin Resolution granted broad presidential war authority, later checked by the 1973 War Powers Act."
+            },
+            {
+              "misconception": "Most American youth in the late 1960s joined radical communes and universally opposed the Vietnam War.",
+              "repair": "The counterculture was highly visible in media, but young Americans were politically diverse, and support for traditional values and conservative youth groups also grew rapidly."
+            }
+          ]
         }
       ],
       "knowledgeChecks": [
@@ -8516,7 +8974,26 @@
           "contentComplete": true,
           "contentWordCount": 78,
           "contentBlockCount": 6,
-          "chapterId": "apush-ch-09"
+          "chapterId": "apush-ch-09",
+          "workedExample": {
+            "prompt": "Evaluate the extent to which the Reagan administration (1981–1989) succeeded in rolling back the size and scope of the federal government created by the New Deal and Great Society.",
+            "steps": [
+              "Step 1: Contextualize the 1980 conservative coalition uniting economic supply-siders, Sun Belt suburbanites, Cold War hawks, and evangelical voters (such as the Moral Majority) behind Ronald Reagan.",
+              "Step 2: Measure real policy change against continuity: Reagan enacted sweeping marginal income tax cuts (1981), industry deregulation, and union pushback (PATCO), yet sharp defense spending increases expanded federal deficits and broad bipartisan support kept core entitlements like Social Security and Medicare intact.",
+              "Step 3: Conclude that Reaganism shifted political discourse rightward and slowed new domestic welfare expansion, representing a partial conservative realignment rather than the dismantling of the federal state."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Reagan's supply-side tax cuts eliminated the federal budget deficit and abolished Social Security.",
+              "repair": "Tax cuts paired with major Cold War military expansion tripled the national debt during the 1980s, and popular entitlements like Social Security and Medicare survived."
+            },
+            {
+              "misconception": "The conservative resurgence appeared suddenly in 1980 with no prior grassroots organization.",
+              "repair": "Modern conservatism built steadily over decades from Barry Goldwater's 1964 campaign, Sun Belt growth, think tanks, tax revolts like Proposition 13, and religious mobilization."
+            }
+          ]
         },
         {
           "id": "apush-ch-09-section-02",
@@ -8766,7 +9243,26 @@
           "contentComplete": true,
           "contentWordCount": 76,
           "contentBlockCount": 6,
-          "chapterId": "apush-ch-09"
+          "chapterId": "apush-ch-09",
+          "workedExample": {
+            "prompt": "Explain how post-1980 economic globalization, digital technology, and migration reshaped regional power and political debates across the Rust Belt and Sun Belt.",
+            "steps": [
+              "Step 1: Identify structural shifts since 1980: global trade agreements like NAFTA (1994), digital computing/internet industries, and sustained immigration shaped by the 1965 Immigration and Nationality Act.",
+              "Step 2: Apply regional comparison: while aggregate GDP grew and finance/tech hubs boomed, manufacturing offshoring hollowed out unionized Rust Belt industrial towns even as domestic and international migrants swelled Sun Belt cities, shifting electoral votes southward and westward.",
+              "Step 3: Conclude that national economic averages concealed sharp regional and income divergence, fueling contemporary debates over free trade, automation, wage stagnation, and immigration policy."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Post-1980 manufacturing job losses were caused entirely by foreign trade agreements like NAFTA.",
+              "repair": "Trade liberalization contributed to factory offshoring, but automation, robotics, and domestic shifts toward service and technology sectors also drove steep industrial job declines."
+            },
+            {
+              "misconception": "Post-1965 U.S. immigration came predominantly from Northern and Western Europe just as in the 1840s.",
+              "repair": "Abolishing national-origins quotas in 1965 shifted immigration heavily toward Latin America and Asia, transforming American demographics and urban culture."
+            }
+          ]
         },
         {
           "id": "apush-ch-09-section-03",
@@ -9016,7 +9512,26 @@
           "contentComplete": true,
           "contentWordCount": 95,
           "contentBlockCount": 6,
-          "chapterId": "apush-ch-09"
+          "chapterId": "apush-ch-09",
+          "workedExample": {
+            "prompt": "Analyze how the end of the Cold War (1989–1991) and the September 11, 2001 attacks altered U.S. foreign policy priorities and domestic debates over national security and civil liberties.",
+            "steps": [
+              "Step 1: Frame the post-Cold War transition: the Soviet Union's 1991 collapse left the United States the sole superpower, shifting focus from bipolar containment to regional crises (Persian Gulf War, Balkans) and transnational terrorism.",
+              "Step 2: Apply causation to post-9/11 policy: the 2001 attacks triggered the War on Terror—including invasions of Afghanistan (2001) and Iraq (2003)—and domestic legislation like the USA PATRIOT Act expanding surveillance powers and creating the Department of Homeland Security.",
+              "Step 3: Conclude that twenty-first-century U.S. history reflects enduring tension between unilateral global intervention versus multilateral limits abroad, and between counterterrorism security and Fourth Amendment privacy rights at home."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "The collapse of the Soviet Union in 1991 ended major U.S. overseas military deployments permanently.",
+              "repair": "Despite post-Cold War hopes for a \"peace dividend,\" U.S. forces intervened repeatedly in the Persian Gulf, Somalia, the Balkans, Afghanistan, and Iraq."
+            },
+            {
+              "misconception": "The USA PATRIOT Act passed unanimously without any subsequent constitutional debate over civil liberties.",
+              "repair": "Although enacted with broad post-9/11 majorities, its warrantless metadata collection and expanded surveillance triggered sustained legal challenges and bipartisan privacy reforms."
+            }
+          ]
         }
       ],
       "knowledgeChecks": [
@@ -10815,5 +11330,689 @@
     "status": "complete",
     "reviewStatus": "source-reviewed-editorial-pass",
     "note": "All native AP U.S. History foundation sections use structured lesson blocks and remain subject-expert pending."
-  }
+  },
+  "quickReference": [
+    {
+      "id": "ap-ush-reference-01",
+      "domainId": "period-1-1491-1607",
+      "domainLabel": "Unit 1: Period 1: 1491-1607",
+      "title": "Pre-Columbian Societies & the Columbian Exchange",
+      "purpose": "Anchors environmental adaptation among Indigenous nations, Spanish imperial labor systems, and transatlantic biological and demographic transformation.",
+      "checklistLabel": "Before answering",
+      "formulasLabel": "Key periods & turning points",
+      "checklist": [
+        "Connect each pre-1492 Indigenous society directly to its regional environment (arid Southwest, Great Plains, Northeast woodlands, or Pacific Northwest).",
+        "Trace bidirectional Columbian Exchange flows carefully: New World crops went east, while Old World livestock and epidemic diseases came west.",
+        "Distinguish Spanish crown motives (wealth, Catholic conversion, imperial prestige) from how Spanish colonists actually treated Indigenous and African labor."
+      ],
+      "formulas": [
+        "Regional Indigenous diversity (pre-1492): maize irrigation among Southwest Pueblo; mobile bison hunting on Great Plains; Three Sisters agriculture & Iroquois Confederacy in Northeast; maritime fishing/plank houses in Pacific Northwest.",
+        "Columbian Exchange (post-1492): American maize, potatoes, and cassava fueled European/African population growth; European horses transformed Plains hunting while smallpox/measles caused catastrophic Indigenous mortality.",
+        "Spanish colonial labor & hierarchy: encomienda system extracted Indigenous tribute/labor; casta system ranked peninsulares, criollos, mestizos, and mulattoes; declining Indigenous populations spurred the transatlantic African slave trade (asiento).",
+        "Valladolid Debate (1550–1551): Bartolomé de las Casas challenged Juan Ginés de Sepúlveda over Indigenous humanity and harsh encomienda abuses, leading to the New Laws of 1542."
+      ],
+      "decisionRules": [
+        "When you see an APUSH prompt asking why European populations grew rapidly after 1500 → cite calorie-dense New World crops (potatoes, maize) and silver bullion shifting Europe from feudalism toward capitalism.",
+        "When you see an excerpt comparing Pueblo irrigation villages with Great Plains nomadic camps → argue that local climate and resource availability shaped distinct economic and social structures.",
+        "When you see Spanish authorities transitioning from encomienda labor toward African chattel slavery → link the shift to Indigenous demographic collapse from disease, resistance, and Las Casas's advocacy.",
+        "When you see joint-stock companies mentioned alongside 16th-century exploration → identify pooled investor capital spreading maritime risk as Spain's silver influx reshaped European trade."
+      ],
+      "cautions": [
+        "Do not treat pre-Columbian Native Americans as a single uniform culture; APUSH rubrics reward specific regional contrasts tied to ecology.",
+        "Horses were NOT native to the Americas in 1491; Spanish introduction reshaped Great Plains bison hunting after European contact.",
+        "Period 1 ends in 1607 with Jamestown—do not pull Puritan Massachusetts Bay (1630) or Bacon's Rebellion (1676) back into Period 1."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-ush-reference-02",
+      "domainId": "period-2-1607-1754",
+      "domainLabel": "Unit 2: Period 2: 1607-1754",
+      "title": "Colonial Regions, Labor Shifts & Atlantic Worlds",
+      "purpose": "Contrasts European imperial models and British colonial regions while tracking the rise of chattel slavery, mercantilism, and religious revival.",
+      "checklistLabel": "Before answering",
+      "formulasLabel": "Key periods & turning points",
+      "checklist": [
+        "Compare European empires by settlement pattern: Spanish extraction/missions, French/Dutch fur-trade alliances, and British populous settler agriculture.",
+        "Differentiate Chesapeake/Southern plantation colonies, New England Puritan communities, and diverse Middle Colonies by economy, family structure, and labor system.",
+        "Keep Period 2 strictly before the Seven Years' War (1754)—colonies operated under mercantilist Navigation Acts paired with loose salutary neglect."
+      ],
+      "formulas": [
+        "British regional divergence: Jamestown (1607) & Chesapeake tobacco monoculture; Plymouth (1620) & Massachusetts Bay (1630) Puritan family towns; Middle Colonies (\"breadbasket\") with Quaker/Dutch religious tolerance; Caribbean sugar plantations.",
+        "Transition to racialized chattel slavery: Bacon's Rebellion (1676) alarmed Virginia planters over landless former indentured servants, accelerating reliance on enslaved Africans codified in strict slave codes; Stono Rebellion (1739) spurred harsher controls.",
+        "Indigenous resistance: Metacom's / King Philip's War (1675–1676) devastated New England Algonquian power; Pueblo Revolt (1680) led by Popé temporarily expelled Spanish rule from New Mexico and won greater religious accommodation.",
+        "Transatlantic currents: Navigation Acts enforced mercantilism amid salutary neglect; First Great Awakening (Jonathan Edwards, George Whitefield) challenged clerical authority alongside Enlightenment natural-rights print culture."
+      ],
+      "decisionRules": [
+        "When you see a question explaining why Virginia planters shifted from white indentured servants to enslaved Africans after 1676 → cite Bacon's Rebellion, rising European wages shrinking servant supply, and permanent hereditary labor codes.",
+        "When you see a comparison of French and British relations with Native Americans → emphasize that smaller French fur-trading populations relied on intermarriage and military alliances, whereas land-hungry British settlers displaced tribes.",
+        "When you see a 1740s sermon emphasizing emotional personal conversion and questioning established ministers → link it to the First Great Awakening fostering intercolonial identity and challenges to hierarchy.",
+        "When you see colonial assemblies like the Virginia House of Burgesses or New England town meetings → connect self-governance to salutary neglect and distance from London."
+      ],
+      "cautions": [
+        "Slavery existed in ALL thirteen British colonies (including New York and New England), though plantation economies in the Chesapeake, Carolinas, and West Indies relied on it most heavily.",
+        "Puritans in Massachusetts Bay sought religious freedom for themselves, NOT broad religious toleration for dissenters like Roger Williams or Anne Hutchinson.",
+        "The First Great Awakening did not directly call for American independence in the 1740s; rather, it habituated colonists to questioning institutional authority."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-ush-reference-03",
+      "domainId": "period-3-1754-1800",
+      "domainLabel": "Unit 3: Period 3: 1754-1800",
+      "title": "Imperial Crisis, Revolution & the Early Republic",
+      "purpose": "Traces the pivot from the Seven Years' War to independence, constitutional design, and the ideological clash of the First Party System.",
+      "checklistLabel": "Before answering",
+      "formulasLabel": "Key periods & turning points",
+      "checklist": [
+        "Anchor 1763 as the decisive turning point ending salutary neglect because British war debt triggered direct parliamentary taxation and western settlement limits.",
+        "Trace the structural leap from the Articles of Confederation (state sovereignty, no taxing power) to the 1787 Constitution (federalism, checks and balances).",
+        "Separate Hamiltonian Federalists (national bank, loose construction, pro-British trade) from Jeffersonian Democratic-Republicans (agrarianism, strict construction, pro-French)."
+      ],
+      "formulas": [
+        "Road to Revolution (1754–1776): Seven Years' War → Proclamation of 1763, Stamp Act (1765), Townshend Duties, Boston Tea Party (1773), Coercive Acts → Thomas Paine's Common Sense & Declaration of Independence (1776).",
+        "Revolutionary War & aftermath: Battle of Saratoga (1777) secured the decisive French alliance; Treaty of Paris (1783) recognized U.S. independence; Republican Motherhood expanded women's civic role in educating virtuous citizens.",
+        "Confederation to Constitution: Northwest Ordinance (1787) created orderly statehood and banned slavery in Northwest Territory, while Shays' Rebellion (1786–1787) exposed federal weakness → 1787 Constitution & 1791 Bill of Rights.",
+        "Early Republic First Party System (1790s): Hamilton's Financial Plan (debt assumption, BUS, tariffs), Whiskey Rebellion (1794), Washington's Farewell Address (1796 warning against factions and permanent foreign alliances), Alien & Sedition Acts (1798) and Virginia/Kentucky Resolutions."
+      ],
+      "decisionRules": [
+        "When you see a 1760s colonial protest citing \"no taxation without representation\" → note colonists rejected British \"virtual representation\" while initially seeking restored imperial rights, not immediate independence.",
+        "When you see a comparison of Shays' Rebellion (1786) and the Whiskey Rebellion (1794) → contrast Articles helplessness with Washington's decisive federal enforcement under the new Constitution.",
+        "When you see Virginia and Kentucky Resolutions (1798) responding to the Alien and Sedition Acts → identify early states'-rights nullification arguments contesting federal overreach.",
+        "When you see a prompt on Revolutionary War limitations → note gradual northern emancipation contrasted with constitutional protections for slavery (Three-Fifths Compromise, 1808 slave-trade clause) and westward displacement of Native allies."
+      ],
+      "cautions": [
+        "The Stamp Act (1765) provoked fierce unity because it was a direct internal tax on printed paper, unlike earlier external customs duties regulating trade.",
+        "Washington's Farewell Address warned against permanent foreign alliances and partisan factions, NOT against international commercial trade.",
+        "The Bill of Rights was added in 1791 as a concession to Anti-Federalist ratification concerns, not included in the original 1787 Philadelphia draft."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-ush-reference-04",
+      "domainId": "period-4-1800-1848",
+      "domainLabel": "Unit 4: Period 4: 1800-1848",
+      "title": "Market Revolution, Jacksonian Democracy & Reform",
+      "purpose": "Links economic transformation, expanding white male suffrage, sectional compromises, and Second Great Awakening reform movements.",
+      "checklistLabel": "Before answering",
+      "formulasLabel": "Key periods & turning points",
+      "checklist": [
+        "Connect transportation/industrial innovations (Erie Canal, steamboats, railroads, cotton gin) directly to regional specialization across North, Midwest, and South.",
+        "Track how Jacksonian Democracy expanded voting for white men while excluding women, African Americans, and forcibly removing Native nations.",
+        "Distinguish Period 4's Missouri Compromise (1820) and Second Party System (Democrats vs. Whigs) from Period 5's post-1848 sectional breakdown."
+      ],
+      "formulas": [
+        "Jeffersonian Republic & Nationalism: Election of 1800 peaceful transfer; Marbury v. Madison (1803); Louisiana Purchase (1803); War of 1812 (Hartford Convention doomed Federalists); Monroe Doctrine (1823).",
+        "Market Revolution & American System: Erie Canal (1825), Lowell textile mills, interchangeable parts, and cotton gin linked Northern factories, Western grain, and Southern cotton; Clay's American System pushed tariffs, Second BUS, and internal improvements.",
+        "Jacksonian Era & Second Party System: universal white male suffrage; Democrats (Jackson) vs. Whigs (Clay); Nullification Crisis (1832–1833), Bank War, and Indian Removal Act (1830) leading to the Trail of Tears.",
+        "Reform & Sectionalism: Second Great Awakening fueled abolitionism (Garrison's Liberator, Frederick Douglass), Seneca Falls Convention (1848 Declaration of Sentiments), temperance, and public schooling; Missouri Compromise (1820) drew the 36°30' slavery line."
+      ],
+      "decisionRules": [
+        "When you see the cotton gin (1793) paired with Northern textile mills → explain how industrialization in New England depended on and entrenched plantation slavery across the Deep South.",
+        "When you see South Carolina threatening to nullify the Tariff of 1828/1832 → connect Calhoun's theory to regional resentment of Northern industrial protectionism and Jackson's Force Bill asserting federal supremacy.",
+        "When you see women organizing temperance, asylum reform, and abolition societies under the \"cult of domesticity\" → explain how moral-guardian ideology paradoxically propelled women into public activism and Seneca Falls (1848).",
+        "When you see Marshall Court decisions (McCulloch, Gibbons v. Ogden, Dartmouth College) → recognize a consistent pattern strengthening federal authority and contract/market stability over state laws."
+      ],
+      "cautions": [
+        "The Missouri Compromise (1820) applied ONLY to the Louisiana Purchase territory—not to later lands acquired from Mexico in 1848.",
+        "Early abolitionists like William Lloyd Garrison remained a vocal minority in the North during Period 4; most Northern whites opposed slavery's westward expansion (Free Soil) rather than immediate racial equality.",
+        "Jackson opposed the Second Bank of the United States and federal internal improvements like the Maysville Road, yet strongly defended federal union during the Nullification Crisis."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-ush-reference-05",
+      "domainId": "period-5-1844-1877",
+      "domainLabel": "Unit 5: Period 5: 1844-1877",
+      "title": "Manifest Destiny, Civil War & Reconstruction",
+      "purpose": "Follows how territorial expansion shattered sectional compromises, how Union victory ended slavery, and why Reconstruction both transformed and fell short of equality.",
+      "checklistLabel": "Before answering",
+      "formulasLabel": "Key periods & turning points",
+      "checklist": [
+        "Trace each 1850s crisis directly back to the core question: whether Congress could prohibit slavery in newly acquired western territories.",
+        "Distinguish wartime strategic turning points (Antietam/Emancipation Proclamation, Gettysburg, Vicksburg) from constitutional changes (13th, 14th, 15th Amendments).",
+        "Evaluate Reconstruction by weighing real breakthroughs (citizenship, Black officeholders, Freedmen's Bureau schools) against Southern backlash and Northern retreat."
+      ],
+      "formulas": [
+        "Expansion ignites crisis: Manifest Destiny, Texas annexation (1845), Mexican-American War (1846–1848) & Treaty of Guadalupe Hidalgo → Mexican Cession sparked Wilmot Proviso and Compromise of 1850 (California free, harsh Fugitive Slave Act).",
+        "Breakdown of Union (1854–1860): Kansas-Nebraska Act (1854, popular sovereignty repealed 36°30' line → Bleeding Kansas & Republican Party); Dred Scott v. Sandford (1857) denied Black citizenship and voided congressional bans on territorial slavery; Election of 1860 triggered secession.",
+        "Civil War (1861–1865): Union advantages in industry, railroads, and manpower; Emancipation Proclamation (1863) redefined war aims to end slavery in rebelling states and blocked British/French intervention; Gettysburg & Vicksburg (1863) shifted momentum.",
+        "Reconstruction (1865–1877): 13th (abolition), 14th (birthright citizenship & equal protection), and 15th (Black male voting) Amendments; Radical Reconstruction & Freedmen's Bureau opposed by Black Codes, KKK, and sharecropping until Compromise of 1877 withdrew federal troops."
+      ],
+      "decisionRules": [
+        "When you see why Lincoln's 1860 election caused immediate Southern secession despite his pledge not to touch slavery where it existed → explain that the Republican Free-Soil platform blocked slavery's westward expansion and threatened Southern political power.",
+        "When you see the Emancipation Proclamation evaluated as a primary source → note it freed enslaved people ONLY in Confederate-held states (not loyal border states) while authorizing Black Union soldiers and transforming war aims.",
+        "When you see women's-rights leaders like Stanton and Anthony splitting over the 15th Amendment → cite frustration that voting rights explicitly protected race while excluding sex.",
+        "When you see Southern sharecropping contracts in the 1870s → interpret them as economic continuity trapping freedpeople and poor whites in debt peonage after chattel slavery ended."
+      ],
+      "cautions": [
+        "The Emancipation Proclamation did NOT legally abolish slavery nationwide; the 13th Amendment (1865) accomplished permanent nationwide abolition.",
+        "Lincoln did NOT run in 1860 as an immediate abolitionist; he opposed the expansion of slavery into western territories.",
+        "The Compromise of 1877 ended federal military Reconstruction in the South—it did not formally repeal the 14th or 15th Amendments, which were instead narrowed by court rulings and state disenfranchisement."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-ush-reference-06",
+      "domainId": "period-6-1865-1898",
+      "domainLabel": "Unit 6: Period 6: 1865-1898",
+      "title": "Gilded Age Industry, Immigration, West & Populism",
+      "purpose": "Organizes corporate consolidation, labor unrest, New Immigration, New South segregation, western assimilation, and agrarian Populist protest.",
+      "checklistLabel": "Before answering",
+      "formulasLabel": "Key periods & turning points",
+      "checklist": [
+        "Keep Period 6 (1865–1898) distinct from Period 7's Progressive Era: Gilded Age federal policy remained largely laissez-faire and pro-business despite rising protest.",
+        "Compare labor unions by membership and strategy: Knights of Labor (inclusive, broad reform) vs. AFL (skilled craft workers, \"bread-and-butter\" wages/hours).",
+        "Connect industrial capitalism, urban immigration, western railroad expansion, and Southern Jim Crow as interlocking features of one era."
+      ],
+      "formulas": [
+        "Industrial capitalism: transcontinental railroad (1869) created national markets; Carnegie (vertical integration, Gospel of Wealth) and Rockefeller (horizontal trusts) defended laissez-faire alongside Social Darwinism; Interstate Commerce Act (1887) and Sherman Antitrust Act (1890) saw weak early enforcement.",
+        "Labor & urban immigration: Great Railroad Strike (1877), Haymarket (1886), Homestead (1892), Pullman (1894); New Immigrants from Southern/Eastern Europe settled ethnic neighborhoods assisted by political machines (Tammany Hall) and Jane Addams's Hull House; Chinese Exclusion Act (1882).",
+        "New South & Jim Crow: limited textile/steel industrialization alongside persistent sharecropping; disenfranchisement (poll taxes, literacy tests) and Plessy v. Ferguson (1896, \"separate but equal\"); Booker T. Washington (vocational accommodation) vs. Ida B. Wells & W.E.B. Du Bois (civil rights advocacy).",
+        "The West & Populism: Homestead Act (1862), Dawes Severalty Act (1887 forced tribal land allotment/assimilation), Wounded Knee (1890); Grange & Farmers' Alliances formed the Populist Party (1892 Omaha Platform: free silver, direct Senate election, graduated income tax, rail regulation)."
+      ],
+      "decisionRules": [
+        "When you see western farmers demanding \"free silver\" (16:1 silver-to-gold coinage) in 1896 → explain that inflation eased fixed mortgage debt burdens while eastern bankers favored the deflationary gold standard.",
+        "When you see federal troops breaking the 1894 Pullman Strike under an antitrust injunction → conclude the Gilded Age federal government routinely sided with corporate management over organized labor.",
+        "When you see the Dawes Act (1887) and Carlisle Indian Industrial School → identify federal policy aiming to erase tribal sovereignty and assimilate Native Americans into individual yeoman farmers.",
+        "When you see Populist Party planks like direct election of senators and graduated income tax failing in 1896 → note continuity as Progressives later enacted many Populist reforms via the 16th and 17th Amendments."
+      ],
+      "cautions": [
+        "Do not confuse Social Darwinism (survival of the fittest opposing charity) with Carnegie's Gospel of Wealth (wealthy philanthropists morally obligated to fund libraries/universities for self-help).",
+        "The Sherman Antitrust Act of 1890 was initially used more effectively against labor unions than against corporate monopolies until Theodore Roosevelt's presidency in Period 7.",
+        "New Immigrants (1880s–1920s) came largely from Southern and Eastern Europe (Italy, Poland, Russia), contrasting with Old Immigrants (1840s–1850s) from Ireland and Germany."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-ush-reference-07",
+      "domainId": "period-7-1890-1945",
+      "domainLabel": "Unit 7: Period 7: 1890-1945",
+      "title": "Imperialism, Progressivism, New Deal & World Wars",
+      "purpose": "Synthesizes America's rise to global power, Progressive state regulation, 1920s cultural clashes, New Deal safety nets, and WWII mobilization.",
+      "checklistLabel": "Before answering",
+      "formulasLabel": "Key periods & turning points",
+      "checklist": [
+        "Contrast Progressive Era reforms (regulating capitalism to curb corporate/urban abuses) with the New Deal (direct federal relief, jobs, and financial safety nets during collapse).",
+        "Track the swing in U.S. foreign policy: 1898 imperialism → 1917 WWI intervention → 1920s–1930s isolationism/Neutrality Acts → 1941 WWII global leadership.",
+        "Evaluate wartime home fronts for both expanded opportunities (Great Migration, Rosie the Riveter) and civil-liberties restrictions (Espionage/Sedition Acts, Japanese American internment)."
+      ],
+      "formulas": [
+        "Overseas expansion & Progressivism: Spanish-American War (1898: Philippines, Puerto Rico, Guam), Open Door Policy, Roosevelt Corollary; muckrakers (Sinclair, Tarbell), Pure Food & Drug Act (1906), Federal Reserve (1913), and 16th/17th/18th/19th Amendments.",
+        "WWI & 1920s cultural tensions: 1917 U.S. entry (unrestricted submarine warfare, Zimmermann Telegram), Great Migration, Senate rejection of Treaty of Versailles/League of Nations; 1920s mass consumerism, Harlem Renaissance, Scopes Trial, First Red Scare, and 1921/1924 Immigration Quota Acts.",
+        "Great Depression & New Deal (1929–1939): crash exposed overproduction, credit speculation, and weak banks; FDR's Relief-Recovery-Reform (FDIC, CCC, AAA, WPA, Social Security Act 1935, Wagner Act/NLRA) forged the New Deal coalition and expanded federal responsibility.",
+        "World War II (1941–1945): Lend-Lease → Pearl Harbor (Dec 7, 1941); wartime production ended the Depression; Double V campaign; Executive Order 9066 & Korematsu v. U.S. (1944) internment; D-Day, Pacific island hopping, and atomic bombs (August 1945)."
+      ],
+      "decisionRules": [
+        "When you see why the Senate rejected the Treaty of Versailles in 1919 → cite Article X of the League of Nations, which Henry Cabot Lodge argued infringed on Congress's constitutional power to declare war.",
+        "When you see critics attacking the New Deal from both left and right → pair Huey Long/Francis Townsend (demanding deeper redistribution) against conservative Liberty League/Supreme Court objections to federal overreach.",
+        "When you see the 1924 National Origins Act alongside the Scopes Trial and revival of the KKK → frame the 1920s as a clash between urban modernism/diversity and rural traditionalist/nativist anxieties.",
+        "When you see why New Deal programs did not fully end the Great Depression → explain that massive federal WWII defense mobilization after 1941 finally eliminated mass unemployment."
+      ],
+      "cautions": [
+        "Progressive reformers were mostly urban middle-class professionals—not agrarian Populists—and many Progressives ignored or endorsed racial segregation.",
+        "Social Security (1935) initially excluded agricultural and domestic workers, disproportionately leaving out Black and Mexican American laborers.",
+        "The U.S. did NOT join the League of Nations after WWI, marking a key contrast with U.S. leadership in founding the United Nations in 1945."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-ush-reference-08",
+      "domainId": "period-8-1945-1980",
+      "domainLabel": "Unit 8: Period 8: 1945-1980",
+      "title": "Cold War Containment, Civil Rights & Great Society",
+      "purpose": "Connects global containment strategy, postwar suburban prosperity, landmark civil rights victories, liberal Great Society programs, and 1970s disillusionment.",
+      "checklistLabel": "Before answering",
+      "formulasLabel": "Key periods & turning points",
+      "checklist": [
+        "Track Cold War containment strategies across administrations: Truman economic/military aid, Eisenhower brinkmanship/covert ops, Kennedy/LBJ flexible response in Vietnam, and Nixon détente.",
+        "Connect legal, grassroots, and legislative prongs of the Civil Rights Movement (NAACP courts + SCLC/SNCC direct action + 1964/1965 federal statutes).",
+        "Identify why postwar liberal consensus fractured after 1968: Vietnam credibility gap, urban unrest, stagflation, Watergate, and conservative backlash."
+      ],
+      "formulas": [
+        "Early Cold War & 1950s society: Containment (Kennan), Truman Doctrine (1947), Marshall Plan, Berlin Airlift, NATO (1949), Korean War (1950–1953), Second Red Scare/McCarthyism; GI Bill, Levittown suburbs, Baby Boom, Sun Belt growth, and Interstate Highway Act (1956).",
+        "Civil Rights Movement: Brown v. Board (1954), Montgomery Bus Boycott (1955–1956), Little Rock Nine, Sit-ins & Freedom Rides, March on Washington (1963), Civil Rights Act (1964), Voting Rights Act (1965), and later shift toward Black Power.",
+        "Great Society, Warren Court & Vietnam: LBJ's Medicare/Medicaid, War on Poverty, and Immigration and Nationality Act (1965 abolishing 1924 quotas); Warren Court expanded individual rights; Gulf of Tonkin (1964) → Tet Offensive (1968) → War Powers Act (1973).",
+        "1970s rights & crises: Feminist (NOW, Title IX 1972), Chicano (UFW/César Chávez), AIM, Environmental (EPA 1970), and LGBTQ (Stonewall 1969) movements alongside Nixon détente (China/SALT I), Watergate (1972–1974), OPEC oil shocks, and stagflation."
+      ],
+      "decisionRules": [
+        "When you see why the Civil Rights Act of 1964 and Voting Rights Act of 1965 passed after decades of delay → pair televised violence (Birmingham, Selma) and Cold War image pressure with LBJ's legislative leverage.",
+        "When you see the 1968 Tet Offensive referenced in a Vietnam prompt → emphasize that although militarily repelled by U.S. forces, it shattered public trust (\"credibility gap\") and eroded support for escalation.",
+        "When you see the 1965 Immigration and Nationality Act → link it to a dramatic demographic shift away from European quotas toward Latin American and Asian immigration.",
+        "When you see white Southern Democrats shifting toward the Republican Party after 1964 → explain Nixon's Southern Strategy and conservative reaction against federal civil rights enforcement and Great Society liberalism."
+      ],
+      "cautions": [
+        "Do not confuse the First Red Scare (1919–1920 Palmer Raids against anarchists/radicals) with the Second Red Scare (1947–1954 HUAC/McCarthyism targeting alleged Soviet spies).",
+        "Cold War containment aimed to stop the SPREAD of communism rather than roll back existing Soviet control in Eastern Europe.",
+        "Stagflation in the 1970s combined stagnant growth/high unemployment WITH high inflation simultaneously, defying traditional Keynesian trade-offs."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-ush-reference-09",
+      "domainId": "period-9-1980-present",
+      "domainLabel": "Unit 9: Period 9: 1980-Present",
+      "title": "Conservatism, Globalization & Post-Cold War America",
+      "purpose": "Anchors the Reagan conservative realignment, end of the Cold War, digital/global economic restructuring, demographic shifts, and post-9/11 policy.",
+      "checklistLabel": "Before answering",
+      "formulasLabel": "Key periods & turning points",
+      "checklist": [
+        "Evaluate Reagan-era conservatism across three pillars: supply-side tax cuts/deregulation, assertive anti-Soviet defense buildup, and Religious Right social politics.",
+        "Distinguish conservative rhetoric about shrinking government from persistent entitlement spending (Social Security, Medicare) and rising federal deficits.",
+        "Connect post-1980 manufacturing decline, NAFTA/globalization, and digital tech growth to widening wage inequality and regional political realignment."
+      ],
+      "formulas": [
+        "Reagan Revolution (1980–1988): coalition of fiscal conservatives, Sun Belt voters, and Moral Majority; supply-side \"Reaganomics\" (1981 tax cuts, deregulation, PATCO strike) cut inflation alongside Volcker's Fed while defense spending expanded federal deficits.",
+        "End of the Cold War: Reagan paired defense buildup (SDI) and anti-communist proxy support with diplomacy alongside Gorbachev (glasnost/perestroika, 1987 INF Treaty) → fall of Berlin Wall (1989) and Soviet collapse (1991).",
+        "Economic & demographic transformation: shift from Rust Belt manufacturing to service/IT/internet economy; NAFTA (1994) and WTO expanded global trade; post-1965 Latin American/Asian immigration and Sun Belt migration reshaped electoral maps.",
+        "21st-century challenges: September 11, 2001 attacks launched the War on Terror (Afghanistan 2001, Iraq 2003, USA PATRIOT Act security-vs-privacy debate), 2008 Great Recession, Affordable Care Act (2010), and climate/energy debates."
+      ],
+      "decisionRules": [
+        "When you see a prompt asking how Reagan's policies succeeded AND faced limits → note major tax-rate reductions and deregulation succeeded, while Social Security, Medicare, and overall federal deficits remained large.",
+        "When you see Rust Belt factory closures paired with Silicon Valley growth after 1980 → attribute the shift to automation, digital productivity gains, and globalized free-trade supply chains.",
+        "When you see the USA PATRIOT Act (2001) compared to earlier crises → draw a historical parallel to wartime civil-liberties debates (Alien & Sedition Acts, Espionage Act, EO 9066).",
+        "When you see political influence shifting toward Texas, Florida, and the Mountain West after 1980 → connect electoral-vote gains to postwar and late-20th-century Sun Belt population migration."
+      ],
+      "cautions": [
+        "Supply-side Reaganomics did NOT balance the federal budget in the 1980s; tax cuts combined with steep defense spending and intact entitlements tripled the national debt.",
+        "The Cold War did not end solely via military confrontation; Soviet economic stagnation, Gorbachev's reforms, and diplomatic arms treaties interacted with U.S. pressure.",
+        "Period 9 emphasizes continuity as well as change: debates over immigration, federal safety nets, and executive war powers echo earlier APUSH periods."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    }
+  ],
+  "misconceptionFamilies": [
+    {
+      "id": "apush-mf-anachronism-periodization-drift",
+      "label": "Anachronism and Periodization Boundary Drift",
+      "description": "Learners choose an historically true statement that belongs to an earlier or later APUSH time period than the prompt specifies (such as applying Progressive or New Deal reforms to Gilded Age Period 6 or antebellum debates to Period 2).",
+      "remediationMove": "Bracket the prompt’s exact start and end years first, verify the date of every event named in each choice, and eliminate any chronologically out-of-bounds option immediately regardless of how familiar it sounds.",
+      "remediationPlaybookId": "apush-pb-anachronism-periodization-drift",
+      "itemIds": [
+        "apush-foundation-011",
+        "apush-foundation-012",
+        "apush-foundation-013",
+        "apush-foundation-014",
+        "apush-foundation-015",
+        "apush-foundation-016",
+        "apush-foundation-035",
+        "apush-foundation-036",
+        "apush-foundation-037",
+        "apush-foundation-038",
+        "apush-foundation-039",
+        "apush-foundation-040"
+      ]
+    },
+    {
+      "id": "apush-mf-causation-vs-chronology",
+      "label": "Causation vs. Mere Chronology (Post Hoc Reasoning)",
+      "description": "Learners assume an earlier event caused a later development simply because it happened beforehand, or reverse immediate triggers, underlying structural causes, and downstream historical effects.",
+      "remediationMove": "Draw a directional timeline marking structural preconditions → immediate catalyst → target event → downstream consequences, and check which side of the arrow the question stem actually asks for.",
+      "remediationPlaybookId": "apush-pb-causation-vs-chronology",
+      "itemIds": [
+        "apush-foundation-023",
+        "apush-foundation-024",
+        "apush-foundation-025",
+        "apush-foundation-026",
+        "apush-foundation-027",
+        "apush-foundation-028",
+        "apush-foundation-041",
+        "apush-foundation-042",
+        "apush-foundation-043",
+        "apush-foundation-044",
+        "apush-foundation-045",
+        "apush-foundation-090"
+      ]
+    },
+    {
+      "id": "apush-mf-hipp-summary-vs-analysis",
+      "label": "Primary-Source HIPP Summary vs. Sourcing Analysis",
+      "description": "Learners merely paraphrase what an excerpt says at face value instead of analyzing how Historical Situation, Intended Audience, Purpose, or Point of View shapes the speaker’s argument, bias, or strategic omissions.",
+      "remediationMove": "Read the attribution line first (author, date, venue, role) and ask why THIS speaker made THIS specific claim to THIS audience in THIS exact year before examining the answer choices.",
+      "remediationPlaybookId": "apush-pb-hipp-summary-vs-analysis",
+      "itemIds": [
+        "apush-foundation-017",
+        "apush-foundation-018",
+        "apush-foundation-019",
+        "apush-foundation-020",
+        "apush-foundation-021",
+        "apush-foundation-022",
+        "apush-foundation-029",
+        "apush-foundation-030",
+        "apush-foundation-031",
+        "apush-foundation-032",
+        "apush-foundation-033",
+        "apush-foundation-034"
+      ]
+    },
+    {
+      "id": "apush-mf-regional-labor-conflation",
+      "label": "Regional and Labor-System Conflation",
+      "description": "Learners collapse distinct colonial, antebellum, or industrial regions and labor regimes—confusing Spanish encomienda, French fur-trade alliances, Chesapeake tobacco servitude/chattel slavery, New England mixed family farms, and Northern wage factories.",
+      "remediationMove": "Tag both the geographic region and its dominant economic/labor structure before evaluating choices, confirming whether the prompt asks for a regional similarity or a sharp regional contrast.",
+      "remediationPlaybookId": "apush-pb-regional-labor-conflation",
+      "itemIds": [
+        "apush-foundation-001",
+        "apush-foundation-002",
+        "apush-foundation-003",
+        "apush-foundation-004",
+        "apush-foundation-005",
+        "apush-foundation-051",
+        "apush-foundation-006",
+        "apush-foundation-007",
+        "apush-foundation-008",
+        "apush-foundation-009",
+        "apush-foundation-010",
+        "apush-foundation-057"
+      ]
+    },
+    {
+      "id": "apush-mf-ccot-balance",
+      "label": "Continuity vs. Change Over Time (CCOT) One-Sidedness",
+      "description": "Learners treat major turning points (such as Reconstruction, Industrialization, the New Deal, or the 1980s Conservative Resurgence) as total rupture or total stasis, missing the enduring structures that persisted alongside change.",
+      "remediationMove": "Force a balanced CCOT ledger on every turning-point prompt: name one concrete institutional or social transformation AND one persistent structural continuity across the date span.",
+      "remediationPlaybookId": "apush-pb-ccot-balance",
+      "itemIds": [
+        "apush-foundation-080",
+        "apush-foundation-081",
+        "apush-foundation-082",
+        "apush-foundation-083",
+        "apush-foundation-084",
+        "apush-foundation-108",
+        "apush-foundation-046",
+        "apush-foundation-047",
+        "apush-foundation-048",
+        "apush-foundation-049",
+        "apush-foundation-050",
+        "apush-foundation-096"
+      ]
+    },
+    {
+      "id": "apush-mf-evidence-thesis-alignment",
+      "label": "Evidence-to-Thesis Alignment and Stimulus Overreach",
+      "description": "Learners choose factually true statements or absolute claims (\"completely ended\", \"universally accepted\") that fail to match the stimulus author’s specific argument or the prompt’s targeted historical reasoning skill.",
+      "remediationMove": "Underline the exact task verb (corroborate, refute, directly resulted from, best reflects the excerpt’s viewpoint) and reject any option whose scope is broader, more extreme, or off-axis from the stimulus claim.",
+      "remediationPlaybookId": "apush-pb-evidence-thesis-alignment",
+      "itemIds": [
+        "apush-foundation-063",
+        "apush-foundation-064",
+        "apush-foundation-065",
+        "apush-foundation-066",
+        "apush-foundation-067",
+        "apush-foundation-068",
+        "apush-foundation-091",
+        "apush-foundation-092",
+        "apush-foundation-093",
+        "apush-foundation-094",
+        "apush-foundation-095",
+        "apush-foundation-116"
+      ]
+    }
+  ],
+  "misconceptionRemediationPlaybooks": [
+    {
+      "id": "apush-pb-anachronism-periodization-drift",
+      "familyId": "apush-mf-anachronism-periodization-drift",
+      "familyLabel": "Anachronism and Periodization Boundary Drift",
+      "title": "Enforcing Strict Date Windows and APUSH Periodization Anchors",
+      "recognitionCue": "You selected an historically accurate U.S. event or policy that actually occurred decades before or after the date bracket printed in the prompt or source attribution.",
+      "repairQuestion": "What exact APUSH period and start/end years bound this question, and which date belongs to each policy, movement, or court ruling named in the choices?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Write the stimulus date and prompt date window at the top of your notes, then attach an approximate year or APUSH period (Periods 1–9) to every choice in the missed item.",
+          "requiredOutput": "A date-tagged list of all four choices highlighting the exact chronological boundary crossed by your original selection."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Anchor the era’s boundary turning points (including 1754 French & Indian War, 1800 Jeffersonian transition, 1848 Mexican Cession, 1877 End of Reconstruction, 1898 Spanish-American War, 1945 Postwar/Cold War, and 1980 Reagan election) to separate adjacent look-alike eras.",
+          "requiredOutput": "A boundary-anchor strip separating the prompt’s period from the immediately preceding and following periods."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Sort six frequently confused reforms and policies into their exact periods: Stamp Act protests (P3), Seneca Falls (P4), Interstate Commerce Act (P6), Meat Inspection Act (P7), Great Society Medicare (P8), and Welfare Reform 1996 (P9).",
+          "requiredOutput": "All six items placed cleanly in their exact APUSH periods with one distinguishing era marker for each."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Re-attempt the missed APUSH item and solve a fresh cross-period stimulus question by eliminating every out-of-window distractor before comparing the surviving in-period choices.",
+          "requiredOutput": "Verified correct answers on both items accompanied by explicit date-window verification notes."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "apush-pb-causation-vs-chronology",
+      "familyId": "apush-mf-causation-vs-chronology",
+      "familyLabel": "Causation vs. Mere Chronology (Post Hoc Reasoning)",
+      "title": "Separating Causal Mechanisms from Earlier Events and Downstream Effects",
+      "recognitionCue": "You picked an effect when the prompt asked for a cause, or chose a chronologically earlier event that had no direct causal mechanism linking it to the historical outcome.",
+      "repairQuestion": "Is the stem asking what led INTO the target event (cause) or what flowed OUT of it (effect), and what concrete mechanism connects the two developments?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Box the causal direction phrase in the missed stem (\"most directly led to\", \"contributed to the rise of\", \"was a direct consequence of\") and check whether your chosen option sat on the wrong side of the event arrow.",
+          "requiredOutput": "A directional arrow diagram showing what the prompt asked for versus where your distractor actually sits in time."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Map the historical episode into a 3-column causation chain: Long-Term Structural Conditions → Immediate Catalyst → Direct Outcome, verifying an explicit \"because/therefore\" link at every arrow.",
+          "requiredOutput": "A completed 3-column causation chain with a one-sentence mechanism proving the link is causal rather than coincidental chronology."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Contrast causes and effects for two high-frequency APUSH pivots: the Mexican-American War (cause: Texas annexation & expansionism → effect: Wilmot Proviso & renewed sectional crisis over slavery in territories) and the Gulf of Tonkin Resolution (cause: Cold War containment → effect: escalated executive military commitment & later War Powers Act).",
+          "requiredOutput": "Two verified cause → event → effect chains clearly distinguishing preconditions from consequences."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Re-solve the missed causation item and complete one new Period 5 or Period 8 causation item by checking arrow direction before selecting.",
+          "requiredOutput": "Correct choices on both items paired with a concise \"because → therefore\" causal verification sentence."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "apush-pb-hipp-summary-vs-analysis",
+      "familyId": "apush-mf-hipp-summary-vs-analysis",
+      "familyLabel": "Primary-Source HIPP Summary vs. Sourcing Analysis",
+      "title": "Moving from Excerpt Paraphrase to Purposeful HIPP Sourcing",
+      "recognitionCue": "You treated a partisan speech, corporate defense, or reform pamphlet as an objective textbook summary rather than analyzing how the author’s position and audience shaped the claim.",
+      "repairQuestion": "Who wrote this document, in what immediate historical crisis, for which specific audience, and what action or belief were they trying to persuade that audience to adopt?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Read the attribution line of the missed stimulus first (name, occupation/role, publication type, and year) and note which sourcing clue (H, I, P, or P) your face-value reading overlooked.",
+          "requiredOutput": "An attribution breakdown flagging the exact author role, audience, and historical tension missed in the first attempt."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Complete a rapid HIPP matrix for the excerpt—Historical Situation, Intended Audience, Purpose, Point of View—and connect at least one element directly to WHY the author framed or omitted specific evidence.",
+          "requiredOutput": "A 4-row HIPP analysis ending with a sourcing sentence (\"Because the author was X addressing Y during Z, the excerpt emphasizes a specific claim\")."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Contrast two paired primary perspectives from the same era: Andrew Carnegie’s \"Gospel of Wealth\" (industrialist defending laissez-faire philanthropy) versus a Populist Omaha Platform excerpt (indebted farmers demanding federal railroad regulation and free silver).",
+          "requiredOutput": "Side-by-side Point-of-View and Purpose statements explaining how each author’s economic stake shaped their proposed remedy."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Re-attempt the missed primary-source item and solve a fresh Period 4 or Period 6 sourcing item by inspecting the attribution line before reading the body text.",
+          "requiredOutput": "Correct answers on both items backed by a specific HIPP-based rationale rather than mere plot summary."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "apush-pb-regional-labor-conflation",
+      "familyId": "apush-mf-regional-labor-conflation",
+      "familyLabel": "Regional and Labor-System Conflation",
+      "title": "Differentiating Regional Economies and Labor Systems Across Eras",
+      "recognitionCue": "You matched Chesapeake plantation labor patterns to New England town settlements, or conflated Spanish encomienda coercion with French fur-trade diplomatic alliances.",
+      "repairQuestion": "Which exact geographic region and dominant labor/economic system does the prompt describe, and how did environment and imperial goals make it distinct from neighboring regions?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Highlight the region or imperial power named in the missed Period 1 or Period 2 item and pinpoint which neighboring region’s demographic or labor traits leaked into your chosen distractor.",
+          "requiredOutput": "A region-mismatch note identifying the target region versus the region actually described by the distractor."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Build a 4-column comparative matrix separating Spanish (encomienda, mission/casta hierarchy), French/Dutch (trade alliances, smaller settlements), Chesapeake/Southern British (tobacco/rice cash crops, shift from indentured servitude to racialized chattel slavery after Bacon’s Rebellion), and New England British (Puritan family migration, mixed maritime/subsistence economy).",
+          "requiredOutput": "A filled 4-column regional-and-labor comparison chart tying environment and demographics to each labor regime."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Compare two APUSH labor transitions: Chesapeake’s 1670s–1700s shift from indentured servants to enslaved African labor and the post-Civil War South’s transition from chattel slavery to sharecropping and tenant farming.",
+          "requiredOutput": "Two concise explanations specifying the economic driver and legal/social control mechanism behind each regional labor regime."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Re-solve the missed Period 1/2 item and one Market Revolution regional-specialization item contrasting Northeast textile mills, Midwest grain farming, and Southern cotton plantations.",
+          "requiredOutput": "Verified correct answers on both items explicitly anchored to the matching geographic region and labor system."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "apush-pb-ccot-balance",
+      "familyId": "apush-mf-ccot-balance",
+      "familyLabel": "Continuity vs. Change Over Time (CCOT) One-Sidedness",
+      "title": "Balancing Structural Continuity Against Historical Change Across Turning Points",
+      "recognitionCue": "You chose an answer claiming a turning point \"completely abolished\" an older pattern or \"produced no meaningful change\", missing the coexistence of reform and persistence.",
+      "repairQuestion": "Across this date span, what specific policy, economy, or social boundary genuinely changed, AND what underlying power structure or debate persisted?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Check the missed CCOT item for absolutist rupture/stasis words (\"completely ended\", \"entirely replaced\", \"unchanged\", \"eliminated all\") and note whether the stem asked specifically for continuity or for change.",
+          "requiredOutput": "A one-line audit naming the prompt’s CCOT target (continuity vs. change) and the overbroad absolutes flagged in distractors."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Build a two-sided CCOT balance ledger for the era in the prompt, entering at least one specific institutional change alongside one specific enduring continuity supported by named historical evidence.",
+          "requiredOutput": "A balanced 2-column CCOT ledger showing both genuine transformation and structural persistence across the same period."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Construct balanced CCOT summaries for two classic APUSH eras: Post-Civil War New South (change: legal emancipation & rail/textile growth vs. continuity: cotton dependence, sharecropping, Jim Crow disenfranchisement) and Period 9 1980s Conservatism (change: tax cuts & deregulation vs. continuity: intact core entitlements like Social Security/Medicare and high defense spending).",
+          "requiredOutput": "Two nuanced CCOT statements pairing concrete change evidence with concrete continuity evidence."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Re-attempt the missed Period 6 or Period 9 CCOT item and solve one fresh long-arc comparison item (such as First vs. Second Great Migration or Gilded Age vs. 1920s immigration restrictions).",
+          "requiredOutput": "Correct choices on both items accompanied by an explicit check confirming both continuity and change were weighed."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "apush-pb-evidence-thesis-alignment",
+      "familyId": "apush-mf-evidence-thesis-alignment",
+      "familyLabel": "Evidence-to-Thesis Alignment and Stimulus Overreach",
+      "title": "Aligning Evidence Strictly to the Prompt’s Claim and Reasoning Task",
+      "recognitionCue": "You picked an historically true statement that did not actually support, challenge, or reflect the specific argument inside the stimulus excerpt or prompt thesis.",
+      "repairQuestion": "Does this choice directly corroborate or counter the exact thesis in the stimulus, or is it merely a true side-fact from the same decade?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Summarize the stimulus author’s core claim in ten words or fewer, then test whether your missed answer directly backs that exact claim or drifts onto a related but separate topic.",
+          "requiredOutput": "A ten-word stimulus claim summary plus a brief explanation of why the distractor was \"true but off-target\"."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Apply the APUSH Evidence Alignment Filter: (1) Match the exact task verb (supports, challenges, exemplifies, contrasts); (2) Verify the subject group matches the stimulus (such as labor unions vs. women’s suffrage vs. civil rights); (3) Reject extreme quantifiers unsupported by historical reality.",
+          "requiredOutput": "A 3-step alignment checklist scoring all four choices on factual accuracy AND direct relevance to the stimulus claim."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Test two candidate pieces of evidence against a thesis about Federalist vs. Anti-Federalist debates (Period 3) and a thesis about Cold War domestic consensus vs. youth counterculture (Period 8), selecting only the evidence that proves the specific causal or comparative claim.",
+          "requiredOutput": "Two defended evidence pairings explaining why the rejected true fact fails to advance the thesis."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Re-solve the missed Period 3 or Period 8 stimulus item and one secondary-source historian-debate item comparing two historians’ competing interpretations of the same event.",
+          "requiredOutput": "Verified correct answers on both items anchored to the exact line of reasoning in each stimulus."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ]
 }

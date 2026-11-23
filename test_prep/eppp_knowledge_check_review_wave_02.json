@@ -88,7 +88,7 @@
           "title": "MCMI-IV ? Millon Clinical Multiaxial Inventory-IV",
           "organization": "Pearson Assessments",
           "url": "https://www.pearsonassessments.com/store/en/usd/p/100001362.html",
-          "whyReputable": "Official publisher documentation specifying the instrument?s clinical purpose, adult inpatient and outpatient scoring framework, and clinical normative sample."
+          "whyReputable": "Official publisher documentation specifying the instrument's clinical purpose, adult inpatient and outpatient scoring framework, and clinical normative sample."
         },
         {
           "title": "Standards for Educational and Psychological Testing",
@@ -152,7 +152,7 @@
         "Provide a narrative summary to the receiving clinician instead of raw test data because unformatted scores fall outside Standard 9.04."
       ],
       "answerIndex": 2,
-      "rationale": "The keyed response keeps Standards 9.04 and 9.11 distinct. Test data can include raw and scaled scores and the client?s responses, and a valid release to a named qualified psychologist ordinarily triggers the 9.04 pathway subject to its exceptions and applicable law. A blank manual and unused item booklet are test materials whose security remains protected consistent with law, publisher contracts, and professional obligations. A release is not a waiver of every security duty, but neither is test security a categorical reason to withhold all client test data or provide only a narrative summary.",
+      "rationale": "The keyed response keeps Standards 9.04 and 9.11 distinct. Test data can include raw and scaled scores and the client's responses, and a valid release to a named qualified psychologist ordinarily triggers the 9.04 pathway subject to its exceptions and applicable law. A blank manual and unused item booklet are test materials whose security remains protected consistent with law, publisher contracts, and professional obligations. A release is not a waiver of every security duty, but neither is test security a categorical reason to withhold all client test data or provide only a narrative summary.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://www.apa.org/ethics/code",
@@ -275,7 +275,7 @@
         "Average phenotypic differences observed between two distinct demographic populations on this trait can be attributed 70% to inherited differences."
       ],
       "answerIndex": 2,
-      "rationale": "A heritability estimate of .70 means that, under the sampled population, environment, measurements, and statistical model, genetic differences account for about 70% of the observed variation among people in that trait. It does not mean that 70% of any one person?s trait was caused by genes, identify which genes or environments matter, prove that the trait cannot change, or explain a difference between demographic groups. Heritability can change when environmental variation, population composition, measurement, or other conditions change, so the estimate should not be exported automatically to another population.",
+      "rationale": "A heritability estimate of .70 means that, under the sampled population, environment, measurements, and statistical model, genetic differences account for about 70% of the observed variation among people in that trait. It does not mean that 70% of any one person's trait was caused by genes, identify which genes or environments matter, prove that the trait cannot change, or explain a difference between demographic groups. Heritability can change when environmental variation, population composition, measurement, or other conditions change, so the estimate should not be exported automatically to another population.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://medlineplus.gov/genetics/understanding/inheritance/heritability/"
@@ -397,7 +397,7 @@
           "whyReputable": "Peer-reviewed conceptual replication using a larger, more diverse sample and reporting attenuation after family, cognitive, and home-environment controls."
         }
       ],
-      "reviewNote": "Preserved the replication?s actual attenuation result without claiming that self-regulation is meaningless or that covariates prove causation.",
+      "reviewNote": "Preserved the replication's actual attenuation result without claiming that self-regulation is meaningless or that covariates prove causation.",
       "reviewDate": "2026-07-23",
       "reviewMode": "claim-level-source-review-and-editorial-rewrite",
       "reviewWave": "knowledge-check-wave-02",
@@ -418,7 +418,7 @@
         "It functions as a psychometric equivalent to explicit self-report attitude measures when respondents minimize social desirability"
       ],
       "answerIndex": 2,
-      "rationale": "An IAT score reflects relative response-time performance for the paired categories under a particular administration. Project Implicit cautions against treating one score as a permanent property of an individual or a confident forecast of that person?s behavior on a specific occasion; practice, order, context, reliability, scoring, and the selected categories can matter. Research can find aggregate relationships between IAT scores and outcomes, but an aggregate association does not make a single score diagnostic of prejudice. The measure is also not interchangeable with explicit self-report, which captures different information.",
+      "rationale": "An IAT score reflects relative response-time performance for the paired categories under a particular administration. Project Implicit cautions against treating one score as a permanent property of an individual or a confident forecast of that person's behavior on a specific occasion; practice, order, context, reliability, scoring, and the selected categories can matter. Research can find aggregate relationships between IAT scores and outcomes, but an aggregate association does not make a single score diagnostic of prejudice. The measure is also not interchangeable with explicit self-report, which captures different information.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://implicit.harvard.edu/implicit/faqs.html",
@@ -438,7 +438,7 @@
           "whyReputable": "Peer-reviewed meta-analysis quantifying aggregate predictive relationships while supporting careful interpretation across outcomes and methods."
         }
       ],
-      "reviewNote": "Updated the individual-score interpretation using Project Implicit?s current cautions and aggregate predictive-validity evidence.",
+      "reviewNote": "Updated the individual-score interpretation using Project Implicit's current cautions and aggregate predictive-validity evidence.",
       "reviewDate": "2026-07-23",
       "reviewMode": "claim-level-source-review-and-editorial-rewrite",
       "reviewWave": "knowledge-check-wave-02",
@@ -459,7 +459,7 @@
         "The client should be matched to an indirect, high-context communication approach rather than direct verbal goal setting"
       ],
       "answerIndex": 2,
-      "rationale": "A country-level average describes a sampled group and cannot determine an individual client?s values, communication style, decision preferences, or treatment goals. Treating the mean as the person commits an ecological inference error and obscures within-country diversity, migration history, region, language, generation, class, disability, religion, gender, and other intersecting contexts. The finding can support a respectful question about family involvement, autonomy, authority, communication, and goals, but the clinician should listen to the client?s own account and revisit assumptions as the relationship and context develop.",
+      "rationale": "A country-level average describes a sampled group and cannot determine an individual client's values, communication style, decision preferences, or treatment goals. Treating the mean as the person commits an ecological inference error and obscures within-country diversity, migration history, region, language, generation, class, disability, religion, gender, and other intersecting contexts. The finding can support a respectful question about family involvement, autonomy, authority, communication, and goals, but the clinician should listen to the client's own account and revisit assumptions as the relationship and context develop.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://www.apa.org/about/policy/multicultural-guidelines.pdf"

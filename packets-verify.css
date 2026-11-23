@@ -85,7 +85,7 @@ h4 { margin: 0; padding: 0; color: var(--ink); line-height: 1.2; }
 
 .copy-said { margin-top: 0.6rem; font-weight: 600; color: var(--ink); min-height: 1.6em; }
 .copy-text { display: block; width: 100%; margin-top: 0.5rem; padding: 0.6rem 0.75rem; font-family: var(--mono); font-size: 0.8125rem; line-height: 1.5; color: var(--ink); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; }
-.part-it .actions { margin-top: 1.5rem; }
+.verdict .actions { margin-top: 1rem; padding-top: 0; border-top: 0; }
 
 /* The guide for school IT */
 .guide-section { margin-top: 2.25rem; }
@@ -114,7 +114,7 @@ h4 { margin: 0; padding: 0; color: var(--ink); line-height: 1.2; }
   .facts-table, .facts-table tbody, .facts-table tr, .facts-table th, .facts-table td { display: block; width: auto; }
   .facts-table th { border-bottom: 0; padding-bottom: 0.35rem; }
   .facts-table td { padding-top: 0.5rem; }
-  .part-it .actions .btn { flex: 1 1 100%; }
+  .verdict .actions .btn { flex: 1 1 100%; }
 }
 
 @media (min-width: 44rem) {
@@ -159,6 +159,7 @@ h4 { margin: 0; padding: 0; color: var(--ink); line-height: 1.2; }
   .limits { border: 1px solid #000000; border-left-width: 4px; border-radius: 0; max-width: none; }
   .reports-head { margin-top: 1rem; }
   .report { border-color: #000000; border-radius: 0; overflow: visible; }
+  .report + .report { break-before: page; }
   .verdict { border-left-color: #000000; }
   .part { border-top-color: #000000; }
   .part > summary { min-height: 0; padding-top: 0.5rem; padding-bottom: 0.3rem; font-size: 11pt; }

@@ -26,6 +26,10 @@
     {
       "issue": "Non-EPPP editorial screening flagged residual lexical-leakage, brief distractor-rationale, or asymmetric-extreme-distractor warnings in 33 item(s).",
       "change": "Remediated 33 item(s) by hand via dev-tools/non_eppp_authored_remediation/educational_leadership_5412_batch3.cjs without changing any answerIndex, domainId, rationale, or references. All editorial warning checks now report 0 findings across the batch."
+    },
+    {
+      "issue": "Non-EPPP editorial screening flagged residual lexical-leakage, brief distractor-rationale, or asymmetric-extreme-distractor warnings in 51 item(s).",
+      "change": "Remediated 51 item(s) by hand via dev-tools/non_eppp_authored_remediation/educational_leadership_5412_batch3.cjs + length_balance_wave2_part2.cjs without changing any answerIndex, domainId, rationale, or references. All editorial warning checks now report 0 findings across the batch."
     }
   ],
   "checks": {
@@ -332,7 +336,7 @@
   },
   "artifactBinding": {
     "algorithm": "sha256",
-    "sha256": "03e97ccf97cd4f3be4c40c3ce2bd19e4c173f782e9e50c0fb69e2baefd4273d7"
+    "sha256": "e7f2eb0e42c2558db28be11aea6b61e24f31ba40efabcd4d84b796b7d133abba"
   },
   "integration": {
     "packId": "praxis-educational-leadership-5412",
@@ -345,7 +349,7 @@
     "sharedExpansionScriptMutated": false,
     "releaseBuilderMutated": false
   },
-  "sourceSha256": "03e97ccf97cd4f3be4c40c3ce2bd19e4c173f782e9e50c0fb69e2baefd4273d7",
+  "sourceSha256": "e7f2eb0e42c2558db28be11aea6b61e24f31ba40efabcd4d84b796b7d133abba",
   "remediation": [
     {
       "at": "2026-08-17",
@@ -365,6 +369,16 @@
       "ledger": "dev-tools/non_eppp_authored_remediation/educational_leadership_5412_batch3.cjs",
       "priorSha256": "3f1ebee948d6e2eb820ec9f04efd22e7e848cab0a615dea01bd7c1644be58644",
       "sha256": "03e97ccf97cd4f3be4c40c3ce2bd19e4c173f782e9e50c0fb69e2baefd4273d7",
+      "note": "Edited after the independent cross-review to eliminate editorial warning findings while preserving tested constructs and answer positions. The binding was renewed so the artifact stays self-consistent; the original reviewer did not review these replacements."
+    },
+    {
+      "at": "2026-11-21",
+      "by": "Antigravity — AlloFlow test-prep warning remediation pass",
+      "scope": "editorial warning remediation (lexical leakage / distractor feedback depth / extreme-qualifier balance)",
+      "itemsChanged": 51,
+      "ledger": "dev-tools/non_eppp_authored_remediation/educational_leadership_5412_batch3.cjs + length_balance_wave2_part2.cjs",
+      "priorSha256": "03e97ccf97cd4f3be4c40c3ce2bd19e4c173f782e9e50c0fb69e2baefd4273d7",
+      "sha256": "e7f2eb0e42c2558db28be11aea6b61e24f31ba40efabcd4d84b796b7d133abba",
       "note": "Edited after the independent cross-review to eliminate editorial warning findings while preserving tested constructs and answer positions. The binding was renewed so the artifact stays self-consistent; the original reviewer did not review these replacements."
     }
   ]

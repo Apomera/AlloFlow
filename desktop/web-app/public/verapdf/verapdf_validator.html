@@ -29,17 +29,18 @@
 <style>
   body { font-family: system-ui, Segoe UI, Roboto, sans-serif; max-width: 760px; margin: 20px auto; padding: 0 16px; background: #ffffff; color: #0f172a; }
   h1 { font-size: 18px; margin: 0 0 12px; } #status { font-weight: 700; padding: 8px 12px; border-radius: 8px; background: #f1f5f9; }
-  input[type=file] { margin: 12px 0; } ul { margin: 6px 0 0; padding-left: 20px; }
+  input[type=file] { margin: 12px 0; min-height: 44px; padding: 8px 0; } ul { margin: 6px 0 0; padding-left: 20px; }
   li { margin: 3px 0; font-size: 13px; } .pass { color: #15803d; } .fail { color: #b91c1c; }
   .muted { color: #475569; font-size: 12px; } #report { margin-top: 12px; }
-  button { min-height: 36px; padding: 6px 12px; border-radius: 8px; border: 1px solid #475569; background: #f8fafc; color: #0f172a; font: 600 13px system-ui, sans-serif; cursor: pointer; }
+  button { min-height: 44px; padding: 10px 14px; border-radius: 8px; border: 1px solid #475569; background: #f8fafc; color: #0f172a; font: 600 13px system-ui, sans-serif; cursor: pointer; }
   button:disabled { opacity: 0.6; cursor: not-allowed; }
   .ro-active { background: #fef9c3; border-left: 3px solid #1d4ed8; padding-left: 6px; border-radius: 4px; }
-  .skip-link { position: absolute; left: -9999px; top: 8px; z-index: 9999; background: #1e3a8a; color: #fff; padding: 8px 14px; border-radius: 8px; font-weight: 700; text-decoration: none; }
-  .skip-link:focus { left: 12px; }
+  .skip-link { position: absolute; inset-inline-start: 8px; top: 8px; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; pointer-events: none; z-index: 9999; min-height: 44px; display: inline-flex; align-items: center; background: #1e3a8a; color: #fff; padding: 10px 14px; border-radius: 8px; font-weight: 700; text-decoration: none; }
+  .skip-link:focus { inset-inline-start: 12px; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; pointer-events: auto; }
   :focus-visible { outline: 3px solid #1d4ed8; outline-offset: 2px; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
   @media (forced-colors: active) {
+    .skip-link:focus { background: Canvas; color: CanvasText; border: 2px solid Highlight; outline: 3px solid Highlight; outline-offset: 2px; }
     :focus-visible { outline: 3px solid Highlight; outline-offset: 2px; }
     .ro-active { outline: 2px solid Highlight; }
   }
@@ -452,16 +453,23 @@
     });
     const cur = ul.children[i]; if (cur && cur.scrollIntoView) { try { cur.scrollIntoView({ block: 'nearest' }); } catch (e) {} }
   }
+  function _roStatus(msg) {
+    const el = document.getElementById('ro-status');
+    if (el) el.textContent = msg || '';
+  }
   function _roStop() {
+    const wasSpeaking = _roSpeaking;
     try { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); } catch (e) {}
     _roSpeaking = false;
     const pauseBtn = document.getElementById('ro-pause');
     if (pauseBtn) pauseBtn.setAttribute('aria-pressed', 'false');
     _roHighlight(-1);
+    if (wasSpeaking) _roStatus('Reading aloud stopped.');
   }
   function _roSpeakFrom(i) {
-    if (!('speechSynthesis' in window) || !_roItems || i >= _roItems.length) { _roSpeaking = false; _roHighlight(-1); return; }
+    if (!('speechSynthesis' in window) || !_roItems || i >= _roItems.length) { _roSpeaking = false; _roHighlight(-1); _roStatus(''); return; }
     _roHighlight(i);
+    _roStatus('Reading element ' + (i + 1) + ' of ' + _roItems.length + '.');
     const it = _roItems[i];
     const u = new SpeechSynthesisUtterance((it.role ? it.role + '. ' : '') + (it.text || 'no actual-text — content is in the page stream'));
     u.rate = 1.05;
@@ -477,9 +485,11 @@
       if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
         window.speechSynthesis.pause();
         if (pauseBtn) pauseBtn.setAttribute('aria-pressed', 'true');
+        _roStatus('Reading aloud paused.');
       } else {
         window.speechSynthesis.resume();
         if (pauseBtn) pauseBtn.setAttribute('aria-pressed', 'false');
+        _roStatus('Reading aloud resumed.');
       }
     } catch (e) {}
   }
@@ -498,10 +508,15 @@
       '<h2 id="ro-heading" style="font-size:14px;margin:14px 0 4px"><span aria-hidden="true">🔊</span> Reading-order preview <span class="muted">(' + ro.items.length + ' elements — the order a screen reader announces)</span></h2>' +
       '<p class="muted" style="margin:0 0 6px">Replays the tagged structure in order. If a multi-column or complex page reads out of sequence here, the tag reading order is wrong — independent of whether veraPDF passes.</p>' +
       '<div style="margin:6px 0;display:flex;gap:6px;flex-wrap:wrap"><button id="ro-play" type="button"><span aria-hidden="true">▶</span> Read aloud</button><button id="ro-pause" type="button" aria-pressed="false"><span aria-hidden="true">⏸</span> Pause / Resume</button><button id="ro-stop" type="button"><span aria-hidden="true">⏹</span> Stop</button></div>' +
+      '<p id="ro-status" class="muted" role="status" aria-live="polite" style="margin:4px 0 6px;min-height:18px"></p>' +
       '<ol id="ro-list" tabindex="0" aria-labelledby="ro-heading" style="max-height:320px;overflow:auto;font-size:13px;line-height:1.5;border:1px solid #cbd5e1;border-radius:8px;padding:8px 8px 8px 30px;margin:0">' + list + '</ol>';
     document.getElementById('ro-play').onclick = _roPlay;
     document.getElementById('ro-pause').onclick = _roPause;
     document.getElementById('ro-stop').onclick = _roStop;
+    host.onkeydown = (ev) => {
+      if (ev.isComposing || ev.keyCode === 229) return;
+      if (ev.key === 'Escape' && _roSpeaking) { ev.preventDefault(); _roStop(); }
+    };
   }
   function _roOfferPreview() {
     const host = document.getElementById('ro'); if (!host) return;

@@ -40,6 +40,29 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
     liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(liveRegion);
   })();
+  // WCAG 2.3.3 / 2.4.7 / forced-colors scoped styles for Crew Protocols
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-crewprotocols-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-crewprotocols-a11y-css';
+    st.textContent = [
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .selh-crewprotocols *, .selh-crewprotocols *::before, .selh-crewprotocols *::after {',
+      '    animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;',
+      '    transition-duration: 0.01ms !important; scroll-behavior: auto !important;',
+      '  }',
+      '}',
+      '.selh-crewprotocols button:focus-visible, .selh-crewprotocols input:focus-visible, .selh-crewprotocols textarea:focus-visible, .selh-crewprotocols a:focus-visible, .selh-crewprotocols [tabindex]:focus-visible {',
+      '  outline: 3px solid #38bdf8 !important; outline-offset: 2px !important;',
+      '}',
+      '@media (forced-colors: active) {',
+      '  .selh-crewprotocols button:focus-visible, .selh-crewprotocols input:focus-visible, .selh-crewprotocols textarea:focus-visible, .selh-crewprotocols a:focus-visible, .selh-crewprotocols [tabindex]:focus-visible {',
+      '    outline: 2px solid Highlight !important; outline-offset: 2px !important;',
+      '  }',
+      '}'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
 
   // Categories of protocols
   var CATEGORIES = {
@@ -416,7 +439,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
       var _cpT = (ctx && ctx.theme) || {};
       var _cpHC = !!_cpT.isContrast, _cpL = !_cpHC && !_cpT.isDark;
       var _cp_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _cp_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#fff':'#000000'};
-      var _cp_FGL = {'#cbd5e1':'#334155','#7dd3fc':'#075985','#bae6fd':'#075985','#10b981':'#047857','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#e9d5ff':'#581c87','#fcd34d':'#78350f','#fde68a':'#92400e'}, _cp_FGH = {'#dc2626':'#ffff00','#cbd5e1':'#ffff00','#7dd3fc':'#ffff00','#94a3b8':'#ffff00','#bae6fd':'#ffff00','#e2e8f0':'#ffff00','#e9d5ff':'#ffff00','#10b981':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00','#a855f7':'#ffff00','#0ea5e9':'#ffff00','#3b82f6':'#ffff00','#ec4899':'#ffff00','#fff':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
+      var _cp_FGL = {'#cbd5e1':'#334155','#7dd3fc':'#075985','#bae6fd':'#075985','#10b981':'#047857','#94a3b8':'#475569','#64748b':'#475569','#e2e8f0':'#1e293b','#e9d5ff':'#581c87','#fcd34d':'#78350f','#fde68a':'#92400e'}, _cp_FGH = {'#dc2626':'#ffff00','#cbd5e1':'#ffff00','#7dd3fc':'#ffff00','#94a3b8':'#ffff00','#bae6fd':'#ffff00','#e2e8f0':'#ffff00','#e9d5ff':'#ffff00','#10b981':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00','#a855f7':'#ffff00','#0ea5e9':'#ffff00','#3b82f6':'#ffff00','#ec4899':'#ffff00','#fff':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
       var _cp_BDL = {'#334155':'#cbd5e1','#1e293b':'#e2e8f0','#475569':'#cbd5e1'}, _cp_BDH = {'#334155':'#ffff00','#0ea5e9':'#ffff00','#1e293b':'#ffff00','#10b981':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#0284c7':'#ffff00','#f59e0b':'#ffff00'};
       var _cpBg = function(h){ return _cpHC ? (_cp_BGH[h]||h) : (_cpL ? (_cp_BGL[h]||h) : h); };
       // Dark-mode foreground remap. The tool shell is always dark, so these
@@ -441,6 +464,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
       var announceToSR = ctx.announceToSR;
       var onSafetyFlag = ctx.onSafetyFlag || null;
       var _cpBand = (ctx && ctx.gradeBand) || 'high';
+      function isImeComposing(e) {
+        return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+      }
+      function announceCP(msg) {
+        if (!msg) return;
+        if (typeof announceToSR === 'function') { try { announceToSR(msg); } catch (_) {} }
+        if (typeof document !== 'undefined') {
+          var lr = document.getElementById('allo-live-crewprotocols');
+          if (lr) { lr.textContent = ''; setTimeout(function() { lr.textContent = msg; }, 20); }
+        }
+      }
 
       var d = labToolData.crewProtocols || defaultState();
       function setCP(patch) {
@@ -483,8 +517,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
-          h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: _cpHC ? '#000000' : (_cpL ? '#f1f5f9' : 'rgba(255,255,255,0.05)'), border: '1px solid ' + _cpBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _cpFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+          h('button', { type: 'button', onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
+            style: { background: _cpHC ? '#000000' : (_cpL ? '#f1f5f9' : 'rgba(255,255,255,0.05)'), border: '1px solid ' + _cpBd('#334155'), borderRadius: 8, padding: '10px 14px', minHeight: 44, cursor: 'pointer', color: _cpFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _cpFg('#7dd3fc'), fontSize: 22, fontWeight: 900 } }, '🪑 Crew Protocols'),
             h('div', { style: { fontSize: 12, color: _cpFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A library of structured group formats for Crew, advisory, and homeroom.')
@@ -501,13 +535,30 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
           { id: 'print', label: 'Print', icon: '🖨' },
           { id: 'about', label: 'About', icon: 'ℹ' }
         ];
+        function onTabKeyDown(e, idx) {
+          if (isImeComposing(e) || e.ctrlKey || e.metaKey || e.altKey) return;
+          var next = null;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (idx + 1) % tabs.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (idx - 1 + tabs.length) % tabs.length;
+          else if (e.key === 'Home') next = 0;
+          else if (e.key === 'End') next = tabs.length - 1;
+          if (next === null) return;
+          e.preventDefault();
+          var targetId = tabs[next].id;
+          goto(targetId);
+          setTimeout(function() {
+            var el = typeof document !== 'undefined' && document.getElementById('cp-tab-' + targetId);
+            if (el && el.focus) el.focus();
+          }, 0);
+        }
         return h('div', { className: 'no-print', role: 'tablist', 'aria-label': 'Crew Protocols sections',
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
-          tabs.map(function(t) {
+          tabs.map(function(t, idx) {
             var active = view === t.id;
-            return h('button', { key: t.id, id: 'cp-tab-' + t.id, onClick: function() { goto(t.id); },
+            return h('button', { key: t.id, type: 'button', id: 'cp-tab-' + t.id, onClick: function() { goto(t.id); },
+              onKeyDown: function(e) { onTabKeyDown(e, idx); },
               role: 'tab', 'aria-selected': active, 'aria-controls': 'cp-panel-' + t.id, tabIndex: active ? 0 : -1,
-              style: { padding: '6px 12px', borderRadius: 8, border: (_cpHC ? '2px' : '1px') + ' solid ' + _cpBd(active ? '#0ea5e9' : '#334155'),
+              style: { padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: (_cpHC ? '2px' : '1px') + ' solid ' + _cpBd(active ? '#0ea5e9' : '#334155'),
                 background: active ? (_cpHC ? '#000000' : (_cpL ? '#e0f2fe' : 'rgba(14,165,233,0.18)')) : _cpBg('#1e293b'),
                 color: active ? _cpFg('#bae6fd') : _cpFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
@@ -540,12 +591,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
             Object.keys(CATEGORIES).map(function(catId) {
               var cat = CATEGORIES[catId];
               var count = PROTOCOLS.filter(function(p) { return p.category === catId; }).length;
-              return h('button', { key: catId,
+              var cardEdge = '1px solid ' + (_cpHC ? '#ffff00' : cat.color + '66');
+              return h('button', { key: catId, type: 'button',
                 onClick: function() { setCP({ filter: catId, view: 'browse' }); },
                 'aria-label': 'Browse ' + cat.label,
-                style: { textAlign: 'left', padding: 14, borderRadius: 10, border: '1px solid ' + (_cpHC ? '#ffff00' : cat.color + '66'), borderLeft: '4px solid ' + _cpBd(cat.color), background: _cpBg('#0f172a'), cursor: 'pointer', color: _cpFg('#e2e8f0') } },
+                style: { textAlign: 'left', padding: 14, minHeight: 44, borderRadius: 10, borderTop: cardEdge, borderRight: cardEdge, borderBottom: cardEdge, borderLeft: '4px solid ' + _cpBd(cat.color), background: _cpBg('#0f172a'), cursor: 'pointer', color: _cpFg('#e2e8f0') } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
-                  h('span', { style: { fontSize: 22 } }, cat.icon),
+                  h('span', { style: { fontSize: 22 }, 'aria-hidden': 'true' }, cat.icon),
                   h('span', { style: { fontSize: 14, fontWeight: 800, color: _cpInk(_cpFg(cat.color)), flex: 1 } }, cat.label),
                   h('span', { style: { fontSize: 10, color: _cpInk(_cpFg(cat.color)), fontWeight: 700 } }, count + ' format' + (count === 1 ? '' : 's'))
                 ),
@@ -574,14 +626,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
         return h('div', null,
           // Filter chips
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            h('button', { onClick: function() { setCP({ filter: null }); }, 'aria-label': 'Show all', 'aria-pressed': !d.filter,
-              style: { padding: '4px 12px', borderRadius: 14, border: '1px solid ' + _cpBd(!d.filter ? '#0ea5e9' : '#334155'), background: !d.filter ? (_cpHC ? '#000000' : (_cpL ? '#e0f2fe' : 'rgba(14,165,233,0.18)')) : _cpBg('#1e293b'), color: !d.filter ? _cpFg('#bae6fd') : _cpFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'All (' + PROTOCOLS.length + ')'),
+            h('button', { type: 'button', onClick: function() { setCP({ filter: null }); }, 'aria-label': 'Show all', 'aria-pressed': !d.filter,
+              style: { padding: '8px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 14, border: '1px solid ' + _cpBd(!d.filter ? '#0ea5e9' : '#334155'), background: !d.filter ? (_cpHC ? '#000000' : (_cpL ? '#e0f2fe' : 'rgba(14,165,233,0.18)')) : _cpBg('#1e293b'), color: !d.filter ? _cpFg('#bae6fd') : _cpFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, 'All (' + PROTOCOLS.length + ')'),
             Object.keys(CATEGORIES).map(function(catId) {
               var cat = CATEGORIES[catId];
               var count = PROTOCOLS.filter(function(p) { return p.category === catId; }).length;
               var active = d.filter === catId;
-              return h('button', { key: catId, onClick: function() { setCP({ filter: catId }); }, 'aria-label': 'Filter by ' + cat.label, 'aria-pressed': active,
-                style: { padding: '4px 12px', borderRadius: 14, border: '1px solid ' + _cpBd(active ? cat.color : '#334155'), background: active ? (_cpHC ? '#000000' : cat.color + '22') : _cpBg('#1e293b'), color: active ? _cpInk(_cpFg(cat.color)) : _cpFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, cat.icon + ' ' + cat.label + ' (' + count + ')');
+              return h('button', { key: catId, type: 'button', onClick: function() { setCP({ filter: catId }); }, 'aria-label': 'Filter by ' + cat.label, 'aria-pressed': active,
+                style: { padding: '8px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 14, border: '1px solid ' + _cpBd(active ? cat.color : '#334155'), background: active ? (_cpHC ? '#000000' : cat.color + '22') : _cpBg('#1e293b'), color: active ? _cpInk(_cpFg(cat.color)) : _cpFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, cat.icon + ' ' + cat.label + ' (' + count + ')');
             })
           ),
 
@@ -591,7 +643,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
             var isPlanned = plannedList.some(function(x) { return x && x.protocolId === p.id; });
             return h('div', { key: p.id, style: { padding: 16, borderRadius: 12, background: _cpBg('#0f172a'), borderTop: '1px solid ' + _cpBd('#1e293b'), borderRight: '1px solid ' + _cpBd('#1e293b'), borderBottom: '1px solid ' + _cpBd('#1e293b'), borderLeft: '4px solid ' + _cpBd(cat.color), marginBottom: 12 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
-                h('span', { style: { fontSize: 22 } }, cat.icon),
+                h('span', { style: { fontSize: 22 }, 'aria-hidden': 'true' }, cat.icon),
                 h('span', { style: { fontSize: 16, fontWeight: 800, color: _cpFg('#e2e8f0'), flex: 1 } }, p.title),
                 h('span', { style: { fontSize: 10, color: _cpInk(_cpFg(cat.color)), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, cat.label)
               ),
@@ -616,7 +668,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
               h('div', { style: { fontSize: 11, color: _cpFg('#94a3b8'), fontStyle: 'italic', marginBottom: 10, lineHeight: 1.5 } },
                 h('strong', null, 'Source: '), p.source
               ),
-              h('button', { onClick: function() {
+              h('button', { type: 'button', onClick: function() {
                 setLabToolData(function(prev) {
                   var prior = (prev && prev.crewProtocols) || defaultState();
                   var cur = Array.isArray(prior.planned) ? prior.planned.slice() : [];
@@ -627,8 +679,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
                   return Object.assign({}, prev, { crewProtocols: Object.assign({}, prior, { planned: nextPlanned, lastUpdated: todayISO() }) });
                 });
                 if (addToast) addToast(isPlanned ? 'Removed from plan.' : 'Added to plan.', 'info');
+                announceCP(isPlanned ? (p.title + ' removed from Crew plan.') : (p.title + ' added to Crew plan.'));
               }, 'aria-label': isPlanned ? ('Remove ' + p.title + ' from plan') : ('Add ' + p.title + ' to plan'), 'aria-pressed': isPlanned,
-                style: { padding: '6px 14px', borderRadius: 6, border: (_cpHC ? '2px' : '1px') + ' solid ' + _cpBd(cat.color), background: isPlanned ? (_cpHC ? '#000000' : '#0369a1') : 'transparent', color: isPlanned ? (_cpHC ? '#ffff00' : '#ffffff') : _cpInk(_cpFg(cat.color)), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                style: { padding: '10px 16px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 6, border: (_cpHC ? '2px' : '1px') + ' solid ' + _cpBd(cat.color), background: isPlanned ? (_cpHC ? '#000000' : '#0369a1') : 'transparent', color: isPlanned ? (_cpHC ? '#ffff00' : '#ffffff') : _cpInk(_cpFg(cat.color)), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
                 isPlanned ? '✓ Saved to plan' : '+ Save to my Crew plan')
             );
           }),
@@ -658,7 +711,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
                     else if (typeof setSelHubTool === 'function') setSelHubTool(p.toolId);
                   },
                   'aria-label': 'Open ' + toolName + ' for Crew prompt: ' + p.construct,
-                  style: { display: 'block', width: '100%', textAlign: 'left', padding: 12, borderRadius: 10, background: _cpBg('#0f172a'), borderTop: '1px solid ' + _cpBd('#1e293b'), borderRight: '1px solid ' + _cpBd('#1e293b'), borderBottom: '1px solid ' + _cpBd('#1e293b'), borderLeft: '3px solid ' + _cpBd('#10b981'), marginBottom: 8, cursor: 'pointer', color: _cpFg('#e2e8f0') } },
+                  style: { display: 'block', width: '100%', textAlign: 'left', padding: 12, minHeight: 44, borderRadius: 10, background: _cpBg('#0f172a'), borderTop: '1px solid ' + _cpBd('#1e293b'), borderRight: '1px solid ' + _cpBd('#1e293b'), borderBottom: '1px solid ' + _cpBd('#1e293b'), borderLeft: '3px solid ' + _cpBd('#10b981'), marginBottom: 8, cursor: 'pointer', color: _cpFg('#e2e8f0') } },
                   h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
                     h('span', { style: { fontSize: 11, color: _cpInk(_cpFg('#10b981')), fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, toolName),
                     h('span', { style: { marginLeft: 'auto', fontSize: 11, color: _cpFg('#7dd3fc'), fontWeight: 700 } }, 'Open tool →')
@@ -682,11 +735,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
         if (planned.length === 0) {
           return h('div', null,
             h('div', { style: { padding: 20, borderRadius: 12, background: _cpBg('#0f172a'), border: '1px solid ' + _cpBd('#1e293b'), textAlign: 'center' } },
-              h('div', { style: { fontSize: 36, marginBottom: 8 } }, '📅'),
+              h('div', { style: { fontSize: 36, marginBottom: 8 }, 'aria-hidden': 'true' }, '📅'),
               h('div', { style: { color: _cpFg('#cbd5e1'), fontSize: 14, marginBottom: 4 } }, 'Your Crew plan is empty'),
               h('div', { style: { color: _cpFg('#94a3b8'), fontSize: 12, marginBottom: 12 } }, 'Browse protocols and tap "Save to my Crew plan" to build your week.'),
-              h('button', { onClick: function() { goto('browse'); }, 'aria-label': 'Browse protocols',
-                style: { padding: '8px 16px', borderRadius: 8, border: '1px solid ' + _cpBd('#0ea5e9'), background: _cpHC ? '#000000' : (_cpL ? '#e0f2fe' : 'rgba(14,165,233,0.18)'), color: _cpFg('#bae6fd'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Browse protocols')
+              h('button', { type: 'button', onClick: function() { goto('browse'); }, 'aria-label': 'Browse protocols',
+                style: { padding: '10px 18px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + _cpBd('#0ea5e9'), background: _cpHC ? '#000000' : (_cpL ? '#e0f2fe' : 'rgba(14,165,233,0.18)'), color: _cpFg('#bae6fd'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Browse protocols')
             )
           );
         }
@@ -700,13 +753,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
             return Object.assign({}, prev, { crewProtocols: Object.assign({}, prior, { planned: cur, lastUpdated: todayISO() }) });
           });
         }
-        function remove(idx) {
+        function remove(idx, title) {
           setLabToolData(function(prev) {
             var prior = (prev && prev.crewProtocols) || defaultState();
             var cur = Array.isArray(prior.planned) ? prior.planned.slice() : [];
             cur.splice(idx, 1);
             return Object.assign({}, prev, { crewProtocols: Object.assign({}, prior, { planned: cur, lastUpdated: todayISO() }) });
           });
+          if (title) announceCP('Removed ' + title + ' from Crew plan.');
         }
 
         return h('div', null,
@@ -718,36 +772,38 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
             var cat = CATEGORIES[p.category];
             return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: _cpBg('#0f172a'), borderTop: '1px solid ' + _cpBd('#1e293b'), borderRight: '1px solid ' + _cpBd('#1e293b'), borderBottom: '1px solid ' + _cpBd('#1e293b'), borderLeft: '3px solid ' + _cpBd(cat.color), marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
-                h('span', { style: { fontSize: 18 } }, cat.icon),
+                h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, cat.icon),
                 h('span', { style: { fontSize: 14, fontWeight: 700, color: _cpFg('#e2e8f0'), flex: 1 } }, p.title),
                 h('span', { style: { fontSize: 10, color: _cpFg('#94a3b8') } }, '⏱ ' + p.time),
-                h('button', { onClick: function() { remove(i); }, 'aria-label': 'Remove ' + p.title + ' from plan',
-                  style: { background: 'transparent', border: '1px solid ' + _cpBd('#475569'), color: _cpFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
+                h('button', { type: 'button', onClick: function() { remove(i, p.title); }, 'aria-label': 'Remove ' + p.title + ' from plan',
+                  style: { background: 'transparent', border: '1px solid ' + _cpBd('#475569'), color: _cpFg('#94a3b8'), borderRadius: 6, padding: '6px 10px', minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 13 } }, '✕')
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 } },
                 h('div', null,
-                  h('label', { htmlFor: 'cp-date-' + i, style: { display: 'block', fontSize: 10, color: _cpFg('#94a3b8'), fontWeight: 700, marginBottom: 2 } }, 'When'),
+                  h('label', { htmlFor: 'cp-date-' + i, style: { display: 'block', fontSize: 11, color: _cpFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'When'),
                   h('input', { id: 'cp-date-' + i, type: 'text', value: entry.date || '',
                     placeholder: 'e.g. Mon Sep 15',
                     onChange: function(e) { setEntry(i, { date: e.target.value }); },
+                    onKeyDown: function(e) { if (!isImeComposing(e) && e.key === 'Escape' && entry.date) { e.preventDefault(); setEntry(i, { date: '' }); } },
                     onBlur: function(e) { scanCrewText(e.target.value); },
-                    style: { width: '100%', padding: 6, borderRadius: 4, border: '1px solid ' + _cpBd('#334155'), background: _cpBg('#1e293b'), color: _cpFg('#e2e8f0'), fontSize: 12 } })
+                    style: { width: '100%', boxSizing: 'border-box', padding: '10px 12px', minHeight: 44, borderRadius: 6, border: '1px solid ' + _cpBd('#334155'), background: _cpBg('#1e293b'), color: _cpFg('#e2e8f0'), fontSize: 13 } })
                 ),
                 h('div', null,
-                  h('label', { htmlFor: 'cp-notes-' + i, style: { display: 'block', fontSize: 10, color: _cpFg('#94a3b8'), fontWeight: 700, marginBottom: 2 } }, 'Notes'),
+                  h('label', { htmlFor: 'cp-notes-' + i, style: { display: 'block', fontSize: 11, color: _cpFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Notes'),
                   h('input', { id: 'cp-notes-' + i, type: 'text', value: entry.notes || '',
                     placeholder: 'Specific framing, who to focus on, etc.',
                     onChange: function(e) { setEntry(i, { notes: e.target.value }); },
+                    onKeyDown: function(e) { if (!isImeComposing(e) && e.key === 'Escape' && entry.notes) { e.preventDefault(); setEntry(i, { notes: '' }); } },
                     onBlur: function(e) { scanCrewText(e.target.value); },
-                    style: { width: '100%', padding: 6, borderRadius: 4, border: '1px solid ' + _cpBd('#334155'), background: _cpBg('#1e293b'), color: _cpFg('#e2e8f0'), fontSize: 12 } })
+                    style: { width: '100%', boxSizing: 'border-box', padding: '10px 12px', minHeight: 44, borderRadius: 6, border: '1px solid ' + _cpBd('#334155'), background: _cpBg('#1e293b'), color: _cpFg('#e2e8f0'), fontSize: 13 } })
                 )
               )
             );
           }),
 
           h('div', { style: { display: 'flex', gap: 10, marginTop: 12, flexWrap: 'wrap' } },
-            h('button', { onClick: function() { goto('print'); }, 'aria-label': 'Print my plan',
-              style: { padding: '10px 20px', borderRadius: 10, border: _cpHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _cpHC ? '#000000' : 'linear-gradient(135deg, #075985 0%, #0369a1 100%)', color: _cpHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 14 } },
+            h('button', { type: 'button', onClick: function() { goto('print'); }, 'aria-label': 'Print my plan',
+              style: { padding: '10px 20px', minHeight: 44, borderRadius: 10, border: _cpHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _cpHC ? '#000000' : 'linear-gradient(135deg, #075985 0%, #0369a1 100%)', color: _cpHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 14 } },
               '🖨 Print my plan')
           ),
 
@@ -764,9 +820,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
           h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: _cpHC ? '#000000' : (_cpL ? '#f0f9ff' : 'rgba(14,165,233,0.10)'), borderRadius: 8, border: '1px solid ' + (_cpHC ? '#ffff00' : 'rgba(14,165,233,0.3)') } },
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _cpFg('#bae6fd'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print my Crew plan.')),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _cpHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _cpHC ? '#000000' : 'linear-gradient(135deg, #075985 0%, #0369a1 100%)', color: _cpHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
-            h('button', { onClick: function() { goto('planner'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _cpBd('#475569'), background: _cpBg('#1e293b'), color: _cpFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+            h('button', { type: 'button', onClick: printNow, style: { padding: '10px 18px', minHeight: 44, borderRadius: 8, border: _cpHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _cpHC ? '#000000' : 'linear-gradient(135deg, #075985 0%, #0369a1 100%)', color: _cpHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { type: 'button', onClick: function() { goto('planner'); }, 'aria-label': 'Back',
+              style: { padding: '10px 18px', minHeight: 44, borderRadius: 8, border: '1px solid ' + _cpBd('#475569'), background: _cpBg('#1e293b'), color: _cpFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
@@ -870,7 +926,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
           h('div', { style: { fontSize: 11, color: _cpFg('#7dd3fc'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: _cpFg('#bae6fd'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+                style: { fontSize: 13, color: _cpFg('#bae6fd'), fontWeight: 700, textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', minHeight: 44, marginBottom: 4 } }, title + ' ↗')
             : h('div', { style: { fontSize: 13, color: _cpFg('#bae6fd'), fontWeight: 700, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _cpFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );
@@ -884,7 +940,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
       else if (view === 'about') body = renderAbout();
       else body = renderHome();
 
-      return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Crew Protocols Library' },
+      return h('div', { className: 'selh-crewprotocols', style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Crew Protocols Library' },
         header(),
         navTabs(),
         (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')

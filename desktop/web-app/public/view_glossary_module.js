@@ -182,6 +182,123 @@ async function prepareGlossaryMulberry(result, signal) {
   _setGlossaryCreditBand(symbol, 688 - 640);
   return symbol;
 }
+async function ensureOfflineGlossaryPictureAssets() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return null;
+  if (typeof window.__alloEnsureWordPictures === 'function') {
+    try {
+      await window.__alloEnsureWordPictures();
+    } catch (_) {}
+  }
+  const loadScript = (src, attr) => new Promise(resolve => {
+    if (document.querySelector('script[' + attr + '="1"]')) {
+      resolve(true);
+      return;
+    }
+    const sc = document.createElement('script');
+    sc.src = src;
+    sc.async = true;
+    sc.setAttribute(attr, '1');
+    sc.onload = () => resolve(true);
+    sc.onerror = () => resolve(false);
+    (document.head || document.documentElement).appendChild(sc);
+  });
+  const pending = [];
+  if (!(window.AlloModules && window.AlloModules.WordSoundsSymbols)) pending.push(loadScript('word_sounds_symbols_en.js', 'data-allo-word-symbols'));
+  if (!(window.AlloReadingSymbolsExt || window.AlloModules && window.AlloModules.ReadingSymbolsExt)) pending.push(loadScript('reading_symbols_ext_en.js', 'data-allo-reading-symbols-ext'));
+  if (!(window.AlloWordPictureSemantic || window.AlloModules && window.AlloModules.WordPictureSemantic)) pending.push(loadScript('word_picture_semantic_en.js', 'data-allo-word-semantic'));
+  if (!(window.AlloWordPictureMatcher || window.AlloModules && window.AlloModules.WordPictureMatcher)) pending.push(loadScript('word_picture_matcher.js', 'data-allo-word-matcher'));
+  if (pending.length) await Promise.all(pending);
+  const sym = window.AlloModules && window.AlloModules.WordSoundsSymbols || window.AlloWordSoundsSymbols || null;
+  const ext = window.AlloReadingSymbolsExt || window.AlloModules && window.AlloModules.ReadingSymbolsExt || null;
+  const fetchShards = async bank => {
+    if (!bank || !Array.isArray(bank.shards) || typeof bank.ready === 'function' && bank.ready() || typeof fetch !== 'function') return;
+    await Promise.all(bank.shards.map(sh => fetch(sh.url).then(r => r && r.ok ? r.json() : null).then(data => {
+      if (data) bank.add(data);
+    }).catch(() => {})));
+  };
+  await Promise.all([fetchShards(sym), ext && typeof ext.load === 'function' ? ext.load().catch(() => {}) : fetchShards(ext)]);
+  return window.AlloWordPictureMatcher || window.AlloModules && window.AlloModules.WordPictureMatcher || null;
+}
+function offlineSvgToDataUrl(svg) {
+  if (typeof svg !== 'string' || !svg.trim()) return '';
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+}
+async function prepareOfflineGlossarySymbol(hit, signal) {
+  const source = offlineSvgToDataUrl(hit?.svg);
+  if (!source) throw new Error('This offline picture has no usable drawing.');
+  const image = await new Promise((resolve, reject) => {
+    const img = new Image();
+    const stop = () => {
+      img.src = '';
+      cleanup();
+      reject(new Error('Image replacement canceled.'));
+    };
+    const cleanup = () => {
+      if (signal) signal.removeEventListener('abort', stop);
+    };
+    img.onload = () => {
+      cleanup();
+      resolve(img);
+    };
+    img.onerror = () => {
+      cleanup();
+      reject(new Error('The offline picture could not be opened.'));
+    };
+    if (signal?.aborted) {
+      stop();
+      return;
+    }
+    if (signal) signal.addEventListener('abort', stop, {
+      once: true
+    });
+    img.src = source;
+  });
+  const canvas = document.createElement('canvas');
+  canvas.width = 640;
+  canvas.height = 688;
+  const ctx = canvas.getContext('2d');
+  if (!ctx || !image.naturalWidth || !image.naturalHeight) throw new Error('The offline picture could not be opened.');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, 640, 688);
+  const scale = Math.min(608 / image.naturalWidth, 608 / image.naturalHeight);
+  const width = image.naturalWidth * scale,
+    height = image.naturalHeight * scale;
+  ctx.drawImage(image, (640 - width) / 2, (640 - height) / 2, width, height);
+  const isDiagram = hit?.set === 'diagram';
+  const isOpenMoji = hit?.set === 'openmoji';
+  const lines = isDiagram ? ['AlloFlow K-12 Curriculum Diagram (Offline)', 'alloflow.org | Included for offline classroom use'] : isOpenMoji ? ['OpenMoji | CC BY-SA 4.0 | Converted to PNG', 'openmoji.org | creativecommons.org/licenses/by-sa/4.0/'] : ['Mulberry Symbols by Steve Lee | CC BY-SA 4.0 | Converted to PNG', 'globalsymbols.com/symbolsets/mulberry | creativecommons.org/licenses/by-sa/4.0/'];
+  ctx.fillStyle = '#334155';
+  ctx.font = '12px sans-serif';
+  ctx.textAlign = 'center';
+  lines.forEach((ln, idx) => ctx.fillText(ln, 320, 654 + idx * 17, 624));
+  const png = canvas.toDataURL('image/png');
+  _setGlossaryCreditBand(png, 688 - 640);
+  return png;
+}
+function offlineGlossaryAttribution(hit) {
+  if (hit?.set === 'diagram') return {
+    set: 'AlloFlow Curriculum Diagrams',
+    author: 'AlloFlow',
+    license: 'AGPL-3.0',
+    label: hit.label || hit.word || ''
+  };
+  if (hit?.set === 'openmoji') return {
+    set: 'OpenMoji',
+    author: 'OpenMoji',
+    license: 'CC BY-SA 4.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
+    url: 'https://openmoji.org/',
+    label: hit.label || hit.word || ''
+  };
+  return {
+    set: 'Mulberry Symbols',
+    author: 'Steve Lee',
+    license: 'CC BY-SA 4.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
+    via: 'Offline Bundle',
+    label: hit.label || hit.word || ''
+  };
+}
 // A classroom photo arrives screened, with AI alt text of the photo itself.
 // Credit is drawn in a band under it, as for Mulberry, so it survives exports
 // that copy only the image bytes.
@@ -400,6 +517,7 @@ function GlossaryImageControls({
   const [mode, setMode] = React.useState('choices');
   const [query, setQuery] = React.useState(item.term || '');
   const [results, setResults] = React.useState([]);
+  const [offlineResults, setOfflineResults] = React.useState([]);
   const [searching, setSearching] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
   const [status, setStatus] = React.useState('');
@@ -498,7 +616,7 @@ function GlossaryImageControls({
     };
   }, [open]);
   React.useEffect(() => {
-    if (open && mode === 'mulberry') searchInputRef.current?.focus();
+    if (open && (mode === 'mulberry' || mode === 'offline')) searchInputRef.current?.focus();
   }, [open, mode]);
   function stopSearch() {
     searchRef.current?.abort();
@@ -523,6 +641,46 @@ function GlossaryImageControls({
     setError('');
     setStatus('');
     setOpen(true);
+  }
+  async function searchOffline(value = query) {
+    const q = String(value || '').trim();
+    if (!q) return;
+    stopSearch();
+    const controller = new AbortController();
+    searchRef.current = controller;
+    setSearching(true);
+    setError('');
+    setStatus('');
+    setOfflineResults([]);
+    try {
+      const matcher = await ensureOfflineGlossaryPictureAssets();
+      if (!mountedRef.current || searchRef.current !== controller) return;
+      if (!matcher || typeof matcher.searchSymbols !== 'function') {
+        setError(text('glossary.images.offline_unavailable', 'Offline symbols and diagrams are not loaded yet.'));
+        return;
+      }
+      const hits = await matcher.searchSymbols(q, {
+        preferDiagrams: true,
+        limit: 24,
+        definition: item.def || ''
+      });
+      if (!mountedRef.current || searchRef.current !== controller) return;
+      const list = Array.isArray(hits) ? hits.filter(h => h && typeof h.svg === 'string' && h.svg.trim()) : [];
+      setOfflineResults(list);
+      setStatus(list.length ? text('glossary.images.offline_found', '{count} offline pictures or diagrams found.').replace('{count}', list.length) : text('glossary.images.no_symbols', 'No symbols found. Try a simpler word.'));
+    } catch (_) {
+      if (mountedRef.current && searchRef.current === controller) setError(text('glossary.images.offline_unavailable', 'Offline symbols and diagrams could not be loaded.'));
+    } finally {
+      if (mountedRef.current && searchRef.current === controller) {
+        searchRef.current = null;
+        setSearching(false);
+      }
+    }
+  }
+  function openOfflineSymbols() {
+    setMode('offline');
+    setQuery(item.term || '');
+    searchOffline(item.term);
   }
   async function search(value = query) {
     const q = String(value || '').trim();
@@ -762,6 +920,12 @@ function GlossaryImageControls({
     type: "button",
     className: buttonClass,
     disabled: working || !beginTask,
+    "aria-pressed": mode === 'offline',
+    onClick: openOfflineSymbols
+  }, text('glossary.images.offline', 'Offline symbols & diagrams')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: buttonClass,
+    disabled: working || !beginTask,
     "aria-pressed": mode === 'mulberry',
     onClick: openMulberry
   }, text('glossary.images.mulberry', 'Find Mulberry symbol')), /*#__PURE__*/React.createElement("button", {
@@ -787,7 +951,69 @@ function GlossaryImageControls({
   })), /*#__PURE__*/React.createElement("p", {
     id: uploadHelpId,
     className: "mb-4 text-xs text-slate-600"
-  }, text('glossary.images.upload_help', 'Upload PNG, JPEG, GIF, WebP, or AVIF images, up to 10 MB.')), mode === 'mulberry' ? /*#__PURE__*/React.createElement("section", {
+  }, text('glossary.images.upload_help', 'Upload PNG, JPEG, GIF, WebP, or AVIF images, up to 10 MB.')), mode === 'offline' ? /*#__PURE__*/React.createElement("section", {
+    "aria-label": text('glossary.images.offline_section_aria', 'Offline symbols and diagrams for {term}').replace('{term}', item.term)
+  }, /*#__PURE__*/React.createElement("form", {
+    onSubmit: event => {
+      event.preventDefault();
+      searchOffline();
+    },
+    className: "flex flex-wrap items-end gap-2"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "min-w-0 flex-1 text-sm font-semibold"
+  }, text('glossary.images.offline_search_label', 'Search offline symbols & K-12 diagrams'), /*#__PURE__*/React.createElement("input", {
+    ref: searchInputRef,
+    type: "search",
+    value: query,
+    onChange: event => {
+      stopSearch();
+      setQuery(event.target.value);
+      setOfflineResults([]);
+      setStatus('');
+      setError('');
+    },
+    className: "mt-1 min-h-11 w-full min-w-0 rounded border border-slate-400 bg-white px-2 text-sm text-slate-800"
+  })), /*#__PURE__*/React.createElement("button", {
+    type: "submit",
+    className: buttonClass,
+    disabled: searching || working || !query.trim()
+  }, text('common.search', 'Search'))), searching && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    className: "mt-2 text-sm text-slate-700"
+  }, text('glossary.images.searching_offline', 'Searching offline library...')), /*#__PURE__*/React.createElement("div", {
+    className: "my-3 grid grid-cols-2 sm:grid-cols-3 gap-2",
+    "aria-busy": searching || working
+  }, offlineResults.map((hit, idx) => /*#__PURE__*/React.createElement("div", {
+    key: (hit.set || 'sym') + ':' + (hit.word || idx) + ':' + idx,
+    className: "min-w-0 rounded-lg border border-slate-300 bg-white p-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    disabled: working,
+    onClick: () => replace(signal => prepareOfflineGlossarySymbol(hit, signal), offlineGlossaryAttribution(hit), () => ({
+      imageSource: hit.set === 'diagram' ? 'diagram' : hit.set || 'mulberry'
+    })),
+    className: buttonClass + ' w-full',
+    "aria-label": text('glossary.images.use_symbol_aria', 'Use {symbol} for {term}').replace('{symbol}', hit.label || hit.word).replace('{term}', item.term)
+  }, /*#__PURE__*/React.createElement("img", {
+    src: offlineSvgToDataUrl(hit.svg),
+    alt: "",
+    className: "h-24 w-full object-contain bg-white"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "mt-1 block break-words"
+  }, hit.label || hit.word), /*#__PURE__*/React.createElement("span", {
+    className: "block text-xs font-normal text-slate-600"
+  }, hit.set === 'diagram' ? 'Diagram' : hit.set === 'openmoji' ? 'OpenMoji' : 'Mulberry'))))), /*#__PURE__*/React.createElement("p", {
+    className: "my-3 text-xs text-slate-700"
+  }, text('glossary.images.offline_credit_note', 'Works 100% offline using Mulberry Symbols (CC BY-SA 4.0), OpenMoji (CC BY-SA 4.0), WordNet semantic matching, and K-12 curriculum diagrams. Credit is included in saved images.')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: buttonClass,
+    onClick: () => {
+      stopSearch();
+      setMode('choices');
+      setStatus('');
+      setError('');
+    }
+  }, text('glossary.images.back', 'Back to current image'))) : mode === 'mulberry' ? /*#__PURE__*/React.createElement("section", {
     "aria-label": text('glossary.images.mulberry_section_aria', 'Mulberry symbols for {term}').replace('{term}', item.term)
   }, /*#__PURE__*/React.createElement("form", {
     onSubmit: event => {
@@ -1661,6 +1887,7 @@ var CheckCircle2 = _lazyIcon('CheckCircle2');
 var AlertCircle = _lazyIcon('AlertCircle');
 var ChevronDown = _lazyIcon('ChevronDown');
 var Download = _lazyIcon('Download');
+var ExternalLink = _lazyIcon('ExternalLink');
 var Eye = _lazyIcon('Eye');
 var GalleryHorizontal = _lazyIcon('GalleryHorizontal');
 var Gamepad2 = _lazyIcon('Gamepad2');
@@ -1830,6 +2057,119 @@ function _glossaryViewAiDoor(kind, t) {
   } catch (_) {
     return null;
   }
+}
+function glossarySafeImageDataUri(raw) {
+  var s = String(raw || '').trim();
+  if (/^data:image\/(png|jpeg|jpg|webp|gif|svg\+xml)/i.test(s)) return s;
+  if (/^<svg[\s>]/i.test(s)) return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s);
+  return '';
+}
+function buildGlossaryVocabEntries(items) {
+  var list = Array.isArray(items) ? items : [];
+  var out = [];
+  var seen = new Set();
+  for (var i = 0; i < list.length && out.length < 60; i++) {
+    var item = list[i];
+    if (!item || typeof item !== 'object' || item.isSelected === false) continue;
+    var word = String(item.term || item.word || '').trim().slice(0, 80);
+    if (!word) continue;
+    var key = word.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    var meaning = String(item.def || item.definition || item.meaning || '').trim().slice(0, 400);
+    var example = String(item.example || item.contextSentence || item.exampleSentence || item.sentence || '').trim().slice(0, 400);
+    var pos = String(item.pos || item.partOfSpeech || '').trim().slice(0, 40);
+    var tier = String(item.tier || '').trim().slice(0, 40);
+    var rawImg = item.imgUri || item.image || item.imageUrl || item.pictureUri || item.svg || '';
+    var imgUri = glossarySafeImageDataUri(rawImg);
+    var alt = String(getGlossaryImageAlt(item) || item.alt || item.imageAlt || '').trim().slice(0, 160);
+    out.push({
+      word: word,
+      meaning: meaning,
+      example: example,
+      pos: pos,
+      tier: tier,
+      imgUri: imgUri,
+      alt: alt
+    });
+  }
+  return out;
+}
+function glossaryWsEscapeHtml(str) {
+  return String(str == null ? '' : str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function buildFallbackVocabWorksheetHtml(title, entries) {
+  var safeTitle = String(title || 'Vocabulary Worksheet').trim() || 'Vocabulary Worksheet';
+  var items = Array.isArray(entries) ? entries : [];
+  var words = items.map(function (e) {
+    return e.word;
+  });
+  var matchItems = items.filter(function (e) {
+    return !!e.meaning;
+  });
+  var rotatedDefs = matchItems.length >= 2 ? matchItems.slice(1).concat(matchItems.slice(0, 1)) : matchItems.slice();
+  var letterOf = function (idx) {
+    var n = idx;
+    var s = '';
+    do {
+      s = String.fromCharCode(65 + n % 26) + s;
+      n = Math.floor(n / 26) - 1;
+    } while (n >= 0);
+    return s;
+  };
+  var answerLetterByWord = {};
+  rotatedDefs.forEach(function (entry, idx) {
+    answerLetterByWord[entry.word.toLowerCase()] = letterOf(idx);
+  });
+  var picItems = items.filter(function (e) {
+    return !!e.imgUri;
+  });
+  var wordBankHtml = words.length ? '<div class="bank" data-vocab-word-bank="true"><strong>Word Bank:</strong> ' + words.slice().sort(function (a, b) {
+    return a.localeCompare(b);
+  }).map(function (w) {
+    return '<span class="chip">' + glossaryWsEscapeHtml(w) + '</span>';
+  }).join(' ') + '</div>' : '';
+  var part1Html = '';
+  var key1Lines = [];
+  if (matchItems.length) {
+    part1Html = '<section class="sec" data-vocab-part="matching"><h2>Part 1 &#8212; Match the Word to Its Meaning</h2>' + '<p class="dir">Write the letter of the matching meaning on the line next to each word.</p>' + '<div class="match-grid"><ol class="col">' + matchItems.map(function (e, i) {
+      return '<li><span class="blank-letter"></span> <strong>' + glossaryWsEscapeHtml(e.word) + '</strong></li>';
+    }).join('') + '</ol><ol class="col defs" type="A">' + rotatedDefs.map(function (e, i) {
+      return '<li><span class="def-letter">' + glossaryWsEscapeHtml(letterOf(i)) + '.</span> ' + glossaryWsEscapeHtml(e.meaning) + '</li>';
+    }).join('') + '</ol></div></section>';
+    key1Lines = matchItems.map(function (e) {
+      return e.word + ' — ' + (answerLetterByWord[e.word.toLowerCase()] || '') + ' (' + e.meaning + ')';
+    });
+  }
+  var key2Lines = [];
+  var clozeHtml = items.length ? '<section class="sec" data-vocab-part="cloze"><h2>Part 2 &#8212; Fill in the Blank</h2>' + '<p class="dir">Choose a word from the Word Bank to complete each sentence, or write a sentence using the word.</p><ol class="list">' + items.map(function (e) {
+    var ex = String(e.example || '').trim();
+    var escWord = e.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    var re = new RegExp('\\b' + escWord + '\\b', 'i');
+    if (ex && re.test(ex)) {
+      var idx = ex.search(re);
+      var matched = ex.match(re)[0];
+      var before = ex.slice(0, idx);
+      var after = ex.slice(idx + matched.length);
+      key2Lines.push(e.word + ' — "' + ex + '"');
+      return '<li>' + glossaryWsEscapeHtml(before) + '<span class="blank-word"></span>' + glossaryWsEscapeHtml(after) + '</li>';
+    }
+    key2Lines.push(e.word + ' — Answers will vary (sentence using "' + e.word + '").');
+    return '<li>Write a sentence using <strong>' + glossaryWsEscapeHtml(e.word) + '</strong>:<div class="write-line"></div></li>';
+  }).join('') + '</ol></section>' : '';
+  var key3Lines = [];
+  var picHtml = picItems.length ? '<section class="sec" data-vocab-part="pictures"><h2>Part 3 &#8212; Name the Picture</h2>' + '<p class="dir">Write the matching vocabulary word on the line under each picture.</p><div class="pic-grid">' + picItems.map(function (e, i) {
+    key3Lines.push(i + 1 + '. ' + e.word);
+    return '<figure class="pic-card"><div class="pic-num">' + (i + 1) + '.</div><img src="' + glossaryWsEscapeHtml(e.imgUri) + '" alt="' + glossaryWsEscapeHtml(e.alt || 'Vocabulary picture ' + (i + 1)) + '" /><div class="write-line"></div></figure>';
+  }).join('') + '</div></section>' : '';
+  var keySection = '<section class="answer-key" data-vocab-answer-key="true">' + '<h1>' + glossaryWsEscapeHtml(safeTitle) + ' &#8212; Teacher Answer Key</h1>' + (key1Lines.length ? '<h2>Part 1 &#8212; Match the Word to Its Meaning</h2><ol>' + key1Lines.map(function (l) {
+    return '<li>' + glossaryWsEscapeHtml(l) + '</li>';
+  }).join('') + '</ol>' : '') + (key2Lines.length ? '<h2>Part 2 &#8212; Fill in the Blank</h2><ol>' + key2Lines.map(function (l) {
+    return '<li>' + glossaryWsEscapeHtml(l) + '</li>';
+  }).join('') + '</ol>' : '') + (key3Lines.length ? '<h2>Part 3 &#8212; Name the Picture</h2><ol>' + key3Lines.map(function (l) {
+    return '<li>' + glossaryWsEscapeHtml(l) + '</li>';
+  }).join('') + '</ol>' : '') + '</section>';
+  return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">' + '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; img-src data:; font-src \'self\' data:; script-src \'none\'">' + '<meta name="viewport" content="width=device-width,initial-scale=1">' + '<title>' + glossaryWsEscapeHtml(safeTitle) + ' — Vocabulary Worksheet</title>' + '<style>' + '@page{margin:0.6in;}*{box-sizing:border-box;}body{margin:0;padding:24px;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#111;background:#fff;line-height:1.45;}' + 'main{max-width:8.2in;margin:0 auto;}header{border-bottom:2px solid #111;padding-bottom:10px;margin-bottom:16px;}' + 'h1{font-size:20px;margin:0 0 8px;}h2{font-size:15px;margin:16px 0 6px;border-bottom:1px solid #333;padding-bottom:3px;}' + '.meta{display:flex;gap:24px;font-size:13px;}.meta span{flex:1;border-bottom:1px solid #111;padding-bottom:2px;}' + '.bank{border:1.5px solid #111;padding:10px 12px;margin:12px 0;font-size:13px;}.chip{display:inline-block;border:1px solid #333;padding:2px 8px;margin:2px 4px 2px 0;font-weight:600;}' + '.dir{margin:0 0 10px;font-size:13px;font-style:italic;}.sec{margin-bottom:18px;}' + '.match-grid{display:grid;grid-template-columns:1fr 1.5fr;gap:18px;}.col{margin:0;padding-left:20px;}.defs{list-style:none;padding-left:0;}.def-letter{font-weight:700;margin-right:4px;}' + '.col li,.list li{margin-bottom:8px;font-size:13.5px;}.blank-letter{display:inline-block;width:28px;border-bottom:1.5px solid #111;margin-right:6px;}' + '.blank-word{display:inline-block;width:130px;border-bottom:1.5px solid #111;margin:0 4px;}.write-line{border-bottom:1.5px solid #111;height:24px;margin-top:4px;}' + '.pic-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}.pic-card{margin:0;border:1px solid #333;padding:10px;text-align:center;break-inside:avoid;}' + '.pic-num{text-align:left;font-weight:700;font-size:12px;}.pic-card img{max-width:100%;max-height:110px;object-fit:contain;filter:grayscale(100%);}' + '.answer-key{page-break-before:always;break-before:page;border-top:2px dashed #111;padding-top:16px;margin-top:28px;}' + '@media print{body{padding:0;}.answer-key{border-top:none;margin-top:0;padding-top:0;}}' + '</style></head><body><main>' + '<header><h1>' + glossaryWsEscapeHtml(safeTitle) + '</h1>' + '<div class="meta"><span>Name:</span><span>Date:</span></div></header>' + wordBankHtml + part1Html + clozeHtml + picHtml + keySection + '</main></body></html>';
 }
 function GlossaryView(props) {
   // Pure data + state reads
@@ -2448,6 +2788,93 @@ function GlossaryView(props) {
   var glossaryToolsOpen = glossaryToolsState[0];
   var setGlossaryToolsOpen = glossaryToolsState[1];
   var [isGlossaryExportsOpen, setIsGlossaryExportsOpen] = React.useState(false);
+  var [vocabPacketNotice, setVocabPacketNotice] = React.useState('');
+  var [vocabWorksheetNotice, setVocabWorksheetNotice] = React.useState('');
+  var sendGlossaryToVocabPacket = async function () {
+    if (!isTeacherMode || !activityWords.length) return;
+    setVocabPacketNotice('');
+    var entries = buildGlossaryVocabEntries(activityWords);
+    if (!entries.length) {
+      setVocabPacketNotice('No vocabulary words are available to send.');
+      return;
+    }
+    var sendFn = typeof props.onSendToVocabPacket === 'function' ? props.onSendToVocabPacket : typeof window !== 'undefined' && typeof window.__alloSendToVocabPacket === 'function' ? window.__alloSendToVocabPacket : null;
+    if (typeof sendFn !== 'function') {
+      setVocabPacketNotice('Vocabulary Packet handoff is unavailable in this view.');
+      return;
+    }
+    try {
+      var ok = await sendFn({
+        title: generatedContent && generatedContent.title || 'Vocabulary',
+        lang: glossaryBaseLanguage || leveledTextLanguage || currentUiLanguage || 'English',
+        entries: entries
+      });
+      if (glossaryMountedRef.current) {
+        setVocabPacketNotice(ok === false ? 'Could not hand off draft to Vocabulary Packet.' : 'Sent vocabulary list to Vocabulary Packet in a new tab.');
+      }
+    } catch (_) {
+      if (glossaryMountedRef.current) setVocabPacketNotice('Could not hand off draft to Vocabulary Packet.');
+    }
+  };
+  var downloadGlossaryVocabWorksheet = function () {
+    if (!isTeacherMode || !activityWords.length) return;
+    setVocabWorksheetNotice('');
+    try {
+      var entries = buildGlossaryVocabEntries(activityWords);
+      if (!entries.length) {
+        setVocabWorksheetNotice('No vocabulary words are available for the worksheet.');
+        return;
+      }
+      var wsTitle = generatedContent && generatedContent.title || 'Vocabulary Worksheet';
+      var html = '';
+      if (typeof window !== 'undefined' && window.AlloPacketPrintCards && typeof window.AlloPacketPrintCards.buildVocabWorksheetHtml === 'function') {
+        html = window.AlloPacketPrintCards.buildVocabWorksheetHtml({
+          title: wsTitle,
+          entries: entries.map(function (e) {
+            return {
+              word: e.word,
+              meaning: e.meaning,
+              example: e.example,
+              picture: e.imgUri || '',
+              pictureUri: e.imgUri || ''
+            };
+          })
+        }, {
+          wordBank: true,
+          pictures: true,
+          answerKey: true
+        });
+      }
+      if (!html || typeof html !== 'string') {
+        html = buildFallbackVocabWorksheetHtml(wsTitle, entries);
+      }
+      var slug = String(wsTitle || 'vocabulary').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'vocabulary';
+      var fname = slug + '-vocabulary-worksheet.html';
+      if (typeof window !== 'undefined' && typeof window.Blob === 'function' && window.URL && typeof window.URL.createObjectURL === 'function' && typeof document !== 'undefined' && document.body) {
+        var blob = new window.Blob([html], {
+          type: 'text/html;charset=utf-8'
+        });
+        var url = window.URL.createObjectURL(blob);
+        var link = document.createElement('a');
+        link.href = url;
+        link.download = fname;
+        link.hidden = true;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(function () {
+          try {
+            window.URL.revokeObjectURL(url);
+          } catch (_) {}
+        }, 15000);
+      }
+      if (glossaryMountedRef.current) {
+        setVocabWorksheetNotice('Downloaded ' + fname + '. Open it in any browser to print.');
+      }
+    } catch (_) {
+      if (glossaryMountedRef.current) setVocabWorksheetNotice('The vocabulary worksheet could not be prepared. Please try again.');
+    }
+  };
   var [showGlossaryContext, setShowGlossaryContext] = React.useState(() => {
     try {
       return window.localStorage.getItem('allo_glossary_show_context_sentences') === 'on';
@@ -2476,6 +2903,8 @@ function GlossaryView(props) {
   }
   React.useEffect(function () {
     setIsGlossaryExportsOpen(false);
+    setVocabPacketNotice('');
+    setVocabWorksheetNotice('');
   }, [activityResourceKey, isTeacherMode]);
   var glossaryAudioState = React.useState({
     busy: false,
@@ -4868,7 +5297,31 @@ function GlossaryView(props) {
     }, /*#__PURE__*/React.createElement(Download, {
       size: 16,
       "aria-hidden": "true"
-    }), " ", glossaryText('glossary.export_word_list', 'Export word list…'))))), /*#__PURE__*/React.createElement("div", {
+    }), " ", glossaryText('glossary.export_word_list', 'Export word list…')), activityWords.length > 0 && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-testid": "glossary-send-vocab-packet",
+      onClick: sendGlossaryToVocabPacket,
+      className: exportAction
+    }, /*#__PURE__*/React.createElement(ExternalLink, {
+      size: 16,
+      "aria-hidden": "true"
+    }), " Send to Vocabulary Packet"), activityWords.length > 0 && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-testid": "glossary-download-worksheet",
+      onClick: downloadGlossaryVocabWorksheet,
+      className: exportAction
+    }, /*#__PURE__*/React.createElement(Download, {
+      size: 16,
+      "aria-hidden": "true"
+    }), " Download Vocabulary Worksheet")), vocabPacketNotice && /*#__PURE__*/React.createElement("p", {
+      role: "status",
+      "aria-live": "polite",
+      className: "mt-2 text-xs text-indigo-900"
+    }, vocabPacketNotice), vocabWorksheetNotice && /*#__PURE__*/React.createElement("p", {
+      role: "status",
+      "aria-live": "polite",
+      className: "mt-2 text-xs text-indigo-900"
+    }, vocabWorksheetNotice))), /*#__PURE__*/React.createElement("div", {
       id: "glossary-toolbar-tools",
       hidden: !glossaryToolbarToolsOpen,
       style: {

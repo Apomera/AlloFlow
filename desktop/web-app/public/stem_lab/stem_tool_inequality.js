@@ -1667,7 +1667,7 @@ window.StemLab = window.StemLab || {
             ? h('circle', { key: 'tp' + i, cx: px, cy: py, r: 5.8, fill: col, stroke: isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff'), strokeWidth: 1.8 })
             : h('path', { key: 'tp' + i, d: 'M' + (px - 5) + ',' + (py - 5) + ' L' + (px + 5) + ',' + (py + 5) + ' M' + (px - 5) + ',' + (py + 5) + ' L' + (px + 5) + ',' + (py - 5), stroke: col, strokeWidth: 2.5, strokeLinecap: 'round' }));
           if (p.ok && !isContrast) kids.push(h('circle', { key: 'tps' + i, cx: px - 1.6, cy: py - 1.6, r: 1.4, fill: '#ffffff', opacity: 0.78 }));
-          if (p.label) kids.push(h('text', { key: 'tpl' + i, x: Math.min(W2 - pad2 - 42, px + 8), y: Math.max(pad2 + 12, py - 6), fill: col, style: { fontSize: '10px', fontWeight: 'bold' } }, p.label));
+          if (p.label) kids.push(h('text', { key: 'tpl' + i, x: Math.min(W2 - pad2 - 42, px + 8), y: Math.max(pad2 + 12, py - 6), fill: col, style: { fontSize: '10px', fontWeight: 'bold', paintOrder: 'stroke', stroke: isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff'), strokeWidth: '3px', strokeLinejoin: 'round' } }, p.label));
         });
         kids.push(h('text', { key: 'axx', x: W2 - pad2 + 5, y: toGY(0) + 4, fill: axisStroke, style: { fontSize: '11px', fontWeight: 'bold' } }, 'x'));
         kids.push(h('text', { key: 'axy', x: toGX(0) + 5, y: pad2 - 5, fill: axisStroke, style: { fontSize: '11px', fontWeight: 'bold' } }, 'y'));
@@ -1680,7 +1680,7 @@ window.StemLab = window.StemLab || {
           o.onPick(Math.round(gRange.xMin + (px - pad2) / (W2 - 2 * pad2) * (gRange.xMax - gRange.xMin)), Math.round(gRange.yMax - (py - pad2) / (H2 - 2 * pad2) * (gRange.yMax - gRange.yMin)));
         } : undefined;
         return h('svg', { viewBox: '0 0 ' + W2 + ' ' + H2, role: 'img', 'aria-label': o.label, 'data-inequality-plane': o.id || 'single', onClick: pick, style: { maxWidth: 420, cursor: pick ? 'crosshair' : undefined },
-          className: 'w-full rounded-xl border-2 shadow-sm ' + (isContrast ? 'bg-black border-yellow-300' : (isDark ? 'bg-slate-900 border-fuchsia-700' : 'bg-white border-fuchsia-200')) }, kids);
+          className: 'block mx-auto w-full rounded-xl border-2 shadow-sm ' + (isContrast ? 'bg-black border-yellow-300' : (isDark ? 'bg-slate-900 border-fuchsia-700' : 'bg-white border-fuchsia-200')) }, kids);
       };
 
       // ── Explore, 1D ──
@@ -2364,7 +2364,7 @@ window.StemLab = window.StemLab || {
             // expr 'x > 3', so a bare expr check completed the quest on first open.
             onChange: function(e) { setExpr(e.target.value); },
             onKeyDown: function(e) { if (e.key === 'Enter') addToHistory(d.expr); },
-            className: 'px-4 py-2 border-2 border-fuchsia-600 rounded-lg font-mono text-lg text-center w-52 max-w-full focus:ring-2 focus:ring-fuchsia-400 outline-none',
+            className: 'px-4 py-2 border-2 border-fuchsia-600 rounded-lg font-mono text-lg text-center w-72 max-w-full focus:ring-2 focus:ring-fuchsia-400 outline-none',
             'aria-label': __alloT('stem.inequality.aria_expression_input', 'Inequality expression input')
           })
         ),

@@ -7546,6 +7546,8 @@
                   type: 'button',
                   'data-allo-fs-btn': 'true',
                   'aria-pressed': 'false',
+                  disabled: !show3d,
+                  tabIndex: show3d ? 0 : -1,
                   ref: function (b) { if (b && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(b, b.closest('[data-allo-fs-stage]')); },
                   'aria-label': __alloT('stem.bridgelab.enter_fullscreen', 'View the 3D bridge fullscreen'),
                   'data-fs-out': __alloT('stem.bridgelab.enter_fullscreen', 'View the 3D bridge fullscreen'),

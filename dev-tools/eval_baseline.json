@@ -1,0 +1,42 @@
+{
+  "note": "Tight ratchet baseline for dev-tools/check_eval.cjs --strict. Each entry pins an audited pre-existing site by (file, kind, normalizedSignature, count). Any new, modified, or higher-count eval/Function/string-timer site fails CI.",
+  "accepted": {
+    "desktop/mcp/remediation_headless_driver.cjs": [
+      { "kind": "indirect-eval", "signature": "(0,eval)('('+cfg.rtlFn+')')", "count": 1, "rationale": "Playwright page.evaluate bridge deserializing first-party isRtlLanguage.toString()" },
+      { "kind": "indirect-eval", "signature": "(0,eval)('('+candidateRejectionFn+')')", "count": 3, "rationale": "Playwright page.evaluate bridge deserializing first-party helper .toString()" },
+      { "kind": "indirect-eval", "signature": "(0,eval)('('+sourceCoverageFn+')')", "count": 2, "rationale": "Playwright page.evaluate bridge deserializing first-party helper .toString()" },
+      { "kind": "indirect-eval", "signature": "(0,eval)('('+scanLayerCautionFn+')')", "count": 1, "rationale": "Playwright page.evaluate bridge deserializing first-party helper .toString()" },
+      { "kind": "indirect-eval", "signature": "(0,eval)('('+verificationEvidenceFn+')')", "count": 2, "rationale": "Playwright page.evaluate bridge deserializing first-party helper .toString()" },
+      { "kind": "indirect-eval", "signature": "(0,eval)('('+scanReadingFn+')')", "count": 1, "rationale": "Playwright page.evaluate bridge deserializing first-party helper .toString()" },
+      { "kind": "indirect-eval", "signature": "(0,eval)('('+rtlFn+')')", "count": 1, "rationale": "Playwright page.evaluate bridge deserializing first-party helper .toString()" },
+      { "kind": "indirect-eval", "signature": "(0,eval)('('+checksSource+')')", "count": 2, "rationale": "Playwright page.evaluate bridge deserializing first-party helper .toString()" },
+      { "kind": "indirect-eval", "signature": "(0,eval)('('+src+')')", "count": 1, "rationale": "Playwright page.evaluate bridge deserializing first-party helper .toString()" },
+      { "kind": "indirect-eval", "signature": "(0,eval)('('+activeContentFn+')')", "count": 1, "rationale": "Playwright page.evaluate bridge deserializing first-party helper .toString()" },
+      { "kind": "indirect-eval", "signature": "(0,eval)('('+carryFn+')')", "count": 1, "rationale": "Playwright page.evaluate bridge deserializing first-party helper .toString()" }
+    ],
+    "desktop/mcp/remediation_narration.cjs": [
+      { "kind": "indirect-eval", "signature": "(0,eval)('('+fn+')')", "count": 1, "rationale": "Playwright page.evaluate bridge deserializing first-party normalizeClip.toString()" }
+    ],
+    "host_handlers_module.js": [
+      { "kind": "Function()", "signature": "Function(''use strict'; return('+jsExpr+')')", "count": 1, "rationale": "Pre-existing evaluateMathExpression (strictly stripped to [0-9+\\-*/().%^ ] before evaluation; candidate for future recursive-descent parser replacement to remove unsafe-eval reliance)" }
+    ],
+    "host_handlers_source.jsx": [
+      { "kind": "Function()", "signature": "Function(''use strict'; return('+jsExpr+')')", "count": 1, "rationale": "Pre-existing evaluateMathExpression source (strictly stripped to [0-9+\\-*/().%^ ] before evaluation; candidate for future recursive-descent parser replacement)" }
+    ],
+    "view_export_preview_module.js": [
+      { "kind": "new Function", "signature": "new Function('u','return import(u)')", "count": 1, "rationale": "Dynamic import() wrapper preventing esbuild static resolution of pinned Harper WASM ESM bundle" }
+    ],
+    "view_export_preview_source.jsx": [
+      { "kind": "new Function", "signature": "new Function('u','return import(u)')", "count": 1, "rationale": "Dynamic import() wrapper preventing esbuild static resolution of pinned Harper WASM ESM bundle" }
+    ],
+    "view_pdf_audit_module.js": [
+      { "kind": "new Function", "signature": "new Function('u','return import(u)')", "count": 2, "rationale": "Dynamic import() wrappers for pinned ESM helpers (mathml2omml / PDF export) shielded from esbuild bundling" }
+    ],
+    "view_pdf_audit_source.jsx": [
+      { "kind": "new Function", "signature": "new Function('u','return import(u)')", "count": 2, "rationale": "Dynamic import() wrappers for pinned ESM helpers (mathml2omml / PDF export) shielded from esbuild bundling" }
+    ],
+    "voice_module.js": [
+      { "kind": "new Function", "signature": "new Function('u','return import(u)')", "count": 2, "rationale": "Dynamic import() capability check and ESM shim for @xenova/transformers CDN loader" }
+    ]
+  }
+}

@@ -75,6 +75,7 @@ window.StemLab = window.StemLab || {
       '@keyframes geo-beacon-pulse { 0% { opacity: 0.28; } 50% { opacity: 0.72; } 100% { opacity: 0.28; } }',
       '[data-stem-tool-shell="geoQuiz"] .geo-beacon-halo { animation: geo-beacon-pulse 2.4s ease-in-out infinite; }',
       '[data-stem-tool-shell="geoQuiz"] .geo-map-frame { box-shadow: inset 0 0 22px rgba(2,12,24,0.22), 0 6px 18px -10px rgba(2,12,24,0.35); }',
+      '[data-stem-tool-shell="geoQuiz"] .geo-map-frame .leaflet-container, [data-stem-tool-shell="geoQuiz"] .geo-map-frame.leaflet-container { background: #072235; }',
       '[data-stem-tool-shell="geoQuiz"]:not([data-stem-theme="contrast"]) .geo-dist-label { background: rgba(15,23,42,0.92); color: #f8fafc; border: 1px solid rgba(56,189,248,0.55); border-radius: 6px; font-weight: 700; font-size: 11px; padding: 2px 7px; box-shadow: 0 3px 10px rgba(2,6,23,0.45); }',
       '[data-stem-tool-shell="geoQuiz"]:not([data-stem-theme="contrast"]) .geo-dist-label.leaflet-tooltip-left::before { border-left-color: rgba(15,23,42,0.92); }',
       '[data-stem-tool-shell="geoQuiz"]:not([data-stem-theme="contrast"]) .geo-dist-label.leaflet-tooltip-right::before { border-right-color: rgba(15,23,42,0.92); }',
@@ -1320,12 +1321,13 @@ var d = _geoPlainObj(labToolData) ? labToolData : {};
           // Esri's boundaries-and-places reference layer supplies them, also keyless.
           function geoTileLayer(m, labels) {
             var esri = 'Tiles \u00a9 <a href="https://www.esri.com/" target="_blank" rel="noopener noreferrer">Esri</a> and source contributors';
+            var worldBounds = [[-85.0511, -180], [85.0511, 180]];
             var base = window.L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-              attribution: esri, maxZoom: 18, noWrap: true
+              attribution: esri, maxZoom: 18, noWrap: true, bounds: worldBounds
             }).addTo(m);
             if (labels) {
               window.L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-                maxZoom: 18, noWrap: true, opacity: 0.9
+                maxZoom: 18, noWrap: true, bounds: worldBounds, opacity: 0.9
               }).addTo(m);
             }
             return base;
@@ -4512,7 +4514,7 @@ var d = _geoPlainObj(labToolData) ? labToolData : {};
           : 'Drag points • Add segments to discover theorems';
 
         // SVG Canvas
-        const renderCanvas = () => React.createElement('svg', { width:W, height:H, viewBox:`0 0 ${W} ${H}`, className:'cursor-crosshair select-none', style:{background:'#faf5ff', outline: '2px solid transparent'}, role:'application', tabIndex:0, 'aria-label': `Geometry prover canvas. ${gpPoints.length} point${gpPoints.length===1?'':'s'} placed${gpSelected>=0?', point '+(gpSelected+1)+' selected':''}. Keyboard: Enter or Space to place a point near the selection, arrow keys to nudge the selected point, N or P to cycle selection, Delete to remove selected point.`, onKeyDown:handleCanvasKeyDown, onMouseDown:handleCanvasMouseDown, onMouseMove:handleCanvasMouseMove, onMouseUp:handleCanvasMouseUp, onMouseLeave:()=>{ handleCanvasMouseUp(); gpUpd('hoverIdx',-1); } },
+        const renderCanvas = () => React.createElement('svg', { width:W, height:H, viewBox:`0 0 ${W} ${H}`, className:'cursor-crosshair select-none focus-visible:ring-2 focus-visible:ring-indigo-600', style:{background:'#faf5ff'}, role:'application', tabIndex:0, 'aria-label': `Geometry prover canvas. ${gpPoints.length} point${gpPoints.length===1?'':'s'} placed${gpSelected>=0?', point '+(gpSelected+1)+' selected':''}. Keyboard: Enter or Space to place a point near the selection, arrow keys to nudge the selected point, N or P to cycle selection, Delete to remove selected point.`, onKeyDown:handleCanvasKeyDown, onMouseDown:handleCanvasMouseDown, onMouseMove:handleCanvasMouseMove, onMouseUp:handleCanvasMouseUp, onMouseLeave:()=>{ handleCanvasMouseUp(); gpUpd('hoverIdx',-1); } },
           React.createElement('title',null,'Geometry Prover Canvas'),
           Array.from({length:Math.floor(W/gridStep)+1}).map((_,i)=>React.createElement('line',{key:'gv'+i,x1:i*gridStep,y1:0,x2:i*gridStep,y2:H,stroke:'#ede9fe',strokeWidth:0.5})),
           Array.from({length:Math.floor(H/gridStep)+1}).map((_,i)=>React.createElement('line',{key:'gh'+i,x1:0,y1:i*gridStep,x2:W,y2:i*gridStep,stroke:'#ede9fe',strokeWidth:0.5})),
@@ -4652,7 +4654,7 @@ var d = _geoPlainObj(labToolData) ? labToolData : {};
               React.createElement('div',null, React.createElement('p',{className:'text-sm font-bold text-violet-800'},m.title), React.createElement('p',{className:'text-[0.6875rem] text-slate-600'},'Discover the rule yourself through measurement & prediction'))
             ))),
             React.createElement('div',{className:'mt-3 pt-3 border-t-2 border-violet-100'},
-              React.createElement('p',{className:'text-sm font-bold text-orange-700 mb-2'},'🎲 Quick Activities'),
+              React.createElement('p',{className:'text-sm font-bold text-orange-700 mb-2' + onHostInk},'🎲 Quick Activities'),
               React.createElement('button',{onClick:function(){gpUpd('mission',{id:'angle_sorter',step:0,data:{}});startAngleSorter();},className:'w-full flex items-center gap-3 p-3 bg-white border-2 border-orange-100 rounded-xl hover:border-orange-400 hover:bg-orange-50 text-left transition-all'},
                 React.createElement('span',{className:'text-2xl w-10 text-center shrink-0'},'📐'),
                 React.createElement('div',null,React.createElement('p',{className:'text-sm font-bold text-orange-700'},'Angle Sorter'),React.createElement('p',{className:'text-[0.6875rem] text-slate-600'},'Drag angles into the correct category — acute, right, obtuse, straight, or reflex!'))

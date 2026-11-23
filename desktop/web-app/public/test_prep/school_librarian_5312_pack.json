@@ -7727,7 +7727,7 @@
       "prompt": "After a semester of inquiry instruction, lesson counts increased but student rubric scores did not. What is the librarian's best next step?",
       "choices": [
         "Report the higher lesson count as proof that the inquiry initiative achieved its intended learning outcome.",
-        "Examine implementation and learner-work evidence with teaching partners, locate where learning stalled, and revise the approach for a subsequent cycle.",
+        "Examine implementation and learner work with teaching partners, locate where growth stalled, and revise for a future cycle.",
         "Conclude that the rubric is invalid because its scores did not improve after the additional library lessons.",
         "Continue the same lessons for another semester so a larger activity count can compensate for unchanged performance."
       ],
@@ -7821,7 +7821,7 @@
         "Implement the signature rule immediately because a uniform requirement treats every student and family in the same way.",
         "Ignore the proposal and continue current checkout practice without documenting the concern or consulting administrators.",
         "Move all young-adult novels behind the desk while the librarian informally decides which students seem mature enough.",
-        "Review the restriction under district rules and reconsideration procedures, assess its effect on equitable access, and propose the least restrictive lawful approach."
+        "Review the restriction via district rules and reconsideration steps, assess access equity, and propose the least restrictive lawful path."
       ],
       "answerIndex": 3,
       "rationale": "Access rules should be grounded in adopted policy, educational purpose, professional principles, and applicable requirements rather than improvised blanket restrictions. A documented review also surfaces disparate effects and routes concerns through established governance.",
@@ -8279,7 +8279,7 @@
       "prompt": "Before redesigning the library commons, the team has traffic counts, accessibility complaints, noise observations, and requests for more group space. What should the librarian do with this evidence?",
       "choices": [
         "Select the layout with the greatest number of seats because capacity is the common denominator across all four data sources.",
-        "Translate the distinct needs into design criteria, prototype competing layouts with users, and evaluate access and learning tradeoffs during preconstruction review.",
+        "Turn distinct needs into design criteria, prototype layouts with users, and weigh access and learning tradeoffs prior to construction.",
         "Prioritize the most frequent request and treat the other evidence as secondary until the renovation is complete.",
         "Ask the architect to reproduce a recently published award-winning library plan without local testing."
       ],
@@ -8373,7 +8373,7 @@
         "Expand the program because the total attendance demonstrates sufficient demand for the existing lunchtime model.",
         "Cancel the program because any initial participation disparity means the idea cannot be made equitable.",
         "Continue unchanged and invite support teachers to excuse interested students from required services whenever possible.",
-        "Review participation and learner feedback by group, test alternative access times, and judge the program against both engagement and equity criteria."
+        "Review participation and feedback by group, test alternate times, and evaluate the program on engagement and equity criteria."
       ],
       "answerIndex": 3,
       "rationale": "Improvement cycles examine who benefited, who could not participate, and which design feature produced the pattern. Testing additional schedules or formats can preserve demonstrated interest while addressing the access barrier before a permanent expansion decision.",
@@ -8831,7 +8831,7 @@
       "prompt": "A neighboring school requests digital access to an ebook under the district's resource-sharing agreement. What must the librarian verify first?",
       "choices": [
         "Send a staff login because the schools share a district and therefore have interchangeable digital access rights.",
-        "Confirm that the license and authentication rules permit the proposed users and method, then follow the resource-sharing protocol and access safeguards.",
+        "Confirm license and authentication rules permit the users and delivery method, then follow sharing protocol and safeguards.",
         "Decline the request because electronic resources cannot participate in any form of interschool resource sharing.",
         "Download and email the ebook file after confirming that the requesting teacher needs it for instruction."
       ],
@@ -8968,7 +8968,7 @@
       "cognitiveLevel": "apply",
       "prompt": "A circulation report automatically emails families the titles of every overdue book. A student says a title reveals a sensitive personal interest. What should the librarian do?",
       "choices": [
-        "Pause unnecessary title disclosure, review notice settings and policy with authorized staff, and redesign messages to minimize exposed borrowing data.",
+        "Pause title disclosure, review notice settings and policy with authorized staff, and redesign alerts to minimize borrowing data.",
         "Keep the notices unchanged because family responsibility for materials permits disclosure of any circulation detail.",
         "Delete the student's overdue record so the sensitive title will not appear in the next automated message.",
         "Ask students to identify sensitive books at checkout so staff can manually suppress those titles from notices."
@@ -9152,7 +9152,7 @@
       "cognitiveLevel": "evaluate",
       "prompt": "A database can be accessed off campus through a shared password, but use logs cannot distinguish authorized users and the password circulates publicly. What is the best response?",
       "choices": [
-        "Work with the vendor and district to implement license-compliant individual or federated access that protects privacy and produces appropriate security audit trails.",
+        "Work with the vendor and district to set up compliant individual or federated login that protects privacy and maintains audit trails.",
         "Change the shared password each week and post the new credential in every classroom to preserve convenient access.",
         "Disable off-campus access because authentication risk makes remote database service incompatible with responsible stewardship.",
         "Keep the shared password but ask students to sign a promise that they will not forward it outside the school community."
@@ -9199,7 +9199,7 @@
       "prompt": "Overdue fines generate little revenue but block many students from borrowing, especially those with limited transportation. Which recommendation is strongest?",
       "choices": [
         "Keep the fines because a consequence is fair when the same amount is charged for every late item.",
-        "Analyze loss and return patterns, test nonpunitive reminders or replacement options, and revise the policy to preserve accountability with fewer access barriers.",
+        "Analyze loss and return data, test nonpunitive reminders or replacement paths, and revise policy for accountability with fewer barriers.",
         "Erase all item records after the due date so students can borrow without being connected to outstanding materials.",
         "Increase fines until revenue covers replacement costs, using the higher payment as evidence of stronger responsibility."
       ],
@@ -9477,7 +9477,7 @@
         "Search algorithms certify the most accurate viewpoint by measuring which content receives the strongest user engagement.",
         "Personalization means the search company has read and approved every recommended item for the individual student.",
         "Repeated viewpoints show that scholarly consensus has been reached even when the results contain no research sources.",
-        "Ranking and recommendation systems use signals and optimization goals that can personalize exposure, so students should deliberately broaden sources and queries."
+        "Ranking systems use engagement signals and goals that narrow exposure, so learners should deliberately broaden sources and queries."
       ],
       "answerIndex": 3,
       "rationale": "Information systems rank rather than neutrally list all available content. Engagement, relevance predictions, location, history, commercial goals, and other signals may narrow exposure; varied queries, source types, and direct database searching provide useful checks.",
@@ -9761,7 +9761,7 @@
       "prompt": "Another school requests an article through interlibrary loan, and the same journal issue has been requested repeatedly. What should staff do?",
       "choices": [
         "Send each requested scan because separate requests can never create a systematic-copying concern for a library.",
-        "Review the request pattern, subscription and license terms, applicable library-copying provisions, and district guidance before supplying or acquiring access.",
+        "Review the pattern, subscription and license terms, copying rules, and district guidance before supplying or acquiring access.",
         "Refuse the article because interlibrary cooperation permits lending physical books but excludes copies of journal articles.",
         "Buy a personal subscription for a staff member and use that account to fulfill future school requests more cheaply."
       ],
@@ -9810,7 +9810,7 @@
       "choices": [
         "Reply to the sender asking whether the request is legitimate before deciding whether to enter the password.",
         "Open the link on a library computer because district filtering will prevent a fraudulent page from loading.",
-        "Avoid the embedded link, inspect sender and destination cues, report the message through the district channel, and navigate independently to the service.",
+        "Avoid the link, check sender and URL cues, report the alert via district channels, and navigate independently to the site.",
         "Forward the message to classmates so everyone can compare whether the same password notice was received."
       ],
       "answerIndex": 2,
@@ -9947,7 +9947,7 @@
       "prompt": "A student paraphrases an article accurately but omits the citation because none of the original sentences were copied. What feedback is most appropriate?",
       "choices": [
         "Accept the paragraph because changing the wording makes the idea part of the student's own original expression.",
-        "Explain that the borrowed idea still requires attribution, then help the student connect the paraphrase to an in-text citation and source record.",
+        "Explain that borrowed ideas still need credit, then help the writer link the paraphrase to an in-text citation and source entry.",
         "Require quotation marks around the paraphrase because every cited idea must reproduce the source's exact wording.",
         "Delete the paragraph because a missing citation cannot be repaired after the student has drafted the assignment."
       ],
@@ -10546,7 +10546,7 @@
       "choices": [
         "Create a simpler source-evaluation task for both students so accommodations do not affect the pace of the whole class.",
         "Give the original lesson to the class and arrange separate remediation after either student fails the assessment.",
-        "Provide accessible content and structured graphic organizers to all, allow supported ways to examine sources, and assess the same evaluation criteria.",
+        "Offer accessible texts and graphic organizers to all, allow supported source review, and assess the same evaluation criteria.",
         "Assign each student a preferred medium and prohibit switching so the differentiation plan remains easy to manage."
       ],
       "answerIndex": 2,
@@ -10593,7 +10593,7 @@
         "Give struggling readers shorter sources containing the correct conclusion while other students evaluate conflicting evidence.",
         "Let students choose any enjoyable activity related to the topic, whether or not it requires revising a claim from evidence.",
         "Require a handwritten paragraph from every student so the assessment conditions remain uniform and easy to compare.",
-        "Offer readable text, audio, and captioned media sources, model evidence revision, and let students explain claim revisions in accessible formats using common criteria."
+        "Offer text, audio, and captioned media, model evidence revision, and let learners justify claim updates in varied formats on shared criteria."
       ],
       "answerIndex": 3,
       "rationale": "Flexible representation and expression support access when the intellectual target remains stable. Common criteria should capture how evidence justifies revision, while format options avoid measuring decoding, hearing, or handwriting demands irrelevant to that target.",
@@ -10636,7 +10636,7 @@
       "cognitiveLevel": "analyze",
       "prompt": "Students submit search logs midway through an inquiry unit. Which use of those logs would make the assessment genuinely formative?",
       "choices": [
-        "Identify patterns in query revision and source selection, give actionable feedback, and provide time for students to change their searches.",
+        "Note query-revision and source patterns, give actionable feedback, and allow time for learners to refine their searches.",
         "Record a completion grade and store the logs as evidence that students participated in the research process.",
         "Rank students by number of searches so those with the fewest queries know they need to work harder.",
         "Wait until final projects are graded, then use the logs to explain why low-scoring students had difficulty."
@@ -10777,7 +10777,7 @@
         "Assign simpler factual webpages so the learner can avoid abstracts and complete the project independently.",
         "Have a fluent peer select all sources because efficient collaboration matters more than individual source judgment.",
         "Require dictionary translation of every unfamiliar word before the learner may decide whether an abstract is relevant.",
-        "Preteach key concepts with visuals and resources in relevant languages, model abstract structure, and allow linguistic supports while assessing source reasoning."
+        "Preteach concepts using visuals and bilingual resources, model abstract structure, and allow linguistic aids while assessing reasoning."
       ],
       "answerIndex": 3,
       "rationale": "Language scaffolds can make disciplinary reasoning visible without replacing it. Concept preparation, strategic translation, modeling, and supported discussion help the learner evaluate relevance while the assessment remains focused on inquiry rather than exhaustive English decoding.",
@@ -11697,7 +11697,7 @@
         "Choose a position before the meeting so the librarian's technology expertise can resolve the disagreement efficiently.",
         "Let the faculty vote immediately because majority preference is the most democratic basis for instructional technology decisions.",
         "Delay all discussion until a national organization issues one rule that applies to every tool, learner, and assignment.",
-        "Clarify instructional purposes, examine evidence and current policy, surface access and data risks, and facilitate a bounded pilot with shared criteria if appropriate."
+        "Clarify instructional goals, weigh evidence and policy, surface access and data risks, and guide a bounded pilot with shared criteria."
       ],
       "answerIndex": 3,
       "rationale": "Instructional leadership structures inquiry rather than substituting authority or popularity for evidence. Shared purposes, constraints, learner voice, policy, safeguards, and evaluation criteria can turn disagreement into a responsible learning process.",
@@ -11787,7 +11787,7 @@
       "prompt": "A cross-school librarian team meets monthly but spends each meeting exchanging activity ideas without examining learner needs or results. What should the facilitator change?",
       "choices": [
         "Increase the number of activity demonstrations so every librarian leaves each meeting with more options to try.",
-        "Establish a shared problem of practice, analyze comparable evidence, test a strategy, and use subsequent meetings to study and refine implementation.",
+        "Set a shared problem of practice, review comparable evidence, test a strategy, and use later sessions to refine implementation.",
         "Ask each member to submit a success story and select the most inspiring example as the district model.",
         "Replace meetings with a resource folder because collaboration is unnecessary when ideas can be shared asynchronously."
       ],
@@ -11924,7 +11924,7 @@
       "cognitiveLevel": "evaluate",
       "prompt": "The principal is considering cutting database funding and asks for a five-minute case. Which advocacy message is strongest?",
       "choices": [
-        "Connect the database to a documented learner and curriculum need, present credible use and outcome evidence with limits, and request a specific feasible action.",
+        "Link the resource to a documented curriculum need, share credible use and outcome data with limits, and request one feasible action.",
         "State that strong schools fund libraries and warn that cancellation will show the community that research is not valued.",
         "List every database feature and usage total so the amount of information demonstrates the resource's importance.",
         "Tell one moving student success story and avoid numbers because human examples are more persuasive than program evidence."
@@ -12018,7 +12018,7 @@
       "choices": [
         "Accept the claim because advocacy settings permit stronger language than formal program evaluation reports.",
         "Reject any connection between library services and graduation because complex outcomes can never be discussed in program advocacy.",
-        "Correct the causal overstatement, describe the evidence for the library's plausible contribution, and keep the funding request tied to documented needs and results.",
+        "Correct the causal overstatement, share evidence of the library's plausible role, and tie the funding request to documented needs and results.",
         "Change the subject to circulation growth so the supporter is not embarrassed and the hearing remains favorable."
       ],
       "answerIndex": 2,
@@ -22364,7 +22364,7 @@
           {
             "file": "school_librarian_5312_batch3.json",
             "algorithm": "sha256",
-            "sha256": "75a49d1a6ef60eb63f6db8310a986eca493edaf3cb5ab0cf4cdda2649cd37765",
+            "sha256": "862ea889c76db048a38658f65e5020b6a5fc674fd521941dbbf62dfa58b49ee4",
             "itemCount": 100
           }
         ]
@@ -22393,7 +22393,7 @@
             "file": "school_librarian_5312_batch3.json",
             "reviewReport": "school_librarian_5312_batch3.review.json",
             "itemCount": 100,
-            "sha256": "75a49d1a6ef60eb63f6db8310a986eca493edaf3cb5ab0cf4cdda2649cd37765"
+            "sha256": "862ea889c76db048a38658f65e5020b6a5fc674fd521941dbbf62dfa58b49ee4"
           }
         ]
       }

@@ -325,7 +325,10 @@
     }
     var credit = picture.credit;
     if (!isPlainObject(credit)) return 'the picture has no credit';
-    if (credit.own !== true && !OPEN_LICENSE.test(plainLine(credit.license, 60))) return 'the picture has no open license (public domain, CC0, CC BY or CC BY-SA)';
+    var isBuiltinAlloFlow = plainLine(credit.license, 60) === 'AGPL-3.0'
+      && plainLine(credit.author, 80) === 'AlloFlow'
+      && plainLine(credit.source, 80) === 'AlloFlow Curriculum Diagrams';
+    if (credit.own !== true && !isBuiltinAlloFlow && !OPEN_LICENSE.test(plainLine(credit.license, 60))) return 'the picture has no open license (public domain, CC0, CC BY or CC BY-SA)';
     return '';
   }
   // opts.own, checked, for the words asked: { byWord: { word: { sounds, spelling, clip, picture } }, refused, words }.
@@ -1607,7 +1610,7 @@
         ai: 'none', attributions: attributions, notices: notices, creditsInFile: false,
       };
       if (directionsOnce) manifest.directionsOnce = true;
-      if (opts.picked && opts.picked.criteria && opts.picked.criteria.stage) manifest.stageNote = STAGE_NOTE;
+      if (opts.picked && opts.picked.criteria && (opts.picked.criteria.stage || (Array.isArray(opts.picked.criteria.stages) && opts.picked.criteria.stages.some(function (id) { return !/^wider:/.test(id); })))) manifest.stageNote = STAGE_NOTE;
       if (manifest.learnerLabel) manifest.openWith = '#learner=' + encodeURIComponent(manifest.learnerLabel);
       if (ownManifest) manifest.own = ownManifest;
       // Only a packet asked for with pictures says anything about them.
@@ -1811,16 +1814,50 @@
     var minBooks = typeof c.minBooks === 'number' && c.minBooks >= 0 ? c.minBooks : DEFAULT_MIN_BOOKS;
     var maxRank = c.maxRank > 0 ? c.maxRank : hasChildBooks ? 0 : DEFAULT_MAX_RANK;
     var requireClip = c.requireClip !== false;
+    var stageTable = ctx.stages || wordlist.stages || defaultStageTable();
+    var compiledStages = stageTable ? compileStages(stageTable) : null;
+    var parseStageEntry = function (raw) {
+      var text = String(raw || '').trim();
+      if (!text) return null;
+      var wideMatch = /^wider:(challenging|advanced)$/i.exec(text);
+      var wideName = wideMatch ? wideMatch[1].toLowerCase() : (WIDER_LEVELS.indexOf(text.toLowerCase()) >= 0 ? text.toLowerCase() : '');
+      if (wideName) return { kind: 'level', id: 'wider:' + wideName, level: wideName };
+      if (!stageTable) throw new Error('pickWords needs the stage table (wordlist.stages or context.stages) to use a stage');
+      var st = stageOf(text, stageTable);
+      if (!st) throw new Error('Unknown stage: ' + text + ' (use ' + compiledStages.list.map(function (s) { return s.id; }).join(', ') + ')');
+      return { kind: 'stage', id: st.id, stage: st };
+    };
+    var shapesList = [];
+    if (Array.isArray(c.shapes)) {
+      c.shapes.forEach(function (s) {
+        var up = String(s || '').trim().toUpperCase();
+        if (up && shapesList.indexOf(up) < 0) shapesList.push(up);
+      });
+    }
+    if (!shapesList.length && c.shape) shapesList.push(String(c.shape).trim().toUpperCase());
+    var stagesList = [], stageSeen = Object.create(null);
+    var rawStages = [].concat(Array.isArray(c.stages) ? c.stages : [], Array.isArray(c.levels) ? c.levels : []);
+    rawStages.forEach(function (raw) {
+      var entry = parseStageEntry(raw);
+      if (entry && !stageSeen[entry.id]) { stageSeen[entry.id] = true; stagesList.push(entry); }
+    });
     var level = WIDER_LEVELS.indexOf(c.level) >= 0 ? c.level : '';
     if (c.level && !level) throw new Error('Unknown level: ' + c.level + ' (use ' + WIDER_LEVELS.join(', ') + ')');
-    var stageTable = ctx.stages || wordlist.stages || defaultStageTable();
     var stage = c.stage ? stageOf(c.stage, stageTable) : null;
     if (c.stage && !stageTable) throw new Error('pickWords needs the stage table (wordlist.stages or context.stages) to use a stage');
-    if (c.stage && !stage) throw new Error('Unknown stage: ' + c.stage + ' (use ' + compileStages(stageTable).list.map(function (s) { return s.id; }).join(', ') + ')');
+    if (c.stage && !stage) throw new Error('Unknown stage: ' + c.stage + ' (use ' + compiledStages.list.map(function (s) { return s.id; }).join(', ') + ')');
+    if (!stagesList.length) {
+      if (level) stagesList.push({ kind: 'level', id: 'wider:' + level, level: level });
+      else if (stage) stagesList.push({ kind: 'stage', id: stage.id, stage: stage });
+    } else if (stagesList.length === 1) {
+      if (stagesList[0].kind === 'level') { level = stagesList[0].level; stage = null; }
+      else { stage = stagesList[0].stage; level = ''; }
+    }
+    var isMulti = shapesList.length >= 2 || stagesList.length >= 2;
     // British spellings and words (colour, mum) are left out unless asked for, or the stage is an England row.
     var allowBritish = c.british === true || (c.british !== false && !!stage && stage.allowBritish);
     var syllables = c.syllables > 0 ? Math.floor(c.syllables) : 0;
-    var shape = c.shape ? String(c.shape).toUpperCase() : '';
+    var shape = shapesList.length === 1 ? shapesList[0] : '';
     var target = c.targetSound ? String(c.targetSound).replace(/^\/|\/$/g, '').trim().toLowerCase() : '';
     var spelling = c.spellingPattern ? String(c.spellingPattern).trim().toLowerCase() : '';
     var position = c.position || 'any';
@@ -1832,6 +1869,183 @@
       var entry = core.dictionarySounds(word);
       return entry ? entry.sounds : null;
     };
+    if (isMulti) {
+      var hasWider = stagesList.some(function (e) { return e.kind === 'level'; });
+      var hasStage = stagesList.some(function (e) { return e.kind === 'stage'; });
+      var multiAllowBritish = c.british === true || (c.british !== false && stagesList.some(function (e) { return e.kind === 'stage' && e.stage.allowBritish; }));
+      var maxWordLen = hasWider ? MAX_LETTERS : GRADE_MAX_LETTERS;
+      // For cumulative stages within the same framework, find each selected stage's immediately lower selected stage
+      // so we prioritize its stage-exclusive band (falling back to overlap only if the exclusive band is sparse).
+      var prevStageById = Object.create(null);
+      if (hasStage && compiledStages) {
+        var byFw = Object.create(null);
+        stagesList.forEach(function (e) {
+          if (e.kind !== 'stage') return;
+          var fw = e.stage.framework || '';
+          if (!byFw[fw]) byFw[fw] = [];
+          byFw[fw].push(e);
+        });
+        Object.keys(byFw).forEach(function (fw) {
+          var list = byFw[fw].slice().sort(function (a, b) {
+            return compiledStages.list.indexOf(a.stage) - compiledStages.list.indexOf(b.stage);
+          });
+          for (var idx = 1; idx < list.length; idx++) prevStageById[list[idx].id] = list[idx - 1].stage;
+        });
+      }
+      var stageSpecs = stagesList.length ? stagesList : [{ kind: 'any', id: '' }];
+      var shapeSpecs = shapesList.length ? shapesList : [''];
+      var buckets = [], bucketByKey = Object.create(null);
+      stageSpecs.forEach(function (sp) {
+        shapeSpecs.forEach(function (sh) {
+          var key = sp.id + '|' + sh;
+          var b = { key: key, stageSpec: sp, shape: sh, primary: [], fallback: [] };
+          buckets.push(b);
+          bucketByKey[key] = b;
+        });
+      });
+      var mReasons = { fitsTheCriteria: 0, blocked: 0, soundsLikeABlockedWord: 0, oneDroppedSoundFromABlockedWord: 0, usedOnlyWhenTyped: 0, britishSpellingOrWord: 0, notFamiliarEnough: 0, noRecording: 0, excluded: 0 };
+      if (hasWider) { mReasons.inTheGradeLevels = 0; mReasons.notReadForTheWiderLevels = 0; mReasons.inTheOtherWiderLevel = 0; }
+      var mPool = [], mCommon = Object.create(null), mSoundCount = Object.create(null);
+      var spellingSplit = spelling ? /^([a-z])_e$/.exec(spelling) : null;
+      wordlist.rows().forEach(function (row) {
+        if (!/^[a-z]+$/.test(row.word) || row.word.length < 2 || row.word.length > maxWordLen || !/[aeiouy]/.test(row.word)) return;
+        if (c.sounds > 0 && row.sounds !== c.sounds) return;
+        if (shapesList.length && shapesList.indexOf(row.shape) < 0) return;
+        if (syllables && row.shape.split('V').length - 1 !== syllables) return;
+        var needUnits = hasStage || !!spelling;
+        var sounds = target || needUnits ? soundsOf(row.word) : null;
+        if ((target || needUnits) && !sounds) return;
+        if (target && !sounds.some(function (s, i) { return s === target && atPosition(i, sounds.length, position); })) return;
+        var units = null;
+        if (needUnits) {
+          units = wordUnits(core, row.word, sounds);
+          if (!units || suspectSplit(units)) return;
+          if (spelling) {
+            var hit = units.some(function (u, i) {
+              if (!atPosition(i, units.length, position)) return false;
+              return spellingSplit ? u.letters === spellingSplit[1] && u.pattern === 'silent_e' : u.letters === spelling;
+            });
+            if (!hit) return;
+          }
+        }
+        var structural = stageSpecs.filter(function (sp) {
+          if (sp.kind === 'level') return row.word.length <= MAX_LETTERS;
+          if (sp.kind === 'stage') return row.word.length <= GRADE_MAX_LETTERS && fitsStage(sp.stage, units);
+          return row.word.length <= GRADE_MAX_LETTERS;
+        });
+        if (!structural.length) return;
+        mReasons.fitsTheCriteria++;
+        if (row.blocked) { mReasons.blocked++; return; }
+        if (row.nearBlocked) { mReasons.soundsLikeABlockedWord++; return; }
+        if (c.avoidDroppedSound && row.dropBlocked) { mReasons.oneDroppedSoundFromABlockedWord++; return; }
+        if (row.soft) { mReasons.usedOnlyWhenTyped++; return; }
+        var familiar = row.known || (row.zipf >= minZipf && row.books >= minBooks) || (maxRank > 0 && row.rank > 0 && row.rank <= maxRank);
+        var matched = [], failBrit = false, failFam = false, failWider = false, failOtherWider = false, failInGrade = false;
+        structural.forEach(function (sp) {
+          if (sp.kind === 'level') {
+            if (row.british && c.british !== true) { failBrit = true; return; }
+            if (familiar) { failInGrade = true; return; }
+            if (!row.wider) { failWider = true; return; }
+            if ((sp.level === 'challenging') !== (row.books >= WIDER_MIN_BOOKS)) { failOtherWider = true; return; }
+            matched.push(sp);
+          } else if (sp.kind === 'stage') {
+            var spBrit = c.british === true || (c.british !== false && !!sp.stage.allowBritish);
+            if (row.british && !spBrit) { failBrit = true; return; }
+            if (!familiar) { failFam = true; return; }
+            matched.push(sp);
+          } else {
+            if (row.british && c.british !== true) { failBrit = true; return; }
+            if (!familiar) { failFam = true; return; }
+            matched.push(sp);
+          }
+        });
+        if (!matched.length) {
+          if (failBrit) mReasons.britishSpellingOrWord++;
+          else if (failFam) mReasons.notFamiliarEnough++;
+          else if (failWider && hasWider) mReasons.notReadForTheWiderLevels++;
+          else if (failOtherWider && hasWider) mReasons.inTheOtherWiderLevel++;
+          else if (failInGrade && hasWider) mReasons.inTheGradeLevels++;
+          return;
+        }
+        if (requireClip && !row.hasClip) { mReasons.noRecording++; return; }
+        if (exclude[row.word]) { mReasons.excluded++; return; }
+        mPool.push(row.word);
+        mSoundCount[row.word] = row.sounds;
+        mCommon[row.word] = hasChildBooks ? Number(row.zipf) || 0 : row.rank > 0 ? -row.rank : -1e9;
+        var shKey = shapesList.length ? row.shape : '';
+        matched.forEach(function (sp) {
+          var b = bucketByKey[sp.id + '|' + shKey];
+          if (!b) return;
+          if (sp.kind === 'stage' && prevStageById[sp.id] && fitsStage(prevStageById[sp.id], units)) b.fallback.push(row.word);
+          else b.primary.push(row.word);
+        });
+      });
+      var mRand = mulberry32(seedFor(seed, 'pickWords'));
+      var useFullMix = c.mix !== 'common';
+      var shufflePart = function (arr) {
+        var copy = arr.slice().sort();
+        var bnd = useFullMix ? copy.length : COMMON_BAND;
+        if (bnd < copy.length) copy.sort(function (a, b) { return mCommon[b] - mCommon[a] || (a < b ? -1 : a > b ? 1 : 0); });
+        for (var f = 0; f < copy.length; f += bnd) {
+          var t = Math.min(copy.length, f + bnd);
+          for (var ii = t - 1; ii > f; ii--) {
+            var jj = f + Math.floor(mRand() * (ii - f + 1));
+            var sw = copy[ii]; copy[ii] = copy[jj]; copy[jj] = sw;
+          }
+        }
+        return copy;
+      };
+      var activeBuckets = [];
+      buckets.forEach(function (b) {
+        if (!b.primary.length && !b.fallback.length) return;
+        activeBuckets.push(shufflePart(b.primary).concat(shufflePart(b.fallback)));
+      });
+      var turn = activeBuckets.map(function (_, idx) { return idx; });
+      for (var ti = turn.length - 1; ti > 0; ti--) {
+        var tj = Math.floor(mRand() * (ti + 1));
+        var ts = turn[ti]; turn[ti] = turn[tj]; turn[tj] = ts;
+      }
+      var ptr = activeBuckets.map(function () { return 0; });
+      var seenWord = Object.create(null), mOrder = [];
+      while (mOrder.length < mPool.length) {
+        var progressed = false;
+        for (var tk = 0; tk < turn.length; tk++) {
+          var bi = turn[tk], list = activeBuckets[bi];
+          while (ptr[bi] < list.length && seenWord[list[ptr[bi]]]) ptr[bi]++;
+          if (ptr[bi] < list.length) {
+            var w = list[ptr[bi]++];
+            seenWord[w] = true;
+            mOrder.push(w);
+            progressed = true;
+          }
+        }
+        if (!progressed) break;
+      }
+      if (c.spread === 'sounds') {
+        var mBySounds = {}, mNums = [], mDealt = [];
+        mOrder.forEach(function (word) { var n = mSoundCount[word]; if (!mBySounds[n]) { mBySounds[n] = []; mNums.push(n); } mBySounds[n].push(word); });
+        mNums.sort(function (a, b) { return a - b; });
+        [mNums.filter(function (n) { return n >= 2 && n <= 6; }), mNums.filter(function (n) { return n < 2 || n > 6; })].forEach(function (set) {
+          var size = set.reduce(function (sum, n) { return sum + mBySounds[n].length; }, 0), start = mDealt.length;
+          for (var round = 0; mDealt.length - start < size; round++) set.forEach(function (n) { if (round < mBySounds[n].length) mDealt.push(mBySounds[n][round]); });
+        });
+        mOrder = mDealt;
+      }
+      var mUsed = { count: count, sounds: c.sounds || null, shape: shapesList.length === 1 ? shapesList[0] : null, targetSound: target || null, spellingPattern: spelling || null,
+        position: target || spelling ? position : null, stage: stagesList.length === 1 && stagesList[0].kind === 'stage' ? stagesList[0].id : null, syllables: syllables || null,
+        familiarity: hasChildBooks ? 'on the app lists, or child-book Zipf >= ' + minZipf + ' in >= ' + minBooks + ' books' + (maxRank ? ', or reading-library rank <= ' + maxRank : '')
+          : 'on the app lists, or reading-library rank <= ' + maxRank,
+        minZipf: hasChildBooks ? minZipf : null, minBooks: hasChildBooks ? minBooks : null, maxRank: maxRank || null, british: multiAllowBritish, requireClip: requireClip, seed: seed };
+      if (shapesList.length >= 2) mUsed.shapes = shapesList.slice();
+      if (stagesList.length >= 2) mUsed.stages = stagesList.map(function (e) { return e.id; });
+      if (stagesList.length === 1 && stagesList[0].kind === 'stage') {
+        var sOne = stagesList[0].stage;
+        mUsed.stageLabel = sOne.label; mUsed.framework = sOne.framework; mUsed.stageVerified = sOne.verified; mUsed.stageBasis = sOne.basis; mUsed.stageNote = sOne.note;
+      }
+      if (useFullMix) mUsed.mix = 'any';
+      if (c.spread === 'sounds') mUsed.spread = 'sounds';
+      return { words: mOrder.slice(0, count), pool: mPool.length, reasons: mReasons, criteria: mUsed };
+    }
     // usedOnlyWhenTyped: the blocklist file's [soft] words. The picker never returns one, whatever is asked.
     var reasons = { fitsTheCriteria: 0, blocked: 0, soundsLikeABlockedWord: 0, oneDroppedSoundFromABlockedWord: 0, usedOnlyWhenTyped: 0, britishSpellingOrWord: 0, notFamiliarEnough: 0, noRecording: 0, excluded: 0 };
     // Counted only when a wider level is asked for, so the answer for a grade level is what it always was.

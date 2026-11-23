@@ -22406,7 +22406,7 @@ var VISUAL_ANCHORS = [
               style: { minHeight: 44, padding: '8px 12px', borderRadius: 9, border: '1px solid ' + _minBg('#334155'), background: 'transparent', color: _minFg('#cbd5e1'), fontSize: 11, fontWeight: 800, cursor: 'pointer' }
             }, 'Clear check-in') : null
           ),
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(126px, 1fr))', gap: 8 } },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 155px), 1fr))', gap: 8 } },
             mindfulnessArrivalOptions.map(function(option) {
               var isSelected = arrivalNeed === option.id;
               return h('button', {
@@ -22426,7 +22426,7 @@ var VISUAL_ANCHORS = [
               },
                 h('span', { 'aria-hidden': 'true', style: { width: 3, minHeight: 42, alignSelf: 'stretch', borderRadius: 99, background: isSelected ? option.color : _minBg('#334155'), flexShrink: 0 } }),
                 h('span', { 'aria-hidden': 'true', style: { fontSize: 19, lineHeight: 1.2 } }, option.icon),
-                h('span', null,
+                h('span', { style: { minWidth: 0, overflowWrap: 'anywhere' } },
                   h('span', { style: { display: 'block', color: isSelected ? _minFg(option.color) : _minFg('#e2e8f0'), fontSize: 12, fontWeight: 900 } }, option.label),
                   h('span', { style: { display: 'block', marginTop: 2, color: _minFg('#94a3b8'), fontSize: 10.5, lineHeight: 1.35 } }, option.cue)
                 ),
@@ -22592,7 +22592,7 @@ var VISUAL_ANCHORS = [
           ),
 
           // Start button
-          !breathActive && h('button', { type: 'button', 'aria-label': 'Start breathing exercise',
+          !breathActive && h('button', { type: 'button', 'aria-label': 'Begin Breathing exercise',
             onClick: function() {
               stopBreathTimer();
               upd({ breathActive: true, breathPhase: 'inhale', breathTimeLeft: bp.inhale, breathCycle: 1 });
@@ -24191,7 +24191,7 @@ if (activeTab === 'breath_studio') {
     ),
     h('div', { style: { marginTop: 14, display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center' } },
       h('button', { type: 'button', onClick: function() { upd({ bsRunning: !bsRunning }); if (soundEnabled) sfxClick(); },
-        style: { padding: '12px 24px', borderRadius: 8, border: _minHC ? '1px solid #ffff00' : 'none', background: _minHC ? '#000000' : (bsRunning ? '#ef4444' : pattern.color), color: _minHC ? '#ffff00' : '#ffffff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
+        style: { padding: '12px 24px', borderRadius: 8, border: _minHC ? '1px solid #ffff00' : 'none', background: _minHC ? '#000000' : (bsRunning ? '#b91c1c' : '#1d4ed8'), color: _minHC ? '#ffff00' : '#ffffff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
       }, bsRunning ? '⏸  Pause' : '▶  Start'),
       h('button', { type: 'button', onClick: function() { upd({ bsPhase: 0, bsCount: 0, bsRunning: false, bsCycles: 0 }); if (soundEnabled) sfxClick(); },
         style: { padding: '12px 18px', borderRadius: 8, border: '1px solid #475569', background: _minBg('#1e293b'), color: _minFg('#94a3b8'), fontSize: 13, cursor: 'pointer' }

@@ -1454,12 +1454,12 @@
         "9"
       ],
       "answerIndex": 3,
-      "rationale": "The IQR is Q3 − Q1 = 18 − 9 = 9.",
+      "rationale": "The interquartile range measures the spread of the middle 50% of a distribution using IQR = Q3 - Q1. Ignoring the minimum, median, and maximum, subtracting Q1 = 9 from Q3 = 18 gives 18 - 9 = 9.",
       "choiceRationales": [
         "5 equals Q1 minus the minimum (9 − 4), which gives the span of the lower whisker in the bottom quarter rather than the spread of the central 50% between Q1 and Q3.",
         "14 subtracts the minimum from the third quartile (18 − 4), combining the lowest three quarters instead of isolating the interquartile range by subtracting Q1 from Q3.",
         "23 equals the overall range from maximum to minimum (27 − 4), measuring total spread across every observation rather than the interquartile range spanning the middle half.",
-        "Best answer. The IQR is Q3 − Q1 = 18 − 9 = 9."
+        "Best answer. The interquartile range measures the spread of the middle 50% of a distribution using IQR = Q3 - Q1. Ignoring the minimum, median, and maximum, subtracting Q1 = 9 from Q3 = 18 gives 18 - 9 = 9."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -3118,12 +3118,12 @@
         "0.38"
       ],
       "answerIndex": 3,
-      "rationale": "The complement rule gives P(not A) = 1 − P(A) = 1 − 0.62 = 0.38.",
+      "rationale": "By the complement rule, an event and its complement partition the sample space so P(not A) = 1 - P(A). Substituting P(A) = 0.62 gives 1 - 0.62 = 0.38.",
       "choiceRationales": [
         "0.62 is the probability of event A occurring rather than its complement; the probability that A does not occur is found by subtracting 0.62 from 1 to obtain 0.38.",
         "1.62 adds 0.62 to 1 instead of subtracting it from 1, which violates both the complement rule and the axiom that every probability must lie between 0 and 1.",
         "0.06 does not follow from the complement rule for a single event; because P(A) + P(not A) = 1, subtracting 0.62 from 1 gives exactly 0.38.",
-        "Best answer. The complement rule gives P(not A) = 1 − P(A) = 1 − 0.62 = 0.38."
+        "Best answer. By the complement rule, an event and its complement partition the sample space so P(not A) = 1 - P(A). Substituting P(A) = 0.62 gives 1 - 0.62 = 0.38."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -3326,10 +3326,10 @@
         "0.375"
       ],
       "answerIndex": 1,
-      "rationale": "Conditional probability uses the borrowers as the denominator: 20/32 = 0.625.",
+      "rationale": "Conditioning on borrowing a book restricts the sample space from 80 visitors to the 32 borrowers. Since 20 of those 32 also use a study room, P(study room | book) = 20 / 32 = 0.625.",
       "choiceRationales": [
         "0.25 is 20 out of 80, using all visitors as the denominator; the condition restricts attention to the 32 borrowers.",
-        "Best answer. Conditional probability uses the borrowers as the denominator: 20/32 = 0.625.",
+        "Best answer. Conditioning on borrowing a book restricts the sample space from 80 visitors to the 32 borrowers. Since 20 of those 32 also use a study room, P(study room | book) = 20 / 32 = 0.625.",
         "0.40 is 32 out of 80, the probability of borrowing a book, not the conditional probability of using a study room.",
         "0.375 is 12 out of 32, the share of borrowers who did not use a study room; the question asks for the share who did."
       ],
@@ -3430,11 +3430,11 @@
         "0.90"
       ],
       "answerIndex": 2,
-      "rationale": "For independent events, P(A and B) = P(A)P(B) = 0.4(0.5) = 0.20.",
+      "rationale": "When two events A and B are independent, their joint probability obeys the multiplication rule P(A and B) = P(A)*P(B). Multiplying 0.4 by 0.5 yields 0.20.",
       "choiceRationales": [
         "0.10 subtracts the two event probabilities (0.5 − 0.4) instead of applying the multiplication rule for independent events, which requires multiplying 0.4 by 0.5 to obtain 0.20.",
         "0.45 averages the two marginal probabilities rather than multiplying them; when events A and B are independent, their joint probability equals the product P(A) × P(B) = 0.20.",
-        "Best answer. For independent events, P(A and B) = P(A)P(B) = 0.4(0.5) = 0.20.",
+        "Best answer. When two events A and B are independent, their joint probability obeys the multiplication rule P(A and B) = P(A)*P(B). Multiplying 0.4 by 0.5 yields 0.20.",
         "0.90 adds 0.4 and 0.5 together, which would even exceed the union probability here; finding P(A and B) for independent events requires multiplying rather than adding."
       ],
       "references": [
@@ -3534,12 +3534,12 @@
         "0.70"
       ],
       "answerIndex": 3,
-      "rationale": "Use the union rule: 0.40 + 0.50 − 0.20 = 0.70.",
+      "rationale": "By the general addition rule, P(A or B) = P(A) + P(B) - P(A and B). Adding 0.40 + 0.50 = 0.90 counts the overlap twice, so subtracting P(A and B) = 0.20 yields 0.90 - 0.20 = 0.70.",
       "choiceRationales": [
         "0.20 is the intersection probability P(A and B) where both events happen together, whereas the union probability combines both events and subtracts that overlap once to get 0.70.",
         "0.50 accounts only for event B by itself; the general addition rule requires adding P(A) and P(B) and then subtracting the double-counted intersection 0.20 to obtain 0.70.",
         "0.90 adds P(A) and P(B) without subtracting the overlap of 0.20, so it double counts outcomes in both events.",
-        "Best answer. Use the union rule: 0.40 + 0.50 − 0.20 = 0.70."
+        "Best answer. By the general addition rule, P(A or B) = P(A) + P(B) - P(A and B). Adding 0.40 + 0.50 = 0.90 counts the overlap twice, so subtracting P(A and B) = 0.20 yields 0.90 - 0.20 = 0.70."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -3742,10 +3742,10 @@
         "1.5"
       ],
       "answerIndex": 1,
-      "rationale": "The expected value is 0(0.2) + 1(0.5) + 2(0.3) = 1.1.",
+      "rationale": "For a discrete random variable, expected value is the probability-weighted sum E(X) = sum of x*P(X = x). Computing 0(0.2) + 1(0.5) + 2(0.3) = 0 + 0.5 + 0.6 gives a long-run mean of 1.1.",
       "choiceRationales": [
         "0.6 is 2 times 0.3, the contribution of the last outcome alone; the expected value sums every value times its probability.",
-        "Best answer. The expected value is 0(0.2) + 1(0.5) + 2(0.3) = 1.1.",
+        "Best answer. For a discrete random variable, expected value is the probability-weighted sum E(X) = sum of x*P(X = x). Computing 0(0.2) + 1(0.5) + 2(0.3) = 0 + 0.5 + 0.6 gives a long-run mean of 1.1.",
         "1.0 takes the unweighted arithmetic average of the three values 0, 1, and 2, overlooking that the larger outcome of 2 has a higher probability (0.3) than 0 (0.2).",
         "1.5 does not properly weight each outcome by its probability; computing the expected value via 0(0.2) + 1(0.5) + 2(0.3) produces 0 + 0.5 + 0.6 = 1.1."
       ],
@@ -4054,9 +4054,9 @@
         "160"
       ],
       "answerIndex": 0,
-      "rationale": "For a binomial random variable, the mean is np = 40(0.25) = 10.",
+      "rationale": "The expected value (mean) of a binomial random variable X ~ Bin(n, p) is mu_X = n*p. Substituting n = 40 trials and success probability p = 0.25 gives 40(0.25) = 10.",
       "choiceRationales": [
-        "Best answer. For a binomial random variable, the mean is np = 40(0.25) = 10.",
+        "Best answer. The expected value (mean) of a binomial random variable X ~ Bin(n, p) is mu_X = n*p. Substituting n = 40 trials and success probability p = 0.25 gives 40(0.25) = 10.",
         "0.25 is only the single-trial success probability p rather than the expected number of successes; multiplying n = 40 trials by p = 0.25 gives a binomial mean of 10.",
         "30 computes n(1 − p) = 40(0.75), which represents the expected count of failures instead of the expected count of successes np = 10 for the binomial variable X.",
         "160 divides the number of trials by the success probability (40 / 0.25) instead of multiplying; an expected count cannot exceed n = 40 trials, and np equals 10."
@@ -4366,12 +4366,12 @@
         "2"
       ],
       "answerIndex": 3,
-      "rationale": "The z-score is (86 − 70)/8 = 2.",
+      "rationale": "A z-score standardizes an observation via z = (x - mu) / sigma. Substituting x = 86, mu = 70, and sigma = 8 yields (86 - 70) / 8 = 16 / 8 = 2, placing the score two standard deviations above the mean.",
       "choiceRationales": [
         "A negative z-score indicates an observation lying below the distribution mean, whereas a test score of 86 sits two standard deviations above the mean of 70, giving +2.",
         "0.5 divides the standard deviation by the distance (8/16); the z-score is the distance divided by the standard deviation.",
         "16 is the unstandardized difference 86 − 70 in raw score points; finding the z-score requires dividing that deviation by the standard deviation of 8 to yield 2.",
-        "Best answer. The z-score is (86 − 70)/8 = 2."
+        "Best answer. A z-score standardizes an observation via z = (x - mu) / sigma. Substituting x = 86, mu = 70, and sigma = 8 yields (86 - 70) / 8 = 16 / 8 = 2, placing the score two standard deviations above the mean."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -4990,10 +4990,10 @@
         "0.40"
       ],
       "answerIndex": 1,
-      "rationale": "The standard deviation is sqrt(p(1-p)/n) = sqrt(0.4(0.6)/100) ≈ 0.049.",
+      "rationale": "When the 10% condition holds, the standard deviation of p-hat is sqrt(p*(1 - p) / n). Substituting p = 0.40 and n = 100 gives sqrt(0.40(0.60) / 100) = sqrt(0.0024) approx 0.049.",
       "choiceRationales": [
         "0.0049 shifts the decimal place by a factor of ten; evaluating sqrt(0.40 × 0.60 / 100) gives sqrt(0.0024), which rounds to 0.049 rather than 0.0049.",
-        "Best answer. The standard deviation is sqrt(p(1-p)/n) = sqrt(0.4(0.6)/100) ≈ 0.049.",
+        "Best answer. When the 10% condition holds, the standard deviation of p-hat is sqrt(p*(1 - p) / n). Substituting p = 0.40 and n = 100 gives sqrt(0.40(0.60) / 100) = sqrt(0.0024) approx 0.049.",
         "0.24 stops after multiplying p(1 − p) = 0.40 × 0.60, omitting both the division by n = 100 and the square root required for the standard deviation of p-hat.",
         "0.40 is the population proportion p and thus the mean of the sampling distribution of p-hat, not its standard deviation, which equals sqrt(p(1 − p)/n) ≈ 0.049."
       ],
@@ -6030,12 +6030,12 @@
         "0.10"
       ],
       "answerIndex": 3,
-      "rationale": "The mean of a difference of sample proportions is p1 − p2 = 0.50 − 0.40 = 0.10.",
+      "rationale": "Because sample proportions are unbiased estimators, the mean of the sampling distribution of p-hat1 - p-hat2 is p1 - p2 regardless of sample sizes: 0.50 - 0.40 = 0.10.",
       "choiceRationales": [
         "0.05 cuts the true difference in half without justification; the expected value of the difference between two independent sample proportions equals p1 − p2 = 0.50 − 0.40 = 0.10.",
         "0.90 sums the two population proportions (0.50 + 0.40) instead of subtracting them; because the statistic is p-hat1 − p-hat2, its sampling distribution centers at p1 − p2 = 0.10.",
         "The subtraction order is reversed here (0.40 − 0.50); since the statistic is defined as p-hat1 − p-hat2, its mean is centered at 0.50 − 0.40, which equals positive 0.10.",
-        "Best answer. The mean of a difference of sample proportions is p1 − p2 = 0.50 − 0.40 = 0.10."
+        "Best answer. Because sample proportions are unbiased estimators, the mean of the sampling distribution of p-hat1 - p-hat2 is p1 - p2 regardless of sample sizes: 0.50 - 0.40 = 0.10."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -6966,9 +6966,9 @@
         "72"
       ],
       "answerIndex": 0,
-      "rationale": "The standard deviation of the sample mean is sigma/sqrt(n) = 12/sqrt(36) = 2.",
+      "rationale": "For random samples of size n, the standard deviation of the sample mean is sigma_x-bar = sigma / sqrt(n). Substituting sigma = 12 and n = 36 gives 12 / sqrt(36) = 12 / 6 = 2.",
       "choiceRationales": [
-        "Best answer. The standard deviation of the sample mean is sigma/sqrt(n) = 12/sqrt(36) = 2.",
+        "Best answer. For random samples of size n, the standard deviation of the sample mean is sigma_x-bar = sigma / sqrt(n). Substituting sigma = 12 and n = 36 gives 12 / sqrt(36) = 12 / 6 = 2.",
         "0.33 divides the population standard deviation by n = 36 instead of sqrt(36); the formula sigma / sqrt(n) gives 12 / 6 = 2 rather than 12 / 36.",
         "12 is the standard deviation of individual observations in the population, whereas sample averages of size 36 vary less by a factor of sqrt(36), yielding 12 / 6 = 2.",
         "72 multiplies the population standard deviation of 12 by sqrt(36) instead of dividing by it; averaging 36 observations shrinks variability to 12 / 6 = 2 rather than enlarging it."
@@ -9462,9 +9462,9 @@
         "8"
       ],
       "answerIndex": 0,
-      "rationale": "Substitute x = 5: y-hat = 12 + 4(5) = 32.",
+      "rationale": "To predict the response from a least-squares regression equation, substitute the explanatory value into y-hat = 12 + 4x. Setting x = 5 gives y-hat = 12 + 4(5) = 12 + 20 = 32.",
       "choiceRationales": [
-        "Best answer. Substitute x = 5: y-hat = 12 + 4(5) = 32.",
+        "Best answer. To predict the response from a least-squares regression equation, substitute the explanatory value into y-hat = 12 + 4x. Setting x = 5 gives y-hat = 12 + 4(5) = 12 + 20 = 32.",
         "Multiplying the slope 4 by x = 5 gives 20, which captures only the slope term and omits adding the y-intercept of 12 to obtain y-hat = 32.",
         "Computing 12 times 5 incorrectly multiplies the y-intercept by x = 5, whereas the linear model adds the intercept 12 to the slope product 4(5) to get 32.",
         "Subtracting the slope from the intercept (12 − 4 = 8) ignores the input x = 5 entirely instead of substituting x = 5 into y-hat = 12 + 4x to obtain 32."
@@ -9774,12 +9774,12 @@
         "6"
       ],
       "answerIndex": 3,
-      "rationale": "Residual = observed response − predicted response = 41 − 35 = 6.",
+      "rationale": "A regression residual equals observed minus predicted response, e = y - y-hat. Subtracting the predicted value 35 from the actual value 41 yields 41 - 35 = 6.",
       "choiceRationales": [
         "Reversing the subtraction as predicted minus actual (35 − 41) flips the sign; a residual is defined as observed minus predicted, so 41 − 35 equals +6.",
         "Reporting 35 repeats the model’s predicted response y-hat instead of computing the residual, which measures the vertical gap y − y-hat = 41 − 35 = 6.",
         "Adding the observed value 41 and predicted value 35 produces 76, but a residual measures prediction error by subtracting predicted from actual to give 41 − 35 = 6.",
-        "Best answer. Residual = observed response − predicted response = 41 − 35 = 6."
+        "Best answer. A regression residual equals observed minus predicted response, e = y - y-hat. Subtracting the predicted value 35 from the actual value 41 yields 41 - 35 = 6."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -10086,11 +10086,11 @@
         "1.40"
       ],
       "answerIndex": 2,
-      "rationale": "r-squared is the square of the correlation: (0.70)^2 = 0.49.",
+      "rationale": "In simple linear regression, the coefficient of determination r^2 equals the square of the correlation r. Squaring r = 0.70 gives (0.70)^2 = 0.49, or 49% variance explained.",
       "choiceRationales": [
         "Subtracting 0.70 from 1 yields the complement 0.30, whereas the coefficient of determination r-squared is found by squaring the correlation: (0.70)^2 = 0.49.",
         "Leaving the value at 0.70 simply restates the correlation r itself without squaring it, while r-squared requires computing (0.70)^2 = 0.49 to measure explained variation.",
-        "Best answer. r-squared is the square of the correlation: (0.70)^2 = 0.49.",
+        "Best answer. In simple linear regression, the coefficient of determination r^2 equals the square of the correlation r. Squaring r = 0.70 gives (0.70)^2 = 0.49, or 49% variance explained.",
         "Doubling r to get 1.40 confuses squaring with multiplying by 2 and produces an impossible proportion of variance explained, since r-squared must lie between 0 and 1."
       ],
       "references": [
@@ -11334,11 +11334,11 @@
         "1.50"
       ],
       "answerIndex": 2,
-      "rationale": "There are 150 students total, so the bus relative frequency is 75/150 = 0.50.",
+      "rationale": "Relative frequency equals category count divided by total observations. Summing 45 + 75 + 30 gives 150 students total, so the bus-rider relative frequency is 75 / 150 = 0.50.",
       "choiceRationales": [
         "Dividing 45 by the total of 150 students yields 0.30, which is the relative frequency for walkers rather than the 75/150 = 0.50 relative frequency for bus riders.",
         "0.67 would require 100 of the 150 students; only 75 ride the bus, so the relative frequency is 0.50.",
-        "Best answer. There are 150 students total, so the bus relative frequency is 75/150 = 0.50.",
+        "Best answer. Relative frequency equals category count divided by total observations. Summing 45 + 75 + 30 gives 150 students total, so the bus-rider relative frequency is 75 / 150 = 0.50.",
         "A relative frequency is a proportion between 0 and 1 and can never reach 1.50; dividing the 75 bus riders by all 150 students gives 75/150 = 0.50."
       ],
       "references": [
@@ -11750,11 +11750,11 @@
         "37"
       ],
       "answerIndex": 2,
-      "rationale": "The interquartile range is Q3 - Q1 = 25 - 12 = 13.",
+      "rationale": "The IQR equals the distance between the upper and lower quartiles, Q3 - Q1, and does not directly use the median. With Q3 = 25 and Q1 = 12, the central half of the data spans 25 - 12 = 13.",
       "choiceRationales": [
         "Computing Q3 minus the median (25 − 18 = 7) measures only the upper quarter’s width, whereas the interquartile range spans the full middle 50% as Q3 − Q1 = 25 − 12 = 13.",
         "Reporting 18 gives the median, which is a measure of center rather than the interquartile range of spread calculated by subtracting Q1 = 12 from Q3 = 25.",
-        "Best answer. The interquartile range is Q3 - Q1 = 25 - 12 = 13.",
+        "Best answer. The IQR equals the distance between the upper and lower quartiles, Q3 - Q1, and does not directly use the median. With Q3 = 25 and Q1 = 12, the central half of the data spans 25 - 12 = 13.",
         "Adding Q1 and Q3 (12 + 25 = 37) sums the quartiles instead of finding the distance between them; the IQR is defined by subtraction, Q3 − Q1 = 13."
       ],
       "references": [
@@ -12166,11 +12166,11 @@
         "A census"
       ],
       "answerIndex": 2,
-      "rationale": "Selecting every kth individual after a random start is systematic sampling.",
+      "rationale": "Choosing a random starting point on an ordered roster and then selecting every kth (10th) individual thereafter is the defining procedure of a systematic random sample.",
       "choiceRationales": [
         "Voluntary response sampling relies on people choosing to opt in on their own, whereas this roster procedure uses a random start and a fixed step of ten.",
         "Cluster sampling randomly selects intact groups and surveys everyone inside them, while selecting every tenth individual from an ordered list draws individuals spread across the roster.",
-        "Best answer. Selecting every kth individual after a random start is systematic sampling.",
+        "Best answer. Choosing a random starting point on an ordered roster and then selecting every kth (10th) individual thereafter is the defining procedure of a systematic random sample.",
         "A census collects data from every single member of the population on the roster, rather than selecting only one-tenth of the names at regular intervals."
       ],
       "references": [
@@ -12686,12 +12686,12 @@
         "0.062"
       ],
       "answerIndex": 3,
-      "rationale": "The simulated probability is successes divided by repetitions: 31/500 = 0.062.",
+      "rationale": "An empirical probability from a simulation equals the proportion of repetitions meeting the criterion. Dividing 31 successes by 500 repetitions yields 31 / 500 = 0.062.",
       "choiceRationales": [
         "Writing 0.0062 shifts the decimal point one place too far left, corresponding to 31 out of 5,000 rather than 31 out of 500, which equals 0.062.",
         "Reporting 0.31 treats the 31 successes as if they occurred in 100 trials instead of dividing by the actual 500 simulated repetitions to get 0.062.",
         "Dividing 500 by 31 inverts the ratio of successes to trials and yields a number greater than 1, which is impossible for any probability estimate.",
-        "Best answer. The simulated probability is successes divided by repetitions: 31/500 = 0.062."
+        "Best answer. An empirical probability from a simulation equals the proportion of repetitions meeting the criterion. Dividing 31 successes by 500 repetitions yields 31 / 500 = 0.062."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -12998,11 +12998,11 @@
         "1.67"
       ],
       "answerIndex": 2,
-      "rationale": "Conditional probability is P(A and B)/P(B) = 0.18/0.30 = 0.60.",
+      "rationale": "By the conditional probability formula, P(A | B) = P(A and B) / P(B). Dividing the joint probability 0.18 by the conditioning event probability 0.30 gives 0.18 / 0.30 = 0.60.",
       "choiceRationales": [
         "Computing 0.30 minus 0.18 yields 0.12, which is P(B and not A) rather than the conditional probability P(A | B) = P(A and B)/P(B) = 0.18/0.30 = 0.60.",
         "Adding 0.18 and 0.30 sums the joint and marginal probabilities instead of dividing the intersection probability 0.18 by the conditioning event’s probability 0.30.",
-        "Best answer. Conditional probability is P(A and B)/P(B) = 0.18/0.30 = 0.60.",
+        "Best answer. By the conditional probability formula, P(A | B) = P(A and B) / P(B). Dividing the joint probability 0.18 by the conditioning event probability 0.30 gives 0.18 / 0.30 = 0.60.",
         "Dividing 0.30 by 0.18 puts P(B) in the numerator by mistake and produces a value above 1, which cannot be a valid probability."
       ],
       "references": [
@@ -13518,12 +13518,12 @@
         "115"
       ],
       "answerIndex": 3,
-      "rationale": "One standard deviation above the mean is 100 + 15 = 115.",
+      "rationale": "A score located z standard deviations from the mean satisfies x = mu + z*sigma. For one standard deviation above the mean (z = 1) with mu = 100 and sigma = 15, x = 100 + 1(15) = 115.",
       "choiceRationales": [
         "Subtracting one standard deviation from the mean (100 − 15 = 85) places the score one standard deviation below the mean rather than above it.",
         "A score of 100 sits directly at the distribution mean with a z-score of 0, rather than one standard deviation (15 points) above the mean.",
         "Adding 30 to 100 reaches 130, which is two standard deviations above the mean (z = +2) instead of one standard deviation above (100 + 15 = 115).",
-        "Best answer. One standard deviation above the mean is 100 + 15 = 115."
+        "Best answer. A score located z standard deviations from the mean satisfies x = mu + z*sigma. For one standard deviation above the mean (z = 1) with mu = 100 and sigma = 15, x = 100 + 1(15) = 115."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -13726,10 +13726,10 @@
         "A critical value only"
       ],
       "answerIndex": 1,
-      "rationale": "An estimator is a statistic used to estimate a population parameter.",
+      "rationale": "A statistic calculated from sample data (such as p-hat) to approximate an unknown population parameter (such as p) is formally called an estimator (or point estimator).",
       "choiceRationales": [
         "A parameter describes the entire population and is usually unknown, whereas the sample proportion p-hat is a sample statistic used to estimate that parameter.",
-        "Best answer. An estimator is a statistic used to estimate a population parameter.",
+        "Best answer. A statistic calculated from sample data (such as p-hat) to approximate an unknown population parameter (such as p) is formally called an estimator (or point estimator).",
         "A Type II error occurs when a hypothesis test fails to reject a false null hypothesis, which is a decision error rather than a statistic estimating a population value.",
         "A critical value is a boundary taken from a z- or t-distribution for a chosen confidence or significance level, not a sample statistic calculated from observed data."
       ],
@@ -13830,11 +13830,11 @@
         "0.25"
       ],
       "answerIndex": 2,
-      "rationale": "The standard deviation is sqrt(0.25(0.75)/400) = sqrt(0.00046875) about 0.0217.",
+      "rationale": "The standard deviation of a sample proportion is sigma_p-hat = sqrt(p*(1 - p) / n). With p = 0.25 and n = 400, sqrt(0.25(0.75) / 400) = sqrt(0.00046875) approx 0.0217.",
       "choiceRationales": [
         "0.00054 is close to the variance 0.00046875 before taking the square root, not the standard deviation.",
         "Multiplying 0.25 by 0.75 gives 0.1875, which is only the numerator p(1 − p) before dividing by n = 400 and taking the square root to get 0.0217.",
-        "Best answer. The standard deviation is sqrt(0.25(0.75)/400) = sqrt(0.00046875) about 0.0217.",
+        "Best answer. The standard deviation of a sample proportion is sigma_p-hat = sqrt(p*(1 - p) / n). With p = 0.25 and n = 400, sqrt(0.25(0.75) / 400) = sqrt(0.00046875) approx 0.0217.",
         "Stating 0.25 repeats the population proportion p (the center of the sampling distribution) instead of computing its standard deviation sqrt(p(1 − p)/n) ≈ 0.0217."
       ],
       "references": [
@@ -14142,10 +14142,10 @@
         "H0: p = 0.82"
       ],
       "answerIndex": 1,
-      "rationale": "The null hypothesis contains equality and uses the population parameter p.",
+      "rationale": "A null hypothesis always specifies an equality statement about a population parameter rather than a sample statistic. Testing a claim of fewer than 18% sets H0: p = 0.18.",
       "choiceRationales": [
         "The null hypothesis always states a benchmark of equality (p = 0.18), whereas the strict inequality p < 0.18 belongs in the alternative hypothesis being tested.",
-        "Best answer. The null hypothesis contains equality and uses the population parameter p.",
+        "Best answer. A null hypothesis always specifies an equality statement about a population parameter rather than a sample statistic. Testing a claim of fewer than 18% sets H0: p = 0.18.",
         "Significance tests state hypotheses about the unknown population proportion p using equality in H0, never about the observed sample proportion p-hat.",
         "Using 0.82 represents the complement (customers who do not abandon a cart), whereas the research question specifically tests whether the abandonment proportion is below 0.18."
       ],
@@ -14870,9 +14870,9 @@
         "Ha: p-hat1 - p-hat2 < 0 for every sample"
       ],
       "answerIndex": 0,
-      "rationale": "The alternative describes the directional population claim using parameters.",
+      "rationale": "The alternative hypothesis encodes the directional research claim using population parameters, not sample statistics. Claiming p1 is smaller than p2 corresponds to Ha: p1 - p2 < 0.",
       "choiceRationales": [
-        "Best answer. The alternative describes the directional population claim using parameters.",
+        "Best answer. The alternative hypothesis encodes the directional research claim using population parameters, not sample statistics. Claiming p1 is smaller than p2 corresponds to Ha: p1 - p2 < 0.",
         "Stating equality p1 − p2 = 0 defines the null hypothesis of no difference, whereas the alternative hypothesis must express the directional inequality being investigated.",
         "Writing p1 − p2 > 0 tests whether population 1 has a larger proportion than population 2, which reverses the claim that population 1’s proportion is smaller.",
         "Formal hypotheses always refer to fixed population parameters p1 and p2 rather than sample statistics p-hat1 and p-hat2, which vary from sample to sample."
@@ -15182,12 +15182,12 @@
         "6"
       ],
       "answerIndex": 3,
-      "rationale": "The degrees of freedom are (rows - 1)(columns - 1) = 3(2) = 6.",
+      "rationale": "In a two-way chi-square test of independence or homogeneity, degrees of freedom equal (r - 1)(c - 1). For 4 rows and 3 columns, df = (4 - 1)(3 - 1) = 3(2) = 6.",
       "choiceRationales": [
         "7 adds the row and column counts (4 + 3); the degrees of freedom multiply (rows − 1) by (columns − 1).",
         "Multiplying (4 − 1) by 3 gives 9 because it forgets to subtract 1 from the column count; the formula df = (r − 1)(c − 1) yields (4 − 1)(3 − 1) = 6.",
         "Multiplying 4 rows by 3 columns gives all 12 cells in the table instead of accounting for fixed row and column totals via df = (4 − 1)(3 − 1) = 6.",
-        "Best answer. The degrees of freedom are (rows - 1)(columns - 1) = 3(2) = 6."
+        "Best answer. In a two-way chi-square test of independence or homogeneity, degrees of freedom equal (r - 1)(c - 1). For 4 rows and 3 columns, df = (4 - 1)(3 - 1) = 3(2) = 6."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -16430,12 +16430,12 @@
         "-1 to 1, inclusive"
       ],
       "answerIndex": 3,
-      "rationale": "Correlation is standardized and must lie between -1 and 1.",
+      "rationale": "Because Pearson correlation averages products of standardized z-scores, the Cauchy-Schwarz inequality bounds r between -1 and 1 inclusive, with -1 and 1 representing exact linear relationships.",
       "choiceRationales": [
         "Correlation r is not expressed on a 0-to-100 percentage scale, and it can take negative values down to −1 when a linear association slopes downward.",
         "Because correlation standardizes both variables into z-scores, its value cannot grow arbitrarily large and is strictly bounded between −1 and 1 inclusive.",
         "Restricting r to nonnegative numbers omits negative linear relationships, which produce correlation values ranging from −1 up to 0.",
-        "Best answer. Correlation is standardized and must lie between -1 and 1."
+        "Best answer. Because Pearson correlation averages products of standardized z-scores, the Cauchy-Schwarz inequality bounds r between -1 and 1 inclusive, with -1 and 1 representing exact linear relationships."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -16534,9 +16534,9 @@
         "48"
       ],
       "answerIndex": 0,
-      "rationale": "Substituting x = 4 gives y-hat = 12 + 3(4) = 24.",
+      "rationale": "Evaluating the linear model y-hat = 12 + 3x at x = 4 multiplies the slope 3 by 4 to get a 12-unit increase above the intercept 12, producing a predicted response of 12 + 12 = 24.",
       "choiceRationales": [
-        "Best answer. Substituting x = 4 gives y-hat = 12 + 3(4) = 24.",
+        "Best answer. Evaluating the linear model y-hat = 12 + 3x at x = 4 multiplies the slope 3 by 4 to get a 12-unit increase above the intercept 12, producing a predicted response of 12 + 12 = 24.",
         "Adding 12 and 3 yields 15, which forgets to multiply the slope 3 by the input x = 4 before adding the intercept 12 to obtain 12 + 3(4) = 24.",
         "Multiplying the intercept 12 by the slope 3 gives 36 instead of evaluating the regression equation at x = 4 via 12 + 3(4) = 24.",
         "Computing 12 times 4 incorrectly multiplies the y-intercept by x = 4 rather than adding the intercept 12 to the slope term 3(4) to get 24."
@@ -16742,11 +16742,11 @@
         "39"
       ],
       "answerIndex": 2,
-      "rationale": "Residual equals observed minus predicted: 18 - 21 = -3.",
+      "rationale": "A residual measures vertical prediction error as e = observed - predicted (y - y-hat). Substituting y = 18 and y-hat = 21 gives 18 - 21 = -3, showing the observation lies 3 units below the line.",
       "choiceRationales": [
         "Subtracting observed from predicted (21 − 18 = 3) reverses the residual formula; because observed minus predicted is 18 − 21 = −3, the point lies below the line.",
         "Reporting 18 merely restates the observed response y instead of finding the prediction error y − y-hat = 18 − 21 = −3.",
-        "Best answer. Residual equals observed minus predicted: 18 - 21 = -3.",
+        "Best answer. A residual measures vertical prediction error as e = observed - predicted (y - y-hat). Substituting y = 18 and y-hat = 21 gives 18 - 21 = -3, showing the observation lies 3 units below the line.",
         "Adding 18 and 21 combines the actual and predicted responses into 39, whereas a residual takes their difference y − y-hat = 18 − 21 = −3."
       ],
       "references": [
@@ -17782,9 +17782,9 @@
         "90"
       ],
       "answerIndex": 0,
-      "rationale": "Substituting x = 5 into y-hat = 18 + 2.4x gives 18 + 12 = 30.",
+      "rationale": "Evaluate the fitted linear regression equation y-hat = a + b*x with intercept a = 18 and slope b = 2.4. Substituting x = 5 gives y-hat = 18 + 2.4(5) = 18 + 12 = 30.",
       "choiceRationales": [
-        "Best answer. Substituting x = 5 into y-hat = 18 + 2.4x gives 18 + 12 = 30.",
+        "Best answer. Evaluate the fitted linear regression equation y-hat = a + b*x with intercept a = 18 and slope b = 2.4. Substituting x = 5 gives y-hat = 18 + 2.4(5) = 18 + 12 = 30.",
         "20.4 simply adds the intercept 18 and slope 2.4 as though x were 1; substituting x = 5 into y-hat = 18 + 2.4x requires multiplying 2.4 by 5 before adding 18 to obtain 30.",
         "43.2 multiplies the intercept 18 by the slope 2.4 instead of using the explanatory value x = 5; a linear prediction multiplies only the slope by x and then adds the intercept.",
         "90 multiplies the intercept 18 by x = 5 and omits the slope term entirely; the intercept stays fixed at 18 while only the slope 2.4 scales with x = 5 to yield 18 + 12 = 30."
@@ -17990,11 +17990,11 @@
         "1.15"
       ],
       "answerIndex": 2,
-      "rationale": "The union rule gives 0.55 + 0.40 - 0.20 = 0.75.",
+      "rationale": "For two non-disjoint events, the union probability equals P(A) + P(B) - P(A and B) so shared outcomes are counted once. Substituting the given values produces 0.55 + 0.40 - 0.20 = 0.75.",
       "choiceRationales": [
         "0.22 multiplies P(A) = 0.55 by P(B) = 0.40, which tests independence for an intersection rather than applying the general addition rule P(A) + P(B) - P(A and B) for a union.",
         "0.95 adds P(A) = 0.55 and P(B) = 0.40 while forgetting to subtract their 0.20 overlap, double-counting outcomes where both events occur and overstating P(A or B) by 0.20.",
-        "Best answer. The union rule gives 0.55 + 0.40 - 0.20 = 0.75.",
+        "Best answer. For two non-disjoint events, the union probability equals P(A) + P(B) - P(A and B) so shared outcomes are counted once. Substituting the given values produces 0.55 + 0.40 - 0.20 = 0.75.",
         "1.15 adds the overlap 0.20 to 0.55 + 0.40 instead of subtracting it, producing a value above 1 that cannot be a valid probability and violating the general addition rule."
       ],
       "references": [
@@ -18198,9 +18198,9 @@
         "1.33"
       ],
       "answerIndex": 0,
-      "rationale": "The multiplication rule gives P(A and B) = P(A)P(B | A) = 0.30(0.40) = 0.12.",
+      "rationale": "By the general multiplication rule, P(A and B) = P(A)*P(B | A), which holds whether or not events are independent. Multiplying 0.30 by 0.40 gives 0.12.",
       "choiceRationales": [
-        "Best answer. The multiplication rule gives P(A and B) = P(A)P(B | A) = 0.30(0.40) = 0.12.",
+        "Best answer. By the general multiplication rule, P(A and B) = P(A)*P(B | A), which holds whether or not events are independent. Multiplying 0.30 by 0.40 gives 0.12.",
         "0.10 subtracts 0.30 from 0.40, but finding the joint probability P(A and B) requires the general multiplication rule P(A) * P(B | A) = 0.30 * 0.40 = 0.12 rather than subtraction.",
         "0.70 adds P(A) and P(B | A), which conflates a conditional probability with a mutually exclusive union; a joint occurrence of A and B is computed by multiplying 0.30 by 0.40.",
         "1.33 divides 0.40 by 0.30 and exceeds 1, which is impossible for any probability; the general multiplication rule multiplies P(A) by the conditional probability P(B | A) instead."
@@ -18302,10 +18302,10 @@
         "1.10"
       ],
       "answerIndex": 1,
-      "rationale": "Independence requires P(A and B) = P(A)P(B) = 0.60(0.50) = 0.30.",
+      "rationale": "Two events are statistically independent if and only if P(A and B) = P(A)*P(B). With P(A) = 0.60 and P(B) = 0.50, independence requires P(A and B) = 0.60(0.50) = 0.30.",
       "choiceRationales": [
         "0.10 takes the difference 0.60 - 0.50, whereas two events are independent only when their joint probability equals the product P(A) * P(B), giving 0.60 * 0.50 = 0.30 here.",
-        "Best answer. Independence requires P(A and B) = P(A)P(B) = 0.60(0.50) = 0.30.",
+        "Best answer. Two events are statistically independent if and only if P(A and B) = P(A)*P(B). With P(A) = 0.60 and P(B) = 0.50, independence requires P(A and B) = 0.60(0.50) = 0.30.",
         "0.55 averages P(A) = 0.60 and P(B) = 0.50 rather than multiplying them; under independence, P(A and B) must equal P(A) times P(B), which cannot exceed either individual probability.",
         "1.10 sums 0.60 and 0.50 to a number greater than 1, which violates probability bounds; checking independence requires multiplying P(A) and P(B) to obtain an intersection probability of 0.30."
       ],
@@ -18718,10 +18718,10 @@
         "162"
       ],
       "answerIndex": 1,
-      "rationale": "The standard error is sigma/square root of n = 18/9 = 2.",
+      "rationale": "The standard deviation of the sampling distribution of x-bar is sigma / sqrt(n). With sigma = 18 and sample size n = 81, sqrt(81) = 9, so the standard error is 18 / 9 = 2.",
       "choiceRationales": [
         "0.22 divides the population standard deviation 18 by n = 81 instead of sqrt(81) = 9; the standard error formula sigma / sqrt(n) divides by the square root of sample size.",
-        "Best answer. The standard error is sigma/square root of n = 18/9 = 2.",
+        "Best answer. The standard deviation of the sampling distribution of x-bar is sigma / sqrt(n). With sigma = 18 and sample size n = 81, sqrt(81) = 9, so the standard error is 18 / 9 = 2.",
         "18 is the population standard deviation for individual observations, whereas averages of 81 values vary much less and have standard error sigma / sqrt(n) = 18 / 9 = 2.",
         "162 multiplies 18 by sqrt(81) = 9 instead of dividing by it; larger samples reduce the spread of the sample mean, so the formula divides sigma by sqrt(n)."
       ],
@@ -18926,12 +18926,12 @@
         "About 28%"
       ],
       "answerIndex": 3,
-      "rationale": "The unexplained proportion is 1 - 0.72 = 0.28, or about 28%.",
+      "rationale": "Because r^2 = 0.72 represents the proportion of y-variation explained by the linear model, the unexplained fraction is 1 - r^2 = 1 - 0.72 = 0.28, or about 28%.",
       "choiceRationales": [
         "7.2% arbitrarily shifts the decimal point of 0.72 by a factor of 10; because r-squared = 0.72 is the explained fraction, the unexplained percentage is 100% minus 72%, or 28%.",
         "72% is the percentage of response variability explained by the least-squares line, whereas the question asks for the remaining unexplained share, which is the complement 1 - r-squared = 0.28.",
         "Adding instead of subtracting gives a percentage above 100, which is impossible for a share of variation.",
-        "Best answer. The unexplained proportion is 1 - 0.72 = 0.28, or about 28%."
+        "Best answer. Because r^2 = 0.72 represents the proportion of y-variation explained by the linear model, the unexplained fraction is 1 - r^2 = 1 - 0.72 = 0.28, or about 28%."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -19654,11 +19654,11 @@
         "200"
       ],
       "answerIndex": 2,
-      "rationale": "The standard error is sigma/square root of n = 20/10 = 2.",
+      "rationale": "Sample-mean variability shrinks by sqrt(n) according to SE(x-bar) = sigma / sqrt(n). Dividing sigma = 20 by sqrt(100) = 10 gives 20 / 10 = 2 for the standard error.",
       "choiceRationales": [
         "0.2 divides the population standard deviation 20 by the sample size 100 instead of its square root 10; the standard error of the sample mean equals sigma / sqrt(n) = 20 / 10 = 2.",
         "20 is the standard deviation of single observations in the population, not the standard error of x-bar, which shrinks by a factor of sqrt(100) = 10 when averaging 100 observations.",
-        "Best answer. The standard error is sigma/square root of n = 20/10 = 2.",
+        "Best answer. Sample-mean variability shrinks by sqrt(n) according to SE(x-bar) = sigma / sqrt(n). Dividing sigma = 20 by sqrt(100) = 10 gives 20 / 10 = 2 for the standard error.",
         "200 multiplies 20 by sqrt(100) = 10 rather than dividing; increasing sample size decreases the variability of the sample mean according to the formula sigma / sqrt(n)."
       ],
       "references": [
@@ -21214,10 +21214,10 @@
         "1.60"
       ],
       "answerIndex": 1,
-      "rationale": "R-squared is r squared, so (-0.60)^2 = 0.36.",
+      "rationale": "In simple linear regression, the coefficient of determination is r^2, which is always non-negative. Squaring r = -0.60 gives (-0.60)^2 = 0.36, meaning 36% of y-variability is explained.",
       "choiceRationales": [
         "Squaring r = -0.60 produces (-0.60)^2 = +0.36, not a negative value; the coefficient of determination r-squared is always between 0 and 1 regardless of the sign of r.",
-        "Best answer. R-squared is r squared, so (-0.60)^2 = 0.36.",
+        "Best answer. In simple linear regression, the coefficient of determination is r^2, which is always non-negative. Squaring r = -0.60 gives (-0.60)^2 = 0.36, meaning 36% of y-variability is explained.",
         "0.60 is simply the absolute value of the correlation r = -0.60 rather than its square; computing r-squared requires squaring -0.60 to obtain 0.36.",
         "1.60 adds 1 to the magnitude 0.60 and exceeds 1, which is impossible for r-squared because a linear model cannot explain more than 100% of the variation in y."
       ],
@@ -21318,11 +21318,11 @@
         "There is no remaining variation."
       ],
       "answerIndex": 2,
-      "rationale": "The proportion not explained by the model is 1 - 0.81 = 0.19, or about 19%.",
+      "rationale": "With r^2 = 0.81, 81% of variation in the response is accounted for by the linear relationship with x, leaving 1 - 0.81 = 0.19 (about 19% of response variation) unexplained.",
       "choiceRationales": [
         "r-squared = 0.81 represents the proportion of variability in y accounted for by the linear model, not an error rate or count of incorrect individual predictions.",
         "The complement 1 - 0.81 = 0.19 is the unexplained fraction of variation, not r; the correlation magnitude is sqrt(0.81) = 0.90, with sign matching the slope.",
-        "Best answer. The proportion not explained by the model is 1 - 0.81 = 0.19, or about 19%.",
+        "Best answer. With r^2 = 0.81, 81% of variation in the response is accounted for by the linear relationship with x, leaving 1 - 0.81 = 0.19 (about 19% of response variation) unexplained.",
         "Only r-squared = 1.00 would mean zero residual variation; because the linear model accounts for 81% of the response variability, roughly 19% still remains unexplained."
       ],
       "references": [
@@ -21630,10 +21630,10 @@
         "A boxplot of transportation categories."
       ],
       "answerIndex": 1,
-      "rationale": "A segmented bar chart compares conditional category percentages across groups.",
+      "rationale": "Because both grade level and transportation method are categorical variables, a segmented bar chart by grade level best displays and compares conditional category percentages.",
       "choiceRationales": [
         "Histograms bin quantitative measurements along a continuous numeric scale, whereas both grade level and transportation choice are categorical variables best compared using conditional percentages in a bar chart.",
-        "Best answer. A segmented bar chart compares conditional category percentages across groups.",
+        "Best answer. Because both grade level and transportation method are categorical variables, a segmented bar chart by grade level best displays and compares conditional category percentages.",
         "Scatterplots display ordered pairs of two quantitative variables on numerical axes and cannot represent the relationship between two categorical variables like grade level and transportation method.",
         "Boxplots summarize five-number summaries (minimum, quartiles, median, maximum) of quantitative data, which do not exist for unordered categorical labels such as transportation types."
       ],
@@ -21734,11 +21734,11 @@
         "The distribution has no variability."
       ],
       "answerIndex": 2,
-      "rationale": "A high right tail can pull the mean above the median.",
+      "rationale": "The mean is non-resistant and gets pulled toward extreme tail values, whereas the median resists outliers. Having mean 38 substantially above median 31 indicates a long upper tail, so the distribution is skewed right.",
       "choiceRationales": [
         "In a roughly symmetric distribution, the mean and median are nearly equal; having a mean of 38 noticeably above a median of 31 indicates asymmetry pulled toward high values.",
         "Left-skewed distributions have a long lower tail that pulls the mean below the median, which contradicts a mean of 38 exceeding the median of 31.",
-        "Best answer. A high right tail can pull the mean above the median.",
+        "Best answer. The mean is non-resistant and gets pulled toward extreme tail values, whereas the median resists outliers. Having mean 38 substantially above median 31 indicates a long upper tail, so the distribution is skewed right.",
         "If a distribution had zero variability, every observation would be identical, forcing the mean and median to be equal rather than separated by 7 units."
       ],
       "references": [
@@ -21838,12 +21838,12 @@
         "50"
       ],
       "answerIndex": 3,
-      "rationale": "The IQR is 12, so the upper fence is 32 + 1.5(12) = 50.",
+      "rationale": "Tukey's upper outlier fence is Q3 + 1.5*IQR. First find IQR = Q3 - Q1 = 32 - 20 = 12, multiply by 1.5 to get 18, and add to Q3 = 32 to obtain 32 + 18 = 50.",
       "choiceRationales": [
         "38 adds only 0.5 * IQR (6) to Q3 = 32; since IQR = 32 - 20 = 12, the standard upper outlier fence uses Q3 + 1.5 * IQR = 32 + 18 = 50.",
         "44 adds a single IQR (12) to Q3 = 32 instead of 1.5 IQRs; Tukey's upper fence rule multiplies the interquartile range 12 by 1.5 to add 18, giving 50.",
         "64 doubles Q3 (32 + 32) instead of using the interquartile range 32 - 20 = 12; the upper fence is calculated as Q3 + 1.5(IQR) = 32 + 18 = 50.",
-        "Best answer. The IQR is 12, so the upper fence is 32 + 1.5(12) = 50."
+        "Best answer. Tukey's upper outlier fence is Q3 + 1.5*IQR. First find IQR = Q3 - Q1 = 32 - 20 = 12, multiply by 1.5 to get 18, and add to Q3 = 32 to obtain 32 + 18 = 50."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -22046,10 +22046,10 @@
         "A randomized experiment."
       ],
       "answerIndex": 1,
-      "rationale": "A census collects data from every member of the defined population.",
+      "rationale": "Surveying every single member of the defined target population (the entire club) rather than a subset constitutes a census of the club, eliminating sampling variability.",
       "choiceRationales": [
         "A simple random sample selects only a random subset of the population, whereas surveying every single member of the club collects data from the entire population, making it a census.",
-        "Best answer. A census collects data from every member of the defined population.",
+        "Best answer. Surveying every single member of the defined target population (the entire club) rather than a subset constitutes a census of the club, eliminating sampling variability.",
         "The target population here is the small club rather than the entire city, and the researcher actively contacted every member instead of letting people self-select into responding.",
         "An experiment actively imposes treatments through random assignment to measure effects, whereas simply asking club members about their opinions on a policy is observational data collection."
       ],
@@ -22150,11 +22150,11 @@
         "A census of the district."
       ],
       "answerIndex": 2,
-      "rationale": "Strata are formed first, and random samples are taken from each stratum.",
+      "rationale": "Partitioning schools into homogeneous size strata first and then drawing random samples within every stratum ensures full subgroup representation, defining a stratified random sample.",
       "choiceRationales": [
         "Cluster sampling would select whole schools and survey them entirely; here students are sampled from every size group.",
         "Convenience sampling picks whoever is easiest to reach without randomization, whereas this district first forms school-size strata and then selects students randomly inside every stratum.",
-        "Best answer. Strata are formed first, and random samples are taken from each stratum.",
+        "Best answer. Partitioning schools into homogeneous size strata first and then drawing random samples within every stratum ensures full subgroup representation, defining a stratified random sample.",
         "A census would include every student in the entire district, whereas this design draws a random sample from each school-size group rather than surveying everyone."
       ],
       "references": [
@@ -22566,11 +22566,11 @@
         "0.07"
       ],
       "answerIndex": 2,
-      "rationale": "The complement rule gives 1 - 0.72 = 0.28.",
+      "rationale": "Because an event and its complement are mutually exclusive and cover all outcomes, P(not A) = 1 - P(A). Subtracting P(A) = 0.72 from 1 gives 1 - 0.72 = 0.28.",
       "choiceRationales": [
         "0.72 repeats P(A) itself instead of finding its complement; by the complement rule, the probability that A does not occur is 1 - P(A) = 1 - 0.72 = 0.28.",
         "1.28 adds 0.28 to 1 (or misapplies the complement direction) and produces a value above 1, which violates probability rules; P(not A) must equal 1 - 0.72 = 0.28.",
-        "Best answer. The complement rule gives 1 - 0.72 = 0.28.",
+        "Best answer. Because an event and its complement are mutually exclusive and cover all outcomes, P(not A) = 1 - P(A). Subtracting P(A) = 0.72 from 1 gives 1 - 0.72 = 0.28.",
         "0.07 does not come from any valid probability rule here; subtracting P(A) = 0.72 from 1 gives P(not A) = 0.28 rather than dividing 0.72 by 10."
       ],
       "references": [
@@ -22670,12 +22670,12 @@
         "0.15"
       ],
       "answerIndex": 3,
-      "rationale": "The multiplication rule gives P(A and B) = P(B)P(A | B) = 0.50(0.30) = 0.15.",
+      "rationale": "Applying the general multiplication rule conditioned on B gives P(A and B) = P(B)*P(A | B). Substituting P(B) = 0.50 and P(A | B) = 0.30 yields 0.50(0.30) = 0.15.",
       "choiceRationales": [
         "0.20 subtracts P(A | B) = 0.30 from P(B) = 0.50, whereas the general multiplication rule computes the intersection P(A and B) by multiplying P(B) * P(A | B) = 0.15.",
         "0.80 adds 0.50 and 0.30, which yields neither a joint nor a union probability here; finding P(A and B) requires multiplying P(B) by the conditional probability P(A | B).",
         "1.67 divides 0.50 by 0.30 and produces a number greater than 1, which cannot be a probability; the joint probability P(A and B) equals 0.50 * 0.30 = 0.15.",
-        "Best answer. The multiplication rule gives P(A and B) = P(B)P(A | B) = 0.50(0.30) = 0.15."
+        "Best answer. Applying the general multiplication rule conditioned on B gives P(A and B) = P(B)*P(A | B). Substituting P(B) = 0.50 and P(A | B) = 0.30 yields 0.50(0.30) = 0.15."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -22774,9 +22774,9 @@
         "4.00"
       ],
       "answerIndex": 0,
-      "rationale": "The expected value is 1(0.10) + 2(0.25) + 4(0.65) = 3.20.",
+      "rationale": "Multiply each outcome by its assigned probability and sum the terms: E(X) = 1(0.10) + 2(0.25) + 4(0.65). Adding 0.10 + 0.50 + 2.60 yields an expected value of 3.20.",
       "choiceRationales": [
-        "Best answer. The expected value is 1(0.10) + 2(0.25) + 4(0.65) = 3.20.",
+        "Best answer. Multiply each outcome by its assigned probability and sum the terms: E(X) = 1(0.10) + 2(0.25) + 4(0.65). Adding 0.10 + 0.50 + 2.60 yields an expected value of 3.20.",
         "1.00 is merely the sum of the three probabilities (0.10 + 0.25 + 0.65), whereas the expected value multiplies each numerical outcome by its probability before summing: 1(0.10) + 2(0.25) + 4(0.65) = 3.20.",
         "2.50 ignores the unequal probability weights (resembling an unweighted average of 1, 2, and 4); because the outcome 4 carries weight 0.65, the weighted mean is pulled up to 3.20.",
         "4.00 is the most likely outcome, not the expected value; the average must weight all three outcomes."
@@ -23294,10 +23294,10 @@
         "Increase the standard error."
       ],
       "answerIndex": 1,
-      "rationale": "A larger sample reduces standard error and generally narrows the interval.",
+      "rationale": "Confidence interval width equals 2*z*SE, where standard error decreases inversely with sqrt(n). At a fixed confidence level, increasing sample size shrinks SE and narrows the interval.",
       "choiceRationales": [
         "Raising the confidence level enlarges the critical value and widens the interval, and it also violates the constraint that the confidence level must remain unchanged.",
-        "Best answer. A larger sample reduces standard error and generally narrows the interval.",
+        "Best answer. Confidence interval width equals 2*z*SE, where standard error decreases inversely with sqrt(n). At a fixed confidence level, increasing sample size shrinks SE and narrows the interval.",
         "Replacing a random sample with volunteers introduces severe selection bias and invalidates the interval's coverage without reliably shrinking the standard error.",
         "Because margin of error equals critical value times standard error, a larger standard error makes the confidence interval wider; narrowing it requires decreasing standard error via larger n."
       ],
@@ -23606,9 +23606,9 @@
         "A confidence interval contains the parameter."
       ],
       "answerIndex": 0,
-      "rationale": "Type I error is a false positive: rejecting a null that is actually true.",
+      "rationale": "A Type I error (false positive, with probability alpha) occurs when sample evidence leads a hypothesis test to reject H0 even though the null hypothesis is actually true.",
       "choiceRationales": [
-        "Best answer. Type I error is a false positive: rejecting a null that is actually true.",
+        "Best answer. A Type I error (false positive, with probability alpha) occurs when sample evidence leads a hypothesis test to reject H0 even though the null hypothesis is actually true.",
         "Failing to reject a false null hypothesis is a Type II error (a false negative), whereas a Type I error is a false positive committed when a true null is mistakenly rejected.",
         "Having a sample statistic match the population parameter exactly is an unusually accurate estimate rather than a hypothesis-testing decision error of either Type I or Type II.",
         "When a confidence interval successfully captures the true population parameter, the estimation procedure has worked as intended rather than committing any inference error."
@@ -24126,10 +24126,10 @@
         "36"
       ],
       "answerIndex": 1,
-      "rationale": "A one-sample t procedure uses n - 1 degrees of freedom, so df = 17.",
+      "rationale": "Estimating one unknown population standard deviation from a sample of size n uses one degree of freedom, so a one-sample t interval has df = n - 1 = 18 - 1 = 17.",
       "choiceRationales": [
         "18 is the sample size n itself, whereas estimating the population standard deviation with s uses one degree of freedom, giving df = n - 1 = 17 for a one-sample t interval.",
-        "Best answer. A one-sample t procedure uses n - 1 degrees of freedom, so df = 17.",
+        "Best answer. Estimating one unknown population standard deviation from a sample of size n uses one degree of freedom, so a one-sample t interval has df = n - 1 = 18 - 1 = 17.",
         "16 subtracts 2 from n = 18—as in simple linear regression slope inference—whereas a one-sample t interval for a mean uses df = n - 1 = 17.",
         "36 doubles the sample size of 18 without statistical justification; degrees of freedom for a one-sample t procedure equal n - 1, which is always one less than n."
       ],
@@ -24230,11 +24230,11 @@
         "H0: s = 10"
       ],
       "answerIndex": 2,
-      "rationale": "The null uses equality and the population mean parameter.",
+      "rationale": "A null hypothesis states a benchmark equality about a population parameter, not a sample statistic like x-bar or s. Testing whether population mean battery life is 10 hours sets H0: mu = 10.",
       "choiceRationales": [
         "Strict inequalities such as > belong in an alternative hypothesis, whereas the null hypothesis must state the benchmark equality being tested—that mean battery life equals 10 hours.",
         "Hypotheses make claims about the fixed population parameter mu rather than the sample mean x-bar, which fluctuates randomly from sample to sample even when H0 holds.",
-        "Best answer. The null uses equality and the population mean parameter.",
+        "Best answer. A null hypothesis states a benchmark equality about a population parameter, not a sample statistic like x-bar or s. Testing whether population mean battery life is 10 hours sets H0: mu = 10.",
         "The symbol s denotes a sample standard deviation, whereas the research question concerns the population mean battery life mu and requires setting mu equal to 10."
       ],
       "references": [
@@ -24854,9 +24854,9 @@
         "A categorical distribution."
       ],
       "answerIndex": 0,
-      "rationale": "A tight downward linear pattern indicates a strong negative association.",
+      "rationale": "Points clustered tightly along a straight line indicate a strong linear relationship, and a downward slope from left to right indicates a negative association between x and y.",
       "choiceRationales": [
-        "Best answer. A tight downward linear pattern indicates a strong negative association.",
+        "Best answer. Points clustered tightly along a straight line indicate a strong linear relationship, and a downward slope from left to right indicates a negative association between x and y.",
         "The points cluster tightly around a straight, downward line, so the association is strong, negative, and linear.",
         "A downward slope still represents a clear association—larger x-values systematically accompany smaller y-values—and the tight clustering around the line indicates that this negative linear relationship is strong.",
         "Scatterplots display paired numerical observations for two quantitative variables, whereas categorical distributions summarize counts or percentages across group labels using bar charts or two-way tables."
@@ -24958,10 +24958,10 @@
         "It changes its sign after the multiplication."
       ],
       "answerIndex": 1,
-      "rationale": "Correlation is unchanged by positive linear rescaling of either variable.",
+      "rationale": "Correlation r averages products of standardized z-scores, which are dimensionless and invariant under positive linear rescaling. Multiplying all response values by 3 leaves r unchanged.",
       "choiceRationales": [
         "Correlation r standardizes both variables into z-scores before computing their average product, so multiplying y by positive 3 scales the spread and deviations equally and leaves r unchanged.",
-        "Best answer. Correlation is unchanged by positive linear rescaling of either variable.",
+        "Best answer. Correlation r averages products of standardized z-scores, which are dimensionless and invariant under positive linear rescaling. Multiplying all response values by 3 leaves r unchanged.",
         "Multiplying every response value by 3 stretches the vertical scale linearly without disrupting how tightly points follow a straight line, so the linear correlation keeps its exact value.",
         "Because 3 is positive, the relative ordering of response values stays identical and the direction of association is preserved; only multiplying by a negative constant reverses the sign of r."
       ],
@@ -25062,11 +25062,11 @@
         "90 response units."
       ],
       "answerIndex": 2,
-      "rationale": "The predicted change is slope times change in x: 1.8(5) = 9.",
+      "rationale": "A regression slope b gives the predicted change in y per one-unit increase in x via delta y-hat = b * delta x. For b = 1.8 and delta x = 5, delta y-hat = 1.8(5) = 9 response units.",
       "choiceRationales": [
         "1.8 response units is the predicted change for a single 1-unit increase in x, whereas a 5-unit increase multiplies the slope by 5 to predict a change of 9 response units.",
         "3.2 subtracts 1.8 from 5 rather than multiplying the slope by the change in x; linear predicted change equals slope times delta-x, which is 1.8 * 5 = 9 units.",
-        "Best answer. The predicted change is slope times change in x: 1.8(5) = 9.",
+        "Best answer. A regression slope b gives the predicted change in y per one-unit increase in x via delta y-hat = b * delta x. For b = 1.8 and delta x = 5, delta y-hat = 1.8(5) = 9 response units.",
         "90 multiplies the slope 1.8 by 50 instead of 5 (a decimal-place error); multiplying 1.8 response units per x-unit by a 5-unit rise yields 9 response units."
       ],
       "references": [
@@ -25270,9 +25270,9 @@
         "The sample must be a census."
       ],
       "answerIndex": 0,
-      "rationale": "A funnel shape suggests that the spread of residuals changes across x.",
+      "rationale": "A fanning or funnel-shaped residual plot shows residual spread widening as x grows (heteroscedasticity), violating the linear-regression condition of constant error variance across x.",
       "choiceRationales": [
-        "Best answer. A funnel shape suggests that the spread of residuals changes across x.",
+        "Best answer. A fanning or funnel-shaped residual plot shows residual spread widening as x grows (heteroscedasticity), violating the linear-regression condition of constant error variance across x.",
         "Residual plots are constructed only for quantitative regression models; an outward fan shape points to nonconstant spread of residuals across x rather than a categorical response.",
         "Residuals can fan outward even around a strongly sloped linear trend with high correlation; widening vertical scatter violates equal variance, not the presence of a linear association.",
         "Residual plots do not depend on how the sample was drawn; the funnel indicates non-constant variance."

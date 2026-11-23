@@ -5690,7 +5690,10 @@ function buildWorld(T,kit) {
       api.current={draw:draw,checkReturnFocus:checkReturnFocus};resize();observer=new ResizeObserver(resize);observer.observe(viewport);
       window.addEventListener('blur',pauseForFocus);window.addEventListener('focus',returned);document.addEventListener('visibilitychange',hidden);document.addEventListener('focusin',focusChanged);document.addEventListener('pointerdown',cancelReturnFocus,true);node.addEventListener('keydown',keydown);window.addEventListener('keyup',keyup);reduced.addEventListener('change',motionPreferenceChanged);
       setRenderer('loading');
-      Promise.all([window.StemLab.ensureThree(),window.StemMeadow?Promise.resolve(window.StemMeadow):window.StemLab.ensureMeadow()]).then(function(deps){
+      Promise.all([
+        Promise.resolve().then(function(){return window.StemLab.ensureThree();}),
+        Promise.resolve().then(function(){return window.StemMeadow||window.StemLab.ensureMeadow();})
+      ]).then(function(deps){
         if(!alive)return;var T=deps[0];
         try{gl=new T.WebGLRenderer({antialias:true,alpha:false,powerPreference:'low-power'});gl.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));gl.outputEncoding=T.sRGBEncoding;gl.toneMapping=T.ACESFilmicToneMapping;gl.toneMappingExposure=.95;
           gl.domElement.className='bf-gl';gl.domElement.setAttribute('aria-hidden','true');gl.domElement.addEventListener('webglcontextlost',lost);viewport.insertBefore(gl.domElement,cv);world=buildWorld(T,deps[1]);camera=new T.PerspectiveCamera(52,1,.1,600);setRenderer('three');resize();

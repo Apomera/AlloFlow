@@ -155,7 +155,12 @@
     "refine_go": "Proponi una riscrittura",
     "refining": "Scrittura della proposta in corso…",
     "made_from_version": "Creato dalla versione {version} della tua fonte",
-    "remake": "Ricrea dalla versione attuale"
+    "remake": "Ricrea dalla versione attuale",
+    "dictate": "Detta",
+    "close_dictate": "Chiudi dettatura",
+    "send_read_along": "Invia al Pacchetto di lettura condivisa",
+    "upload_verify_banner": "Audio/video trascritto in locale con Whisper ({count} segmenti tenuti in memoria)",
+    "clear_audio": "Cancella audio"
   },
   "sel": {
     "peersupport": {
@@ -7185,7 +7190,10 @@
     "source_choice_ambiguous": "Scegli una lettura in Basato su prima di generare. È disponibile più di una lettura.",
     "source_choices_load_failed": "Non è stato possibile caricare le letture disponibili. Riprova.",
     "submission_tools_still_loading": "Gli strumenti di consegna si stanno ancora caricando. Prova a premere di nuovo Consegna.",
-    "blank_created": "Bozza vuota creata: {title}. Compilala prima di condividerla."
+    "blank_created": "Bozza vuota creata: {title}. Compilala prima di condividerla.",
+    "sent_to_read_along": "Brano inviato al Pacchetto di lettura condivisa in una nuova scheda.",
+    "read_along_handoff_failed": "Impossibile trasferire la bozza al Pacchetto di lettura condivisa.",
+    "read_along_no_text": "Aggiungi o detta il testo sorgente prima di inviare al Pacchetto di lettura condivisa."
   },
   "large_file": {
     "modal_title": "Importa Large audio file",
@@ -7202,7 +7210,8 @@
     "chunk_info": "Per l'elaborazione, l'audio viene diviso in segmenti di 5 minuti",
     "chunk_progress": "Chunk {current} di {total}",
     "audio_only_error": "Al momento la trascrizione a segmenti supporta solo file audio (MP3, WAV, ecc.).",
-    "starting": "Avvio in corso..."
+    "starting": "Avvio in corso...",
+    "engine_legend": "Motore di trascrizione"
   },
   "formatting": {
     "bold": "Bold (**testo**)",
@@ -7606,7 +7615,8 @@
       "analyzing_short": "Analisi in corso...",
       "generate_short": "Genera",
       "books_short": "Libri",
-      "books_hint": "Apri i libri illustrati: qualsiasi libro può diventare il tuo testo di partenza"
+      "books_hint": "Apri i libri illustrati: qualsiasi libro può diventare il tuo testo di partenza",
+      "dictate_hint": "Detta il testo sorgente con Whisper sul dispositivo e verifica facoltativa con Gemini"
     },
     "status_generating": "Generating origine testo...",
     "success_long_form": "lungo-form testo generato successfully!",
@@ -7656,7 +7666,8 @@
     "empty_desc_teacher": "Aggiungi un testo, poi scegli gli strumenti che lo adattano per i tuoi studenti.",
     "empty_desc_family": "Aggiungi qualcosa che sta leggendo tuo figlio o tua figlia, poi scegli come vuoi aiutare.",
     "reading_catalog": "Catalogo di lettura",
-    "find_online": "Cerca online"
+    "find_online": "Cerca online",
+    "dictate_or_record": "Detta o registra"
   },
   "wizard": {
     "title": "rapido Inizia",
@@ -7790,7 +7801,12 @@
     "paste_word_count": "{count} parole",
     "length_custom": "Personalizzata…",
     "length_custom_label": "Numero di parole",
-    "length_custom_hint": "Da 50 a 5.000 parole"
+    "length_custom_hint": "Da 50 a 5.000 parole",
+    "dictate_desc": "Dettatura vocale locale con Whisper e controllo facoltativo",
+    "dictate_title": "Detta o registra il tuo testo sorgente",
+    "dictate_helper": "Usa in modo predefinito la dettatura privata Whisper sul dispositivo. Modifica liberamente, ripulisci il testo se desideri o confrontalo con la registrazione usando Gemini.",
+    "dictate_loading": "Caricamento di Studio dettatura (Local Whisper)… Puoi anche digitare o modificare qui sotto durante il caricamento.",
+    "words_dictated_unit": "parole dettate"
   },
   "settings": {
     "immersive_options": "Immersivo opzioni",
@@ -109979,5 +109995,68 @@
     "sc_findText": "Trova testo nel design",
     "sc_commandPalette": "Apri le azioni rapide",
     "sc_help": "Mostra questo elenco di scorciatoie"
+  },
+  "dictation": {
+    "badge_desktop": "Desktop Whisper pronto",
+    "badge_download_needed": "Local Whisper · Primo download necessario",
+    "badge_local_ready": "Local Whisper pronto · {name}",
+    "cleanup_apply": "Applica pulizia",
+    "cleanup_failed": "Impossibile ripulire il testo in questo momento.",
+    "cleanup_fillers": "Riduci le parole riempitive",
+    "cleanup_heading": "Pulizia testo AI facoltativa",
+    "cleanup_keep": "Mantieni originale",
+    "cleanup_no_changes": "Nessuna modifica suggerita per questa bozza.",
+    "cleanup_notes": "Formatta come appunti di classe",
+    "cleanup_punctuation": "Sistema punteggiatura e formattazione",
+    "cleanup_review_title": "Pulizia suggerita pronta — la tua bozza non è ancora cambiata",
+    "cleanup_text_only": "solo testo — nessun audio viene inviato",
+    "cleanup_unavailable": "La pulizia testo AI non è disponibile al momento.",
+    "cleanup_undo": "Annulla pulizia",
+    "cleanup_working": "Pulizia in corso…",
+    "clear_audio": "Cancella audio registrato ({mb} MB)",
+    "crosscheck_all_resolved": "Tutti i punti segnalati sono stati rivisti.",
+    "crosscheck_btn": "Verifica rispetto all'audio con Gemini",
+    "crosscheck_count": "{count} punto/i segnalato/i da rivedere:",
+    "crosscheck_disabled_note": "Non disponibile al momento (disattivato in modalità offline / studente senza AI o senza chiave Gemini). La dettatura Local Whisper continua a funzionare completamente offline.",
+    "crosscheck_disclosure": "Si avvia solo se fai clic sotto: invia a Gemini i segmenti audio registrati in memoria e la bozza di testo per segnalare possibili errori di parola.",
+    "crosscheck_failed": "La verifica audio con Gemini non è stata completata. La tua trascrizione locale è intatta.",
+    "crosscheck_heading": "Verifica incrociata con l'audio tramite Gemini (Facoltativa)",
+    "crosscheck_none": "Nessuna discrepanza sostanziale trovata tra Local Whisper e Gemini Audio.",
+    "crosscheck_running": "Verifica rispetto all'audio in corso…",
+    "crosscheck_unavailable": "La verifica incrociata audio con Gemini non è disponibile al momento.",
+    "download_now": "Scarica Local Whisper ({size} MB)",
+    "download_warning": "Avviso di download: Local Whisper utilizza per impostazione predefinita il riconoscimento vocale privato sul dispositivo. Scaricare il modello {name} richiede ~{size} MB una sola volta (~1–2 minuti a seconda della connessione), resta nella cache offline del browser e mantiene le registrazioni vocali su questo dispositivo.",
+    "draft_label": "Bozza di trascrizione (modificabile)",
+    "draft_placeholder": "Premi «Avvia dettatura» sopra, oppure digita o modifica direttamente qui la tua trascrizione…",
+    "guide_both_body": "Inizia privatamente con Local Whisper così la dettatura rimane veloce e offline-first. Se desideri un secondo parere su termini complessi o nomi propri, attiva la verifica incrociata Gemini per confrontare due modelli indipendenti con il tuo audio e riascoltare clip di 5 secondi in ogni punto segnalato.",
+    "guide_both_label": "Perché usarli entrambi (Verifica incrociata):",
+    "guide_gemini_body": "Nessun download del modello richiesto. Più forte su lessico specialistico, nomi propri, accenti, aule rumorose e punteggiatura — invia i frammenti audio registrati a Gemini solo se acconsenti.",
+    "guide_gemini_title": "Gemini Audio (Verifica facoltativa)",
+    "guide_summary": "Local Whisper vs Gemini Audio — punti di forza e perché usarli entrambi",
+    "guide_whisper_body": "Privato e offline dopo un solo download (~39–73 MB). Nessun audio lascia il tuo dispositivo, non serve alcuna chiave API o quota, e la dettatura lunga e continua funziona in modo affidabile.",
+    "guide_whisper_title": "Local Whisper (Predefinito)",
+    "ios_canvas_blocked": "Local Whisper è in pausa su iPhone/iPad all'interno di Gemini Canvas. Digita direttamente qui sotto oppure apri AlloFlow in un browser desktop.",
+    "ios_canvas_hint": "Puoi digitare direttamente qui sotto, aprire AlloFlow in un browser desktop per Local Whisper oppure usare Gemini Audio se configurato.",
+    "ios_canvas_title": "Whisper sul dispositivo è in pausa su iPhone/iPad all'interno di Gemini Canvas",
+    "listening_local": "Ascolto locale con Whisper… fai una breve pausa o continua a parlare per aggiungere testo.",
+    "mic_start_failed": "Impossibile avviare il microfono. Controlla le autorizzazioni del browser.",
+    "model_size_label": "Dimensione del modello Local Whisper",
+    "pause_recording": "Pausa",
+    "paused_note": "In pausa. Puoi modificare la trascrizione qui sotto oppure premere «Riprendi» per continuare a dettare.",
+    "privacy_tag": "Privato · Offline dopo il download · Nessuna chiave API necessaria",
+    "resume_recording": "Riprendi",
+    "send_read_along": "Invia al Pacchetto di lettura condivisa",
+    "speech_settings": "Impostazioni voce",
+    "speed_badge_lesson": "Testato: {speed}x più veloce del parlato · Ottimo per dettature lunghe",
+    "speed_badge_short": "Testato: {speed}x più veloce del parlato · Ideale per clip brevi",
+    "speed_badge_slow": "Testato: {speed}x · Più lento del tempo reale (possibili pause)",
+    "speed_badge_upgrade": "Testato: {speed}x più veloce del parlato · Ottimo per dettature lunghe (puoi provare anche {name})",
+    "start_recording": "Avvia dettatura (Local Whisper)",
+    "stop_recording": "Ferma",
+    "studio_title": "Studio dettatura",
+    "test_mic": "Prova microfono (4s)",
+    "upload_media": "Trascrivi file audio/video",
+    "use_text": "Usa testo dettato",
+    "voice_unavailable": "Il registratore vocale è ancora in caricamento. Riprova tra un momento."
   }
 }

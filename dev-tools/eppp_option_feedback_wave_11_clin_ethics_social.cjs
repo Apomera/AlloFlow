@@ -5,7 +5,7 @@ const revisions = {
     expectedAnswerIndex: 2,
     incorrectFeedback: {
       0: 'Traditional behavior therapy changes behavior through learning principles such as reinforcement and exposure. It need not dispute rigid demands, which is the cognitive-philosophical target signaled by this terminology.',
-      1: 'An empathic, nondirective stance emphasizes congruence and unconditional positive regard rather than actively labeling and disputing a client?s absolutistic beliefs as irrational.',
+      1: 'An empathic, nondirective stance emphasizes congruence and unconditional positive regard rather than actively labeling and disputing a client’s absolutistic beliefs as irrational.',
       3: 'Interpreting unconscious conflict, defenses, and transference belongs to a psychoanalytic framework. The named pattern of rigid demands comes from a different therapeutic vocabulary.',
     },
     feedbackDesign: ['behavioral-technique substitution', 'person-centered-stance substitution', 'psychoanalytic-vocabulary substitution'],

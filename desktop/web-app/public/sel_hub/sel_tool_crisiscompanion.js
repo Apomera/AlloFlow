@@ -75,6 +75,16 @@ window.SelHub = window.SelHub || {
       '}',
       '.selh-crisiscompanion .cc-breath-circle {',
       '  transition: transform 4s ease-in-out, background 4s ease-in-out;',
+      '}',
+      '@media (forced-colors: active) {',
+      '  .selh-crisiscompanion button:focus-visible,',
+      '  .selh-crisiscompanion input:focus-visible,',
+      '  .selh-crisiscompanion textarea:focus-visible,',
+      '  .selh-crisiscompanion select:focus-visible,',
+      '  .selh-crisiscompanion [tabindex]:focus-visible {',
+      '    outline: 2px solid Highlight !important;',
+      '    outline-offset: 2px !important;',
+      '  }',
       '}'
     ].join('\n');
     document.head.appendChild(st);
@@ -1641,7 +1651,11 @@ window.SelHub = window.SelHub || {
           closeCrisisConfirm();
         }
       }
+      function isImeComposing(e) {
+        return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+      }
       function handleCrisisConfirmKeyDown(event) {
+        if (isImeComposing(event)) return;
         if (event.key === 'Escape') {
           event.preventDefault();
           closeCrisisConfirm();
@@ -1678,11 +1692,13 @@ window.SelHub = window.SelHub || {
           h('p', { id: 'cc-confirm-description', style: { margin: '0 0 18px', fontSize: 13, lineHeight: 1.6, color: SLATE_TEXT } }, description),
           h('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 10, flexWrap: 'wrap' } },
             h('button', {
+              type: 'button',
               id: 'cc-confirm-cancel',
               onClick: closeCrisisConfirm,
               style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid #64748b', background: _ccC('#f8fafc'), color: SLATE_TEXT, fontSize: 13, fontWeight: 700, cursor: 'pointer' }
             }, __alloT('sel.crisiscompanion.ui.cancel', 'Cancel')),
             h('button', {
+              type: 'button',
               onClick: commitCrisisAction,
               style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid #dc2626', background: '#b91c1c', color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer' }
             }, clearingPlan ? __alloT('sel.crisiscompanion.ui.clear_safety_plan', 'Clear safety plan') : __alloT('sel.crisiscompanion.ui.clear_all_readings', 'Clear all readings'))
@@ -1796,13 +1812,15 @@ window.SelHub = window.SelHub || {
             ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
               h('button', {
+                type: 'button',
                 onClick: function() { upd('consented', true); markVisited('whyMatters'); announce(__alloT('sel.crisiscompanion.ui.continuing_into_crisis_companion', 'Continuing into Crisis Companion')); },
                 'aria-label': __alloT('sel.crisiscompanion.ui.i_understand_the_content_note_and', 'I understand the content note and want to continue into Crisis Companion'),
-                style: { padding: '14px 18px', background: TEAL, color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 800, fontSize: '15px', cursor: 'pointer', boxShadow: '0 3px 10px rgba(13,148,136,0.3)' }
+                style: { padding: '14px 18px', minHeight: 44, background: TEAL, color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 800, fontSize: '15px', cursor: 'pointer', boxShadow: '0 3px 10px rgba(13,148,136,0.3)' }
               }, __alloT('sel.crisiscompanion.ui.i_understand_continue', '✓ I understand — continue')),
               h('button', {
+                type: 'button',
                 onClick: function() { addToast(__alloT('sel.crisiscompanion.ui.returning_to_sel_hub_menu', 'Returning to SEL Hub menu')); if (ctx.setSelHubTool) ctx.setSelHubTool(null); },
-                style: { padding: '12px 18px', background: _ccC('#f1f5f9'), color: _ccCHC ? '#ffff00' : (_ccCDark ? '#e2e8f0' : SLATE_TEXT), border: '2px solid #cbd5e1', borderRadius: '12px', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }
+                style: { padding: '12px 18px', minHeight: 44, background: _ccC('#f1f5f9'), color: _ccCHC ? '#ffff00' : (_ccCDark ? '#e2e8f0' : SLATE_TEXT), border: '2px solid #cbd5e1', borderRadius: '12px', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }
               }, __alloT('sel.crisiscompanion.ui.take_me_back_to_the_menu', '← Take me back to the menu'))
             )
           )
@@ -1817,23 +1835,45 @@ window.SelHub = window.SelHub || {
       var visitedCount = SECTIONS.filter(function(s) { return badges[s.id]; }).length;
 
       function navStrip() {
+        function onMainTabKeyDown(e, idx) {
+          if (isImeComposing(e) || e.ctrlKey || e.metaKey || e.altKey) return;
+          var next = null;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (idx + 1) % SECTIONS.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (idx - 1 + SECTIONS.length) % SECTIONS.length;
+          else if (e.key === 'Home') next = 0;
+          else if (e.key === 'End') next = SECTIONS.length - 1;
+          if (next === null) return;
+          e.preventDefault();
+          var targetId = SECTIONS[next].id;
+          setSection(targetId);
+          setTimeout(function() {
+            var el = typeof document !== 'undefined' && document.getElementById('cc-tab-' + targetId);
+            if (el && el.focus) el.focus();
+          }, 0);
+        }
         return h('div', { style: { background: _ccC(TEAL_LIGHT), border: '1px solid ' + TEAL_BORDER, borderRadius: '12px', padding: '10px 12px', marginBottom: '14px' } },
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' } },
             h('div', { style: { fontSize: '11px', fontWeight: 700, color: TEAL_DARK, textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('sel.crisiscompanion.ui.crisis_companion', 'Crisis Companion')),
             h('div', { style: { fontSize: '11px', color: TEAL_DARK, fontWeight: 600 } }, _selFill(__alloT('sel.crisiscompanion.ui.visitedcount_sectionscount_sections_visited', '{visitedCount} / {SECTIONSCount} sections visited'), { visitedCount: visitedCount, SECTIONSCount: SECTIONS.length }))
           ),
           h('div', { 'role': 'tablist', 'aria-label': __alloT('sel.crisiscompanion.ui.crisis_companion_sections', 'Crisis Companion sections'), style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
-            SECTIONS.map(function(s) {
+            SECTIONS.map(function(s, sIdx) {
               var sel = (section === s.id);
               var visited = !!badges[s.id];
               return h('button', {
                 key: s.id,
+                type: 'button',
+                id: 'cc-tab-' + s.id,
                 role: 'tab',
                 'aria-selected': sel ? 'true' : 'false',
+                'aria-controls': 'cc-panel-' + s.id,
+                tabIndex: sel ? 0 : -1,
                 'aria-label': s.label + (visited ? __alloT('sel.crisiscompanion.ui.visited', ' (visited)') : ''),
                 onClick: function() { setSection(s.id); },
+                onKeyDown: function(e) { onMainTabKeyDown(e, sIdx); },
                 style: {
-                  padding: '6px 12px',
+                  padding: '8px 14px',
+                  minHeight: 44,
                   borderRadius: '8px',
                   border: '2px solid ' + (sel ? TEAL_DARK : (visited ? TEAL : _ccC('#e2e8f0'))),
                   background: sel ? TEAL : (visited ? _ccC('#fff') : _ccC('#f8fafc')),
@@ -2666,18 +2706,40 @@ window.SelHub = window.SelHub || {
           { id: 'safety',   icon: '📋', label: __alloT('sel.crisiscompanion.sub_tabs.safety.label', 'Safety plan') }
         ];
         function setSub(id) { upd('careSubtab', id); announce(_selFill(__alloT('sel.crisiscompanion.ui.now_viewing_label', 'Now viewing: {label}'), { label: (SUB_TABS.filter(function(t) { return t.id === id; })[0] || {}).label })); }
+        function onSubTabKeyDown(e, idx) {
+          if (isImeComposing(e) || e.ctrlKey || e.metaKey || e.altKey) return;
+          var next = null;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (idx + 1) % SUB_TABS.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (idx - 1 + SUB_TABS.length) % SUB_TABS.length;
+          else if (e.key === 'Home') next = 0;
+          else if (e.key === 'End') next = SUB_TABS.length - 1;
+          if (next === null) return;
+          e.preventDefault();
+          var targetId = SUB_TABS[next].id;
+          setSub(targetId);
+          setTimeout(function() {
+            var el = typeof document !== 'undefined' && document.getElementById('cc-subtab-' + targetId);
+            if (el && el.focus) el.focus();
+          }, 0);
+        }
         // Sub-nav strip
         var subNav = h('div', { role: 'tablist', 'aria-label': __alloT('sel.crisiscompanion.ui.self_care_sub_sections', 'Self-care sub-sections'), style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '14px' } },
-          SUB_TABS.map(function(t) {
+          SUB_TABS.map(function(t, tIdx) {
             var sel = (careSubtab === t.id);
             return h('button', {
               key: t.id,
+              type: 'button',
+              id: 'cc-subtab-' + t.id,
               role: 'tab',
               'aria-selected': sel ? 'true' : 'false',
+              'aria-controls': 'cc-subpanel-' + t.id,
+              tabIndex: sel ? 0 : -1,
               'aria-label': t.label,
               onClick: function() { setSub(t.id); },
+              onKeyDown: function(e) { onSubTabKeyDown(e, tIdx); },
               style: {
                 padding: '8px 14px',
+                minHeight: 44,
                 background: sel ? TEAL : _ccC('#fff'),
                 color: sel ? '#fff' : TEAL_DARK,
                 border: '2px solid ' + (sel ? TEAL_DARK : TEAL_BORDER),
@@ -2728,9 +2790,11 @@ window.SelHub = window.SelHub || {
         content = h('div', null,
           sectionHero({ icon: '💚', label: __alloT('sel.crisiscompanion.ui.caring_for_yourself_when_you_ve', 'Caring for yourself when you\'ve supported a friend') }),
           subNav,
-          subContent,
-          // Always-visible static support content below the sub-tab area
-          careSubtab === 'read' && h('div', null, _renderSelfCareReadingExtras(h)),
+          h('div', { id: 'cc-subpanel-' + careSubtab, role: 'tabpanel', 'aria-labelledby': 'cc-subtab-' + careSubtab },
+            subContent,
+            // Always-visible static support content below the sub-tab area
+            careSubtab === 'read' && h('div', null, _renderSelfCareReadingExtras(h))
+          ),
           nextButton()
         );
       }
@@ -2765,9 +2829,10 @@ window.SelHub = window.SelHub || {
               var done = responses[i] != null;
               return h('button', {
                 key: s.id,
+                type: 'button',
                 onClick: function() { upd('practiceIdx', i); announce(_selFill(__alloT('sel.crisiscompanion.ui.loaded_scenario_title', 'Loaded scenario: {title}'), { title: s.title })); },
                 'aria-pressed': sel ? 'true' : 'false',
-                style: { padding: '8px 14px', borderRadius: '10px', border: '2px solid ' + (sel ? TEAL_DARK : TEAL_BORDER), background: sel ? TEAL : _ccC('#fff'), color: sel ? '#fff' : TEAL_DARK, fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '8px 14px', minHeight: 44, borderRadius: '10px', border: '2px solid ' + (sel ? TEAL_DARK : TEAL_BORDER), background: sel ? TEAL : _ccC('#fff'), color: sel ? '#fff' : TEAL_DARK, fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
               }, _selFill(__alloT('sel.crisiscompanion.ui.scenario_value', 'Scenario {value}'), { value: (i + 1) }), done ? ' ✓' : '');
             })
           ),
@@ -2790,10 +2855,26 @@ window.SelHub = window.SelHub || {
                 }
                 return h('button', {
                   key: ri,
+                  type: 'button',
+                  id: 'cc-practice-radio-' + practiceIdx + '-' + ri,
                   onClick: function() { chooseResponse(practiceIdx, ri); },
+                  onKeyDown: function(e) {
+                    if (isImeComposing(e) || e.ctrlKey || e.metaKey || e.altKey) return;
+                    var len = sc.responses.length;
+                    var next = null;
+                    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') next = (ri + 1) % len;
+                    else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') next = (ri - 1 + len) % len;
+                    else if (e.key === 'Home') next = 0;
+                    else if (e.key === 'End') next = len - 1;
+                    if (next === null) return;
+                    e.preventDefault();
+                    var el = typeof document !== 'undefined' && document.getElementById('cc-practice-radio-' + practiceIdx + '-' + next);
+                    if (el && el.focus) el.focus();
+                  },
                   role: 'radio', 'aria-checked': sel ? 'true' : 'false',
+                  tabIndex: (sel || (picked == null && ri === 0)) ? 0 : -1,
                   'aria-disabled': revealed ? 'true' : 'false',
-                  style: { textAlign: 'left', padding: '12px 14px', background: bg, border: '2px solid ' + border, borderRadius: '10px', cursor: revealed ? 'default' : 'pointer', color: text, fontSize: '13px', lineHeight: 1.6 }
+                  style: { textAlign: 'left', padding: '12px 14px', minHeight: 44, background: bg, border: '2px solid ' + border, borderRadius: '10px', cursor: revealed ? 'default' : 'pointer', color: text, fontSize: '13px', lineHeight: 1.6 }
                 },
                   h('div', { style: { fontWeight: 700, marginBottom: revealed ? '8px' : 0 } }, r.text),
                   revealed && h('div', { style: { fontSize: '12px', lineHeight: 1.6, fontWeight: 400, fontStyle: 'italic' } },
@@ -2816,7 +2897,7 @@ window.SelHub = window.SelHub || {
       return h('div', { className: 'selh-crisiscompanion', style: { padding: '16px', maxWidth: '900px', margin: '0 auto', color: SLATE_TEXT, fontFamily: 'system-ui, -apple-system, sans-serif' } },
         navStrip(),
         renderCrisisConfirm(),
-        withCrisisBars(h('div', null,
+        withCrisisBars(h('div', { id: 'cc-panel-' + section, role: 'tabpanel', 'aria-labelledby': 'cc-tab-' + section },
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('crisiscompanion', h, ctx) : null),
           content || h('div', null, __alloT('sel.crisiscompanion.ui.loading', 'Loading…'))
         ))

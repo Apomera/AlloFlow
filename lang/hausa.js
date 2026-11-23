@@ -155,7 +155,12 @@
     "refine_go": "Ba da shawarar sake rubutawa",
     "refining": "Ana rubuta shawara…",
     "made_from_version": "An ƙirƙira daga siga ta {version} ta tushenku",
-    "remake": "Sake ƙirƙira daga sigar yanzu"
+    "remake": "Sake ƙirƙira daga sigar yanzu",
+    "dictate": "Rubuta da murya",
+    "close_dictate": "Rufe rubuta da murya",
+    "send_read_along": "Aika zuwa Fakitin Karatu Tare",
+    "upload_verify_banner": "An rubuta sauti/bidiyo a na'ura da Whisper (an ajiye sassa {count} a ƙwaƙwalwar na'ura)",
+    "clear_audio": "Share sauti"
   },
   "sel": {
     "peersupport": {
@@ -5996,7 +6001,10 @@
     "source_choice_ambiguous": "Zaɓi sigar karatu a cikin Bisa kan kafin ka samar. Akwai sigar karatu fiye da ɗaya.",
     "source_choices_load_failed": "Ba a iya loda zaɓuɓɓukan sigar karatu ba. Sake gwadawa.",
     "submission_tools_still_loading": "Kayan aikin miƙa aiki suna lodi har yanzu. Sake gwada Mika.",
-    "blank_created": "An ƙirƙiri {title} mara komai. Cike shi kafin ka raba shi."
+    "blank_created": "An ƙirƙiri {title} mara komai. Cike shi kafin ka raba shi.",
+    "sent_to_read_along": "An aika sashin rubutu zuwa Fakitin Karatu Tare a sabon shafi.",
+    "read_along_handoff_failed": "An kasa mika daftarin zuwa Fakitin Karatu Tare.",
+    "read_along_no_text": "Ƙara ko ka rubuta rubutun asali da murya kafin ka aika zuwa Fakitin Karatu Tare."
   },
   "large_file": {
     "modal_title": "Shigo Large sauti fayil",
@@ -6013,7 +6021,8 @@
     "chunk_info": "Ana raba sauti zuwa gunduwoyi na minti 5 don sarrafawa",
     "chunk_progress": "Chunk {current} na {total}",
     "audio_only_error": "A yanzu fayilolin sauti kawai (MP3, WAV, da sauransu) ake tallafawa wajen rubutawa gunduwa-gunduwa.",
-    "starting": "Ana farawa..."
+    "starting": "Ana farawa...",
+    "engine_legend": "Injin Rubuta Sauti"
   },
   "formatting": {
     "bold": "Bold (**rubutu**)",
@@ -6417,7 +6426,8 @@
       "analyzing_short": "Ana bincike...",
       "generate_short": "Samar da",
       "books_short": "Littattafai",
-      "books_hint": "Buɗe littattafan hoto: kowane littafi na iya zama tushen rubutunka"
+      "books_hint": "Buɗe littattafan hoto: kowane littafi na iya zama tushen rubutunka",
+      "dictate_hint": "Rubuta rubutun asalinka da murya ta Whisper na kan na'ura da zaɓin binciken Gemini"
     },
     "status_generating": "Generating tushe rubutu...",
     "success_long_form": "dogon-form rubutu samar successfully!",
@@ -6467,7 +6477,8 @@
     "empty_desc_teacher": "Ƙara wani rubutu, sannan ka zaɓi kayan aikin da za su daidaita shi don ɗalibanka.",
     "empty_desc_family": "Ƙara abin da yaronka yake karantawa, sannan ka zaɓi yadda kake so ka taimaka.",
     "reading_catalog": "Jerin karatu",
-    "find_online": "Bincika a intanet"
+    "find_online": "Bincika a intanet",
+    "dictate_or_record": "Rubuta da murya ko ka yi rikodi"
   },
   "wizard": {
     "title": "da sauri Fara",
@@ -6601,7 +6612,12 @@
     "paste_word_count": "Kalmomi {count}",
     "length_custom": "Na musamman…",
     "length_custom_label": "Yawan kalmomi",
-    "length_custom_hint": "Kalmomi 50 zuwa 5,000"
+    "length_custom_hint": "Kalmomi 50 zuwa 5,000",
+    "dictate_desc": "Rubuta da murya ta Whisper na gida da zaɓin bincike",
+    "dictate_title": "Rubuta da murya ko ka yi rikodin rubutun asalinka",
+    "dictate_helper": "Yana amfani da Whisper na sirri a kan na'ura ta asali. Gyara yadda kake so, tsaftace rubutu idan kana so, ko ka kwatanta da rikodinka ta Gemini.",
+    "dictate_loading": "Ana loda Studio na Rubuta da Murya (Whisper na Gida)… Kana iya bugawa ko gyarawa a ƙasa yayin da yake lodawa.",
+    "words_dictated_unit": "kalmomin da aka rubuta da murya"
   },
   "settings": {
     "immersive_options": "Immersive zaɓi",
@@ -106858,5 +106874,68 @@
     "sc_findText": "Nemo rubutu a cikin zane",
     "sc_commandPalette": "Buɗe ayyuka masu sauri",
     "sc_help": "Nuna wannan jerin gajerun hanyoyi"
+  },
+  "dictation": {
+    "badge_desktop": "Desktop Whisper a Shirye Yake",
+    "badge_download_needed": "Whisper na Gida · Zazzagewar Farko",
+    "badge_local_ready": "Whisper na Gida a Shirye · {name}",
+    "cleanup_apply": "Aiwatar da tsaftacewa",
+    "cleanup_failed": "An kasa tsaftace rubutun yanzu.",
+    "cleanup_fillers": "Cire kalmomin ciko",
+    "cleanup_heading": "Zaɓin tsaftace rubutu da AI",
+    "cleanup_keep": "Bar na asali",
+    "cleanup_no_changes": "Ba a ba da shawarar canje-canje ga wannan daftarin ba.",
+    "cleanup_notes": "Tsara kamar bayanan aji",
+    "cleanup_punctuation": "Gyara alamomin rubutu da tsari",
+    "cleanup_review_title": "Shawarar tsaftacewa ta shirya — daftarinka bai canza ba tukuna",
+    "cleanup_text_only": "rubutu kawai — ba a aika sauti ba",
+    "cleanup_unavailable": "Tsaftace rubutu da AI ba ya samuwa yanzu.",
+    "cleanup_undo": "Soke tsaftacewa",
+    "cleanup_working": "Ana tsaftacewa…",
+    "clear_audio": "Share sautin da aka yi rikodi ({mb} MB)",
+    "crosscheck_all_resolved": "An duba duk wuraren da aka yi wa alama.",
+    "crosscheck_btn": "Tabbatar da sauti ta Gemini",
+    "crosscheck_count": "Wuri/wurare {count} da aka yi wa alama don dubawa:",
+    "crosscheck_disabled_note": "Ba ya samuwa yanzu (an kashe shi a yanayin babu intanet / yanayin ɗalibi ba tare da AI ba ko babu maɓallin Gemini). Rubuta da murya ta Whisper na gida yana ci gaba da aiki gaba ɗaya ba tare da intanet ba.",
+    "crosscheck_disclosure": "Yana aiki ne kawai idan ka danna ƙasa: yana aika sassan sautin da ke ƙwaƙwalwar na'ura da daftarin rubutu zuwa Gemini don nuna kurakuran kalmomi masu yiwuwa.",
+    "crosscheck_failed": "Binciken sauti na Gemini bai kammala ba. Rubutunka na gida yana nan ba tare da canji ba.",
+    "crosscheck_heading": "Kwatanta rubutu da sauti ta Gemini (Zaɓi ne)",
+    "crosscheck_none": "Ba a sami wani babban bambanci tsakanin Whisper na Gida da Gemini Audio ba.",
+    "crosscheck_running": "Ana duba tare da sauti…",
+    "crosscheck_unavailable": "Kwatanta sauti da Gemini ba ya samuwa yanzu.",
+    "download_now": "Zazzage Whisper na Gida ({size} MB)",
+    "download_warning": "Sanarwar zazzagewa: Whisper na Gida yana amfani da gane murya na sirri a kan na'ura. Zazzage samfurin {name} yana ɗaukar ~{size} MB sau ɗaya (kimanin minti 1–2 dangane da intanet), yana ajiyewa ba tare da intanet ba a burauzarka, kuma yana riƙe rikodin muryarka a kan wannan na'urar.",
+    "draft_label": "Daftarin rubutu (ana iya gyarawa)",
+    "draft_placeholder": "Danna Fara rubuta da murya a sama, ko ka buga/gyara rubutunka kai tsaye a nan…",
+    "guide_both_body": "Fara cikin sirri da Whisper na Gida domin rubuta da murya ya kasance da sauri kuma ba tare da intanet ba. Idan kana son ra'ayi na biyu kan kalmomi masu wahala ko sunaye, zaɓi kwatanta da Gemini don gwada samfurori biyu masu zaman kansu da sautinka kuma ka sake sauraron sassa na daƙiƙa 5 a kowane wuri da aka yi wa alama.",
+    "guide_both_label": "Dalilin amfani da duka biyun (Kwatantawa):",
+    "guide_gemini_body": "Ba ya buƙatar zazzage samfuri. Ya fi ƙarfi a kalmomin ƙwarewa, sunayen mutane/wurare, lafazi daban-daban, ajujuwa masu hayaniya, da alamomin rubutu — yana aika sassan sauti zuwa Gemini ne kawai idan ka zaɓa.",
+    "guide_gemini_title": "Gemini Audio (Zaɓin bincike)",
+    "guide_summary": "Whisper na Gida da Gemini Audio — ƙarfi da dalilin amfani da duka biyun",
+    "guide_whisper_body": "Na sirri ne kuma yana aiki ba tare da intanet ba bayan zazzagewa sau ɗaya (~39–73 MB). Babu sautin da ke barin na'urarka, ba a buƙatar maɓallin API ko iyaka, kuma dogon rubuta da murya yana aiki da kyau.",
+    "guide_whisper_title": "Whisper na Gida (Na asali)",
+    "ios_canvas_blocked": "An dakatar da Whisper na Gida a kan iPhone/iPad a cikin Gemini Canvas. Buga kai tsaye a ƙasa ko ka buɗe AlloFlow a burauzar kwamfuta.",
+    "ios_canvas_hint": "Kana iya bugawa kai tsaye a ƙasa, ka buɗe AlloFlow a burauzar kwamfuta don Whisper na Gida, ko ka yi amfani da Gemini Audio idan an saita.",
+    "ios_canvas_title": "An dakatar da Whisper na kan na'ura a iPhone/iPad a cikin Gemini Canvas",
+    "listening_local": "Ana sauraro a na'ura da Whisper… tsaya kaɗan ko ci gaba da magana don ƙara rubutu.",
+    "mic_start_failed": "An kasa kunna makirufo. Duba izinin burauza.",
+    "model_size_label": "Girman samfurin Whisper na Gida",
+    "pause_recording": "Dakata",
+    "paused_note": "An dakata. Kana iya gyara rubutun a ƙasa ko ka danna Ci gaba don ci gaba da rubuta da murya.",
+    "privacy_tag": "Na sirri · Babu intanet bayan zazzagewa · Ba a buƙatar maɓallin API",
+    "resume_recording": "Ci gaba",
+    "send_read_along": "Aika zuwa Fakitin Karatu Tare",
+    "speech_settings": "Saitunan magana",
+    "speed_badge_lesson": "An gwada: ya fi magana sauri sau {speed}x · Yana da kyau ga dogon rubuta da murya",
+    "speed_badge_short": "An gwada: ya fi magana sauri sau {speed}x · Mafi kyau ga gajerun sassa",
+    "speed_badge_slow": "An gwada: {speed}x · Ya fi lokacin gaske jinkiri (yi tsammanin ɗan tsayawa)",
+    "speed_badge_upgrade": "An gwada: ya fi magana sauri sau {speed}x · Yana da kyau ga dogon rubuta da murya (kana iya gwada {name} kuma)",
+    "start_recording": "Fara rubuta da murya (Whisper na Gida)",
+    "stop_recording": "Tsaya",
+    "studio_title": "Studio na Rubuta da Murya",
+    "test_mic": "Gwada makirufo (4s)",
+    "upload_media": "Rubuta fayil ɗin sauti/bidiyo",
+    "use_text": "Yi amfani da rubutun da aka yi da murya",
+    "voice_unavailable": "Na'urar rikodin murya tana kan lodawa. Da fatan za a sake gwadawa nan da ɗan lokaci."
   }
 }

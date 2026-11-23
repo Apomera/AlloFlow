@@ -209,17 +209,6 @@
     }
     add(body, el('p', 'hint', r.limits));
 
-    var status = el('p', 'copy-said');
-    status.setAttribute('role', 'status');
-    var box = el('div', 'copy-box');
-    box.hidden = true;
-    var copy = button('btn', 'Copy this report');
-    copy.setAttribute('data-copy', String(index));
-    copy.addEventListener('click', function () { copyReport(item, status, box); });
-    var print = button('btn', 'Print');
-    print.setAttribute('data-print', String(index));
-    print.addEventListener('click', printPage);
-    add(body, add(el('div', 'actions no-print'), copy, print), status, box);
     var box2 = part('For IT staff', body);
     box2.className += ' part-it';
     return box2;
@@ -256,6 +245,19 @@
     card.setAttribute('aria-labelledby', line.id);
     if (!r.headline) return card;
 
+    var status = el('p', 'copy-said');
+    status.setAttribute('role', 'status');
+    status.hidden = true;
+    var box = el('div', 'copy-box');
+    box.hidden = true;
+    var copy = button('btn', 'Copy this report');
+    copy.setAttribute('data-copy', String(index));
+    copy.addEventListener('click', function () { copyReport(item, status, box); });
+    var print = button('btn', 'Print');
+    print.setAttribute('data-print', String(index));
+    print.addEventListener('click', printPage);
+    add(top, add(el('div', 'actions no-print'), copy, print), status, box);
+
     PARTS.forEach(function (p) { add(card, part(p.title, listOf(r.plain[p.key]))); });
     var n = r.counts.notExpected + r.counts.look;
     var look = part(LOOK_TITLE, lookList(r), el('span', 'part-count', String(n)));
@@ -287,12 +289,13 @@
       while (box.firstChild) box.removeChild(box.firstChild);
       add(box, area);
       box.hidden = false;
+      status.hidden = false;
       status.textContent = 'This browser did not let the page copy. Select all of the text below and copy it.';
       area.focus();
       area.select();
     };
     try {
-      window.navigator.clipboard.writeText(text).then(function () { box.hidden = true; status.textContent = 'Copied. The report is on the clipboard as plain text.'; }, manual);
+      window.navigator.clipboard.writeText(text).then(function () { box.hidden = true; status.hidden = false; status.textContent = 'Copied. The report is on the clipboard as plain text.'; }, manual);
     } catch (_) { manual(); }
   }
   // On paper every part is open. What was closed on the screen is closed again when the browser says printing is over

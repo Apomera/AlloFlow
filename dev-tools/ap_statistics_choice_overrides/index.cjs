@@ -3,6 +3,10 @@
 const baseItems = require('./items.cjs');
 const leakageFixes = require('./leakage_fixes.cjs');
 const { FOUNDATIONAL_CHECKS, TRANSFER_CHECK_OVERRIDES } = require('./library_checks.cjs');
+const shortRationales = {
+  ...require('../ap_stem_short_rationales/ap_stats_phys_chem.cjs').ap_statistics_foundation_pilot,
+  ...require('../ap_stem_short_rationales/wave2_phys_stats.cjs').ap_statistics_foundation_pilot,
+};
 
 const items = { ...baseItems };
 for (const [id, fix] of Object.entries(leakageFixes)) {
@@ -20,11 +24,13 @@ function normalizeLookup(value) {
 
 function applyApStatsChoiceOverride(itemId, spec) {
   const override = items[itemId];
-  if (!override) return spec;
+  const enrichedRationale = shortRationales[itemId];
+  if (!override && !enrichedRationale) return spec;
   const next = { ...spec };
-  if (override.prompt) next.prompt = override.prompt;
-  if (override.answer) next.answer = override.answer;
-  if (override.distractorReplacements) {
+  if (enrichedRationale) next.rationale = enrichedRationale;
+  if (override && override.prompt) next.prompt = override.prompt;
+  if (override && override.answer) next.answer = override.answer;
+  if (override && override.distractorReplacements) {
     const normalizedMap = new Map(
       Object.entries(override.distractorReplacements).map(([k, v]) => [normalizeLookup(k), v])
     );

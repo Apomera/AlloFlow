@@ -121,7 +121,7 @@ describe('the About page', () => {
     const guide = squash(parse(GUIDE).body.textContent);
     for (const piece of ['no sign-in, no cookies, no analytics', 'Find a picture', 'Look up a word online', 'class mailbox']) expect(guide, piece).toContain(piece);
     const time = doc.querySelector('time');
-    expect([time.getAttribute('datetime'), squash(time.parentNode.textContent)]).toEqual(['2026-11-17', 'Last updated: 2026-11-17.']);
+    expect([time.getAttribute('datetime'), squash(time.parentNode.textContent)]).toEqual(['2026-11-22', 'Last updated: 2026-11-22.']);
   });
 
   it('has the header and footer of the other Packets pages, the product name once, and plain American words', () => {
@@ -174,9 +174,13 @@ describe('the IT guide, 2026-11-17', () => {
     expect(loaderText).toMatch(/\{ url: str\(opts\.submit\.url\), packId: str\(opts\.submit\.packId\), secret: str\(opts\.submit\.secret\)/);
   });
 
-  it('says nothing that suggests the Symbol Runner page, or any student file, uses the microphone', () => {
+  it('says nothing that suggests the Symbol Runner page, or any standard practice file or check, uses the microphone', () => {
     const mentions = sentences(doc.body.textContent).filter((s) => /microphone/i.test(s));
-    expect(mentions).toEqual(['The microphone is used only when the teacher presses Record.']);
+    expect(mentions).toEqual([
+      'The microphone is used only when the teacher presses Record.',
+      "If a teacher turns on optional Student Voice Practice in a read-along file, the student's microphone stays in browser memory only for local playback and is never saved or sent.",
+      'Standard practice files and checks never use the microphone.',
+    ]);
     for (const s of sentences(doc.body.textContent).filter((line) => /Symbol Runner/.test(line))) expect(s).not.toMatch(/microphone|speech|voice|listen/i);
   });
 

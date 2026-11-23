@@ -26,6 +26,7 @@
 <script src="word_practice_core.js" defer></script>
 <script src="word_practice_media.js" defer></script>
 <script src="word_practice_ui.js" defer></script>
+<script src="packets_word_starters.js" defer></script>
 <script src="packets-present-export.js" defer></script>
 </head>
 <body>
@@ -37,6 +38,19 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 3 7.5l9 4.5 9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
       <span id="product-name">AlloFlow Packets</span>
     </a>
+    <details class="top-menu">
+      <summary>Switch maker</summary>
+      <nav aria-label="Other Packets tools">
+        <a href="packets-make.html">Word Sounds</a>
+        <a href="packets-vocab.html">Vocabulary</a>
+        <a href="packets-math-practice.html">Math Fact Practice</a>
+        <a href="packets-check.html">Math Check</a>
+        <a href="packets-read-along.html">Read-Along</a>
+        <a href="packets-symbol-runner.html">Symbol Runner</a>
+        <a href="packets-present-export.html" aria-current="page">Present &amp; print</a>
+        <a href="packets-results.html">Add up results</a>
+      </nav>
+    </details>
     <a class="top-link" href="packets.html">All Packets pages</a>
   </div>
 <details class="proof">
@@ -48,7 +62,7 @@
   <div class="wrap wrap-narrow proof-body">
     <ul>
       <li>Nothing is generated when you make a file or when a student uses it. The spoken sounds were recorded ahead of time with two AI voices (Kokoro and Google Gemini). Some meanings were checked and corrected ahead of time with AI help, not by a person.</li>
-      <li>This page loads twenty files from this site: the page itself, three stylesheets (<code>packets.css</code>, <code>packets-make.css</code>, <code>packets-present-export.css</code>), fifteen scripts (<code>packets-page.js</code>, <code>word_sounds_take_home_loader.js</code>, <code>packets_my_words.js</code>, <code>packets_vocab_bank_en.js</code>, <code>word_sounds_phonemes_en.js</code>, <code>word_sounds_core.js</code>, <code>word_sounds_pronunciations.js</code>, <code>word_sounds_symbols_en.js</code>, <code>packets_vocab_media.js</code>, <code>word_picture_matcher.js</code>, <code>word_practice_annotation_assets.js</code>, <code>word_practice_core.js</code>, <code>word_practice_media.js</code>, <code>word_practice_ui.js</code>, <code>packets-present-export.js</code>) and the icon in the browser tab. PowerPoint export loads one more script from this site (<code>vendor/pptxgenjs-3.12.0.bundle.js</code>) only when you ask for slides.</li>
+      <li>This page loads twenty-one files from this site: the page itself, three stylesheets (<code>packets.css</code>, <code>packets-make.css</code>, <code>packets-present-export.css</code>), sixteen scripts (<code>packets-page.js</code>, <code>word_sounds_take_home_loader.js</code>, <code>packets_my_words.js</code>, <code>packets_vocab_bank_en.js</code>, <code>word_sounds_phonemes_en.js</code>, <code>word_sounds_core.js</code>, <code>word_sounds_pronunciations.js</code>, <code>word_sounds_symbols_en.js</code>, <code>packets_vocab_media.js</code>, <code>word_picture_matcher.js</code>, <code>word_practice_annotation_assets.js</code>, <code>word_practice_core.js</code>, <code>word_practice_media.js</code>, <code>word_practice_ui.js</code>, <code>packets_word_starters.js</code>, <code>packets-present-export.js</code>) and the icon in the browser tab. PowerPoint export loads one more script from this site (<code>vendor/pptxgenjs-3.12.0.bundle.js</code>) only when you ask for slides.</li>
       <li>Your word list, imported pictures, and exported HTML or PowerPoint files are built inside this browser tab. Nothing is uploaded.</li>
       <li>There are no cookies and nothing to sign in to.</li>
       <li>On this device the page can read saved words from My words and keep your last export choices locally unless you clear them below.</li>
@@ -67,11 +81,9 @@
 
     <noscript><p class="note note-problem">This page needs JavaScript to present and export word cards. Nothing is sent anywhere.</p></noscript>
 
-    <section class="pe-starters" aria-labelledby="starters-heading">
-      <h2 id="starters-heading">Word sets and printable sheets</h2>
-      <p class="pe-starters-note">Start with a ready-made set or saved maker words (pictures match automatically), or type your own words below.</p>
-      <div class="pe-starter-row">
-        <div class="pe-control">
+    <section class="pe-starters" aria-label="Word sets and printable sheets">
+      <div class="pe-bar">
+        <div class="pe-control pe-source-control">
           <label for="pe-word-source">Load words</label>
           <select id="pe-word-source">
             <optgroup label="Ready-made word sets">
@@ -88,31 +100,41 @@
               <option id="pe-load-vocab-words" value="saved:vocab" hidden>Words from Vocabulary maker</option>
               <option id="pe-load-ws-words" value="saved:word-sounds" hidden>Words from Word Sounds maker</option>
             </optgroup>
+            <option id="pe-custom-opt" value="custom" hidden>Custom word list</option>
           </select>
         </div>
-        <div class="pe-control">
-          <label for="pe-sheet-type">Print a classroom sheet</label>
-          <div class="pe-sheet-row">
-            <select id="pe-sheet-type">
-              <option value="flashcards">2-sided flashcards</option>
-              <option value="frayer">Frayer study sheets</option>
-              <option value="sorting-cards">Cut-out sorting cards</option>
-              <option value="worksheet">Cloze and matching worksheet</option>
-              <option value="bingo">Classroom Bingo boards</option>
-              <option value="loop-cards">I Have, Who Has cards</option>
-              <option value="word-wall">Classroom Word Wall cards</option>
-            </select>
-            <button type="button" class="btn btn-small" id="pe-sheet-download">Download</button>
+        <details id="pe-more" class="more pe-more">
+          <summary>
+            <span class="more-name">Print sheets &amp; more tools</span>
+            <span class="more-now" id="pe-more-now">2-sided flashcards</span>
+          </summary>
+          <div class="more-body pe-more-body">
+            <div class="pe-control">
+              <label for="pe-sheet-type">Print a classroom sheet</label>
+              <div class="pe-sheet-row">
+                <select id="pe-sheet-type">
+                  <option value="flashcards">2-sided flashcards</option>
+                  <option value="frayer">Frayer study sheets</option>
+                  <option value="sorting-cards">Cut-out sorting cards</option>
+                  <option value="worksheet">Cloze and matching worksheet</option>
+                  <option value="word-sounds-worksheet">Word Sounds Activity Worksheet</option>
+                  <option value="bingo">Classroom Bingo boards</option>
+                  <option value="loop-cards">I Have, Who Has cards</option>
+                  <option value="word-wall">Classroom Word Wall cards</option>
+                </select>
+                <button type="button" class="btn btn-small" id="pe-sheet-download">Download</button>
+              </div>
+              <div class="pe-sheet-row" role="group" aria-label="Reading supports for sheets">
+                <label class="radio"><input type="checkbox" id="pe-opt-syllables"> <span>Syllable breaks (a&middot;b&middot;c)</span></label>
+                <label class="radio"><input type="checkbox" id="pe-opt-bold"> <span>Bold word starts</span></label>
+              </div>
+            </div>
+            <div class="pe-links">
+              <a class="btn btn-text btn-small" id="pe-find-online" href="packets-pictures.html#from=present">Find more pictures online</a>
+              <button type="button" class="btn btn-text btn-small" id="pe-open-symbol-runner">Practice in Symbol Runner</button>
+            </div>
           </div>
-          <div class="pe-sheet-row" role="group" aria-label="Reading supports for sheets">
-            <label class="radio"><input type="checkbox" id="pe-opt-syllables"> <span>Syllable breaks (a&middot;b&middot;c)</span></label>
-            <label class="radio"><input type="checkbox" id="pe-opt-bold"> <span>Bold word starts</span></label>
-          </div>
-        </div>
-        <div class="pe-links">
-          <a class="btn btn-text btn-small" id="pe-find-online" href="packets-pictures.html#from=present">Find more pictures online</a>
-          <button type="button" class="btn btn-text btn-small" id="pe-open-symbol-runner">Practice in Symbol Runner</button>
-        </div>
+        </details>
       </div>
       <p id="pe-status" class="pe-status" role="status" aria-live="polite"></p>
     </section>
@@ -121,15 +143,17 @@
 
     <details id="about-page" class="about">
       <summary>About this page</summary>
-      <h2>Where the words, sounds, and pictures come from</h2>
-      <p>Meanings come from pre-built offline word lists (Simple English Wiktionary, English Wiktionary, Open English WordNet, Princeton WordNet, and the New Academic Word List). Sound boxes come from CMUdict mapped to Orton-Gillingham sound labels. Built-in drawings come from Mulberry Symbols and OpenMoji under CC BY-SA 4.0.</p>
-      <h2>What this browser keeps</h2>
-      <p>Your export setup choices stay in local browser storage on this device only.</p>
-      <p class="actions">
-        <button type="button" class="btn btn-small" id="pe-clear-local">Clear saved choices on this browser</button>
-        <a class="btn btn-small" href="packets.html">Back to AlloFlow Packets</a>
-      </p>
-      <p id="pe-clear-status" class="pe-status" role="status" aria-live="polite"></p>
+      <div class="about-body">
+        <h2>Where the words, sounds, and pictures come from</h2>
+        <p>Meanings come from pre-built offline word lists (Simple English Wiktionary, English Wiktionary, Open English WordNet, Princeton WordNet, and the New Academic Word List). Sound boxes come from CMUdict mapped to Orton-Gillingham sound labels. Built-in drawings come from Mulberry Symbols and OpenMoji under CC BY-SA 4.0.</p>
+        <h2>What this browser keeps</h2>
+        <p>Your export setup choices stay in local browser storage on this device only.</p>
+        <p class="actions">
+          <button type="button" class="btn btn-small" id="pe-clear-local">Forget my choices</button>
+          <a class="btn btn-small" href="packets.html">Back to AlloFlow Packets</a>
+        </p>
+        <p id="pe-clear-status" class="pe-status" role="status" aria-live="polite"></p>
+      </div>
     </details>
   </div>
 </main>

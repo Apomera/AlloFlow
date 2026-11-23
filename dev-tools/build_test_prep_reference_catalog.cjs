@@ -113,6 +113,7 @@ for (const file of fs.readdirSync(sourceDir).filter((name) => name.endsWith('_le
 // reaches them and their cited sources have to be named explicitly. Shared with
 // any tool that needs the same entries so there is one definition.
 const { AP_REFERENCE_SOURCES } = require('./ap_reference_sources.cjs');
+const { EPPP_REFERENCE_SOURCES, DEAD_REPLACED_DOI_URLS } = require('./eppp_reference_sources.cjs');
 
 const explicitMetadataOverrides = {
   ...AP_REFERENCE_SOURCES,
@@ -429,10 +430,11 @@ async function resolveDoi(reference) {
   if (!title) return null;
   const organization = cleanText((Array.isArray(record['container-title']) && record['container-title'][0]) || record.publisher || '');
   const abstract = shorten(record.abstract || '', 420);
+  const titleWithEnd = /[.?!]$/.test(title) ? title : `${title}.`;
   return {
     title,
     organization,
-    summary: abstract || `This scholarly work focuses on “${title}.” Open the source to review its methods, scope, findings, and limitations in context.`,
+    summary: abstract || `This scholarly work focuses on “${titleWithEnd}” Open the source to review its methods, scope, findings, and limitations in context.`,
     credibility: 'The DOI provides a persistent link to the publisher metadata for this scholarly work. Evidentiary strength still depends on the publication type, methods, sample, analysis, and fit to the claim.',
     metadataSource: 'Crossref',
     doi,
@@ -483,7 +485,7 @@ async function main() {
     }
     detail.title = cleanText(detail.title);
     detail.organization = cleanText(detail.organization);
-    detail.summary = shorten(detail.summary);
+    detail.summary = shorten(String(detail.summary || '').replace(/(?<!\.)\.\.(?=”)/g, '.').replace(/\.\.$/, '...'));
     detail.credibility = shorten(detail.credibility);
   }
   const epppBankPath = path.join(root, 'test_prep', 'eppp_native_items.json');
@@ -499,6 +501,8 @@ async function main() {
       }
     }
   }
+  Object.assign(catalog, EPPP_REFERENCE_SOURCES);
+  for (const deadUrl of DEAD_REPLACED_DOI_URLS) delete catalog[deadUrl];
   const ordered = Object.fromEntries(Object.entries(catalog).sort(([a], [b]) => a.localeCompare(b)));
   fs.mkdirSync(path.dirname(deployOutput), { recursive: true });
   const json = JSON.stringify(ordered, null, 2) + '\n';

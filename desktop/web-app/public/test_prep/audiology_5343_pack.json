@@ -11363,7 +11363,7 @@
       "cognitiveLevel": "analysis",
       "prompt": "During real-ear verification, the probe tube ends too far from the tympanic membrane. What error is most likely at high frequencies?",
       "choices": [
-        "Upper-frequency eardrum output may be underestimated as standing-wave cancellation grows with tip distance.",
+        "Eardrum output may be underestimated as standing-wave cancellation grows with distance.",
         "The device battery chemistry changes, increasing output at every input level.",
         "The test becomes a bone-conduction measure specific to the contralateral cochlea.",
         "The hearing aid’s directional microphones reverse their physical orientation."
@@ -11655,7 +11655,7 @@
       "choices": [
         "It reproduces osseointegrated transmission exactly and removes the need for medical evaluation.",
         "It makes aided sound-field thresholds sufficient by themselves to establish surgical candidacy.",
-        "It can provide a nonsurgical estimate of aided access, comfort, retention, and functional benefit while candidacy is evaluated.",
+        "It gives a nonsurgical estimate of aided access, comfort, and daily benefit during candidacy review.",
         "It diagnoses the cause of conductive loss from one aided threshold."
       ],
       "answerIndex": 2,
@@ -11947,7 +11947,7 @@
       "cognitiveLevel": "analysis",
       "prompt": "Which client is most likely to benefit from a group audiologic-rehabilitation format in addition to individual care?",
       "choices": [
-        "A client seeking communication-strategy practice, peer problem solving, and partner involvement around shared listening challenges.",
+        "A client seeking strategy practice, peer problem solving, and partner support for shared listening needs.",
         "A client with an acute neurologic red flag who needs emergency referral before routine rehabilitation.",
         "A client whose only need is sterile repair of an internal implanted component.",
         "A client who has not consented to share experiences in any group setting."
@@ -11997,7 +11997,7 @@
       "prompt": "A client understands speech much better when watching the talker’s face. How should rehabilitation use this strength?",
       "choices": [
         "Block the talker’s face during every activity so visual benefit is eliminated.",
-        "Teach integration of auditory and visual cues while improving lighting, sight lines, and repair strategies.",
+        "Integrate auditory and visual cues with clear sight lines, lighting, and repair skills.",
         "Conclude that amplification is unnecessary because visual cues help.",
         "Treat lipreading as an exact one-to-one transcription of every speech sound."
       ],
@@ -12047,7 +12047,7 @@
       "choices": [
         "Document mastery because the client agreed verbally during the explanation.",
         "Repeat the same rapid technical explanation without allowing practice.",
-        "Use teach-back and hands-on demonstration, simplify the steps, provide accessible supports, and reassess performance.",
+        "Use teach-back, guided practice, simpler steps, accessible supports, and reassessment.",
         "Remove the devices permanently because one teaching attempt was unsuccessful."
       ],
       "answerIndex": 2,
@@ -12097,7 +12097,7 @@
         "Have school staff make every decision without involving the student.",
         "Wait until a device fails during the first college examination to discuss backup access.",
         "Assume the high-school IEP transfers unchanged to every postsecondary setting.",
-        "Practice requesting accommodations, maintaining devices and backups, and navigating disability-access requirements."
+        "Practice requesting accommodations, managing devices and backups, and navigating access rules."
       ],
       "answerIndex": 3,
       "rationale": "Transition support shifts increasing responsibility to the student while maintaining needed coaching. Self-advocacy, technology care, backup plans, communication disclosure choices, current documentation, and knowledge of the receiving setting’s process promote continuity of access.",
@@ -12193,7 +12193,7 @@
       "prompt": "A family uses a language the audiologist does not speak and requests counseling about communication options. Which approach is most appropriate?",
       "choices": [
         "Use a young sibling as the default interpreter for complex consent and counseling.",
-        "Arrange a qualified interpreter, address the family directly, provide balanced accessible information, and elicit cultural and communication priorities.",
+        "Use a qualified interpreter, address the family directly, give balanced information, and elicit cultural goals.",
         "Provide one communication option as culturally superior before asking about family goals.",
         "Address every statement to the interpreter because the family is not part of the clinical conversation."
       ],
@@ -12297,7 +12297,7 @@
         "Send the complete clinic chart because educational personnel automatically have unrestricted access to health records.",
         "Refuse every disclosure because FERPA and HIPAA prohibit records from moving between educational and health settings.",
         "Ask the requesting employee to select whichever privacy law produces the fastest transfer.",
-        "Identify who maintains the file, which privacy rules apply, individual authorization or other lawful basis, the requested scope, and a secure delivery method."
+        "Confirm who holds the file, applicable privacy rules, valid authorization or lawful basis, permitted scope, and secure delivery."
       ],
       "answerIndex": 3,
       "rationale": "Privacy analysis depends on the setting, record holder, law, policy, consent, and purpose. The audiologist should verify identity and authority, share only the supported information, use secure channels, document the disclosure, and consult current organizational or legal guidance when FERPA, HIPAA, or state requirements are uncertain.",
@@ -12455,7 +12455,7 @@
       "choices": [
         "Rely only on the clinician’s home-state license because remote services occur wherever the computer is registered.",
         "Proceed if the video connection is clear because technical quality replaces licensure and emergency planning.",
-        "Verify authority where the client will be located and confirm consent, privacy, technology validity, accessibility, local support, and emergency procedures.",
+        "Verify authority at the client location and confirm consent, privacy, valid technology, accessibility, and emergency protocols.",
         "Ask the client to select a different state in the software so the jurisdiction question no longer appears."
       ],
       "answerIndex": 2,
@@ -12559,7 +12559,7 @@
       "cognitiveLevel": "analysis",
       "prompt": "Two reasonable tinnitus-management approaches are available, but the research evidence and the client’s priorities differ across outcomes. How should the audiologist choose between them?",
       "choices": [
-        "Integrate critical appraisal of the evidence with clinical data and expertise, then use shared decision making to align benefits, burdens, uncertainty, and client goals.",
+        "Integrate appraised evidence with clinical expertise and use shared decision making to weigh benefits, uncertainty, and client goals.",
         "Select the newest marketed product because recency is a sufficient substitute for comparative evidence.",
         "Follow the clinician’s customary approach without discussing alternatives or measuring the outcomes important to the client.",
         "Use the group-average research result as a guaranteed prediction for this individual and suppress uncertainty."
@@ -12613,7 +12613,7 @@
       "prompt": "A clinician is asked to copy yesterday’s hearing-aid note and bill the same service code even though today’s visit addressed a different problem. What is the appropriate response?",
       "choices": [
         "Reuse the prior note unchanged because continuity is more important than whether the record describes today’s work.",
-        "Document the care actually provided, findings, decisions, time and code requirements accurately, and correct any unsupported billing before submission.",
+        "Record the actual care, findings, decisions, and code requirements accurately, and correct unsupported billing before filing.",
         "Choose the highest-paying code and add standard language later if the payer requests evidence.",
         "Omit an unsuccessful measure so the chart contains only findings that support reimbursement."
       ],
@@ -12667,7 +12667,7 @@
       "choices": [
         "Keep the incentive private because product availability makes financial interests irrelevant to informed choice.",
         "Recommend the incentivized model automatically and describe competing options only after the sale is final.",
-        "Disclose the financial relationship, present reasonable alternatives objectively, and base the recommendation on evidence and the patient’s informed priorities.",
+        "Disclose the financial interest, present reasonable alternatives objectively, and base advice on evidence and patient priorities.",
         "Use the manufacturer representative’s product comparison as the sole basis for selecting among otherwise suitable devices."
       ],
       "answerIndex": 2,
@@ -12721,7 +12721,7 @@
         "Complete every optional test and schedule ordinary follow-up several months later before discussing medical referral.",
         "Provide medication advice independently because an audiogram is sufficient to determine the medical treatment.",
         "Reassure the client that unilateral tinnitus establishes a benign chronic condition and needs no prompt assessment.",
-        "Recognize the time-sensitive red flag, arrange urgent medical evaluation under current protocol, and document and communicate findings without delaying for a routine battery."
+        "Recognize the red flag, arrange urgent medical referral per protocol, and document findings without delaying for routine tests."
       ],
       "answerIndex": 3,
       "rationale": "Sudden unilateral sensorineural change is a time-sensitive medical concern. The audiologist should stop or streamline routine procedures as appropriate, obtain valid essential evidence without causing delay, activate the current referral pathway, explain urgency, document communication, and support follow-through.",
@@ -23519,7 +23519,7 @@
           {
             "file": "audiology_5343_batch3.json",
             "algorithm": "sha256",
-            "sha256": "f34856cad9ed4f77eb5752616ef49ef338be7345ee0d28aecd87790851bb0ab9",
+            "sha256": "2990cadcad83029bdd413e7330f0ecffe90d5410cdfdf48cdb25f1ac39a90e05",
             "itemCount": 100
           }
         ]
@@ -23548,7 +23548,7 @@
             "file": "audiology_5343_batch3.json",
             "reviewReport": "audiology_5343_batch3.review.json",
             "itemCount": 100,
-            "sha256": "f34856cad9ed4f77eb5752616ef49ef338be7345ee0d28aecd87790851bb0ab9"
+            "sha256": "2990cadcad83029bdd413e7330f0ecffe90d5410cdfdf48cdb25f1ac39a90e05"
           }
         ]
       }

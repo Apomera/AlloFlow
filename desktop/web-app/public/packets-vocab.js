@@ -14,6 +14,7 @@
 
   var LOOKUP_PAGE = 'packets-vocab-lookup.html';
   var PICTURES_PAGE = 'packets-pictures.html';
+  var VOICE_PAGE = 'packets-voice.html';
   var STORE_KEY = 'alloflow-packets-vocab/1';
   var EDITS_KEY = 'alloflow-packets-vocab-edits/1';
   var TRY_PAGE = 'packets-try.html';
@@ -21,7 +22,11 @@
   var MAX_STUDENTS = 40;
   var MAX_REOPEN_BYTES = 60 * 1024 * 1024;
   var MAX_ROSTER_BYTES = 256 * 1024;
+  var MAX_CLIP_CHARS = 2 * 1024 * 1024;
   var MAX_KEPT = 2000;     // words whose changes are kept; the oldest go first
+  var READY_AUDIO_RE = /^data:audio\/(?:wav|x-wav|wave|mpeg|mp3);base64,[A-Za-z0-9+/]+={0,2}$/i;
+  var WAV_AUDIO_RE = /^data:audio\/(?:wav|x-wav|wave);base64,[A-Za-z0-9+/]+={0,2}$/i;
+  var ANY_AUDIO_RE = /^data:audio\/[a-z0-9.+-]+;base64,[A-Za-z0-9+/]+={0,2}$/i;
   var LARGE_FILE_BYTES = 10e6;
   var LARGE_FILE_SAID = 'This file is over 10 MB. Some email and school platforms block large files, and older phones open them slowly. Choose fewer words, turn off Recordings of the words, or leave out picture questions to make it smaller.';
   // BEGIN TYPE EXAMPLES (2026-11-18): one worked example under each kind of question, so a teacher sees what the student
@@ -78,7 +83,7 @@
   var wordsTimer = 0;
   // Recordings and pictures (packets_vocab_media.js, word_sounds_symbols_en.js, word_sounds_packet_builder.js, word_picture_matcher.js, packets_my_words.js).
   var media = null, symbols = null, art = null, matcher = null, myWords = null, pictureState = 'idle', heard = null, pendingPicWord = '';
-  var myPictures = Object.create(null), myPicSyncRun = 0;
+  var myPictures = Object.create(null), myClips = Object.create(null), myClipPortable = Object.create(null), myPicSyncRun = 0, vocabAudioKitWait = null;
   var previewOmit = Object.create(null), previewSlot = Object.create(null), previewSession = null, inPreviewAction = false;
   function readJsonSafe(raw) {
     return JSON.parse(raw, function (k, v) {
@@ -108,14 +113,14 @@
     });
   }
 
-  function defaults() { return { words: '', types: ['meaning', 'word'], mode: 'practice', title: '', readAloud: true, voices: true, diagrams: false, repeatMissed: false, codeName: '' }; }
+  function defaults() { return { words: '', types: ['meaning', 'word'], mode: 'practice', title: '', readAloud: true, voices: true, diagrams: false, repeatMissed: false, mix: true, mixSeed: null, codeName: '' }; }
 
   // ---------------------------------------------------------------------------
   // What this page keeps, in this browser only
   // ---------------------------------------------------------------------------
   function remember() {
     try {
-      window.localStorage.setItem(STORE_KEY, JSON.stringify({ v: 1, words: state.words, types: state.types, mode: state.mode, title: state.title, readAloud: state.readAloud, voices: state.voices, diagrams: !!state.diagrams, repeatMissed: !!state.repeatMissed }));
+      window.localStorage.setItem(STORE_KEY, JSON.stringify({ v: 1, words: state.words, types: state.types, mode: state.mode, title: state.title, readAloud: state.readAloud, voices: state.voices, diagrams: !!state.diagrams, repeatMissed: !!state.repeatMissed, mix: state.mix !== false, mixSeed: typeof state.mixSeed === 'number' && isFinite(state.mixSeed) ? Math.floor(state.mixSeed) : null }));
     } catch (_) { /* a browser that cannot keep them still works */ }
   }
   function recall() {
@@ -130,6 +135,8 @@
     if (typeof saved.voices === 'boolean') fresh.voices = saved.voices;
     if (typeof saved.diagrams === 'boolean') fresh.diagrams = saved.diagrams;
     if (saved.repeatMissed === true) fresh.repeatMissed = true;
+    if (typeof saved.mix === 'boolean') fresh.mix = saved.mix;
+    if (typeof saved.mixSeed === 'number' && isFinite(saved.mixSeed)) fresh.mixSeed = Math.floor(saved.mixSeed);
     return fresh;
   }
   function freshEdits() { return { v: 1, words: Object.create(null), senses: Object.create(null) }; }
@@ -182,7 +189,7 @@
     Object.keys(myPictures).forEach(function (k) {
       var pic = myPictures[k];
       if (!pic || !pic.dataUri) return;
-      mergedWords[k] = Object.assign({}, mergedWords[k] || {}, { customPicture: { dataUri: pic.dataUri } });
+      mergedWords[k] = Object.assign({}, mergedWords[k] || {}, { customPicture: { dataUri: pic.dataUri, credit: pic.credit } });
     });
     return { v: 1, words: mergedWords, senses: edits.senses };
   }
@@ -203,15 +210,144 @@
       })).then(function () { if (migrated) keepEdits(); });
     });
   }
+  function clipUriFromEntry(entry) {
+    if (!isObject(entry)) return '';
+    var src = (isObject(entry.clip) && typeof entry.clip.dataUri === 'string' && entry.clip.dataUri)
+      ? entry.clip
+      : (isObject(entry.recording) && typeof entry.recording.dataUri === 'string' && entry.recording.dataUri ? entry.recording : null);
+    if (!src || src.none) return '';
+    var uri = String(src.dataUri || '').trim();
+    return ANY_AUDIO_RE.test(uri) ? uri : '';
+  }
+  function readMyMedia(keys) {
+    if (!myWords || !Array.isArray(keys) || !keys.length) return Promise.resolve({});
+    var fn = typeof myWords.getManyMedia === 'function' ? myWords.getManyMedia
+      : (typeof myWords.getMany === 'function' ? myWords.getMany : null);
+    if (!fn) return Promise.resolve({});
+    try {
+      return Promise.resolve(fn.call(myWords, keys)).then(function (found) {
+        return isObject(found) ? found : {};
+      }, function () { return {}; });
+    } catch (_) { return Promise.resolve({}); }
+  }
+  function loadVocabAudioKit() {
+    var ready = function (kit) {
+      if (!kit || typeof kit.wavUriToMp3Uri !== 'function') return Promise.resolve(null);
+      if (typeof kit.getMp3 !== 'function') return Promise.resolve(kit);
+      var timer = null;
+      var cap = new Promise(function (resolve) { timer = setTimeout(function () { resolve(false); }, 800); });
+      return Promise.race([kit.getMp3().catch(function () { return false; }), cap]).then(function (ok) {
+        if (timer != null) clearTimeout(timer);
+        return ok ? kit : (window.lamejs && window.lamejs.Mp3Encoder ? kit : null);
+      });
+    };
+    if (window.AlloPacketAudioKit && typeof window.AlloPacketAudioKit.wavUriToMp3Uri === 'function') {
+      return ready(window.AlloPacketAudioKit);
+    }
+    if (vocabAudioKitWait) return vocabAudioKitWait;
+    if (!doc || !doc.createElement) return Promise.resolve(null);
+    vocabAudioKitWait = new Promise(function (resolve) {
+      var settled = false;
+      var finish = function () {
+        if (settled) return;
+        settled = true;
+        ready(window.AlloPacketAudioKit).then(resolve, function () { resolve(null); });
+      };
+      var existing = doc.querySelector && doc.querySelector('script[data-allo-audio-kit="1"]');
+      if (existing) {
+        setTimeout(finish, 400);
+        return;
+      }
+      try {
+        var sc = doc.createElement('script');
+        sc.src = 'packets_audio_kit.js';
+        sc.async = true;
+        sc.setAttribute('data-allo-audio-kit', '1');
+        sc.onload = finish;
+        sc.onerror = finish;
+        (doc.head || doc.documentElement).appendChild(sc);
+        setTimeout(finish, 800);
+      } catch (_) { finish(); }
+    });
+    return vocabAudioKitWait;
+  }
+  function prepareOneMyClip(rawUri) {
+    if (!rawUri || !ANY_AUDIO_RE.test(rawUri)) return Promise.resolve('');
+    if (Object.prototype.hasOwnProperty.call(myClipPortable, rawUri)) return Promise.resolve(myClipPortable[rawUri]);
+    if (READY_AUDIO_RE.test(rawUri) && !WAV_AUDIO_RE.test(rawUri)) {
+      var direct = rawUri.length <= MAX_CLIP_CHARS ? rawUri : '';
+      myClipPortable[rawUri] = direct;
+      return Promise.resolve(direct);
+    }
+    var encodeWav = function (wavUri) {
+      if (!wavUri || !WAV_AUDIO_RE.test(wavUri)) return Promise.resolve('');
+      return loadVocabAudioKit().then(function (kit) {
+        if (kit && typeof kit.wavUriToMp3Uri === 'function') {
+          try {
+            var mp3 = kit.wavUriToMp3Uri(wavUri, 48);
+            if (typeof mp3 === 'string' && READY_AUDIO_RE.test(mp3) && mp3.length <= MAX_CLIP_CHARS) {
+              myClipPortable[rawUri] = mp3;
+              return mp3;
+            }
+          } catch (_) {}
+        }
+        var ok = wavUri.length <= MAX_CLIP_CHARS ? wavUri : '';
+        myClipPortable[rawUri] = ok;
+        return ok;
+      });
+    };
+    if (WAV_AUDIO_RE.test(rawUri)) return encodeWav(rawUri);
+    var OfflineCtx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    if (loader && typeof loader.portableAudio === 'function' && OfflineCtx) {
+      var todo = { audio: { clip: rawUri } };
+      return Promise.resolve().then(function () {
+        return loader.portableAudio(todo, { AudioContext: function () { return new OfflineCtx(1, 1, 22050); } });
+      }).then(function () {
+        var converted = todo.audio.clip;
+        if (typeof converted === 'string' && WAV_AUDIO_RE.test(converted)) return encodeWav(converted);
+        if (typeof converted === 'string' && READY_AUDIO_RE.test(converted) && converted.length <= MAX_CLIP_CHARS) {
+          myClipPortable[rawUri] = converted;
+          return converted;
+        }
+        return '';
+      }, function () { return ''; });
+    }
+    return Promise.resolve('');
+  }
+  function loadMyClipsFor(words) {
+    if (!myWords || !Array.isArray(words) || !words.length) return Promise.resolve({});
+    var keys = [];
+    words.forEach(function (w) {
+      var k = builder.keyOf(w);
+      if (k && keys.indexOf(k) < 0) keys.push(k);
+    });
+    if (!keys.length) return Promise.resolve({});
+    return readMyMedia(keys).then(function (found) {
+      var pairs = [];
+      keys.forEach(function (k) {
+        var mk = typeof myWords.normalizeMediaKey === 'function' ? myWords.normalizeMediaKey(k) : k;
+        var entry = found[mk] || found[k] || null;
+        var uri = clipUriFromEntry(entry);
+        if (uri) pairs.push([k, uri]);
+      });
+      if (!pairs.length) return {};
+      var out = Object.create(null);
+      return Promise.all(pairs.map(function (pair) {
+        return prepareOneMyClip(pair[1]).then(function (ready) {
+          if (ready) out[pair[0]] = ready;
+        });
+      })).then(function () { return out; });
+    });
+  }
   function syncMyPictures() {
-    if (!myWords || typeof myWords.getManyMedia !== 'function') return Promise.resolve();
+    if (!myWords) return Promise.resolve();
     var words = listNow().words;
     var keys = words.map(function (w) { return builder.keyOf(w); }).filter(Boolean);
     if (!keys.length) return Promise.resolve();
     var run = ++myPicSyncRun;
-    return myWords.getManyMedia(keys).then(function (found) {
+    return readMyMedia(keys).then(function (found) {
       if (run !== myPicSyncRun || !isObject(found)) return;
-      var changedAny = false;
+      var changedPic = false, changedClip = false;
       keys.forEach(function (k) {
         var mk = typeof myWords.normalizeMediaKey === 'function' ? myWords.normalizeMediaKey(k) : k;
         var entry = found[mk] || found[k] || null;
@@ -219,17 +355,22 @@
         if (hasPic) {
           if (!myPictures[k] || myPictures[k].dataUri !== entry.picture.dataUri) {
             myPictures[k] = { dataUri: entry.picture.dataUri, credit: entry.picture.credit || { own: true }, stored: true };
-            changedAny = true;
+            changedPic = true;
           }
         } else if (myPictures[k] && myPictures[k].stored) {
           delete myPictures[k];
-          changedAny = true;
+          changedPic = true;
+        }
+        var clipUri = clipUriFromEntry(entry);
+        if (clipUri) {
+          if (myClips[k] !== clipUri) { myClips[k] = clipUri; changedClip = true; }
+        } else if (myClips[k]) {
+          delete myClips[k];
+          changedClip = true;
         }
       });
-      if (changedAny) {
-        redraft();
-        if (step === 3) { drawStep3(); makeSoon(30); }
-      }
+      if (changedPic) redraft();
+      if ((changedPic || changedClip) && step === 3) { drawStep3(); makeSoon(30); }
     }, function () {});
   }
 
@@ -526,6 +667,7 @@
         state.types = builder.TYPES.map(function (x) { return x.id; }).filter(function (id) { return id === t.id ? box.checked : state.types.indexOf(id) >= 0; });
         remember();
         label.classList.toggle('is-on', box.checked);
+        syncMix();
         drawBlankRows();
         drawPictureRows();
         makeSoon(30);
@@ -759,12 +901,47 @@
     if (fold) host.appendChild(fold);
     settleFocus();
   }
+  function drawMoreSummary() {
+    var parts = [];
+    if (!state.readAloud) parts.push('Read aloud: off');
+    else parts.push(state.voices ? 'Read aloud + recordings' : 'Read aloud: device voice only');
+    if (state.mode !== 'check' && state.repeatMissed) parts.push('repeat missed');
+    setText('more-now', parts.join(' \u00b7 '));
+  }
+  function syncSymbolRunnerLink() {
+    var srLink = $('open-symbol-runner');
+    if (!srLink) return;
+    var words = rows.map(function (r) { return String(r.word || '').trim(); })
+      .filter(function (w) { return /^[A-Za-z0-9]{1,20}$/.test(w); }).slice(0, 30);
+    if (words.length >= 2) {
+      srLink.setAttribute('href', 'packets-symbol-runner.html#symbols=' + encodeURIComponent(words.join(',')));
+      srLink.hidden = false;
+    } else {
+      srLink.setAttribute('href', 'packets-symbol-runner.html');
+      srLink.hidden = true;
+    }
+  }
+  function syncMix() {
+    var mixable = state.mode !== 'check' && typesNow().length >= 2;
+    show('v-mix-field', mixable);
+    var box = $('v-mix');
+    if (box) {
+      box.checked = state.mix !== false;
+      box.disabled = !mixable;
+      box.parentNode.classList.toggle('is-on', box.checked);
+    }
+    show('v-mix-again', mixable && state.mix !== false);
+    drawBatch();
+  }
   function syncMode() {
     Array.prototype.forEach.call(doc.querySelectorAll('input[name="mode"]'), function (radio) {
       radio.checked = radio.value === state.mode;
       radio.parentNode.classList.toggle('is-on', radio.checked);
     });
     show('code-panel', state.mode === 'check');
+    if ($('f-repeat-missed')) $('f-repeat-missed').disabled = state.mode === 'check';
+    syncMix();
+    drawMoreSummary();
   }
   function drawStep3() {
     drawTypes();
@@ -777,6 +954,8 @@
     $('f-read').checked = state.readAloud;
     if ($('f-repeat-missed')) { $('f-repeat-missed').checked = !!state.repeatMissed; $('f-repeat-missed').disabled = state.mode === 'check'; }
     if ($('f-voices')) { $('f-voices').checked = state.voices; $('f-voices').disabled = !state.readAloud; }
+    drawMoreSummary();
+    syncSymbolRunnerLink();
   }
   function clearBuilt() {
     buildRun++;
@@ -786,6 +965,7 @@
     show('size-warn', false);
     show('try', false);
     show('save', false);
+    show('download-bundle', false);
     show('after-save', false);
     show('build-problem', false);
   }
@@ -803,13 +983,25 @@
     buildTimer = setTimeout(make, delay);
   }
   function codeNow() { return String($('f-code').value || '').trim(); }
-  function buildWith(learner, types, clips) {
+  function buildWith(learner, types, clips, overrideOrderSeed) {
     var sylTbl = (window.AlloModules && window.AlloModules.SyllableTableEn) || null;
+    var useMix = state.mode !== 'check' && state.mix !== false && types.length >= 2;
+    var orderMode = state.mode === 'check' ? undefined : (useMix ? 'mix' : 'blocks');
+    var orderSeed = useMix
+      ? (typeof overrideOrderSeed === 'number' && isFinite(overrideOrderSeed)
+        ? Math.floor(overrideOrderSeed)
+        : (typeof state.mixSeed === 'number' && isFinite(state.mixSeed) ? Math.floor(state.mixSeed) : null))
+      : null;
     var vocabOpts = { loader: loader, rows: rows, types: types, mode: state.mode, title: state.title, readAloud: state.readAloud,
       voices: state.voices, clips: clips || null, pictures: pictureState === 'ready' ? symbols : null, diagrams: !!state.diagrams, matcher: matcher, art: art, syllables: sylTbl };
+    if (orderMode) vocabOpts.order = orderMode;
+    if (orderSeed !== null) vocabOpts.orderSeed = orderSeed;
     if (Object.keys(previewOmit).length) vocabOpts.omitItems = previewOmit;
     var lesson = builder.lessonFromVocab(vocabOpts);
-    return builder.buildVocabPacket({ lesson: lesson, loader: loader, rows: rows, bank: bankState === 'ready' ? bank : null, teacherCode: state.mode === 'check' ? codeNow() : '', learner: learner || '', voices: state.voices, diagrams: !!state.diagrams, repeatMissed: state.mode !== 'check' && !!state.repeatMissed });
+    var packetOpts = { lesson: lesson, loader: loader, rows: rows, bank: bankState === 'ready' ? bank : null, teacherCode: state.mode === 'check' ? codeNow() : '', learner: learner || '', voices: state.voices, diagrams: !!state.diagrams, repeatMissed: state.mode !== 'check' && !!state.repeatMissed };
+    if (orderMode) packetOpts.order = orderMode;
+    if (orderSeed !== null) packetOpts.orderSeed = orderSeed;
+    return builder.buildVocabPacket(packetOpts);
   }
   function isPictureType(id) { return id === 'picture' || id === 'picword'; }
   function make() {
@@ -836,15 +1028,34 @@
         problem(msg);
         return { html: null, said: msg };
       }
-      drawResult(result, types, notes);
+      drawResult(result, types, notes, clips);
       return built && built.html ? { html: built.html, url: fileUrl } : { html: null, said: 'Could not update the file.' };
     };
     // Recordings made ahead of time, for the words the file says out loud (Read aloud on, recordings not turned off).
-    if (!state.readAloud || !state.voices || !media || typeof loader.portableAudio !== 'function') return Promise.resolve(go(null));
+    // Teacher recordings in My words are merged with priority over built-in recordings, and work even offline.
+    if (!state.readAloud || !state.voices) return Promise.resolve(go(null));
+    var wordsToHear = typeof builder.wordsToHear === 'function' ? builder.wordsToHear(rows, types) : rows.map(function (r) { return r.word; });
+    var canMedia = !!(media && typeof loader.portableAudio === 'function');
+    if (!canMedia && !myWords) return Promise.resolve(go(null));
     making('Getting the recordings.');
-    return media.clips(builder.wordsToHear(rows, types), loader, function (text) { if (run === buildRun) making(text); }).then(go, function () {
-      notes.push('The recordings could not be downloaded, so the device voice reads every word.');
-      return go(null);
+    return loadMyClipsFor(wordsToHear).then(function (ownClips) {
+      if (run !== buildRun) return { html: null, said: 'Cancelled.' };
+      var ownKeys = Object.keys(ownClips);
+      var remaining = wordsToHear.filter(function (w) { return !ownClips[builder.keyOf(w)]; });
+      if (!canMedia || !remaining.length) {
+        return go(ownKeys.length ? ownClips : null);
+      }
+      return media.clips(remaining, loader, function (text) { if (run === buildRun) making(text); }).then(function (bankClips) {
+        var merged = Object.create(null);
+        if (isObject(bankClips)) Object.keys(bankClips).forEach(function (k) { merged[k] = bankClips[k]; });
+        ownKeys.forEach(function (k) { merged[k] = ownClips[k]; });
+        return go(Object.keys(merged).length ? merged : null);
+      }, function () {
+        notes.push(ownKeys.length
+          ? 'The built-in recordings could not be downloaded, so the device voice reads the words without your own recording.'
+          : 'The recordings could not be downloaded, so the device voice reads every word.');
+        return go(ownKeys.length ? ownClips : null);
+      });
     });
   }
   function rowForPreviewItem(lesson, t, item) {
@@ -1009,7 +1220,7 @@
       }
     }
   }
-  function drawResult(result, types, notes) {
+  function drawResult(result, types, notes, clipsUsed) {
     types = types || state.types;
     show('making', false);
     var lesson = result.lesson;
@@ -1019,8 +1230,10 @@
     var samples = lesson.blocks.reduce(function (n, b) { return n + b.items.length - scored(b); }, 0);
     var total = lesson.blocks.reduce(function (n, b) { return n + scored(b); }, 0);
     var kinds = lesson.blocks.map(function (b) { var t = builder.TYPES.filter(function (x) { return x.activity === b.activity; })[0]; return scored(b) + ' ' + t.name; });
+    var mixedOrderOn = Array.isArray(lesson.sequence) && lesson.sequence.length > 0;
     var data = [['Questions', capital(count(total, 'question')) + ': ' + listed(kinds) + '. Each has 4 answers to choose from, in a mixed order.'
-      + (lesson.blocks.length > 1 && types.indexOf('meaning') >= 0 && types.indexOf('word') >= 0 ? ' Meaning to word comes first, so no meaning is shown as a choice before it is asked.' : '')]];
+      + (mixedOrderOn ? ' Question types are mixed, with Meaning to word before Word to meaning for each word.'
+        : lesson.blocks.length > 1 && types.indexOf('meaning') >= 0 && types.indexOf('word') >= 0 ? ' Meaning to word comes first, so no meaning is shown as a choice before it is asked.' : '')]];
     var left = q.left.map(function (l) { var t = builder.TYPES.filter(function (x) { return x.id === l.type; })[0]; return l.word + ' (' + t.name + '): ' + l.why; });
     data.push(['Left out', left.length ? left.join(' ') : 'Nothing.']);
     data.push(['How', state.mode === 'check' ? 'A check: one try for each question, no right or wrong shown, no clock. The score is the number right.' + (codeNow() ? ' The answers screen opens with your teacher code.' : ' With no teacher code the screen at the end shows only the score.')
@@ -1039,9 +1252,40 @@
     if (notes && notes.length) data.push(['Note', notes.join(' ')]);
     setText('voices-line', !state.readAloud ? 'Read aloud is off, so the file has no recordings.' : !state.voices ? 'Off: the device voice reads every word.'
       : clips.length ? capital(count(clips.length, 'word')) + ' in this file have a recording, about ' + fileSize(clipBytes) + '.' : 'No word in this file has a recording made ahead of time.');
+    var vLine = $('voices-line');
+    if (vLine && vLine.parentNode) {
+      var vWrap = $('voices-missing-wrap');
+      var missingVoiceWords = [];
+      if (state.readAloud && state.voices) {
+        rows.forEach(function (r) {
+          if (!r || !r.word || !r.key) return;
+          if (clipsUsed && Object.prototype.hasOwnProperty.call(clipsUsed, r.key) && clipsUsed[r.key]) return;
+          if (missingVoiceWords.indexOf(r.word) < 0 && missingVoiceWords.length < 24) missingVoiceWords.push(r.word);
+        });
+      }
+      if (missingVoiceWords.length) {
+        if (!vWrap) {
+          vWrap = el('span', 'hint');
+          vWrap.id = 'voices-missing-wrap';
+          vLine.parentNode.insertBefore(vWrap, vLine.nextSibling);
+        }
+        vWrap.textContent = (missingVoiceWords.length === rows.length ? 'No recording yet for these words. ' : capital(count(missingVoiceWords.length, 'word')) + ' without a recording yet. ');
+        var vLink = el('a', '', 'Record or make a voice clip');
+        vLink.id = 'voices-add-link';
+        vLink.href = VOICE_PAGE + '#words=' + encodeURIComponent(missingVoiceWords.join(','));
+        vLink.target = '_blank';
+        vLink.rel = 'noopener';
+        vLink.appendChild(el('span', 'sr-only', ' (opens in a new tab)'));
+        vWrap.appendChild(vLink);
+        vWrap.hidden = false;
+      } else if (vWrap) {
+        vWrap.hidden = true;
+        vWrap.textContent = '';
+      }
+    }
     data.push(['Title', lesson.title]);
     built = { baseHtml: result.html, html: result.html, name: fileName(lesson.title, '.html'), bytes: 0, lesson: lesson, total: total, summaryBase: data, codeName: '',
-      coded: state.mode === 'check' && codeNow().length >= 4 };
+      coded: state.mode === 'check' && codeNow().length >= 4, types: types.slice(), clips: clipsUsed || null };
     applySingleCodeName();
     // The list of what is in the file sits under the choices (2026-11-16), so questions left out are said here too, by the Save button.
     setText('left-note-text', left.length ? capital(count(left.length, 'question')) + (left.length === 1 ? ' was' : ' were') + ' left out.' : '');
@@ -1068,6 +1312,7 @@
     }
     show('summary', true);
     show('save', true);
+    show('download-bundle', !!(window.AlloPacketZip && typeof window.AlloPacketZip.create === 'function' && window.AlloPacketPrintCards && typeof window.AlloPacketPrintCards.buildVocabWorksheetHtml === 'function'));
     setText('making-said', 'The file is ready: ' + count(total, 'question') + ', ' + fileSize(built.bytes) + '.');
     drawBatch();
   }
@@ -1118,9 +1363,17 @@
     var list = batchList();
     return list.names.length === 1 ? list.names[0] : '';
   }
+  function canRotateBatch(n) {
+    return n >= 2 && state.mode !== 'check' && state.mix !== false && typesNow().length >= 2;
+  }
   function drawBatch() {
     var list = batchList(), n = list.names.length, parts = [];
     var btn = $('batch-make');
+    var canRotate = canRotateBatch(n);
+    show('batch-rotate-wrap', canRotate);
+    if ($('f-batch-rotate') && $('f-batch-rotate').parentNode) {
+      $('f-batch-rotate').parentNode.classList.toggle('is-on', canRotate && $('f-batch-rotate').checked);
+    }
     if (n === 0) {
       parts.push('Leave empty so each student types a code name at the start.');
       if (btn) btn.hidden = true;
@@ -1129,6 +1382,7 @@
       if (btn) btn.hidden = true;
     } else {
       parts.push(count(n, 'file') + (built ? ', about ' + fileSize(n * built.bytes) + ' in all.' : '. The size shows here once the file above is ready.'));
+      if (canRotate && $('f-batch-rotate') && $('f-batch-rotate').checked) parts.push('Each student gets a different question order.');
       if (btn) {
         btn.hidden = false;
         btn.textContent = 'Save .zip for ' + n + ' students';
@@ -1147,14 +1401,19 @@
     if (!window.AlloPacketZip || typeof window.AlloPacketZip.create !== 'function') { setText('batch-problem', 'This page could not load the part that makes .zip files. Load the page again.'); return; }
     try {
       var zip = window.AlloPacketZip.create(), encoder = new TextEncoder();
-      list.names.forEach(function (name) {
-        zip.add(fileName(built.lesson.title, '__' + name + '.html'), encoder.encode(builder.withCodeName(built.baseHtml, name)));
+      var rotate = canRotateBatch(list.names.length) && !!($('f-batch-rotate') && $('f-batch-rotate').checked);
+      var baseSeed = typeof state.mixSeed === 'number' && isFinite(state.mixSeed) ? Math.floor(state.mixSeed) : 0;
+      list.names.forEach(function (name, idx) {
+        var html = rotate
+          ? buildWith(name, built.types || typesNow(), built.clips || null, baseSeed + idx + 1).html
+          : builder.withCodeName(built.baseHtml, name);
+        zip.add(fileName(built.lesson.title, '__' + name + '.html'), encoder.encode(html));
       });
       var parts = zip.finish();
       var zipName = fileName(built.lesson.title, '__' + list.names.length + '-students.zip');
       var url = URL.createObjectURL(new Blob(parts, { type: 'application/zip' }));
       download(url, zipName);
-      setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+      setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 60000);
       setText('batch-said', 'Saved ' + zipName + ' (' + fileSize(zip.bytes) + '). Each file\'s name ends with the student\'s code name. Send each student their own file.');
     } catch (error) {
       setText('batch-problem', 'The .zip file could not be made (' + said(error) + ').');
@@ -1233,6 +1492,13 @@
     state.voices = back.voices !== false;
     state.diagrams = !!back.diagrams;
     state.repeatMissed = back.mode !== 'check' && !!back.repeatMissed;
+    if (back.mode !== 'check' && back.types.length >= 2) {
+      state.mix = back.order === 'mix';
+      state.mixSeed = typeof back.orderSeed === 'number' && isFinite(back.orderSeed) ? Math.floor(back.orderSeed) : null;
+    } else {
+      state.mix = true;
+      state.mixSeed = null;
+    }
     var noPicSet = {};
     (back.noPicture || []).forEach(function (word) { noPicSet[builder.keyOf(word)] = true; });
     (back.words || []).forEach(function (word) {
@@ -1309,7 +1575,100 @@
   // A file handed over by "Change this file" on Open a practice file (packets-open.html, packets_handoff.js): taken
   // once and deleted, then opened as if chosen here, when the word list is no longer loading.
   var handed = null;
+  var handedDraft = null;
   var pendingRehearseStep2 = false;
+  function normalizeDraftImgUri(uri) {
+    if (typeof uri !== 'string') return '';
+    var s = uri.trim();
+    if (!s || s.length > 1572864) return '';
+    if (/^data:image\/svg\+xml(?:;charset=[^;,]+)?,/i.test(s) && !/;base64,/i.test(s)) {
+      var comma = s.indexOf(',');
+      var rawSvg = comma >= 0 ? s.slice(comma + 1) : '';
+      try { rawSvg = decodeURIComponent(rawSvg); } catch (_) {}
+      if (!rawSvg) return '';
+      try {
+        s = 'data:image/svg+xml;base64,' + window.btoa(unescape(encodeURIComponent(rawSvg)));
+      } catch (_) { return ''; }
+    }
+    if (/^data:image\/(?:png|jpeg|jpg|svg\+xml);base64,/i.test(s)) {
+      if (typeof builder.validCustomDataUri === 'function') return builder.validCustomDataUri(s, art) || '';
+      return /^data:image\/(?:png|jpeg|svg\+xml);base64,[A-Za-z0-9+/]+=*$/i.test(s) ? s : '';
+    }
+    if (/^data:image\/(?:webp|gif);base64,[A-Za-z0-9+/]+=*$/i.test(s)) return s;
+    return '';
+  }
+  function applyVocabDraft(draft) {
+    if (!draft || draft.kind !== 'vocab' || !Array.isArray(draft.entries) || !draft.entries.length) {
+      reopenNote('The draft is not here any more. Type your words below to start.');
+      return;
+    }
+    var seen = Object.create(null);
+    var cleanEntries = [];
+    var maxWords = builder.MAX_WORDS || 40;
+    draft.entries.forEach(function (entry) {
+      if (!entry || typeof entry !== 'object' || cleanEntries.length >= maxWords) return;
+      var rawWord = typeof entry.word === 'string' ? entry.word.trim() : '';
+      var word = typeof builder.normalizeWord === 'function' ? builder.normalizeWord(rawWord) : rawWord;
+      if (!word) return;
+      var key = builder.keyOf(word);
+      if (!key || seen[key]) return;
+      seen[key] = true;
+      cleanEntries.push({
+        word: word,
+        key: key,
+        meaning: typeof entry.meaning === 'string' ? entry.meaning.replace(/\s+/g, ' ').trim().slice(0, 300) : '',
+        example: typeof entry.example === 'string' ? entry.example.replace(/\s+/g, ' ').trim().slice(0, 300) : '',
+        pos: typeof entry.pos === 'string' ? entry.pos.replace(/\s+/g, ' ').trim().slice(0, 20) : '',
+        imgUri: normalizeDraftImgUri(entry.imgUri),
+        alt: typeof entry.alt === 'string' ? entry.alt.replace(/\s+/g, ' ').trim().slice(0, 120) : '',
+      });
+    });
+    if (!cleanEntries.length) {
+      reopenNote('No usable words were found in that draft. Type your words below to start.');
+      return;
+    }
+    resetPreview(true);
+    state.words = cleanEntries.map(function (e) { return e.word; }).join('\n').slice(0, MAX_TYPED);
+    if (typeof draft.title === 'string' && draft.title.trim()) {
+      state.title = draft.title.trim().slice(0, 80);
+      if ($('f-title')) $('f-title').value = state.title;
+    }
+    if ($('f-words')) $('f-words').value = state.words;
+    redraft();
+    cleanEntries.forEach(function (e) {
+      var row = rowOf(e.key);
+      if (e.meaning) {
+        if (row && !row.own && row.senseId) senseEdit(row.senseId).def = e.meaning;
+        else wordEdit(e.key).def = e.meaning;
+      }
+      if (e.example) {
+        if (row && !row.own && row.senseId) senseEdit(row.senseId).example = e.example;
+        else wordEdit(e.key).example = e.example;
+      }
+      if (e.pos && (!row || row.own)) wordEdit(e.key).pos = e.pos;
+      if (e.imgUri) {
+        var picCredit = { own: true };
+        if (e.alt) picCredit.alt = e.alt;
+        myPictures[e.key] = { dataUri: e.imgUri, credit: picCredit };
+        if (edits.words[e.key]) delete edits.words[e.key].noPicture;
+      }
+    });
+    keepEdits();
+    remember();
+    redraft();
+    var readyCount = rows.filter(function (r) { return !!r.def; }).length;
+    var targetStep = rows.length >= 4 ? (readyCount >= 4 ? 3 : 2) : 1;
+    goTo(targetStep, true);
+    var notes = [];
+    if (rows.length < 4) notes.push('Add ' + count(4 - rows.length, 'more word') + ' so each question has 4 choices.');
+    reopenNote('Loaded ' + count(rows.length, 'word') + ' from AlloFlow.', notes);
+  }
+  function openHandedDraft() {
+    if (handedDraft === null || bankState === 'loading') return;
+    var draft = handedDraft;
+    handedDraft = null;
+    applyVocabDraft(draft);
+  }
   function openHanded() {
     if (handed === null || bankState === 'loading') return;
     var item = handed;
@@ -1318,7 +1677,21 @@
   }
   function takeHanded() {
     var handoff = window.AlloPacketHandoff;
-    if (!handoff || typeof handoff.take !== 'function' || window.location.hash !== handoff.HASH) return;
+    if (!handoff) return;
+    var draftHash = handoff.DRAFT_HASH || '#import-draft';
+    if (typeof handoff.takeDraft === 'function' && window.location.hash === draftHash) {
+      try { window.history.replaceState(null, '', window.location.href.split('#')[0]); } catch (_) {}
+      handoff.takeDraft().then(function (draft) {
+        if (!draft || draft.kind !== 'vocab' || !Array.isArray(draft.entries) || !draft.entries.length) {
+          reopenNote('The draft is not here any more. Type your words below to start.');
+          return;
+        }
+        handedDraft = draft;
+        openHandedDraft();
+      }, function () { reopenNote('This browser could not hand the draft over. Type your words below to start.'); });
+      return;
+    }
+    if (typeof handoff.take !== 'function' || window.location.hash !== handoff.HASH) return;
     try { window.history.replaceState(null, '', window.location.href.split('#')[0]); } catch (_) {}
     handoff.take().then(function (file) {
       if (!file) { reopenNote('The file is not here any more. Choose it with Open a file I made.'); return; }
@@ -1332,6 +1705,7 @@
       bankState = 'missing';
       setText('bank-line', 'The word list could not be loaded. You can still type the meaning of each word yourself in step 2.');
       openHanded();
+      openHandedDraft();
       return;
     }
     bank = given;
@@ -1345,6 +1719,7 @@
       if (step === 2) { redraft(); drawRows(); }
       if (pendingRehearseStep2) { pendingRehearseStep2 = false; goTo(2, true); }
       openHanded();
+      openHandedDraft();
     };
     var started;
     try { started = bank.load(); } catch (_) { started = null; }
@@ -1367,9 +1742,48 @@
       radio.addEventListener('change', function () { if (!radio.checked) return; state.mode = radio.value; remember(); syncMode(); makeSoon(30); });
     });
     $('f-title').addEventListener('input', function () { state.title = this.value.slice(0, 80); remember(); makeSoon(400); });
-    if ($('f-repeat-missed')) $('f-repeat-missed').addEventListener('change', function () { state.repeatMissed = this.checked; remember(); makeSoon(30); });
-    $('f-read').addEventListener('change', function () { state.readAloud = this.checked; remember(); if ($('f-voices')) $('f-voices').disabled = !state.readAloud; makeSoon(30); });
-    if ($('f-voices')) $('f-voices').addEventListener('change', function () { state.voices = this.checked; remember(); makeSoon(30); });
+    if ($('v-mix')) $('v-mix').addEventListener('change', function () {
+      state.mix = this.checked;
+      state.mixSeed = null;
+      remember();
+      syncMix();
+      makeSoon(30);
+    });
+    if ($('v-mix-again')) $('v-mix-again').addEventListener('click', function () {
+      state.mixSeed = (typeof state.mixSeed === 'number' && isFinite(state.mixSeed) ? Math.floor(state.mixSeed) : 0) + 1;
+      remember();
+      setText('v-mix-said', 'Mixed the questions again.');
+      makeSoon(30);
+    });
+    if ($('f-starter')) {
+      var starterApi = window.AlloPacketWordStarters;
+      var starterList = starterApi && Array.isArray(starterApi.LIST) ? starterApi.LIST : [];
+      if (starterList.length) {
+        starterList.forEach(function (set) {
+          if (!set || !set.id || !Array.isArray(set.words) || !set.words.length) return;
+          var opt = el('option', '', set.title + ' (' + set.words.length + ' words)');
+          opt.value = set.id;
+          $('f-starter').appendChild(opt);
+        });
+        show('starter-row', true);
+      }
+      $('f-starter').addEventListener('change', function () {
+        var val = this.value;
+        this.value = '';
+        if (!val || !starterApi || typeof starterApi.get !== 'function') return;
+        var pickedSet = starterApi.get(val);
+        if (!pickedSet || !Array.isArray(pickedSet.words) || !pickedSet.words.length) return;
+        state.words = pickedSet.words.map(function (it) { return it.word; }).join('\n').slice(0, MAX_TYPED);
+        if (!String(state.title || '').trim()) state.title = String(pickedSet.title || '').slice(0, 80);
+        $('f-words').value = state.words;
+        setText('step-1-problem', '');
+        remember();
+        drawWords();
+      });
+    }
+    if ($('f-repeat-missed')) $('f-repeat-missed').addEventListener('change', function () { state.repeatMissed = this.checked; remember(); drawMoreSummary(); makeSoon(30); });
+    $('f-read').addEventListener('change', function () { state.readAloud = this.checked; remember(); if ($('f-voices')) $('f-voices').disabled = !state.readAloud; drawMoreSummary(); makeSoon(30); });
+    if ($('f-voices')) $('f-voices').addEventListener('change', function () { state.voices = this.checked; remember(); drawMoreSummary(); makeSoon(30); });
     if ($('f-diagrams')) $('f-diagrams').addEventListener('change', function () {
       state.diagrams = this.checked;
       remember();
@@ -1449,6 +1863,7 @@
       this.setAttribute('aria-label', shown ? 'Show the teacher code' : 'Hide the teacher code');
     });
     $('f-batch-names').addEventListener('input', function () { setText('batch-problem', ''); applySingleCodeName(); drawBatch(); });
+    if ($('f-batch-rotate')) $('f-batch-rotate').addEventListener('change', drawBatch);
     $('batch-make').addEventListener('click', saveBatchZip);
     if ($('batch-load') && $('batch-file')) {
       $('batch-load').addEventListener('click', function () { $('batch-file').value = ''; $('batch-file').click(); });
@@ -1464,7 +1879,29 @@
     $('back-3').addEventListener('click', function () { goTo(2); });
     $('fix-rows').addEventListener('click', function () { goTo(2); });
     $('save').addEventListener('click', saveFile);
-    var cards = window.AlloPacketPrintCards;
+    var cards = window.AlloPacketPrintCards || window.AlloPacketsPrintCards;
+    var loadVocabPictures = symbols && media ? function () {
+      if (pictureState === 'ready') return Promise.resolve(true);
+      pictureState = 'loading';
+      return media.pictures(symbols).then(function (ok) {
+        pictureState = ok ? 'ready' : 'failed';
+        return !!ok;
+      }, function () {
+        pictureState = 'failed';
+        return false;
+      });
+    } : null;
+    var ownVocabPictures = function (wordList) {
+      var map = Object.create(null);
+      (Array.isArray(wordList) ? wordList : []).forEach(function (w) {
+        var k = builder.keyOf(w);
+        var wEdit = edits && edits.words && isObject(edits.words[k]) ? edits.words[k] : null;
+        if (wEdit && wEdit.noPicture === true) { map[w] = { picture: { none: true } }; return; }
+        var pic = myPictures[k];
+        if (pic && pic.dataUri) map[w] = { picture: { dataUri: pic.dataUri, credit: pic.credit || { own: true } } };
+      });
+      return Promise.resolve(map);
+    };
     if (cards && typeof cards.wire === 'function' && $('print-cards')) cards.wire($('print-cards'), function () {
       return {
         words: rows.map(function (r) { return r.word; }),
@@ -1473,32 +1910,81 @@
         symbols: symbols,
         matcher: state.diagrams ? matcher : null,
         syllables: (window.AlloModules && window.AlloModules.SyllableTableEn) || null,
-        loadPictures: symbols && media ? function () {
-          if (pictureState === 'ready') return Promise.resolve(true);
-          pictureState = 'loading';
-          return media.pictures(symbols).then(function (ok) {
-            pictureState = ok ? 'ready' : 'failed';
-            return !!ok;
-          }, function () {
-            pictureState = 'failed';
-            return false;
-          });
-        } : null,
-        own: function (wordList) {
-          var map = Object.create(null);
-          (Array.isArray(wordList) ? wordList : []).forEach(function (w) {
-            var k = builder.keyOf(w);
-            var pic = myPictures[k];
-            if (pic && pic.dataUri) map[w] = { picture: { dataUri: pic.dataUri, credit: pic.credit || { own: true } } };
-          });
-          return Promise.resolve(map);
-        }
+        loadPictures: loadVocabPictures,
+        own: ownVocabPictures
       };
     });
-    $('reopen-choose').addEventListener('click', function () { $('reopen-file').click(); });
-    $('reopen-file').addEventListener('change', function () {
-      var file = this.files && this.files[0];
-      this.value = '';
+    var vocabWorksheetState = function () {
+      return {
+        title: state.title || 'Vocabulary practice',
+        entries: rows.map(function (r) {
+          var wEdit = edits && edits.words && isObject(edits.words[r.key]) ? edits.words[r.key] : null;
+          var noPic = !!(r.pictureOff || (wEdit && wEdit.noPicture === true));
+          var picUri = '';
+          var picSet = '';
+          var picCredit = null;
+          if (!noPic) {
+            if (r.customPicture) {
+              picUri = r.customPicture;
+              picSet = 'own';
+              picCredit = (myPictures[r.key] && myPictures[r.key].credit) || { own: true };
+            } else if (myPictures[r.key] && myPictures[r.key].dataUri) {
+              picUri = myPictures[r.key].dataUri;
+              picSet = 'own';
+              picCredit = myPictures[r.key].credit || { own: true };
+            } else if (r.diagramSvg && !(art && art.svgRefusal(r.diagramSvg))) {
+              picUri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(r.diagramSvg);
+              picSet = 'diagram';
+            } else if (symbols && pictureState === 'ready') {
+              var got = null;
+              try { got = symbols.get(r.word) || (r.pictureLookupWord ? symbols.get(r.pictureLookupWord) : null); } catch (_) { got = null; }
+              if (got && typeof got.svg === 'string' && !(art && art.svgRefusal(got.svg))) {
+                picUri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(got.svg);
+                picSet = got.set || 'mulberry';
+              }
+            }
+          }
+          return {
+            word: r.word,
+            meaning: r.def || '',
+            example: r.example || '',
+            blank: r.blank && r.blank.ask ? r.blank.ask : '',
+            blankAnswer: r.blank && r.blank.answer ? r.blank.answer : r.word,
+            picture: picUri,
+            pictureSet: picSet,
+            pictureCredit: picCredit,
+            noPicture: noPic
+          };
+        }),
+        pictures: true,
+        symbols: symbols,
+        matcher: state.diagrams ? matcher : null,
+        syllablesTable: (window.AlloModules && window.AlloModules.SyllableTableEn) || null,
+        loadPictures: loadVocabPictures,
+        own: ownVocabPictures,
+        creditLine: myWords && typeof myWords.creditLine === 'function' ? myWords.creditLine : null
+      };
+    };
+    if (cards && typeof cards.wireVocabWorksheet === 'function' && $('print-worksheet')) cards.wireVocabWorksheet($('print-worksheet'), vocabWorksheetState);
+    if ($('download-bundle')) $('download-bundle').addEventListener('click', function () {
+      if (!built || !built.html) return;
+      var zipKit = window.AlloPacketZip;
+      if (!zipKit || typeof zipKit.create !== 'function' || !cards || typeof cards.buildVocabWorksheetHtml !== 'function') return;
+      var wsState = vocabWorksheetState();
+      var zip = zipKit.create();
+      zip.add('01-Interactive-Packet.html', built.html);
+      zip.add('02-Worksheet-Scaffolded.html', cards.buildVocabWorksheetHtml(wsState, { showPictures: true, showWordBank: true, showSyllables: true, includeAnswerKey: false }));
+      zip.add('03-Worksheet-Independent.html', cards.buildVocabWorksheetHtml(wsState, { showPictures: true, showWordBank: false, showSyllables: false, includeAnswerKey: false }));
+      zip.add('04-Teacher-Answer-Key.html', cards.buildVocabWorksheetHtml(wsState, { showPictures: true, showWordBank: true, showSyllables: true, includeAnswerKey: true }));
+      var zipName = fileName((built.lesson && built.lesson.title) || state.title || 'vocabulary', '-classroom-bundle.zip');
+      var url = '';
+      try { url = URL.createObjectURL(new Blob(zip.finish(), { type: 'application/zip' })); } catch (_) { url = ''; }
+      if (!url) return;
+      download(url, zipName);
+      window.setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 10000);
+    });
+    if ($('print-worksheet') && $('print-cards') && $('print-cards').hidden) $('print-worksheet').hidden = true;
+    function readReopenFile(file) {
       if (!file) return;
       if (file.size > MAX_REOPEN_BYTES) { reopenNote('This file is too large to be a file made here.'); return; }
       var done = function (buf) {
@@ -1513,7 +1999,32 @@
         reader.onerror = function () { reopenNote('This browser could not read the file.'); };
         reader.readAsText(file);
       }
+    }
+    $('reopen-choose').addEventListener('click', function () { $('reopen-file').click(); });
+    $('reopen-file').addEventListener('change', function () {
+      var file = this.files && this.files[0];
+      this.value = '';
+      readReopenFile(file);
     });
+    if ($('reopen-close')) $('reopen-close').addEventListener('click', function () {
+      show('reopen-note', false);
+      reopenPending = null;
+      if ($('reopen-choose')) $('reopen-choose').focus();
+    });
+    var dropHost = doc.querySelector('main') || doc.body;
+    if (dropHost) {
+      var hasFiles = function (e) { return !!(e && e.dataTransfer && e.dataTransfer.types && Array.prototype.indexOf.call(e.dataTransfer.types, 'Files') >= 0); };
+      dropHost.addEventListener('dragover', function (e) { if (!hasFiles(e) || $('reopen').hidden) return; e.preventDefault(); $('reopen').classList.add('is-dropping'); });
+      dropHost.addEventListener('dragleave', function (e) { if (!e.relatedTarget || !dropHost.contains(e.relatedTarget)) $('reopen').classList.remove('is-dropping'); });
+      dropHost.addEventListener('drop', function (e) {
+        $('reopen').classList.remove('is-dropping');
+        if (!hasFiles(e) || $('reopen').hidden) return;
+        var file = e.dataTransfer.files && e.dataTransfer.files[0];
+        if (!file) return;
+        e.preventDefault();
+        readReopenFile(file);
+      });
+    }
     if ($('reopen-page')) {
       $('reopen-page').addEventListener('click', function (event) {
         var handoff = window.AlloPacketHandoff;
@@ -1534,6 +2045,7 @@
       if ($('f-diagrams')) $('f-diagrams').checked = false;
       setText('custom-pic-said', '');
       show('rehearse-note', false);
+      show('reopen-note', false);
       goTo(1, true);
       setText('forget-said', 'Done. Your choices are back to how they started.');
     });
@@ -1591,19 +2103,25 @@
     var sym = window.AlloModules && window.AlloModules.WordSoundsSymbols;
     art = window.AlloPacketBuilder && typeof window.AlloPacketBuilder.svgRefusal === 'function' ? window.AlloPacketBuilder : null;
     matcher = window.AlloWordPictureMatcher || (window.AlloModules && window.AlloModules.WordPictureMatcher) || null;
-    myWords = window.AlloPacketMyWords && typeof window.AlloPacketMyWords.getManyMedia === 'function' ? window.AlloPacketMyWords : null;
+    myWords = window.AlloPacketMyWords && (typeof window.AlloPacketMyWords.getManyMedia === 'function' || typeof window.AlloPacketMyWords.getMany === 'function') ? window.AlloPacketMyWords : null;
     symbols = media && art && sym && typeof sym.has === 'function' && typeof sym.file === 'function' && typeof sym.get === 'function' ? sym : null;
     if (loader.DEFAULT_LABELS && loader.DEFAULT_LABELS.save_work) setText('csv-label', loader.DEFAULT_LABELS.save_work);
     wire();
     var rehearseCount = applyRehearseHash();
     // "#check-mode" / "#practice-mode" (the front door's cards) start on that kind of file, whatever was remembered.
-    var kindHash = /^#(check|practice)-mode$/i.exec(String(window.location && window.location.hash || ''));
+    var rawHash = String(window.location && window.location.hash || '');
+    var kindHash = /^#(check|practice)-mode$/i.exec(rawHash);
     if (kindHash) {
       state.mode = kindHash[1].toLowerCase(); syncMode(); remember();
       try { window.history.replaceState(null, '', window.location.pathname + window.location.search); } catch (_) {}
     }
+    var wantStep2 = /^#step=2$/i.test(rawHash);
+    if (wantStep2) {
+      try { window.history.replaceState(null, '', window.location.pathname + window.location.search); } catch (_) {}
+    }
     show('reopen', !!(window.AlloPacketVerify && typeof window.AlloPacketVerify.readParts === 'function' && typeof FileReader === 'function'));
     show('loading', false);
+    drawMoreSummary();
     if (myWords) {
       migrateLegacyPictures();
       if (typeof myWords.onChange === 'function') myWords.onChange(function (change) { if (!change || !change.here) syncMyPictures(); });
@@ -1624,6 +2142,9 @@
       show('rehearse-note', true);
       if (bankState === 'loading') { pendingRehearseStep2 = true; goTo(1, true); }
       else goTo(2, true);
+    } else if (wantStep2 && listNow().words.length >= 4) {
+      if (bankState === 'loading') { pendingRehearseStep2 = true; goTo(1, true); }
+      else goTo(2, true);
     } else {
       if (rehearseCount > 0) {
         reopenNote('Loaded ' + count(rehearseCount, 'missed word') + ' from results. Add ' + count(4 - rehearseCount, 'more word') + ' so each question has 4 choices.', []);
@@ -1632,6 +2153,10 @@
     }
     syncMyPictures();
     takeHanded();
+    window.addEventListener('pagehide', function () {
+      if (fileUrl) { try { URL.revokeObjectURL(fileUrl); } catch (_) {} fileUrl = ''; }
+      try { stopPreviewSession(); } catch (_) {}
+    });
   }
 
   try { start(); } catch (error) {

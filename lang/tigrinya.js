@@ -155,7 +155,12 @@
     "refine_go": "ዳግመ-ጽሑፍ ኣማኽር",
     "refining": "ሓሳብ ይጽሓፍ ኣሎ…",
     "made_from_version": "ካብ ሕታም {version} ናይ ምንጪኻ ዝተሰርሐ",
-    "remake": "ካብቲ ህሉው ሕታም እንደገና ስራሕ"
+    "remake": "ካብቲ ህሉው ሕታም እንደገና ስራሕ",
+    "dictate": "ብድምጺ ጽሓፍ",
+    "close_dictate": "ናይ ድምጺ ጽሑፍ ዕጸው",
+    "send_read_along": "ናብ ሓቢርካ መንበቢ ፓኬት ስደድ",
+    "upload_verify_banner": "ድምጺ/ቪድዮ ኣብ መሳርሒኻ ብWhisper ናብ ጽሑፍ ተቐዪሩ ({count} ክፋላት ኣብ መዘከርታ ተዓቂቦም)",
+    "clear_audio": "ድምጺ ኣጽሪ"
   },
   "sel": {
     "peersupport": {
@@ -5996,7 +6001,10 @@
     "source_choice_ambiguous": "ቅድሚ ምፍጣር ኣብ «መሰረት ኣብ» ሓደ ንባብ ምረጽ። ካብ ሓደ ንባብ ዝበዝሑ ኣለዉ።",
     "source_choices_load_failed": "ምርጫታት ንባብ ክጽዓኑ ኣይከኣሉን። በጃኻ ደጊምካ ፈትን።",
     "submission_tools_still_loading": "መሳርሒታት ምቕራብ ገና ይጽዓኑ ኣለዉ። «ኣቕርብ» ደጊምካ ፈትን።",
-    "blank_created": "ባዶ {title} ተፈጢሩ። ቅድሚ ምክፋልካ ምልኦ።"
+    "blank_created": "ባዶ {title} ተፈጢሩ። ቅድሚ ምክፋልካ ምልኦ።",
+    "sent_to_read_along": "እቲ ጽሑፍ ብሓድሽ ታብ ናብ ሓቢርካ መንበቢ ፓኬት ተላኢኹ።",
+    "read_along_handoff_failed": "ነቲ ረቂቕ ናብ ሓቢርካ መንበቢ ፓኬት ምሕላፍ ኣይተኻእለን።",
+    "read_along_no_text": "ናብ ሓቢርካ መንበቢ ፓኬት ቅድሚ ምስዳድካ ምንጪ ጽሑፍ ወስኽ ወይ ብድምጺ ጽሓፍ።"
   },
   "large_file": {
     "modal_title": "ኣእቱ Large ድምጺ ፋይል",
@@ -6013,7 +6021,8 @@
     "chunk_info": "እቲ ድምጺ ንመስርሕ ናብ ቁራጻት 5 ደቒቕ ይኸፋፈል",
     "chunk_progress": "Chunk {current} ናይ {total}",
     "audio_only_error": "ኣብዚ እዋን ብቑራጻት ናብ ጽሑፍ ንምቕያር ዝድገፉ ፋይላት ድምጺ (MP3፡ WAV፡ ወዘተ) ጥራይ እዮም።",
-    "starting": "ይጅምር ኣሎ..."
+    "starting": "ይጅምር ኣሎ...",
+    "engine_legend": "ሞተር ድምጺ-ናብ-ጽሑፍ"
   },
   "formatting": {
     "bold": "Bold (**ጽሑፍ**)",
@@ -6417,7 +6426,8 @@
       "analyzing_short": "ይምርመር ኣሎ...",
       "generate_short": "ፍጠር",
       "books_short": "መጻሕፍቲ",
-      "books_hint": "ስእላዊ መጻሕፍቲ ክፈት፦ ዝኾነ መጽሓፍ ናይ ምንጪ ጽሑፍካ ክኸውን ይኽእል"
+      "books_hint": "ስእላዊ መጻሕፍቲ ክፈት፦ ዝኾነ መጽሓፍ ናይ ምንጪ ጽሑፍካ ክኸውን ይኽእል",
+      "dictate_hint": "ምንጪ ጽሑፍካ ኣብ መሳርሒኻ ብዘሎ Whisper ከምኡውን ብኣማራጺ Gemini መረጋገጺ ብድምጺ ጽሓፍ"
     },
     "status_generating": "Generating ምንጪ ጽሑፍ...",
     "success_long_form": "ነዊሕ-ቅርጺ ጽሑፍ ብዕውት ተፈጢሩ!",
@@ -6467,7 +6477,8 @@
     "empty_desc_teacher": "ሓደ ምንባብ ወስኽ፣ ድሕሪኡ ነቲ ምንባብ ንተማሃሮኻ ምቹእ ዝገብሩ መሳርሒታት ምረጽ።",
     "empty_desc_family": "ውላድካ ዝንብብ ዘሎ ነገር ወስኽ፣ ድሕሪኡ ብኸመይ ክትሕግዞ ከም እትደሊ ምረጽ።",
     "reading_catalog": "ናይ ንባብ ዝርዝር",
-    "find_online": "ኣብ ኢንተርነት ድለ"
+    "find_online": "ኣብ ኢንተርነት ድለ",
+    "dictate_or_record": "ብድምጺ ጽሓፍ ወይ ቅዳሕ"
   },
   "wizard": {
     "title": "ቅልጡፍ ጀምር",
@@ -6601,7 +6612,12 @@
     "paste_word_count": "{count} ቃላት",
     "length_custom": "ብድሌትካ…",
     "length_custom_label": "ብዝሒ ቃላት",
-    "length_custom_hint": "ካብ 50 ክሳብ 5,000 ቃላት"
+    "length_custom_hint": "ካብ 50 ክሳብ 5,000 ቃላት",
+    "dictate_desc": "ኣብ መሳርሒ ዝሰርሕ Whisper ናይ ድምጺ ጽሑፍን ኣማራጺ መረጋገጽን",
+    "dictate_title": "ምንጪ ጽሑፍካ ብድምጺ ጽሓፍ ወይ ቅዳሕ",
+    "dictate_helper": "ብነባሪ ውልቃዊ ኣብ መሳርሒ ዝሰርሕ Whisper ይጥቀም። ብናጻ ኣርም፣ እንተ ደሊኻ ነቲ ጽሑፍ ኣጽሪ፣ ወይ ምስ ቅዳሕካ ብGemini ኣረጋግጽ።",
+    "dictate_loading": "ስቱድዮ ድምጺ ጽሑፍ (Local Whisper) ይጽዕን ኣሎ… ክሳብ ዝጽዕን ኣብ ታሕቲ ክትጽሕፍ ወይ ከተኣርም ትኽእል ኢኻ።",
+    "words_dictated_unit": "ቃላት ብድምጺ ተጻሒፎም"
   },
   "settings": {
     "immersive_options": "Immersive ኣማራጺታት",
@@ -106854,5 +106870,68 @@
     "sc_findText": "ኣብ ዲዛይን ጽሑፍ ድለ",
     "sc_commandPalette": "ቅልጡፍ ተግባራት ክፈት",
     "sc_help": "ነዚ ዝርዝር ሓጸርቲ መንገድታት ኣርኢ"
+  },
+  "dictation": {
+    "badge_desktop": "ዴስክቶፕ Whisper ድሉው እዩ",
+    "badge_download_needed": "Local Whisper · ናይ መጀመርታ ግዜ ምውራድ የድሊ",
+    "badge_local_ready": "Local Whisper ድሉው እዩ · {name}",
+    "cleanup_apply": "ምጽራይ ተግብር",
+    "cleanup_failed": "ነቲ ጽሑፍ ሕጂ ምጽራይ ኣይተኻእለን።",
+    "cleanup_fillers": "ዘየድልዩ መመላእቲ ቃላት ኣውጽእ",
+    "cleanup_heading": "ኣማራጺ ብAI ጽሑፍ ምጽራይ",
+    "cleanup_keep": "ነቲ ቀዳማይ ሓዝ",
+    "cleanup_no_changes": "ነዚ ረቂቕ ዝተሓበረ ለውጢ የለን።",
+    "cleanup_notes": "ከም ናይ ክፍሊ መዘኻኸሪ ኣዳሉ",
+    "cleanup_punctuation": "ስርዓተ-ነጥብን ኣቀማምጣን ኣስተኻኽል",
+    "cleanup_review_title": "ዝተሓበረ ምጽራይ ድሉው እዩ — ረቂቕካ ገና ኣይተቐየረን",
+    "cleanup_text_only": "ጽሑፍ ጥራይ — ዝኾነ ድምጺ ኣይስደድን",
+    "cleanup_unavailable": "ብAI ጽሑፍ ምጽራይ ሕጂ ኣይርከብን እዩ።",
+    "cleanup_undo": "ምጽራይ ምለስ",
+    "cleanup_working": "የጽሪ ኣሎ…",
+    "clear_audio": "ዝተቐድሐ ድምጺ ኣጽሪ ({mb} MB)",
+    "crosscheck_all_resolved": "ኩሎም ምልክት ዝተገብረሎም ቦታታት ተራእዮም።",
+    "crosscheck_btn": "ምስ ድምጺ ብGemini ኣረጋግጽ",
+    "crosscheck_count": "ንምግምጋም {count} ምልክት ዝተገብረሎም ቦታ(ታት):",
+    "crosscheck_disabled_note": "ሕጂ ኣይርከብን (ብዘይ መስመር / ናይ ተምሃራይ AI-ዕጹው ኩነታት ወይ ብዘይ መፍትሕ Gemini ተዓጽዩ)። ናይ Local Whisper ድምጺ ጽሑፍካ ምሉእ ብምሉእ ብዘይ መስመር ይሰርሕ እዩ።",
+    "crosscheck_disclosure": "ኣብ ታሕቲ ምስ እትጥውቕ ጥራይ ይሰርሕ፦ ዝተጋገዩ ቃላት ንምምልካት ኣብ መዘከርታ ዝተዓቀቡ ክፋላት ድምጽኻን ረቂቕ ጽሑፍካን ናብ Gemini ይስድድ።",
+    "crosscheck_failed": "ናይ Gemini ድምጺ ምርግጋጽ ኣይተዛዘመን። ኣብ መሳርሒኻ ዘሎ ጽሑፍ ኣይተተንከፈን።",
+    "crosscheck_heading": "ምስ ድምጺ ብGemini ምምዝዛን (ብምርጫ)",
+    "crosscheck_none": "ኣብ መንጎ Local Whisperን Gemini Audioን ዝኾነ ዓቢ ፍልልይ ኣይተረኽበን።",
+    "crosscheck_running": "ምስ ድምጺ የረጋግጽ ኣሎ…",
+    "crosscheck_unavailable": "ናይ Gemini ድምጺ ምምዝዛን ሕጂ ኣይርከብን እዩ።",
+    "download_now": "Local Whisper ኣውርድ ({size} MB)",
+    "download_warning": "መተሓሳሰቢ ምውራድ፦ Local Whisper ብነባሪ ውልቃዊ ኣብ መሳርሒ ዝሰርሕ ምልላይ ድምጺ ይጥቀም። ሞዴል {name} ሓንሳብ ንምውራድ ~{size} MB ይወስድ (ከም ፍጥነት ኢንተርነት ~1–2 ደቒቕ)፣ ኣብ መርበብ ሓበሬታኻ ብዘይ መስመር ይዕቀብ፣ ቅዳሓት ድምጽኻ ድማ ኣብዚ መሳርሒ ጥራይ ይተርፉ።",
+    "draft_label": "ረቂቕ ጽሑፍ (ዝእረም)",
+    "draft_placeholder": "ኣብ ላዕሊ «ብድምጺ ምጽሓፍ ጀምር» ጠውቕ፣ ወይ ጽሑፍካ ብቐጥታ ኣብዚ ጽሓፍ/ኣርም…",
+    "guide_both_body": "ድምጺ ጽሑፍካ ቅልጡፍን ብዘይ መስመርን ንኽኸውን ብLocal Whisper ብውልቂ ጀምር። ኣብ ጽንኩራት ቃላት ወይ ኣስማት ካልኣይ ርእይቶ እንተ ደሊኻ፣ ክልተ ነጻ ሞዴላት ምስ ድምጽኻ ንምውድዳርን ኣብ ዝኾነ ምልክት ዝተገብረሉ ቦታ ናይ 5 ካልኢት ክሊፕ ዳግማይ ንምስማዕን Gemini ምምዝዛን ምረጽ።",
+    "guide_both_label": "ንምንታይ ክልቲኦም ንጥቀም (ምምዝዛን)፦",
+    "guide_gemini_body": "ዝኾነ ሞዴል ምውራድ ኣየድልን። ኣብ ፍሉይ ቃላት፣ ስማት፣ ዝተፈላለየ ኣዘራርባ፣ ጫውጫው ዘለዎም ክፍልታትን ስርዓተ-ነጥብን ዝያዳ ሓያል እዩ — ዝተቐድሑ ክፋላት ድምጺ ናብ Gemini ዝሰድድ ንስኻ እንተ መሪጽካ ጥራይ እዩ።",
+    "guide_gemini_title": "Gemini Audio (ኣማራጺ ምርግጋጽ)",
+    "guide_summary": "Local Whisper ኣንጻር Gemini Audio — ብልጫታትን ክልቲኦም ናይ ምጥቃም ጥቕምን",
+    "guide_whisper_body": "ድሕሪ ሓደ ግዜ ምውራድ (~39–73 MB) ውልቃውን ብዘይ መስመርን። ዝኾነ ድምጺ ካብ መሳርሒኻ ኣይወጽእን፣ መፍትሕ API ወይ ኮታ ኣየድልን፣ ነዊሕ ቀጻሊ ድምጺ ጽሑፍ ድማ ብዘተኣማምን ይሰርሕ።",
+    "guide_whisper_title": "Local Whisper (ነባሪ)",
+    "ios_canvas_blocked": "Local Whisper ኣብ ውሽጢ Gemini Canvas ኣብ iPhone/iPad ተዓጊቱ ኣሎ። ኣብ ታሕቲ ብቐጥታ ጽሓፍ ወይ AlloFlow ኣብ ዴስክቶፕ መርበብ ክፈት።",
+    "ios_canvas_hint": "ኣብ ታሕቲ ብቐጥታ ክትጽሕፍ፣ ንLocal Whisper ኣብ ዴስክቶፕ መርበብ AlloFlow ክትከፍት፣ ወይ እንተ ተዳልዩ Gemini Audio ክትጥቀም ትኽእል።",
+    "ios_canvas_title": "ኣብ መሳርሒ ዝሰርሕ Whisper ኣብ ውሽጢ Gemini Canvas ኣብ iPhone/iPad ተዓጊቱ ኣሎ",
+    "listening_local": "ኣብ መሳርሒኻ ብWhisper ይሰምዕ ኣሎ… ጽሑፍ ንምውሳኽ ንሓጺር ግዜ ዕረፍ ወይ ምዝራብ ቀጽል።",
+    "mic_start_failed": "ማይክሮፎን ምጅማር ኣይተኻእለን። ፍቓዳት መርበብ ሓበሬታ መርምር።",
+    "model_size_label": "ዓቐን ሞዴል Local Whisper",
+    "pause_recording": "ንግዜኡ ኣቋርጽ",
+    "paused_note": "ንግዜኡ ኣቋሪጹ ኣሎ። ኣብ ታሕቲ ጽሑፍ ከተኣርም ወይ ምጽሓፍ ንምቕጻል «ቀጽል» ክትጥውቕ ትኽእል።",
+    "privacy_tag": "ውልቃዊ · ድሕሪ ምውራድ ብዘይ መስመር · መፍትሕ API ኣየድልን",
+    "resume_recording": "ቀጽል",
+    "send_read_along": "ናብ ሓቢርካ መንበቢ ፓኬት ስደድ",
+    "speech_settings": "ቅንብራት ዘረባ",
+    "speed_badge_lesson": "ተፈቲኑ፦ ካብ ዘረባ {speed}x ዝቐልጠፈ · ንነዊሕ ድምጺ ጽሑፍ ጽቡቕ",
+    "speed_badge_short": "ተፈቲኑ፦ ካብ ዘረባ {speed}x ዝቐልጠፈ · ንሓጸርቲ ክሊፓት ብሉጽ",
+    "speed_badge_slow": "ተፈቲኑ፦ {speed}x · ካብ ናይ ሓቂ ግዜ ዝደንጎየ (ምቑራጽ ክህሉ ይኽእል)",
+    "speed_badge_upgrade": "ተፈቲኑ፦ ካብ ዘረባ {speed}x ዝቐልጠፈ · ንነዊሕ ድምጺ ጽሑፍ ጽቡቕ ({name} እውን ክትፍትን ትኽእል)",
+    "start_recording": "ብድምጺ ምጽሓፍ ጀምር (Local Whisper)",
+    "stop_recording": "ኣቋርጽ",
+    "studio_title": "ስቱድዮ ድምጺ ጽሑፍ",
+    "test_mic": "ማይክ ፈትን (4 ካል.)",
+    "upload_media": "ፋይል ድምጺ/ቪድዮ ናብ ጽሑፍ ቀይር",
+    "use_text": "ብድምጺ ዝተጻሕፈ ጽሑፍ ተጠቀም",
+    "voice_unavailable": "መቕርጺ ድምጺ ገና ይጽዕን ኣሎ። በጃኻ ድሕሪ ቁሩብ ደጊምካ ፈትን።"
   }
 }

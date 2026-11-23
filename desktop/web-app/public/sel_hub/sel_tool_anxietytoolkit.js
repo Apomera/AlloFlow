@@ -477,7 +477,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
               'Three questions, takes about 30 seconds. This is not an assessment — it just helps us point you to the right place. If you have used this tool before, you can ',
               h('button', {
                 onClick: skipTriage,
-                'aria-label': 'Skip triage — I have used this tool before',
+                'aria-label': 'Skip this triage — I have used this tool before',
                 style: { background: 'none', border: 'none', padding: 0, color: _anxFg('#7dd3fc'), textDecoration: 'underline', cursor: 'pointer', fontSize: 13.5, fontFamily: 'inherit' }
               }, 'skip this'),
               '.'

@@ -28,6 +28,7 @@ const outputCode = `/**
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.StudentSaveAdventurePanel) {
     console.log('[CDN] StudentSaveAdventurePanel already loaded, skipping');
     return;

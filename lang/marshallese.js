@@ -3294,7 +3294,10 @@
     "adventure_resumed_level": "Resumed Adventure (Level {level})",
     "source_choice_ambiguous": "Choose a reading in Based on before generating. More than one reading is available.",
     "source_choices_load_failed": "Reading choices could not load. Please try again.",
-    "submission_tools_still_loading": "Submission tools are still loading. Try Submit again."
+    "submission_tools_still_loading": "Submission tools are still loading. Try Submit again.",
+    "sent_to_read_along": "Eṃōj jilkinlọk mōttan jeje eo ñan Bōk in Riit Ippān Doon ilo juon tab ekāāl.",
+    "read_along_handoff_failed": "Eban maroñ jilkinlọk jeje in kein kajuon ñan Bōk in Riit Ippān Doon.",
+    "read_along_no_text": "Kobaik ak kōnono im je jeje in jinoin mọkta jān jilkinlọk ñan Bōk in Riit Ippān Doon."
   },
   "large_file": {
     "modal_title": "Import Large Audio fail",
@@ -3311,7 +3314,8 @@
     "chunk_info": "Audio ej split into 5-minute chunks ñan processing",
     "chunk_progress": "Chunk {current} in {total}",
     "audio_only_error": "Currently only audio fail (MP3, WAV, etc.) rej supported ñan chunked transcription.",
-    "starting": "Ej jino..."
+    "starting": "Ej jino...",
+    "engine_legend": "Injin in Je Ainikien"
   },
   "formatting": {
     "bold": "Bold (**text**)",
@@ -3623,7 +3627,8 @@
       "analyzing_short": "Ej etale...",
       "generate_short": "Kōṃṃan",
       "books_short": "Bok ko",
-      "books_hint": "Kōpeḷḷọk bok in pija ko: jabdewōt bok emaroñ erom naan eo aṃ"
+      "books_hint": "Kōpeḷḷọk bok in pija ko: jabdewōt bok emaroñ erom naan eo aṃ",
+      "dictate_hint": "Kōnono im je jeje eo aṃ kōn Whisper ilo kein jerbal in im etale kōn Gemini ñe kwōkōṇaan"
     },
     "status_generating": "Generating source text...",
     "success_long_form": "Long-form text kōṃṃan successfully!",
@@ -3666,7 +3671,8 @@
     "qs_find": "Pukot juon jikin jeḷā ilo intanet",
     "qs_find_sub": "Likūt juon link ak kōtḷọk AI bwe en pukot",
     "qs_generate": "Kōṃṃan jān juon tōpik",
-    "qs_generate_sub": "AI enaaj jeje ñan eok"
+    "qs_generate_sub": "AI enaaj jeje ñan eok",
+    "dictate_or_record": "Kōnono im je ak rekọọte"
   },
   "wizard": {
     "title": "Quick Jino",
@@ -3791,7 +3797,12 @@
     "step_of": "in",
     "progress": "Wōnṃaanḷọk ilo Jino Mōkaj",
     "progress_value": "Bun̄tōn {current} iaan {total}",
-    "help_click_element": "Klik jabdewōt men ilaḷ ñan juon kōmeḷeḷe eḷapḷọk"
+    "help_click_element": "Klik jabdewōt men ilaḷ ñan juon kōmeḷeḷe eḷapḷọk",
+    "dictate_desc": "Kōnono im je kōn Whisper ilo kein jerbal in & etale ñe kwōkōṇaan",
+    "dictate_title": "Kōnono im je ak rekọọte jeje eo aṃ",
+    "dictate_helper": "Ej jino kōn kōnono im je ettino kōn Whisper ilo kein jerbal in. Kōṃṃan oktak ñe kwōkōṇaan, karreoik jeje eo, ak keidi ippān ainikien eo kar rekọọte kōn Gemini.",
+    "dictate_loading": "Ej kōpellọk Jikin Kōnono im Je (Whisper ilo kein jerbal in)… Kwōmaroñ bar jeje ak kōṃṃan oktak ilal ilo iien ej kōpellọk.",
+    "words_dictated_unit": "naan kar kōnono im je"
   },
   "settings": {
     "immersive_options": "Immersive Options",
@@ -101958,5 +101969,75 @@
     "a11y_unverified_clinical_deletion": "Unverified clinical deletion",
     "a11y_review_protected_clinical_record_deletion": "Review protected clinical record deletion",
     "a11y_protected_record_security": "Protected record security"
+  },
+  "source_view": {
+    "dictate": "Kōnono im je",
+    "close_dictate": "Kiil kōnono im je",
+    "send_read_along": "Jilkinlọk ñan Bōk in Riit Ippān Doon",
+    "upload_verify_banner": "Ainikien/pija kar je ilo kein jerbal in kōn Whisper ({count} mōttan rej pād ilo memōri)",
+    "clear_audio": "Kōṃọọl ainikien"
+  },
+  "dictation": {
+    "badge_desktop": "Whisper an Kompiuta Epojak",
+    "badge_download_needed": "Whisper ilo Kein Jerbal · Kaunloọd Kein Kajuon",
+    "badge_local_ready": "Whisper ilo Kein Jerbal Epojak · {name}",
+    "cleanup_apply": "Kōjerbal karreo eo",
+    "cleanup_failed": "Eban maroñ karreoik jeje eo kiiō.",
+    "cleanup_fillers": "Kōdiklọk naan ko ejjelọk tokjāer",
+    "cleanup_heading": "Karreoik jeje kōn AI (ñe kwōkōṇaan)",
+    "cleanup_keep": "Kōjparok eo mọkta",
+    "cleanup_no_changes": "Ejjelọk oktak kar lōṃṇak kake ñan jeje in.",
+    "cleanup_notes": "Kōṃṃan āinwōt nọọt in kūlaaj",
+    "cleanup_punctuation": "Karreoik kōkaḷḷe in jeje im jekjek eo",
+    "cleanup_review_title": "Karreo eo kar lōṃṇak kake epojak — jeje eo aṃ ejjañin oktak",
+    "cleanup_text_only": "jeje wōt — ejjelọk ainikien ej jilkinlọk",
+    "cleanup_unavailable": "Karreoik jeje kōn AI ejjab pād kiiō.",
+    "cleanup_undo": "Kōrool karreo eo",
+    "cleanup_working": "Ej karreo…",
+    "clear_audio": "Kōṃọọl ainikien eo kar rekọọte ({mb} MB)",
+    "crosscheck_all_resolved": "Aolep jikin ko kar kōkaḷḷeik eṃōj etali.",
+    "crosscheck_btn": "Etale ippān ainikien kōn Gemini",
+    "crosscheck_count": "{count} jikin kar kōkaḷḷeik ñan etale:",
+    "crosscheck_disabled_note": "Ejjab pād kiiō (kar kiil ilo ejjelọk intōnet / AI an rijikuuḷ ekar kiil ak ejjelọk kiin Gemini). Kōnono im je kōn Whisper ilo kein jerbal in ej wōnm̧aanlọk wōt ilo ejjelọk intōnet.",
+    "crosscheck_disclosure": "Ej jerbal wōt ñe kwōj jibed ilal: ej jilkinlọk mōttan ainikien ko ilo memōri im jeje eo aṃ ñan Gemini ñan kōkaḷḷeik bōd ko remaroñ pād ilo naan ko.",
+    "crosscheck_failed": "Etale ainikien kōn Gemini ear jab dedelọk. Jeje eo aṃ ilo kein jerbal in ejjañin oktak.",
+    "crosscheck_heading": "Keidi ippān ainikien kōn Gemini (Ñe kwōkōṇaan)",
+    "crosscheck_none": "Ejjelọk oktak elap kar loe ikōtaan Whisper ilo Kein Jerbal im Gemini Audio.",
+    "crosscheck_running": "Ej etale ippān ainikien…",
+    "crosscheck_unavailable": "Keidi ainikien kōn Gemini ejjab pād kiiō.",
+    "download_now": "Kaunloọd Whisper ilo Kein Jerbal ({size} MB)",
+    "download_warning": "Kōjjeḷā kōn kaunloọd: Whisper ilo Kein Jerbal ej kōjerbal kile ainikien ettino ilo kein jerbal in. Kaunloọd mọọdōḷ {name} ej bōk ~{size} MB juon wōt alen (~1–2 minit ekkar ñan intōnet), ej kōjparok ilo buraojōr eo aṃ ñan iien ejjelọk intōnet, im ainikien ko aṃ rej pād wōt ilo kein jerbal in.",
+    "draft_label": "Jeje in kein kajuon (maroñ kōṃṃan oktak)",
+    "draft_placeholder": "Jibed Jino kōnono im je ilōñ, ak jeje/kōṃṃan oktak ilo jeje eo aṃ ijin…",
+    "guide_both_body": "Jino ilo ettino kōn Whisper ilo Kein Jerbal bwe kōnono im je eo aṃ en mōkaj im jerbal ilo ejjelọk intōnet. Ñe kwōkōṇaan juon bar lōṃṇak kōn naan ko reppen ak etan armej, kāālōt keidi kōn Gemini ñan keidi ruo mọọdōḷ ko rejeṇolọk ippān ainikien eo aṃ im bar roñjake 5-jeken mōttan ilo jabdewōt jikin kar kōkaḷḷeik.",
+    "guide_both_label": "Etke kōjerbal ruo jimọr (Keidi):",
+    "guide_gemini_body": "Ejjab aikuji kaunloọd mọọdōḷ. Ekajoorlọk ilo naan ko reppen, etan armej im jikin, kain kōnono ko, kūlaaj ko relōñ ainikien, im kōkaḷḷe in jeje — ej jilkinlọk mōttan ainikien ñan Gemini wōt ñe kwōj kāālōt.",
+    "guide_gemini_title": "Gemini Audio (Etale ñe kwōkōṇaan)",
+    "guide_summary": "Whisper ilo Kein Jerbal vs. Gemini Audio — maroñ ko & etke kōjerbal ruo jimọr",
+    "guide_whisper_body": "Ettino im ejjerbal ilo ejjelọk intōnet ālikin juon wōt kaunloọd (~39–73 MB). Ejjelọk ainikien ej diwōj jān kein jerbal in, ejjab aikuji kiin API ak joñan, im kōnono im je eo eaitok ej jerbal ilo emm̧an.",
+    "guide_whisper_title": "Whisper ilo Kein Jerbal (Kein kajuon)",
+    "ios_canvas_blocked": "Whisper ilo Kein Jerbal ej bōjrak ilo iPhone/iPad ilowaan Gemini Canvas. Jeje kajju ilal ak kōpellọk AlloFlow ilo buraojōr an kompiuta.",
+    "ios_canvas_hint": "Kwōmaroñ jeje kajju ilal, kōpellọk AlloFlow ilo buraojōr an kompiuta ñan Whisper ilo Kein Jerbal, ak kōjerbal Gemini Audio ñe epojak.",
+    "ios_canvas_title": "Whisper ilo kein jerbal ej bōjrak ilo iPhone/iPad ilowaan Gemini Canvas",
+    "listening_local": "Ej roñjake ilo kein jerbal in kōn Whisper… kakkije jidik ak wōnm̧aanlọk wōt ilo kōnono ñan kobaik jeje.",
+    "mic_start_failed": "Eban maroñ jino maik. Etale mālim ko an buraojōr.",
+    "model_size_label": "Joñan mọọdōḷ an Whisper ilo Kein Jerbal",
+    "pause_recording": "Kakkije",
+    "paused_note": "Ekakkije. Kwōmaroñ kōṃṃan oktak ilo jeje eo ilal ak jibed Wōnm̧aanlọk ñan kōnono im je wōt.",
+    "privacy_tag": "Ettino · Ejjelọk intōnet ālikin kaunloọd · Ejjab aikuji kiin API",
+    "resume_recording": "Wōnm̧aanlọk",
+    "send_read_along": "Jilkinlọk ñan Bōk in Riit Ippān Doon",
+    "speech_settings": "Kōṃṃan ko an ainikien",
+    "speed_badge_lesson": "Kar mālijjoñ: {speed}x mōkajlọk jān kōnono · Em̧m̧an ñan kōnono im je eaitok",
+    "speed_badge_short": "Kar mālijjoñ: {speed}x mōkajlọk jān kōnono · Em̧m̧antata ñan mōttan ko rekadu",
+    "speed_badge_slow": "Kar mālijjoñ: {speed}x · Rumm̧wijḷọk jān iien em̧ool (kōtmāne kakkije ko)",
+    "speed_badge_upgrade": "Kar mālijjoñ: {speed}x mōkajlọk jān kōnono · Em̧m̧an ñan kōnono im je eaitok (kwōmaroñ bar mālijjoñ {name})",
+    "start_recording": "Jino kōnono im je (Whisper ilo Kein Jerbal)",
+    "stop_recording": "Bōjrak",
+    "studio_title": "Jikin Kōnono im Je",
+    "test_mic": "Mālijjoñ maik (4s)",
+    "upload_media": "Jeje fail in ainikien/pija",
+    "use_text": "Kōjerbal jeje kar kōnono im je",
+    "voice_unavailable": "Kein rekọọte ainikien ej kōpellọk wōt. Jouj im bar kajjioñ ilo juon minit."
   }
 }

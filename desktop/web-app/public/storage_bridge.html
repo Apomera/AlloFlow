@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
 <meta name="robots" content="noindex, nofollow">
 <title>AlloFlow Device Storage</title>
 <!--
@@ -36,30 +37,47 @@
   Keep in sync with allo_device_storage_module.js (same repo root).
 -->
 <style>
-  :root { color-scheme: light dark; }
+  :root { color-scheme: light dark; --focus: #2563eb; }
   * { box-sizing: border-box; }
   body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
          background: #f8fafc; color: #0f172a; line-height: 1.5; }
+  .skip-link { position: fixed; left: 12px; top: -72px; z-index: 100002;
+               min-height: 44px; display: inline-flex; align-items: center;
+               padding: 10px 16px; border-radius: 8px; background: #0f172a;
+               color: #ffffff; font-weight: 700; text-decoration: none;
+               border: 2px solid var(--focus); }
+  .skip-link:focus { top: 12px; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+             overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+  button:focus-visible, input:focus-visible, summary:focus-visible,
+  a:focus-visible, main:focus-visible, #bridge-banner:focus-visible {
+    outline: 3px solid var(--focus); outline-offset: 2px;
+  }
   @media (prefers-color-scheme: dark) {
+    :root { --focus: #93c5fd; }
     body { background: #0f172a; color: #e2e8f0; }
     .card { background: #1e293b !important; border-color: #334155 !important; }
     th { background: #0f172a !important; }
     td, th { border-color: #334155 !important; }
-    .muted { color: #94a3b8 !important; }
+    .muted { color: #cbd5e1 !important; }
+    button.danger { color: #fca5a5 !important; border-color: #f87171 !important; }
+    .bridge-code-box { background: #1e293b !important; color: #f8fafc !important; border: 1px solid #475569; }
+    .bridge-code-box input { background: #0f172a !important; color: #f8fafc !important; border-color: #64748b !important; }
+    .bridge-code-err { color: #fca5a5 !important; }
   }
   main { max-width: 760px; margin: 0 auto; padding: 24px 16px 64px; }
   h1 { font-size: 1.25rem; margin: 0 0 4px; }
-  .muted { color: #64748b; font-size: .85rem; }
+  .muted { color: #475569; font-size: .85rem; }
   .card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px;
           padding: 16px; margin-top: 16px; }
   table { width: 100%; border-collapse: collapse; font-size: .85rem; }
   th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #e2e8f0; }
   th { background: #f1f5f9; font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; }
-  button { font: inherit; font-size: .8rem; font-weight: 600; padding: 6px 12px;
-           border-radius: 999px; border: 1px solid #cbd5e1; background: transparent;
-           color: inherit; cursor: pointer; }
+  button { font: inherit; font-size: .85rem; font-weight: 600; min-height: 44px;
+           padding: 10px 14px; border-radius: 999px; border: 1px solid #94a3b8;
+           background: transparent; color: inherit; cursor: pointer; }
   button:hover { border-color: #6366f1; }
-  button.danger { color: #dc2626; border-color: #fca5a5; }
+  button.danger { color: #b91c1c; border-color: #f87171; }
   .pill { display: inline-block; padding: 2px 10px; border-radius: 999px;
           font-size: .75rem; font-weight: 700; }
   .pill.ok { background: #dcfce7; color: #166534; }
@@ -71,18 +89,28 @@
   .about-storage h2 { font-size: .95rem; margin: 14px 0 2px; }
   .about-storage p { margin: 0; font-size: .9rem; }
   .about-storage details { margin-top: 12px; }
-  .about-storage summary { cursor: pointer; font-size: .85rem; font-weight: 600; }
+  .about-storage summary { min-height: 44px; display: inline-flex; align-items: center;
+                           cursor: pointer; font-size: .85rem; font-weight: 600; }
   #saved-data-size { font-weight: 600; margin: 0 0 8px; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+  }
+  @media (forced-colors: active) {
+    body, .card, .pill, .skip-link, .bridge-code-box { background: Canvas !important; color: CanvasText !important; border: 1px solid CanvasText !important; }
+    button, button.danger { background: ButtonFace !important; color: ButtonText !important; border: 1px solid ButtonText !important; }
+    :focus-visible, .skip-link:focus { outline: 3px solid Highlight !important; outline-offset: 2px !important; }
+  }
 </style>
 </head>
 <body>
-<div id="bridge-banner" hidden>
-  <h1>🔗 AlloFlow device storage is connected</h1>
+<a class="skip-link" id="skip-link" href="#review-ui">Skip to main content</a>
+<div id="bridge-banner" tabindex="-1" role="region" aria-label="Device storage status" hidden>
+  <h1><span aria-hidden="true">🔗 </span>AlloFlow device storage is connected</h1>
   <p class="muted">Your work is being saved on this device only. You can close
   this window when your AlloFlow session is done — nothing is sent to the
   internet.</p>
 </div>
-<main id="approval-ui" hidden>
+<main id="approval-ui" tabindex="-1" hidden>
   <h1 id="approval-title">Approve AlloFlow device storage?</h1>
   <div id="approval-intro" class="about-storage">
     <p>AlloFlow is asking to keep your work saved in this browser on this
@@ -135,22 +163,22 @@
     <p id="saved-data-status" class="muted" role="status" aria-live="polite"></p>
   </div>
 </main>
-<main id="review-ui" hidden>
+<main id="review-ui" tabindex="-1" hidden>
   <h1>AlloFlow device storage</h1>
   <p class="muted">Work saved by AlloFlow on <strong>this browser, on this
   device</strong>. Nothing on this page is sent to any server — review,
   export, or erase it below. On a shared computer, remember anyone using this
   browser profile can open this page.</p>
-  <div class="card" id="status-card">Loading…</div>
+  <div class="card" id="status-card" role="status" aria-live="polite">Loading…</div>
   <div class="card">
     <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
-      <button id="btn-export">⬇ Export everything (JSON)</button>
-      <button id="btn-refresh">↻ Refresh</button>
-      <button id="btn-forget">🔒 Forget approval</button>
-      <button id="btn-wipe" class="danger">🗑 Erase everything</button>
+      <button id="btn-export" type="button"><span aria-hidden="true">⬇ </span>Export everything (JSON)</button>
+      <button id="btn-refresh" type="button"><span aria-hidden="true">↻ </span>Refresh</button>
+      <button id="btn-forget" type="button"><span aria-hidden="true">🔒 </span>Forget approval</button>
+      <button id="btn-wipe" type="button" class="danger"><span aria-hidden="true">🗑 </span>Erase everything</button>
     </div>
     <table id="ns-table"><thead>
-      <tr><th>Namespace</th><th>Records</th><th>~Size</th><th></th></tr>
+      <tr><th scope="col">Namespace</th><th scope="col">Records</th><th scope="col">~Size</th><th scope="col"><span class="sr-only">Actions</span></th></tr>
     </thead><tbody></tbody></table>
     <p class="muted" id="empty-note" hidden>Nothing is stored on this device yet.</p>
   </div>
@@ -1133,7 +1161,11 @@
     var deleteSavedButton = document.getElementById('btn-delete-saved');
     var savedSummary = null;
     var deleteAttempt = null;
-    if (connectionKind === 'popup') approvalUi.hidden = false;
+    if (connectionKind === 'popup') {
+      approvalUi.hidden = false;
+      var skipForApproval = document.getElementById('skip-link');
+      if (skipForApproval) skipForApproval.setAttribute('href', '#approval-ui');
+    }
 
     // The consent prompt shows what this partition holds and offers deletion. Like
     // approval, deletion is confirmed only in a separate top-level window, so a page
@@ -1272,6 +1304,8 @@
       denied = false;
       approvalUi.hidden = true;
       document.getElementById('bridge-banner').hidden = false;
+      var skipForBanner = document.getElementById('skip-link');
+      if (skipForBanner) skipForBanner.setAttribute('href', '#bridge-banner');
       readyClient(source, origin);
     }
 
@@ -1582,18 +1616,28 @@
       var overlay = document.createElement('div');
       overlay.setAttribute('role', 'dialog');
       overlay.setAttribute('aria-modal', 'true');
+      overlay.setAttribute('aria-labelledby', 'bridge-code-dialog-title');
       overlay.style.cssText = 'position:fixed;inset:0;z-index:100001;background:rgba(15,23,42,.72);display:flex;align-items:center;justify-content:center;padding:16px;';
       var box = document.createElement('form');
+      box.className = 'bridge-code-box';
       box.style.cssText = 'background:#fff;color:#0f172a;border-radius:12px;padding:18px;width:min(100%,380px);font:14px/1.45 system-ui,sans-serif;box-shadow:0 20px 50px rgba(0,0,0,.4);';
-      var title = document.createElement('h3');
+      var title = document.createElement('h2');
+      title.id = 'bridge-code-dialog-title';
       title.textContent = 'Educator access code required';
       title.style.cssText = 'margin:0 0 8px;font-size:16px;';
+      var label = document.createElement('label');
+      label.setAttribute('for', 'bridge-code-input');
+      label.textContent = 'Educator access code';
+      label.style.cssText = 'display:block;font-weight:600;font-size:13px;margin-bottom:4px;';
       var input = document.createElement('input');
+      input.id = 'bridge-code-input';
       input.type = 'password';
       input.autocomplete = 'off';
       input.placeholder = 'Enter educator access code';
-      input.style.cssText = 'width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #94a3b8;border-radius:8px;margin-bottom:8px;font:inherit;';
+      input.setAttribute('aria-label', 'Educator access code');
+      input.style.cssText = 'width:100%;min-height:44px;box-sizing:border-box;padding:8px 10px;border:1px solid #64748b;border-radius:8px;margin-bottom:8px;font:inherit;';
       var err = document.createElement('div');
+      err.className = 'bridge-code-err';
       err.setAttribute('role', 'alert');
       err.style.cssText = 'color:#b91c1c;min-height:18px;font-size:12px;margin-bottom:8px;';
       var row = document.createElement('div');
@@ -1607,12 +1651,30 @@
       row.appendChild(cancel);
       row.appendChild(submit);
       box.appendChild(title);
+      box.appendChild(label);
       box.appendChild(input);
       box.appendChild(err);
       box.appendChild(row);
       overlay.appendChild(box);
       document.body.appendChild(overlay);
+      var onKeyDown = function (ev) {
+        if (ev.isComposing || ev.keyCode === 229) return;
+        if (ev.key === 'Escape') {
+          ev.preventDefault();
+          finish(false);
+          return;
+        }
+        if (ev.key === 'Tab') {
+          var focusables = [input, cancel, submit].filter(function (el) { return el && !el.disabled; });
+          if (!focusables.length) return;
+          var idx = focusables.indexOf(document.activeElement);
+          if (ev.shiftKey && (idx <= 0)) { ev.preventDefault(); focusables[focusables.length - 1].focus(); }
+          else if (!ev.shiftKey && (idx === focusables.length - 1)) { ev.preventDefault(); focusables[0].focus(); }
+        }
+      };
+      document.addEventListener('keydown', onKeyDown);
       var finish = function (ok) {
+        document.removeEventListener('keydown', onKeyDown);
         try { overlay.remove(); } catch (_) {}
         if (openerBtn && openerBtn.focus) try { openerBtn.focus(); } catch (_) {}
         resolve(!!ok);
@@ -1693,10 +1755,14 @@
         cells.forEach(function (c) { var td = document.createElement('td'); td.textContent = c; tr.appendChild(td); });
         var td = document.createElement('td');
         var view = document.createElement('button');
+        view.type = 'button';
         view.textContent = 'View';
+        view.setAttribute('aria-label', 'View records in ' + ns);
         view.onclick = function () { requireBridgeEducatorCode(view).then(function (ok) { if (ok) showNs(ns); }); };
         var clear = document.createElement('button');
+        clear.type = 'button';
         clear.textContent = 'Erase';
+        clear.setAttribute('aria-label', 'Erase records in ' + ns);
         clear.className = 'danger';
         clear.style.marginLeft = '6px';
         clear.onclick = function () {

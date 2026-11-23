@@ -9,9 +9,10 @@
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
-    if (document.getElementById('allo-live-allobot')) return;
+    if (typeof document === 'undefined' || !document.body || document.getElementById('allo-live-allobot')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-allobot';
     liveRegion.setAttribute('aria-live', 'polite');
@@ -41,14 +42,14 @@
   var useImperativeHandle = React.useImperativeHandle;
 
   // ── App dependencies from window ──
-  var LanguageContext = window.AlloLanguageContext;
+  var LanguageContext = window.AlloLanguageContext || (typeof React.createContext === 'function' ? React.createContext({ t: function(k) { return k; } }) : null);
   var _shared = window.__alloShared || {};
   var safeGetItem = _shared.safeGetItem || function(k) { try { return localStorage.getItem(k); } catch(e) { return null; } };
   var safeSetItem = _shared.safeSetItem || function(k,v) { try { localStorage.setItem(k,v); } catch(e) {} };
   var warnLog = _shared.warnLog || function() { console.warn.apply(console, arguments); };
   var debugLog = window.__alloDebugLog || function() {};
   var getGlobalAudioContext = window.getGlobalAudioContext || function() { return null; };
-  var isGlobalMuted = window.__alloIsGlobalMuted || function() { return false; };
+  var isGlobalMuted = window.__alloIsGlobalMuted || function() { return !!(typeof window !== 'undefined' && (window.__alloGlobalMute || window._alloGlobalMute)); };
 
   // ── Style constants (mirrored from host app) ──
   var STYLE_ANIMATION_DELAY_HALF = { animationDelay: '0.5s' };
@@ -601,6 +602,7 @@ const JetpackParticles = ({ active }) => {
   useEffect(() => {
     if (!active) return;
     const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.hidden) return;
       const timestamp = Date.now();
       const speedL = 0.6 + Math.random() * 0.4;
       const speedR = 0.6 + Math.random() * 0.4;
@@ -975,9 +977,10 @@ const releaseAlloBotAudioUrl = (url) => {
   } catch (_) {
   }
 };
+const _botSafeJsonReviver = (k, v) => k === "__proto__" || k === "constructor" || k === "prototype" ? void 0 : v;
 const isAlloBotTtsOff = () => {
   try {
-    return JSON.parse(safeGetItem("alloflow_ai_config") || "{}").ttsProvider === "off";
+    return JSON.parse(safeGetItem("alloflow_ai_config") || "{}", _botSafeJsonReviver).ttsProvider === "off";
   } catch (_) {
     return false;
   }
@@ -1880,7 +1883,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     const fallback = { x: 24, y: 20 };
     try {
       const saved = safeGetItem("allo_bot_pos_v2");
-      const parsed = saved ? JSON.parse(saved) : fallback;
+      const parsed = saved ? JSON.parse(saved, _botSafeJsonReviver) : fallback;
       const width = typeof window !== "undefined" ? window.innerWidth : 1024;
       const height = typeof window !== "undefined" ? window.innerHeight : 768;
       return clampAlloBotPosition(parsed, width, height, fallback);
@@ -3343,7 +3346,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
         introTimerRef.current = scheduleOwnedTimeout(() => {
           introTimerRef.current = null;
           introClaimedRef.current = false;
-          const noAi = typeof window !== "undefined" && typeof window.__alloAiUsable === "function" && !window.__alloAiUsable("text");
+          const noAi = typeof window !== "undefined" && (typeof window.__alloAiUsable === "function" && !window.__alloAiUsable("text") || window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true || window.hideStudentAiFeatures === true || !!window.__alloQrStudentMode || window.StudentPolicy && typeof window.StudentPolicy.isAiDisabled === "function" && window.StudentPolicy.isAiDisabled() || window.AlloModules && window.AlloModules.StudentPolicy && typeof window.AlloModules.StudentPolicy.isAiDisabled === "function" && window.AlloModules.StudentPolicy.isAiDisabled());
           const welcomeKey = noAi ? "sidebar.allobot_welcome_no_ai" : "sidebar.ai_guide_welcome";
           const welcomeMsg = t(welcomeKey);
           if (welcomeMsg && welcomeMsg !== welcomeKey) {
@@ -3391,12 +3394,14 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   }, [motionDisabled, scheduleOwnedTimeout]);
   const handleKeyDown = (e) => {
     if (e.target !== e.currentTarget) return;
-    const movement = {
+    if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+    const movementMap = {
       ArrowLeft: { x: 1, y: 0, label: "left" },
       ArrowRight: { x: -1, y: 0, label: "right" },
       ArrowUp: { x: 0, y: -1, label: "up" },
       ArrowDown: { x: 0, y: 1, label: "down" }
-    }[e.key];
+    };
+    const movement = Object.prototype.hasOwnProperty.call(movementMap, e.key) ? movementMap[e.key] : null;
     if (!movement || isSleeping) return;
     e.preventDefault();
     const step = e.shiftKey ? 40 : 10;
@@ -3779,7 +3784,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       setTouchControlsOpen(false);
     };
     const dismissOnEscape = (e) => {
-      if (e && e.key === "Escape") setTouchControlsOpen(false);
+      if (e && !e.isComposing && !e.nativeEvent?.isComposing && e.keyCode !== 229 && e.key === "Escape") setTouchControlsOpen(false);
     };
     const opts = { capture: true, passive: true };
     window.addEventListener("pointerdown", dismissOutside, opts);

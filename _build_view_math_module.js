@@ -31,6 +31,7 @@ const moduleSrc = `/**
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.MathView) {
     console.log('[CDN] ViewMathModule already loaded, skipping');
     return;
@@ -41,7 +42,7 @@ const moduleSrc = `/**
 
   var _lazyIcon = function (name) {
     return function (props) {
-      var I = window.AlloIcons && window.AlloIcons[name];
+      var I = typeof window !== 'undefined' && window.AlloIcons && window.AlloIcons[name];
       return I ? React.createElement(I, props) : null;
     };
   };

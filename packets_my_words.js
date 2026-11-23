@@ -103,6 +103,7 @@
   var NOT_KEEPING = 'This browser is not keeping your words.';
   var LIMITS = { wordMin: 2, wordMax: 24, words: 500, sounds: 24, clipBytes: 409600, pictureBytes: 204800, pictureSide: 256, readBytes: 26214400 };
   var SCHEME = 'https:' + '/' + '/';
+  var SVG_NS = 'http:' + '/' + '/' + 'www.w3.org/2000/svg';
   var SVG_TYPE = 'image/svg+xml';
 
   var EXPORT_KIND = 'alloflow-packets-my-words';
@@ -116,11 +117,20 @@
     var text = typeof word === 'string' ? word.trim().toLowerCase() : '';
     return /^[a-z]+$/.test(text) && text.length >= LIMITS.wordMin && text.length <= LIMITS.wordMax ? text : '';
   }
+  var MEDIA_KEY_RE = /^[a-z0-9 '\-.+=%$\u00a2\u20ac\u00a3\u00b0\u00d7\u00f7\u2212\u2044]+$/;
+  try { MEDIA_KEY_RE = new RegExp("^[\\p{L}\\p{M}\\p{N} '\\-.+=%$\\u00a2\\u20ac\\u00a3\\u00b0\\u00d7\\u00f7\\u2212\\u2044]+$", 'u'); } catch (_) {}
   function normalizeMediaKey(value) {
-    var w = normalizeWord(value);
-    if (w) return w;
-    var text = typeof value === 'string' ? value.trim().toLowerCase().replace(/\s+/g, ' ') : '';
-    return /^[a-z0-9][a-z0-9 '-]{0,47}$/.test(text) ? text : '';
+    if (typeof value !== 'string') return '';
+    if (/[\x00-\x1f\x7f]/.test(value)) return '';
+    var text = value;
+    try { text = text.normalize('NFKC'); } catch (_) {}
+    text = text.replace(/\u2019/g, "'").trim().toLowerCase().replace(/\s+/g, ' ');
+    if (!text || text.length > 48) return '';
+    if (text === '__proto__' || text === 'constructor' || text === 'prototype') return '';
+    if (/[\\<>]|\.\./.test(text)) return '';
+    if (/^\d+\/\d+$/.test(text)) return text;
+    if (text.indexOf('/') >= 0) return '';
+    return MEDIA_KEY_RE.test(text) ? text : '';
   }
 
   // One line of plain text: no control characters, single spaces, a length limit.
@@ -146,7 +156,9 @@
     return found ? found[1].toLowerCase() : '';
   }
   function toBase64(text) {
-    var bytes = unescape(encodeURIComponent(text));
+    var bytes;
+    try { bytes = unescape(encodeURIComponent(text)); }
+    catch (_) { throw fail('not_a_picture', 'That file is not a picture this browser can read.'); }
     return typeof root.btoa === 'function' ? root.btoa(bytes) : Buffer.from(bytes, 'binary').toString('base64');
   }
   function fromBase64(body) {
@@ -207,6 +219,12 @@
       if (bare(m[1] != null ? m[1] : m[2] != null ? m[2] : m[3]).charAt(0) !== '#') return 'a link to something outside the drawing';
     }
     return '';
+  }
+  function ensureSvgXmlns(svg) {
+    return String(svg || '').replace(/<svg(?=[\s>])((?:"[^"]*"|'[^']*'|[^>"'])*)>/i, function (tag, attrs) {
+      if (/(?:^|\s)xmlns\s*=/i.test(attrs)) return tag;
+      return '<svg xmlns="' + SVG_NS + '"' + attrs + '>';
+    });
   }
   // A file an SVG picture may start with before its <svg> tag: a byte order mark, an XML line, comments.
   function svgBody(text) {
@@ -286,10 +304,11 @@
 
   // The small row list() and usage() read.
   function rowOf(entry) {
-    var clipBytes = entry.clip ? entry.clip.bytes : 0;
+    var clipBytes = entry.clip ? (Number(entry.clip.bytes) || 0) : 0;
+    var clipSource = entry.clip ? (entry.clip.source === 'computer-voice' ? 'computer-voice' : 'teacher') : '';
     var pictureNone = !!(entry.picture && entry.picture.none === true);
-    var pictureBytes = entry.picture && !pictureNone ? entry.picture.bytes : 0;
-    return { word: entry.word, updated: entry.updated, sounds: !!entry.sounds, clip: !!entry.clip, picture: !!entry.picture && !pictureNone,
+    var pictureBytes = entry.picture && !pictureNone ? (Number(entry.picture.bytes) || 0) : 0;
+    return { word: entry.word, updated: entry.updated, sounds: !!entry.sounds, clip: !!entry.clip, clipSource: clipSource, picture: !!entry.picture && !pictureNone,
       noPicture: pictureNone,
       own: !!(entry.picture && !pictureNone && entry.picture.credit && entry.picture.credit.own === true),
       clipBytes: clipBytes, pictureBytes: pictureBytes, bytes: clipBytes + pictureBytes + (entry.sounds ? JSON.stringify(entry.sounds).length : 0) };
@@ -421,11 +440,11 @@
           if (!/<svg[\s>]/i.test(svg.slice(0, 4000))) throw fail('not_a_picture', 'That file is not a picture this browser can read.');
           if (text.length > 4 * SVG_MAX) throw fail('picture_too_big', 'That drawing is too large to read here. Choose a smaller picture.');
           if (!svgRefusal(svg)) {
-            var kept = 'data:' + SVG_TYPE + ';base64,' + toBase64(svg);
+            var kept = 'data:' + SVG_TYPE + ';base64,' + toBase64(ensureSvgXmlns(svg));
             if (dataUriBytes(kept) <= LIMITS.pictureBytes) return kept;
           }
           // Anything else is drawn as dots: a PNG cannot hold a script, a link or a handler.
-          return loadImage('data:' + SVG_TYPE + ';base64,' + toBase64(text)).then(function (image) { return draw(image, side, false, true); });
+          return loadImage('data:' + SVG_TYPE + ';base64,' + toBase64(ensureSvgXmlns(text))).then(function (image) { return draw(image, side, false, true); });
         });
       }
       var photo = type === 'image/jpeg';
@@ -456,7 +475,9 @@
     function storageError(error) {
       var name = error && error.name;
       if (error && error.code && typeof error.code === 'string') return error;
-      if (name === 'QuotaExceededError') return fail('storage_full', 'This device has no room left for this site. Remove some words, or free some space.');
+      if (name === 'QuotaExceededError' || name === 'NS_ERROR_DOM_QUOTA_REACHED' || (error && error.code === 22)) {
+        return fail('storage_full', 'This device has no room left for this site. Remove some words, or free some space.');
+      }
       return noStorage();
     }
     function open() {
@@ -576,7 +597,7 @@
         keys.forEach(function (key) { stores[WORDS].get(key).onsuccess = function (event) { if (event.target.result) found[key] = event.target.result; }; });
       }, {});
     }
-    function put(word, patch) {
+    function putOne(word, patch, silent) {
       var key = normalizeWord(word), cleaned = {}, names;
       try {
         if (!key) throw fail('bad_word', 'A word is ' + LIMITS.wordMin + ' to ' + LIMITS.wordMax + ' letters, with no spaces, numbers or marks.');
@@ -606,8 +627,9 @@
             else write();
           };
         };
-      }).then(function (entry) { announce(key, entry ? 'put' : 'remove'); if (entry) keepAsked(); return entry; }, function (error) { throw storageError(error); });
+      }).then(function (entry) { if (!silent) announce(key, entry ? 'put' : 'remove'); if (entry) keepAsked(); return entry; }, function (error) { throw storageError(error); });
     }
+    function put(word, patch) { return putOne(word, patch, false); }
     // Ask the browser, once, to keep this site's storage rather than clear it under pressure. It may say no.
     var askedToKeep = false;
     function keepAsked() {
@@ -616,7 +638,7 @@
       try { var st = home.navigator && home.navigator.storage; if (st && typeof st.persist === 'function') st.persist().catch(function () {}); } catch (_) {}
     }
     function mediaBytes(entry) {
-      if (!entry) return 0;
+      if (!isObject(entry)) return 0;
       var clipBytes = entry.clip ? (Number(entry.clip.bytes) || 0) : 0;
       var pictureNone = !!(entry.picture && entry.picture.none === true);
       var pictureBytes = entry.picture && !pictureNone ? (Number(entry.picture.bytes) || 0) : 0;
@@ -628,7 +650,10 @@
         return read([MEDIA], function (stores, done) {
           done([]);
           stores[MEDIA].getAll().onsuccess = function (event) {
-            done((event.target.result || []).slice().sort(function (a, b) { return a.key < b.key ? -1 : a.key > b.key ? 1 : 0; }));
+            var rows = (Array.isArray(event.target.result) ? event.target.result : []).filter(function (row) {
+              return isObject(row) && typeof row.key === 'string' && row.key.length > 0;
+            });
+            done(rows.sort(function (a, b) { return a.key < b.key ? -1 : a.key > b.key ? 1 : 0; }));
           };
         }, []);
       }, function () { return []; });
@@ -661,6 +686,10 @@
       if (!isObject(data) || data.kind !== EXPORT_KIND || !Array.isArray(data.words)) return refuse('not_my_words', 'This is not a My words file.');
       var kept = [], refused = [], mediaList = Array.isArray(data.media) ? data.media : [];
       var isFatalStorage = function (err) { return !!(err && (err.code === 'no_storage' || err.code === 'storage_full')); };
+      var finish = function () {
+        if (kept.length > 0) announce('', 'put');
+        return { kept: kept, refused: refused };
+      };
       var pushRest = function (list, from, keyFn) {
         for (var idx = from; idx < list.length && refused.length < LIMITS.words * 2; idx++) {
           var row = list[idx];
@@ -668,19 +697,19 @@
         }
       };
       var stepMedia = function (j) {
-        if (j >= mediaList.length) return Promise.resolve({ kept: kept, refused: refused });
-        if (j >= LIMITS.words) { pushRest(mediaList, j, function (r) { return own(r, 'key') ? r.key : r.word; }); return Promise.resolve({ kept: kept, refused: refused }); }
+        if (j >= mediaList.length) return Promise.resolve(finish());
+        if (j >= LIMITS.words) { pushRest(mediaList, j, function (r) { return own(r, 'key') ? r.key : r.word; }); return Promise.resolve(finish()); }
         var row = mediaList[j], patchIn = {};
         if (!isObject(row)) { refused.push('?'); return stepMedia(j + 1); }
         ['clip', 'picture'].forEach(function (name) { if (own(row, name) && row[name]) patchIn[name] = row[name]; });
         var rawKey = own(row, 'key') ? row.key : row.word;
-        return putMedia(rawKey, patchIn).then(
+        return putMediaOne(rawKey, patchIn, true).then(
           function (entry) { if (entry) kept.push(entry.key || entry.word); return stepMedia(j + 1); },
           function (err) {
             refused.push(line(rawKey, 40) || '?');
             if (isFatalStorage(err)) {
               pushRest(mediaList, j + 1, function (r) { return own(r, 'key') ? r.key : r.word; });
-              return { kept: kept, refused: refused };
+              return finish();
             }
             return stepMedia(j + 1);
           }
@@ -692,14 +721,14 @@
         var row = data.words[i], patchIn = {};
         if (!isObject(row)) { refused.push('?'); return step(i + 1); }
         ['sounds', 'clip', 'picture'].forEach(function (name) { if (own(row, name) && row[name]) patchIn[name] = row[name]; });
-        return put(row.word, patchIn).then(
+        return putOne(row.word, patchIn, true).then(
           function (entry) { if (entry) kept.push(entry.word); return step(i + 1); },
           function (err) {
             refused.push(line(row.word, 40) || '?');
             if (isFatalStorage(err)) {
               pushRest(data.words, i + 1, function (r) { return r.word; });
               pushRest(mediaList, 0, function (r) { return own(r, 'key') ? r.key : r.word; });
-              return { kept: kept, refused: refused };
+              return finish();
             }
             return step(i + 1);
           }
@@ -722,7 +751,10 @@
       return read([ROWS], function (stores, done) {
         done([]);
         stores[ROWS].getAll().onsuccess = function (event) {
-          done((event.target.result || []).slice().sort(function (a, b) { return a.word < b.word ? -1 : a.word > b.word ? 1 : 0; }));
+          var rows = (Array.isArray(event.target.result) ? event.target.result : []).filter(function (row) {
+            return isObject(row) && typeof row.word === 'string' && row.word.length > 0;
+          });
+          done(rows.sort(function (a, b) { return a.word < b.word ? -1 : a.word > b.word ? 1 : 0; }));
         };
       }, []);
     }
@@ -753,10 +785,16 @@
           done({ count: 0, bytes: 0 });
           var finish = function () {
             if (--pending > 0) return;
+            var validRows = (Array.isArray(rowList) ? rowList : []).filter(function (row) {
+              return isObject(row) && typeof row.word === 'string' && row.word.length > 0;
+            });
+            var validMedia = (Array.isArray(mediaList) ? mediaList : []).filter(function (entry) {
+              return isObject(entry) && typeof entry.key === 'string' && entry.key.length > 0;
+            });
             done({
-              count: rowList.length + mediaList.length,
-              bytes: rowList.reduce(function (sum, row) { return sum + (Number(row.bytes) || 0); }, 0)
-                + mediaList.reduce(function (sum, entry) { return sum + mediaBytes(entry); }, 0),
+              count: validRows.length + validMedia.length,
+              bytes: validRows.reduce(function (sum, row) { return sum + (Number(row.bytes) || 0); }, 0)
+                + validMedia.reduce(function (sum, entry) { return sum + mediaBytes(entry); }, 0),
             });
           };
           stores[ROWS].getAll().onsuccess = function (event) { rowList = event.target.result || []; finish(); };
@@ -769,10 +807,10 @@
     // Standard 2-24 letter words route directly to the shared words/rows stores; single symbols, digits and
     // multi-word phrases route to the sibling media object store inside the same IndexedDB database.
     function getMedia(rawKey) {
-      var wKey = normalizeWord(rawKey);
-      if (wKey) return get(wKey);
       var mKey = normalizeMediaKey(rawKey);
       if (!mKey) return Promise.resolve(null);
+      var wKey = normalizeWord(mKey);
+      if (wKey) return get(wKey);
       return read([MEDIA], function (stores, done) {
         done(null);
         stores[MEDIA].get(mKey).onsuccess = function (event) { done(event.target.result || null); };
@@ -781,10 +819,11 @@
     function getManyMedia(rawKeys) {
       var wordKeys = [], mediaKeys = [];
       (Array.isArray(rawKeys) ? rawKeys : []).forEach(function (raw) {
-        var wKey = normalizeWord(raw);
-        if (wKey) { if (wordKeys.indexOf(wKey) < 0) wordKeys.push(wKey); return; }
         var mKey = normalizeMediaKey(raw);
-        if (mKey && mediaKeys.indexOf(mKey) < 0) mediaKeys.push(mKey);
+        if (!mKey) return;
+        var wKey = normalizeWord(mKey);
+        if (wKey) { if (wordKeys.indexOf(wKey) < 0) wordKeys.push(wKey); return; }
+        if (mediaKeys.indexOf(mKey) < 0) mediaKeys.push(mKey);
       });
       if (!wordKeys.length && !mediaKeys.length) return Promise.resolve({});
       return Promise.all([
@@ -801,10 +840,10 @@
         return out;
       });
     }
-    function putMedia(rawKey, patch) {
-      var wKey = normalizeWord(rawKey);
-      if (wKey) return put(wKey, patch);
+    function putMediaOne(rawKey, patch, silent) {
       var mKey = normalizeMediaKey(rawKey), cleaned = {}, names;
+      var wKey = mKey ? normalizeWord(mKey) : '';
+      if (wKey) return putOne(wKey, patch, silent);
       try {
         if (!mKey) throw fail('bad_word', 'That word or symbol cannot be kept here.');
         if (!isObject(patch)) throw fail('bad_part', 'There is nothing to keep for this item.');
@@ -833,13 +872,14 @@
             else write();
           };
         };
-      }).then(function (entry) { announce('', entry ? 'put' : 'remove'); if (entry) keepAsked(); return entry; }, function (error) { throw storageError(error); });
+      }).then(function (entry) { if (!silent) announce('', entry ? 'put' : 'remove'); if (entry) keepAsked(); return entry; }, function (error) { throw storageError(error); });
     }
+    function putMedia(rawKey, patch) { return putMediaOne(rawKey, patch, false); }
     function removeMedia(rawKey) {
-      var wKey = normalizeWord(rawKey);
-      if (wKey) return remove(wKey);
       var mKey = normalizeMediaKey(rawKey);
       if (!mKey) return Promise.resolve(false);
+      var wKey = normalizeWord(mKey);
+      if (wKey) return remove(wKey);
       return run([MEDIA], 'readwrite', function (stores, done) {
         done(false);
         stores[MEDIA].get(mKey).onsuccess = function (event) {

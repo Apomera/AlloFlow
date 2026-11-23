@@ -370,7 +370,7 @@
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
       "sourceItemsSha256": "f647cb4e8a471aeb782b963a0131979955a29b49e638349f06fd23733a279a97",
-      "learningLibrarySha256": "10d302a8d13c4fb4b0811d3e019cc672f51d871321ac1b4068000bca5eead277"
+      "learningLibrarySha256": "c9b30541a09a6d95e338df8d55e2333d1c261595583ea67f9dc767f65ca52f91"
     },
     {
       "stem": "special_education_behavior_emotional_5372",
@@ -378,7 +378,7 @@
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
       "sourceItemsSha256": "9e6fabcc848b60d5fd59da9f1208d989707529b3eada83914c364f600caa4937",
-      "learningLibrarySha256": "79bed6b01cfcad9a39dc6ddf158c5e3ed36316fd04bf5b354fc0431b48e85b88"
+      "learningLibrarySha256": "3e966b2d95fa1d62616359e3ad5622387b6a55dd5297d9dd6ce2e390d0fbca29"
     },
     {
       "stem": "special_education_early_childhood_5692",
@@ -386,7 +386,7 @@
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
       "sourceItemsSha256": "88d1351581ff40914b29e72560c301c3673ef4641c13aa1a189e8bbba1d91211",
-      "learningLibrarySha256": "46985fd3d3fe0573a755179b9e9645111f72f56c5f113add237ae1938345d336"
+      "learningLibrarySha256": "8f2c3ea9f75fc273a49bad26fd110bdaeb2395b752099550536ce1e0f13f5505"
     },
     {
       "stem": "special_education_intellectual_disabilities_5322",
@@ -394,7 +394,7 @@
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
       "sourceItemsSha256": "81eea71705980cb63129d70c60c12565fd7e5a7f5811597d81e4b4b10b0bec10",
-      "learningLibrarySha256": "50da936dd72de52966013ea1c18e362b2f3a38fd30601fd387d8edf1aad36609"
+      "learningLibrarySha256": "6b4c08e32af987286b656215891dd675d75e73d2ac5e35ca4575dff977a04783"
     },
     {
       "stem": "special_education_learning_disabilities_5383",
@@ -402,7 +402,7 @@
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
       "sourceItemsSha256": "c0f5d9f2c395465796acb0a79f3f69414d7d19e9b10ca1c67c9c023c697fbb73",
-      "learningLibrarySha256": "7dbfe1e8ade5caac117429874cb07da3d01ebef7aa20373f2dea555f8f35b11c"
+      "learningLibrarySha256": "47554b45e967267701cf2f18d341f0be783412193d47b8ea7efb3ae1ae752d29"
     },
     {
       "stem": "special_education_severe_profound_5547",
@@ -410,7 +410,7 @@
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
       "sourceItemsSha256": "063ada46a906589ba35e44b5c336535cc8d95a7ac3b450deaeabce2dc0753125",
-      "learningLibrarySha256": "3b6f7caa2ca8e07d188eb752f67ebed0bc0c4c944f4ce20af1e8310be7a7b020"
+      "learningLibrarySha256": "0f516dcd4b65a9c3382e1646702c7d5db7d37adb8f9c1a60e08ad85df116b345"
     },
     {
       "stem": "speech_language_pathology_5331",
@@ -418,7 +418,7 @@
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
       "sourceItemsSha256": "146d686eef2b8189238baa1612f9427169f3450ac21cdfbc12c80d462f3731df",
-      "learningLibrarySha256": "acdecf06c83de32c7b3bcad6f39c00a6610299532f6ded72e77dc537e2a4756f"
+      "learningLibrarySha256": "4f45d07e0561b20e35b243527715ac6ff66f82f3e7c26b21706b996fc278bd91"
     },
     {
       "stem": "teaching_reading_5205",
@@ -426,7 +426,7 @@
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
       "sourceItemsSha256": "64e073ba5dc84c5fa8ba11a0e83053e37167ad57a3e0d9a9f6f6175c7d24a35b",
-      "learningLibrarySha256": "74f956d39d22ff749366863b8fe440049bc6ee4626286efe435fd18405d2e144"
+      "learningLibrarySha256": "2a004f08ccfd93f51fcb1889ac5dbf79faa4faa6d0dddf7de1d67acad327b879"
     }
   ],
   "reviewStandard": {

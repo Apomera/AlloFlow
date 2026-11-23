@@ -6058,14 +6058,14 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           // Tool tabs
           renderStartHere(),
 
-          h('div', { className: 'gap-1 mb-3 border-b border-slate-200', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 110px), 1fr))' }, role: 'tablist', 'aria-label': t('stem.unitconvert.unit_converter_sections', 'Unit Converter sections'), 'data-tab-order': visibleTabOrder.join(' ') },
+          h('div', { className: 'gap-1 mb-3 border-b border-slate-200', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 7.5rem), 1fr))' }, role: 'tablist', 'aria-label': t('stem.unitconvert.unit_converter_sections', 'Unit Converter sections'), 'data-tab-order': visibleTabOrder.join(' ') },
             visibleTabOrder.map(function(id) { return [id, TAB_LABELS[id]]; }).map(function(item, idx) {
               var inPath = pathTabs.indexOf(item[0]) !== -1;
               var shortcut = (UNIT_CONVERT_TAB_ORDER.indexOf(item[0]) + 1) % 10;
               return h('button', { key: item[0],
                 type: 'button',
                 id: 'stem-unitconvert-tab-' + item[0],
-                style: { color: ctx.isContrast ? '#00ff00' : undefined, minHeight: 44, minWidth: 0, whiteSpace: 'normal', boxShadow: inPath && tab !== item[0] ? 'inset 0 3px 0 ' + (isContrast ? '#ffff00' : isDarkUI ? '#22d3ee' : '#0e7490') : undefined },
+                style: { color: ctx.isContrast ? '#00ff00' : undefined, minHeight: 44, minWidth: 0, whiteSpace: 'normal', overflowWrap: 'anywhere', boxShadow: inPath && tab !== item[0] ? 'inset 0 3px 0 ' + (isContrast ? '#ffff00' : isDarkUI ? '#22d3ee' : '#0e7490') : undefined },
                 onClick: function() { upd('tab', item[0]); },
                 role: 'tab', 'aria-selected': tab === item[0],
                 'aria-controls': 'stem-unitconvert-panel-' + item[0],

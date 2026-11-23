@@ -37170,8 +37170,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   h('text', { x: 430, y: 66, fill: '#cbd5e1', fontSize: 11, fontWeight: 700 }, '345 ft')
                 ),
                 h('div', { className: 'rr-physics-legend' },
-                  h('span', null, '■ ', __alloT('stem.roadready.stopping_ref_reaction', 'Reaction (1.5 s)')),
-                  h('span', null, '■ ', __alloT('stem.roadready.stopping_ref_braking', 'Braking distance (scales with v²)'))
+                  h('span', null, h('span', { 'aria-hidden': 'true', style: { color: '#38bdf8' } }, '■ '), __alloT('stem.roadready.stopping_ref_reaction', 'Reaction (1.5 s)')),
+                  h('span', null, h('span', { 'aria-hidden': 'true', style: { color: '#f59e0b' } }, '■ '), __alloT('stem.roadready.stopping_ref_braking', 'Braking distance (scales with v²)'))
                 )
               ),
               h('div', { className: 'rr-hero-presets', role: 'group', 'aria-label': __alloT('stem.roadready.quick_launch_presets', 'Quick-launch starter activities') },

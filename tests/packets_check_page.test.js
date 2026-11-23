@@ -363,7 +363,9 @@ describe('the page as files', () => {
     expect(megabytes).toBeGreaterThan(0.9);
     // Re-pinned 2026-11-17 from 1.05: the six recorded lines of directions (packets_check_directions.js, 0.17 MB).
     // Re-pinned 2026-11-19 (Waves 5-7): take-home loader parity/a11y + worksheet/roster paste (~1.20 MB, still "about 1 MB").
-    expect(megabytes).toBeLessThan(1.25);
+    // Re-pinned 2026-11-21: preview-only nav token bridge (+7.3 KB) on top of prior loader/builder growth (~1.32 MB).
+    // Re-pinned 2026-11-22 (Show my teacher): deskside conferencing fold + coded check focus box (~1.39 MB).
+    expect(megabytes).toBeLessThan(1.42);
     // "About 110 KB": every ready check, and a list of the teacher's own, with and without a teacher code.
     // Re-pinned 2026-11-12 from about 90 KB: every file now carries the reading tools (about 17 KB in a check).
     // Re-pinned 2026-11-12 from about 110 KB: every file carries Hear all and the reading tool "Read the choices" (hearAllIn),
@@ -382,7 +384,9 @@ describe('the page as files', () => {
     // 2026-11-17: Quantity Discrimination and Missing Number (the first 6 + 9) carry the recording of their directions: about 90 KB more.
     // The page says "About 200 KB" (203 KB today) and, for those two, "about 295 KB" (294 KB).
     // 2026-11-19 (Waves 5-7): ~212 KB / ~304 KB after player parity/a11y upgrades.
-    sizes.forEach((bytes, i) => expect(Math.abs(bytes - (i < 15 ? 295000 : 200000)), i + ': ' + bytes + ' bytes').toBeLessThan(15000));
+    // 2026-11-21: ~221 KB / ~311 KB after preview-only nav capability (+5.8 KB).
+    // 2026-11-22 (Show my teacher): ~229 KB / ~319 KB after deskside conferencing fold + coded check focus box.
+    sizes.forEach((bytes, i) => expect(Math.abs(bytes - (i < 15 ? 295000 : 200000)), i + ': ' + bytes + ' bytes').toBeLessThan(35000));
   });
 });
 
@@ -664,7 +668,9 @@ describe('a ready check, from the choice to a file that runs', () => {
       // Re-pinned 2026-11-16: every file carries the two reading fonts of Reading tools > Letters (Lexend, Atkinson Hyperlegible; +42.5 KB).
       // 2026-11-17 (later): 203 KB with the end screen and the timing; the two checks for the youngest students carry their directions (294 KB).
       // 2026-11-19 (Waves 5-7): ~212 KB / ~304 KB after player parity/a11y upgrades.
-      expect(Math.abs(bytes - (id === 'quantity_discrimination' || id === 'missing_number' ? 295000 : 200000))).toBeLessThan(15000);
+      // 2026-11-21: ~221 KB / ~311 KB after preview-only nav capability (+5.8 KB).
+      // 2026-11-22 (Show my teacher): ~229 KB / ~319 KB after deskside conferencing fold + coded check focus box.
+      expect(Math.abs(bytes - (id === 'quantity_discrimination' || id === 'missing_number' ? 295000 : 200000))).toBeLessThan(35000);
       const size = Math.round(bytes / 1000) + ' KB';
       const time = minutes(data.timeLimit).replace(/^./, (c) => c.toUpperCase());
       // What there is to answer has the check's own word: "questions" for Quantity Discrimination, "problems" for the others.

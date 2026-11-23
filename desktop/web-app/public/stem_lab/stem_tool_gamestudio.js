@@ -1265,7 +1265,8 @@ window.StemLab = window.StemLab || {
                 role: 'tab', 'aria-selected': isActive ? 'true' : 'false', 'aria-controls': 'gs-tabpanel', tabIndex: isActive ? 0 : -1,
                 onClick: function() { goGsTab(tab.id); },
                 onKeyDown: onGsTabKey,
-                className: 'flex-1 min-w-[78px] py-2 px-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ' +
+                style: { flex: '1 1 auto' },
+                className: 'py-2 px-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ' +
                   (isActive ? 'bg-white text-rose-900 shadow-sm border border-rose-600' : 'text-rose-800 hover:text-rose-950 hover:bg-rose-100 border border-transparent')
               }, tab.icon + ' ' + tab.label);
             })

@@ -782,10 +782,10 @@
             },
             {
               "type": "paragraph",
-              "text": "Worked-example sequence: Evaluate lim (x^2-9)/(x-3) as x approaches 3. Factor and cancel for nearby x not equal to 3. The reduced expression x+3 approaches 6.",
+              "text": "Worked-example sequence: Evaluate lim (x^2 - 9)/(x - 3) as x approaches 3 using algebraic manipulation. Factor the numerator as (x - 3)(x + 3) and cancel (x - 3) for nearby x not equal to 3. Evaluate the reduced expression x + 3 as x approaches 3 to obtain 6.",
               "runs": [
                 {
-                  "text": "Worked-example sequence: Evaluate lim (x^2-9)/(x-3) as x approaches 3. Factor and cancel for nearby x not equal to 3. The reduced expression x+3 approaches 6."
+                  "text": "Worked-example sequence: Evaluate lim (x^2 - 9)/(x - 3) as x approaches 3 using algebraic manipulation. Factor the numerator as (x - 3)(x + 3) and cancel (x - 3) for nearby x not equal to 3. Evaluate the reduced expression x + 3 as x approaches 3 to obtain 6."
                 }
               ]
             },
@@ -822,10 +822,10 @@
             }
           ],
           "workedExample": {
-            "prompt": "Evaluate lim (x^2-9)/(x-3) as x approaches 3.",
+            "prompt": "Evaluate lim (x^2 - 9)/(x - 3) as x approaches 3 using algebraic manipulation.",
             "steps": [
-              "Factor and cancel for nearby x not equal to 3.",
-              "The reduced expression x+3 approaches 6."
+              "Factor the numerator as (x - 3)(x + 3) and cancel (x - 3) for nearby x not equal to 3.",
+              "Evaluate the reduced expression x + 3 as x approaches 3 to obtain 6."
             ],
             "original": true
           },
@@ -939,10 +939,10 @@
             },
             {
               "type": "paragraph",
-              "text": "Worked-example sequence: Evaluate lim (x^2-9)/(x-3) as x approaches 3. Factor and cancel for nearby x not equal to 3. The reduced expression x+3 approaches 6.",
+              "text": "Worked-example sequence: Classify the discontinuity of f(x) = (x^2 - 4)/(x - 2) at x = 2 and state how to make f continuous. Both one-sided limits equal lim (x + 2) = 4 as x approaches 2, so the two-sided limit exists while f(2) is undefined. Thus x = 2 is a removable discontinuity; defining f(2) = 4 satisfies lim f(x) = f(2).",
               "runs": [
                 {
-                  "text": "Worked-example sequence: Evaluate lim (x^2-9)/(x-3) as x approaches 3. Factor and cancel for nearby x not equal to 3. The reduced expression x+3 approaches 6."
+                  "text": "Worked-example sequence: Classify the discontinuity of f(x) = (x^2 - 4)/(x - 2) at x = 2 and state how to make f continuous. Both one-sided limits equal lim (x + 2) = 4 as x approaches 2, so the two-sided limit exists while f(2) is undefined. Thus x = 2 is a removable discontinuity; defining f(2) = 4 satisfies lim f(x) = f(2)."
                 }
               ]
             },
@@ -971,10 +971,10 @@
             }
           ],
           "workedExample": {
-            "prompt": "Evaluate lim (x^2-9)/(x-3) as x approaches 3.",
+            "prompt": "Classify the discontinuity of f(x) = (x^2 - 4)/(x - 2) at x = 2 and state how to make f continuous.",
             "steps": [
-              "Factor and cancel for nearby x not equal to 3.",
-              "The reduced expression x+3 approaches 6."
+              "Both one-sided limits equal lim (x + 2) = 4 as x approaches 2, so the two-sided limit exists while f(2) is undefined.",
+              "Thus x = 2 is a removable discontinuity; defining f(2) = 4 satisfies lim f(x) = f(2)."
             ],
             "original": true
           },
@@ -1081,10 +1081,10 @@
             },
             {
               "type": "paragraph",
-              "text": "Worked-example sequence: Evaluate lim (x^2-9)/(x-3) as x approaches 3. Factor and cancel for nearby x not equal to 3. The reduced expression x+3 approaches 6.",
+              "text": "Worked-example sequence: Use the Intermediate Value Theorem to show f(x) = x^3 + x - 1 has at least one root on [0, 1]. Because f is a polynomial, it is continuous on the closed interval [0, 1], with f(0) = -1 and f(1) = 1. Since -1 < 0 < 1, IVT guarantees at least one c in (0, 1) where f(c) = 0.",
               "runs": [
                 {
-                  "text": "Worked-example sequence: Evaluate lim (x^2-9)/(x-3) as x approaches 3. Factor and cancel for nearby x not equal to 3. The reduced expression x+3 approaches 6."
+                  "text": "Worked-example sequence: Use the Intermediate Value Theorem to show f(x) = x^3 + x - 1 has at least one root on [0, 1]. Because f is a polynomial, it is continuous on the closed interval [0, 1], with f(0) = -1 and f(1) = 1. Since -1 < 0 < 1, IVT guarantees at least one c in (0, 1) where f(c) = 0."
                 }
               ]
             },
@@ -1121,10 +1121,10 @@
             }
           ],
           "workedExample": {
-            "prompt": "Evaluate lim (x^2-9)/(x-3) as x approaches 3.",
+            "prompt": "Use the Intermediate Value Theorem to show f(x) = x^3 + x - 1 has at least one root on [0, 1].",
             "steps": [
-              "Factor and cancel for nearby x not equal to 3.",
-              "The reduced expression x+3 approaches 6."
+              "Because f is a polynomial, it is continuous on the closed interval [0, 1], with f(0) = -1 and f(1) = 1.",
+              "Since -1 < 0 < 1, IVT guarantees at least one c in (0, 1) where f(c) = 0."
             ],
             "original": true
           },
@@ -1232,7 +1232,12 @@
       "foundationPrototype": true,
       "sourceReviewed": true,
       "status": "source-reviewed-editorial-draft",
-      "releaseEligible": false
+      "releaseEligible": false,
+      "chapterTakeaways": [
+        "A two-sided limit exists only when left- and right-hand limits both exist and are equal; continuity at x = c further requires f(c) to exist and equal that limit.",
+        "Factor, rationalize, or simplify common factors to resolve 0/0 removable holes, whereas a nonzero numerator over zero signals a vertical asymptote and infinite limit behavior.",
+        "To apply the Intermediate Value Theorem on [a, b], first verify continuity on the closed interval and show the target value k lies strictly between f(a) and f(b)."
+      ]
     },
     {
       "id": "ap-calc-ab-ch-02",
@@ -1331,10 +1336,10 @@
             },
             {
               "type": "paragraph",
-              "text": "Worked-example sequence: Differentiate x^2 e^x. Apply the product rule. The result is e^x(x^2+2x).",
+              "text": "Worked-example sequence: Use the limit definition to find f'(2) for f(x) = x^2 and justify continuity at x = 2. Evaluate lim [(2 + h)^2 - 4]/h = lim (4h + h^2)/h = lim (4 + h) = 4 as h approaches 0. Because f'(2) = 4 exists, f is differentiable at x = 2, which automatically guarantees continuity at x = 2.",
               "runs": [
                 {
-                  "text": "Worked-example sequence: Differentiate x^2 e^x. Apply the product rule. The result is e^x(x^2+2x)."
+                  "text": "Worked-example sequence: Use the limit definition to find f'(2) for f(x) = x^2 and justify continuity at x = 2. Evaluate lim [(2 + h)^2 - 4]/h = lim (4h + h^2)/h = lim (4 + h) = 4 as h approaches 0. Because f'(2) = 4 exists, f is differentiable at x = 2, which automatically guarantees continuity at x = 2."
                 }
               ]
             },
@@ -1371,10 +1376,10 @@
             }
           ],
           "workedExample": {
-            "prompt": "Differentiate x^2 e^x.",
+            "prompt": "Use the limit definition to find f'(2) for f(x) = x^2 and justify continuity at x = 2.",
             "steps": [
-              "Apply the product rule.",
-              "The result is e^x(x^2+2x)."
+              "Evaluate lim [(2 + h)^2 - 4]/h = lim (4h + h^2)/h = lim (4 + h) = 4 as h approaches 0.",
+              "Because f'(2) = 4 exists, f is differentiable at x = 2, which automatically guarantees continuity at x = 2."
             ],
             "original": true
           },
@@ -1488,10 +1493,10 @@
             },
             {
               "type": "paragraph",
-              "text": "Worked-example sequence: Differentiate x^2 e^x. Apply the product rule. The result is e^x(x^2+2x).",
+              "text": "Worked-example sequence: Differentiate g(x) = 4x^3 - 6x^(1/2) + 9 using linearity and the power rule. Differentiate term by term: d/dx(4x^3) = 12x^2, d/dx(-6x^(1/2)) = -3x^(-1/2), and d/dx(9) = 0. Combine the terms to obtain g'(x) = 12x^2 - 3/sqrt(x).",
               "runs": [
                 {
-                  "text": "Worked-example sequence: Differentiate x^2 e^x. Apply the product rule. The result is e^x(x^2+2x)."
+                  "text": "Worked-example sequence: Differentiate g(x) = 4x^3 - 6x^(1/2) + 9 using linearity and the power rule. Differentiate term by term: d/dx(4x^3) = 12x^2, d/dx(-6x^(1/2)) = -3x^(-1/2), and d/dx(9) = 0. Combine the terms to obtain g'(x) = 12x^2 - 3/sqrt(x)."
                 }
               ]
             },
@@ -1520,10 +1525,10 @@
             }
           ],
           "workedExample": {
-            "prompt": "Differentiate x^2 e^x.",
+            "prompt": "Differentiate g(x) = 4x^3 - 6x^(1/2) + 9 using linearity and the power rule.",
             "steps": [
-              "Apply the product rule.",
-              "The result is e^x(x^2+2x)."
+              "Differentiate term by term: d/dx(4x^3) = 12x^2, d/dx(-6x^(1/2)) = -3x^(-1/2), and d/dx(9) = 0.",
+              "Combine the terms to obtain g'(x) = 12x^2 - 3/sqrt(x)."
             ],
             "original": true
           },
@@ -1629,10 +1634,10 @@
             },
             {
               "type": "paragraph",
-              "text": "Worked-example sequence: Differentiate x^2 e^x. Apply the product rule. The result is e^x(x^2+2x).",
+              "text": "Worked-example sequence: Differentiate h(x) = x^2 e^x using the product rule and basic transcendental derivatives. Label u = x^2 (u' = 2x) and v = e^x (v' = e^x), then apply (uv)' = u'v + uv'. Simplify h'(x) = 2x e^x + x^2 e^x = e^x(x^2 + 2x).",
               "runs": [
                 {
-                  "text": "Worked-example sequence: Differentiate x^2 e^x. Apply the product rule. The result is e^x(x^2+2x)."
+                  "text": "Worked-example sequence: Differentiate h(x) = x^2 e^x using the product rule and basic transcendental derivatives. Label u = x^2 (u' = 2x) and v = e^x (v' = e^x), then apply (uv)' = u'v + uv'. Simplify h'(x) = 2x e^x + x^2 e^x = e^x(x^2 + 2x)."
                 }
               ]
             },
@@ -1669,10 +1674,10 @@
             }
           ],
           "workedExample": {
-            "prompt": "Differentiate x^2 e^x.",
+            "prompt": "Differentiate h(x) = x^2 e^x using the product rule and basic transcendental derivatives.",
             "steps": [
-              "Apply the product rule.",
-              "The result is e^x(x^2+2x)."
+              "Label u = x^2 (u' = 2x) and v = e^x (v' = e^x), then apply (uv)' = u'v + uv'.",
+              "Simplify h'(x) = 2x e^x + x^2 e^x = e^x(x^2 + 2x)."
             ],
             "original": true
           },
@@ -1780,7 +1785,12 @@
       "foundationPrototype": true,
       "sourceReviewed": true,
       "status": "source-reviewed-editorial-draft",
-      "releaseEligible": false
+      "releaseEligible": false,
+      "chapterTakeaways": [
+        "Recognize difference-quotient limits of (f(x+h)-f(x))/h or (f(x)-f(a))/(x-a) as f'(x) or f'(a) so you differentiate directly instead of evaluating an indeterminate limit.",
+        "Differentiability implies continuity, but continuity does not guarantee differentiability; sharp corners, cusps, vertical tangents, and jumps all make f'(c) fail to exist.",
+        "Apply the product rule (f'g + fg') and quotient rule ((f'g - fg')/g^2) systematically, and remember trig derivatives for cos, cot, and csc carry negative signs."
+      ]
     },
     {
       "id": "ap-calc-ab-ch-03",
@@ -1876,10 +1886,10 @@
             },
             {
               "type": "paragraph",
-              "text": "Worked-example sequence: Differentiate x^2+y^2=25 implicitly. Obtain 2x+2y(dy/dx)=0. Solve to get dy/dx=-x/y.",
+              "text": "Worked-example sequence: Differentiate x^2 + y^2 = 25 implicitly and find the tangent slope at (3, 4). Apply the chain rule to y^2 to obtain 2x + 2y(dy/dx) = 0, then solve for dy/dx = -x/y. Substitute (3, 4) to get tangent slope dy/dx = -3/4.",
               "runs": [
                 {
-                  "text": "Worked-example sequence: Differentiate x^2+y^2=25 implicitly. Obtain 2x+2y(dy/dx)=0. Solve to get dy/dx=-x/y."
+                  "text": "Worked-example sequence: Differentiate x^2 + y^2 = 25 implicitly and find the tangent slope at (3, 4). Apply the chain rule to y^2 to obtain 2x + 2y(dy/dx) = 0, then solve for dy/dx = -x/y. Substitute (3, 4) to get tangent slope dy/dx = -3/4."
                 }
               ]
             },
@@ -1916,10 +1926,10 @@
             }
           ],
           "workedExample": {
-            "prompt": "Differentiate x^2+y^2=25 implicitly.",
+            "prompt": "Differentiate x^2 + y^2 = 25 implicitly and find the tangent slope at (3, 4).",
             "steps": [
-              "Obtain 2x+2y(dy/dx)=0.",
-              "Solve to get dy/dx=-x/y."
+              "Apply the chain rule to y^2 to obtain 2x + 2y(dy/dx) = 0, then solve for dy/dx = -x/y.",
+              "Substitute (3, 4) to get tangent slope dy/dx = -3/4."
             ],
             "original": true
           },
@@ -2030,10 +2040,10 @@
             },
             {
               "type": "paragraph",
-              "text": "Worked-example sequence: Differentiate x^2+y^2=25 implicitly. Obtain 2x+2y(dy/dx)=0. Solve to get dy/dx=-x/y.",
+              "text": "Worked-example sequence: Given f(2) = 5 and f'(2) = 3 for an invertible differentiable function f, find (f^-1)'(5). Match corresponding coordinates: because f(2) = 5, we know f^-1(5) = 2. Apply the inverse derivative formula (f^-1)'(5) = 1 / f'(f^-1(5)) = 1 / f'(2) = 1/3.",
               "runs": [
                 {
-                  "text": "Worked-example sequence: Differentiate x^2+y^2=25 implicitly. Obtain 2x+2y(dy/dx)=0. Solve to get dy/dx=-x/y."
+                  "text": "Worked-example sequence: Given f(2) = 5 and f'(2) = 3 for an invertible differentiable function f, find (f^-1)'(5). Match corresponding coordinates: because f(2) = 5, we know f^-1(5) = 2. Apply the inverse derivative formula (f^-1)'(5) = 1 / f'(f^-1(5)) = 1 / f'(2) = 1/3."
                 }
               ]
             },
@@ -2062,10 +2072,10 @@
             }
           ],
           "workedExample": {
-            "prompt": "Differentiate x^2+y^2=25 implicitly.",
+            "prompt": "Given f(2) = 5 and f'(2) = 3 for an invertible differentiable function f, find (f^-1)'(5).",
             "steps": [
-              "Obtain 2x+2y(dy/dx)=0.",
-              "Solve to get dy/dx=-x/y."
+              "Match corresponding coordinates: because f(2) = 5, we know f^-1(5) = 2.",
+              "Apply the inverse derivative formula (f^-1)'(5) = 1 / f'(f^-1(5)) = 1 / f'(2) = 1/3."
             ],
             "original": true
           },
@@ -2171,10 +2181,10 @@
             },
             {
               "type": "paragraph",
-              "text": "Worked-example sequence: Differentiate x^2+y^2=25 implicitly. Obtain 2x+2y(dy/dx)=0. Solve to get dy/dx=-x/y.",
+              "text": "Worked-example sequence: Find the second derivative f''(x) of f(x) = sin(2x) by applying the chain rule twice. Differentiate once to get f'(x) = cos(2x) * 2 = 2 cos(2x). Differentiate again using the chain rule to get f''(x) = 2(-sin(2x)) * 2 = -4 sin(2x).",
               "runs": [
                 {
-                  "text": "Worked-example sequence: Differentiate x^2+y^2=25 implicitly. Obtain 2x+2y(dy/dx)=0. Solve to get dy/dx=-x/y."
+                  "text": "Worked-example sequence: Find the second derivative f''(x) of f(x) = sin(2x) by applying the chain rule twice. Differentiate once to get f'(x) = cos(2x) * 2 = 2 cos(2x). Differentiate again using the chain rule to get f''(x) = 2(-sin(2x)) * 2 = -4 sin(2x)."
                 }
               ]
             },
@@ -2211,10 +2221,10 @@
             }
           ],
           "workedExample": {
-            "prompt": "Differentiate x^2+y^2=25 implicitly.",
+            "prompt": "Find the second derivative f''(x) of f(x) = sin(2x) by applying the chain rule twice.",
             "steps": [
-              "Obtain 2x+2y(dy/dx)=0.",
-              "Solve to get dy/dx=-x/y."
+              "Differentiate once to get f'(x) = cos(2x) * 2 = 2 cos(2x).",
+              "Differentiate again using the chain rule to get f''(x) = 2(-sin(2x)) * 2 = -4 sin(2x)."
             ],
             "original": true
           },
@@ -2322,7 +2332,12 @@
       "foundationPrototype": true,
       "sourceReviewed": true,
       "status": "source-reviewed-editorial-draft",
-      "releaseEligible": false
+      "releaseEligible": false,
+      "chapterTakeaways": [
+        "For nested compositions, differentiate from the outermost layer inward and multiply by every inner derivative; omitting an inner factor is the top Chain Rule error.",
+        "In implicit differentiation, attach dy/dx whenever differentiating a y-term with respect to x, then isolate dy/dx; for d^2y/dx^2, substitute dy/dx back into the result.",
+        "For an inverse function g = f^-1, evaluate g'(b) = 1 / f'(a) where f(a) = b, matching the output b to its corresponding input a before substituting into f'."
+      ]
     },
     {
       "id": "ap-calc-ab-ch-04",
@@ -2420,10 +2435,10 @@
             },
             {
               "type": "paragraph",
-              "text": "Worked-example sequence: A circle radius grows at 2 cm/s when r=3 cm. Differentiate A=pi r^2 in time. dA/dt=12 pi cm^2/s.",
+              "text": "Worked-example sequence: A particle moves with position s(t) = t^3 - 6t^2 + 9t meters (t in seconds). Determine whether speed is increasing at t = 4. Compute velocity v(t) = s'(t) = 3t^2 - 12t + 9 so v(4) = 9 m/s, and acceleration a(t) = v'(t) = 6t - 12 so a(4) = 12 m/s^2. Because v(4) > 0 and a(4) > 0 share the same sign, the particle is speeding up at t = 4 seconds.",
               "runs": [
                 {
-                  "text": "Worked-example sequence: A circle radius grows at 2 cm/s when r=3 cm. Differentiate A=pi r^2 in time. dA/dt=12 pi cm^2/s."
+                  "text": "Worked-example sequence: A particle moves with position s(t) = t^3 - 6t^2 + 9t meters (t in seconds). Determine whether speed is increasing at t = 4. Compute velocity v(t) = s'(t) = 3t^2 - 12t + 9 so v(4) = 9 m/s, and acceleration a(t) = v'(t) = 6t - 12 so a(4) = 12 m/s^2. Because v(4) > 0 and a(4) > 0 share the same sign, the particle is speeding up at t = 4 seconds."
                 }
               ]
             },
@@ -2460,10 +2475,10 @@
             }
           ],
           "workedExample": {
-            "prompt": "A circle radius grows at 2 cm/s when r=3 cm.",
+            "prompt": "A particle moves with position s(t) = t^3 - 6t^2 + 9t meters (t in seconds). Determine whether speed is increasing at t = 4.",
             "steps": [
-              "Differentiate A=pi r^2 in time.",
-              "dA/dt=12 pi cm^2/s."
+              "Compute velocity v(t) = s'(t) = 3t^2 - 12t + 9 so v(4) = 9 m/s, and acceleration a(t) = v'(t) = 6t - 12 so a(4) = 12 m/s^2.",
+              "Because v(4) > 0 and a(4) > 0 share the same sign, the particle is speeding up at t = 4 seconds."
             ],
             "original": true
           },
@@ -2575,10 +2590,10 @@
             },
             {
               "type": "paragraph",
-              "text": "Worked-example sequence: A circle radius grows at 2 cm/s when r=3 cm. Differentiate A=pi r^2 in time. dA/dt=12 pi cm^2/s.",
+              "text": "Worked-example sequence: A circle radius grows at dr/dt = 2 cm/s. Find the rate of change of area dA/dt when r = 3 cm. Differentiate A = pi r^2 with respect to time t before substituting instant values: dA/dt = 2 pi r (dr/dt). Substitute r = 3 cm and dr/dt = 2 cm/s to obtain dA/dt = 12 pi cm^2/s.",
               "runs": [
                 {
-                  "text": "Worked-example sequence: A circle radius grows at 2 cm/s when r=3 cm. Differentiate A=pi r^2 in time. dA/dt=12 pi cm^2/s."
+                  "text": "Worked-example sequence: A circle radius grows at dr/dt = 2 cm/s. Find the rate of change of area dA/dt when r = 3 cm. Differentiate A = pi r^2 with respect to time t before substituting instant values: dA/dt = 2 pi r (dr/dt). Substitute r = 3 cm and dr/dt = 2 cm/s to obtain dA/dt = 12 pi cm^2/s."
                 }
               ]
             },
@@ -2607,10 +2622,10 @@
             }
           ],
           "workedExample": {
-            "prompt": "A circle radius grows at 2 cm/s when r=3 cm.",
+            "prompt": "A circle radius grows at dr/dt = 2 cm/s. Find the rate of change of area dA/dt when r = 3 cm.",
             "steps": [
-              "Differentiate A=pi r^2 in time.",
-              "dA/dt=12 pi cm^2/s."
+              "Differentiate A = pi r^2 with respect to time t before substituting instant values: dA/dt = 2 pi r (dr/dt).",
+              "Substitute r = 3 cm and dr/dt = 2 cm/s to obtain dA/dt = 12 pi cm^2/s."
             ],
             "original": true
           },
@@ -2715,10 +2730,10 @@
             },
             {
               "type": "paragraph",
-              "text": "Worked-example sequence: A circle radius grows at 2 cm/s when r=3 cm. Differentiate A=pi r^2 in time. dA/dt=12 pi cm^2/s.",
+              "text": "Worked-example sequence: Linearize f(x) = sqrt(x) at a = 9 to approximate sqrt(9.2), and evaluate lim (e^x - 1)/x as x approaches 0 with L'Hospital's Rule. Using f(9) = 3 and f'(9) = 1/6, L(9.2) = 3 + (1/6)(0.2) = 3.033 approximates sqrt(9.2). Because numerator and denominator both approach 0 as x approaches 0, L'Hospital's Rule yields lim e^x / 1 = 1.",
               "runs": [
                 {
-                  "text": "Worked-example sequence: A circle radius grows at 2 cm/s when r=3 cm. Differentiate A=pi r^2 in time. dA/dt=12 pi cm^2/s."
+                  "text": "Worked-example sequence: Linearize f(x) = sqrt(x) at a = 9 to approximate sqrt(9.2), and evaluate lim (e^x - 1)/x as x approaches 0 with L'Hospital's Rule. Using f(9) = 3 and f'(9) = 1/6, L(9.2) = 3 + (1/6)(0.2) = 3.033 approximates sqrt(9.2). Because numerator and denominator both approach 0 as x approaches 0, L'Hospital's Rule yields lim e^x / 1 = 1."
                 }
               ]
             },
@@ -2755,10 +2770,10 @@
             }
           ],
           "workedExample": {
-            "prompt": "A circle radius grows at 2 cm/s when r=3 cm.",
+            "prompt": "Linearize f(x) = sqrt(x) at a = 9 to approximate sqrt(9.2), and evaluate lim (e^x - 1)/x as x approaches 0 with L'Hospital's Rule.",
             "steps": [
-              "Differentiate A=pi r^2 in time.",
-              "dA/dt=12 pi cm^2/s."
+              "Using f(9) = 3 and f'(9) = 1/6, L(9.2) = 3 + (1/6)(0.2) = 3.033 approximates sqrt(9.2).",
+              "Because numerator and denominator both approach 0 as x approaches 0, L'Hospital's Rule yields lim e^x / 1 = 1."
             ],
             "original": true
           },
@@ -2866,7 +2881,12 @@
       "foundationPrototype": true,
       "sourceReviewed": true,
       "status": "source-reviewed-editorial-draft",
-      "releaseEligible": false
+      "releaseEligible": false,
+      "chapterTakeaways": [
+        "Always interpret a derivative in context with four elements: the quantity changing, whether it increases or decreases, units of output per input, and the exact instant.",
+        "In straight-line motion, speed increases when velocity and acceleration share the same sign and decreases when they have opposite signs; never judge speed from acceleration alone.",
+        "Verify the 0/0 or infinity/infinity form by checking numerator and denominator limits separately before invoking L'Hospital's Rule, then differentiate top and bottom independently."
+      ]
     },
     {
       "id": "ap-calc-ab-ch-05",
@@ -2966,10 +2986,10 @@
             },
             {
               "type": "paragraph",
-              "text": "Worked-example sequence: Maximize rectangle area with perimeter 20. Use A=x(10-x) on 0<=x<=10. The maximum occurs for a 5 by 5 square.",
+              "text": "Worked-example sequence: Verify the Mean Value Theorem for f(x) = x^2 on [1, 5] and find the guaranteed number c. Because f is continuous on [1, 5] and differentiable on (1, 5), the average rate of change is [25 - 1]/(5 - 1) = 6. Solve f'(c) = 2c = 6 to obtain c = 3, which lies inside (1, 5).",
               "runs": [
                 {
-                  "text": "Worked-example sequence: Maximize rectangle area with perimeter 20. Use A=x(10-x) on 0<=x<=10. The maximum occurs for a 5 by 5 square."
+                  "text": "Worked-example sequence: Verify the Mean Value Theorem for f(x) = x^2 on [1, 5] and find the guaranteed number c. Because f is continuous on [1, 5] and differentiable on (1, 5), the average rate of change is [25 - 1]/(5 - 1) = 6. Solve f'(c) = 2c = 6 to obtain c = 3, which lies inside (1, 5)."
                 }
               ]
             },
@@ -3006,10 +3026,10 @@
             }
           ],
           "workedExample": {
-            "prompt": "Maximize rectangle area with perimeter 20.",
+            "prompt": "Verify the Mean Value Theorem for f(x) = x^2 on [1, 5] and find the guaranteed number c.",
             "steps": [
-              "Use A=x(10-x) on 0<=x<=10.",
-              "The maximum occurs for a 5 by 5 square."
+              "Because f is continuous on [1, 5] and differentiable on (1, 5), the average rate of change is [25 - 1]/(5 - 1) = 6.",
+              "Solve f'(c) = 2c = 6 to obtain c = 3, which lies inside (1, 5)."
             ],
             "original": true
           },
@@ -3122,10 +3142,10 @@
             },
             {
               "type": "paragraph",
-              "text": "Worked-example sequence: Maximize rectangle area with perimeter 20. Use A=x(10-x) on 0<=x<=10. The maximum occurs for a 5 by 5 square.",
+              "text": "Worked-example sequence: Use the First Derivative Test to classify the local extrema of f(x) = x^3 - 3x. Solve f'(x) = 3x^2 - 3 = 3(x - 1)(x + 1) = 0 for critical numbers x = -1 and x = 1. Because f' changes from + to - at x = -1 (local max 2) and from - to + at x = 1 (local min -2), both are local extrema.",
               "runs": [
                 {
-                  "text": "Worked-example sequence: Maximize rectangle area with perimeter 20. Use A=x(10-x) on 0<=x<=10. The maximum occurs for a 5 by 5 square."
+                  "text": "Worked-example sequence: Use the First Derivative Test to classify the local extrema of f(x) = x^3 - 3x. Solve f'(x) = 3x^2 - 3 = 3(x - 1)(x + 1) = 0 for critical numbers x = -1 and x = 1. Because f' changes from + to - at x = -1 (local max 2) and from - to + at x = 1 (local min -2), both are local extrema."
                 }
               ]
             },
@@ -3154,10 +3174,10 @@
             }
           ],
           "workedExample": {
-            "prompt": "Maximize rectangle area with perimeter 20.",
+            "prompt": "Use the First Derivative Test to classify the local extrema of f(x) = x^3 - 3x.",
             "steps": [
-              "Use A=x(10-x) on 0<=x<=10.",
-              "The maximum occurs for a 5 by 5 square."
+              "Solve f'(x) = 3x^2 - 3 = 3(x - 1)(x + 1) = 0 for critical numbers x = -1 and x = 1.",
+              "Because f' changes from + to - at x = -1 (local max 2) and from - to + at x = 1 (local min -2), both are local extrema."
             ],
             "original": true
           },
@@ -3267,10 +3287,10 @@
             },
             {
               "type": "paragraph",
-              "text": "Worked-example sequence: Maximize rectangle area with perimeter 20. Use A=x(10-x) on 0<=x<=10. The maximum occurs for a 5 by 5 square.",
+              "text": "Worked-example sequence: Maximize the area of a rectangle with perimeter 20 and confirm concavity with the Second Derivative Test. Model A(x) = x(10 - x) = 10x - x^2 on 0 <= x <= 10 and solve A'(x) = 10 - 2x = 0 to get x = 5. Because A''(x) = -2 < 0 (concave down) and endpoint areas are 0, the maximum area is 25 for a 5 by 5 square.",
               "runs": [
                 {
-                  "text": "Worked-example sequence: Maximize rectangle area with perimeter 20. Use A=x(10-x) on 0<=x<=10. The maximum occurs for a 5 by 5 square."
+                  "text": "Worked-example sequence: Maximize the area of a rectangle with perimeter 20 and confirm concavity with the Second Derivative Test. Model A(x) = x(10 - x) = 10x - x^2 on 0 <= x <= 10 and solve A'(x) = 10 - 2x = 0 to get x = 5. Because A''(x) = -2 < 0 (concave down) and endpoint areas are 0, the maximum area is 25 for a 5 by 5 square."
                 }
               ]
             },
@@ -3307,10 +3327,10 @@
             }
           ],
           "workedExample": {
-            "prompt": "Maximize rectangle area with perimeter 20.",
+            "prompt": "Maximize the area of a rectangle with perimeter 20 and confirm concavity with the Second Derivative Test.",
             "steps": [
-              "Use A=x(10-x) on 0<=x<=10.",
-              "The maximum occurs for a 5 by 5 square."
+              "Model A(x) = x(10 - x) = 10x - x^2 on 0 <= x <= 10 and solve A'(x) = 10 - 2x = 0 to get x = 5.",
+              "Because A''(x) = -2 < 0 (concave down) and endpoint areas are 0, the maximum area is 25 for a 5 by 5 square."
             ],
             "original": true
           },
@@ -3419,7 +3439,12 @@
       "foundationPrototype": true,
       "sourceReviewed": true,
       "status": "source-reviewed-editorial-draft",
-      "releaseEligible": false
+      "releaseEligible": false,
+      "chapterTakeaways": [
+        "Before invoking the Mean Value Theorem on [a, b], explicitly state that f is continuous on [a, b] and differentiable on (a, b) to guarantee f'(c) = (f(b)-f(a))/(b-a).",
+        "Justify relative extrema by showing f' changes sign at a critical point (where f' = 0 or DNE), and confirm absolute extrema on a closed interval using the Candidates Test with endpoints.",
+        "Inflection points require f'' to change sign, not merely equal zero; use concavity to tell whether a tangent-line estimate overestimates (concave down) or underestimates (concave up)."
+      ]
     },
     {
       "id": "ap-calc-ab-ch-06",
@@ -3519,10 +3544,10 @@
             },
             {
               "type": "paragraph",
-              "text": "Worked-example sequence: Evaluate integral 1 to 3 of 2x dx. Use antiderivative x^2. The value is 9-1=8.",
+              "text": "Worked-example sequence: Approximate the definite integral of f(x) = x^2 on [0, 4] using a left Riemann sum with n = 2 equal subintervals. Compute uniform width Delta x = (4 - 0)/2 = 2 and sample at left endpoints x = 0 and x = 2. Sum L_2 = 2[f(0) + f(2)] = 2(0 + 4) = 8, which underestimates because x^2 is increasing on [0, 4].",
               "runs": [
                 {
-                  "text": "Worked-example sequence: Evaluate integral 1 to 3 of 2x dx. Use antiderivative x^2. The value is 9-1=8."
+                  "text": "Worked-example sequence: Approximate the definite integral of f(x) = x^2 on [0, 4] using a left Riemann sum with n = 2 equal subintervals. Compute uniform width Delta x = (4 - 0)/2 = 2 and sample at left endpoints x = 0 and x = 2. Sum L_2 = 2[f(0) + f(2)] = 2(0 + 4) = 8, which underestimates because x^2 is increasing on [0, 4]."
                 }
               ]
             },
@@ -3559,10 +3584,10 @@
             }
           ],
           "workedExample": {
-            "prompt": "Evaluate integral 1 to 3 of 2x dx.",
+            "prompt": "Approximate the definite integral of f(x) = x^2 on [0, 4] using a left Riemann sum with n = 2 equal subintervals.",
             "steps": [
-              "Use antiderivative x^2.",
-              "The value is 9-1=8."
+              "Compute uniform width Delta x = (4 - 0)/2 = 2 and sample at left endpoints x = 0 and x = 2.",
+              "Sum L_2 = 2[f(0) + f(2)] = 2(0 + 4) = 8, which underestimates because x^2 is increasing on [0, 4]."
             ],
             "original": true
           },
@@ -3677,10 +3702,10 @@
             },
             {
               "type": "paragraph",
-              "text": "Worked-example sequence: Evaluate integral 1 to 3 of 2x dx. Use antiderivative x^2. The value is 9-1=8.",
+              "text": "Worked-example sequence: Differentiate G(x) = integral from 2 to x^2 of cos(t) dt using the Fundamental Theorem of Calculus. Apply FTC Part 1 together with the chain rule for the composite upper limit u(x) = x^2 (du/dx = 2x). Evaluate the integrand at x^2 and multiply by 2x to obtain G'(x) = 2x cos(x^2).",
               "runs": [
                 {
-                  "text": "Worked-example sequence: Evaluate integral 1 to 3 of 2x dx. Use antiderivative x^2. The value is 9-1=8."
+                  "text": "Worked-example sequence: Differentiate G(x) = integral from 2 to x^2 of cos(t) dt using the Fundamental Theorem of Calculus. Apply FTC Part 1 together with the chain rule for the composite upper limit u(x) = x^2 (du/dx = 2x). Evaluate the integrand at x^2 and multiply by 2x to obtain G'(x) = 2x cos(x^2)."
                 }
               ]
             },
@@ -3709,10 +3734,10 @@
             }
           ],
           "workedExample": {
-            "prompt": "Evaluate integral 1 to 3 of 2x dx.",
+            "prompt": "Differentiate G(x) = integral from 2 to x^2 of cos(t) dt using the Fundamental Theorem of Calculus.",
             "steps": [
-              "Use antiderivative x^2.",
-              "The value is 9-1=8."
+              "Apply FTC Part 1 together with the chain rule for the composite upper limit u(x) = x^2 (du/dx = 2x).",
+              "Evaluate the integrand at x^2 and multiply by 2x to obtain G'(x) = 2x cos(x^2)."
             ],
             "original": true
           },
@@ -3818,10 +3843,10 @@
             },
             {
               "type": "paragraph",
-              "text": "Worked-example sequence: Evaluate integral 1 to 3 of 2x dx. Use antiderivative x^2. The value is 9-1=8.",
+              "text": "Worked-example sequence: Evaluate the definite integral from 0 to 1 of 2x(x^2 + 1)^3 dx using u-substitution. Set u = x^2 + 1 so du = 2x dx, and change bounds from x = 0, 1 to u = 1, 2. Integrate u^3 from 1 to 2 to get [u^4/4] from 1 to 2 = 16/4 - 1/4 = 15/4.",
               "runs": [
                 {
-                  "text": "Worked-example sequence: Evaluate integral 1 to 3 of 2x dx. Use antiderivative x^2. The value is 9-1=8."
+                  "text": "Worked-example sequence: Evaluate the definite integral from 0 to 1 of 2x(x^2 + 1)^3 dx using u-substitution. Set u = x^2 + 1 so du = 2x dx, and change bounds from x = 0, 1 to u = 1, 2. Integrate u^3 from 1 to 2 to get [u^4/4] from 1 to 2 = 16/4 - 1/4 = 15/4."
                 }
               ]
             },
@@ -3858,10 +3883,10 @@
             }
           ],
           "workedExample": {
-            "prompt": "Evaluate integral 1 to 3 of 2x dx.",
+            "prompt": "Evaluate the definite integral from 0 to 1 of 2x(x^2 + 1)^3 dx using u-substitution.",
             "steps": [
-              "Use antiderivative x^2.",
-              "The value is 9-1=8."
+              "Set u = x^2 + 1 so du = 2x dx, and change bounds from x = 0, 1 to u = 1, 2.",
+              "Integrate u^3 from 1 to 2 to get [u^4/4] from 1 to 2 = 16/4 - 1/4 = 15/4."
             ],
             "original": true
           },
@@ -3968,7 +3993,12 @@
       "foundationPrototype": true,
       "sourceReviewed": true,
       "status": "source-reviewed-editorial-draft",
-      "releaseEligible": false
+      "releaseEligible": false,
+      "chapterTakeaways": [
+        "By FTC Part 1, the derivative of the integral from a to g(x) of f(t) dt equals f(g(x)) times g'(x), connecting accumulation graphs directly to f as the derivative of the integral.",
+        "For Riemann sums on monotonic functions, left sums underestimate increasing curves and overestimate decreasing ones, while trapezoidal sums depend on concavity rather than monotonicity.",
+        "When using u-substitution in a definite integral, transform the original x-limits into u-limits immediately so you evaluate directly without converting back to x."
+      ]
     },
     {
       "id": "ap-calc-ab-ch-07",
@@ -4065,10 +4095,10 @@
             },
             {
               "type": "paragraph",
-              "text": "Worked-example sequence: Solve dy/dx=2y with y(0)=3. Integrate dy/y=2dx. The solution is y=3e^(2x).",
+              "text": "Worked-example sequence: Verify that y(x) = 3e^(2x) is the particular solution to dy/dx = 2y with y(0) = 3. Differentiate y(x) = 3e^(2x) to get dy/dx = 6e^(2x), which equals 2y = 2(3e^(2x)) for every x. Evaluate y(0) = 3e^0 = 3 to confirm the initial condition holds.",
               "runs": [
                 {
-                  "text": "Worked-example sequence: Solve dy/dx=2y with y(0)=3. Integrate dy/y=2dx. The solution is y=3e^(2x)."
+                  "text": "Worked-example sequence: Verify that y(x) = 3e^(2x) is the particular solution to dy/dx = 2y with y(0) = 3. Differentiate y(x) = 3e^(2x) to get dy/dx = 6e^(2x), which equals 2y = 2(3e^(2x)) for every x. Evaluate y(0) = 3e^0 = 3 to confirm the initial condition holds."
                 }
               ]
             },
@@ -4105,10 +4135,10 @@
             }
           ],
           "workedExample": {
-            "prompt": "Solve dy/dx=2y with y(0)=3.",
+            "prompt": "Verify that y(x) = 3e^(2x) is the particular solution to dy/dx = 2y with y(0) = 3.",
             "steps": [
-              "Integrate dy/y=2dx.",
-              "The solution is y=3e^(2x)."
+              "Differentiate y(x) = 3e^(2x) to get dy/dx = 6e^(2x), which equals 2y = 2(3e^(2x)) for every x.",
+              "Evaluate y(0) = 3e^0 = 3 to confirm the initial condition holds."
             ],
             "original": true
           },
@@ -4219,10 +4249,10 @@
             },
             {
               "type": "paragraph",
-              "text": "Worked-example sequence: Solve dy/dx=2y with y(0)=3. Integrate dy/y=2dx. The solution is y=3e^(2x).",
+              "text": "Worked-example sequence: Determine slope-field segment slopes for dy/dx = x - y at (2, 2), (2, 0), and (0, 2). Substitute each pair into x - y: slopes are 0 at (2, 2), +2 at (2, 0), and -2 at (0, 2). All segments along the diagonal line y = x are horizontal because dy/dx = 0 whenever y = x.",
               "runs": [
                 {
-                  "text": "Worked-example sequence: Solve dy/dx=2y with y(0)=3. Integrate dy/y=2dx. The solution is y=3e^(2x)."
+                  "text": "Worked-example sequence: Determine slope-field segment slopes for dy/dx = x - y at (2, 2), (2, 0), and (0, 2). Substitute each pair into x - y: slopes are 0 at (2, 2), +2 at (2, 0), and -2 at (0, 2). All segments along the diagonal line y = x are horizontal because dy/dx = 0 whenever y = x."
                 }
               ]
             },
@@ -4251,10 +4281,10 @@
             }
           ],
           "workedExample": {
-            "prompt": "Solve dy/dx=2y with y(0)=3.",
+            "prompt": "Determine slope-field segment slopes for dy/dx = x - y at (2, 2), (2, 0), and (0, 2).",
             "steps": [
-              "Integrate dy/y=2dx.",
-              "The solution is y=3e^(2x)."
+              "Substitute each pair into x - y: slopes are 0 at (2, 2), +2 at (2, 0), and -2 at (0, 2).",
+              "All segments along the diagonal line y = x are horizontal because dy/dx = 0 whenever y = x."
             ],
             "original": true
           },
@@ -4362,10 +4392,10 @@
             },
             {
               "type": "paragraph",
-              "text": "Worked-example sequence: Solve dy/dx=2y with y(0)=3. Integrate dy/y=2dx. The solution is y=3e^(2x).",
+              "text": "Worked-example sequence: Solve the separable differential equation dy/dx = 2y with initial condition y(0) = 3. Separate variables as (1/y) dy = 2 dx (y != 0) and integrate to get ln|y| = 2x + C, giving y = A e^(2x). Apply y(0) = 3 to find A = 3, yielding the particular solution y = 3e^(2x).",
               "runs": [
                 {
-                  "text": "Worked-example sequence: Solve dy/dx=2y with y(0)=3. Integrate dy/y=2dx. The solution is y=3e^(2x)."
+                  "text": "Worked-example sequence: Solve the separable differential equation dy/dx = 2y with initial condition y(0) = 3. Separate variables as (1/y) dy = 2 dx (y != 0) and integrate to get ln|y| = 2x + C, giving y = A e^(2x). Apply y(0) = 3 to find A = 3, yielding the particular solution y = 3e^(2x)."
                 }
               ]
             },
@@ -4402,10 +4432,10 @@
             }
           ],
           "workedExample": {
-            "prompt": "Solve dy/dx=2y with y(0)=3.",
+            "prompt": "Solve the separable differential equation dy/dx = 2y with initial condition y(0) = 3.",
             "steps": [
-              "Integrate dy/y=2dx.",
-              "The solution is y=3e^(2x)."
+              "Separate variables as (1/y) dy = 2 dx (y != 0) and integrate to get ln|y| = 2x + C, giving y = A e^(2x).",
+              "Apply y(0) = 3 to find A = 3, yielding the particular solution y = 3e^(2x)."
             ],
             "original": true
           },
@@ -4512,7 +4542,12 @@
       "foundationPrototype": true,
       "sourceReviewed": true,
       "status": "source-reviewed-editorial-draft",
-      "releaseEligible": false
+      "releaseEligible": false,
+      "chapterTakeaways": [
+        "To solve a separable differential equation, separate all y-terms with dy and x-terms with dx before integrating, include +C right after integration, and solve for C using the initial condition.",
+        "When verifying a proposed solution to a differential equation, compute its required derivatives and substitute directly into both sides while confirming the initial value holds.",
+        "In a logistic model dP/dt = kP(1 - P/M), population grows fastest at half the carrying capacity (P = M/2), where the solution curve shifts from concave up to concave down."
+      ]
     },
     {
       "id": "ap-calc-ab-ch-08",
@@ -4615,10 +4650,10 @@
             },
             {
               "type": "paragraph",
-              "text": "Worked-example sequence: Find area between y=x and y=x^2 on [0,1]. Integrate x-x^2. The area is 1/6.",
+              "text": "Worked-example sequence: Find the average value of f(x) = 3x^2 on [0, 2] and distinguish it from total accumulation. Compute total accumulation via the definite integral from 0 to 2 of 3x^2 dx = [x^3] from 0 to 2 = 8. Divide by interval width 2 - 0 = 2 to obtain average value 8 / 2 = 4.",
               "runs": [
                 {
-                  "text": "Worked-example sequence: Find area between y=x and y=x^2 on [0,1]. Integrate x-x^2. The area is 1/6."
+                  "text": "Worked-example sequence: Find the average value of f(x) = 3x^2 on [0, 2] and distinguish it from total accumulation. Compute total accumulation via the definite integral from 0 to 2 of 3x^2 dx = [x^3] from 0 to 2 = 8. Divide by interval width 2 - 0 = 2 to obtain average value 8 / 2 = 4."
                 }
               ]
             },
@@ -4655,10 +4690,10 @@
             }
           ],
           "workedExample": {
-            "prompt": "Find area between y=x and y=x^2 on [0,1].",
+            "prompt": "Find the average value of f(x) = 3x^2 on [0, 2] and distinguish it from total accumulation.",
             "steps": [
-              "Integrate x-x^2.",
-              "The area is 1/6."
+              "Compute total accumulation via the definite integral from 0 to 2 of 3x^2 dx = [x^3] from 0 to 2 = 8.",
+              "Divide by interval width 2 - 0 = 2 to obtain average value 8 / 2 = 4."
             ],
             "original": true
           },
@@ -4771,10 +4806,10 @@
             },
             {
               "type": "paragraph",
-              "text": "Worked-example sequence: Find area between y=x and y=x^2 on [0,1]. Integrate x-x^2. The area is 1/6.",
+              "text": "Worked-example sequence: Find the area enclosed between y = x and y = x^2 on [0, 1]. Identify intersections at x = 0 and x = 1 and note that y = x lies above y = x^2 on [0, 1]. Integrate (x - x^2) from 0 to 1 to obtain [x^2/2 - x^3/3] from 0 to 1 = 1/2 - 1/3 = 1/6.",
               "runs": [
                 {
-                  "text": "Worked-example sequence: Find area between y=x and y=x^2 on [0,1]. Integrate x-x^2. The area is 1/6."
+                  "text": "Worked-example sequence: Find the area enclosed between y = x and y = x^2 on [0, 1]. Identify intersections at x = 0 and x = 1 and note that y = x lies above y = x^2 on [0, 1]. Integrate (x - x^2) from 0 to 1 to obtain [x^2/2 - x^3/3] from 0 to 1 = 1/2 - 1/3 = 1/6."
                 }
               ]
             },
@@ -4803,10 +4838,10 @@
             }
           ],
           "workedExample": {
-            "prompt": "Find area between y=x and y=x^2 on [0,1].",
+            "prompt": "Find the area enclosed between y = x and y = x^2 on [0, 1].",
             "steps": [
-              "Integrate x-x^2.",
-              "The area is 1/6."
+              "Identify intersections at x = 0 and x = 1 and note that y = x lies above y = x^2 on [0, 1].",
+              "Integrate (x - x^2) from 0 to 1 to obtain [x^2/2 - x^3/3] from 0 to 1 = 1/2 - 1/3 = 1/6."
             ],
             "original": true
           },
@@ -4915,10 +4950,10 @@
             },
             {
               "type": "paragraph",
-              "text": "Worked-example sequence: Find area between y=x and y=x^2 on [0,1]. Integrate x-x^2. The area is 1/6.",
+              "text": "Worked-example sequence: Find the volume when the region between y = x and y = x^2 on [0, 1] revolves around the x-axis. Set washer radii from the axis: outer radius R(x) = x and inner radius r(x) = x^2. Evaluate pi * integral from 0 to 1 of (x^2 - x^4) dx = pi(1/3 - 1/5) = 2pi/15.",
               "runs": [
                 {
-                  "text": "Worked-example sequence: Find area between y=x and y=x^2 on [0,1]. Integrate x-x^2. The area is 1/6."
+                  "text": "Worked-example sequence: Find the volume when the region between y = x and y = x^2 on [0, 1] revolves around the x-axis. Set washer radii from the axis: outer radius R(x) = x and inner radius r(x) = x^2. Evaluate pi * integral from 0 to 1 of (x^2 - x^4) dx = pi(1/3 - 1/5) = 2pi/15."
                 }
               ]
             },
@@ -4955,10 +4990,10 @@
             }
           ],
           "workedExample": {
-            "prompt": "Find area between y=x and y=x^2 on [0,1].",
+            "prompt": "Find the volume when the region between y = x and y = x^2 on [0, 1] revolves around the x-axis.",
             "steps": [
-              "Integrate x-x^2.",
-              "The area is 1/6."
+              "Set washer radii from the axis: outer radius R(x) = x and inner radius r(x) = x^2.",
+              "Evaluate pi * integral from 0 to 1 of (x^2 - x^4) dx = pi(1/3 - 1/5) = 2pi/15."
             ],
             "original": true
           },
@@ -5066,7 +5101,12 @@
       "foundationPrototype": true,
       "sourceReviewed": true,
       "status": "source-reviewed-editorial-draft",
-      "releaseEligible": false
+      "releaseEligible": false,
+      "chapterTakeaways": [
+        "Compute average value as (1/(b-a)) times the definite integral of f(x) over [a, b], and distinguish net displacement (integral of v(t)) from total distance (integral of |v(t)|).",
+        "Set up area between curves by integrating (top minus bottom) with respect to x or (right minus left) with respect to y, splitting the integral wherever curves intersect and switch.",
+        "For solids of revolution, measure outer radius R and inner radius r from the actual axis of rotation (not blindly from zero) and integrate pi times (R^2 - r^2) rather than pi(R - r)^2."
+      ]
     }
   ],
   "practiceRouting": {
@@ -13113,476 +13153,860 @@
   "diagrams": [
     {
       "id": "ap-calc-ab-flow-01",
-      "title": "Limits and Continuity reasoning flow",
+      "chapterId": "ap-calc-ab-ch-01",
+      "domainId": "limits-and-continuity",
+      "title": "Limits, continuity classification, and Intermediate Value Theorem flow",
       "type": "optional-concept-flow",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Trace the Unit 1 AP Calculus AB reasoning sequence from problem representation to justified mathematical conclusion.",
+      "caption": "An original AP Calculus AB Unit 1 concept flow summarizing limits, continuity classification, and intermediate value theorem flow.",
       "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
         "nodes": [
           {
-            "id": "representation",
-            "label": "Identify representation and givens"
+            "id": "one-sided",
+            "label": "Compare left- and right-hand limits",
+            "detail": "Inspect nearby behavior from both sides of c using tables, graphs, or expressions before evaluating f(c)."
           },
           {
-            "id": "procedure",
-            "label": "Select procedure and verify conditions"
+            "id": "algebra",
+            "label": "Resolve indeterminate forms algebraically",
+            "detail": "Factor, rationalize, or apply limit laws and dominant-term analysis for removable holes and limits at infinity."
           },
           {
-            "id": "execution",
-            "label": "Execute with notation and units"
+            "id": "continuity",
+            "label": "Verify three-part continuity at c",
+            "detail": "Check that f(c) is defined, the two-sided limit exists, and lim f(x) = f(c) to separate removable, jump, and infinite discontinuities."
           },
           {
-            "id": "interpretation",
-            "label": "Interpret, justify, and check"
+            "id": "ivt",
+            "label": "Apply IVT on a closed interval",
+            "detail": "Once continuity on [a, b] is confirmed and k lies between f(a) and f(b), guarantee at least one c in (a, b) with f(c) = k."
           }
         ],
         "edges": [
           {
-            "from": "representation",
-            "to": "procedure"
+            "id": "one-sided-to-algebra",
+            "from": "one-sided",
+            "to": "algebra",
+            "label": "motivates simplification via"
           },
           {
-            "from": "procedure",
-            "to": "execution"
+            "id": "algebra-to-continuity",
+            "from": "algebra",
+            "to": "continuity",
+            "label": "supplies limit values for"
           },
           {
-            "from": "execution",
-            "to": "interpretation"
+            "id": "continuity-to-ivt",
+            "from": "continuity",
+            "to": "ivt",
+            "label": "satisfies hypothesis for"
           }
-        ]
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
       },
       "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Four-step Unit 1 flow from one-sided limits to algebraic manipulation, continuity classification, and IVT existence.",
+        "longDescription": "Read from left to right. Inspect nearby behavior from both sides of c using tables, graphs, or expressions before evaluating f(c). Factor, rationalize, or apply limit laws and dominant-term analysis for removable holes and limits at infinity. Check that f(c) is defined, the two-sided limit exists, and lim f(x) = f(c) to separate removable, jump, and infinite discontinuities. Once continuity on [a, b] is confirmed and k lies between f(a) and f(b), guarantee at least one c in (a, b) with f(c) = k.",
         "textEquivalent": [
-          "Identify the representation and givens.",
-          "Select a procedure and verify conditions.",
-          "Execute with notation and units.",
-          "Interpret, justify, and check the result."
+          "Compare left- and right-hand limits: Inspect nearby behavior from both sides of c using tables, graphs, or expressions before evaluating f(c).",
+          "Resolve indeterminate forms algebraically: Factor, rationalize, or apply limit laws and dominant-term analysis for removable holes and limits at infinity.",
+          "Verify three-part continuity at c: Check that f(c) is defined, the two-sided limit exists, and lim f(x) = f(c) to separate removable, jump, and infinite discontinuities.",
+          "Apply IVT on a closed interval: Once continuity on [a, b] is confirmed and k lies between f(a) and f(b), guarantee at least one c in (a, b) with f(c) = k."
         ],
-        "fallbackMode": "ordered-text-equivalent"
+        "readingOrder": [
+          "one-sided",
+          "algebra",
+          "continuity",
+          "ivt"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
       },
       "unscored": true,
       "officialItem": false,
-      "releaseEligible": false
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      }
     },
     {
       "id": "ap-calc-ab-flow-02",
-      "title": "Derivative Foundations reasoning flow",
+      "chapterId": "ap-calc-ab-ch-02",
+      "domainId": "differentiation-definition-and-fundamental-properties",
+      "title": "Limit definition of derivative to differentiation rule selection flow",
       "type": "optional-concept-flow",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Trace the Unit 2 AP Calculus AB reasoning sequence from problem representation to justified mathematical conclusion.",
+      "caption": "An original AP Calculus AB Unit 2 concept flow summarizing limit definition of derivative to differentiation rule selection flow.",
       "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
         "nodes": [
           {
-            "id": "representation",
-            "label": "Identify representation and givens"
+            "id": "secant",
+            "label": "Frame average rate via difference quotient",
+            "detail": "Write [f(a+h)-f(a)]/h or [f(x)-f(a)]/(x-a) to connect secant slope with contextual average rate of change."
           },
           {
-            "id": "procedure",
-            "label": "Select procedure and verify conditions"
+            "id": "tangent",
+            "label": "Take the limit for instantaneous slope",
+            "detail": "Evaluate the limit as h approaches 0 to define f prime(a) as tangent-line slope and instantaneous rate."
           },
           {
-            "id": "execution",
-            "label": "Execute with notation and units"
+            "id": "diff-cont",
+            "label": "Check differentiability and continuity",
+            "detail": "Confirm smooth behavior with no corners, cusps, vertical tangents, or discontinuities; differentiability implies continuity."
           },
           {
-            "id": "interpretation",
-            "label": "Interpret, justify, and check"
+            "id": "rules",
+            "label": "Apply power, product, quotient, and trig rules",
+            "detail": "Match expression structure to linearity, transcendental formulas, and ordered product or quotient rules."
           }
         ],
         "edges": [
           {
-            "from": "representation",
-            "to": "procedure"
+            "id": "secant-to-tangent",
+            "from": "secant",
+            "to": "tangent",
+            "label": "passes to the limit as"
           },
           {
-            "from": "procedure",
-            "to": "execution"
+            "id": "tangent-to-diff-cont",
+            "from": "tangent",
+            "to": "diff-cont",
+            "label": "requires existence checked by"
           },
           {
-            "from": "execution",
-            "to": "interpretation"
+            "id": "diff-cont-to-rules",
+            "from": "diff-cont",
+            "to": "rules",
+            "label": "enables efficient calculation with"
           }
-        ]
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
       },
       "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Four-step Unit 2 flow from average rate of change to instantaneous derivative, differentiability checks, and differentiation rules.",
+        "longDescription": "Read from left to right. Write [f(a+h)-f(a)]/h or [f(x)-f(a)]/(x-a) to connect secant slope with contextual average rate of change. Evaluate the limit as h approaches 0 to define f prime(a) as tangent-line slope and instantaneous rate. Confirm smooth behavior with no corners, cusps, vertical tangents, or discontinuities; differentiability implies continuity. Match expression structure to linearity, transcendental formulas, and ordered product or quotient rules.",
         "textEquivalent": [
-          "Identify the representation and givens.",
-          "Select a procedure and verify conditions.",
-          "Execute with notation and units.",
-          "Interpret, justify, and check the result."
+          "Frame average rate via difference quotient: Write [f(a+h)-f(a)]/h or [f(x)-f(a)]/(x-a) to connect secant slope with contextual average rate of change.",
+          "Take the limit for instantaneous slope: Evaluate the limit as h approaches 0 to define f prime(a) as tangent-line slope and instantaneous rate.",
+          "Check differentiability and continuity: Confirm smooth behavior with no corners, cusps, vertical tangents, or discontinuities; differentiability implies continuity.",
+          "Apply power, product, quotient, and trig rules: Match expression structure to linearity, transcendental formulas, and ordered product or quotient rules."
         ],
-        "fallbackMode": "ordered-text-equivalent"
+        "readingOrder": [
+          "secant",
+          "tangent",
+          "diff-cont",
+          "rules"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
       },
       "unscored": true,
       "officialItem": false,
-      "releaseEligible": false
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      }
     },
     {
       "id": "ap-calc-ab-flow-03",
-      "title": "Advanced Differentiation reasoning flow",
+      "chapterId": "ap-calc-ab-ch-03",
+      "domainId": "differentiation-composite-implicit-inverse-functions",
+      "title": "Composite, implicit, inverse, and higher-order differentiation flow",
       "type": "optional-concept-flow",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Trace the Unit 3 AP Calculus AB reasoning sequence from problem representation to justified mathematical conclusion.",
+      "caption": "An original AP Calculus AB Unit 3 concept flow summarizing composite, implicit, inverse, and higher-order differentiation flow.",
       "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
         "nodes": [
           {
-            "id": "representation",
-            "label": "Identify representation and givens"
+            "id": "structure",
+            "label": "Decompose outer and inner structure",
+            "detail": "Read composite functions from outside inward and distinguish explicit y = f(x) from implicit F(x, y) = c."
           },
           {
-            "id": "procedure",
-            "label": "Select procedure and verify conditions"
+            "id": "chain",
+            "label": "Execute chain rule with inner derivative",
+            "detail": "Differentiate the outer layer while keeping the inner expression unchanged, then multiply by the inner derivative."
           },
           {
-            "id": "execution",
-            "label": "Execute with notation and units"
+            "id": "implicit-inv",
+            "label": "Handle implicit y terms and inverse slopes",
+            "detail": "Attach dy/dx whenever differentiating y with respect to x, and use reciprocal slopes 1/f prime(f^-1(a)) for inverses."
           },
           {
-            "id": "interpretation",
-            "label": "Interpret, justify, and check"
+            "id": "higher",
+            "label": "Differentiate repeatedly and track units",
+            "detail": "Compute second and higher derivatives cleanly while interpreting how each order tracks rate of change of the previous derivative."
           }
         ],
         "edges": [
           {
-            "from": "representation",
-            "to": "procedure"
+            "id": "structure-to-chain",
+            "from": "structure",
+            "to": "chain",
+            "label": "determines layer order for"
           },
           {
-            "from": "procedure",
-            "to": "execution"
+            "id": "chain-to-implicit-inv",
+            "from": "chain",
+            "to": "implicit-inv",
+            "label": "generalizes directly to"
           },
           {
-            "from": "execution",
-            "to": "interpretation"
+            "id": "implicit-inv-to-higher",
+            "from": "implicit-inv",
+            "to": "higher",
+            "label": "extends to successive rates via"
           }
-        ]
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
       },
       "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Four-step Unit 3 flow from structural decomposition to chain rule, implicit and inverse differentiation, and higher-order derivatives.",
+        "longDescription": "Read from left to right. Read composite functions from outside inward and distinguish explicit y = f(x) from implicit F(x, y) = c. Differentiate the outer layer while keeping the inner expression unchanged, then multiply by the inner derivative. Attach dy/dx whenever differentiating y with respect to x, and use reciprocal slopes 1/f prime(f^-1(a)) for inverses. Compute second and higher derivatives cleanly while interpreting how each order tracks rate of change of the previous derivative.",
         "textEquivalent": [
-          "Identify the representation and givens.",
-          "Select a procedure and verify conditions.",
-          "Execute with notation and units.",
-          "Interpret, justify, and check the result."
+          "Decompose outer and inner structure: Read composite functions from outside inward and distinguish explicit y = f(x) from implicit F(x, y) = c.",
+          "Execute chain rule with inner derivative: Differentiate the outer layer while keeping the inner expression unchanged, then multiply by the inner derivative.",
+          "Handle implicit y terms and inverse slopes: Attach dy/dx whenever differentiating y with respect to x, and use reciprocal slopes 1/f prime(f^-1(a)) for inverses.",
+          "Differentiate repeatedly and track units: Compute second and higher derivatives cleanly while interpreting how each order tracks rate of change of the previous derivative."
         ],
-        "fallbackMode": "ordered-text-equivalent"
+        "readingOrder": [
+          "structure",
+          "chain",
+          "implicit-inv",
+          "higher"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
       },
       "unscored": true,
       "officialItem": false,
-      "releaseEligible": false
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      }
     },
     {
       "id": "ap-calc-ab-flow-04",
-      "title": "Contextual Derivatives reasoning flow",
+      "chapterId": "ap-calc-ab-ch-04",
+      "domainId": "contextual-applications-of-differentiation",
+      "title": "Contextual derivatives, rectilinear motion, related rates, and local linearity flow",
       "type": "optional-concept-flow",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Trace the Unit 4 AP Calculus AB reasoning sequence from problem representation to justified mathematical conclusion.",
+      "caption": "An original AP Calculus AB Unit 4 concept flow summarizing contextual derivatives, rectilinear motion, related rates, and local linearity flow.",
       "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
         "nodes": [
           {
-            "id": "representation",
-            "label": "Identify representation and givens"
+            "id": "context-units",
+            "label": "Translate rate sign and compound units",
+            "detail": "Interpret derivative values as output units per input unit at a specific instant, never as total accumulated quantity."
           },
           {
-            "id": "procedure",
-            "label": "Select procedure and verify conditions"
+            "id": "motion",
+            "label": "Separate position, velocity, speed, and acceleration",
+            "detail": "Compare signs of v(t) = s prime(t) and a(t) = v prime(t): speed increases when velocity and acceleration share a sign."
           },
           {
-            "id": "execution",
-            "label": "Execute with notation and units"
+            "id": "related-rates",
+            "label": "Differentiate geometric equation in time first",
+            "detail": "Relate changing quantities with one equation, differentiate with respect to t, and substitute instant values only afterward."
           },
           {
-            "id": "interpretation",
-            "label": "Interpret, justify, and check"
+            "id": "linear-lhopital",
+            "label": "Approximate locally or verify indeterminate limits",
+            "detail": "Use tangent line L(x) = f(a) + f prime(a)(x-a) near a, and verify 0/0 or infinity/infinity before applying L Hospital Rule."
           }
         ],
         "edges": [
           {
-            "from": "representation",
-            "to": "procedure"
+            "id": "context-to-motion",
+            "from": "context-units",
+            "to": "motion",
+            "label": "anchors sign and unit meaning in"
           },
           {
-            "from": "procedure",
-            "to": "execution"
+            "id": "motion-to-related",
+            "from": "motion",
+            "to": "related-rates",
+            "label": "extends time-rate modeling to"
           },
           {
-            "from": "execution",
-            "to": "interpretation"
+            "id": "related-to-linear",
+            "from": "related-rates",
+            "to": "linear-lhopital",
+            "label": "pairs local rates with"
           }
-        ]
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
       },
       "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Four-step Unit 4 flow from contextual units and motion signs to related rates, tangent-line approximation, and L Hospital Rule.",
+        "longDescription": "Read from left to right. Interpret derivative values as output units per input unit at a specific instant, never as total accumulated quantity. Compare signs of v(t) = s prime(t) and a(t) = v prime(t): speed increases when velocity and acceleration share a sign. Relate changing quantities with one equation, differentiate with respect to t, and substitute instant values only afterward. Use tangent line L(x) = f(a) + f prime(a)(x-a) near a, and verify 0/0 or infinity/infinity before applying L Hospital Rule.",
         "textEquivalent": [
-          "Identify the representation and givens.",
-          "Select a procedure and verify conditions.",
-          "Execute with notation and units.",
-          "Interpret, justify, and check the result."
+          "Translate rate sign and compound units: Interpret derivative values as output units per input unit at a specific instant, never as total accumulated quantity.",
+          "Separate position, velocity, speed, and acceleration: Compare signs of v(t) = s prime(t) and a(t) = v prime(t): speed increases when velocity and acceleration share a sign.",
+          "Differentiate geometric equation in time first: Relate changing quantities with one equation, differentiate with respect to t, and substitute instant values only afterward.",
+          "Approximate locally or verify indeterminate limits: Use tangent line L(x) = f(a) + f prime(a)(x-a) near a, and verify 0/0 or infinity/infinity before applying L Hospital Rule."
         ],
-        "fallbackMode": "ordered-text-equivalent"
+        "readingOrder": [
+          "context-units",
+          "motion",
+          "related-rates",
+          "linear-lhopital"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
       },
       "unscored": true,
       "officialItem": false,
-      "releaseEligible": false
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      }
     },
     {
       "id": "ap-calc-ab-flow-05",
-      "title": "Derivative Analysis reasoning flow",
+      "chapterId": "ap-calc-ab-ch-05",
+      "domainId": "analytical-applications-of-differentiation",
+      "title": "MVT, critical-point tests, concavity, and optimization justification flow",
       "type": "optional-concept-flow",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Trace the Unit 5 AP Calculus AB reasoning sequence from problem representation to justified mathematical conclusion.",
+      "caption": "An original AP Calculus AB Unit 5 concept flow summarizing mvt, critical-point tests, concavity, and optimization justification flow.",
       "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
         "nodes": [
           {
-            "id": "representation",
-            "label": "Identify representation and givens"
+            "id": "theorems",
+            "label": "Verify MVT and EVT hypotheses",
+            "detail": "Confirm continuity on [a, b] and differentiability on (a, b) before guaranteeing an average-instantaneous slope match or global extrema."
           },
           {
-            "id": "procedure",
-            "label": "Select procedure and verify conditions"
+            "id": "first-deriv",
+            "label": "Find critical points and build f prime sign chart",
+            "detail": "Solve f prime(x) = 0 or undefined, then check sign changes of f prime to identify increasing/decreasing intervals and local extrema."
           },
           {
-            "id": "execution",
-            "label": "Execute with notation and units"
+            "id": "second-deriv",
+            "label": "Analyze concavity and inflection via f double prime",
+            "detail": "Test sign changes of f double prime for inflection points and confirm local extrema where f prime = 0 using the Second Derivative Test."
           },
           {
-            "id": "interpretation",
-            "label": "Interpret, justify, and check"
+            "id": "optimize",
+            "label": "Compare candidates and endpoints for global extrema",
+            "detail": "Evaluate the objective function at all feasible interior critical points and domain endpoints, then state a contextual conclusion."
           }
         ],
         "edges": [
           {
-            "from": "representation",
-            "to": "procedure"
+            "id": "theorems-to-first",
+            "from": "theorems",
+            "to": "first-deriv",
+            "label": "establishes existence before"
           },
           {
-            "from": "procedure",
-            "to": "execution"
+            "id": "first-to-second",
+            "from": "first-deriv",
+            "to": "second-deriv",
+            "label": "refines curve shape with"
           },
           {
-            "from": "execution",
-            "to": "interpretation"
+            "id": "second-to-optimize",
+            "from": "second-deriv",
+            "to": "optimize",
+            "label": "justifies global decisions in"
           }
-        ]
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
       },
       "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Four-step Unit 5 flow from MVT and EVT hypotheses to first-derivative sign charts, second-derivative concavity, and closed-interval optimization.",
+        "longDescription": "Read from left to right. Confirm continuity on [a, b] and differentiability on (a, b) before guaranteeing an average-instantaneous slope match or global extrema. Solve f prime(x) = 0 or undefined, then check sign changes of f prime to identify increasing/decreasing intervals and local extrema. Test sign changes of f double prime for inflection points and confirm local extrema where f prime = 0 using the Second Derivative Test. Evaluate the objective function at all feasible interior critical points and domain endpoints, then state a contextual conclusion.",
         "textEquivalent": [
-          "Identify the representation and givens.",
-          "Select a procedure and verify conditions.",
-          "Execute with notation and units.",
-          "Interpret, justify, and check the result."
+          "Verify MVT and EVT hypotheses: Confirm continuity on [a, b] and differentiability on (a, b) before guaranteeing an average-instantaneous slope match or global extrema.",
+          "Find critical points and build f prime sign chart: Solve f prime(x) = 0 or undefined, then check sign changes of f prime to identify increasing/decreasing intervals and local extrema.",
+          "Analyze concavity and inflection via f double prime: Test sign changes of f double prime for inflection points and confirm local extrema where f prime = 0 using the Second Derivative Test.",
+          "Compare candidates and endpoints for global extrema: Evaluate the objective function at all feasible interior critical points and domain endpoints, then state a contextual conclusion."
         ],
-        "fallbackMode": "ordered-text-equivalent"
+        "readingOrder": [
+          "theorems",
+          "first-deriv",
+          "second-deriv",
+          "optimize"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
       },
       "unscored": true,
       "officialItem": false,
-      "releaseEligible": false
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      }
     },
     {
       "id": "ap-calc-ab-flow-06",
-      "title": "Integration and Accumulation reasoning flow",
+      "chapterId": "ap-calc-ab-ch-06",
+      "domainId": "integration-and-accumulation-of-change",
+      "title": "Riemann sums, definite integral properties, FTC, and u-substitution flow",
       "type": "optional-concept-flow",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Trace the Unit 6 AP Calculus AB reasoning sequence from problem representation to justified mathematical conclusion.",
+      "caption": "An original AP Calculus AB Unit 6 concept flow summarizing riemann sums, definite integral properties, ftc, and u-substitution flow.",
       "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
         "nodes": [
           {
-            "id": "representation",
-            "label": "Identify representation and givens"
+            "id": "riemann",
+            "label": "Accumulate change via Riemann sums",
+            "detail": "Multiply each subinterval width Delta x by left, right, midpoint, or trapezoidal heights and interpret signed area with units."
           },
           {
-            "id": "procedure",
-            "label": "Select procedure and verify conditions"
+            "id": "properties",
+            "label": "Apply integral additivity and bound orientation",
+            "detail": "Split or combine adjacent intervals, factor constants, and negate the integral whenever upper and lower limits reverse."
           },
           {
-            "id": "execution",
-            "label": "Execute with notation and units"
+            "id": "ftc",
+            "label": "Link rates and accumulation through FTC",
+            "detail": "Differentiate accumulation functions G(x) with the chain rule on composite bounds, and evaluate net change via F(b) - F(a)."
           },
           {
-            "id": "interpretation",
-            "label": "Interpret, justify, and check"
+            "id": "usub",
+            "label": "Select antiderivatives and u-substitution",
+            "detail": "Match an inner composite expression u with its differential du, convert definite limits to u-bounds, and include +C for indefinite integrals."
           }
         ],
         "edges": [
           {
-            "from": "representation",
-            "to": "procedure"
+            "id": "riemann-to-properties",
+            "from": "riemann",
+            "to": "properties",
+            "label": "passes to the definite integral with"
           },
           {
-            "from": "procedure",
-            "to": "execution"
+            "id": "properties-to-ftc",
+            "from": "properties",
+            "to": "ftc",
+            "label": "simplifies evaluation using"
           },
           {
-            "from": "execution",
-            "to": "interpretation"
+            "id": "ftc-to-usub",
+            "from": "ftc",
+            "to": "usub",
+            "label": "requires antiderivatives found by"
           }
-        ]
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
       },
       "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Four-step Unit 6 flow from Riemann sums to definite integral properties, Fundamental Theorem of Calculus, and antiderivative substitution.",
+        "longDescription": "Read from left to right. Multiply each subinterval width Delta x by left, right, midpoint, or trapezoidal heights and interpret signed area with units. Split or combine adjacent intervals, factor constants, and negate the integral whenever upper and lower limits reverse. Differentiate accumulation functions G(x) with the chain rule on composite bounds, and evaluate net change via F(b) - F(a). Match an inner composite expression u with its differential du, convert definite limits to u-bounds, and include +C for indefinite integrals.",
         "textEquivalent": [
-          "Identify the representation and givens.",
-          "Select a procedure and verify conditions.",
-          "Execute with notation and units.",
-          "Interpret, justify, and check the result."
+          "Accumulate change via Riemann sums: Multiply each subinterval width Delta x by left, right, midpoint, or trapezoidal heights and interpret signed area with units.",
+          "Apply integral additivity and bound orientation: Split or combine adjacent intervals, factor constants, and negate the integral whenever upper and lower limits reverse.",
+          "Link rates and accumulation through FTC: Differentiate accumulation functions G(x) with the chain rule on composite bounds, and evaluate net change via F(b) - F(a).",
+          "Select antiderivatives and u-substitution: Match an inner composite expression u with its differential du, convert definite limits to u-bounds, and include +C for indefinite integrals."
         ],
-        "fallbackMode": "ordered-text-equivalent"
+        "readingOrder": [
+          "riemann",
+          "properties",
+          "ftc",
+          "usub"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
       },
       "unscored": true,
       "officialItem": false,
-      "releaseEligible": false
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      }
     },
     {
       "id": "ap-calc-ab-flow-07",
-      "title": "Differential Equations reasoning flow",
+      "chapterId": "ap-calc-ab-ch-07",
+      "domainId": "differential-equations",
+      "title": "Differential equation modeling, slope fields, separation, and particular solutions flow",
       "type": "optional-concept-flow",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Trace the Unit 7 AP Calculus AB reasoning sequence from problem representation to justified mathematical conclusion.",
+      "caption": "An original AP Calculus AB Unit 7 concept flow summarizing differential equation modeling, slope fields, separation, and particular solutions flow.",
       "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
         "nodes": [
           {
-            "id": "representation",
-            "label": "Identify representation and givens"
+            "id": "model-de",
+            "label": "Translate proportional rates into dy/dx",
+            "detail": "Convert verbal statements about rate of change into a differential equation, checking equilibrium solutions where dy/dx = 0."
           },
           {
-            "id": "procedure",
-            "label": "Select procedure and verify conditions"
+            "id": "slope-field",
+            "label": "Sketch and read local slope fields",
+            "detail": "Evaluate dy/dx at grid coordinates to identify horizontal isoclines, sign regions, and qualitative long-term trajectories."
           },
           {
-            "id": "execution",
-            "label": "Execute with notation and units"
+            "id": "separate",
+            "label": "Separate y and x factors cleanly",
+            "detail": "Group all y factors with dy and x factors with dx, integrate both sides, and add a single constant of integration C."
           },
           {
-            "id": "interpretation",
-            "label": "Interpret, justify, and check"
+            "id": "initial-cond",
+            "label": "Apply initial condition for particular solution",
+            "detail": "Substitute (x_0, y_0) to determine C, select the matching algebraic branch, and verify the solution satisfies both dy/dx and y(x_0)."
           }
         ],
         "edges": [
           {
-            "from": "representation",
-            "to": "procedure"
+            "id": "model-to-slope",
+            "from": "model-de",
+            "to": "slope-field",
+            "label": "visualizes local trajectories via"
           },
           {
-            "from": "procedure",
-            "to": "execution"
+            "id": "slope-to-separate",
+            "from": "slope-field",
+            "to": "separate",
+            "label": "guides analytical solving by"
           },
           {
-            "from": "execution",
-            "to": "interpretation"
+            "id": "separate-to-initial",
+            "from": "separate",
+            "to": "initial-cond",
+            "label": "narrows the general family through"
           }
-        ]
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
       },
       "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Four-step Unit 7 flow from rate-equation modeling to slope-field behavior, separation of variables, and initial-condition particular solutions.",
+        "longDescription": "Read from left to right. Convert verbal statements about rate of change into a differential equation, checking equilibrium solutions where dy/dx = 0. Evaluate dy/dx at grid coordinates to identify horizontal isoclines, sign regions, and qualitative long-term trajectories. Group all y factors with dy and x factors with dx, integrate both sides, and add a single constant of integration C. Substitute (x_0, y_0) to determine C, select the matching algebraic branch, and verify the solution satisfies both dy/dx and y(x_0).",
         "textEquivalent": [
-          "Identify the representation and givens.",
-          "Select a procedure and verify conditions.",
-          "Execute with notation and units.",
-          "Interpret, justify, and check the result."
+          "Translate proportional rates into dy/dx: Convert verbal statements about rate of change into a differential equation, checking equilibrium solutions where dy/dx = 0.",
+          "Sketch and read local slope fields: Evaluate dy/dx at grid coordinates to identify horizontal isoclines, sign regions, and qualitative long-term trajectories.",
+          "Separate y and x factors cleanly: Group all y factors with dy and x factors with dx, integrate both sides, and add a single constant of integration C.",
+          "Apply initial condition for particular solution: Substitute (x_0, y_0) to determine C, select the matching algebraic branch, and verify the solution satisfies both dy/dx and y(x_0)."
         ],
-        "fallbackMode": "ordered-text-equivalent"
+        "readingOrder": [
+          "model-de",
+          "slope-field",
+          "separate",
+          "initial-cond"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
       },
       "unscored": true,
       "officialItem": false,
-      "releaseEligible": false
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      }
     },
     {
       "id": "ap-calc-ab-flow-08",
-      "title": "Applications of Integration reasoning flow",
+      "chapterId": "ap-calc-ab-ch-08",
+      "domainId": "applications-of-integration",
+      "title": "Average value, net accumulation, area between curves, and solids of revolution flow",
       "type": "optional-concept-flow",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Trace the Unit 8 AP Calculus AB reasoning sequence from problem representation to justified mathematical conclusion.",
+      "caption": "An original AP Calculus AB Unit 8 concept flow summarizing average value, net accumulation, area between curves, and solids of revolution flow.",
       "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
         "nodes": [
           {
-            "id": "representation",
-            "label": "Identify representation and givens"
+            "id": "avg-net",
+            "label": "Compute average value and net vs. total change",
+            "detail": "Divide definite accumulation by (b - a) for average value, add initial value to net rate for final amount, and integrate |v(t)| for total distance."
           },
           {
-            "id": "procedure",
-            "label": "Select procedure and verify conditions"
+            "id": "area",
+            "label": "Set up upper-minus-lower or right-minus-left area",
+            "detail": "Find intersection bounds first and split integrals wherever curves cross so signed areas never cancel."
           },
           {
-            "id": "execution",
-            "label": "Execute with notation and units"
+            "id": "cross-sec",
+            "label": "Express known cross-section area A(x) or A(y)",
+            "detail": "Write the cross-sectional slice area (square, semicircle, triangle) directly from base length before integrating along the perpendicular axis."
           },
           {
-            "id": "interpretation",
-            "label": "Interpret, justify, and check"
+            "id": "washers",
+            "label": "Measure disc and washer radii from the axis",
+            "detail": "Compute outer radius R and inner radius r relative to the stated axis of revolution and integrate pi(R^2 - r^2) with cubic units."
           }
         ],
         "edges": [
           {
-            "from": "representation",
-            "to": "procedure"
+            "id": "avg-to-area",
+            "from": "avg-net",
+            "to": "area",
+            "label": "generalizes 1D accumulation to 2D"
           },
           {
-            "from": "procedure",
-            "to": "execution"
+            "id": "area-to-cross",
+            "from": "area",
+            "to": "cross-sec",
+            "label": "supplies base lengths for 3D"
           },
           {
-            "from": "execution",
-            "to": "interpretation"
+            "id": "cross-to-washers",
+            "from": "cross-sec",
+            "to": "washers",
+            "label": "specializes circular slices into"
           }
-        ]
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
       },
       "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Four-step Unit 8 flow from average value and net change to area between curves, cross-sectional slices, and disc or washer volumes.",
+        "longDescription": "Read from left to right. Divide definite accumulation by (b - a) for average value, add initial value to net rate for final amount, and integrate |v(t)| for total distance. Find intersection bounds first and split integrals wherever curves cross so signed areas never cancel. Write the cross-sectional slice area (square, semicircle, triangle) directly from base length before integrating along the perpendicular axis. Compute outer radius R and inner radius r relative to the stated axis of revolution and integrate pi(R^2 - r^2) with cubic units.",
         "textEquivalent": [
-          "Identify the representation and givens.",
-          "Select a procedure and verify conditions.",
-          "Execute with notation and units.",
-          "Interpret, justify, and check the result."
+          "Compute average value and net vs. total change: Divide definite accumulation by (b - a) for average value, add initial value to net rate for final amount, and integrate |v(t)| for total distance.",
+          "Set up upper-minus-lower or right-minus-left area: Find intersection bounds first and split integrals wherever curves cross so signed areas never cancel.",
+          "Express known cross-section area A(x) or A(y): Write the cross-sectional slice area (square, semicircle, triangle) directly from base length before integrating along the perpendicular axis.",
+          "Measure disc and washer radii from the axis: Compute outer radius R and inner radius r relative to the stated axis of revolution and integrate pi(R^2 - r^2) with cubic units."
         ],
-        "fallbackMode": "ordered-text-equivalent"
+        "readingOrder": [
+          "avg-net",
+          "area",
+          "cross-sec",
+          "washers"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
       },
       "unscored": true,
       "officialItem": false,
-      "releaseEligible": false
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      }
     }
   ],
   "diagramPlacements": [
     {
       "id": "ap-calc-ab-placement-01",
       "diagramId": "ap-calc-ab-flow-01",
+      "chapterId": "ap-calc-ab-ch-01",
       "sectionId": "ap-calc-ab-ch-01-section-01",
+      "position": "after-section-content",
+      "learnerPurpose": "Trace the Unit 1 AP Calculus AB reasoning sequence from problem representation to justified mathematical conclusion.",
       "fallbackMode": "diagram-text-equivalent",
       "requiredForComprehension": false,
+      "unscored": true,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
       "releaseEligible": false
     },
     {
       "id": "ap-calc-ab-placement-02",
       "diagramId": "ap-calc-ab-flow-02",
+      "chapterId": "ap-calc-ab-ch-02",
       "sectionId": "ap-calc-ab-ch-02-section-01",
+      "position": "after-section-content",
+      "learnerPurpose": "Trace the Unit 2 AP Calculus AB reasoning sequence from problem representation to justified mathematical conclusion.",
       "fallbackMode": "diagram-text-equivalent",
       "requiredForComprehension": false,
+      "unscored": true,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
       "releaseEligible": false
     },
     {
       "id": "ap-calc-ab-placement-03",
       "diagramId": "ap-calc-ab-flow-03",
+      "chapterId": "ap-calc-ab-ch-03",
       "sectionId": "ap-calc-ab-ch-03-section-01",
+      "position": "after-section-content",
+      "learnerPurpose": "Trace the Unit 3 AP Calculus AB reasoning sequence from problem representation to justified mathematical conclusion.",
       "fallbackMode": "diagram-text-equivalent",
       "requiredForComprehension": false,
+      "unscored": true,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
       "releaseEligible": false
     },
     {
       "id": "ap-calc-ab-placement-04",
       "diagramId": "ap-calc-ab-flow-04",
+      "chapterId": "ap-calc-ab-ch-04",
       "sectionId": "ap-calc-ab-ch-04-section-01",
+      "position": "after-section-content",
+      "learnerPurpose": "Trace the Unit 4 AP Calculus AB reasoning sequence from problem representation to justified mathematical conclusion.",
       "fallbackMode": "diagram-text-equivalent",
       "requiredForComprehension": false,
+      "unscored": true,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
       "releaseEligible": false
     },
     {
       "id": "ap-calc-ab-placement-05",
       "diagramId": "ap-calc-ab-flow-05",
+      "chapterId": "ap-calc-ab-ch-05",
       "sectionId": "ap-calc-ab-ch-05-section-01",
+      "position": "after-section-content",
+      "learnerPurpose": "Trace the Unit 5 AP Calculus AB reasoning sequence from problem representation to justified mathematical conclusion.",
       "fallbackMode": "diagram-text-equivalent",
       "requiredForComprehension": false,
+      "unscored": true,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
       "releaseEligible": false
     },
     {
       "id": "ap-calc-ab-placement-06",
       "diagramId": "ap-calc-ab-flow-06",
+      "chapterId": "ap-calc-ab-ch-06",
       "sectionId": "ap-calc-ab-ch-06-section-01",
+      "position": "after-section-content",
+      "learnerPurpose": "Trace the Unit 6 AP Calculus AB reasoning sequence from problem representation to justified mathematical conclusion.",
       "fallbackMode": "diagram-text-equivalent",
       "requiredForComprehension": false,
+      "unscored": true,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
       "releaseEligible": false
     },
     {
       "id": "ap-calc-ab-placement-07",
       "diagramId": "ap-calc-ab-flow-07",
+      "chapterId": "ap-calc-ab-ch-07",
       "sectionId": "ap-calc-ab-ch-07-section-01",
+      "position": "after-section-content",
+      "learnerPurpose": "Trace the Unit 7 AP Calculus AB reasoning sequence from problem representation to justified mathematical conclusion.",
       "fallbackMode": "diagram-text-equivalent",
       "requiredForComprehension": false,
+      "unscored": true,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
       "releaseEligible": false
     },
     {
       "id": "ap-calc-ab-placement-08",
       "diagramId": "ap-calc-ab-flow-08",
+      "chapterId": "ap-calc-ab-ch-08",
       "sectionId": "ap-calc-ab-ch-08-section-01",
+      "position": "after-section-content",
+      "learnerPurpose": "Trace the Unit 8 AP Calculus AB reasoning sequence from problem representation to justified mathematical conclusion.",
       "fallbackMode": "diagram-text-equivalent",
       "requiredForComprehension": false,
+      "unscored": true,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
       "releaseEligible": false
     }
   ],
@@ -13994,11 +14418,11 @@
       "unitId": "limits-and-continuity",
       "title": "Limits and Continuity decision loop",
       "content": [
-        "Name the representation.",
-        "Select a definition, theorem, or procedure.",
-        "Check its conditions.",
-        "Execute with clear notation.",
-        "Interpret or justify the result."
+        "Attempt direct substitution first; if 0/0 arises, factor, rationalize, or rewrite trigonometric forms rather than stopping at undefined.",
+        "Compare left-hand and right-hand limits separately at piecewise boundaries, jump breaks, and vertical asymptotes.",
+        "Analyze end behavior as x approaches ±infinity by comparing dominant terms to locate horizontal asymptotes.",
+        "Verify all three continuity conditions at c: f(c) exists, the two-sided limit exists, and the limit equals f(c).",
+        "Confirm continuity on [a, b] and check that target k lies between f(a) and f(b) before invoking the Intermediate Value Theorem (IVT) or Squeeze Theorem."
       ],
       "original": true,
       "releaseEligible": false
@@ -14020,11 +14444,11 @@
       "unitId": "differentiation-definition-and-fundamental-properties",
       "title": "Derivative Foundations decision loop",
       "content": [
-        "Name the representation.",
-        "Select a definition, theorem, or procedure.",
-        "Check its conditions.",
-        "Execute with clear notation.",
-        "Interpret or justify the result."
+        "Distinguish average rate of change (secant slope [f(b)-f(a)]/(b-a)) from instantaneous rate of change (limit of the difference quotient).",
+        "Test continuity and compare left- and right-hand derivatives at piecewise joins before claiming differentiability.",
+        "Rewrite roots, reciprocals, and simple products into power-rule form whenever possible to avoid unnecessary rule errors.",
+        "Select product or quotient rules cleanly for multi-factor expressions and recall exact trig, exponential, and logarithmic derivatives.",
+        "State the derivative value as an instantaneous rate with output-per-input units and verify tangent-line slope agreement."
       ],
       "original": true,
       "releaseEligible": false
@@ -14046,11 +14470,11 @@
       "unitId": "differentiation-composite-implicit-inverse-functions",
       "title": "Advanced Differentiation decision loop",
       "content": [
-        "Name the representation.",
-        "Select a definition, theorem, or procedure.",
-        "Check its conditions.",
-        "Execute with clear notation.",
-        "Interpret or justify the result."
+        "Peel composite functions from outer layer to inner layer with the Chain Rule, multiplying by each interior derivative in turn.",
+        "When x and y are intertwined, differentiate every term with respect to x, attach dy/dx to y-terms, and isolate dy/dx algebraically.",
+        "Evaluate inverse function derivatives via (f^-1)'(b) = 1 / f'(a) after confirming f(a) = b and f'(a) != 0.",
+        "Apply inverse trigonometric derivative templates (arcsin, arctan, arcsec) alongside the chain factor for the argument u(x).",
+        "Use repeated differentiation carefully for d^2y/dx^2 in implicit relations, substituting dy/dx back in before evaluating at a point."
       ],
       "original": true,
       "releaseEligible": false
@@ -14072,11 +14496,11 @@
       "unitId": "contextual-applications-of-differentiation",
       "title": "Contextual Derivatives decision loop",
       "content": [
-        "Name the representation.",
-        "Select a definition, theorem, or procedure.",
-        "Check its conditions.",
-        "Execute with clear notation.",
-        "Interpret or justify the result."
+        "Translate verbal rates into derivative notation (dV/dt, dr/dt, v(t) = x'(t), a(t) = v'(t)) and list known values at the target instant.",
+        "For related rates, establish the general geometric or physical equation first, differentiate with respect to t, and substitute instantaneous values only afterward.",
+        "Build tangent-line linearization L(x) = f(a) + f'(a)(x - a) and use the sign of f''(x) to justify whether L(x) overestimates or underestimates f(x).",
+        "For particle motion, check the sign of v(t) for direction and compare the signs of v(t) and a(t) to determine whether speed is increasing or decreasing.",
+        "Before applying L'Hospital's Rule, write the separate numerator and denominator limits to prove a 0/0 or infinity/infinity indeterminate form."
       ],
       "original": true,
       "releaseEligible": false
@@ -14098,11 +14522,11 @@
       "unitId": "analytical-applications-of-differentiation",
       "title": "Derivative Analysis decision loop",
       "content": [
-        "Name the representation.",
-        "Select a definition, theorem, or procedure.",
-        "Check its conditions.",
-        "Execute with clear notation.",
-        "Interpret or justify the result."
+        "Verify continuity on [a, b] and differentiability on (a, b) before citing the Mean Value Theorem (MVT) or Extreme Value Theorem (EVT).",
+        "Find all critical points where f'(x) = 0 or f'(x) is undefined inside the domain, then track sign changes of f' for local extrema.",
+        "For absolute extrema on a closed interval, apply the Candidates Test by comparing f(x) at every interior critical point and both endpoints.",
+        "Determine concavity and points of inflection by verifying an actual sign change in f''(x), or use the Second Derivative Test when f'(c) = 0 and f''(c) != 0.",
+        "In optimization, write the objective in one variable using the constraint, establish the feasible domain, and justify the global optimum analytically."
       ],
       "original": true,
       "releaseEligible": false
@@ -14124,11 +14548,11 @@
       "unitId": "integration-and-accumulation-of-change",
       "title": "Integration and Accumulation decision loop",
       "content": [
-        "Name the representation.",
-        "Select a definition, theorem, or procedure.",
-        "Check its conditions.",
-        "Execute with clear notation.",
-        "Interpret or justify the result."
+        "Match the prompt to a Riemann sum (left, right, midpoint) or trapezoidal sum using exact subinterval widths, and check monotonicity for over/underestimates.",
+        "Apply FTC Part 1 to differentiate accumulation functions g(x) = integral from a to u(x) of f(t) dt, multiplying by u'(x) when the upper bound is composite.",
+        "Evaluate definite integrals with FTC Part 2 by finding an antiderivative F(x), computing F(b) - F(a), and adding +C for indefinite integrals.",
+        "Select u-substitution when an inner derivative appears up to a constant factor, and convert definite integral bounds directly to u-values.",
+        "Use algebraic division, splitting numerators, or completing the square to reduce rational integrands into power, ln|u|, or arctan(u) forms."
       ],
       "original": true,
       "releaseEligible": false
@@ -14150,11 +14574,11 @@
       "unitId": "differential-equations",
       "title": "Differential Equations decision loop",
       "content": [
-        "Name the representation.",
-        "Select a definition, theorem, or procedure.",
-        "Check its conditions.",
-        "Execute with clear notation.",
-        "Interpret or justify the result."
+        "Translate proportional-rate language directly into a differential equation such as dy/dt = ky, verifying units on both sides.",
+        "Read slope fields by testing horizontal (dy/dx = 0), vertical, and sign-change patterns along axes and equilibrium lines before sketching a curve.",
+        "Separate variables completely into g(y) dy = f(x) dx before integrating both sides; never integrate a mixed expression directly.",
+        "Introduce a single constant of integration C immediately upon integrating, and solve for C using the initial condition (x0, y0) before simplifying when cleaner.",
+        "Isolate y(x) explicitly, select the correct branch sign for roots or absolute values using (x0, y0), and state the domain interval containing x0."
       ],
       "original": true,
       "releaseEligible": false
@@ -14176,11 +14600,11 @@
       "unitId": "applications-of-integration",
       "title": "Applications of Integration decision loop",
       "content": [
-        "Name the representation.",
-        "Select a definition, theorem, or procedure.",
-        "Check its conditions.",
-        "Execute with clear notation.",
-        "Interpret or justify the result."
+        "Compute average value with (1/(b - a)) times the integral of f(x) dx on [a, b] and net change via x(b) = x(a) + integral of x'(t) dt, using integral of |v(t)| dt for total distance.",
+        "For accumulation rates in context, pair inflow and outflow rates as the integral of (R_in - R_out) dt and check critical points where R_in(t) = R_out(t).",
+        "Set up area between curves by solving for intersection bounds and integrating (top - bottom) dx or (right - left) dy over each non-overlapping region.",
+        "For cross-sectional solids, express the base length s = top - bottom (or right - left) and integrate the exact cross-section area formula A(x) over the base.",
+        "For solids of revolution, measure outer radius R and inner radius r from the exact axis of rotation (not just the coordinate axis) and integrate pi * (R^2 - r^2)."
       ],
       "original": true,
       "releaseEligible": false
@@ -14226,16 +14650,16 @@
         }
       ],
       "responsePlanning": [
-        "Identify givens and representations.",
-        "Name a valid procedure or theorem and its conditions.",
-        "Show an expression before calculator evaluation.",
-        "Use notation, units, and a contextual or mathematical conclusion."
+        "Evaluate the left-hand and right-hand limits separately at the join point before stating a two-sided limit.",
+        "Compare the two-sided limit against the defined point value f(c) to classify removable, jump, or infinite discontinuity.",
+        "Verify continuity on the closed interval [a, b] and confirm the target value lies strictly between f(a) and f(b) before invoking IVT.",
+        "Write formal limit notation lim_{x->c-} and lim_{x->c+} rather than substituting undefined expressions directly."
       ],
       "selfCheck": [
-        "Every requested quantity is addressed.",
-        "The selected procedure matches the representation.",
-        "Theorem conditions are stated when needed.",
-        "Signs and units are interpreted.",
+        "Both one-sided limits at the join are computed explicitly and compared.",
+        "Continuity classification cites all three conditions (defined value, finite limit, equality).",
+        "IVT justification explicitly states continuity on [a, b] and the endpoint inequality.",
+        "Any proposed repair redefines only the point value when a removable hole exists.",
         "No score or official rubric claim is made."
       ],
       "calculatorUse": "calculator-permitted-planning",
@@ -14284,16 +14708,16 @@
         }
       ],
       "responsePlanning": [
-        "Identify givens and representations.",
-        "Name a valid procedure or theorem and its conditions.",
-        "Show an expression before calculator evaluation.",
-        "Use notation, units, and a contextual or mathematical conclusion."
+        "Set up lim_{h->0} [f(a+h) - f(a)] / h or lim_{x->a} [f(x) - f(a)] / (x - a) at the named input.",
+        "Select the narrowest symmetric or adjacent interval in the table to compute a difference-quotient estimate with units.",
+        "Identify product, quotient, or power structure before differentiating the symbolic formula term by term.",
+        "Compare the analytical derivative at the point against the tabular secant estimate and account for curvature differences."
       ],
       "selfCheck": [
-        "Every requested quantity is addressed.",
-        "The selected procedure matches the representation.",
-        "Theorem conditions are stated when needed.",
-        "Signs and units are interpreted.",
+        "Limit notation stays attached until the algebraic simplification eliminates division by zero.",
+        "Tabular derivative estimate shows the exact difference quotient before simplifying.",
+        "Symbolic rule choice (power, product, or quotient) matches the algebraic structure cleanly.",
+        "Numerical estimate and analytical value carry matching units and a clear reconciliation.",
         "No score or official rubric claim is made."
       ],
       "calculatorUse": "calculator-not-required",
@@ -14342,16 +14766,16 @@
         }
       ],
       "responsePlanning": [
-        "Identify givens and representations.",
-        "Name a valid procedure or theorem and its conditions.",
-        "Show an expression before calculator evaluation.",
-        "Use notation, units, and a contextual or mathematical conclusion."
+        "Differentiate every term with respect to x, attaching dy/dx via the chain rule whenever differentiating a y-expression.",
+        "Collect all dy/dx terms on one side, factor out dy/dx, and isolate the quotient before substituting the point coordinates.",
+        "Differentiate dy/dx again using quotient/product rules and substitute the expression for dy/dx back into d^2y/dx^2.",
+        "Inspect the denominator of dy/dx to identify vertical tangents or points where the implicit branch fails to give a finite slope."
       ],
       "selfCheck": [
-        "Every requested quantity is addressed.",
-        "The selected procedure matches the representation.",
-        "Theorem conditions are stated when needed.",
-        "Signs and units are interpreted.",
+        "Every y-term differentiation includes the inner chain-rule factor dy/dx.",
+        "The point (x0, y0) is verified on the relation and substituted only after isolating dy/dx.",
+        "Second-derivative work replaces dy/dx with its explicit expression or evaluated value cleanly.",
+        "Domain restriction explains why a zero denominator prevents a finite derivative.",
         "No score or official rubric claim is made."
       ],
       "calculatorUse": "calculator-not-required",
@@ -14400,16 +14824,16 @@
         }
       ],
       "responsePlanning": [
-        "Identify givens and representations.",
-        "Name a valid procedure or theorem and its conditions.",
-        "Show an expression before calculator evaluation.",
-        "Use notation, units, and a contextual or mathematical conclusion."
+        "State the contextual meaning of the derivative including the quantity, sign (increasing/decreasing), time/input instant, and compound units.",
+        "Differentiate the geometric formula implicitly with respect to time t before substituting instantaneous radius and rate values.",
+        "Build the linearization L(x) = f(a) + f'(a)(x - a) from the base point and rate, then evaluate at the nearby target input.",
+        "Use concavity (sign of the second derivative) and step size |x - a| to explain why tangent accuracy degrades away from a."
       ],
       "selfCheck": [
-        "Every requested quantity is addressed.",
-        "The selected procedure matches the representation.",
-        "Theorem conditions are stated when needed.",
-        "Signs and units are interpreted.",
+        "Contextual rate statement includes quantity, direction, instant, and exact units.",
+        "Related-rates equation is differentiated with respect to t before plugging in changing values.",
+        "Linearization clearly states the anchor point, slope, and approximate output with units.",
+        "Locality explanation connects curvature or concavity to over-/underestimation behavior.",
         "No score or official rubric claim is made."
       ],
       "calculatorUse": "calculator-permitted-planning",
@@ -14458,16 +14882,16 @@
         }
       ],
       "responsePlanning": [
-        "Identify givens and representations.",
-        "Name a valid procedure or theorem and its conditions.",
-        "Show an expression before calculator evaluation.",
-        "Use notation, units, and a contextual or mathematical conclusion."
+        "Map intervals where f'(x) > 0 (increasing) and f'(x) < 0 (decreasing) directly from the sign table.",
+        "Justify local maxima and minima strictly by sign changes in f'(x) rather than merely citing f'(c) = 0.",
+        "Apply the Candidates Test on the closed interval by evaluating f(x) at both endpoints and every interior critical point.",
+        "Translate the winning candidate into a clear contextual optimization recommendation with units."
       ],
       "selfCheck": [
-        "Every requested quantity is addressed.",
-        "The selected procedure matches the representation.",
-        "Theorem conditions are stated when needed.",
-        "Signs and units are interpreted.",
+        "Monotonicity claims cite the sign of f'(x) explicitly rather than vague pronoun references.",
+        "Local extremum justifications specify the direction of the sign change in f'(x).",
+        "Absolute extremum reasoning checks both closed-interval endpoints and all critical numbers.",
+        "Final optimization statement answers the exact contextual quantity requested with units.",
         "No score or official rubric claim is made."
       ],
       "calculatorUse": "calculator-not-required",
@@ -14516,16 +14940,16 @@
         }
       ],
       "responsePlanning": [
-        "Identify givens and representations.",
-        "Name a valid procedure or theorem and its conditions.",
-        "Show an expression before calculator evaluation.",
-        "Use notation, units, and a contextual or mathematical conclusion."
+        "List each subinterval width Delta t explicitly (accounting for unequal spacing) and multiply by the designated left, right, midpoint, or trapezoidal heights.",
+        "Interpret the definite integral of the net rate as total net change in quantity over the stated time interval with accumulated units.",
+        "Apply FTC Part 1 (including the chain rule if the upper or lower limit is a function of x) to differentiate the accumulation function.",
+        "Use additivity and reversal of limits to combine adjacent or overlapping definite integrals cleanly."
       ],
       "selfCheck": [
-        "Every requested quantity is addressed.",
-        "The selected procedure matches the representation.",
-        "Theorem conditions are stated when needed.",
-        "Signs and units are interpreted.",
+        "Riemann sum uses each subinterval's actual width rather than assuming uniform spacing.",
+        "Signed accumulation interpretation distinguishes net change from initial amount plus net change.",
+        "FTC differentiation replaces the dummy variable accurately and includes any boundary chain-rule factor.",
+        "Integral property steps track sign flips when reversing limits of integration.",
         "No score or official rubric claim is made."
       ],
       "calculatorUse": "calculator-not-required",
@@ -14574,16 +14998,16 @@
         }
       ],
       "responsePlanning": [
-        "Identify givens and representations.",
-        "Name a valid procedure or theorem and its conditions.",
-        "Show an expression before calculator evaluation.",
-        "Use notation, units, and a contextual or mathematical conclusion."
+        "Identify the dependent variable, independent variable, equilibria (where dy/dt = 0), and proportionality structure in the differential equation.",
+        "Test a proposed solution by differentiating it and comparing LHS and RHS identically, then checking the initial condition.",
+        "Read sign and magnitude of dy/dt across population levels to describe monotonic approach toward or away from equilibrium.",
+        "Contrast unbounded exponential growth (dy/dt = kP) with carrying-capacity-limited logistic behavior (inflection at half capacity)."
       ],
       "selfCheck": [
-        "Every requested quantity is addressed.",
-        "The selected procedure matches the representation.",
-        "Theorem conditions are stated when needed.",
-        "Signs and units are interpreted.",
+        "Differential-equation interpretation explains what dy/dt = 0 implies about equilibrium levels.",
+        "Solution verification checks both the differential equation identity and the initial value.",
+        "Slope analysis connects dy/dt sign to growth/decay direction without confusing P with dP/dt.",
+        "Model comparison accurately distinguishes constant relative growth from capacity-constrained growth.",
         "No score or official rubric claim is made."
       ],
       "calculatorUse": "calculator-permitted-planning",
@@ -14632,16 +15056,16 @@
         }
       ],
       "responsePlanning": [
-        "Identify givens and representations.",
-        "Name a valid procedure or theorem and its conditions.",
-        "Show an expression before calculator evaluation.",
-        "Use notation, units, and a contextual or mathematical conclusion."
+        "Find intersection points first to establish limits of integration and verify which curve stays on top (or right) across the region.",
+        "Express the base length s(x) = top - bottom, then substitute s(x) into the exact cross-section area formula (square, semicircle, or triangle) before integrating.",
+        "Measure outer radius R(x) and inner radius r(x) from the stated axis of revolution and integrate pi * [R(x)^2 - r(x)^2].",
+        "Check linear vs. squared vs. cubic units and guard against squaring (R - r)^2 instead of subtracting R^2 - r^2."
       ],
       "selfCheck": [
-        "Every requested quantity is addressed.",
-        "The selected procedure matches the representation.",
-        "Theorem conditions are stated when needed.",
-        "Signs and units are interpreted.",
+        "Intersection limits match the variable of integration (dx vs. dy) consistently.",
+        "Cross-section integral applies the exact geometric area coefficient (such as pi/8 for diameter semicircles).",
+        "Washer setup shifts both outer and inner radii cleanly relative to any non-zero axis of revolution.",
+        "Error check explicitly contrasts pi*(R^2 - r^2) against the common mistake pi*(R - r)^2.",
         "No score or official rubric claim is made."
       ],
       "calculatorUse": "calculator-not-required",
@@ -14682,7 +15106,8 @@
     "topicRoutes": 40,
     "richLessonPrototypes": 8,
     "sourceReviewedChapters": 8,
-    "releaseEligibleRecords": 0
+    "releaseEligibleRecords": 0,
+    "glossaryTerms": 24
   },
   "accessibility": {
     "contentForm": "text-first, linear lessons, plain-text math notation, single-choice items, optional flows, and unscored planning workshops",
@@ -14729,5 +15154,773 @@
     "richLessonPrototypes": 8,
     "status": "expanded-foundation-prototype",
     "note": "All eight chapters and twenty-four structured sections are navigable, with four items, three diagnostic sets, and one remediation playbook per topic route; independent review remains pending."
-  }
+  },
+  "glossary": [
+    {
+      "id": "ap-calc-ab-gloss-01",
+      "term": "Two-sided limit",
+      "definition": "The value L that f(x) approaches as x approaches c from both sides, existing if and only if the left-hand and right-hand limits both exist and equal L, regardless of the value of f(c).",
+      "aliases": [
+        "Limit"
+      ],
+      "chapterIds": [
+        "ap-calc-ab-ch-01"
+      ],
+      "domainIds": [
+        "limits-and-continuity"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-calc-ab-ch-01",
+            "chapterTitle": "Unit 1: Limits and Continuity",
+            "domainId": "limits-and-continuity",
+            "domain": "Unit 1: Limits and Continuity",
+            "sectionId": "ap-calc-ab-ch-01-section-01",
+            "sectionHeading": "Limits and Continuity: foundations",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-calculus-ab"
+      ]
+    },
+    {
+      "id": "ap-calc-ab-gloss-02",
+      "term": "Continuity at a point",
+      "definition": "A function f is continuous at x = c when f(c) is defined, lim(x->c) f(x) exists, and lim(x->c) f(x) = f(c); failing any one condition creates a removable, jump, or infinite discontinuity.",
+      "aliases": [
+        "Point continuity"
+      ],
+      "chapterIds": [
+        "ap-calc-ab-ch-01"
+      ],
+      "domainIds": [
+        "limits-and-continuity"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-calc-ab-ch-01",
+            "chapterTitle": "Unit 1: Limits and Continuity",
+            "domainId": "limits-and-continuity",
+            "domain": "Unit 1: Limits and Continuity",
+            "sectionId": "ap-calc-ab-ch-01-section-02",
+            "sectionHeading": "Limits and Continuity: representation and reasoning",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-calculus-ab"
+      ]
+    },
+    {
+      "id": "ap-calc-ab-gloss-03",
+      "term": "Intermediate Value Theorem",
+      "definition": "If f is continuous on the closed interval [a, b] and k lies between f(a) and f(b), then at least one c in (a, b) satisfies f(c) = k; it guarantees existence of a value, not its uniqueness.",
+      "aliases": [
+        "IVT"
+      ],
+      "chapterIds": [
+        "ap-calc-ab-ch-01"
+      ],
+      "domainIds": [
+        "limits-and-continuity"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-calc-ab-ch-01",
+            "chapterTitle": "Unit 1: Limits and Continuity",
+            "domainId": "limits-and-continuity",
+            "domain": "Unit 1: Limits and Continuity",
+            "sectionId": "ap-calc-ab-ch-01-section-03",
+            "sectionHeading": "Limits and Continuity: transfer and synthesis",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-calculus-ab"
+      ]
+    },
+    {
+      "id": "ap-calc-ab-gloss-04",
+      "term": "Limit definition of the derivative",
+      "definition": "The instantaneous rate of change f'(x) = lim(h->0) [f(x + h) - f(x)] / h, or equivalently lim(x->a) [f(x) - f(a)] / (x - a), giving the tangent-line slope whenever the finite limit exists.",
+      "aliases": [
+        "Difference quotient limit"
+      ],
+      "chapterIds": [
+        "ap-calc-ab-ch-02"
+      ],
+      "domainIds": [
+        "differentiation-definition-and-fundamental-properties"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-calc-ab-ch-02",
+            "chapterTitle": "Unit 2: Differentiation: Definition and Fundamental Properties",
+            "domainId": "differentiation-definition-and-fundamental-properties",
+            "domain": "Unit 2: Differentiation: Definition and Fundamental Properties",
+            "sectionId": "ap-calc-ab-ch-02-section-01",
+            "sectionHeading": "Derivative Foundations: foundations",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-calculus-ab"
+      ]
+    },
+    {
+      "id": "ap-calc-ab-gloss-05",
+      "term": "Differentiability",
+      "definition": "A function is differentiable at x = c when f'(c) exists as a finite number; differentiability guarantees continuity, whereas corners, cusps, vertical tangents, or discontinuities prevent it.",
+      "aliases": [
+        "Differentiable function"
+      ],
+      "chapterIds": [
+        "ap-calc-ab-ch-02"
+      ],
+      "domainIds": [
+        "differentiation-definition-and-fundamental-properties"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-calc-ab-ch-02",
+            "chapterTitle": "Unit 2: Differentiation: Definition and Fundamental Properties",
+            "domainId": "differentiation-definition-and-fundamental-properties",
+            "domain": "Unit 2: Differentiation: Definition and Fundamental Properties",
+            "sectionId": "ap-calc-ab-ch-02-section-02",
+            "sectionHeading": "Derivative Foundations: representation and reasoning",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-calculus-ab"
+      ]
+    },
+    {
+      "id": "ap-calc-ab-gloss-06",
+      "term": "Product and quotient rules",
+      "definition": "Differentiation rules giving (fg)' = f'g + fg' and (f/g)' = (f'g - fg') / g^2 for differentiable functions with g(x) != 0, preventing the error of differentiating factors or quotients separately.",
+      "aliases": [
+        "Product rule",
+        "Quotient rule"
+      ],
+      "chapterIds": [
+        "ap-calc-ab-ch-02"
+      ],
+      "domainIds": [
+        "differentiation-definition-and-fundamental-properties"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-calc-ab-ch-02",
+            "chapterTitle": "Unit 2: Differentiation: Definition and Fundamental Properties",
+            "domainId": "differentiation-definition-and-fundamental-properties",
+            "domain": "Unit 2: Differentiation: Definition and Fundamental Properties",
+            "sectionId": "ap-calc-ab-ch-02-section-03",
+            "sectionHeading": "Derivative Foundations: transfer and synthesis",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-calculus-ab"
+      ]
+    },
+    {
+      "id": "ap-calc-ab-gloss-07",
+      "term": "Chain rule",
+      "definition": "The differentiation rule d/dx [f(g(x))] = f'(g(x)) * g'(x) for composite functions, multiplying the derivative of the outer function evaluated at the inner function by the inner derivative.",
+      "aliases": [
+        "Composite derivative"
+      ],
+      "chapterIds": [
+        "ap-calc-ab-ch-03"
+      ],
+      "domainIds": [
+        "differentiation-composite-implicit-inverse-functions"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-calc-ab-ch-03",
+            "chapterTitle": "Unit 3: Differentiation: Composite, Implicit, and Inverse Functions",
+            "domainId": "differentiation-composite-implicit-inverse-functions",
+            "domain": "Unit 3: Differentiation: Composite, Implicit, and Inverse Functions",
+            "sectionId": "ap-calc-ab-ch-03-section-01",
+            "sectionHeading": "Advanced Differentiation: foundations",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-calculus-ab"
+      ]
+    },
+    {
+      "id": "ap-calc-ab-gloss-08",
+      "term": "Implicit differentiation",
+      "definition": "A method for finding dy/dx from an equation relating x and y without isolating y first, differentiating both sides with respect to x and multiplying every y-term derivative by dy/dx.",
+      "aliases": [],
+      "chapterIds": [
+        "ap-calc-ab-ch-03"
+      ],
+      "domainIds": [
+        "differentiation-composite-implicit-inverse-functions"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-calc-ab-ch-03",
+            "chapterTitle": "Unit 3: Differentiation: Composite, Implicit, and Inverse Functions",
+            "domainId": "differentiation-composite-implicit-inverse-functions",
+            "domain": "Unit 3: Differentiation: Composite, Implicit, and Inverse Functions",
+            "sectionId": "ap-calc-ab-ch-03-section-02",
+            "sectionHeading": "Advanced Differentiation: representation and reasoning",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-calculus-ab"
+      ]
+    },
+    {
+      "id": "ap-calc-ab-gloss-09",
+      "term": "Inverse function derivative",
+      "definition": "For a differentiable, one-to-one function f with f(a) = b and f'(a) != 0, the inverse satisfies (f^-1)'(b) = 1 / f'(a), evaluating the reciprocal slope at the input a that produces output b.",
+      "aliases": [
+        "Derivative of an inverse"
+      ],
+      "chapterIds": [
+        "ap-calc-ab-ch-03"
+      ],
+      "domainIds": [
+        "differentiation-composite-implicit-inverse-functions"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-calc-ab-ch-03",
+            "chapterTitle": "Unit 3: Differentiation: Composite, Implicit, and Inverse Functions",
+            "domainId": "differentiation-composite-implicit-inverse-functions",
+            "domain": "Unit 3: Differentiation: Composite, Implicit, and Inverse Functions",
+            "sectionId": "ap-calc-ab-ch-03-section-03",
+            "sectionHeading": "Advanced Differentiation: transfer and synthesis",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-calculus-ab"
+      ]
+    },
+    {
+      "id": "ap-calc-ab-gloss-10",
+      "term": "Related rates",
+      "definition": "Problems linking two or more time-varying quantities through a geometric or physical equation, solved by differentiating implicitly with respect to time t before substituting instantaneous values.",
+      "aliases": [],
+      "chapterIds": [
+        "ap-calc-ab-ch-04"
+      ],
+      "domainIds": [
+        "contextual-applications-of-differentiation"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-calc-ab-ch-04",
+            "chapterTitle": "Unit 4: Contextual Applications of Differentiation",
+            "domainId": "contextual-applications-of-differentiation",
+            "domain": "Unit 4: Contextual Applications of Differentiation",
+            "sectionId": "ap-calc-ab-ch-04-section-01",
+            "sectionHeading": "Contextual Derivatives: foundations",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-calculus-ab"
+      ]
+    },
+    {
+      "id": "ap-calc-ab-gloss-11",
+      "term": "Local linear approximation",
+      "definition": "Estimating f(x) near x = a with the tangent line L(x) = f(a) + f'(a)(x - a); the estimate overestimates f where f''(x) < 0 (concave down) and underestimates f where f''(x) > 0 (concave up).",
+      "aliases": [
+        "Tangent line approximation",
+        "Linearization"
+      ],
+      "chapterIds": [
+        "ap-calc-ab-ch-04"
+      ],
+      "domainIds": [
+        "contextual-applications-of-differentiation"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-calc-ab-ch-04",
+            "chapterTitle": "Unit 4: Contextual Applications of Differentiation",
+            "domainId": "contextual-applications-of-differentiation",
+            "domain": "Unit 4: Contextual Applications of Differentiation",
+            "sectionId": "ap-calc-ab-ch-04-section-02",
+            "sectionHeading": "Contextual Derivatives: representation and reasoning",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-calculus-ab"
+      ]
+    },
+    {
+      "id": "ap-calc-ab-gloss-12",
+      "term": "L'Hospital's Rule",
+      "definition": "When lim f(x)/g(x) gives the indeterminate form 0/0 or infinity/infinity and g'(x) != 0 nearby, lim f(x)/g(x) = lim f'(x)/g'(x) if it exists; numerator and denominator limits must be shown separately.",
+      "aliases": [
+        "L'Hôpital's rule"
+      ],
+      "chapterIds": [
+        "ap-calc-ab-ch-04"
+      ],
+      "domainIds": [
+        "contextual-applications-of-differentiation"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-calc-ab-ch-04",
+            "chapterTitle": "Unit 4: Contextual Applications of Differentiation",
+            "domainId": "contextual-applications-of-differentiation",
+            "domain": "Unit 4: Contextual Applications of Differentiation",
+            "sectionId": "ap-calc-ab-ch-04-section-03",
+            "sectionHeading": "Contextual Derivatives: transfer and synthesis",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-calculus-ab"
+      ]
+    },
+    {
+      "id": "ap-calc-ab-gloss-13",
+      "term": "Mean Value Theorem",
+      "definition": "If f is continuous on [a, b] and differentiable on (a, b), then at least one c in (a, b) satisfies f'(c) = [f(b) - f(a)] / (b - a), equating instantaneous rate of change to average rate of change.",
+      "aliases": [
+        "MVT"
+      ],
+      "chapterIds": [
+        "ap-calc-ab-ch-05"
+      ],
+      "domainIds": [
+        "analytical-applications-of-differentiation"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-calc-ab-ch-05",
+            "chapterTitle": "Unit 5: Analytical Applications of Differentiation",
+            "domainId": "analytical-applications-of-differentiation",
+            "domain": "Unit 5: Analytical Applications of Differentiation",
+            "sectionId": "ap-calc-ab-ch-05-section-01",
+            "sectionHeading": "Derivative Analysis: foundations",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-calculus-ab"
+      ]
+    },
+    {
+      "id": "ap-calc-ab-gloss-14",
+      "term": "First Derivative Test",
+      "definition": "Classifies interior critical points where f'(c) = 0 or is undefined: f has a local maximum if f' changes from positive to negative, and a local minimum if f' changes from negative to positive.",
+      "aliases": [
+        "Relative extrema test"
+      ],
+      "chapterIds": [
+        "ap-calc-ab-ch-05"
+      ],
+      "domainIds": [
+        "analytical-applications-of-differentiation"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-calc-ab-ch-05",
+            "chapterTitle": "Unit 5: Analytical Applications of Differentiation",
+            "domainId": "analytical-applications-of-differentiation",
+            "domain": "Unit 5: Analytical Applications of Differentiation",
+            "sectionId": "ap-calc-ab-ch-05-section-02",
+            "sectionHeading": "Derivative Analysis: representation and reasoning",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-calculus-ab"
+      ]
+    },
+    {
+      "id": "ap-calc-ab-gloss-15",
+      "term": "Point of inflection",
+      "definition": "A point where a continuous function changes concavity, justified by a sign change in f''(x) (or a switch between increasing and decreasing in f'(x)), rather than by f''(x) = 0 alone.",
+      "aliases": [
+        "Inflection point"
+      ],
+      "chapterIds": [
+        "ap-calc-ab-ch-05"
+      ],
+      "domainIds": [
+        "analytical-applications-of-differentiation"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-calc-ab-ch-05",
+            "chapterTitle": "Unit 5: Analytical Applications of Differentiation",
+            "domainId": "analytical-applications-of-differentiation",
+            "domain": "Unit 5: Analytical Applications of Differentiation",
+            "sectionId": "ap-calc-ab-ch-05-section-03",
+            "sectionHeading": "Derivative Analysis: transfer and synthesis",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-calculus-ab"
+      ]
+    },
+    {
+      "id": "ap-calc-ab-gloss-16",
+      "term": "Riemann sum",
+      "definition": "A finite sum Sigma f(x_i*) * delta-x approximating signed area on [a, b]; left, right, midpoint, and trapezoidal sums converge to the definite integral as the maximum subinterval width approaches zero.",
+      "aliases": [
+        "Definite integral limit"
+      ],
+      "chapterIds": [
+        "ap-calc-ab-ch-06"
+      ],
+      "domainIds": [
+        "integration-and-accumulation-of-change"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-calc-ab-ch-06",
+            "chapterTitle": "Unit 6: Integration and Accumulation of Change",
+            "domainId": "integration-and-accumulation-of-change",
+            "domain": "Unit 6: Integration and Accumulation of Change",
+            "sectionId": "ap-calc-ab-ch-06-section-01",
+            "sectionHeading": "Integration and Accumulation: foundations",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-calculus-ab"
+      ]
+    },
+    {
+      "id": "ap-calc-ab-gloss-17",
+      "term": "Fundamental Theorem of Calculus",
+      "definition": "Links derivatives and integrals: if g(x) = integral from a to x of f(t) dt for continuous f, then g'(x) = f(x), and integral from a to b of f(x) dx = F(b) - F(a) for any antiderivative F of f.",
+      "aliases": [
+        "FTC"
+      ],
+      "chapterIds": [
+        "ap-calc-ab-ch-06"
+      ],
+      "domainIds": [
+        "integration-and-accumulation-of-change"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-calc-ab-ch-06",
+            "chapterTitle": "Unit 6: Integration and Accumulation of Change",
+            "domainId": "integration-and-accumulation-of-change",
+            "domain": "Unit 6: Integration and Accumulation of Change",
+            "sectionId": "ap-calc-ab-ch-06-section-02",
+            "sectionHeading": "Integration and Accumulation: representation and reasoning",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-calculus-ab"
+      ]
+    },
+    {
+      "id": "ap-calc-ab-gloss-18",
+      "term": "Substitution method",
+      "definition": "An integration technique reversing the chain rule by setting u = g(x) and du = g'(x) dx to simplify an integrand; for definite integrals, the integration limits must also be transformed into u-values.",
+      "aliases": [
+        "u-substitution"
+      ],
+      "chapterIds": [
+        "ap-calc-ab-ch-06"
+      ],
+      "domainIds": [
+        "integration-and-accumulation-of-change"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-calc-ab-ch-06",
+            "chapterTitle": "Unit 6: Integration and Accumulation of Change",
+            "domainId": "integration-and-accumulation-of-change",
+            "domain": "Unit 6: Integration and Accumulation of Change",
+            "sectionId": "ap-calc-ab-ch-06-section-03",
+            "sectionHeading": "Integration and Accumulation: transfer and synthesis",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-calculus-ab"
+      ]
+    },
+    {
+      "id": "ap-calc-ab-gloss-19",
+      "term": "Slope field",
+      "definition": "A graphical lattice of short segments with slope dy/dx = F(x, y) at sampled points, used to visualize solution behavior and sketch the particular solution passing through an initial condition.",
+      "aliases": [
+        "Direction field"
+      ],
+      "chapterIds": [
+        "ap-calc-ab-ch-07"
+      ],
+      "domainIds": [
+        "differential-equations"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-calc-ab-ch-07",
+            "chapterTitle": "Unit 7: Differential Equations",
+            "domainId": "differential-equations",
+            "domain": "Unit 7: Differential Equations",
+            "sectionId": "ap-calc-ab-ch-07-section-01",
+            "sectionHeading": "Differential Equations: foundations",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-calculus-ab"
+      ]
+    },
+    {
+      "id": "ap-calc-ab-gloss-20",
+      "term": "Separation of variables",
+      "definition": "A method for solving dy/dx = g(x)h(y) by rewriting (1/h(y)) dy = g(x) dx, integrating both sides with one constant C, applying the initial condition, and stating the domain containing that point.",
+      "aliases": [
+        "Separable differential equation"
+      ],
+      "chapterIds": [
+        "ap-calc-ab-ch-07"
+      ],
+      "domainIds": [
+        "differential-equations"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-calc-ab-ch-07",
+            "chapterTitle": "Unit 7: Differential Equations",
+            "domainId": "differential-equations",
+            "domain": "Unit 7: Differential Equations",
+            "sectionId": "ap-calc-ab-ch-07-section-02",
+            "sectionHeading": "Differential Equations: representation and reasoning",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-calculus-ab"
+      ]
+    },
+    {
+      "id": "ap-calc-ab-gloss-21",
+      "term": "Exponential growth and decay",
+      "definition": "Solutions to the differential equation dy/dt = k*y have the form y(t) = y_0 * e^(kt), where rate of change is proportional to current amount, producing growth when k > 0 and decay when k < 0.",
+      "aliases": [
+        "Proportional rate model"
+      ],
+      "chapterIds": [
+        "ap-calc-ab-ch-07"
+      ],
+      "domainIds": [
+        "differential-equations"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-calc-ab-ch-07",
+            "chapterTitle": "Unit 7: Differential Equations",
+            "domainId": "differential-equations",
+            "domain": "Unit 7: Differential Equations",
+            "sectionId": "ap-calc-ab-ch-07-section-03",
+            "sectionHeading": "Differential Equations: transfer and synthesis",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-calculus-ab"
+      ]
+    },
+    {
+      "id": "ap-calc-ab-gloss-22",
+      "term": "Average value of a function",
+      "definition": "The mean height of a continuous function f on [a, b], given by f_avg = [1 / (b - a)] * integral from a to b of f(x) dx, distinct from average rate of change [f(b) - f(a)] / (b - a).",
+      "aliases": [
+        "Mean value for integrals"
+      ],
+      "chapterIds": [
+        "ap-calc-ab-ch-08"
+      ],
+      "domainIds": [
+        "applications-of-integration"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-calc-ab-ch-08",
+            "chapterTitle": "Unit 8: Applications of Integration",
+            "domainId": "applications-of-integration",
+            "domain": "Unit 8: Applications of Integration",
+            "sectionId": "ap-calc-ab-ch-08-section-01",
+            "sectionHeading": "Applications of Integration: foundations",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-calculus-ab"
+      ]
+    },
+    {
+      "id": "ap-calc-ab-gloss-23",
+      "term": "Net change vs. total distance",
+      "definition": "Integrating velocity v(t) over [a, b] yields net displacement (final minus initial position), whereas integrating speed |v(t)| over [a, b] yields total distance traveled by counting all motion positively.",
+      "aliases": [
+        "Displacement vs. total distance"
+      ],
+      "chapterIds": [
+        "ap-calc-ab-ch-08"
+      ],
+      "domainIds": [
+        "applications-of-integration"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-calc-ab-ch-08",
+            "chapterTitle": "Unit 8: Applications of Integration",
+            "domainId": "applications-of-integration",
+            "domain": "Unit 8: Applications of Integration",
+            "sectionId": "ap-calc-ab-ch-08-section-02",
+            "sectionHeading": "Applications of Integration: representation and reasoning",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-calculus-ab"
+      ]
+    },
+    {
+      "id": "ap-calc-ab-gloss-24",
+      "term": "Washer method",
+      "definition": "Computes the volume of a solid of revolution with a hollow interior via integral of pi * (R(x)^2 - r(x)^2) dx perpendicular to the axis, subtracting squared radii rather than squaring (R - r).",
+      "aliases": [
+        "Disk and washer volumes"
+      ],
+      "chapterIds": [
+        "ap-calc-ab-ch-08"
+      ],
+      "domainIds": [
+        "applications-of-integration"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-calc-ab-ch-08",
+            "chapterTitle": "Unit 8: Applications of Integration",
+            "domainId": "applications-of-integration",
+            "domain": "Unit 8: Applications of Integration",
+            "sectionId": "ap-calc-ab-ch-08-section-03",
+            "sectionHeading": "Applications of Integration: transfer and synthesis",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-calculus-ab"
+      ]
+    }
+  ]
 }

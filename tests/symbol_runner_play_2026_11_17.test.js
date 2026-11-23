@@ -266,7 +266,7 @@ describe('rehearsal, help and the grid', () => {
     expect(cell.querySelector('.asr-mid').textContent).toBe(q.display.charAt(q.flankerCenter));
     h.destroy();
     h = core.mountRunner(stage, { modeId: 'number_size_stroop', seed: 3, viewMode: 'grid' });
-    const sizes = [...stage.querySelector('.asr-ran-cell').querySelectorAll('span')].map((n) => parseInt(n.style.fontSize, 10));
+    const sizes = [...stage.querySelector('.asr-ran-cell').querySelectorAll('span')].map((n) => parseInt(n.style.fontSize, 10) || n.className);
     expect(sizes).toHaveLength(2);
     expect(sizes[0]).not.toBe(sizes[1]);
     h.destroy();

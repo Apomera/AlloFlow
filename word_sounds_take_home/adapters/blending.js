@@ -72,31 +72,54 @@ module.exports = {
       answerAudio: [answerClip] } };
   },
   render: function (item, ctx) {
-    var win = ctx.root.ownerDocument.defaultView;
+    var doc = ctx.root.ownerDocument;
+    var win = doc.defaultView;
     var cards = [];
     var token = 0;
+    var timer = null;
+    var watchingStop = false;
+    var clearTimer = function () {
+      if (timer != null) { try { win.clearTimeout(timer); } catch (_) {} timer = null; }
+    };
     var mark = function (index) {
       cards.forEach(function (c, i) { c.box.style.outline = i === index ? '4px solid var(--accent)' : ''; c.box.style.outlineOffset = i === index ? '2px' : ''; });
     };
+    var onDocStop = function (e) {
+      if (!ctx.root.isConnected || (e && e.target && e.target.closest && e.target.closest('[data-player-stop-audio]'))) halt();
+    };
+    var onDocKey = function (e) {
+      var k = String((e && e.key) || '');
+      if (!ctx.root.isConnected || k === 'Escape' || k === 'Esc') halt();
+    };
+    var watchStop = function (on) {
+      if (!doc || !doc.addEventListener || watchingStop === on) return;
+      watchingStop = on;
+      if (on) { doc.addEventListener('click', onDocStop, true); doc.addEventListener('keydown', onDocKey, true); }
+      else { doc.removeEventListener('click', onDocStop, true); doc.removeEventListener('keydown', onDocKey, true); }
+    };
+    var halt = function () { token++; clearTimer(); watchStop(false); mark(-1); };
     // Play a sequence with the app's pauses; any tap, answer or new screen
     // ends it (a stopped clip never resolves, and the token moves on).
     var run = function (steps) {
+      clearTimer();
       var mine = ++token;
       var i = 0;
+      watchStop(true);
       var step = function () {
-        if (mine !== token || !ctx.root.isConnected) return;
-        if (i >= steps.length) { mark(-1); return; }
+        timer = null;
+        if (mine !== token) return;
+        if (!ctx.root.isConnected) { watchStop(false); mark(-1); return; }
+        if (i >= steps.length) { watchStop(false); mark(-1); return; }
         var s = steps[i++];
         mark(s.hi == null ? -1 : s.hi);
         ctx.play(s.id).then(function (ok) {
           if (mine !== token) return;
-          if (ok === false) { mark(-1); return; }
-          win.setTimeout(step, s.gap || 0);
+          if (ok === false) { watchStop(false); mark(-1); return; }
+          timer = win.setTimeout(step, s.gap || 0);
         });
       };
       step();
     };
-    var halt = function () { token++; mark(-1); };
     var soundSteps = function () {
       var gap = ctx.soundGap ? ctx.soundGap() : 500;
       return item.sounds.map(function (id) { return { id: id, gap: gap }; }).concat([{ id: item.question, gap: 100 }]);
@@ -123,7 +146,7 @@ module.exports = {
             missedText: ctx.showLetters ? ctx.fmt(ctx.L.blending_missed, { word: item.target }) : ctx.L.blending_missed_no_letters,
           });
           if (outcome !== 'correct') { box.classList.add('tried'); choose.setAttribute('aria-disabled', 'true'); }
-        } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', text: shownWord }) : ctx.fmt(ctx.L.blending_option_n, { n: n })]);
+        } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', lang: 'en', text: shownWord }) : ctx.fmt(ctx.L.blending_option_n, { n: n })]);
       var box = ctx.el('li', { class: 'choice' }, [listen, choose]);
       cards.push({ box: box, choose: choose, right: String(choice.text).toLowerCase() === String(item.target).toLowerCase() });
       list.appendChild(box);
@@ -140,12 +163,25 @@ module.exports = {
       hear ? hear.note : null,
     ]));
     ctx.root.appendChild(list);
+    if (typeof ctx.keys === 'function') {
+      ctx.keys(function (key) {
+        var k = String(key == null ? '' : key);
+        if (k === 'Escape' || k === 'Esc') {
+          var active = watchingStop || timer != null;
+          halt();
+          if (typeof ctx.stop === 'function') ctx.stop();
+          return active;
+        }
+        return false;
+      });
+    }
     // Opening sequence (word_sounds_module.js:16790-16845): instruction, each
     // sound, "Which word did you hear?", then every choice in turn.
     if (!ctx.isDone()) {
       run((ctx.skipDirections || !item.instruction ? [] : [{ id: item.instruction, gap: 200 }]).concat(soundSteps(), optionSteps(200)));
     }
     return {
+      stop: halt,
       // The R key: the sounds and the question again.
       replay: function () { run(soundSteps()); },
       reveal: function () {

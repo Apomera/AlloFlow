@@ -2836,8 +2836,14 @@ function SourceView(props) {
     playingContentId,
     sourceCheckText,
     onSourceCheckChange,
-    activeUnitId
+    activeUnitId,
+    onSendToReadAlongPacket,
+    uploadedAudioSegments,
+    onClearUploadedAudioSegments
   } = props;
+  const sendToReadAlong = typeof onSendToReadAlongPacket === "function" ? onSendToReadAlongPacket : onSendToReadAlongPacket === void 0 && typeof window !== "undefined" && typeof window.__alloSendToReadAlongPacket === "function" ? window.__alloSendToReadAlongPacket : null;
+  const rawUploadedSegments = uploadedAudioSegments !== void 0 ? uploadedAudioSegments : typeof window !== "undefined" && Array.isArray(window.__alloUploadedAudioSegments) ? window.__alloUploadedAudioSegments : null;
+  const clearUploadedSegments = typeof onClearUploadedAudioSegments === "function" ? onClearUploadedAudioSegments : onClearUploadedAudioSegments === void 0 && typeof window !== "undefined" && typeof window.__alloClearUploadedAudioSegments === "function" ? window.__alloClearUploadedAudioSegments : null;
   const say = (key, fallback) => {
     try {
       const value = t(key);
@@ -2856,6 +2862,18 @@ function SourceView(props) {
   const [checkRun, setCheckRun] = React.useState(null);
   const [refineInstruction, setRefineInstruction] = React.useState("");
   const [refining, setRefining] = React.useState(false);
+  const [dictateOpen, setDictateOpen] = React.useState(() => {
+    if (typeof window !== "undefined" && window.__alloOpenSourceDictation) {
+      window.__alloOpenSourceDictation = false;
+      return true;
+    }
+    return false;
+  });
+  const [dictationMode, setDictationMode] = React.useState("append");
+  const [dictationDraft, setDictationDraft] = React.useState("");
+  const [dismissedUploadRef, setDismissedUploadRef] = React.useState(null);
+  const [, setDictationModTick] = React.useState(0);
+  const uploadedSegsWithBlob = rawUploadedSegments && rawUploadedSegments !== dismissedUploadRef && Array.isArray(rawUploadedSegments) ? rawUploadedSegments.filter((s) => s && s.blob) : [];
   const editorRef = React.useRef(null);
   const checkLineRef = React.useRef(null);
   React.useEffect(() => {
@@ -2864,6 +2882,30 @@ function SourceView(props) {
   React.useEffect(() => {
     if (editing && editorRef.current) editorRef.current.focus();
   }, [editing]);
+  React.useEffect(() => {
+    if (typeof window === "undefined" || typeof window.addEventListener !== "function") return void 0;
+    const onOpenDict = () => {
+      window.__alloOpenSourceDictation = false;
+      setEditing(true);
+      setDictateOpen(true);
+    };
+    const onMod = () => setDictationModTick((n) => n + 1);
+    window.addEventListener("alloflow:open-source-dictation", onOpenDict);
+    window.addEventListener("alloflow:module-registry-changed", onMod);
+    return () => {
+      window.removeEventListener("alloflow:open-source-dictation", onOpenDict);
+      window.removeEventListener("alloflow:module-registry-changed", onMod);
+    };
+  }, []);
+  React.useEffect(() => {
+    if (!dictateOpen || typeof window === "undefined") return;
+    if (!(window.AlloModules && window.AlloModules.SpeechSetup && window.AlloModules.SpeechSetup.DictationStudio)) {
+      try {
+        if (typeof window.__alloLazySpeechSetup === "function") window.__alloLazySpeechSetup();
+      } catch (_) {
+      }
+    }
+  }, [dictateOpen]);
   const aiReady = aiTextAvailable !== false;
   const check = SourceRecord.checkFor(history, text);
   const incomplete = !check && (Array.isArray(history) ? history : []).slice().reverse().find((item) => item?.type === "analysis" && item.data?.originalText === text && SourceRecord.incomplete(item));
@@ -3016,7 +3058,85 @@ function SourceView(props) {
   };
   return /* @__PURE__ */ React.createElement("section", { "data-source-view": true, "data-source-status": status, "aria-labelledby": "source-view-title", className: "mx-auto w-full max-w-3xl space-y-4 text-left" }, /* @__PURE__ */ React.createElement("header", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("h2", { id: "source-view-title", className: "text-xl font-black text-slate-900" }, say("source_view.title", "Your source")), /* @__PURE__ */ React.createElement("p", { id: "source-view-status", "data-source-status-line": true, role: "status", className: "text-sm text-slate-700" }, statusLine), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-3" }, status === "draft" && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-use": true, "data-help-key": "source_view_use", onClick: useSource, className: "min-h-11 rounded-lg bg-indigo-700 px-4 text-sm font-bold text-white hover:bg-indigo-800" }, inUse ? say("source_view.use_version", "Use this version") : say("source_view.use", "Use this source")), status === "draft" && aiReady && /* @__PURE__ */ React.createElement("label", { "data-help-key": "source_view_skip_check", className: "inline-flex min-h-11 items-center gap-2 text-sm text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", "data-source-skip-check": true, checked: skipCheck, onChange: (event) => setSkipCheck(event.target.checked) }), say("source_view.skip_check", "Skip the source check")), status === "draft" && inUse && !(replacement && replacement.status === "replaced" && replacement.previous === inUse.text) && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-discard": true, disabled: checkBusy, onClick: discardChanges, className: "min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50 disabled:opacity-60" }, fill(say("source_view.discard", "Discard changes (back to version {version})"), { version: inUse.version })), status === "in-use" && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-make-resources": true, "data-help-key": "source_view_make_resources", onClick: () => {
     if (typeof onShowResources === "function") onShowResources();
-  }, className: "min-h-11 rounded-lg bg-indigo-700 px-4 text-sm font-bold text-white hover:bg-indigo-800" }, say("source_view.make_resources", "Make resources")), typeof handleSpeak === "function" && !!text.trim() && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-read-aloud": true, "data-help-key": "source_view_read_aloud", "aria-pressed": reading, onClick: readAloud, className: "min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50" }, reading ? say("source_view.stop_reading", "Stop reading") : say("source_view.read_aloud", "Read aloud")))), readOnly ? /* @__PURE__ */ React.createElement("div", { className: "overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm" }, /* @__PURE__ */ React.createElement("div", { "data-source-readonly": true, "aria-describedby": "source-view-status", className: "max-h-[60vh] overflow-y-auto whitespace-pre-wrap p-4 text-sm leading-relaxed text-slate-900" }, text), /* @__PURE__ */ React.createElement("div", { className: "flex justify-end border-t border-slate-100 bg-slate-50 px-3 py-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-edit": true, "data-help-key": "source_view_edit", disabled: checkBusy, onClick: () => setEditing(true), className: "min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50 disabled:opacity-60" }, say("source_view.edit", "Edit source")))) : (
+  }, className: "min-h-11 rounded-lg bg-indigo-700 px-4 text-sm font-bold text-white hover:bg-indigo-800" }, say("source_view.make_resources", "Make resources")), typeof handleSpeak === "function" && !!text.trim() && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-read-aloud": true, "data-help-key": "source_view_read_aloud", "aria-pressed": reading, onClick: readAloud, className: "min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50" }, reading ? say("source_view.stop_reading", "Stop reading") : say("source_view.read_aloud", "Read aloud")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-dictate": true, "data-help-key": "source_view_dictate", "aria-expanded": dictateOpen, onClick: () => {
+    if (status === "in-use" && !editing) setEditing(true);
+    setDictationMode("append");
+    setDictateOpen((v) => !v);
+  }, className: "min-h-11 rounded-lg border border-emerald-600 bg-emerald-50 px-3 text-sm font-bold text-emerald-900 hover:bg-emerald-100" }, dictateOpen ? say("source_view.close_dictate", "Close dictation") : say("source_view.dictate", "Dictate")), typeof sendToReadAlong === "function" && !!text.trim() && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-source-send-read-along": true,
+      "data-help-key": "source_view_send_read_along",
+      onClick: () => sendToReadAlong({ text, segments: uploadedSegsWithBlob }),
+      className: "min-h-11 rounded-lg border border-indigo-600 bg-indigo-50 px-3 text-sm font-bold text-indigo-900 hover:bg-indigo-100"
+    },
+    say("source_view.send_read_along", "Send to Read-Along Packet")
+  ))), uploadedSegsWithBlob.length > 0 && /* @__PURE__ */ React.createElement("div", { "data-source-upload-verify-banner": true, role: "status", className: "flex flex-wrap items-center justify-between gap-2 rounded-xl border-2 border-emerald-300 bg-gradient-to-r from-emerald-50 to-indigo-50 px-4 py-3 text-sm text-slate-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-semibold text-emerald-950" }, fill(say("source_view.upload_verify_banner", "Audio/video transcribed locally with Whisper ({count} segments kept in memory)"), { count: uploadedSegsWithBlob.length })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-source-upload-verify-btn": true,
+      onClick: () => {
+        if (status === "in-use" && !editing) setEditing(true);
+        setDictationMode("verify");
+        setDictationDraft(text);
+        setDictateOpen(true);
+      },
+      className: "min-h-11 rounded-lg bg-indigo-700 px-3 text-xs font-bold text-white hover:bg-indigo-800"
+    },
+    say("dictation.crosscheck_btn", "Verify against audio with Gemini")
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-source-upload-clear-btn": true,
+      onClick: () => {
+        setDismissedUploadRef(rawUploadedSegments);
+        if (typeof clearUploadedSegments === "function") clearUploadedSegments();
+        if (dictationMode === "verify") {
+          setDictateOpen(false);
+          setDictationMode("append");
+        }
+      },
+      className: "min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-xs font-bold text-slate-800 hover:bg-slate-100"
+    },
+    say("source_view.clear_audio", "Clear audio")
+  ))), dictateOpen && (() => {
+    const DictationStudio = typeof window !== "undefined" && window.AlloModules && window.AlloModules.SpeechSetup && window.AlloModules.SpeechSetup.DictationStudio;
+    const isVerifyMode = dictationMode === "verify";
+    return /* @__PURE__ */ React.createElement("section", { "data-source-dictation-panel": true, "aria-label": say("dictation.studio_title", "Dictation Studio"), className: "rounded-xl border-2 border-emerald-200 bg-emerald-50/40 p-4 space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("h3", { className: "m-0 text-sm font-black text-emerald-950" }, say("dictation.studio_title", "Dictation Studio (Local Whisper)")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+      setDictateOpen(false);
+      setDictationMode("append");
+    }, className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-100" }, say("common.close", "Close"))), DictationStudio ? /* @__PURE__ */ React.createElement(
+      DictationStudio,
+      {
+        t,
+        compact: true,
+        value: isVerifyMode ? text : dictationDraft,
+        onChange: isVerifyMode ? ((nextVal) => setInputText(nextVal)) : setDictationDraft,
+        initialSegments: uploadedSegsWithBlob.length > 0 ? uploadedSegsWithBlob : void 0,
+        onClearInitialSegments: () => {
+          setDismissedUploadRef(rawUploadedSegments);
+          if (typeof clearUploadedSegments === "function") clearUploadedSegments();
+        },
+        onSendToReadAlong: typeof sendToReadAlong === "function" ? sendToReadAlong : void 0,
+        aiTextAvailable: aiReady,
+        onApplyToSource: (dictated) => {
+          const clean = String(dictated || "").trim();
+          if (!clean) return;
+          if (isVerifyMode) {
+            setInputText(clean);
+          } else {
+            setInputText((prev) => prev && prev.trim() ? prev.trimEnd() + "\n\n" + clean : clean);
+            setDictationDraft("");
+          }
+          setDictateOpen(false);
+          setDictationMode("append");
+        }
+      }
+    ) : /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs font-semibold text-slate-700" }, say("wizard.dictate_loading", "Loading Dictation Studio (Local Whisper)\u2026")));
+  })(), readOnly ? /* @__PURE__ */ React.createElement("div", { className: "overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm" }, /* @__PURE__ */ React.createElement("div", { "data-source-readonly": true, "aria-describedby": "source-view-status", className: "max-h-[60vh] overflow-y-auto whitespace-pre-wrap p-4 text-sm leading-relaxed text-slate-900" }, text), /* @__PURE__ */ React.createElement("div", { className: "flex justify-end border-t border-slate-100 bg-slate-50 px-3 py-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-edit": true, "data-help-key": "source_view_edit", disabled: checkBusy, onClick: () => setEditing(true), className: "min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50 disabled:opacity-60" }, say("source_view.edit", "Edit source")))) : (
     // One editor card: the formatting bar, the text and its save status, with one focus ring.
     /* @__PURE__ */ React.createElement("div", { className: "overflow-hidden rounded-xl border border-slate-400 bg-white shadow-sm focus-within:ring-2 focus-within:ring-indigo-600" }, /* @__PURE__ */ React.createElement("div", { role: "toolbar", "data-help-key": "source_view_format", "aria-label": say("source_view.format_toolbar", "Formatting"), className: "flex flex-wrap gap-1 border-b border-slate-200 bg-slate-50 px-2 py-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-format": "bold", onClick: () => format("bold"), className: "min-h-11 rounded-md px-3 text-xs font-bold text-slate-700 hover:bg-white hover:shadow-sm" }, say("formatting.bold", "Bold")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-format": "italic", onClick: () => format("italic"), className: "min-h-11 rounded-md px-3 text-xs font-bold text-slate-700 hover:bg-white hover:shadow-sm" }, say("formatting.italic", "Italic")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-format": "highlight", onClick: () => format("highlight"), className: "min-h-11 rounded-md px-3 text-xs font-bold text-slate-700 hover:bg-white hover:shadow-sm" }, say("formatting.highlight", "Highlight")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-format": "h2", onClick: () => format("h2"), className: "min-h-11 rounded-md px-3 text-xs font-bold text-slate-700 hover:bg-white hover:shadow-sm" }, say("source_view.heading", "Heading")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-format": "list", onClick: () => format("list"), className: "min-h-11 rounded-md px-3 text-xs font-bold text-slate-700 hover:bg-white hover:shadow-sm" }, say("formatting.list", "List"))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
       "textarea",
@@ -6721,6 +6841,28 @@ function SourceInputShellView(props) {
     },
     /* @__PURE__ */ React.createElement(BookOpen2, { size: 12, "aria-hidden": "true" }),
     t("input.reading_catalog") || "Reading catalog"
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-source-dictate-btn": "true",
+      "data-help-key": "source_dictate_btn",
+      onClick: () => {
+        if (typeof window !== "undefined") {
+          window.__alloOpenSourceDictation = true;
+          try {
+            window.dispatchEvent(new CustomEvent("alloflow:open-source-dictation"));
+          } catch (_) {
+          }
+        }
+        if (typeof openSourceView === "function") openSourceView({ focus: false });
+      },
+      disabled: isExtracting || isGeneratingSource,
+      title: headerText("input.actions.dictate_hint", "Dictate your source text with on-device Whisper and optional Gemini check"),
+      className: sourcePillClass
+    },
+    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F399}\uFE0F"),
+    headerText("input.dictate_or_record", "Dictate")
   ), /* @__PURE__ */ React.createElement("label", { "data-source-open-pdf-project": "true", "data-help-key": "source_open_pdf_project_btn", className: sourcePillClass + " cursor-pointer focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-1", title: t("input.open_pdf_project_tooltip") || "Reopen PDF Accessibility work you saved earlier. Lesson projects open from Class & Materials." }, /* @__PURE__ */ React.createElement(FileDown, { size: 12, "aria-hidden": "true" }), " ", t("input.open_pdf_project") || "Open PDF project", /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".json", className: "sr-only", onChange: (e) => {
     const file = e.target.files?.[0];
     e.target.value = "";

@@ -7,8 +7,8 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: system-ui, -apple-system, sans-serif; background: linear-gradient(180deg, #e0f2fe 0%, #f0fdf4 40%, #fefce8 80%, #fef3c7 100%); min-height: 100vh; color: #1f2937; }
-  .skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 1000; }
-  .skip-link:focus { position: fixed; left: 8px; top: 8px; width: auto; height: auto; padding: 10px 18px; background: #1e293b; color: #fff; font-weight: 700; border-radius: 8px; outline: 3px solid #facc15; text-decoration: none; }
+  .skip-link { position: absolute; inset-inline-start: 8px; top: 8px; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; z-index: 1000; }
+  .skip-link:focus { position: fixed; inset-inline-start: 8px; top: 8px; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; padding: 10px 18px; background: #1e293b; color: #fff; font-weight: 700; border-radius: 8px; outline: 3px solid #facc15; text-decoration: none; }
   :focus-visible { outline: 3px solid #4338ca; outline-offset: 2px; }
   .header { text-align: center; padding: 32px 20px 16px; }
   .header h1 { font-size: 32px; font-weight: 900; letter-spacing: -0.5px; }
@@ -204,7 +204,7 @@ function render() {
     html += '<div class="words">';
     bed.forEach(function(w) {
       var anim = level === 'seed' ? 'anim-breathe' : level === 'mastered' ? 'anim-glow' : '';
-      html += '<button type="button" class="word-card ' + anim + '" style="border-color:' + g.border + (level === 'mastered' ? ';box-shadow:0 0 12px rgba(250,204,21,0.4)' : '') + '" onclick="speakWord(\'' + w.label.replace(/'/g, "\\'") + '\', this)" aria-label="Speak ' + w.label + (w.tl ? ', Somali: ' + w.tl : '') + '">';
+      html += '<button type="button" class="word-card ' + anim + '" style="border-color:' + g.border + (level === 'mastered' ? ';box-shadow:0 0 12px rgba(250,204,21,0.4)' : '') + '" onclick="speakWord(\'' + w.label.replace(/'/g, "\\'") + '\', this)">';
       if (w.core) html += '<span class="core">CORE</span>';
       html += '<span class="symbol" aria-hidden="true" style="background:' + g.bg + '">' + w.emoji + '</span>';
       html += '<span class="name">' + w.label + '</span>';

@@ -31,6 +31,7 @@ const moduleSrc = `/**
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.PersonaChatView) {
     console.log('[CDN] ViewPersonaChatModule already loaded, skipping');
     return;

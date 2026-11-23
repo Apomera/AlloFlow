@@ -18,8 +18,8 @@
   "summary": {
     "chapters": 12,
     "sections": 48,
-    "diagrams": 0,
-    "diagramPlacements": 0,
+    "diagrams": 12,
+    "diagramPlacements": 12,
     "knowledgeChecks": 60,
     "flashcards": 75,
     "memoryAids": 20,
@@ -28,7 +28,11 @@
     "sourceReviewedFlashcards": 75,
     "sourceReviewedMemoryAids": 20,
     "sourceReviewedConstructedResponseWorkshops": 8,
-    "editorialReviewedSourcePendingMemoryAids": 0
+    "editorialReviewedSourcePendingMemoryAids": 0,
+    "glossaryTerms": 24,
+    "appliedCases": 12,
+    "quickReferenceCards": 4,
+    "misconceptionPlaybooks": 6
   },
   "skills": [
     {
@@ -201,7 +205,18 @@
             "https://ies.ed.gov/ncee/wwc/practiceguide/1"
           ],
           "reviewStatus": "source-reviewed-editorial-pass",
-          "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending."
+          "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending.",
+          "expandableCase": {
+            "schemaVersion": 1,
+            "label": "Applied classroom case",
+            "presentationLabel": "Classroom scenario",
+            "answerLabel": "Best pedagogical decision",
+            "explanationLabel": "Evidence-based rationale",
+            "title": "Teaching Metacognitive Problem-Solving Routines in Fifth Grade",
+            "clinicalDescription": "When facing multi-step fraction word problems, several fifth graders copy a neighbor's numbers immediately or declare they lack a \"math brain\" despite solid computation fluency. Work samples reveal students never pause to estimate reasonableness or check whether their equation matches the problem context.",
+            "diagnosis": "Teach a plan-monitor-evaluate metacognitive routine using worked examples, error analysis, and personal goal tracking to strengthen self-efficacy.",
+            "explanation": "Explicit metacognitive modeling paired with Bandura mastery feedback and peer strategy analysis builds self-regulation and transfer to unfamiliar multi-step tasks. Assigning additional timed computation worksheets leaves strategic planning gaps intact and reinforces fixed-ability beliefs."
+          }
         },
         {
           "id": "plt5622-ch-01-section-04",
@@ -317,6 +332,11 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending."
         }
+      ],
+      "chapterTakeaways": [
+        "Activate elementary students' prior schemas and chunk multi-step lessons into manageable segments so working memory stays clear enough to encode concepts into long-term memory.",
+        "Select learning theories strategically—constructivism for active sense-making, social learning for cognitive modeling and self-efficacy, and behavioral reinforcement for clear routines.",
+        "Strengthen durable K-6 transfer by teaching students to monitor comprehension with self-questioning checklists and scheduling low-stakes retrieval and interleaved practice across units."
       ]
     },
     {
@@ -391,7 +411,18 @@
             "https://ies.ed.gov/ncee/wwc/PracticeGuides"
           ],
           "reviewStatus": "source-reviewed-editorial-pass",
-          "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending."
+          "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending.",
+          "expandableCase": {
+            "schemaVersion": 1,
+            "label": "Applied classroom case",
+            "presentationLabel": "Classroom scenario",
+            "answerLabel": "Best pedagogical decision",
+            "explanationLabel": "Evidence-based rationale",
+            "title": "Supporting Competence and Perspective-Taking in Fourth Grade",
+            "clinicalDescription": "During Erikson's industry-versus-inferiority period, a formerly enthusiastic fourth grader hides writing drafts and teases peers after noticing slower reading fluency than tablemates. Recess conflicts also flare because several students argue rules are fair only when outcomes favor their team.",
+            "diagnosis": "Protect dignity with private growth-tracked goals, facilitate structured perspective-taking discussions, and co-create classroom fairness norms.",
+            "explanation": "Upper-elementary learners experience heightened peer comparison alongside emerging reciprocity in moral reasoning. Private mastery tracking nurtures healthy competence while guided perspective-taking connects rules to shared community impact, avoiding the shame triggered by public score comparisons."
+          }
         },
         {
           "id": "plt5622-ch-02-section-04",
@@ -507,6 +538,11 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending."
         }
+      ],
+      "chapterTakeaways": [
+        "Across grades K-6, learners build Piaget's concrete operational logic—conservation, classification, seriation, and reversibility—yet still need visual models before grasping pure abstraction.",
+        "Support Erikson's industry versus inferiority stage by designing attainable elementary tasks with clear mastery criteria so students gain competence instead of discouragement.",
+        "Expect broad cognitive, physical, and language variability in every K-6 classroom, guiding students from rule-bound obedience toward fairness, perspective-taking, and shared norms."
       ]
     },
     {
@@ -593,7 +629,18 @@
             "https://www.ed.gov/laws-and-policy/civil-rights-laws/race-color-and-national-origin-discrimination/race-color-and-national-origin-discrimination-key-issues/equal-education-opportunities-english"
           ],
           "reviewStatus": "source-reviewed-editorial-pass",
-          "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending."
+          "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending.",
+          "expandableCase": {
+            "schemaVersion": 1,
+            "label": "Applied classroom case",
+            "presentationLabel": "Classroom scenario",
+            "answerLabel": "Best pedagogical decision",
+            "explanationLabel": "Evidence-based rationale",
+            "title": "Leveraging L1 Literacy and Academic Scaffolds for a Fifth-Grade EL",
+            "clinicalDescription": "A newly arrived fifth grader with strong prior schooling in Arabic solves decimal operations rapidly on paper, yet is pulled out of core social studies daily for beginner phonics software and excluded from a civic-debate project because her spoken English is still emerging.",
+            "diagnosis": "Keep her in core grade-level inquiry using bilingual glossaries, graphic organizers, paired language objectives, and structured partner rehearsals.",
+            "explanation": "Meaningful grade-level access treats first-language literacy and conceptual mastery as cognitive assets while scaffolding academic English discourse. Pulling a literate newcomer out of core subjects for primary phonics software restricts opportunity to learn and underestimates her intellectual readiness."
+          }
         },
         {
           "id": "plt5622-ch-03-section-04",
@@ -727,6 +774,11 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending."
         }
+      ],
+      "chapterTakeaways": [
+        "Combine Universal Design for Learning with MTSS tiers—strengthening core Tier 1 teaching, adding targeted Tier 2 small-group intervention, and tracking intensive Tier 3 progress closely.",
+        "Under IDEA and Section 504, accommodations change how a K-6 learner accesses or shows mastery without lowering standards, whereas modifications alter the curriculum expectations themselves.",
+        "Scaffold K-6 English learners with academic vocabulary previews, structured partner talk, and graphic organizers while challenging gifted learners through compacting and inquiry depth."
       ]
     },
     {
@@ -818,7 +870,18 @@
             "https://ies.ed.gov/ncee/wwc/PracticeGuide/31/Published"
           ],
           "reviewStatus": "source-reviewed-editorial-pass",
-          "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending."
+          "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending.",
+          "expandableCase": {
+            "schemaVersion": 1,
+            "label": "Applied classroom case",
+            "presentationLabel": "Classroom scenario",
+            "answerLabel": "Best pedagogical decision",
+            "explanationLabel": "Evidence-based rationale",
+            "title": "Proactive Workshop Design and 504 Self-Management in Sixth Grade",
+            "clinicalDescription": "Sixth-grade writing workshop breaks down as students crowd around one device cart, queue at the teacher's desk for directions, and drift off-task. A student with a Section 504 plan for ADHD repeatedly disrupts peers to escape long unchunked drafting blocks when expectations feel overwhelming.",
+            "diagnosis": "Distribute supply stations, post visual task checklists, chunk drafting with self-monitoring timers, and embed structured topic choices per the 504 plan.",
+            "explanation": "Proactive physical organization, UDL executive-function supports, and meaningful learner agency directly address the escape function of disruptive behavior while honoring Section 504 accommodations. Withholding recess or issuing repeated public warnings fails to remove environmental and task barriers."
+          }
         }
       ],
       "knowledgeChecks": [
@@ -917,6 +980,11 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending."
         }
+      ],
+      "chapterTakeaways": [
+        "Increase K-6 motivation under expectancy-value and self-determination theories by linking work to authentic goals, ensuring tasks feel achievable, and nurturing autonomy and belonging.",
+        "Prevent classroom management breakdowns by co-constructing a few positively stated rules, teaching routines explicitly, and organizing seating and materials for smooth transitions.",
+        "Analyze recurring K-6 misbehavior through its environmental triggers and consequences, teaching self-monitoring and replacement skills privately while preserving student dignity."
       ]
     },
     {
@@ -1008,7 +1076,18 @@
             "https://ies.ed.gov/ncee/wwc/PracticeGuides"
           ],
           "reviewStatus": "source-reviewed-editorial-pass",
-          "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending."
+          "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending.",
+          "expandableCase": {
+            "schemaVersion": 1,
+            "label": "Applied classroom case",
+            "presentationLabel": "Classroom scenario",
+            "answerLabel": "Best pedagogical decision",
+            "explanationLabel": "Evidence-based rationale",
+            "title": "Differentiating Ecosystem Remediation and Enrichment from Preassessment",
+            "clinicalDescription": "A preassessment for a fourth-grade ecosystems standard shows eight students already trace energy across producers, consumers, and decomposers, while seven confuse food webs with animal shelters. A colleague recommends assigning extra drill sheets to early finishers and marching the whole class through the textbook.",
+            "diagnosis": "Use preassessment data to run targeted visual-model remediation while offering high-ceiling ecosystem investigations built on vetted science sources.",
+            "explanation": "Standards-aligned backward design pairs diagnostic preassessment with purposeful tiering: remediation repairs foundational schemas while authentic enrichment deepens conceptual inquiry rather than piling on busywork. Lockstep textbook pacing bores advanced learners and leaves core misconceptions unresolved."
+          }
         }
       ],
       "knowledgeChecks": [
@@ -1107,6 +1186,11 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending."
         }
+      ],
+      "chapterTakeaways": [
+        "Unpack K-6 standards into observable, measurable learning objectives using precise Bloom's verbs, verifying that daily instruction, practice, and assessment test those exact verbs.",
+        "Use backward unit design by defining summative mastery evidence first, sequencing lessons from foundational skills to complex application, and integrating literacy across content areas.",
+        "Administer brief preassessments to plan flexible remediation or enrichment groups, and vet print and digital materials for factual accuracy, accessibility, and district alignment."
       ]
     },
     {
@@ -1185,7 +1269,18 @@
             "https://ies.ed.gov/ncee/wwc/PracticeGuides"
           ],
           "reviewStatus": "source-reviewed-editorial-pass",
-          "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending."
+          "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending.",
+          "expandableCase": {
+            "schemaVersion": 1,
+            "label": "Applied classroom case",
+            "presentationLabel": "Classroom scenario",
+            "answerLabel": "Best pedagogical decision",
+            "explanationLabel": "Evidence-based rationale",
+            "title": "Structuring Interdependence and Accountability in a Fifth-Grade Jigsaw",
+            "clinicalDescription": "During a fifth-grade social studies jigsaw on regional economies, groups of four receive one blank chart with no defined roles or individual checkpoints. Two vocal students finish the entire display while a quiet peer with a writing IEP contributes little and struggles on the subsequent unit check.",
+            "diagnosis": "Structure expert-and-home jigsaw groups with explicit interdependent roles, accessible note frames, and an individual synthesis check.",
+            "explanation": "Research-backed cooperative learning combines positive interdependence with individual accountability and UDL note scaffolds so every student actively processes disciplinary content. Assigning one shared group score without role structure enables unequal participation and hides individual learning gaps."
+          }
         },
         {
           "id": "plt5622-ch-06-section-04",
@@ -1307,6 +1402,11 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending."
         }
+      ],
+      "chapterTakeaways": [
+        "Use explicit direct instruction with worked examples when introducing new K-6 procedures, and transition to guided inquiry or problem-based tasks once foundational concepts are secure.",
+        "Structure K-6 cooperative learning with both positive interdependence and individual accountability—assigning defined roles and individual checks rather than one blanket group grade.",
+        "Pair \"I do, we do, you do\" modeling with timely corrective feedback, gradually fading graphic organizers and prompts as students progress from guided to independent cumulative practice."
       ]
     },
     {
@@ -1403,7 +1503,18 @@
             "https://ies.ed.gov/ncee/wwc/practiceguide/12"
           ],
           "reviewStatus": "source-reviewed-editorial-pass",
-          "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending."
+          "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending.",
+          "expandableCase": {
+            "schemaVersion": 1,
+            "label": "Applied classroom case",
+            "presentationLabel": "Classroom scenario",
+            "answerLabel": "Best pedagogical decision",
+            "explanationLabel": "Evidence-based rationale",
+            "title": "Connecting a Teachable Moment to Formative Reteaching in Third Grade",
+            "clinicalDescription": "Midway through a third-grade lesson on weather bar graphs, a sudden hailstorm hits outside and students excitedly debate how hail forms. Meanwhile, yesterday's exit slips showed 15 of 22 students still misread the graph's vertical scale when intervals count by twos instead of ones.",
+            "diagnosis": "Capture live hailstorm observations as a brief inquiry hook, then immediately pivot to reteaching interval scale reading using student-collected data.",
+            "explanation": "Responsive instruction integrates authentic teachable moments into standards-aligned goals while acting promptly on formative monitoring evidence to resolve misconceptions. Ignoring student curiosity forfeits high engagement, whereas abandoning scale-reading instruction leaves a verified skill gap unaddressed."
+          }
         }
       ],
       "knowledgeChecks": [
@@ -1507,6 +1618,11 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending."
         }
+      ],
+      "chapterTakeaways": [
+        "Sequence K-6 questioning from factual recall to analysis and justification, pairing wait time with think-pair-share so every student rehearses an answer before whole-class sharing.",
+        "Cultivate accountable classroom discussion where students cite text or math evidence to build on peers' ideas, treating wrong answers as productive moments to examine reasoning together.",
+        "Monitor all learners—not just raised hands—using exit tickets, mini-whiteboards, and strategic sampling so you can reteach misconceptions immediately during or right after a lesson."
       ]
     },
     {
@@ -1581,7 +1697,18 @@
             "https://ies.ed.gov/ncee/wwc/practiceguide/12"
           ],
           "reviewStatus": "source-reviewed-editorial-pass",
-          "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending."
+          "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending.",
+          "expandableCase": {
+            "schemaVersion": 1,
+            "label": "Applied classroom case",
+            "presentationLabel": "Classroom scenario",
+            "answerLabel": "Best pedagogical decision",
+            "explanationLabel": "Evidence-based rationale",
+            "title": "Shifting Sixth-Grade Writing from Holistic Scores to Analytic Rubrics",
+            "clinicalDescription": "Sixth graders receive only a single holistic score out of 100 on persuasive essays with \"Good effort, add detail\" at the top. During peer review, partners write \"Looks great!\" without inspecting claim clarity, cited evidence, or counterarguments, and revision drafts barely change.",
+            "diagnosis": "Co-construct an analytic rubric with clear level descriptors, model evidence-based peer feedback stems, and guide portfolio self-assessment.",
+            "explanation": "Analytic rubrics break complex writing into transparent criteria that help students diagnose specific strengths and gaps, deliver actionable peer feedback, and document growth across portfolio drafts. Vague holistic numbers and unguided peer compliments yield minimal metacognitive revision."
+          }
         },
         {
           "id": "plt5622-ch-08-section-04",
@@ -1697,6 +1824,11 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending."
         }
+      ],
+      "chapterTakeaways": [
+        "Align K-6 assessment formats to their purpose—diagnostic tools to locate prerequisite gaps, ungraded formative checks to steer daily feedback, and summative tasks to verify unit mastery.",
+        "Select analytic rubrics when K-6 students need criterion-by-criterion diagnostic feedback on writing or projects, and holistic rubrics for efficient overall scoring of final products.",
+        "Engage elementary learners in goal setting with student-friendly checklists and growth portfolios, providing timely feedback tied to task criteria rather than vague personal praise."
       ]
     },
     {
@@ -1793,7 +1925,18 @@
             "https://studentprivacy.ed.gov/faq/under-ferpa-may-educational-agency-or-institution-disclose-education-records-any-its-employees"
           ],
           "reviewStatus": "source-reviewed-editorial-pass",
-          "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending."
+          "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending.",
+          "expandableCase": {
+            "schemaVersion": 1,
+            "label": "Applied classroom case",
+            "presentationLabel": "Classroom scenario",
+            "answerLabel": "Best pedagogical decision",
+            "explanationLabel": "Evidence-based rationale",
+            "title": "Upholding Multiple Measures and Fairness in Gifted-Service Decisions",
+            "clinicalDescription": "A school review committee proposes exiting a multilingual fourth grader from gifted-enrichment services solely because her score dipped on one timed, culturally narrow verbal screening test, even though her math problem-solving portfolio, science investigations, and classroom observations show advanced reasoning.",
+            "diagnosis": "Advocate for a multiple-measures body of evidence, flag potential linguistic and cultural item bias, and share balanced growth data with her family.",
+            "explanation": "Measurement fairness and validity prohibit high-stakes placement decisions grounded in a single timed test susceptible to construct-irrelevant language or cultural variance. Triangulating standardized data with authentic portfolios and accessible family communication ensures equitable, defensible decisions."
+          }
         }
       ],
       "knowledgeChecks": [
@@ -1897,6 +2040,11 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending."
         }
+      ],
+      "chapterTakeaways": [
+        "Remember a K-6 test can show high reliability (consistent results) while lacking validity if items miss taught standards or if heavy reading demands obscure math understanding.",
+        "Distinguish norm-referenced rankings (percentiles, stanines) from criterion-referenced mastery cutoffs, and inspect mean, median, and spread to spot whole-class versus subgroup needs.",
+        "Reduce cultural or linguistic bias with clear wording and approved accommodations, triangulating classroom work, observations, and test data before communicating strengths and next steps."
       ]
     },
     {
@@ -1993,7 +2141,18 @@
             "https://ies.ed.gov/ncee/wwc/practiceguide/12"
           ],
           "reviewStatus": "source-reviewed-editorial-pass",
-          "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending."
+          "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending.",
+          "expandableCase": {
+            "schemaVersion": 1,
+            "label": "Applied classroom case",
+            "presentationLabel": "Classroom scenario",
+            "answerLabel": "Best pedagogical decision",
+            "explanationLabel": "Evidence-based rationale",
+            "title": "Refocusing a Fifth-Grade PLC on Peer Observation and Student Work",
+            "clinicalDescription": "Fifth-grade math scores dip after adopting a new conceptual curriculum, yet weekly PLC meetings stall into venting about student motivation instead of inspecting instructional choices. One veteran proposes hiring an outside speaker for a single afternoon lecture to boost scores.",
+            "diagnosis": "Launch a job-embedded PLC inquiry cycle featuring peer lesson observations, structured student-work analysis, and iterative scaffolding adjustments.",
+            "explanation": "Sustained job-embedded professional learning anchored in collaborative analysis of student evidence and peer classroom observation drives measurable instructional improvement. Deficit-focused venting and one-off external talks rarely change daily questioning, modeling, or student outcomes."
+          }
         }
       ],
       "knowledgeChecks": [
@@ -2097,6 +2256,11 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending."
         }
+      ],
+      "chapterTakeaways": [
+        "Ground K-6 reflection in disaggregated student evidence—identifying which objective missed the mark for specific learners—to select targeted reteaching adjustments rather than blaming effort.",
+        "Evaluate educational research critically by examining peer review, comparison groups, effect sizes, and fit with elementary populations before adopting new programs or digital tools.",
+        "Sustain K-6 instructional growth through Professional Learning Communities that analyze common formative assessments, conduct local action research, and engage in peer coaching."
       ]
     },
     {
@@ -2175,7 +2339,18 @@
             "https://www.ed.gov/laws-and-policy/civil-rights-laws/race-color-and-national-origin-discrimination/race-color-and-national-origin-discrimination-key-issues/equal-education-opportunities-english"
           ],
           "reviewStatus": "source-reviewed-editorial-pass",
-          "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending."
+          "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending.",
+          "expandableCase": {
+            "schemaVersion": 1,
+            "label": "Applied classroom case",
+            "presentationLabel": "Classroom scenario",
+            "answerLabel": "Best pedagogical decision",
+            "explanationLabel": "Evidence-based rationale",
+            "title": "Aligning Specialists and Fading Paraeducator Prompts in Third Grade",
+            "clinicalDescription": "A third grader with a reading IEP and behavior plan receives pull-out literacy support, occupational therapy sensory breaks, and push-in math paraeducator assistance. Providers use conflicting verbal cues, and the paraeducator sits beside the child nonstop, triggering prompt dependence and peer isolation.",
+            "diagnosis": "Convene a brief multidisciplinary alignment huddle to unify cues, coach the paraeducator on systematic prompt fading, and coordinate family updates.",
+            "explanation": "Effective collaboration aligns specialist routines with core classroom expectations while training paraeducators to fade adult proximity so students build authentic independence and peer belonging. Contradictory cueing and constant hovering fragment skill generalization and foster learned helplessness."
+          }
         },
         {
           "id": "plt5622-ch-11-section-04",
@@ -2297,6 +2472,11 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending."
         }
+      ],
+      "chapterTakeaways": [
+        "Anchor grade-level, IEP, and MTSS team meetings around shared student evidence, defined professional roles, written intervention timelines, and scheduled progress-review follow-ups.",
+        "Build equitable two-way K-6 family partnerships through jargon-free updates, qualified interpreters for conferences, flexible meeting options, and active listening to caregiver insights.",
+        "Guide paraeducators with clear written lesson plans and expected scaffolds, coordinate closely with ESOL and special education specialists, and protect privacy with community partners."
       ]
     },
     {
@@ -2403,7 +2583,18 @@
             "https://www.ed.gov/teaching-and-administration/safe-learning-environments/school-safety-and-security/emergency-planning"
           ],
           "reviewStatus": "source-reviewed-editorial-pass",
-          "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending."
+          "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending.",
+          "expandableCase": {
+            "schemaVersion": 1,
+            "label": "Applied classroom case",
+            "presentationLabel": "Classroom scenario",
+            "answerLabel": "Best pedagogical decision",
+            "explanationLabel": "Evidence-based rationale",
+            "title": "Verifying Local Law, FERPA Privacy, and Lockdown Protocol in Sixth Grade",
+            "clinicalDescription": "A sixth-grade teacher newly relocated from another state assumes her former state's copyright rules, medical field-trip forms, and 48-hour abuse-reporting window still apply. During a lockdown drill, she leaves student IEP folders open on her desk and cracks the door to inspect hallway noise.",
+            "diagnosis": "Follow site lockdown procedures without opening doors, lock confidential IEP files under FERPA, and verify current state and district legal mandates.",
+            "explanation": "Professional safety and legal compliance vary across jurisdictions and require strict execution of site emergency procedures, secure FERPA handling of disability records, and verified state reporting timelines. Relying on out-of-state assumptions or casual drill habits endangers students and breaches law."
+          }
         }
       ],
       "knowledgeChecks": [
@@ -2517,10 +2708,1266 @@
           "reviewStatus": "source-reviewed-editorial-pass",
           "reviewNote": "Independently authored and source reviewed for study use; independent practicing K–6 educator and psychometric validation remain pending."
         }
+      ],
+      "chapterTakeaways": [
+        "Protect K-6 grades, IEP records, and behavioral files under FERPA by avoiding unvetted apps, public grade postings, or sharing records outside legitimate educational interest.",
+        "Uphold student speech, fair-process discipline, and IDEA/504 disability rights consistently, and report suspected child abuse or neglect immediately per statutory mandated-reporting duties.",
+        "Respect educational copyright fair-use limits when reproducing texts or media, follow emergency and medical safety protocols precisely, and verify local policy rules with school leaders."
       ]
     }
   ],
-  "diagrams": [],
+  "diagrams": [
+    {
+      "id": "plt5622-diagram-01",
+      "chapterId": "plt5622-ch-01",
+      "domainId": "students-as-learners",
+      "title": "K–6 Cognitive, Social & Metacognitive Learning Progression",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Trace how K–6 students move from concrete operational reasoning and working-memory management through Vygotskian gradual release and retrieval practice to metacognitive self-regulation and transfer across academic subjects.",
+      "caption": "An original cognitive-pedagogy progression linking concrete reasoning and working memory, Vygotsky’s ZPD and gradual release, retrieval practice, and cross-subject self-regulated transfer for Praxis PLT: Grades K–6 (5622).",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ies.ed.gov/ncee/wwc/practiceguide/1"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Left-to-right learning progression from concrete operational reasoning and working memory through Vygotsky ZPD and gradual release and retrieval practice to metacognitive self-regulation and cross-subject transfer.",
+        "longDescription": "Read from left to right. First, align new K–6 instruction with concrete operational reasoning and working-memory limits by activating prior schemas, using concrete-to-representational-to-abstract models, and chunking multistep directions to avoid cognitive overload. Second, scaffold social learning within Vygotsky’s zone of proximal development using gradual release of responsibility—moving from explicit teacher think-alouds through guided and collaborative peer practice to independent execution. Third, strengthen long-term memory through low-stakes retrieval practice, spaced review, worked examples, and dual verbal-visual coding rather than passive rereading. Fourth, cultivate metacognitive self-regulation and transfer by coaching elementary students to set goals, monitor comprehension, self-check errors, and apply learned strategies across reading, mathematics, science, and social studies.",
+        "textEquivalent": [
+          "Concrete Operational Reasoning & Working Memory: Activate prior schema, present concrete and visual models before abstract symbols, and chunk information to respect elementary working-memory capacity.",
+          "Vygotsky ZPD & Gradual Release: Sequence explicit teacher modeling (“I do”), guided interactive practice (“we do”), collaborative peer work (“you do together”), and faded scaffolds into independence (“you do alone”).",
+          "Retrieval Practice & Spaced Consolidation: Embed frequent low-stakes recall checks, spaced review, elaborative questioning, and visual-verbal connections to encode durable long-term schemas.",
+          "Self-Regulation & Cross-Subject Transfer: Teach learners to plan approaches, monitor accuracy, reflect on strategy effectiveness, and transfer problem-solving habits to novel tasks across disciplines."
+        ],
+        "readingOrder": [
+          "concrete-working-memory",
+          "zpd-gradual-release",
+          "retrieval-consolidation",
+          "metacognitive-transfer"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "concrete-working-memory",
+            "label": "Concrete Reasoning & Working Memory",
+            "detail": "Bridge concrete operational thinking to abstract symbols by activating prior schema, chunking steps, and pairing concrete/visual models with concise explanations."
+          },
+          {
+            "id": "zpd-gradual-release",
+            "label": "Vygotsky ZPD & Gradual Release",
+            "detail": "Guide learners across the zone of proximal development via teacher think-alouds, interactive guided practice, structured peer collaboration, and purposeful scaffold fading."
+          },
+          {
+            "id": "retrieval-consolidation",
+            "label": "Retrieval Practice & Consolidation",
+            "detail": "Use low-stakes recall prompts, spaced practice, worked-example comparisons, and elaborative explanation to move ideas from working memory into durable long-term memory."
+          },
+          {
+            "id": "metacognitive-transfer",
+            "label": "Self-Regulation & Cross-Subject Transfer",
+            "detail": "Coach students to plan, monitor comprehension, diagnose errors, and intentionally apply strategies across literacy, math, science, and social studies."
+          }
+        ],
+        "edges": [
+          {
+            "id": "memory-to-zpd",
+            "from": "concrete-working-memory",
+            "to": "zpd-gradual-release",
+            "label": "reduces extraneous load so learners can engage ZPD stretch"
+          },
+          {
+            "id": "zpd-to-retrieval",
+            "from": "zpd-gradual-release",
+            "to": "retrieval-consolidation",
+            "label": "transitions supported performance into active independent recall"
+          },
+          {
+            "id": "retrieval-to-transfer",
+            "from": "retrieval-consolidation",
+            "to": "metacognitive-transfer",
+            "label": "frees working memory for monitoring and cross-subject transfer"
+          },
+          {
+            "id": "transfer-to-memory",
+            "from": "metacognitive-transfer",
+            "to": "concrete-working-memory",
+            "label": "enriches prior schema for the next grade-level concept"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "plt5622-diagram-07",
+      "chapterId": "plt5622-ch-02",
+      "domainId": "students-as-learners",
+      "title": "Whole-Child Developmental Progression & Responsive Challenge Across Grades K–6",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Apply interacting K–6 cognitive, physical, language, social-emotional, and moral development patterns to calibrate concrete-to-abstract representations, movement, and developmentally responsive challenge without treating age norms as fixed limits.",
+      "caption": "An original developmental-design flow uniting interacting developmental domains, K–6 concrete-to-abstract reasoning, competence and moral perspective taking, and movement-supported challenge for Praxis PLT: Grades K–6 (5622).",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Left-to-right loop from interacting developmental domains and variation through concrete-to-abstract K–6 reasoning and social-emotional or moral growth to movement, readiness, and developmentally responsive challenge.",
+        "longDescription": "Read from left to right. First, view cognitive, physical, language, social, and emotional growth as interacting domains shaped by culture and experience—using typical K–6 age patterns as flexible guides rather than rigid predictions. Second, scaffold reasoning across elementary grades by anchoring primary learners in concrete manipulatives and visual models while guiding upper-elementary students toward logical classification, conservation, and early abstraction. Third, support Eriksonian industry and competence, peer perspective taking, and developing moral reasoning through collaborative problem solving, fair classroom dilemmas, and specific effort-linked feedback. Fourth, pair readiness checks with purposeful movement, structured play or inquiry, and calibrated academic challenge, feeding fresh observations back into whole-child instructional planning.",
+        "textEquivalent": [
+          "Interacting Domains & Individual Variation: Recognize how physical, cognitive, language, social, and emotional growth interact in context without treating age expectations as fixed ceilings.",
+          "K–6 Concrete-to-Abstract Reasoning: Bridge primary-grade hands-on manipulatives and diagrams into upper-elementary logical organization, evidence-based reasoning, and emerging abstraction.",
+          "Industry, Perspective Taking & Moral Growth: Cultivate competence, empathy, and fair rule reasoning through cooperative roles, classroom discussions, and mastery-oriented feedback.",
+          "Movement, Readiness & Responsive Challenge: Balance active movement, structured play or exploration, and appropriately stretched tasks so every elementary learner progresses with confidence."
+        ],
+        "readingOrder": [
+          "interacting-dev-domains",
+          "concrete-to-abstract-reasoning",
+          "competence-perspective-moral",
+          "movement-readiness-challenge"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "interacting-dev-domains",
+            "label": "Interacting Domains & Variation",
+            "detail": "Consider how physical, cognitive, linguistic, social, and emotional development influence one another across cultural contexts, treating age norms as guides rather than fixed limits."
+          },
+          {
+            "id": "concrete-to-abstract-reasoning",
+            "label": "K–6 Concrete-to-Abstract Reasoning",
+            "detail": "Progress purposefully from hands-on manipulatives and pictorial models in primary grades toward structured logical reasoning, classification, and abstract symbols in upper elementary."
+          },
+          {
+            "id": "competence-perspective-moral",
+            "label": "Industry, Perspective Taking & Moral Growth",
+            "detail": "Support Eriksonian competence, peer perspective taking, and fairness-based moral reasoning through structured collaboration, authentic responsibility, and constructive feedback."
+          },
+          {
+            "id": "movement-readiness-challenge",
+            "label": "Movement, Readiness & Responsive Challenge",
+            "detail": "Match task pacing, kinesthetic breaks, structured play or inquiry, and cognitive stretch to observed readiness so students stay productively challenged without frustration."
+          }
+        ],
+        "edges": [
+          {
+            "id": "domains-to-reasoning",
+            "from": "interacting-dev-domains",
+            "to": "concrete-to-abstract-reasoning",
+            "label": "informs representational scaffolds matched to individual variation"
+          },
+          {
+            "id": "reasoning-to-moral",
+            "from": "concrete-to-abstract-reasoning",
+            "to": "competence-perspective-moral",
+            "label": "strengthens perspective taking and reasoned peer dialogue"
+          },
+          {
+            "id": "moral-to-challenge",
+            "from": "competence-perspective-moral",
+            "to": "movement-readiness-challenge",
+            "label": "builds social confidence to engage active, stretched learning tasks"
+          },
+          {
+            "id": "challenge-to-domains",
+            "from": "movement-readiness-challenge",
+            "to": "interacting-dev-domains",
+            "label": "generates fresh whole-child observations to refine developmental fit"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "plt5622-diagram-02",
+      "chapterId": "plt5622-ch-03",
+      "domainId": "students-as-learners",
+      "title": "Differentiated K–6 Instruction, UDL & Multilingual/Exceptionality Access Flow",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Design inclusive K–6 lessons that combine pre-assessment of readiness, language proficiency, and IEP/504 supports with UDL principles and flexible grouping while keeping grade-level rigor intact for every learner.",
+      "caption": "An original elementary differentiation workflow linking pre-assessment, UDL representation/engagement/expression, flexible grouping at grade-level rigor, and accommodation fidelity for Praxis PLT: Grades K–6 (5622).",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://sites.ed.gov/idea/regs/b/d/300.304"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Left-to-right flow from readiness, language, and IEP/504 pre-assessment through UDL representation, engagement, and expression and flexible grouping at grade-level rigor to accommodation fidelity and progress monitoring.",
+        "longDescription": "Read from left to right. First, pre-assess academic readiness, English language proficiency, cultural assets, and legally documented IEP or Section 504 supports before designing lesson tasks. Second, apply Universal Design for Learning proactively across all three networks—multiple means of representation (visuals, graphic organizers, audio/text, explicit vocabulary), engagement (relevant choice, collaborative roles), and action/expression (sentence frames, manipulatives, oral/written/diagram options). Third, differentiate content entry points, process scaffolds, or product formats—including curriculum compacting and tiered inquiry for gifted learners—through flexible, skill-based grouping without lowering grade-level cognitive rigor. Fourth, verify fidelity between accommodations (which remove barriers while keeping grade-level standards constant) and IEP-authorized modifications, using ongoing progress data to adjust groups and collaborate with specialists.",
+        "textEquivalent": [
+          "Pre-Assessment of Readiness, Language & IEP/504 Supports: Review prior-knowledge checks, English learner proficiency descriptors, learner strengths, and required IEP/504 accommodations prior to lesson delivery.",
+          "UDL: Representation, Engagement & Expression: Build proactive access via multimodal texts, visual anchors, academic sentence frames, motivating task entry points, and varied ways to demonstrate mastery.",
+          "Flexible Grouping Without Lowering Rigor: Regroup students dynamically by specific skill need—scaffolding access for emerging readers/ELs and compacting or deepening inquiry for gifted learners—while holding all students to grade-level standards.",
+          "Accommodation Fidelity & Progress Check: Implement accommodations consistently without diluting expectations (reserving modifications strictly for IEP specifications) and update groupings from current performance data."
+        ],
+        "readingOrder": [
+          "readiness-language-iep-precheck",
+          "udl-three-networks",
+          "flexible-grouping-rigor",
+          "accommodation-fidelity-monitor"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "readiness-language-iep-precheck",
+            "label": "Readiness, Language & IEP/504 Pre-Check",
+            "detail": "Gather diagnostic readiness data, English proficiency levels, cultural strengths, and legally mandated IEP/504 supports before finalizing lesson scaffolds."
+          },
+          {
+            "id": "udl-three-networks",
+            "label": "UDL: Representation, Engagement & Expression",
+            "detail": "Remove predictable barriers upfront using visual models, vocabulary frames, audio/print access, meaningful choices, and multimodal response pathways."
+          },
+          {
+            "id": "flexible-grouping-rigor",
+            "label": "Flexible Grouping at Grade-Level Rigor",
+            "detail": "Differentiate process scaffolds and enrichment (including compacting/depth for gifted students) in fluid groups without tracking or lowering grade-level standards."
+          },
+          {
+            "id": "accommodation-fidelity-monitor",
+            "label": "Accommodation Fidelity & Progress Review",
+            "detail": "Maintain clear boundaries between access accommodations and IEP-specified modifications, monitoring growth to fade scaffolds or coordinate specialist support."
+          }
+        ],
+        "edges": [
+          {
+            "id": "precheck-to-udl",
+            "from": "readiness-language-iep-precheck",
+            "to": "udl-three-networks",
+            "label": "anticipates linguistic, sensory, and executive barriers"
+          },
+          {
+            "id": "udl-to-grouping",
+            "from": "udl-three-networks",
+            "to": "flexible-grouping-rigor",
+            "label": "pairs universal access with targeted small-group rigor"
+          },
+          {
+            "id": "grouping-to-fidelity",
+            "from": "flexible-grouping-rigor",
+            "to": "accommodation-fidelity-monitor",
+            "label": "tracks mastery under compliant accommodations and scaffolds"
+          },
+          {
+            "id": "fidelity-to-precheck",
+            "from": "accommodation-fidelity-monitor",
+            "to": "readiness-language-iep-precheck",
+            "label": "feeds updated readiness and support data into the next unit"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "plt5622-diagram-04",
+      "chapterId": "plt5622-ch-04",
+      "domainId": "students-as-learners",
+      "title": "Proactive Elementary Classroom Management, Motivation & Community Building",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Build an engaging, respectful K–6 classroom culture by connecting co-constructed norms and brisk instructional pacing with intrinsic mastery motivation, positive behavioral supports, and restorative problem solving.",
+      "caption": "An original classroom-management and motivation cycle integrating co-constructed norms and pacing, intrinsic mastery feedback, proactive behavioral supports, and restorative problem solving for Praxis PLT: Grades K–6 (5622).",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/31/Published"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Left-to-right flow from co-constructed norms and instructional pacing through intrinsic mastery motivation and specific feedback and proactive behavioral supports to restorative problem solving.",
+        "longDescription": "Read from left to right. First, prevent disruptions proactively through clear, co-constructed classroom norms, explicitly rehearsed procedures, smooth transitions, and engaging instructional pacing that eliminates idle downtime. Second, strengthen intrinsic mastery motivation and self-determination by fostering competence, autonomy, and belonging—offering structured choice, attainable stretch goals, and specific strategy-focused feedback rather than generic praise or overreliance on extrinsic rewards. Third, address off-task or challenging behaviors through tiered positive behavioral supports: non-verbal cues, teacher proximity, environmental adjustments, and teaching functionally equivalent replacement behaviors. Fourth, when peer conflicts or repeated behavioral breakdowns occur, preserve student dignity through private restorative problem-solving conversations that build accountability, repair classroom trust, and reconnect the student to shared norms.",
+        "textEquivalent": [
+          "Co-Constructed Norms & Instructional Pacing: Establish positively stated expectations with student voice, rehearse transitions and materials routines, and maintain brisk, engaging lesson momentum.",
+          "Intrinsic Mastery Motivation & Specific Feedback: Support autonomy, competence, and relatedness through relevant tasks, mastery goal setting, and specific feedback naming the effective strategy or effort used.",
+          "Positive Behavioral Supports (PBIS): Use low-intrusiveness cues, proximity, antecedent modifications, and explicit replacement-behavior coaching before escalating to exclusionary discipline.",
+          "Restorative Problem Solving & Community Repair: Hold private, dignity-preserving check-ins that examine impact, co-create concrete repair steps, and reinforce belonging within the classroom community."
+        ],
+        "readingOrder": [
+          "norms-routines-pacing",
+          "intrinsic-mastery-feedback",
+          "positive-behavioral-supports",
+          "restorative-problem-solving"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "norms-routines-pacing",
+            "label": "Co-Constructed Norms & Instructional Pacing",
+            "detail": "Co-create clear, positively framed norms, rehearse daily transitions explicitly, and maintain active engagement so dead time does not invite off-task behavior."
+          },
+          {
+            "id": "intrinsic-mastery-feedback",
+            "label": "Intrinsic Mastery Motivation & Feedback",
+            "detail": "Cultivate autonomy, belonging, and competence via meaningful choices, mastery-oriented goals, and specific strategy feedback rather than controlling extrinsic incentives."
+          },
+          {
+            "id": "positive-behavioral-supports",
+            "label": "Proactive Positive Behavioral Supports",
+            "detail": "Respond to early warning cues using non-verbal redirection, proximity, antecedent adjustments, and function-aligned replacement skills to keep learning moving."
+          },
+          {
+            "id": "restorative-problem-solving",
+            "label": "Restorative Problem Solving & Repair",
+            "detail": "Conduct private, respectful conferences focused on perspective taking, accountability, and concrete repair plans that strengthen classroom community."
+          }
+        ],
+        "edges": [
+          {
+            "id": "norms-to-motivation",
+            "from": "norms-routines-pacing",
+            "to": "intrinsic-mastery-feedback",
+            "label": "creates psychological safety for risk taking and mastery focus"
+          },
+          {
+            "id": "motivation-to-pbis",
+            "from": "intrinsic-mastery-feedback",
+            "to": "positive-behavioral-supports",
+            "label": "anchors redirection in competence and clear behavioral cues"
+          },
+          {
+            "id": "pbis-to-restorative",
+            "from": "positive-behavioral-supports",
+            "to": "restorative-problem-solving",
+            "label": "resolves persistent conflict constructively without public shaming"
+          },
+          {
+            "id": "restorative-to-norms",
+            "from": "restorative-problem-solving",
+            "to": "norms-routines-pacing",
+            "label": "rebuilds shared ownership of classroom norms and routines"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "plt5622-diagram-08",
+      "chapterId": "plt5622-ch-05",
+      "domainId": "instructional-process",
+      "title": "K–6 Backward Unit Planning, Objective Alignment & Resource Selection",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Design coherent K–6 units through backward planning—translating standards and scope-and-sequence priorities into observable objectives, aligned assessment evidence, vetted interdisciplinary resources, and preassessment-driven remediation or enrichment.",
+      "caption": "An original curriculum-planning flow linking standards and scope-and-sequence prioritization, observable objectives, backward-aligned assessment evidence, interdisciplinary resource vetting, and preassessment-guided differentiation for Praxis PLT: Grades K–6 (5622).",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Left-to-right flow from standards, scope, and sequence through observable objectives, backward-aligned evidence, and interdisciplinary vetted resources to preassessment, remediation, and enrichment.",
+        "longDescription": "Read from left to right. First, unpack state and district standards within the grade-level scope and sequence to prioritize enduring concepts and prerequisite progressions. Second, craft observable, measurable learning objectives stating the expected student performance, conditions, and mastery criteria tightly aligned to the standard. Third, apply backward planning by designing summative performance tasks and formative checkpoints before choosing daily activities so every lesson produces valid evidence of the target objective. Fourth, connect reading, writing, mathematics, science, and social studies authentically in interdisciplinary units while vetting texts, manipulatives, and digital tools for accuracy, cultural fairness, and accessibility. Fifth, administer brief preassessments to plan targeted remediation, tiered scaffolds, and conceptual enrichment before launching instruction, looping back to calibrate daily objective pacing.",
+        "textEquivalent": [
+          "Standards, Scope & Sequence: Unpack grade-level standards across the district scope and sequence to identify priority concepts and prerequisite progressions.",
+          "Observable Objectives & Success Criteria: Formulate measurable objectives with clear action verbs, conditions, and mastery criteria aligned directly to target standards.",
+          "Backward-Aligned Assessment Evidence: Define summative tasks and formative checks before selecting activities so instruction stays anchored to valid evidence.",
+          "Interdisciplinary Units & Vetted Resources: Build authentic cross-subject connections while auditing print and digital materials for accuracy, bias, reading load, and accessibility.",
+          "Preassessment, Remediation & Enrichment: Use quick preassessments to sequence prerequisite mini-lessons, scaffolds, and depth extensions before unit launch."
+        ],
+        "readingOrder": [
+          "standards-scope-sequence",
+          "observable-objectives-criteria",
+          "backward-aligned-evidence",
+          "interdisciplinary-resource-vetting",
+          "preassessment-remediation-enrichment"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "standards-scope-sequence",
+            "label": "Standards, Scope & Sequence",
+            "detail": "Unpack grade-level standards across the annual scope and sequence to distinguish high-priority enduring understandings from supporting subskills."
+          },
+          {
+            "id": "observable-objectives-criteria",
+            "label": "Observable Objectives & Criteria",
+            "detail": "Write measurable daily and unit objectives specifying observable student performance, task conditions, and explicit mastery criteria aligned to the standard."
+          },
+          {
+            "id": "backward-aligned-evidence",
+            "label": "Backward-Aligned Evidence",
+            "detail": "Determine acceptable summative and formative assessment evidence before choosing learning activities so every task measures what the objective actually demands."
+          },
+          {
+            "id": "interdisciplinary-resource-vetting",
+            "label": "Interdisciplinary Units & Vetted Resources",
+            "detail": "Integrate authentic cross-disciplinary themes across ELA, math, science, and social studies while auditing texts and digital tools for accuracy, bias, and accessibility."
+          },
+          {
+            "id": "preassessment-remediation-enrichment",
+            "label": "Preassessment, Remediation & Enrichment",
+            "detail": "Run brief preassessments before teaching to organize prerequisite remediation, language or UDL scaffolds, and deeper enrichment pathways."
+          }
+        ],
+        "edges": [
+          {
+            "id": "standards-to-objectives",
+            "from": "standards-scope-sequence",
+            "to": "observable-objectives-criteria",
+            "label": "translates broad standards into measurable lesson targets"
+          },
+          {
+            "id": "objectives-to-evidence",
+            "from": "observable-objectives-criteria",
+            "to": "backward-aligned-evidence",
+            "label": "defines what valid mastery evidence looks like up front"
+          },
+          {
+            "id": "evidence-to-resources",
+            "from": "backward-aligned-evidence",
+            "to": "interdisciplinary-resource-vetting",
+            "label": "guides selection of aligned, accessible unit texts and tools"
+          },
+          {
+            "id": "resources-to-preassessment",
+            "from": "interdisciplinary-resource-vetting",
+            "to": "preassessment-remediation-enrichment",
+            "label": "prepares tiered materials ready for preassessment grouping"
+          },
+          {
+            "id": "preassessment-to-objectives",
+            "from": "preassessment-remediation-enrichment",
+            "to": "observable-objectives-criteria",
+            "label": "calibrates daily objective pacing and prerequisite steps"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "plt5622-diagram-09",
+      "chapterId": "plt5622-ch-06",
+      "domainId": "instructional-process",
+      "title": "K–6 Instructional Method Selection, Flexible Grouping & Spaced Transfer",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Match explicit modeling, structured inquiry and experiential learning, cooperative and flexible grouping, and spaced differentiated practice to K–6 objectives, prior knowledge, and transfer demands.",
+      "caption": "An original K–6 pedagogy flow linking goal and prior-knowledge matching, explicit modeling and guided practice, inquiry and experiential synthesis, flexible cooperative grouping, and spaced differentiated transfer for Praxis PLT: Grades K–6 (5622).",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ies.ed.gov/ncee/wwc/practiceguide/1"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Left-to-right flow from goal and prior-knowledge method match through explicit modeling, inquiry and experiential tasks, and cooperative flexible grouping to differentiated spaced practice and transfer.",
+        "longDescription": "Read from left to right. First, match instructional methods to the complexity of the K–6 objective, students’ prior knowledge, and available classroom supports rather than relying on one preferred approach. Second, use explicit instruction, worked-example modeling, and guided practice with immediate feedback when teaching foundational academic procedures or unfamiliar vocabulary. Third, transition learners into structured inquiry, problem-based investigations, and experiential tasks that foster conceptual synthesis once core prerequisite knowledge is established. Fourth, structure cooperative learning with clear positive interdependence and individual accountability alongside fluid, data-driven flexible groups rather than permanent ability tracks. Fifth, consolidate durable transfer through progressively faded scaffolds, spaced and interleaved practice, and novel cross-unit applications that inform the next instructional cycle.",
+        "textEquivalent": [
+          "Goal & Prior-Knowledge Method Match: Choose direct, inquiry, interactive, or independent methods from objective demands, learner background knowledge, and evidence needs.",
+          "Explicit Modeling & Guided Practice: Introduce new K–6 skills via teacher think-alouds, worked examples, and monitored guided practice with timely corrective feedback.",
+          "Inquiry, Problem-Based & Experiential Tasks: Deepen conceptual synthesis through structured experiments, authentic problem solving, and hands-on investigations.",
+          "Cooperative Learning & Flexible Grouping: Combine structured peer interdependence and individual accountability with fluid data-based regrouping.",
+          "Differentiation, Spaced Practice & Transfer: Fade scaffolds systematically, space review across weeks, and require transfer to unfamiliar academic problems."
+        ],
+        "readingOrder": [
+          "method-goal-alignment",
+          "explicit-modeling-guided",
+          "inquiry-problem-synthesis",
+          "cooperative-flexible-grouping",
+          "differentiated-spaced-transfer"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "method-goal-alignment",
+            "label": "Goal & Prior-Knowledge Match",
+            "detail": "Match explicit, inquiry, cooperative, experiential, or independent methods to the target cognitive demand, student background knowledge, and available classroom scaffolds."
+          },
+          {
+            "id": "explicit-modeling-guided",
+            "label": "Explicit Modeling & Guided Practice",
+            "detail": "Demonstrate new K–6 reading, writing, or math procedures via concise think-alouds, worked examples, and guided practice with immediate error correction."
+          },
+          {
+            "id": "inquiry-problem-synthesis",
+            "label": "Inquiry & Experiential Synthesis",
+            "detail": "Engage students in structured investigations, hands-on experiments, and evidence-based problem solving to connect concepts once prerequisite tools are secure."
+          },
+          {
+            "id": "cooperative-flexible-grouping",
+            "label": "Cooperative & Flexible Grouping",
+            "detail": "Build positive interdependence and individual accountability into peer tasks while regrouping flexibly by current formative data instead of static tracks."
+          },
+          {
+            "id": "differentiated-spaced-transfer",
+            "label": "Differentiated, Spaced Transfer",
+            "detail": "Adjust scaffold depth, space and interleave practice across units, and prompt independent application to unfamiliar multi-step K–6 problems."
+          }
+        ],
+        "edges": [
+          {
+            "id": "align-to-explicit",
+            "from": "method-goal-alignment",
+            "to": "explicit-modeling-guided",
+            "label": "establishes clear procedural foundations where prior knowledge is low"
+          },
+          {
+            "id": "explicit-to-inquiry-k6",
+            "from": "explicit-modeling-guided",
+            "to": "inquiry-problem-synthesis",
+            "label": "frees working memory for deeper inquiry and conceptual synthesis"
+          },
+          {
+            "id": "inquiry-to-coop",
+            "from": "inquiry-problem-synthesis",
+            "to": "cooperative-flexible-grouping",
+            "label": "channels collaborative reasoning through accountable peer roles"
+          },
+          {
+            "id": "coop-to-spaced",
+            "from": "cooperative-flexible-grouping",
+            "to": "differentiated-spaced-transfer",
+            "label": "fades group support into distributed independent mastery"
+          },
+          {
+            "id": "spaced-to-align",
+            "from": "differentiated-spaced-transfer",
+            "to": "method-goal-alignment",
+            "label": "feeds transfer evidence into subsequent method and grouping choices"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "plt5622-diagram-03",
+      "chapterId": "plt5622-ch-07",
+      "domainId": "instructional-process",
+      "title": "Standards-Aligned K–6 Instructional Design & Questioning Sequence",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Execute high-impact K–6 lessons by aligning measurable objectives and cognitive demand with explicit modeling, structured collaborative discourse, higher-order questioning with deliberate wait time, and independent synthesis.",
+      "caption": "An original K–6 instructional delivery and discourse flow connecting measurable objectives, explicit modeling and structured peer talk, higher-order questioning with wait time, and independent synthesis for Praxis PLT: Grades K–6 (5622).",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Left-to-right instructional sequence from measurable objective and cognitive demand through explicit modeling and collaborative discourse and higher-order questioning with wait time to independent synthesis and in-lesson adjustment.",
+        "longDescription": "Read from left to right. First, establish a measurable, student-friendly objective calibrated to the standard’s true cognitive demand—ensuring lessons move beyond rote recall toward application, analysis, and evidence-based reasoning. Second, deliver clear explicit modeling and think-alouds followed by structured collaborative discourse routines such as think-pair-share or accountable talk stems so every student rehearses academic language. Third, elevate understanding through planned higher-order questions, 3 to 5 seconds of deliberate wait time, equitable participation routines, and probing follow-ups that clarify misconceptions without shutting down learner voice. Fourth, verify individual mastery through an aligned independent synthesis task or exit check, using live misconception data to adjust pacing, clarify examples, or launch targeted follow-up.",
+        "textEquivalent": [
+          "Measurable Objective & Cognitive Demand: Unpack the standard into an observable target and match instructional tasks to the intended cognitive level (recall, application, analysis, or evaluation).",
+          "Explicit Modeling & Collaborative Discourse: Demonstrate expert reasoning via concise think-alouds, then engage all students in structured partner or small-group discourse using academic language stems.",
+          "Higher-Order Questioning & Wait Time: Pose open-ended why/how/justify questions, hold 3–5 seconds of wait time before calling on speakers, and use probing prompts to uncover and repair misconceptions.",
+          "Independent Synthesis & Live Adjustment: Require individual synthesis through a brief performance or written exit check, using responses immediately to reteach, clarify, or extend the lesson."
+        ],
+        "readingOrder": [
+          "measurable-objective-demand",
+          "explicit-modeling-discourse",
+          "higher-order-wait-time",
+          "independent-synthesis-adjust"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "measurable-objective-demand",
+            "label": "Measurable Objective & Cognitive Demand",
+            "detail": "Translate grade-level standards into observable objectives with clear success criteria calibrated to authentic analytical and application rigor."
+          },
+          {
+            "id": "explicit-modeling-discourse",
+            "label": "Explicit Modeling & Collaborative Discourse",
+            "detail": "Model thinking aloud with clear examples and non-examples, then launch structured think-pair-share and accountable talk so every student articulates reasoning."
+          },
+          {
+            "id": "higher-order-wait-time",
+            "label": "Higher-Order Questioning & Wait Time",
+            "detail": "Use planned open-ended prompts, 3–5 seconds of wait time, equitable response checks, and constructive probes to deepen justification and surface errors."
+          },
+          {
+            "id": "independent-synthesis-adjust",
+            "label": "Independent Synthesis & Live Adjustment",
+            "detail": "Check individual mastery via an aligned synthesis or exit task and adjust pacing, examples, or scaffolds before misconceptions solidify."
+          }
+        ],
+        "edges": [
+          {
+            "id": "objective-to-modeling",
+            "from": "measurable-objective-demand",
+            "to": "explicit-modeling-discourse",
+            "label": "focuses teacher think-alouds and peer talk on target rigor"
+          },
+          {
+            "id": "modeling-to-questioning",
+            "from": "explicit-modeling-discourse",
+            "to": "higher-order-wait-time",
+            "label": "prepares students to justify ideas during deep questioning"
+          },
+          {
+            "id": "questioning-to-synthesis",
+            "from": "higher-order-wait-time",
+            "to": "independent-synthesis-adjust",
+            "label": "verifies reasoning before independent application"
+          },
+          {
+            "id": "synthesis-to-modeling",
+            "from": "independent-synthesis-adjust",
+            "to": "explicit-modeling-discourse",
+            "label": "triggers immediate clarification or re-modeling when gaps appear"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "plt5622-diagram-10",
+      "chapterId": "plt5622-ch-08",
+      "domainId": "assessment",
+      "title": "K–6 Assessment Purpose, Format Selection, Rubrics & Accessible Feedback",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Align K–6 diagnostic, formative, and summative assessment purposes with valid formats, transparent rubrics and portfolios, IEP/504 accessibility accommodations, and actionable student feedback.",
+      "caption": "An original classroom-assessment architecture linking assessment purpose, construct-aligned formats, rubrics and self/peer portfolios, and accessible accommodations with actionable feedback for Praxis PLT: Grades K–6 (5622).",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ies.ed.gov/ncee/wwc/practiceguide/12"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Top-to-bottom assessment design flow from diagnostic, formative, and summative purpose through construct-aligned formats and rubrics, portfolios, and self or peer review to accommodations and actionable feedback.",
+        "longDescription": "Read from top to bottom. First, clarify the assessment purpose before building items—distinguishing ungraded diagnostic preassessments and low-stakes formative checks that steer instruction from summative evaluations of unit mastery. Second, select formats aligned to the target construct, pairing efficient selected-response items for factual and conceptual breadth with performance tasks, structured observations, and brief student conferences for complex reasoning and skills. Third, anchor scoring and student ownership in clear analytic rubrics, checklists, longitudinal portfolios, and scaffolded self- and peer-assessment routines. Fourth, preserve construct validity by providing required IEP/504 accommodations and accessible formatting without lowering the target standard, then deliver timely, criterion-referenced feedback that guides each learner’s next revision step and informs future diagnostic checks.",
+        "textEquivalent": [
+          "Diagnostic, Formative & Summative Purpose: Define whether evidence will guide pre-unit placement, in-flight instructional adjustment, or end-of-unit mastery evaluation.",
+          "Construct-Aligned Assessment Formats: Match selected-response checks for broad sampling with performance tasks, observations, and student conferences for complex application.",
+          "Rubrics, Portfolios & Self/Peer Review: Share explicit analytic rubrics, checklists, and growth portfolios so elementary students monitor quality and give structured peer feedback.",
+          "Accessibility, Accommodations & Actionable Feedback: Provide lawful accommodations that remove construct-irrelevant barriers and return timely, criterion-linked feedback explaining next steps."
+        ],
+        "readingOrder": [
+          "diagnostic-formative-summative",
+          "format-construct-alignment",
+          "rubrics-portfolios-self-peer",
+          "accessible-accommodations-feedback"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "top-to-bottom",
+        "nodes": [
+          {
+            "id": "diagnostic-formative-summative",
+            "label": "Diagnostic, Formative & Summative Purpose",
+            "detail": "Specify the instructional decision first—separating ungraded diagnostic readiness checks and responsive formative probes from graded summative mastery evidence."
+          },
+          {
+            "id": "format-construct-alignment",
+            "label": "Construct-Aligned Formats",
+            "detail": "Pair selected-response items for efficient breadth with performance assessments, structured observations, and brief student conferences when reasoning or process is the construct."
+          },
+          {
+            "id": "rubrics-portfolios-self-peer",
+            "label": "Rubrics, Portfolios & Self/Peer Review",
+            "detail": "Use analytic rubrics, clear checklists, and curated work portfolios to make success criteria transparent and coach structured self-assessment and peer feedback."
+          },
+          {
+            "id": "accessible-accommodations-feedback",
+            "label": "Accommodations & Actionable Feedback",
+            "detail": "Implement IEP/504 and language accommodations to remove construct-irrelevant barriers, returning timely, specific feedback that shows students how to close the gap."
+          }
+        ],
+        "edges": [
+          {
+            "id": "purpose-to-format",
+            "from": "diagnostic-formative-summative",
+            "to": "format-construct-alignment",
+            "label": "determines which assessment format elicits valid evidence"
+          },
+          {
+            "id": "format-to-rubrics",
+            "from": "format-construct-alignment",
+            "to": "rubrics-portfolios-self-peer",
+            "label": "establishes transparent scoring criteria and student self-monitoring tools"
+          },
+          {
+            "id": "rubrics-to-feedback",
+            "from": "rubrics-portfolios-self-peer",
+            "to": "accessible-accommodations-feedback",
+            "label": "supports fair evaluation and targeted, criterion-referenced feedback"
+          },
+          {
+            "id": "feedback-to-purpose",
+            "from": "accessible-accommodations-feedback",
+            "to": "diagnostic-formative-summative",
+            "label": "shapes the next formative check or diagnostic launch"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": false,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "plt5622-diagram-05",
+      "chapterId": "plt5622-ch-09",
+      "domainId": "assessment",
+      "title": "Balanced K–6 Assessment System: Validity, Reliability & Data-Driven Reteaching",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Evaluate and use K–6 classroom and standardized assessments accurately by aligning formative, rubric, and summative tools to objectives, auditing validity, reliability, and bias, diagnosing error patterns, and delivering targeted reteaching or extension.",
+      "caption": "An original elementary assessment and data-use cycle connecting objective-aligned measures, validity/reliability/bias checks, diagnostic error-pattern analysis, and targeted reteaching or extension for Praxis PLT: Grades K–6 (5622).",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ies.ed.gov/ncee/wwc/practiceguide/12"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Left-to-right assessment cycle from aligning formative checks, rubrics, and summative tasks to objectives through checking validity, reliability, and bias and analyzing error patterns to delivering targeted reteaching and extension.",
+        "longDescription": "Read from left to right. First, align diagnostic, formative checks, analytic rubrics, and summative performance or selected-response tasks directly to taught learning objectives so every item reflects actual instructional emphasis. Second, verify measurement quality before trusting scores: confirm content and construct validity (measuring what was intended), scoring reliability (consistent rubric criteria and clear directions), and fairness free from cultural or linguistic construct-irrelevant bias. Third, disaggregate student responses beyond overall percent or norm-referenced scores to classify specific error patterns—separating conceptual misunderstandings from procedural slips or reading-load barriers. Fourth, translate error patterns into immediate instructional action by forming targeted reteaching groups with alternative representations, giving actionable revision feedback, extending mastered learners, and re-checking mastery.",
+        "textEquivalent": [
+          "Align Formative Checks, Rubrics & Summative Tasks: Match item formats, analytic rubric criteria, and cognitive demand directly to taught learning objectives across diagnostic, formative, and summative uses.",
+          "Check Validity, Reliability & Bias: Verify the task measures the intended construct accurately (validity), produces consistent scoring across raters/items (reliability), and removes irrelevant cultural or linguistic bias.",
+          "Analyze Item & Error Patterns: Look beneath total scores or percentiles to diagnose specific conceptual misconceptions, missing prerequisite steps, or task-accessibility barriers across student work.",
+          "Deliver Targeted Reteaching & Extension: Regroup learners for focused reteaching using new models, provide specific revision feedback, assign meaningful enrichment for ready learners, and re-assess mastery."
+        ],
+        "readingOrder": [
+          "align-balanced-assessments",
+          "verify-validity-reliability-bias",
+          "diagnose-error-patterns",
+          "targeted-reteaching-extension"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "align-balanced-assessments",
+            "label": "Align Formative, Rubric & Summative Tasks",
+            "detail": "Match quick formative checks, analytic rubrics, performance tasks, and summative items directly to taught objectives and intended cognitive demand."
+          },
+          {
+            "id": "verify-validity-reliability-bias",
+            "label": "Verify Validity, Reliability & Bias",
+            "detail": "Confirm assessments measure the target construct accurately (validity), score consistently (reliability), and avoid construct-irrelevant cultural or language barriers."
+          },
+          {
+            "id": "diagnose-error-patterns",
+            "label": "Analyze Error Patterns & Misconceptions",
+            "detail": "Disaggregate student work beyond summary grades or percentiles to distinguish conceptual misunderstandings, procedural slips, and prerequisite skill gaps."
+          },
+          {
+            "id": "targeted-reteaching-extension",
+            "label": "Targeted Reteaching, Feedback & Extension",
+            "detail": "Deliver small-group reteaching with alternative explanations, actionable student feedback, and deeper extension tasks—then verify mastery on a follow-up check."
+          }
+        ],
+        "edges": [
+          {
+            "id": "align-to-quality",
+            "from": "align-balanced-assessments",
+            "to": "verify-validity-reliability-bias",
+            "label": "audits item quality, rubric consistency, and fairness"
+          },
+          {
+            "id": "quality-to-errors",
+            "from": "verify-validity-reliability-bias",
+            "to": "diagnose-error-patterns",
+            "label": "ensures trustworthy data for pinpointing specific misconceptions"
+          },
+          {
+            "id": "errors-to-reteach",
+            "from": "diagnose-error-patterns",
+            "to": "targeted-reteaching-extension",
+            "label": "drives precise small-group reteaching and enrichment"
+          },
+          {
+            "id": "reteach-to-align",
+            "from": "targeted-reteaching-extension",
+            "to": "align-balanced-assessments",
+            "label": "closes the loop with an aligned follow-up mastery check"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "plt5622-diagram-11",
+      "chapterId": "plt5622-ch-10",
+      "domainId": "professional-development-leadership-community",
+      "title": "K–6 Reflective Inquiry, Research Appraisal & Job-Embedded Growth",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Improve K–6 teaching systematically by pairing baseline reflective goals with critical research appraisal, disciplined local action research, and ongoing mentoring, peer observation, and PLC collaboration.",
+      "caption": "An original professional-inquiry cycle connecting evidence-based reflection and goals, research-design appraisal, local action research with fidelity tracking, and mentoring or peer-observation PLCs for Praxis PLT: Grades K–6 (5622).",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuides"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Left-to-right professional inquiry cycle from evidence-based reflection and baseline goals through research design appraisal and local action research to mentoring, peer observation, and PLC learning.",
+        "longDescription": "Read from left to right. First, examine student achievement trends, classroom artifacts, and equity patterns to establish an objective baseline and define a concrete K–6 professional learning goal. Second, appraise educational research claims carefully—evaluating study design, comparison conditions, generalizability to elementary learners, and the distinction between correlation and causation. Third, run local classroom action research by implementing an evidence-informed change with documented fidelity, monitoring student progress iteratively, and acknowledging classroom-level limitations honestly. Fourth, sustain instructional growth through mentor coaching, reciprocal peer observation, and job-embedded professional learning communities that spark the next cycle of reflective inquiry.",
+        "textEquivalent": [
+          "Evidence-Based Reflection & Baseline Goal: Inspect student work, formative data, and observation notes to establish a baseline and set a measurable K–6 teaching goal.",
+          "Research Design & Causal Appraisal: Scrutinize study methodology, comparison groups, generalizability, and correlation-versus-causation limits before adopting new strategies.",
+          "Classroom Action Research & Fidelity: Pilot a focused instructional improvement, track implementation fidelity and student learning, and state local limitations accurately.",
+          "Mentoring, Peer Observation & PLC Learning: Sustain growth through coaching, non-evaluative peer observation, and ongoing job-embedded professional learning teams."
+        ],
+        "readingOrder": [
+          "baseline-reflective-goal",
+          "research-design-appraisal",
+          "local-action-research",
+          "mentoring-peer-plc"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "baseline-reflective-goal",
+            "label": "Reflective Baseline & Goal",
+            "detail": "Analyze elementary student work trends, observation records, and equity patterns objectively to document a baseline and formulate a measurable professional goal."
+          },
+          {
+            "id": "research-design-appraisal",
+            "label": "Research Design & Causal Appraisal",
+            "detail": "Evaluate education studies for experimental rigor, sample generalizability to K–6 classrooms, and valid distinction between correlational and causal claims."
+          },
+          {
+            "id": "local-action-research",
+            "label": "Local Action Research & Fidelity",
+            "detail": "Implement a focused classroom intervention, document fidelity and student growth systematically, and account transparently for small-sample local limitations."
+          },
+          {
+            "id": "mentoring-peer-plc",
+            "label": "Mentoring, Peer Observation & PLC",
+            "detail": "Translate findings into lasting practice through mentoring, reciprocal peer classroom observations, and sustained job-embedded professional learning communities."
+          }
+        ],
+        "edges": [
+          {
+            "id": "goal-to-appraisal",
+            "from": "baseline-reflective-goal",
+            "to": "research-design-appraisal",
+            "label": "focuses evidence search on a verified instructional need"
+          },
+          {
+            "id": "appraisal-to-local",
+            "from": "research-design-appraisal",
+            "to": "local-action-research",
+            "label": "identifies credible, age-appropriate practices to test locally"
+          },
+          {
+            "id": "local-to-plc",
+            "from": "local-action-research",
+            "to": "mentoring-peer-plc",
+            "label": "invites collaborative critique, coaching, and shared refinement"
+          },
+          {
+            "id": "plc-to-goal",
+            "from": "mentoring-peer-plc",
+            "to": "baseline-reflective-goal",
+            "label": "sustains continuous inquiry into the next instructional priority"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "plt5622-diagram-12",
+      "chapterId": "plt5622-ch-11",
+      "domainId": "professional-development-leadership-community",
+      "title": "K–6 Role-Aware Collaboration, Family Reciprocity & Student Continuity",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Coordinate K–6 families, colleagues, paraeducators, specialists, and community partners using role-clear action plans, language-accessible family reciprocity, aligned instructional support, and FERPA data safeguarding.",
+      "caption": "An original K–6 partnership workflow connecting role-clear action plans, reciprocal language-accessible family engagement, paraeducator and specialist coordination, and community continuity with FERPA safeguarding for Praxis PLT: Grades K–6 (5622).",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://studentprivacy.ed.gov/faq/under-ferpa-may-educational-agency-or-institution-disclose-education-records-any-its-employees"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Left-to-right collaboration flow from shared goals, role clarity, and action plans through reciprocal family partnership and language access and specialist or paraeducator coordination to community continuity and FERPA safeguarding.",
+        "longDescription": "Read from left to right. First, ground every K–6 collaboration in a shared student-centered purpose, clear professional role boundaries, and a concrete action plan with scheduled progress checks. Second, cultivate reciprocal family partnerships that value caregiver insights, offer flexible communication options, and guarantee language access through qualified interpreters and translated documents rather than relying on students. Third, coordinate reading specialists, special educators, school counselors, and paraeducators under teacher-led instructional plans so classroom interventions stay seamless and aligned. Fourth, connect families with after-school, mentoring, and community partners while upholding child safeguarding, FERPA legitimate-educational-interest limits, data minimization, and written parental consent before external record sharing.",
+        "textEquivalent": [
+          "Shared Goals, Role Clarity & Action Plans: Establish student-centered priorities, clear professional boundaries, and documented action steps across school teams and families.",
+          "Reciprocal Family Partnership & Language Access: Foster two-way dialogue respecting family expertise while providing qualified interpretation and translation for equitable participation.",
+          "Specialists & Paraeducator Coordination: Align special educators, interventionists, counselors, and paraeducators around teacher-planned goals and consistent classroom routines.",
+          "Community Continuity & FERPA Safeguarding: Extend wraparound continuity through community partners while enforcing data minimization, need-to-know privacy rules, and written parent consent."
+        ],
+        "readingOrder": [
+          "collaborative-roles-action-plan",
+          "reciprocal-family-access",
+          "paraeducator-specialist-sync",
+          "community-data-safeguarding"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "collaborative-roles-action-plan",
+            "label": "Shared Goals & Role-Clear Plans",
+            "detail": "Anchor K–6 team collaboration in specific student objectives, clear role responsibilities, and written action plans with scheduled follow-up checkpoints."
+          },
+          {
+            "id": "reciprocal-family-access",
+            "label": "Reciprocal Families & Language Access",
+            "detail": "Build two-way family partnerships that honor caregiver knowledge and flexible schedules, providing qualified interpreters and translated notices rather than student translators."
+          },
+          {
+            "id": "paraeducator-specialist-sync",
+            "label": "Specialists & Paraeducator Sync",
+            "detail": "Coordinate special educators, intervention specialists, counselors, and paraeducators under teacher-designed instructional plans so student supports reinforce core learning."
+          },
+          {
+            "id": "community-data-safeguarding",
+            "label": "Community Continuity & Safeguarding",
+            "detail": "Partner with mentoring, library, and after-school organizations while upholding child safeguarding, FERPA need-to-know limits, data minimization, and written consent."
+          }
+        ],
+        "edges": [
+          {
+            "id": "roles-to-families",
+            "from": "collaborative-roles-action-plan",
+            "to": "reciprocal-family-access",
+            "label": "creates transparent, welcoming channels for family co-planning"
+          },
+          {
+            "id": "families-to-sync",
+            "from": "reciprocal-family-access",
+            "to": "paraeducator-specialist-sync",
+            "label": "aligns home strengths with daily specialist and paraeducator support"
+          },
+          {
+            "id": "sync-to-community",
+            "from": "paraeducator-specialist-sync",
+            "to": "community-data-safeguarding",
+            "label": "extends student continuity safely beyond school walls"
+          },
+          {
+            "id": "community-to-roles",
+            "from": "community-data-safeguarding",
+            "to": "collaborative-roles-action-plan",
+            "label": "updates team action plans with holistic continuity insights"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "plt5622-diagram-06",
+      "chapterId": "plt5622-ch-12",
+      "domainId": "professional-development-leadership-community",
+      "title": "Elementary Professional Responsibility, Family Collaboration & Legal Compliance Flow",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Navigate K–6 professional collaboration, reflective growth, and statutory responsibilities cleanly—uniting inclusive family and school-team partnerships with IDEA, Section 504, FERPA, copyright, and mandatory reporting boundaries.",
+      "caption": "An original professional ethics and legal compliance flow linking inclusive family and team collaboration, reflective data-informed growth, IDEA/504/FERPA mandates, and copyright/mandatory-reporting boundaries for Praxis PLT: Grades K–6 (5622).",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://studentprivacy.ed.gov/faq/under-ferpa-may-educational-agency-or-institution-disclose-education-records-any-its-employees"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Left-to-right flow from inclusive family communication and school-team collaboration through reflective data-informed growth to IDEA, Section 504, and FERPA compliance and copyright and mandatory-reporting boundaries.",
+        "longDescription": "Read from left to right. First, build inclusive, two-way family communication using accessible formats and qualified language interpretation while collaborating systematically with grade-level PLCs, counselors, specialists, and paraeducators. Second, sustain reflective, data-informed professional growth through action research, peer observation, and critical appraisal of evidence-based practices. Third, maintain strict compliance with IDEA, Section 504, and FERPA—implementing FAPE and LRE plans with fidelity, honoring Child Find and parental consent requirements, and restricting education records to personnel with a legitimate educational interest. Fourth, uphold legal and ethical boundaries regarding copyright fair use (avoiding unlawful reproduction of consumables or licensed media) and immediate statutory mandatory reporting of suspected child abuse or neglect alongside established school safety procedures.",
+        "textEquivalent": [
+          "Inclusive Family Communication & School-Team Collaboration: Partner with caregivers via two-way, language-accessible communication and coordinate interventions with PLCs, specialists, and paraeducators.",
+          "Reflective Data-Informed Growth: Examine classroom evidence, engage in peer coaching and action research, and evaluate educational research rigorously to improve student outcomes.",
+          "IDEA, Section 504 & FERPA Compliance: Honor FAPE, LRE, Child Find, and informed parental consent obligations while safeguarding student education records strictly to need-to-know officials.",
+          "Copyright & Mandatory Reporting Boundaries: Respect copyright and licensing limits on instructional materials and act immediately on statutory mandatory-reporting and emergency-safety duties."
+        ],
+        "readingOrder": [
+          "family-school-team-collab",
+          "reflective-data-growth",
+          "idea-504-ferpa-compliance",
+          "copyright-reporting-safety"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "family-school-team-collab",
+            "label": "Family & School-Team Collaboration",
+            "detail": "Maintain reciprocal, language-accessible family communication and align student supports with PLCs, reading/EL specialists, counselors, and paraeducators."
+          },
+          {
+            "id": "reflective-data-growth",
+            "label": "Reflective Data-Informed Growth",
+            "detail": "Use student evidence, peer observation, action research, and vetted scholarship to refine instructional equity and professional practice continuously."
+          },
+          {
+            "id": "idea-504-ferpa-compliance",
+            "label": "IDEA, Section 504 & FERPA Compliance",
+            "detail": "Implement IEP/504 plans in the least restrictive environment, honor Child Find and parent consent, and disclose education records only on a legitimate need-to-know basis."
+          },
+          {
+            "id": "copyright-reporting-safety",
+            "label": "Copyright & Mandatory Reporting Boundaries",
+            "detail": "Follow copyright/fair-use rules for print and digital media (never copying consumables wholesale) and report suspected abuse or neglect immediately per statutory duty."
+          }
+        ],
+        "edges": [
+          {
+            "id": "collab-to-growth",
+            "from": "family-school-team-collab",
+            "to": "reflective-data-growth",
+            "label": "informs collaborative inquiry with family and specialist perspectives"
+          },
+          {
+            "id": "growth-to-compliance",
+            "from": "reflective-data-growth",
+            "to": "idea-504-ferpa-compliance",
+            "label": "grounds data review and team decisions in federal privacy and disability law"
+          },
+          {
+            "id": "compliance-to-boundaries",
+            "from": "idea-504-ferpa-compliance",
+            "to": "copyright-reporting-safety",
+            "label": "enforces ethical boundaries across instructional media and child safety"
+          },
+          {
+            "id": "boundaries-to-collab",
+            "from": "copyright-reporting-safety",
+            "to": "family-school-team-collab",
+            "label": "sustains lawful, trustworthy school-family partnerships"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    }
+  ],
   "flashcards": [
     {
       "id": "plt5622-card-001",
@@ -4572,6 +6019,1462 @@
       ],
       "reviewStatus": "source-reviewed-editorial-pass",
       "reviewNote": "Independent case-analysis planning practice; not an official ETS prompt, scoring guide, score, or prediction. Self-check criteria require independent K–6 educator and psychometric validation."
+    }
+  ],
+  "diagramPlacements": [
+    {
+      "id": "plt5622-diagram-placement-01",
+      "diagramId": "plt5622-diagram-01",
+      "chapterId": "plt5622-ch-01",
+      "sectionId": "plt5622-ch-01-section-04",
+      "position": "after-section-content",
+      "learnerPurpose": "Trace how K–6 students move from concrete operational reasoning and working-memory management through Vygotskian gradual release and retrieval practice to metacognitive self-regulation and transfer across academic subjects.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5622-diagram-placement-07",
+      "diagramId": "plt5622-diagram-07",
+      "chapterId": "plt5622-ch-02",
+      "sectionId": "plt5622-ch-02-section-04",
+      "position": "after-section-content",
+      "learnerPurpose": "Apply interacting K–6 cognitive, physical, language, social-emotional, and moral development patterns to calibrate concrete-to-abstract representations, movement, and developmentally responsive challenge without treating age norms as fixed limits.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5622-diagram-placement-02",
+      "diagramId": "plt5622-diagram-02",
+      "chapterId": "plt5622-ch-03",
+      "sectionId": "plt5622-ch-03-section-04",
+      "position": "after-section-content",
+      "learnerPurpose": "Design inclusive K–6 lessons that combine pre-assessment of readiness, language proficiency, and IEP/504 supports with UDL principles and flexible grouping while keeping grade-level rigor intact for every learner.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5622-diagram-placement-04",
+      "diagramId": "plt5622-diagram-04",
+      "chapterId": "plt5622-ch-04",
+      "sectionId": "plt5622-ch-04-section-02",
+      "position": "after-section-content",
+      "learnerPurpose": "Build an engaging, respectful K–6 classroom culture by connecting co-constructed norms and brisk instructional pacing with intrinsic mastery motivation, positive behavioral supports, and restorative problem solving.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5622-diagram-placement-08",
+      "diagramId": "plt5622-diagram-08",
+      "chapterId": "plt5622-ch-05",
+      "sectionId": "plt5622-ch-05-section-03",
+      "position": "after-section-content",
+      "learnerPurpose": "Design coherent K–6 units through backward planning—translating standards and scope-and-sequence priorities into observable objectives, aligned assessment evidence, vetted interdisciplinary resources, and preassessment-driven remediation or enrichment.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5622-diagram-placement-09",
+      "diagramId": "plt5622-diagram-09",
+      "chapterId": "plt5622-ch-06",
+      "sectionId": "plt5622-ch-06-section-04",
+      "position": "after-section-content",
+      "learnerPurpose": "Match explicit modeling, structured inquiry and experiential learning, cooperative and flexible grouping, and spaced differentiated practice to K–6 objectives, prior knowledge, and transfer demands.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5622-diagram-placement-03",
+      "diagramId": "plt5622-diagram-03",
+      "chapterId": "plt5622-ch-07",
+      "sectionId": "plt5622-ch-07-section-01",
+      "position": "after-section-content",
+      "learnerPurpose": "Execute high-impact K–6 lessons by aligning measurable objectives and cognitive demand with explicit modeling, structured collaborative discourse, higher-order questioning with deliberate wait time, and independent synthesis.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5622-diagram-placement-10",
+      "diagramId": "plt5622-diagram-10",
+      "chapterId": "plt5622-ch-08",
+      "sectionId": "plt5622-ch-08-section-04",
+      "position": "after-section-content",
+      "learnerPurpose": "Align K–6 diagnostic, formative, and summative assessment purposes with valid formats, transparent rubrics and portfolios, IEP/504 accessibility accommodations, and actionable student feedback.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5622-diagram-placement-05",
+      "diagramId": "plt5622-diagram-05",
+      "chapterId": "plt5622-ch-09",
+      "sectionId": "plt5622-ch-09-section-01",
+      "position": "after-section-content",
+      "learnerPurpose": "Evaluate and use K–6 classroom and standardized assessments accurately by aligning formative, rubric, and summative tools to objectives, auditing validity, reliability, and bias, diagnosing error patterns, and delivering targeted reteaching or extension.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5622-diagram-placement-11",
+      "diagramId": "plt5622-diagram-11",
+      "chapterId": "plt5622-ch-10",
+      "sectionId": "plt5622-ch-10-section-03",
+      "position": "after-section-content",
+      "learnerPurpose": "Improve K–6 teaching systematically by pairing baseline reflective goals with critical research appraisal, disciplined local action research, and ongoing mentoring, peer observation, and PLC collaboration.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5622-diagram-placement-12",
+      "diagramId": "plt5622-diagram-12",
+      "chapterId": "plt5622-ch-11",
+      "sectionId": "plt5622-ch-11-section-04",
+      "position": "after-section-content",
+      "learnerPurpose": "Coordinate K–6 families, colleagues, paraeducators, specialists, and community partners using role-clear action plans, language-accessible family reciprocity, aligned instructional support, and FERPA data safeguarding.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5622-diagram-placement-06",
+      "diagramId": "plt5622-diagram-06",
+      "chapterId": "plt5622-ch-12",
+      "sectionId": "plt5622-ch-12-section-03",
+      "position": "after-section-content",
+      "learnerPurpose": "Navigate K–6 professional collaboration, reflective growth, and statutory responsibilities cleanly—uniting inclusive family and school-team partnerships with IDEA, Section 504, FERPA, copyright, and mandatory reporting boundaries.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    }
+  ],
+  "glossary": [
+    {
+      "id": "plt5622-gloss-01",
+      "term": "Schema activation and metacognition",
+      "definition": "Connecting new K–6 concepts to students' organized prior knowledge (schemas) while explicitly teaching learners to plan, monitor, and evaluate their own comprehension and problem-solving strategies.",
+      "aliases": [
+        "Prior knowledge activation",
+        "Metacognitive monitoring"
+      ],
+      "chapterIds": [
+        "plt5622-ch-01"
+      ],
+      "domainIds": [
+        "students-as-learners"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5622-ch-01",
+            "chapterTitle": "Learning Theory, Cognition, and Transfer",
+            "domainId": "students-as-learners",
+            "domain": "Students as Learners",
+            "sectionId": "plt5622-ch-01-section-01",
+            "sectionHeading": "Knowledge construction, schema, and information processing",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ies.ed.gov/ncee/wwc/practiceguide/1"
+      ]
+    },
+    {
+      "id": "plt5622-gloss-02",
+      "term": "Social learning and self-efficacy",
+      "definition": "Bandura's framework explaining how students acquire skills through observational modeling and strengthen self-efficacy—confidence in their ability to master tasks—via mastery experiences and feedback.",
+      "aliases": [
+        "Bandura's social cognitive theory"
+      ],
+      "chapterIds": [
+        "plt5622-ch-01"
+      ],
+      "domainIds": [
+        "students-as-learners"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5622-ch-01",
+            "chapterTitle": "Learning Theory, Cognition, and Transfer",
+            "domainId": "students-as-learners",
+            "domain": "Students as Learners",
+            "sectionId": "plt5622-ch-01-section-02",
+            "sectionHeading": "Foundational theorists as instructional lenses",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf"
+      ]
+    },
+    {
+      "id": "plt5622-gloss-03",
+      "term": "Concrete operational stage",
+      "definition": "Piaget's elementary developmental stage (roughly ages 7–11) characterized by logical reasoning about tangible objects, mastery of conservation, reversibility, seriation, and hierarchical classification.",
+      "aliases": [
+        "Piaget's concrete operations"
+      ],
+      "chapterIds": [
+        "plt5622-ch-02"
+      ],
+      "domainIds": [
+        "students-as-learners"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5622-ch-02",
+            "chapterTitle": "Human Development Across Grades K–6",
+            "domainId": "students-as-learners",
+            "domain": "Students as Learners",
+            "sectionId": "plt5622-ch-02-section-02",
+            "sectionHeading": "K–6 reasoning and representation",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf"
+      ]
+    },
+    {
+      "id": "plt5622-gloss-04",
+      "term": "Industry versus inferiority",
+      "definition": "Erikson's elementary psychosocial stage in which K–6 students build a sense of academic and social competence through authentic mastery, or develop inferiority when persistent failure lacks support.",
+      "aliases": [
+        "Erikson's fourth stage"
+      ],
+      "chapterIds": [
+        "plt5622-ch-02"
+      ],
+      "domainIds": [
+        "students-as-learners"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5622-ch-02",
+            "chapterTitle": "Human Development Across Grades K–6",
+            "domainId": "students-as-learners",
+            "domain": "Students as Learners",
+            "sectionId": "plt5622-ch-02-section-03",
+            "sectionHeading": "Social-emotional, identity, and moral development",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf"
+      ]
+    },
+    {
+      "id": "plt5622-gloss-05",
+      "term": "Universal Design for Learning",
+      "definition": "Proactive curriculum framework that builds flexible pathways for engagement, representation, and action and expression from the start so diverse K–6 learners access rigorous standards without barriers.",
+      "aliases": [
+        "UDL"
+      ],
+      "chapterIds": [
+        "plt5622-ch-03"
+      ],
+      "domainIds": [
+        "students-as-learners"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5622-ch-03",
+            "chapterTitle": "Learner Differences, Access, Disability, Giftedness, and Language",
+            "domainId": "students-as-learners",
+            "domain": "Students as Learners",
+            "sectionId": "plt5622-ch-03-section-04",
+            "sectionHeading": "Giftedness, enrichment, differentiation, and universal access",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf"
+      ]
+    },
+    {
+      "id": "plt5622-gloss-06",
+      "term": "Multi-Tiered System of Supports",
+      "definition": "Data-driven schoolwide framework combining core universal instruction (Tier 1), targeted small-group intervention (Tier 2), and intensive individualized support (Tier 3) without delaying IDEA evaluation.",
+      "aliases": [
+        "MTSS",
+        "Tiered academic and behavioral supports"
+      ],
+      "chapterIds": [
+        "plt5622-ch-03"
+      ],
+      "domainIds": [
+        "students-as-learners"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5622-ch-03",
+            "chapterTitle": "Learner Differences, Access, Disability, Giftedness, and Language",
+            "domainId": "students-as-learners",
+            "domain": "Students as Learners",
+            "sectionId": "plt5622-ch-03-section-02",
+            "sectionHeading": "Disability access, IDEA, Section 504, and classroom responsibility",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://sites.ed.gov/idea/regs/b/d/300.304",
+        "https://sites.ed.gov/idea/idea-files/rts-qa-child-find-part-b-08-24-2021/"
+      ]
+    },
+    {
+      "id": "plt5622-gloss-07",
+      "term": "Intrinsic versus extrinsic motivation",
+      "definition": "Intrinsic motivation drives engagement through curiosity, autonomy, and mastery satisfaction, whereas extrinsic motivation relies on external rewards or grades that must be carefully faded to sustain learning.",
+      "aliases": [
+        "Self-determination motivation"
+      ],
+      "chapterIds": [
+        "plt5622-ch-04"
+      ],
+      "domainIds": [
+        "students-as-learners"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5622-ch-04",
+            "chapterTitle": "Motivation, Learning Environment, and Behavior",
+            "domainId": "students-as-learners",
+            "domain": "Students as Learners",
+            "sectionId": "plt5622-ch-04-section-01",
+            "sectionHeading": "Motivation, value, expectancy, and self-determination",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf"
+      ]
+    },
+    {
+      "id": "plt5622-gloss-08",
+      "term": "Proactive classroom management and transitions",
+      "definition": "Preventive elementary management establishing clear behavioral expectations, rehearsed transition cues, active supervision, and consistent positive reinforcement to maximize instructional time.",
+      "aliases": [
+        "Structured classroom transitions"
+      ],
+      "chapterIds": [
+        "plt5622-ch-04"
+      ],
+      "domainIds": [
+        "students-as-learners"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5622-ch-04",
+            "chapterTitle": "Motivation, Learning Environment, and Behavior",
+            "domainId": "students-as-learners",
+            "domain": "Students as Learners",
+            "sectionId": "plt5622-ch-04-section-02",
+            "sectionHeading": "Routines, expectations, and positive climate",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuide/31/Published"
+      ]
+    },
+    {
+      "id": "plt5622-gloss-09",
+      "term": "Curriculum scope and sequence",
+      "definition": "Planned breadth of grade-level content standards (scope) and logical developmental progression of skills across units and grades (sequence) that prevent instructional gaps and unnecessary redundancy.",
+      "aliases": [
+        "Vertical and horizontal alignment"
+      ],
+      "chapterIds": [
+        "plt5622-ch-05"
+      ],
+      "domainIds": [
+        "instructional-process"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5622-ch-05",
+            "chapterTitle": "Standards, Objectives, Planning, and Resources",
+            "domainId": "instructional-process",
+            "domain": "Instructional Process",
+            "sectionId": "plt5622-ch-05-section-01",
+            "sectionHeading": "Standards, scope, sequence, and priority learning",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf"
+      ]
+    },
+    {
+      "id": "plt5622-gloss-10",
+      "term": "Cognitive rigor alignment",
+      "definition": "Matching lesson objectives, learning tasks, and assessments to intentional levels of thinking—from recall to analysis and creation—using Bloom's Revised Taxonomy and Webb's Depth of Knowledge.",
+      "aliases": [
+        "Bloom's taxonomy",
+        "Webb's Depth of Knowledge (DOK)"
+      ],
+      "chapterIds": [
+        "plt5622-ch-05"
+      ],
+      "domainIds": [
+        "instructional-process"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5622-ch-05",
+            "chapterTitle": "Standards, Objectives, Planning, and Resources",
+            "domainId": "instructional-process",
+            "domain": "Instructional Process",
+            "sectionId": "plt5622-ch-05-section-02",
+            "sectionHeading": "Observable objectives and aligned evidence",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf"
+      ]
+    },
+    {
+      "id": "plt5622-gloss-11",
+      "term": "Gradual release of responsibility",
+      "definition": "Structured instructional sequence shifting cognitive ownership from teacher modeling to guided practice, collaborative application, and independent mastery with responsive checks along the way.",
+      "aliases": [
+        "GRR",
+        "I do, we do, you do"
+      ],
+      "chapterIds": [
+        "plt5622-ch-06"
+      ],
+      "domainIds": [
+        "instructional-process"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5622-ch-06",
+            "chapterTitle": "Instructional Methods, Grouping, Scaffolding, and Practice",
+            "domainId": "instructional-process",
+            "domain": "Instructional Process",
+            "sectionId": "plt5622-ch-06-section-01",
+            "sectionHeading": "Explicit, direct, and modeled instruction",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ies.ed.gov/ncee/wwc/practiceguide/1"
+      ]
+    },
+    {
+      "id": "plt5622-gloss-12",
+      "term": "Cooperative learning",
+      "definition": "Small-group instructional method built on positive interdependence, individual accountability, and explicit social roles so every elementary student actively contributes to shared academic goals.",
+      "aliases": [
+        "Structured collaborative grouping"
+      ],
+      "chapterIds": [
+        "plt5622-ch-06"
+      ],
+      "domainIds": [
+        "instructional-process"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5622-ch-06",
+            "chapterTitle": "Instructional Methods, Grouping, Scaffolding, and Practice",
+            "domainId": "instructional-process",
+            "domain": "Instructional Process",
+            "sectionId": "plt5622-ch-06-section-03",
+            "sectionHeading": "Cooperative learning and flexible grouping",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf"
+      ]
+    },
+    {
+      "id": "plt5622-gloss-13",
+      "term": "Higher-order questioning",
+      "definition": "Posing analytical, evaluative, and synthesis questions paired with wait time and follow-up probes that push K–6 learners beyond literal recall to justify reasoning with text or mathematical evidence.",
+      "aliases": [
+        "DOK-aligned probing"
+      ],
+      "chapterIds": [
+        "plt5622-ch-07"
+      ],
+      "domainIds": [
+        "instructional-process"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5622-ch-07",
+            "chapterTitle": "Questioning, Communication, Monitoring, and Reflection",
+            "domainId": "instructional-process",
+            "domain": "Instructional Process",
+            "sectionId": "plt5622-ch-07-section-01",
+            "sectionHeading": "Question purpose, wait time, and cognitive demand",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ies.ed.gov/ncee/wwc/practiceguide/1"
+      ]
+    },
+    {
+      "id": "plt5622-gloss-14",
+      "term": "Error analysis and instructional adjustment",
+      "definition": "Examining recurring student misconceptions across work samples or checks for understanding to pinpoint the underlying skill gap and immediately adapt pacing, grouping, or reteaching strategies.",
+      "aliases": [
+        "Real-time formative pivot"
+      ],
+      "chapterIds": [
+        "plt5622-ch-07"
+      ],
+      "domainIds": [
+        "instructional-process"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5622-ch-07",
+            "chapterTitle": "Questioning, Communication, Monitoring, and Reflection",
+            "domainId": "instructional-process",
+            "domain": "Instructional Process",
+            "sectionId": "plt5622-ch-07-section-04",
+            "sectionHeading": "Monitoring, adjustment, teachable moments, and reflection",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ies.ed.gov/ncee/wwc/practiceguide/12"
+      ]
+    },
+    {
+      "id": "plt5622-gloss-15",
+      "term": "Diagnostic preassessment",
+      "definition": "Targeted assessment administered before instruction to uncover students' prerequisite knowledge, specific skill gaps, and misconceptions so teachers can group learners and plan responsive lessons.",
+      "aliases": [
+        "Diagnostic assessment"
+      ],
+      "chapterIds": [
+        "plt5622-ch-08"
+      ],
+      "domainIds": [
+        "assessment"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5622-ch-08",
+            "chapterTitle": "Assessment Purpose, Format, Alignment, and Feedback",
+            "domainId": "assessment",
+            "domain": "Assessment",
+            "sectionId": "plt5622-ch-08-section-01",
+            "sectionHeading": "Diagnostic, formative, and summative purposes",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ies.ed.gov/ncee/wwc/practiceguide/12"
+      ]
+    },
+    {
+      "id": "plt5622-gloss-16",
+      "term": "Actionable descriptive feedback",
+      "definition": "Timely, task-specific commentary linking a student's current work to clear success criteria and concrete next steps, shown to accelerate achievement far more than grades or general praise alone.",
+      "aliases": [
+        "Growth-oriented formative feedback"
+      ],
+      "chapterIds": [
+        "plt5622-ch-08"
+      ],
+      "domainIds": [
+        "assessment"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5622-ch-08",
+            "chapterTitle": "Assessment Purpose, Format, Alignment, and Feedback",
+            "domainId": "assessment",
+            "domain": "Assessment",
+            "sectionId": "plt5622-ch-08-section-04",
+            "sectionHeading": "Alignment, feedback, accessibility, and accommodations",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf",
+        "https://ies.ed.gov/ncee/wwc/practiceguide/12"
+      ]
+    },
+    {
+      "id": "plt5622-gloss-17",
+      "term": "Criterion- versus norm-referenced assessment",
+      "definition": "Criterion-referenced tests measure mastery against fixed learning standards, whereas norm-referenced tests rank a student's performance relative to a representative peer comparison group.",
+      "aliases": [
+        "Standards-based vs. relative ranking"
+      ],
+      "chapterIds": [
+        "plt5622-ch-09"
+      ],
+      "domainIds": [
+        "assessment"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5622-ch-09",
+            "chapterTitle": "Measurement, Scoring, Interpretation, and Communication",
+            "domainId": "assessment",
+            "domain": "Assessment",
+            "sectionId": "plt5622-ch-09-section-02",
+            "sectionHeading": "Norm and criterion reference, raw and scaled scores",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ies.ed.gov/ncee/wwc/practiceguide/12"
+      ]
+    },
+    {
+      "id": "plt5622-gloss-18",
+      "term": "Item analysis and percentile rank",
+      "definition": "Evaluating item difficulty and distractor patterns alongside percentile ranks—which show the percentage of peers scoring at or below a student—to interpret test quality without misreading grade equivalents.",
+      "aliases": [
+        "Score distribution analysis"
+      ],
+      "chapterIds": [
+        "plt5622-ch-09"
+      ],
+      "domainIds": [
+        "assessment"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5622-ch-09",
+            "chapterTitle": "Measurement, Scoring, Interpretation, and Communication",
+            "domainId": "assessment",
+            "domain": "Assessment",
+            "sectionId": "plt5622-ch-09-section-03",
+            "sectionHeading": "Percentiles, grade equivalents, center, and variation",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ies.ed.gov/ncee/wwc/practiceguide/12"
+      ]
+    },
+    {
+      "id": "plt5622-gloss-19",
+      "term": "Classroom action research",
+      "definition": "Systematic, teacher-led cycle of framing a classroom question, collecting local baseline and intervention data, analyzing results, and refining instruction while recognizing generalizability limits.",
+      "aliases": [
+        "Practitioner inquiry"
+      ],
+      "chapterIds": [
+        "plt5622-ch-10"
+      ],
+      "domainIds": [
+        "professional-development-leadership-community"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5622-ch-10",
+            "chapterTitle": "Reflection, Research, and Professional Learning",
+            "domainId": "professional-development-leadership-community",
+            "domain": "Professional Development, Leadership, and Community",
+            "sectionId": "plt5622-ch-10-section-03",
+            "sectionHeading": "Action research and local improvement",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ies.ed.gov/ncee/wwc/practiceguide/12"
+      ]
+    },
+    {
+      "id": "plt5622-gloss-20",
+      "term": "Evidence-based practice appraisal",
+      "definition": "Critically evaluating educational studies for sound research design, sample relevance, and causal evidence before adopting an instructional program or intervention in K–6 classrooms.",
+      "aliases": [
+        "Research validity review"
+      ],
+      "chapterIds": [
+        "plt5622-ch-10"
+      ],
+      "domainIds": [
+        "professional-development-leadership-community"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5622-ch-10",
+            "chapterTitle": "Reflection, Research, and Professional Learning",
+            "domainId": "professional-development-leadership-community",
+            "domain": "Professional Development, Leadership, and Community",
+            "sectionId": "plt5622-ch-10-section-02",
+            "sectionHeading": "Research appraisal and evidence claims",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf",
+        "https://ies.ed.gov/ncee/wwc/PracticeGuides"
+      ]
+    },
+    {
+      "id": "plt5622-gloss-21",
+      "term": "Professional Learning Community",
+      "definition": "Collaborative team of educators who meet regularly to clarify essential standards, examine common formative assessment data, and design shared Tier 1 and Tier 2 instructional responses.",
+      "aliases": [
+        "PLC",
+        "Grade-level data team"
+      ],
+      "chapterIds": [
+        "plt5622-ch-11"
+      ],
+      "domainIds": [
+        "professional-development-leadership-community"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5622-ch-11",
+            "chapterTitle": "Collaboration, Families, Support Personnel, and Community",
+            "domainId": "professional-development-leadership-community",
+            "domain": "Professional Development, Leadership, and Community",
+            "sectionId": "plt5622-ch-11-section-01",
+            "sectionHeading": "Collaborative purpose, roles, and action plans",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf"
+      ]
+    },
+    {
+      "id": "plt5622-gloss-22",
+      "term": "Co-teaching models",
+      "definition": "Shared classroom delivery by general and special educators or specialists—using station, parallel, alternative, or team teaching—to integrate individualized supports within inclusive K–6 instruction.",
+      "aliases": [
+        "Collaborative instructional delivery"
+      ],
+      "chapterIds": [
+        "plt5622-ch-11"
+      ],
+      "domainIds": [
+        "professional-development-leadership-community"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5622-ch-11",
+            "chapterTitle": "Collaboration, Families, Support Personnel, and Community",
+            "domainId": "professional-development-leadership-community",
+            "domain": "Professional Development, Leadership, and Community",
+            "sectionId": "plt5622-ch-11-section-03",
+            "sectionHeading": "Specialists, paraeducators, and coordinated student support",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf"
+      ]
+    },
+    {
+      "id": "plt5622-gloss-23",
+      "term": "Professional ethics and procedural fairness",
+      "definition": "Legal and ethical obligations requiring K–6 educators to maintain impartial professional boundaries, protect students from discrimination or retaliation, and follow fair notice and due-process standards.",
+      "aliases": [
+        "Educator code of ethics",
+        "Student due process"
+      ],
+      "chapterIds": [
+        "plt5622-ch-12"
+      ],
+      "domainIds": [
+        "professional-development-leadership-community"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5622-ch-12",
+            "chapterTitle": "Ethics, Law, Privacy, Rights, and Student Safety",
+            "domainId": "professional-development-leadership-community",
+            "domain": "Professional Development, Leadership, and Community",
+            "sectionId": "plt5622-ch-12-section-01",
+            "sectionHeading": "Ethics, professional judgment, and fair process",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/pdfs/praxis/5622.pdf",
+        "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf"
+      ]
+    },
+    {
+      "id": "plt5622-gloss-24",
+      "term": "Fair use and statutory compliance",
+      "definition": "Educator compliance with copyright fair-use limits, IDEA and Section 504 nondiscrimination mandates, FERPA privacy rules, and state mandated-reporting and emergency-safety protocols.",
+      "aliases": [
+        "Copyright and student rights"
+      ],
+      "chapterIds": [
+        "plt5622-ch-12"
+      ],
+      "domainIds": [
+        "professional-development-leadership-community"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "plt5622-ch-12",
+            "chapterTitle": "Ethics, Law, Privacy, Rights, and Student Safety",
+            "domainId": "professional-development-leadership-community",
+            "domain": "Professional Development, Leadership, and Community",
+            "sectionId": "plt5622-ch-12-section-03",
+            "sectionHeading": "Disability rights, reporting, speech, and copyright",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ed.gov/laws-and-policy/civil-rights-laws/disability-discrimination",
+        "https://www.ed.gov/teaching-and-administration/safe-learning-environments/school-safety-and-security/emergency-planning"
+      ]
+    }
+  ],
+  "quickReference": [
+    {
+      "id": "plt5622-reference-01",
+      "domainId": "students-as-learners",
+      "domainLabel": "Students as Learners",
+      "title": "Elementary Learning Theories, Cognition & Motivation",
+      "purpose": "Anchors Piaget, Erikson, Vygotsky, Bandura, Kohlberg, information-processing, and inclusive K–6 learner profiles.",
+      "checklistLabel": "Before deciding",
+      "formulasLabel": "Core formulas, rules & benchmarks",
+      "checklist": [
+        "Match the student's grade band (primary K–2 vs. upper elementary 3–6) to expected cognitive, moral, and social-emotional readiness.",
+        "Identify the learning mechanism at stake: cognitive schema building, social modeling, operant reinforcement, metacognition, or intrinsic motivation.",
+        "Distinguish accommodations (access supports preserving grade-level standards) from modifications (altered learning expectations) and language acquisition from disability."
+      ],
+      "formulas": [
+        "Developmental stages across K–6: Piaget's Concrete Operational stage (ages 7–11: logical operations on concrete objects, conservation, classification, seriation) transitioning near grade 6 toward early Formal Operational; Erikson's Industry vs. Inferiority (ages 6–12: competence and peer comparison).",
+        "Social-cognitive & moral benchmarks: Bandura's observational learning (attention, retention, reproduction, motivation) and self-efficacy (mastery experiences strongest); Kohlberg shifts from Preconventional (punishment/reward) toward Conventional (peer approval and social rules) in upper elementary.",
+        "Information processing & transfer: working memory has limited capacity (chunking, visuals, and prior-knowledge activation reduce cognitive load); long-term retention strengthens via elaboration, retrieval practice, and spaced review; metacognition teaches students to plan, monitor, and evaluate.",
+        "Motivation & diversity frameworks: Self-Determination Theory (autonomy, competence, relatedness) and Carol Dweck's growth mindset (praise effort/strategy, not fixed talent); Cummins BICS (1–3 yrs social English) vs. CALP (5–7+ yrs academic English)."
+      ],
+      "decisionRules": [
+        "When a 4th grader speaks fluent playground English (BICS) but struggles with science textbooks and multi-step word problems → provide academic-language (CALP) scaffolds such as sentence frames, cognates, and visual glossaries rather than assuming low ability.",
+        "When a 3rd grader gives up quickly saying I am just bad at math → build Bandura's self-efficacy through attainable mastery tasks and attribute progress to controllable strategy and effort rather than innate intelligence.",
+        "When a student with an IEP or 504 Plan needs extended time or text-to-speech on a grade-level reading test → implement the documented accommodation without lowering the grade-level standard.",
+        "When an elementary classroom struggles with off-task behavior → establish clear positive expectations, teach routines explicitly, reinforce specific desired behaviors, and examine antecedent triggers before escalating punishment."
+      ],
+      "cautions": [
+        "Never confuse negative reinforcement (removing an aversive stimulus to INCREASE a behavior) with punishment (applying or removing a stimulus to DECREASE a behavior).",
+        "Do not mistake fluent conversational English (BICS) for readiness to handle complex decontextualized academic reading and writing (CALP) without support.",
+        "Avoid praising gifted or struggling K–6 students solely for being smart, which fosters a fixed mindset and avoidance of challenging tasks."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5622-reference-02",
+      "domainId": "instructional-process",
+      "domainLabel": "Instructional Process",
+      "title": "Backward Design, Bloom/DOK & Differentiated K–6 Instruction",
+      "purpose": "Anchors standards-aligned objectives, Bloom/DOK cognitive rigor, instructional models, cooperative grouping, and questioning.",
+      "checklistLabel": "Before deciding",
+      "formulasLabel": "Core formulas, rules & benchmarks",
+      "checklist": [
+        "Verify alignment across three elements: grade-level standard, measurable learning objective (verb + content + criteria), and instructional activity.",
+        "Check which cognitive level (Bloom's Revised Taxonomy / Webb's DOK) the lesson aims to reach—recall vs. analysis, evaluation, or creation.",
+        "Match the instructional method (direct instruction, inquiry, cooperative learning, or station rotation) to students' prior knowledge and task complexity."
+      ],
+      "formulas": [
+        "Backward Design (Wiggins & McTighe): Stage 1 Identify desired standards/objectives → Stage 2 Determine acceptable assessment evidence → Stage 3 Plan aligned learning experiences and scaffolds.",
+        "Bloom's Revised Taxonomy & Webb's DOK: Bloom ascends Remember → Understand → Apply → Analyze → Evaluate → Create; Webb's DOK spans Level 1 Recall, Level 2 Skills/Concepts, Level 3 Strategic Thinking, Level 4 Extended Thinking.",
+        "Differentiation levers (Tomlinson): adjust Content (what/text level), Process (how learners make sense), Product (how learners show mastery), or Learning Environment based on Readiness, Interest, and Learning Profile.",
+        "Cooperative learning & questioning benchmarks: effective group work (such as Jigsaw or Think-Pair-Share) requires positive interdependence PLUS individual accountability; effective questioning uses wait time, probing follow-ups, and equitable response routines."
+      ],
+      "decisionRules": [
+        "When introducing a brand-new foundational procedure (such as long division or paragraph structure) to K–6 novices → start with explicit direct instruction and worked modeling (I Do → We Do → You Do) before open-ended inquiry.",
+        "When assigning a group project where one student tends to do all the work → build in defined roles, peer checkpoints, and an individual accountability product alongside the shared group goal.",
+        "When a learning objective uses vague non-measurable verbs like understand, appreciate, or learn → rewrite it with observable, measurable action verbs (compare, justify, solve, construct).",
+        "When a student gives a partially correct answer during class discussion → affirm the accurate piece and ask a targeted probing question or redirect constructively to guide deeper reasoning."
+      ],
+      "cautions": [
+        "Do not equate differentiation with assigning extra busywork to advanced learners or watering down core standards for struggling learners.",
+        "Never plan engaging activities first and retrofit standards or assessments afterward; always anchor planning to the target objective.",
+        "Avoid calling only on the first raised hands, which narrows formative visibility and reduces participation equity across the class."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5622-reference-03",
+      "domainId": "assessment",
+      "domainLabel": "Assessment",
+      "title": "Psychometrics, Score Interpretation & Data-Driven Feedback",
+      "purpose": "Anchors validity, reliability, formative vs. summative design, rubric scoring, and standardized score interpretation for Grades K–6.",
+      "checklistLabel": "Before deciding",
+      "formulasLabel": "Core formulas, rules & benchmarks",
+      "checklist": [
+        "Clarify whether the assessment is diagnostic (pre-instruction), formative (during learning to adjust teaching), or summative (post-instruction mastery).",
+        "Check whether the score being interpreted is criterion-referenced (mastery against a standard) or norm-referenced (ranking against a peer norm group).",
+        "Verify that grading practices separate academic mastery from non-academic compliance and that feedback is timely, specific, and actionable."
+      ],
+      "formulas": [
+        "Validity vs. Reliability: Validity measures whether an assessment actually tests the intended objective/construct (content, construct, predictive); Reliability measures score consistency across time, forms, or raters (reliability is necessary but NOT sufficient for validity).",
+        "Norm-referenced score benchmarks: Percentile Rank = % of norm group scoring at or below the student (NOT % correct); Stanines run 1–9 (mean 5; average band 4–6); Standard Error of Measurement (SEM) creates a confidence band (Observed ± 1 SEM ≈ 68% true-score interval).",
+        "Grade-Equivalent (GE) rule: a 3rd grader earning GE 5.6 performed on the 3rd-grade test as well as an average 5th grader in month 6 would on that same 3rd-grade test—it does NOT verify mastery of 5th-grade content.",
+        "Rubric selection: Analytic rubrics score each criterion separately (best for diagnostic formative feedback and guiding revision); Holistic rubrics yield one overall judgment (best for fast summative overview scoring)."
+      ],
+      "decisionRules": [
+        "When an elementary teacher wants students to revise persuasive essays across organization, evidence, and conventions → choose an analytic rubric shared in advance rather than a single holistic score.",
+        "When an exit ticket reveals that 65% of 5th graders missed fraction regrouping → pause new pacing, analyze the error pattern, and reteach using an alternative representation before giving a summative test.",
+        "When a parent assumes a 72nd percentile rank means their child got 72% of test items correct → clarify that the child scored as high as or higher than 72% of the national norm group.",
+        "When comparing two students whose standardized scores differ by less than one Standard Error of Measurement → treat their true achievement levels as statistically indistinguishable rather than placing them in different tracks."
+      ],
+      "cautions": [
+        "Never assume a highly reliable test is automatically valid; a consistently miscalibrated ruler or off-standard test is reliable yet invalid.",
+        "Do not interpret a high grade-equivalent score as proof that an elementary student should skip directly ahead to that grade curriculum without above-level assessment.",
+        "Avoid giving vague feedback like Good job or Try harder; effective formative feedback specifies what met criteria and the exact next improvement step."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5622-reference-04",
+      "domainId": "professional-development-leadership-community",
+      "domainLabel": "Professional Development, Leadership, and Community",
+      "title": "Education Law, IDEA/504/FERPA, Collaboration & Ethics",
+      "purpose": "Anchors federal student-rights statutes, PLC/specialist collaboration, fair use/digital ethics, and reflective teacher leadership.",
+      "checklistLabel": "Before deciding",
+      "formulasLabel": "Core formulas, rules & benchmarks",
+      "checklist": [
+        "Identify which legal or ethical obligation governs the scenario: IDEA, Section 504, FERPA, Title III/Lau, Title IX, copyright/fair use, or child safety.",
+        "Verify who holds decision-making authority (IEP team vs. single teacher, administrator, parent, or mandated reporting agency).",
+        "Check whether the professional action builds reciprocal family and colleague partnerships grounded in student data and ethical boundaries."
+      ],
+      "formulas": [
+        "IDEA Part B vs. Section 504: IDEA covers 13 disability categories needing specialized instruction via an IEP (FAPE, LRE, annual review, 3-year reevaluation, written parent consent); Section 504 is a civil rights law guaranteeing accommodations for any impairment substantially limiting a major life activity.",
+        "Student access & speech landmarks: Lau v. Nichols (1974) mandates affirmative language-access steps for multilingual learners; Plyler v. Doe (1982) bars denying K–12 enrollment over immigration status; Tinker v. Des Moines (1969) protects student expression unless it causes substantial disruption.",
+        "FERPA & Fair Use boundaries: FERPA restricts PII disclosure without parent consent except legitimate educational interest or health/safety emergencies; Fair Use weighs 4 factors (purpose/educational use, nature of work, amount copied, market effect—never copy entire consumable workbooks).",
+        "Professional growth & collaboration cycle: Professional Learning Communities (PLCs) examine common formative data together; action research tests a classroom strategy systematically; mentoring, reflective journaling, and specialist co-planning (ESL, SLP, SpEd) strengthen Tier 1–3 supports."
+      ],
+      "decisionRules": [
+        "When a 4th grader with severe peanut allergy or diabetes needs health/classroom accommodations but not specialized academic instruction → refer for a Section 504 Plan rather than an IDEA IEP.",
+        "When a teacher wants to use a copyrighted workbook for 25 students by photocopying the entire book → reject mass copying under Fair Use market-effect limits and request licensed copies or use brief permissible excerpts.",
+        "When a general education teacher notices a student struggling academically despite strong Tier 1 instruction → document targeted MTSS/RTI Tier 2 interventions and progress data and collaborate with the grade-level team before jumping straight to special education placement.",
+        "When a parent disagrees with an IEP recommendation or requests an evaluation → honor IDEA procedural safeguards, document the request promptly, and involve the multidisciplinary IEP team rather than making unilateral promises."
+      ],
+      "cautions": [
+        "Never unilaterally alter or ignore a legally binding IEP accommodation because a teacher feels the student should try doing it without support.",
+        "Do not share student grades, IEP status, or behavioral incidents in hallways, public emails, or parent-group chats where unauthorized adults can see PII.",
+        "Avoid confusing academic freedom with ignoring adopted district curriculum standards or state testing security protocols."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    }
+  ],
+  "misconceptionFamilies": [
+    {
+      "id": "plt5622-passive-coverage-vs-backward-design-alignment",
+      "label": "Activity-First Textbook Coverage Instead of Backward Design Alignment",
+      "description": "Planning K–6 units by marching page-by-page through a textbook or picking a fun hands-on craft first, rather than unpacking standards into observable, measurable learning objectives, designing aligned evidence of mastery second, and sequencing instructional activities third (backward design).",
+      "remediationMove": "Start every unit with unpacked standards and measurable student outcomes, align the assessment directly to the cognitive verb of the objective, and select learning tasks and digital/print resources only when they drive that target evidence.",
+      "remediationPlaybookId": "plt5622-playbook-passive-coverage-vs-backward-design-alignment",
+      "itemIds": [
+        "plt5622-b1-031",
+        "plt5622-b1-032",
+        "plt5622-b1-033",
+        "plt5622-b1-034",
+        "plt5622-b1-035",
+        "plt5622-b1-036",
+        "plt5622-b1-037",
+        "plt5622-b1-038",
+        "plt5622-b1-039",
+        "plt5622-b1-040",
+        "plt5622-b1-041",
+        "plt5622-b1-042"
+      ]
+    },
+    {
+      "id": "plt5622-single-modality-vs-udl-and-mtss-differentiation",
+      "label": "One-Size-Fits-All Single-Modality Instruction Instead of UDL and Tiered MTSS Differentiation",
+      "description": "Delivering identical text-heavy instruction to all K–6 learners—or repeating the same explanation louder when students struggle—instead of proactively designing Universal Design for Learning (UDL) options for representation, engagement, and expression alongside data-driven MTSS/RTI tiered remediation.",
+      "remediationMove": "Use preassessment and formative error data to differentiate content access, instructional process, and product options via UDL while preserving grade-level rigor, and deploy targeted Tier 2/Tier 3 remediation when repetition fails to fix underlying conceptual gaps.",
+      "remediationPlaybookId": "plt5622-playbook-single-modality-vs-udl-and-mtss-differentiation",
+      "itemIds": [
+        "plt5622-b1-001",
+        "plt5622-b1-003",
+        "plt5622-b1-004",
+        "plt5622-b1-006",
+        "plt5622-b1-009",
+        "plt5622-b1-010",
+        "plt5622-b1-011",
+        "plt5622-b1-035",
+        "plt5622-b1-037",
+        "plt5622-b1-038",
+        "plt5622-b1-040",
+        "plt5622-b1-070"
+      ]
+    },
+    {
+      "id": "plt5622-closed-recall-questioning-vs-dok-wait-time-and-cooperative-accountability",
+      "label": "Closed Recall Questioning and Unguided Group Work Instead of Higher-DOK Discourse, Wait Time, and Cooperative Accountability",
+      "description": "Limiting K–6 classroom questioning to rapid-fire yes/no recall with zero wait time, calling only on immediate hand-raisers, or assigning unstructured \"group projects\" where one student does all the work instead of pairing higher-order Depth of Knowledge (DOK) prompts with 3–5 seconds of wait time and structured cooperative accountability.",
+      "remediationMove": "Ask open-ended conceptual questions that require evidence and justification, protect 3–5 seconds of wait time (plus think-pair-share) so all learners process, and design cooperative tasks with both positive interdependence and individual accountability.",
+      "remediationPlaybookId": "plt5622-playbook-closed-recall-questioning-vs-dok-wait-time-and-cooperative-accountability",
+      "itemIds": [
+        "plt5622-b1-002",
+        "plt5622-b1-004",
+        "plt5622-b1-005",
+        "plt5622-b1-007",
+        "plt5622-b1-032",
+        "plt5622-b1-033",
+        "plt5622-b1-036",
+        "plt5622-b1-041",
+        "plt5622-b1-042",
+        "plt5622-b1-067"
+      ]
+    },
+    {
+      "id": "plt5622-reactive-discipline-vs-proactive-classroom-management",
+      "label": "Reactive Punitive Discipline Instead of Proactive Classroom Management and Routines",
+      "description": "Waiting for off-task K–6 behavior to escalate and responding with public reprimands, whole-class punishment, or inconsistent consequences instead of establishing explicitly taught routines, smooth transitions, logical consequences, positive reinforcement, and supportive conditions for Erikson's industry vs. inferiority stage.",
+      "remediationMove": "Prevent disruptions proactively through practiced classroom procedures, clear positively stated expectations, active monitoring, and targeted private redirection that preserves dignity and instructional momentum.",
+      "remediationPlaybookId": "plt5622-playbook-reactive-discipline-vs-proactive-classroom-management",
+      "itemIds": [
+        "plt5622-b1-005",
+        "plt5622-b1-008",
+        "plt5622-b1-009",
+        "plt5622-b1-010",
+        "plt5622-b1-011",
+        "plt5622-b1-012",
+        "plt5622-b1-033",
+        "plt5622-b1-040",
+        "plt5622-b1-041",
+        "plt5622-b1-042"
+      ]
+    },
+    {
+      "id": "plt5622-grade-averaging-vs-error-analysis-and-rubric-alignment",
+      "label": "Score Averaging Without Error Analysis, Construct Validity, or Analytic Rubric Alignment",
+      "description": "Recording raw quiz averages and moving on—or grading complex K–6 performance tasks with a vague holistic number—instead of analyzing specific error patterns diagnostically, matching assessment format to objective rigor, using analytic rubrics for actionable feedback, and checking reliability, validity, and norm- vs. criterion-referenced meaning.",
+      "remediationMove": "Treat classroom assessment as an instructional compass: align tasks directly to objectives, score multi-trait work with transparent analytic rubrics, diagnose recurring error patterns before reteaching, and distinguish reliable consistency from valid construct measurement.",
+      "remediationPlaybookId": "plt5622-playbook-grade-averaging-vs-error-analysis-and-rubric-alignment",
+      "itemIds": [
+        "plt5622-b1-061",
+        "plt5622-b1-062",
+        "plt5622-b1-063",
+        "plt5622-b1-064",
+        "plt5622-b1-065",
+        "plt5622-b1-066",
+        "plt5622-b1-067",
+        "plt5622-b1-068",
+        "plt5622-b1-069",
+        "plt5622-b1-070",
+        "plt5622-b1-071",
+        "plt5622-b1-072"
+      ]
+    },
+    {
+      "id": "plt5622-isolated-practice-vs-plc-co-teaching-and-legal-ethics",
+      "label": "Isolated Solo Practice Instead of Data-Driven PLCs, Co-Teaching, and Legal/Ethical Compliance",
+      "description": "Treating professional growth as one-shot passive workshops, working in isolation from specialists and paraeducators, overclaiming causality from small classroom trials, or neglecting FERPA confidentiality, IDEA team collaboration, and linguistically accessible reciprocal family communication.",
+      "remediationMove": "Embed ongoing reflective practice inside collaborative Professional Learning Communities (PLCs) using student work data, coordinate actively with co-teachers, specialists, and paraeducators under clear roles, critically appraise research evidence, and uphold FERPA, IDEA, and equitable family partnership standards.",
+      "remediationPlaybookId": "plt5622-playbook-isolated-practice-vs-plc-co-teaching-and-legal-ethics",
+      "itemIds": [
+        "plt5622-b1-081",
+        "plt5622-b1-082",
+        "plt5622-b1-083",
+        "plt5622-b1-084",
+        "plt5622-b1-085",
+        "plt5622-b1-086",
+        "plt5622-b1-087",
+        "plt5622-b1-088",
+        "plt5622-b1-089",
+        "plt5622-b1-090",
+        "plt5622-b1-091",
+        "plt5622-b1-092"
+      ]
+    }
+  ],
+  "misconceptionRemediationPlaybooks": [
+    {
+      "id": "plt5622-playbook-passive-coverage-vs-backward-design-alignment",
+      "familyId": "plt5622-passive-coverage-vs-backward-design-alignment",
+      "familyLabel": "Activity-First Textbook Coverage Instead of Backward Design Alignment",
+      "title": "Anchor K–6 Unit Planning in Backward Design and Objective-Assessment Alignment",
+      "recognitionCue": "A PLT 5622 planning question asks where to begin a unit, how to unpack a broad standard, or how to pick an educational app—and distractors start with engaging crafts, textbook chapter order, or vague unmeasurable verbs like \"understand\" and \"appreciate.\"",
+      "repairQuestion": "Does the plan move in strict backward-design order (measurable standard outcome → aligned mastery evidence → targeted learning sequence) with every activity serving the exact cognitive verb?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Inspect K–6 planning options for two classic flaws: unmeasurable internal verbs (\"know,\" \"appreciate\") and misaligned triplets where an objective asks students to compare or analyze while the quiz only tests vocabulary recall.",
+          "requiredOutput": "Flag the exact verb mismatch or activity-first shortcut in each distractor."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Map the 3-stage Backward Design sequence (1. Unpack standard into observable, measurable objectives → 2. Determine acceptable assessment evidence → 3. Plan scaffolded learning experiences and resources) and contrast curriculum scope (what is taught) with sequence (logical developmental order).",
+          "requiredOutput": "Rewrite a vague objective (\"Students will understand two historical sources\") into an observable, measurable K–6 objective plus one directly aligned assessment task."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Audit an interdisciplinary fourth-grade unit blending math graphing and science weather data, plus a teacher's decision between two digital apps—one flashy game and one standards-aligned simulation.",
+          "requiredOutput": "Verify that each discipline's genuine standards stay intact (avoiding superficial theme crafts) and state why objective alignment—not entertainment value—must lead resource selection."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Apply backward-design and preassessment logic to a fresh PLT 5622 planning scenario where half the class already mastered a prerequisite skill before the unit begins.",
+          "requiredOutput": "Select the plan that uses brief preassessment data to tighten pacing and match aligned learning tasks to verified readiness rather than blind textbook coverage."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5622-playbook-single-modality-vs-udl-and-mtss-differentiation",
+      "familyId": "plt5622-single-modality-vs-udl-and-mtss-differentiation",
+      "familyLabel": "One-Size-Fits-All Single-Modality Instruction Instead of UDL and Tiered MTSS Differentiation",
+      "title": "Differentiate K–6 Access Through UDL and Data-Driven MTSS Remediation",
+      "recognitionCue": "A vignette shows diverse elementary learners struggling to transfer fraction concepts across formats, holding science misconceptions, or needing varied access supports—and distractors prescribe repeating the exact same lecture, lowering grade-level standards, or segregating learners permanently.",
+      "repairQuestion": "Does this instructional adjustment remove access barriers through UDL (representation, engagement, expression) and targeted MTSS remediation while keeping every student anchored to the core learning standard?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Distinguish genuine UDL/MTSS differentiation from three exam traps: pure repetition (more of the same failed method), tracking/watering down the cognitive standard, and confusing accommodations with modifications.",
+          "requiredOutput": "Label each distractor by its exact failure mode (repetition without diagnosis, lowered rigor, or unaligned access barrier)."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Connect the three UDL pillars (multiple means of engagement, representation, and action/expression) to MTSS tiers (Tier 1 universal differentiated core → Tier 2 targeted small-group skill remediation → Tier 3 intensive individualized intervention) and concrete-operational scaffolds for elementary learners.",
+          "requiredOutput": "Write a clear rule contrasting repetition (building automaticity once a concept is understood) from remediation (re-teaching an underlying misconception using a new representation)."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Design a differentiated response for two fifth-grade challenges: (1) students solve fraction addition on worksheets but fail on word problems and number lines; (2) a student with fine-motor fatigue knows the science explanation orally but struggles to write a full page.",
+          "requiredOutput": "Pair Challenge 1 with multi-representational transfer practice (visual models + varied contexts) and Challenge 2 with a UDL expression option (speech-to-text, structured graphic organizer, or oral explanation) that preserves the science standard."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Evaluate a new K–6 vignette asking how to keep examples developmentally appropriate without watering down academic expectations or how to evaluate an assessment accommodation.",
+          "requiredOutput": "Select the choice that scaffolds access and background connections while preserving construct validity and high expectations."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5622-playbook-closed-recall-questioning-vs-dok-wait-time-and-cooperative-accountability",
+      "familyId": "plt5622-closed-recall-questioning-vs-dok-wait-time-and-cooperative-accountability",
+      "familyLabel": "Closed Recall Questioning and Unguided Group Work Instead of Higher-DOK Discourse, Wait Time, and Cooperative Accountability",
+      "title": "Elevate K–6 Discourse with Higher-DOK Prompts, Wait Time, and Accountable Groups",
+      "recognitionCue": "A PLT 5622 instruction item asks how to deepen metacognition, make inquiry productive, or ensure fair peer/group work—and distractors rely on rapid yes/no recall checks, moving immediately to the first raised hand, or assigning one shared group grade with no individual roles.",
+      "repairQuestion": "Does this discourse or group routine push student thinking beyond recall, give every learner processing time, and guarantee both group interdependence and individual accountability?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Identify passive-discourse and group-work traps: closed recall questions (DOK 1) when analysis/justification (DOK 2–3) is required, zero wait time, unstructured \"turn and chat\" with no protocol, and free-rider group grading.",
+          "requiredOutput": "Point out the exact missing element (cognitive level, wait time, metacognitive reflection, or individual accountability) in each distractor."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Combine four research-backed K–6 routines: (1) stem escalation from recall (\"What is the main character's name?\") to justification (\"How does your text evidence support that claim?\"), (2) 3–5 seconds of wait time + Think-Pair-Share, (3) metacognitive self-monitoring prompts (\"Which strategy worked and why?\"), and (4) cooperative groups with defined roles plus individual check-ins.",
+          "requiredOutput": "Upgrade two closed recall questions into higher-DOK prompts and specify one structure that prevents one student from carrying a 4-person elementary group."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Design (1) a metacognitive routine for fourth graders solving multi-step math problems, and (2) the fairness guardrails needed before third graders conduct peer assessment on persuasive paragraphs.",
+          "requiredOutput": "Specify a structured strategy-check/error-reflection routine for math and require explicit rubric criteria, teacher modeling, and constructive sentence frames before peer feedback."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Evaluate a fresh PLT 5622 scenario contrasting unstructured discovery with teacher-scaffolded inquiry and explicit modeling.",
+          "requiredOutput": "Choose the sequence that pairs clear conceptual goals, modeled thinking, guided questioning, and accountable student synthesis."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5622-playbook-reactive-discipline-vs-proactive-classroom-management",
+      "familyId": "plt5622-reactive-discipline-vs-proactive-classroom-management",
+      "familyLabel": "Reactive Punitive Discipline Instead of Proactive Classroom Management and Routines",
+      "title": "Build Proactive K–6 Classroom Routines and Constructive Behavior Support",
+      "recognitionCue": "A management or motivation scenario features elementary off-task behavior, transition chaos, or a student losing confidence—and distractors choose sarcastic public call-outs, whole-class recess loss, vague threats, or misidentifying negative reinforcement as punishment.",
+      "repairQuestion": "Does this teacher action proactively teach and reinforce clear expectations while protecting student dignity and building elementary competence (industry vs. inferiority)?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Flag reactive management errors immediately: escalating publicly in front of peers, punishing the entire class for two students' actions, adding busywork as a penalty, or confusing removing an unpleasant task (negative reinforcement) with punishment.",
+          "requiredOutput": "Explain why each reactive distractor escalates power struggles or undermines intrinsic competence in K–6 learners."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Contrast proactive management (explicitly teaching, modeling, and rehearsing routines; smooth transitions; proximity and nonverbal cues; logical consequences tied to the behavior; specific mastery feedback) with reactive punishment, and link Erikson's industry vs. inferiority stage to attainable, scaffolded classroom success.",
+          "requiredOutput": "Write a 3-step low-profile redirection ladder (nonverbal proximity/cue → brief private reminder of expected routine → logical consequence/reteach of procedure)."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Solve two K–6 scenarios: (1) a fifth-grade teacher removes an unpleasant extra fluency drill once students meet their accuracy target—classify the operant principle; (2) transitions from science labs to reading repeatedly take 9 noisy minutes.",
+          "requiredOutput": "Identify Scenario 1 as negative reinforcement (strengthening accuracy by removing an aversive requirement) and write a proactive transition routine for Scenario 2 (clear timer cue, modeled cleanup jobs, practiced rehearsal, and specific positive feedback)."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Apply proactive-climate and social-learning principles to a new scenario supporting a hesitant fourth grader who avoids challenging tasks for fear of failing in front of peers.",
+          "requiredOutput": "Select the classroom condition that pairs modeled problem-solving, manageable growth goals, and private effort-linked feedback to build genuine industry."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5622-playbook-grade-averaging-vs-error-analysis-and-rubric-alignment",
+      "familyId": "plt5622-grade-averaging-vs-error-analysis-and-rubric-alignment",
+      "familyLabel": "Score Averaging Without Error Analysis, Construct Validity, or Analytic Rubric Alignment",
+      "title": "Turn K–6 Assessments into Diagnostic Error Analysis and Rubric-Aligned Feedback",
+      "recognitionCue": "An assessment item asks why an analytic rubric outperforms a holistic score, when performance tasks beat selected response, why a consistent test can still be invalid, or how to use formative and diagnostic evidence—and distractors focus on grading speed, ranking peers, or raw average percentages.",
+      "repairQuestion": "Does this assessment choice diagnose exact skill gaps, align directly to the performance demanded by the standard, and give students criterion-specific feedback for revision?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Spot four recurring PLT 5622 assessment traps: equating formative checks with graded mini-summative quizzes, choosing a holistic score when students need trait-by-trait feedback, mistaking score consistency (reliability) for construct validity, and conflating norm-referenced percentiles with criterion-referenced mastery.",
+          "requiredOutput": "Name the exact assessment concept tested in the stem (diagnostic, formative, summative, analytic rubric, portfolio, validity, or norm vs. criterion)."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Build a sharp decision matrix: selected-response efficiently checks factual/conceptual breadth; performance tasks assess complex multi-step execution (like conducting and explaining an experiment); analytic rubrics isolate strengths and next steps per criterion; reliability = consistency across administrations while validity = accurate measurement of the target construct.",
+          "requiredOutput": "Write a 2-sentence explanation of why a highly reliable science test that mostly measures reading speed fails construct validity and how an accommodation can restore validity."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Analyze three K–6 assessment problems: (1) grading a fifth-grade lab investigation and written explanation; (2) turning a stack of completed math papers into a purposeful portfolio; (3) interpreting a third grader's 65th percentile reading score vs. 85% mastery on a fraction-equivalence rubric.",
+          "requiredOutput": "Specify an analytic rubric aligned to investigation and explanation traits, require dated criteria-linked samples plus student reflection for the portfolio, and contrast the norm-referenced peer standing with criterion-referenced standard mastery."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Evaluate a fresh PLT 5622 scenario where half a class misses items on an exit ticket and a teacher must decide between averaging the score into the gradebook or conducting error analysis.",
+          "requiredOutput": "Select the formative error-analysis move that groups students by specific misconception and adjusts the next lesson before summative evaluation."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt5622-playbook-isolated-practice-vs-plc-co-teaching-and-legal-ethics",
+      "familyId": "plt5622-isolated-practice-vs-plc-co-teaching-and-legal-ethics",
+      "familyLabel": "Isolated Solo Practice Instead of Data-Driven PLCs, Co-Teaching, and Legal/Ethical Compliance",
+      "title": "Lead Collaborative PLCs, Co-Teaching, Research Literacy, and Legal Ethics in K–6",
+      "recognitionCue": "A professional-practice scenario covers peer observations, mentor feedback, classroom action research, IEP/specialist coordination, paraeducator supervision, or family communication—and distractors choose unaligned one-day workshops, unshared solo fixes, sweeping causal claims from tiny trials, or one-way English-only notices.",
+      "repairQuestion": "Does this professional move embed sustained data-driven collaboration (PLC/co-teaching/mentoring), apply disciplined evidence limits, and honor legal and equitable family-partnership duties?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Spot five professional-domain distractors: one-shot PD without classroom follow-up, unfocused peer observation with no agreed lens, causal overclaiming from non-equivalent comparison groups, leaving paraeducators or specialists unbriefed, and one-way caregiver reporting without language access.",
+          "requiredOutput": "Identify the specific collaboration, research-literacy, or legal-ethics gap embedded in each distractor."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Establish five PLT 5622 professional standards: (1) effective PD is sustained, job-embedded, and tied to student evidence; (2) peer observation begins with a mutually agreed focus and non-evaluative protocol; (3) small action-research cycles inform local practice adjustment rather than universal proof; (4) teachers coordinate IEP/specialist/paraeducator supports around shared student goals; (5) schools ensure legally required language access (qualified translation/interpretation) and reciprocal family dialogue while safeguarding FERPA confidentiality.",
+          "requiredOutput": "Write one actionable SMART-style professional goal tied to student learning data and one protocol for establishing shared focus before a peer observation."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Resolve three K–6 leadership cases: (1) a program study shows higher scores than a non-equivalent comparison group; (2) a fourth-grade PLC starts a team action plan for reading comprehension; (3) a teacher collaborates with an SLP, OT, and classroom paraeducator for a student with an IEP.",
+          "requiredOutput": "State why baseline group differences prevent causal proof in Case 1, begin Case 2 by analyzing shared student data to define a measurable target, and outline clear coordinated roles and regular check-ins for specialists and the paraeducator in Case 3."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Evaluate a fresh PLT 5622 item on reciprocal family conferences, mentor coaching for a new teacher, or communicating essential academic updates to caregivers with limited English proficiency.",
+          "requiredOutput": "Select the choice that builds two-way partnership, provides qualified translated communication, and connects collaborative reflection directly to improved K–6 student outcomes."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
     }
   ]
 }

@@ -12,6 +12,7 @@ const {
   applyApUsGovChoiceOverride,
   AP_US_GOVERNMENT_LIBRARY_CHECKS,
 } = require('./ap_us_government_choice_overrides/index.cjs');
+const AP_US_GOV_RICH_SECTIONS = require('./learning_library_study_tools_polish/ap_us_gov_sections_15.cjs');
 
 const root = path.resolve(__dirname, '..');
 const packPath = path.join(root, 'test_prep', 'ap_us_government_foundation_pilot.json');
@@ -937,35 +938,30 @@ function buildLibrary(objectiveCatalog) {
         transferItemCount: sectionPracticeItems.filter((candidate) => candidate.practiceSlice === 'transfer-slice').length,
         studyMove: 'Complete one foundation item, explain the mechanism in your own words, then use a depth item and a transfer item to apply the reasoning in new contexts.',
       };
+      const sectionId = chapterId + '-section-' + String(sectionIndex + 1).padStart(2, '0');
+      const richSection = AP_US_GOV_RICH_SECTIONS[sectionId];
+      if (!richSection) throw new Error('Missing rich AP U.S. Government section spec for ' + sectionId);
       const focus = seed[1];
       const terms = seed[2];
       const boundaries = seed[3];
-      const examples = [
-        'Start with the institution, constitutional principle, or civic behavior named in the prompt.',
-        'Connect the concept to a concrete policy, case, source, or participation scenario.',
-      ];
-      const retrieval = [
-        'What political principle or institution is doing the work in this example?',
-        'What evidence would distinguish this explanation from a nearby concept?',
-        'Which limitation keeps the claim from becoming broader than the evidence?',
-      ];
+      const examples = richSection.examples;
+      const commonMisconceptions = richSection.commonMisconceptions;
+      const workedDataExample = richSection.workedDataExample;
+      const retrieval = richSection.retrievalPrompts;
+      const transferMove = richSection.transferMove;
       const contentBlocks = [
         paragraph(focus + ' ' + unit.summary),
-        labeledParagraph('Reasoning move. ', 'Name the concept, identify the relevant constitutional or institutional mechanism, and then explain the consequence.'),
+        labeledParagraph('Worked examples. ', 'Connect the constitutional or institutional mechanism directly to concrete civic scenarios:'),
         bulletList(examples),
-        labeledParagraph('Boundaries. ', 'Use these checks to avoid overgeneralizing:'),
-        bulletList(boundaries),
-        labeledParagraph('Worked comparison. ', 'Compare the policy or institution with the closest alternative before selecting an answer.'),
-        tableBlock(['Question lens', 'Useful check'], [
-          ['Concept', 'What principle, institution, process, policy, or behavior is present?'],
-          ['Evidence', 'What does the source, case, data, or scenario actually establish?'],
-          ['Transfer', 'How would the same reasoning apply in a different context?'],
-        ]),
+        labeledParagraph('Boundaries and common misconceptions. ', 'Use these checks to avoid overgeneralizing:'),
+        bulletList([...boundaries, ...commonMisconceptions]),
+        labeledParagraph('Worked comparison. ', 'Compare the policy, document, or institution across these key dimensions:'),
+        tableBlock(workedDataExample.headers, workedDataExample.rows),
         labeledParagraph('Retrieval practice. ', 'Answer each prompt before opening the related item bank.'),
         bulletList(retrieval, true),
       ];
       return {
-        id: chapterId + '-section-' + String(sectionIndex + 1).padStart(2, '0'),
+        id: sectionId,
         heading: seed[0],
         content: focus,
         keyTerms: terms,
@@ -975,17 +971,10 @@ function buildLibrary(objectiveCatalog) {
         contentBlocks,
         examples,
         nonExamples: boundaries,
-        commonMisconceptions: ['A concept label is not a complete explanation; identify the mechanism and the evidence before generalizing.'],
-        workedDataExample: {
-          headers: ['Question lens', 'Useful check'],
-          rows: [
-            ['Concept', 'Name the principle or institution before choosing a conclusion.'],
-            ['Evidence', 'Separate what the evidence shows from what it does not show.'],
-            ['Transfer', 'Apply the reasoning to a new scenario without importing irrelevant facts.'],
-          ],
-        },
+        commonMisconceptions,
+        workedDataExample,
         retrievalPrompts: retrieval,
-        transferMove: 'Transfer the concept to a new policy, institution, source, data display, or civic behavior while preserving the same reasoning step.',
+        transferMove,
         reviewStatus: 'source-reviewed-editorial-pass',
         reviewNote: 'Original AP U.S. Government foundation lesson shell; independent subject-expert, accessibility, rights, production, and psychometric review remain pending.',
         expertReviewStatus: 'pending',
@@ -1086,6 +1075,9 @@ function buildLibrary(objectiveCatalog) {
     topicDrillMapCount: practiceRoutes.reduce((sum, route) => sum + Object.keys(route.topicItemIds).length, 0),
   };
 
+  const { buildApUsGovernmentDiagrams } = require('./ap_us_government_diagrams.cjs');
+  const { diagrams, diagramPlacements } = buildApUsGovernmentDiagrams(chapters, [CED_URL, COURSE_URL]);
+
   return {
     schemaVersion: 1,
     librarySchemaVersion: 1,
@@ -1127,8 +1119,8 @@ function buildLibrary(objectiveCatalog) {
     workshopPracticeNote: 'These explicitly unscored workshops use original synthetic scenarios, data, and source descriptions for planning and self-check. AlloFlow does not score written responses, apply an official College Board rubric, estimate an AP score, or predict credit or placement.',
     chapters,
     practiceRouting,
-    diagrams: [],
-    diagramPlacements: [],
+    diagrams,
+    diagramPlacements,
     flashcards,
     memoryAids,
     constructedResponseWorkshops,
@@ -1138,8 +1130,8 @@ function buildLibrary(objectiveCatalog) {
       knowledgeChecks: chapters.reduce((sum, chapter) => sum + chapter.knowledgeChecks.length, 0),
       flashcards: flashcards.length,
       memoryAids: memoryAids.length,
-      diagrams: 0,
-      diagramPlacements: 0,
+      diagrams: diagrams.length,
+      diagramPlacements: diagramPlacements.length,
       constructedResponseWorkshops: constructedResponseWorkshops.length,
       foundationalDocuments: foundationalDocumentCatalog.length,
       foundationalDocumentRoutes: foundationalDocumentRoutes.length,

@@ -10586,15 +10586,18 @@ Return ONLY JSON:
       const authorizationFailure = [401, 403].includes(failureStatus) || /\b(?:401|403)\b|unauthorized|forbidden|authentication|invalid.*(?:api.?key|credential)/i.test(failureDetails);
       const quotaFailure = /quota|resource[_ -]exhausted|usage limit|daily limit|billing/i.test(failureDetails);
       const errMsg = err?.emptyGeneration && err.message ? err.message :
-                     err.message?.includes("Blocked") ? "Content blocked by safety filters." :
-                     err.message?.includes("Stopped") ? "Generation stopped by AI model." :
+                     err.message?.includes("Blocked") ? "Content blocked by safety filters. Rephrase the prompt or source text and try again. Previously saved resources were kept." :
+                     err.message?.includes("Stopped") ? "Generation stopped before finishing. Try again or shorten the source text. Previously saved resources were kept." :
                      authorizationFailure ? "Authorization failed. Check the selected provider and its credentials, then retry. Previously saved resources were kept." :
                      quotaFailure ? "The selected provider's usage limit was reached. Retry when it resets or choose an available provider. Previously saved resources were kept." :
                      failureStatus === 429 || /\b429\b|rate.?limit|too many requests/i.test(failureDetails) ? "The provider is receiving too many requests. Wait briefly, then retry. Previously saved resources were kept." :
                      "Error generating content. Please retry. Previously saved resources were kept.";
       // The Source view reports its own check failure in place, with Retry.
       if (!configOverride?.inlineFailure) setError(errMsg);
-      addToast(errMsg, "error");
+      const toastOptions = (authorizationFailure || quotaFailure) && typeof window !== 'undefined' && typeof window.__alloOpenAiSetup === 'function'
+        ? { action: { label: 'Open AI settings', onClick: () => { try { window.__alloOpenAiSetup(); } catch (_) {} } } }
+        : null;
+      addToast(errMsg, "error", toastOptions);
       if (isBotVisible && alloBotRef.current) {
           const actionName = type === 'analysis' ? 'analyzing the source' : 'generating content';
           alloBotRef.current.speak(`I ran into a problem ${actionName}: ${errMsg}.`);

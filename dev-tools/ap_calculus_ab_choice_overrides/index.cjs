@@ -186,13 +186,20 @@ function normalizeLookup(value) {
     .trim();
 }
 
+const shortRationales = {
+  ...require('../ap_stem_short_rationales/ap_calculus_ab.cjs'),
+  ...require('../ap_stem_short_rationales/wave2_bio_calc_chem.cjs').ap_calculus_ab_foundation_pilot,
+};
+
 function applyApCalcChoiceOverride(itemId, spec) {
   const override = AP_CALCULUS_AB_CHOICE_OVERRIDES[itemId];
-  if (!override) return spec;
+  const enrichedRationale = shortRationales[itemId];
+  if (!override && !enrichedRationale) return spec;
   const next = { ...spec };
-  if (override.prompt) next.prompt = override.prompt;
-  if (override.answer) next.answer = override.answer;
-  if (override.distractorReplacements) {
+  if (enrichedRationale) next.rationale = enrichedRationale;
+  if (override && override.prompt) next.prompt = override.prompt;
+  if (override && override.answer) next.answer = override.answer;
+  if (override && override.distractorReplacements) {
     const normalizedMap = new Map(
       Object.entries(override.distractorReplacements).map(([k, v]) => [normalizeLookup(k), v])
     );

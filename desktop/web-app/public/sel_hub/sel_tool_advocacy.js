@@ -11265,7 +11265,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
       var _advT = (ctx && ctx.theme) || {};
       var _advHC = !!_advT.isContrast, _advL = !_advHC && !_advT.isDark;
       var _adv_BGL = {'#1e293b':'#ffffff','#0f172a':'#f8fafc','#334155':'#e2e8f0'}, _adv_BGH = {'#1e293b':'#000000','#0f172a':'#000000','#334155':'#000000','#a5b4fc':'#000000','#15803d':'#000000','#3b82f6':'#000000','#ffffff':'#000000','#f8fafc':'#000000','#eef2ff':'#000000'};
-      var _adv_FGL = {'#94a3b8':'#64748b','#cbd5e1':'#334155','#f1f5f9':'#0f172a','#e2e8f0':'#1e293b','#a5b4fc':'#3730a3','#86efac':'#166534','#fbbf24':'#854d0e','#fcd34d':'#78350f','#fde68a':'#92400e','#fca5a5':'#991b1b','#c7d2fe':'#312e81'}, _adv_FGH = {'#94a3b8':'#ffff00','#fff':'#ffff00','#cbd5e1':'#ffff00','#f1f5f9':'#ffff00','#e2e8f0':'#ffff00','#a5b4fc':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#86efac':'#ffff00','#22c55e':'#ffff00','#0ea5e9':'#ffff00','#f59e0b':'#ffff00','#fbbf24':'#ffff00','#fcd34d':'#ffff00','#bbf7d0':'#ffff00','#fde68a':'#ffff00','#ec4899':'#ffff00','#fca5a5':'#ffff00','#6366f1':'#ffff00','#8b5cf6':'#ffff00','#a855f7':'#ffff00','#3b82f6':'#ffff00','#14b8a6':'#ffff00','#c7d2fe':'#ffff00','#475569':'#ffff00','#3730a3':'#ffff00'};
+      var _adv_FGL = {'#94a3b8':'#475569','#64748b':'#475569','#cbd5e1':'#334155','#f1f5f9':'#0f172a','#e2e8f0':'#1e293b','#a5b4fc':'#3730a3','#86efac':'#166534','#fbbf24':'#854d0e','#fcd34d':'#78350f','#fde68a':'#92400e','#fca5a5':'#991b1b','#c7d2fe':'#312e81'}, _adv_FGH = {'#94a3b8':'#ffff00','#fff':'#ffff00','#cbd5e1':'#ffff00','#f1f5f9':'#ffff00','#e2e8f0':'#ffff00','#a5b4fc':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#86efac':'#ffff00','#22c55e':'#ffff00','#0ea5e9':'#ffff00','#f59e0b':'#ffff00','#fbbf24':'#ffff00','#fcd34d':'#ffff00','#bbf7d0':'#ffff00','#fde68a':'#ffff00','#ec4899':'#ffff00','#fca5a5':'#ffff00','#6366f1':'#ffff00','#8b5cf6':'#ffff00','#a855f7':'#ffff00','#3b82f6':'#ffff00','#14b8a6':'#ffff00','#c7d2fe':'#ffff00','#475569':'#ffff00','#3730a3':'#ffff00'};
       var _adv_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#0f172a':'#cbd5e1'}, _adv_BDH = {'#334155':'#ffff00','#a5b4fc':'#ffff00','#1e293b':'#ffff00','#22c55e':'#ffff00','#fbbf24':'#ffff00','#ef4444':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00','#cbd5e1':'#ffff00','#c7d2fe':'#ffff00'};
       var _advBg = function(h){ return _advHC ? (_adv_BGH[h]||h) : (_advL ? (_adv_BGL[h]||h) : h); };
       // Dark-mode foreground remap. The tool shell is always dark, so these
@@ -11283,6 +11283,9 @@ var TRAUMA_INFORMED_ADVOCACY = [
       var addToast = typeof ctx.addToast === 'function' ? ctx.addToast : function() {};
       var awardXP = typeof ctx.awardXP === 'function' ? ctx.awardXP : function() {};
       var announceToSR = typeof ctx.announceToSR === 'function' ? ctx.announceToSR : function() {};
+      function isImeComposing(e) {
+        return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+      }
       var a11yClick = typeof ctx.a11yClick === 'function' ? ctx.a11yClick : function(fn) {
         return {
           role: 'button',
@@ -11371,6 +11374,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
         focusAdvocacyControl(focusId);
       }
       function handleAdvocacyConfirmKeyDown(event) {
+        if (isImeComposing(event)) return;
         if (event.key === 'Escape') {
           event.preventDefault();
           closeAdvocacyConfirm();
@@ -11503,6 +11507,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
           );
         }
         function handleAdvocacyBadgeDialogKeyDown(event) {
+          if (isImeComposing(event)) return;
           if (event.key === 'Escape') {
             event.preventDefault();
             event.stopPropagation();
@@ -11619,26 +11624,45 @@ var TRAUMA_INFORMED_ADVOCACY = [
       };
 
       var tabBar = h('div', {
-        style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
+        style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch', alignItems: 'center' }
       },
-        h('div', { role: 'tablist', 'aria-label': 'Self-Advocacy tabs', style: { display: 'flex', gap: 2 } },
-          tabs.map(function(t) {
+        h('div', { role: 'tablist', 'aria-label': 'Self-Advocacy tabs', style: { display: 'flex', gap: 4 } },
+          tabs.map(function(t, idx) {
           var isActive = activeTab === t.id;
           return h('button', { type: 'button', 'aria-label': t.label,
             key: t.id,
+            id: 'adv-tab-' + t.id,
+            'aria-controls': 'adv-panel-' + t.id,
+            tabIndex: isActive ? 0 : -1,
             onClick: function() { upd('activeTab', t.id); if (soundEnabled) sfxClick(); },
+            onKeyDown: function(ev) {
+              if (isImeComposing(ev)) return;
+              var nextIdx = idx;
+              if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') nextIdx = (idx + 1) % tabs.length;
+              else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') nextIdx = (idx - 1 + tabs.length) % tabs.length;
+              else if (ev.key === 'Home') nextIdx = 0;
+              else if (ev.key === 'End') nextIdx = tabs.length - 1;
+              else return;
+              ev.preventDefault();
+              upd('activeTab', tabs[nextIdx].id);
+              if (soundEnabled) sfxClick();
+              setTimeout(function() {
+                var el = document.getElementById('adv-tab-' + tabs[nextIdx].id);
+                if (el) el.focus();
+              }, 0);
+            },
             'aria-selected': isActive, role: 'tab',
             style: {
-              padding: '6px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: isActive ? 700 : 500, whiteSpace: 'nowrap',
+              minHeight: 44, padding: '10px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: isActive ? 700 : 500, whiteSpace: 'nowrap',
               background: isActive ? ACCENT_DIM : 'transparent', color: isActive ? _advFg(ACCENT) : _advFg('#94a3b8'), transition: 'all 0.15s'
             }
           }, t.label);
           })
         ),
-        h('button', { type: 'button', 'aria-label': 'Sound effects', 'aria-pressed': !!soundEnabled, onClick: function() { upd('soundEnabled', !soundEnabled); }, style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _advFg('#94a3b8') }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
-        h('button', { type: 'button', 'aria-label': Object.keys(earnedBadges).length + '/' + shownBadges.length + ' badges earned', 'aria-expanded': !!showBadgesPanel, onClick: function() { upd('showBadgesPanel', !showBadgesPanel); }, style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _advFg('#94a3b8'), position: 'relative' } },
+        h('button', { type: 'button', 'aria-label': 'Sound effects', 'aria-pressed': !!soundEnabled, onClick: function() { upd('soundEnabled', !soundEnabled); }, style: { marginLeft: 'auto', minWidth: 44, minHeight: 44, background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, padding: '8px', color: _advFg('#94a3b8'), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
+        h('button', { type: 'button', 'aria-label': Object.keys(earnedBadges).length + '/' + shownBadges.length + ' badges earned', 'aria-expanded': !!showBadgesPanel, onClick: function() { upd('showBadgesPanel', !showBadgesPanel); }, style: { minWidth: 44, minHeight: 44, background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, padding: '8px', color: _advFg('#94a3b8'), position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } },
           '\uD83C\uDFC5',
-          Object.keys(earnedBadges).length > 0 && h('span', { style: { position: 'absolute', top: 0, right: 0, background: _advSolid(ACCENT), color: _advFg('#fff'), borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, Object.keys(earnedBadges).length)
+          Object.keys(earnedBadges).length > 0 && h('span', { style: { position: 'absolute', top: 4, right: 4, background: _advSolid(ACCENT), color: _advFg('#fff'), borderRadius: '50%', width: 16, height: 16, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, Object.keys(earnedBadges).length)
         )
       );
 
@@ -11969,8 +11993,9 @@ var TRAUMA_INFORMED_ADVOCACY = [
           h('div', { style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
             h('input', { 'aria-label': 'Search advocacy phrases', type: 'text', value: d.phraseQuery || '',
               onChange: function(e) { upd('phraseQuery', e.target.value); },
+              onKeyDown: function(e) { if (isImeComposing(e)) return; if (e.key === 'Escape' && d.phraseQuery) { e.preventDefault(); upd('phraseQuery', ''); } },
               placeholder: '🔍 Search phrases...',
-              style: { flex: '1 1 200px', padding: 10, borderRadius: 8, border: '1px solid #334155', background: _advBg('#1e293b'), color: _advFg('#e2e8f0'), fontSize: 13 }
+              style: { flex: '1 1 200px', minHeight: 44, padding: 10, borderRadius: 8, border: '1px solid #334155', background: _advBg('#1e293b'), color: _advFg('#e2e8f0'), fontSize: 13 }
             })
           ),
           h('div', { style: { display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' } },
@@ -12035,8 +12060,9 @@ var TRAUMA_INFORMED_ADVOCACY = [
           h('p', { style: { textAlign: 'center', fontSize: 12, color: _advFg('#94a3b8'), marginBottom: 16 } }, ACCOMMODATIONS_LIBRARY.length + ' accommodations across 12 categories. Each includes: who it helps, why it works, when to ask, and sample request language.'),
           h('input', { 'aria-label': 'Search accommodations', type: 'text', value: d.accomLibQuery || '',
             onChange: function(e) { upd('accomLibQuery', e.target.value); },
+            onKeyDown: function(e) { if (isImeComposing(e)) return; if (e.key === 'Escape' && d.accomLibQuery) { e.preventDefault(); upd('accomLibQuery', ''); } },
             placeholder: '🔍 Search accommodations...',
-            style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: _advBg('#1e293b'), color: _advFg('#e2e8f0'), fontSize: 13, marginBottom: 10, boxSizing: 'border-box' }
+            style: { width: '100%', minHeight: 44, padding: 10, borderRadius: 8, border: '1px solid #334155', background: _advBg('#1e293b'), color: _advFg('#e2e8f0'), fontSize: 13, marginBottom: 10, boxSizing: 'border-box' }
           }),
           h('div', { style: { display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' } },
             accomCats.map(function(c) {
@@ -14033,14 +14059,14 @@ var TRAUMA_INFORMED_ADVOCACY = [
           return h('div', { style: { padding: 20, maxWidth: 620, margin: '0 auto' } },
             crisis,
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
-              h('button', { type: 'button', onClick: function() { upd({ voScriptKey: null, voScriptEnding: null }); }, style: Object.assign({}, btnBase, { minHeight: 32, padding: '4px 12px', fontSize: 11, color: _advFg('#94a3b8') }) }, '← All practices'),
+              h('button', { type: 'button', onClick: function() { upd({ voScriptKey: null, voScriptEnding: null }); }, style: Object.assign({}, btnBase, { minHeight: 44, padding: '10px 14px', fontSize: 12, color: _advFg('#94a3b8') }) }, '← All practices'),
               h('div', null,
                 h('h3', { style: { margin: 0, fontSize: 17, color: _advFg('#f1f5f9') } }, cur.sc.title),
                 h('div', { style: { fontSize: 12, color: _advFg('#94a3b8') } }, cur.ts ? advTs.from : cur.sc.authority.emoji + ' ' + cur.sc.authority.name + ', ' + cur.sc.authority.role)
               )
             ),
             cur.ts ? advTs.renderIntro(cur.ts) : null,
-            h('div', { 'data-adv-script-player': cur.key, onClick: onPlayerClick }, player),
+            h('section', { 'data-adv-script-player': cur.key, 'aria-label': 'Scripted practice player', onClick: onPlayerClick }, player),
             h('p', { style: { fontSize: 11, color: _advFg('#94a3b8'), textAlign: 'center', margin: '10px 0' } }, 'Endings found: ' + foundFor(cur.key) + ' of ' + endCount(cur.story)),
             d.voScriptEnding ? h('div', { 'data-adv-reflect': 'true', style: { background: _advBg('#1e293b'), border: '1px solid #334155', borderRadius: 12, padding: 14 } },
               h('label', { htmlFor: 'adv-reflect-script', style: { display: 'block', fontSize: 13, fontWeight: 800, color: _advFg('#f1f5f9'), marginBottom: 6 } }, '✍️ Reflect'),
@@ -14965,7 +14991,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
                       ['yes', 'no'].map(function(val) {
                         var on = v === val;
                         return h('button', { type: 'button', key: val, onClick: function() { set(val); }, 'aria-pressed': on ? 'true' : 'false',
-                          style: { minHeight: 36, minWidth: 48, padding: '6px 10px', borderRadius: 8, border: '1px solid ' + (on ? _advFg('#5eead4') : _advBd('#475569')), background: on ? 'rgba(20,184,166,0.18)' : _advBg('#0f172a'), color: on ? _advFg('#5eead4') : _advFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, val === 'yes' ? 'Yes' : 'No');
+                          style: { minHeight: 44, minWidth: 48, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + (on ? _advFg('#5eead4') : _advBd('#475569')), background: on ? 'rgba(20,184,166,0.18)' : _advBg('#0f172a'), color: on ? _advFg('#5eead4') : _advFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, val === 'yes' ? 'Yes' : 'No');
                       })
                     )
                   );
@@ -14983,7 +15009,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
         heroBand,
         badgePopup,
         renderAdvocacyConfirm(),
-        h('div', { style: { flex: 1, overflow: 'auto' } }, content),
+        h('div', { id: 'adv-panel-' + activeTab, role: 'tabpanel', 'aria-labelledby': 'adv-tab-' + activeTab, style: { flex: 1, overflow: 'auto' } }, content),
         window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
       );
     }

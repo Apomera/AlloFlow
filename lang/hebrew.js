@@ -155,7 +155,12 @@
     "refine_go": "הצע ניסוח מחדש",
     "refining": "כותב הצעה…",
     "made_from_version": "נוצר מגרסה {version} של המקור שלך",
-    "remake": "צור מחדש מהגרסה הנוכחית"
+    "remake": "צור מחדש מהגרסה הנוכחית",
+    "dictate": "הכתבה",
+    "close_dictate": "סגירת הכתבה",
+    "send_read_along": "שליחה לחבילת קריאה משותפת",
+    "upload_verify_banner": "שמע/וידאו תומלל מקומית באמצעות Whisper ({count} מקטעים נשמרו בזיכרון)",
+    "clear_audio": "ניקוי שמע"
   },
   "sel": {
     "peersupport": {
@@ -2796,7 +2801,8 @@
     "chunk_info": "השמע מחולק לחלקים של 5 דקות לעיבוד",
     "chunk_progress": "חלק {current} מתוך {total}",
     "audio_only_error": "כרגע רק קבצי שמע (MP3, WAV וכו') נתמכים לתמלול בחלקים.",
-    "starting": "מתחיל..."
+    "starting": "מתחיל...",
+    "engine_legend": "מנוע תמלול"
   },
   "formatting": {
     "bold": "מודגש (**טקסט**)",
@@ -4654,7 +4660,8 @@
       "analyzing_short": "מנתח...",
       "generate_short": "ייצר",
       "books_short": "ספרים",
-      "books_hint": "פתחו ספרי תמונות: כל ספר יכול להפוך לטקסט המקור שלכם"
+      "books_hint": "פתחו ספרי תמונות: כל ספר יכול להפוך לטקסט המקור שלכם",
+      "dictate_hint": "הכתיבו את טקסט המקור באמצעות Whisper מקומי במכשיר ובדיקת Gemini אופציונלית"
     },
     "status_generating": "מייצר טקסט מקור...",
     "success_long_form": "טקסט ארוך-טווח נוצר בהצלחה!",
@@ -4704,7 +4711,8 @@
     "empty_desc_teacher": "הוסיפו קטע קריאה, ואז בחרו את הכלים שמתאימים אותו לתלמידים שלכם.",
     "empty_desc_family": "הוסיפו משהו שהילד שלכם קורא, ואז בחרו איך תרצו לעזור.",
     "reading_catalog": "קטלוג הקריאה",
-    "find_online": "מצא באינטרנט"
+    "find_online": "מצא באינטרנט",
+    "dictate_or_record": "הכתבה או הקלטה"
   },
   "prompts": {
     "verified_correct": "**תשובה נכונה מאומתת:**",
@@ -4897,7 +4905,12 @@
     "paste_word_count": "{count} מילים",
     "length_custom": "מותאם אישית…",
     "length_custom_label": "מספר מילים",
-    "length_custom_hint": "50 עד 5,000 מילים"
+    "length_custom_hint": "50 עד 5,000 מילים",
+    "dictate_desc": "הכתבה קולית מקומית עם Whisper ובדיקה אופציונלית",
+    "dictate_title": "הכתיבו או הקליטו את טקסט המקור",
+    "dictate_helper": "ברירת המחדל היא הכתבה פרטית במכשיר עם Whisper. ניתן לערוך בחופשיות, לנקות את הטקסט או להצליב מול ההקלטה בעזרת Gemini.",
+    "dictate_loading": "טוען את אולפן ההכתבה (Whisper מקומי)… אפשר גם להקליד או לערוך למטה בזמן הטעינה.",
+    "words_dictated_unit": "מילים שהוכתבו"
   },
   "process": {
     "source_missing": "אנא ספק טקסט מקור תחילה.",
@@ -6149,7 +6162,10 @@
     "source_choice_ambiguous": "בחר גרסת קריאה ב״מבוסס על״ לפני היצירה. יש יותר מגרסת קריאה אחת זמינה.",
     "source_choices_load_failed": "לא ניתן היה לטעון את גרסאות הקריאה. נסה שוב.",
     "submission_tools_still_loading": "כלי ההגשה עדיין נטענים. לחץ שוב על הגש.",
-    "blank_created": "נוצרה גרסה ריקה של {title}. מלא אותה לפני השיתוף."
+    "blank_created": "נוצרה גרסה ריקה של {title}. מלא אותה לפני השיתוף.",
+    "sent_to_read_along": "הקטע נשלח לחבילת קריאה משותפת בלשונית חדשה.",
+    "read_along_handoff_failed": "לא ניתן היה להעביר את הטיוטה לחבילת קריאה משותפת.",
+    "read_along_no_text": "הוסיפו או הכתיבו טקסט מקור לפני השליחה לחבילת קריאה משותפת."
   },
   "analysis": {
     "passage_versions_not_needed": "לא נחוץ",
@@ -108976,5 +108992,68 @@
     "sc_findText": "חיפוש טקסט בעיצוב",
     "sc_commandPalette": "פתיחת פעולות מהירות",
     "sc_help": "הצגת רשימת קיצורים זו"
+  },
+  "dictation": {
+    "badge_desktop": "Whisper לשולחן עבודה מוכן",
+    "badge_download_needed": "Whisper מקומי · הורדה ראשונה",
+    "badge_local_ready": "Whisper מקומי מוכן · {name}",
+    "cleanup_apply": "החלת ניקוי",
+    "cleanup_failed": "לא ניתן לנקות את הטקסט כרגע.",
+    "cleanup_fillers": "הסרת מילות מילוי",
+    "cleanup_heading": "ניקוי טקסט אופציונלי באמצעות AI",
+    "cleanup_keep": "שמירת המקור",
+    "cleanup_no_changes": "לא הוצעו שינויים לטיוטה זו.",
+    "cleanup_notes": "עיצוב כסיכומי שיעור",
+    "cleanup_punctuation": "ניקוי פיסוק ועיצוב",
+    "cleanup_review_title": "הצעת הניקוי מוכנה — הטיוטה שלך עדיין לא השתנתה",
+    "cleanup_text_only": "טקסט בלבד — לא נשלח שמע",
+    "cleanup_unavailable": "ניקוי טקסט באמצעות AI אינו זמין כרגע.",
+    "cleanup_undo": "ביטול ניקוי",
+    "cleanup_working": "מנקה…",
+    "clear_audio": "ניקוי שמע מוקלט ({mb} MB)",
+    "crosscheck_all_resolved": "כל הנקודות המסומנות נבדקו.",
+    "crosscheck_btn": "אימות מול השמע עם Gemini",
+    "crosscheck_count": "{count} נקודות מסומנות לבדיקה:",
+    "crosscheck_disabled_note": "אינו זמין כרגע (כבוי במצב לא מקוון / מצב תלמיד ללא AI או ללא מפתח Gemini). ההכתבה המקומית ב-Whisper ממשיכה לפעול לגמרי במצב לא מקוון.",
+    "crosscheck_disclosure": "פועל רק אם תלחצו למטה: שולח את מקטעי השמע השמורים בזיכרון ואת טיוטת הטקסט אל Gemini כדי לסמן טעויות אפשריות במילים.",
+    "crosscheck_failed": "בדיקת השמע של Gemini לא הושלמה. התמלול המקומי שלך נשאר ללא שינוי.",
+    "crosscheck_heading": "הצלבה מול השמע בעזרת Gemini (לבחירה)",
+    "crosscheck_none": "לא נמצאו פערים מהותיים בין Whisper מקומי ל-Gemini Audio.",
+    "crosscheck_running": "בודק מול השמע…",
+    "crosscheck_unavailable": "הצלבת שמע עם Gemini אינה זמינה כרגע.",
+    "download_now": "הורדת Whisper מקומי ({size} MB)",
+    "download_warning": "הודעת הורדה: Whisper מקומי משתמש כברירת מחדל בזיהוי דיבור פרטי על המכשיר. הורדת המודל {name} דורשת ~{size} MB פעם אחת (כ-1–2 דקות בהתאם לחיבור), נשמרת במטמון הדפדפן לשימוש לא מקוון ושומרת את ההקלטות הקוליות שלך במכשיר זה.",
+    "draft_label": "טיוטת תמלול (ניתנת לעריכה)",
+    "draft_placeholder": "לחצו על התחלת הכתבה למעלה, או הקלידו וערכו את התמלול ישירות כאן…",
+    "guide_both_body": "התחילו באופן פרטי עם Whisper מקומי כדי שההכתבה תישאר מהירה ולא מקוונת. אם תרצו חוות דעת נוספת על מונחים מורכבים או שמות, הפעילו הצלבה עם Gemini כדי להשוות שני מודלים בלתי תלויים מול השמע ולהאזין לקטעים של 5 שניות בכל נקודה מסומנת.",
+    "guide_both_label": "למה להשתמש בשניהם (הצלבה):",
+    "guide_gemini_body": "אין צורך בהורדת מודל. מדויק יותר באוצר מילים מקצועי, שמות פרטיים, דיבור במבטא, כיתות רועשות ופיסוק — שולח קטעי שמע מוקלטים ל-Gemini רק אם בחרתם בכך.",
+    "guide_gemini_title": "Gemini Audio (בדיקה אופציונלית)",
+    "guide_summary": "Whisper מקומי לעומת Gemini Audio — יתרונות ולמה כדאי לשלב",
+    "guide_whisper_body": "פרטי ולא מקוון לאחר הורדה חד-פעמית (~39–73 MB). אף קובץ שמע אינו יוצא מהמכשיר, אין צורך במפתח API או במכסה, והכתבה ממושכת ורציפה פועלת באמינות.",
+    "guide_whisper_title": "Whisper מקומי (ברירת מחדל)",
+    "ios_canvas_blocked": "Whisper מקומי מושהה ב-iPhone/iPad בתוך Gemini Canvas. הקלידו ישירות למטה או פתחו את AlloFlow בדפדפן מחשב.",
+    "ios_canvas_hint": "ניתן להקליד ישירות למטה, לפתוח את AlloFlow בדפדפן מחשב עבור Whisper מקומי, או להשתמש ב-Gemini Audio אם הוגדר.",
+    "ios_canvas_title": "Whisper במכשיר מושהה ב-iPhone/iPad בתוך Gemini Canvas",
+    "listening_local": "מאזין מקומית עם Whisper… עצרו לרגע או המשיכו לדבר כדי להוסיף טקסט.",
+    "mic_start_failed": "לא ניתן להפעיל את המיקרופון. בדקו את הרשאות הדפדפן.",
+    "model_size_label": "גודל מודל Whisper מקומי",
+    "pause_recording": "השהיה",
+    "paused_note": "מושהה. אפשר לערוך את התמלול למטה או ללחוץ על המשך כדי להמשיך בהכתבה.",
+    "privacy_tag": "פרטי · לא מקוון לאחר ההורדה · ללא צורך במפתח API",
+    "resume_recording": "המשך",
+    "send_read_along": "שליחה לחבילת קריאה משותפת",
+    "speech_settings": "הגדרות דיבור",
+    "speed_badge_lesson": "נבדק: מהיר פי {speed} מדיבור · מתאים להכתבה ארוכה",
+    "speed_badge_short": "נבדק: מהיר פי {speed} מדיבור · מתאים ביותר לקטעים קצרים",
+    "speed_badge_slow": "נבדק: פי {speed} · איטי מזמן אמת (צפויות השהיות)",
+    "speed_badge_upgrade": "נבדק: מהיר פי {speed} מדיבור · מתאים להכתבה ארוכה (אפשר לנסות גם את {name})",
+    "start_recording": "התחלת הכתבה (Whisper מקומי)",
+    "stop_recording": "עצירה",
+    "studio_title": "אולפן הכתבה",
+    "test_mic": "בדיקת מיקרופון (4 שנ')",
+    "upload_media": "תמלול קובץ שמע/וידאו",
+    "use_text": "שימוש בטקסט שהוכתב",
+    "voice_unavailable": "מקליט הקול עדיין נטען. אנא נסו שוב בעוד רגע."
   }
 }

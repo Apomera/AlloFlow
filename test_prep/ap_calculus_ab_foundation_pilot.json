@@ -545,9 +545,9 @@
         "The limit does not exist"
       ],
       "answerIndex": 0,
-      "rationale": "A limit uses nearby behavior; both one-sided values approach 5.",
+      "rationale": "A limit depends only on behavior near x = 2, not the point value f(2) = 9. Because both left-hand and right-hand values approach 5 as x approaches 2, the two-sided limit equals 5.",
       "choiceRationales": [
-        "Best answer. A limit uses nearby behavior; both one-sided values approach 5.",
+        "Best answer. A limit depends only on behavior near x = 2, not the point value f(2) = 9. Because both left-hand and right-hand values approach 5 as x approaches 2, the two-sided limit equals 5.",
         "This reports the defined point value f(2)=9 rather than the nearby behavior of f(x) as x approaches 2.",
         "Adding the nearby trend 5 and the point value f(2)=9 combines two unrelated quantities instead of finding a limit.",
         "A mismatch between the nearby trend and f(2) breaks continuity, but the two-sided limit still exists because both sides approach 5."
@@ -662,10 +662,10 @@
         "The limit is 7, the right-hand value."
       ],
       "answerIndex": 1,
-      "rationale": "A two-sided limit requires equal left-hand and right-hand limits.",
+      "rationale": "A two-sided limit exists if and only if both one-sided limits are finite and equal. Here lim_{x->4-} g(x) = 3 does not equal lim_{x->4+} g(x) = 7, so the two-sided limit does not exist.",
       "choiceRationales": [
         "A one-sided limit from the left alone cannot define a two-sided limit when the right-hand side approaches 7.",
-        "Best answer. A two-sided limit requires equal left-hand and right-hand limits.",
+        "Best answer. A two-sided limit exists if and only if both one-sided limits are finite and equal. Here lim_{x->4-} g(x) = 3 does not equal lim_{x->4+} g(x) = 7, so the two-sided limit does not exist.",
         "Two-sided limits never average disagreeing one-sided values; existence at x=4 requires both the left-hand and right-hand trends to match the exact same number.",
         "Approaching 7 from the right establishes only the right-hand limit at x=4, not a two-sided limit, because the left-hand approach heads to 3 instead."
       ],
@@ -779,11 +779,11 @@
         "The limit does not exist"
       ],
       "answerIndex": 2,
-      "rationale": "Factoring reduces the nearby expression to x+3, which approaches 6.",
+      "rationale": "Direct substitution gives 0/0, so factor the difference of squares: (x^2 - 9)/(x - 3) = (x - 3)(x + 3)/(x - 3) = x + 3 for x != 3. Substituting x = 3 into x + 3 gives 3 + 3 = 6.",
       "choiceRationales": [
         "Evaluating the numerator alone at x=3 gives 0, ignoring the 0/0 indeterminate form that requires factoring first.",
         "This substitutes x=3 without adding the remaining constant in the simplified factor x+3, which approaches 6.",
-        "Best answer. Factoring reduces the nearby expression to x+3, which approaches 6.",
+        "Best answer. Direct substitution gives 0/0, so factor the difference of squares: (x^2 - 9)/(x - 3) = (x - 3)(x + 3)/(x - 3) = x + 3 for x != 3. Substituting x = 3 into x + 3 gives 3 + 3 = 6.",
         "Division by zero at x=3 creates a hole in the graph, not a missing limit, because (x-3) cancels for x near 3."
       ],
       "misconceptionTags": [
@@ -896,12 +896,12 @@
         "1/4"
       ],
       "answerIndex": 3,
-      "rationale": "Rationalizing gives 1/[sqrt(x+4)+2], whose limit is 1/4.",
+      "rationale": "Direct substitution yields 0/0, so rationalize the numerator by multiplying by sqrt(x+4)+2 to cancel x, leaving 1/[sqrt(x+4)+2]. Evaluating at x=0 gives 1/(2+2)=1/4.",
       "choiceRationales": [
         "Direct substitution produces 0/0, so treating a zero numerator as a zero limit skips rationalizing the radical.",
         "This drops one of the two 2s in the rationalized denominator sqrt(x+4)+2, which approaches 2+2=4 instead of 2.",
         "Multiplying by the conjugate yields 1/[sqrt(x+4)+2]; reporting 4 evaluates only the denominator limit sqrt(0+4)+2 instead of taking its reciprocal 1/4.",
-        "Best answer. Rationalizing gives 1/[sqrt(x+4)+2], whose limit is 1/4."
+        "Best answer. Direct substitution yields 0/0, so rationalize the numerator by multiplying by sqrt(x+4)+2 to cancel x, leaving 1/[sqrt(x+4)+2]. Evaluating at x=0 gives 1/(2+2)=1/4."
       ],
       "misconceptionTags": [
         "Cancellation preserves nearby behavior while respecting the excluded input."
@@ -1132,10 +1132,10 @@
         "Continuous"
       ],
       "answerIndex": 1,
-      "rationale": "Different finite one-sided limits create a jump.",
+      "rationale": "Both one-sided limits at x=0 exist and are finite (2 from the left and 5 from the right), but they are unequal. Unequal finite one-sided limits define a jump discontinuity.",
       "choiceRationales": [
         "A removable discontinuity requires the left-hand and right-hand limits to agree, whereas 2 and 5 differ.",
-        "Best answer. Different finite one-sided limits create a jump.",
+        "Best answer. Both one-sided limits at x=0 exist and are finite (2 from the left and 5 from the right), but they are unequal. Unequal finite one-sided limits define a jump discontinuity.",
         "Both one-sided limits at x=0 are finite numbers, 2 from the left and 5 from the right, so the graph has no vertical asymptote there.",
         "A function cannot be continuous at x=0 when its left-hand limit 2 and right-hand limit 5 disagree, creating a finite break in the graph."
       ],
@@ -1250,11 +1250,11 @@
         "2"
       ],
       "answerIndex": 2,
-      "rationale": "The squared denominator approaches zero through positive values on both sides.",
+      "rationale": "As x approaches 4 from either side, (x - 4)^2 stays strictly positive while approaching 0. Dividing the positive numerator 2 by arbitrarily small positive values drives 2/(x - 4)^2 to positive infinity.",
       "choiceRationales": [
         "Squaring (x-4) keeps the denominator strictly positive on both sides of x=4, so the quotient cannot turn negative.",
         "Dividing a fixed positive constant by a tiny positive number grows arbitrarily large instead of shrinking to zero.",
-        "Best answer. The squared denominator approaches zero through positive values on both sides.",
+        "Best answer. As x approaches 4 from either side, (x - 4)^2 stays strictly positive while approaching 0. Dividing the positive numerator 2 by arbitrarily small positive values drives 2/(x - 4)^2 to positive infinity.",
         "The numerator alone is 2, ignoring that dividing by (x-4)^2 amplifies the quotient without bound near x=4."
       ],
       "misconceptionTags": [
@@ -1368,12 +1368,12 @@
         "3"
       ],
       "answerIndex": 3,
-      "rationale": "Equal polynomial degrees give the ratio of leading coefficients.",
+      "rationale": "Divide numerator and denominator by the highest power x^2 to get (3 - 1/x^2)/(1 + 4/x^2). As x -> infinity, 1/x^2 and 4/x^2 approach 0, leaving the leading-coefficient ratio 3/1 = 3.",
       "choiceRationales": [
         "A horizontal asymptote at 0 occurs when the denominator has higher degree, not when both degrees are 2.",
         "This uses the denominator leading coefficient alone instead of dividing the leading coefficients 3 and 1.",
         "The limit diverges only when the numerator degree exceeds the denominator degree; here both are quadratic.",
-        "Best answer. Equal polynomial degrees give the ratio of leading coefficients."
+        "Best answer. Divide numerator and denominator by the highest power x^2 to get (3 - 1/x^2)/(1 + 4/x^2). As x -> infinity, 1/x^2 and 4/x^2 approach 0, leaving the leading-coefficient ratio 3/1 = 3."
       ],
       "misconceptionTags": [
         "Vertical and horizontal asymptotes answer different questions."
@@ -1602,10 +1602,10 @@
         "The function has no local extrema on [a,b]."
       ],
       "answerIndex": 1,
-      "rationale": "IVT guarantees existence for every target between the endpoint values.",
+      "rationale": "Because f is continuous on [a, b] and 3 lies strictly between f(a) = 1 and f(b) = 6, the Intermediate Value Theorem guarantees at least one c in (a, b) with f(c) = 3, though not uniqueness.",
       "choiceRationales": [
         "Continuity ensures the graph reaches height 3 at least once, not that it crosses y=3 only a single time.",
-        "Best answer. IVT guarantees existence for every target between the endpoint values.",
+        "Best answer. Because f is continuous on [a, b] and 3 lies strictly between f(a) = 1 and f(b) = 6, the Intermediate Value Theorem guarantees at least one c in (a, b) with f(c) = 3, though not uniqueness.",
         "Continuity on [a,b] guarantees intermediate outputs between f(a)=1 and f(b)=6, but a continuous curve need not be linear or even differentiable between those endpoints.",
         "Nothing in the Intermediate Value Theorem prevents a continuous curve from having peaks or valleys inside [a,b]."
       ],
@@ -1720,11 +1720,11 @@
         "The average value of f"
       ],
       "answerIndex": 2,
-      "rationale": "This is the limit definition of the derivative at x=3.",
+      "rationale": "By the limit definition of the derivative, f'(a) is the limit as h approaches 0 of [f(a+h)-f(a)]/h. With a=3, this difference-quotient limit gives the derivative f'(3).",
       "choiceRationales": [
         "The difference quotient [f(3+h)-f(3)]/h measures secant slopes near x=3, so its limit as h approaches 0 gives the instantaneous rate of change rather than the height f(3).",
         "The first-order difference quotient of f defines the first derivative f prime(3), not the second derivative.",
-        "Best answer. This is the limit definition of the derivative at x=3.",
+        "Best answer. By the limit definition of the derivative, f'(a) is the limit as h approaches 0 of [f(a+h)-f(a)]/h. With a=3, this difference-quotient limit gives the derivative f'(3).",
         "Average value divides a definite integral by interval length rather than taking the limit of a difference quotient."
       ],
       "misconceptionTags": [
@@ -1838,12 +1838,12 @@
         "8"
       ],
       "answerIndex": 3,
-      "rationale": "The difference quotient simplifies to 8+h and approaches 8.",
+      "rationale": "Form the difference quotient [(4+h)^2-4^2]/h = (8h+h^2)/h, then cancel h for h!=0 to get 8+h. Taking the limit as h approaches 0 yields the derivative f'(4)=8.",
       "choiceRationales": [
         "This reports the input value x=4 itself rather than computing the derivative formula f prime(x)=2x from the limit definition and substituting x=4.",
         "Evaluating f(4)=4^2=16 finds the vertical height on the parabola at x=4 rather than the instantaneous tangent slope f prime(4)=2(4)=8.",
         "Multiplying f(4)=16 by 2 confuses the derivative formula 2x with 2x^2; the limit definition gives f prime(x)=2x, which equals 8 at x=4.",
-        "Best answer. The difference quotient simplifies to 8+h and approaches 8."
+        "Best answer. Form the difference quotient [(4+h)^2-4^2]/h = (8h+h^2)/h, then cancel h for h!=0 to get 8+h. Taking the limit as h approaches 0 yields the derivative f'(4)=8."
       ],
       "misconceptionTags": [
         "A derivative value is a rate, not the function value."
@@ -2072,10 +2072,10 @@
         "f(c)=0 implies differentiability"
       ],
       "answerIndex": 1,
-      "rationale": "Differentiability implies continuity, while corners show the converse can fail.",
+      "rationale": "If f'(c) exists, then lim_{x->c} [f(x) - f(c)] = f'(c)*0 = 0, so f is continuous at c. The converse can fail, as shown by f(x) = |x| at x = 0, which is continuous yet not differentiable.",
       "choiceRationales": [
         "Sharp corners such as f(x)=|x| at x=0 are continuous yet lack a single tangent slope, proving that continuity does not force differentiability.",
-        "Best answer. Differentiability implies continuity, while corners show the converse can fail.",
+        "Best answer. If f'(c) exists, then lim_{x->c} [f(x) - f(c)] = f'(c)*0 = 0, so f is continuous at c. The converse can fail, as shown by f(x) = |x| at x = 0, which is continuous yet not differentiable.",
         "Jump and removable discontinuities produce breaks or open holes in the graph rather than vertical tangent lines, which require continuity at the point.",
         "Having a zero output says nothing about smoothness, as shown by |x| having f(0)=0 without a derivative."
       ],
@@ -2190,11 +2190,11 @@
         "20x^3-6x+7"
       ],
       "answerIndex": 2,
-      "rationale": "Apply the power rule term by term; the constant derivative is zero.",
+      "rationale": "Apply the power rule d/dx[x^n] = n*x^(n-1) term by term: d/dx(5x^4) = 20x^3, d/dx(-3x^2) = -6x, and d/dx(7) = 0 since constants have zero slope. Combining terms yields f'(x) = 20x^3 - 6x.",
       "choiceRationales": [
         "This multiplies each coefficient by its original exponent without decreasing each power of x by 1, omitting the second half of the power rule.",
         "This decreases every variable exponent by 1 but forgets to multiply each term by its original exponent as required by the power rule.",
-        "Best answer. Apply the power rule term by term; the constant derivative is zero.",
+        "Best answer. Apply the power rule d/dx[x^n] = n*x^(n-1) term by term: d/dx(5x^4) = 20x^3, d/dx(-3x^2) = -6x, and d/dx(7) = 0 since constants have zero slope. Combining terms yields f'(x) = 20x^3 - 6x.",
         "The constant term 7 has a rate of change of 0, so differentiating removes it completely rather than carrying +7 into the derivative."
       ],
       "misconceptionTags": [
@@ -2308,12 +2308,12 @@
         "-1/4"
       ],
       "answerIndex": 3,
-      "rationale": "f'(x)=-2x^(-3), so f'(2)=-2/8.",
+      "rationale": "Apply the power rule to f(x)=x^(-2) to find f'(x)=-2x^(-3)=-2/x^3. Evaluating the derivative at x=2 gives the tangent slope f'(2)=-2/8=-1/4.",
       "choiceRationales": [
         "This substitutes x=2 into -2x^(-2) instead of reducing the negative exponent from -2 to -3 to form the derivative f prime(x)=-2x^(-3).",
         "Dropping the negative sign when bringing down the exponent -2 flips the tangent slope from negative to positive instead of giving -2/2^3=-1/4.",
         "This evaluates 2^2=4 instead of applying the power rule to x^(-2) to obtain f prime(x)=-2/x^3 and then substituting x=2.",
-        "Best answer. f'(x)=-2x^(-3), so f'(2)=-2/8."
+        "Best answer. Apply the power rule to f(x)=x^(-2) to find f'(x)=-2x^(-3)=-2/x^3. Evaluating the derivative at x=2 gives the tangent slope f'(2)=-2/8=-1/4."
       ],
       "misconceptionTags": [
         "The derivative of a constant is zero."
@@ -2425,9 +2425,9 @@
         "3 cos x - 2xe^(x-1) + 1"
       ],
       "answerIndex": 0,
-      "rationale": "Use the standard transcendental derivatives with their constant multiples.",
+      "rationale": "Differentiate each term using linearity and standard rules: d/dx(sin x) = cos x, d/dx(e^x) = e^x, and d/dx(ln x) = 1/x for x > 0. Keeping the constant multiples gives 3 cos x - 2e^x + 1/x.",
       "choiceRationales": [
-        "Best answer. Use the standard transcendental derivatives with their constant multiples.",
+        "Best answer. Differentiate each term using linearity and standard rules: d/dx(sin x) = cos x, d/dx(e^x) = e^x, and d/dx(ln x) = 1/x for x > 0. Keeping the constant multiples gives 3 cos x - 2e^x + 1/x.",
         "The first two terms are differentiated properly, but the final term ln x was left unchanged instead of being replaced by its derivative 1/x.",
         "The first derivative of 3 sin x is +3 cos x, whereas -3 sin x is the second derivative obtained by differentiating sine twice.",
         "This mistakenly applies the power rule to the exponential term e^x and uses 1 instead of 1/x for the derivative of ln x."
@@ -2542,10 +2542,10 @@
         "pi/2"
       ],
       "answerIndex": 1,
-      "rationale": "The derivative is -sin x, and -sin(pi/2)=-1.",
+      "rationale": "Using the trigonometric derivative rule d/dx(cos x)=-sin x, substitute x=pi/2 to obtain -sin(pi/2). Since sin(pi/2)=1, the evaluated derivative equals -1.",
       "choiceRationales": [
         "Evaluating cos(pi/2)=0 computes the original function height at x=pi/2 rather than differentiating cosine first to evaluate -sin(pi/2)=-1.",
-        "Best answer. The derivative is -sin x, and -sin(pi/2)=-1.",
+        "Best answer. Using the trigonometric derivative rule d/dx(cos x)=-sin x, substitute x=pi/2 to obtain -sin(pi/2). Since sin(pi/2)=1, the evaluated derivative equals -1.",
         "Forgetting the negative sign in d/dx(cos x)=-sin x yields +sin(pi/2)=1 instead of the true slope -sin(pi/2)=-1 at x=pi/2.",
         "This echoes the input angle x=pi/2 itself instead of differentiating cos x to get -sin x and evaluating that derivative at pi/2."
       ],
@@ -2660,11 +2660,11 @@
         "2xe^x+x^2"
       ],
       "answerIndex": 2,
-      "rationale": "The product rule gives 2xe^x+x^2e^x.",
+      "rationale": "By the product rule (uv)'=u'v+uv' with u=x^2 and v=e^x, differentiate to get f'(x)=2xe^x+x^2e^x. Factoring out the common term e^x yields e^x(x^2+2x).",
       "choiceRationales": [
         "Differentiating x^2 and e^x separately and multiplying ignores the product rule sum f prime g + f g prime.",
         "This keeps only the term from differentiating the exponential factor e^x while omitting the second product-rule term 2xe^x from differentiating x^2.",
-        "Best answer. The product rule gives 2xe^x+x^2e^x.",
+        "Best answer. By the product rule (uv)'=u'v+uv' with u=x^2 and v=e^x, differentiate to get f'(x)=2xe^x+x^2e^x. Factoring out the common term e^x yields e^x(x^2+2x).",
         "In the second product-rule term x^2 times d/dx(e^x), the exponential factor e^x was mistakenly dropped instead of yielding 2xe^x+x^2e^x."
       ],
       "misconceptionTags": [
@@ -2778,12 +2778,12 @@
         "1-1/x^2"
       ],
       "answerIndex": 3,
-      "rationale": "Rewrite as x+1/x or apply the quotient rule.",
+      "rationale": "For x!=0, split the fraction as g(x)=x+x^(-1) and apply the power rule term by term to get g'(x)=1-x^(-2), which simplifies to 1-1/x^2 (matching the quotient rule).",
       "choiceRationales": [
         "Differentiating numerator and denominator separately gives 2x/1, not a valid quotient rule, and still fails to match 1-1/x^2.",
         "Rewriting g(x) as x+x^(-1) shows d/dx(x^(-1))=-x^(-2), so writing +1/x^2 drops the negative sign brought down from the exponent -1.",
         "This misapplies the quotient rule by placing x-1 in the denominator instead of x^2 and dropping numerator terms.",
-        "Best answer. Rewrite as x+1/x or apply the quotient rule."
+        "Best answer. For x!=0, split the fraction as g(x)=x+x^(-1) and apply the power rule term by term to get g'(x)=1-x^(-2), which simplifies to 1-1/x^2 (matching the quotient rule)."
       ],
       "misconceptionTags": [
         "Products and quotients do not differentiate componentwise."
@@ -2895,9 +2895,9 @@
         "15x^2(3x^2+1)^4"
       ],
       "answerIndex": 0,
-      "rationale": "The chain rule multiplies the outer derivative by 6x.",
+      "rationale": "Apply the chain rule with outer function u^5 and inner function u=3x^2+1: multiply 5(3x^2+1)^4 by the inner derivative du/dx=6x to get f'(x)=30x(3x^2+1)^4.",
       "choiceRationales": [
-        "Best answer. The chain rule multiplies the outer derivative by 6x.",
+        "Best answer. Apply the chain rule with outer function u^5 and inner function u=3x^2+1: multiply 5(3x^2+1)^4 by the inner derivative du/dx=6x to get f'(x)=30x(3x^2+1)^4.",
         "This differentiates only the outer fifth power and omits the chain-rule factor 6x from the inner expression.",
         "Multiplying 5 by the inner derivative 6x gives the right coefficient 30x, but the outer power rule still requires reducing the exponent from 5 to 4.",
         "This multiplies by the undifferentiated term 3x^2 instead of the inner derivative d/dx(3x^2+1)=6x required by the chain rule."
@@ -3012,10 +3012,10 @@
         "6x^2 sin(2x^3)"
       ],
       "answerIndex": 1,
-      "rationale": "Differentiate sine and multiply by the derivative of 2x^3.",
+      "rationale": "By the chain rule, differentiate the outer sine to cos(2x^3) while keeping the argument intact, then multiply by d/dx(2x^3)=6x^2 to obtain 6x^2 cos(2x^3).",
       "choiceRationales": [
         "This differentiates the outer sine function into cosine but omits the mandatory chain-rule factor d/dx(2x^3)=6x^2 from the inner polynomial.",
-        "Best answer. Differentiate sine and multiply by the derivative of 2x^3.",
+        "Best answer. By the chain rule, differentiate the outer sine to cos(2x^3) while keeping the argument intact, then multiply by d/dx(2x^3)=6x^2 to obtain 6x^2 cos(2x^3).",
         "This multiplies by the undifferentiated inner expression 2x^3 instead of multiplying by its derivative 6x^2 as required by the chain rule.",
         "The chain-rule factor 6x^2 is correct, but differentiating the outer sine function must change sin(2x^3) into cos(2x^3) rather than leaving sine unchanged."
       ],
@@ -3129,11 +3129,11 @@
         "-2x/y^2"
       ],
       "answerIndex": 2,
-      "rationale": "Implicit differentiation gives 2x+2y(dy/dx)=0.",
+      "rationale": "Differentiate x^2+y^2=25 implicitly with respect to x using the chain rule on y^2 to get 2x+2y(dy/dx)=0. Solving for dy/dx with y!=0 yields dy/dx=-2x/(2y)=-x/y.",
       "choiceRationales": [
         "Differentiating x^2+y^2=25 gives 2x+2y(dy/dx)=0, so solving for dy/dx divides -2x by 2y to get -x/y; writing -y/x inverts that ratio.",
         "Moving 2x across the equals sign changes its sign to -2x, so dropping the minus sign flips the slope.",
-        "Best answer. Implicit differentiation gives 2x+2y(dy/dx)=0.",
+        "Best answer. Differentiate x^2+y^2=25 implicitly with respect to x using the chain rule on y^2 to get 2x+2y(dy/dx)=0. Solving for dy/dx with y!=0 yields dy/dx=-2x/(2y)=-x/y.",
         "The derivative of y^2 with respect to x is 2y(dy/dx), not y^2(dy/dx), so dividing by y^2 is invalid."
       ],
       "misconceptionTags": [
@@ -3246,12 +3246,12 @@
         "-1/3"
       ],
       "answerIndex": 3,
-      "rationale": "Differentiation gives y+xy'+2yy'=0, so y'=-2/6.",
+      "rationale": "Differentiate implicitly using the product rule on xy to get y+x(dy/dx)+2y(dy/dx)=0. Substituting (2,2) gives 2+6(dy/dx)=0, so dy/dx=-2/6=-1/3.",
       "choiceRationales": [
         "Implicit differentiation of xy+y^2=8 gives y+x(dy/dx)+2y(dy/dx)=0, so solving yields -y/(x+2y)=-1/3 at (2,2); doubling y in the numerator wrongly produces -4/6=-2/3.",
         "Dropping the negative sign when moving y to the right side of y+xy prime+2yy prime=0 reverses the slope.",
         "Dropping the coefficient 2 when differentiating y^2 gives y+(x+y)y prime=0 and yields -2/4=-1/2 instead of -1/3.",
-        "Best answer. Differentiation gives y+xy'+2yy'=0, so y'=-2/6."
+        "Best answer. Differentiate implicitly using the product rule on xy to get y+x(dy/dx)+2y(dy/dx)=0. Substituting (2,2) gives 2+6(dy/dx)=0, so dy/dx=-2/6=-1/3."
       ],
       "misconceptionTags": [
         "Treat y as a function of x."
@@ -3364,9 +3364,9 @@
         "1/5"
       ],
       "answerIndex": 0,
-      "rationale": "The inverse derivative is the reciprocal slope at the corresponding input.",
+      "rationale": "By the inverse-function derivative theorem, (f^-1)'(y) = 1 / f'(f^-1(y)). Since f(2) = 5 means f^-1(5) = 2, substituting f'(2) = 3 yields (f^-1)'(5) = 1 / f'(2) = 1/3.",
       "choiceRationales": [
-        "Best answer. The inverse derivative is the reciprocal slope at the corresponding input.",
+        "Best answer. By the inverse-function derivative theorem, (f^-1)'(y) = 1 / f'(f^-1(y)). Since f(2) = 5 means f^-1(5) = 2, substituting f'(2) = 3 yields (f^-1)'(5) = 1 / f'(2) = 1/3.",
         "This takes the reciprocal of the input coordinate x=2 instead of taking the reciprocal of the derivative slope f prime(2)=3 in the inverse-derivative rule.",
         "This reports the forward slope f prime(2)=3 directly without taking the reciprocal 1/f prime(2) required to find the derivative of the inverse at 5.",
         "This takes the reciprocal of the function output f(2)=5 rather than using the reciprocal of the derivative slope f prime(2)=3."
@@ -3482,10 +3482,10 @@
         "1/(1-9x^2)"
       ],
       "answerIndex": 1,
-      "rationale": "Use u prime over 1+u squared with u=3x.",
+      "rationale": "Using the inverse tangent chain rule d/dx[arctan(u)]=u'/(1+u^2) with u=3x and u'=3, square the inner term to 9x^2 and obtain f'(x)=3/(1+9x^2).",
       "choiceRationales": [
         "This substitutes u=3x properly into 1/(1+u^2) to get 1/(1+9x^2), but it omits multiplying by the chain-rule derivative u prime=3.",
-        "Best answer. Use u prime over 1+u squared with u=3x.",
+        "Best answer. Using the inverse tangent chain rule d/dx[arctan(u)]=u'/(1+u^2) with u=3x and u'=3, square the inner term to 9x^2 and obtain f'(x)=3/(1+9x^2).",
         "Squaring the inner expression u=3x produces (3x)^2=9x^2 rather than 3x^2, because the coefficient 3 must be squared along with x.",
         "The arctan derivative has a plus sign in 1+u^2 and requires the chain-rule factor 3 in the numerator."
       ],
@@ -3599,11 +3599,11 @@
         "x^(x-1)"
       ],
       "answerIndex": 2,
-      "rationale": "ln y=x ln x gives y prime over y equal to ln x+1.",
+      "rationale": "Take natural logs to rewrite y=x^x as ln y=x ln x, then differentiate implicitly with the product rule: y'/y=ln x+x(1/x)=ln x+1. Multiplying by y=x^x gives x^x(ln x+1).",
       "choiceRationales": [
         "This applies the power rule as if the exponent x were a constant, which fails when both base and exponent vary.",
         "This applies the exponential rule as if the base x were constant, missing the second product-rule term from d/dx(x ln x).",
-        "Best answer. ln y=x ln x gives y prime over y equal to ln x+1.",
+        "Best answer. Take natural logs to rewrite y=x^x as ln y=x ln x, then differentiate implicitly with the product rule: y'/y=ln x+x(1/x)=ln x+1. Multiplying by y=x^x gives x^x(ln x+1).",
         "This lowers the exponent by 1 without even the factor x or logarithmic differentiation for the variable exponent."
       ],
       "misconceptionTags": [
@@ -3716,12 +3716,12 @@
         "Quotient rule combined with chain rule"
       ],
       "answerIndex": 3,
-      "rationale": "The expression is a quotient whose exponential numerator is composite.",
+      "rationale": "The function is a ratio u(x)/v(x) with u(x) = e^(x^2) and v(x) = 1 + x, requiring the quotient rule. Differentiating the composite numerator e^(x^2) also requires the chain rule, giving 2x*e^(x^2).",
       "choiceRationales": [
         "Neither the composite exponential numerator e^(x^2) nor the overall rational quotient structure can be differentiated using the power rule by itself.",
         "Because this expression is already written explicitly as a single function of x, implicit differentiation is unnecessary and does not replace quotient and chain rules.",
         "The Fundamental Theorem of Calculus differentiates accumulation integrals with variable bounds rather than an explicit quotient containing a composite exponential function.",
-        "Best answer. The expression is a quotient whose exponential numerator is composite."
+        "Best answer. The function is a ratio u(x)/v(x) with u(x) = e^(x^2) and v(x) = 1 + x, requiring the quotient rule. Differentiating the composite numerator e^(x^2) also requires the chain rule, giving 2x*e^(x^2)."
       ],
       "misconceptionTags": [
         "Simplification or logarithmic differentiation may help."
@@ -3833,9 +3833,9 @@
         "4x^3-6x^2"
       ],
       "answerIndex": 0,
-      "rationale": "Differentiate successively three times.",
+      "rationale": "Apply the power rule three successive times to f(x)=x^4-2x^3: f'(x)=4x^3-6x^2, f''(x)=12x^2-12x, and differentiating once more gives the third derivative f'''(x)=24x-12.",
       "choiceRationales": [
-        "Best answer. Differentiate successively three times.",
+        "Best answer. Apply the power rule three successive times to f(x)=x^4-2x^3: f'(x)=4x^3-6x^2, f''(x)=12x^2-12x, and differentiating once more gives the third derivative f'''(x)=24x-12.",
         "This stops after computing the second derivative f double prime(x)=12x^2-12x instead of differentiating one additional time to reach the third derivative.",
         "Differentiating the second derivative 12x^2-12x gives 24x-12, so reporting 24x drops the constant term -12 produced by differentiating -12x.",
         "This stops after the first derivative f prime(x)=4x^3-6x^2 rather than differentiating twice more to obtain the third derivative 24x-12."
@@ -3950,10 +3950,10 @@
         "18"
       ],
       "answerIndex": 1,
-      "rationale": "Acceleration is s double prime =6t-12, which is 6 at t=3.",
+      "rationale": "Differentiate position twice to obtain velocity v(t)=3t^2-12t+9 and acceleration a(t)=s''(t)=6t-12. Evaluating at t=3 yields a(3)=6(3)-12=6.",
       "choiceRationales": [
         "Evaluating v(3)=3(3)^2-12(3)+9=0 computes the velocity at t=3 instead of differentiating once more to find the acceleration a(3)=6(3)-12=6.",
-        "Best answer. Acceleration is s double prime =6t-12, which is 6 at t=3.",
+        "Best answer. Differentiate position twice to obtain velocity v(t)=3t^2-12t+9 and acceleration a(t)=s''(t)=6t-12. Evaluating at t=3 yields a(3)=6(3)-12=6.",
         "This evaluates the initial velocity v(0)=9 or misreads s(3) rather than evaluating the second derivative a(t)=6t-12 at t=3.",
         "This evaluates only the linear term 6t=18 at t=3 while forgetting to subtract the constant 12 in the acceleration formula a(t)=6t-12."
       ],
@@ -4068,11 +4068,11 @@
         "At 2 minutes, volume falls at 5 liters per minute"
       ],
       "answerIndex": 2,
-      "rationale": "The derivative is an instantaneous signed rate with compound units.",
+      "rationale": "The derivative V'(t) represents the instantaneous rate of change of volume in liters per minute. Because V'(5) = -2 is negative at t = 5, tank volume is decreasing at 2 liters/min at 5 minutes.",
       "choiceRationales": [
         "This confuses the rate of change V prime(5) with the volume V(5) itself, which also cannot be negative.",
         "An instantaneous rate of -2 L/min at t=5 does not mean total change over all 5 minutes was 2 liters.",
-        "Best answer. The derivative is an instantaneous signed rate with compound units.",
+        "Best answer. The derivative V'(t) represents the instantaneous rate of change of volume in liters per minute. Because V'(5) = -2 is negative at t = 5, tank volume is decreasing at 2 liters/min at 5 minutes.",
         "In V prime(5)=-2, the input inside parentheses is t=5 minutes and the output magnitude is 2 liters per minute, so this reverses the two quantities."
       ],
       "misconceptionTags": [
@@ -4186,12 +4186,12 @@
         "Dollars per item"
       ],
       "answerIndex": 3,
-      "rationale": "Derivative units are output units divided by input units.",
+      "rationale": "Because C'(q)=dC/dq represents the instantaneous rate of change of cost with respect to quantity, its units are output units over input units: dollars per item.",
       "choiceRationales": [
         "Derivative units always divide output units by input units, dC/dq, so items per dollar inverts the required ratio of dollars per item.",
         "Dollars are the units of total cost C(q) itself, whereas the marginal derivative C prime(q) measures a rate of change in dollars per item.",
         "Differentiating divides by the input unit once; it never squares the input unit or places it in the numerator.",
-        "Best answer. Derivative units are output units divided by input units."
+        "Best answer. Because C'(q)=dC/dq represents the instantaneous rate of change of cost with respect to quantity, its units are output units over input units: dollars per item."
       ],
       "misconceptionTags": [
         "A derivative is a local rate, not accumulation."
@@ -4420,10 +4420,10 @@
         "Neither increasing nor decreasing, because the speed stays constant."
       ],
       "answerIndex": 1,
-      "rationale": "Speed increases when nonzero velocity and acceleration have the same sign.",
+      "rationale": "Evaluate both rates at t = 3: v(3) = 3^2 - 4 = 5 > 0 and a(3) = 2(3) = 6 > 0. Because velocity and acceleration are both positive (same sign), the particle's speed is increasing at t = 3.",
       "choiceRationales": [
         "Positive acceleration increases speed when velocity is also positive; speed decreases only when velocity and acceleration have opposite signs.",
-        "Best answer. Speed increases when nonzero velocity and acceleration have the same sign.",
+        "Best answer. Evaluate both rates at t = 3: v(3) = 3^2 - 4 = 5 > 0 and a(3) = 2(3) = 6 > 0. Because velocity and acceleration are both positive (same sign), the particle's speed is increasing at t = 3.",
         "Positive velocity alone tells direction of motion, not whether speed decreases; matching positive acceleration speeds the particle up.",
         "Constant speed along a line requires zero acceleration, whereas here v(3)=5 and a(3)=6 are both nonzero and share the same positive sign."
       ],
@@ -4538,11 +4538,11 @@
         "18 pi cm^2/s"
       ],
       "answerIndex": 2,
-      "rationale": "Differentiate A=pi r^2 in time and substitute after differentiating.",
+      "rationale": "Differentiating A = pi*r^2 with respect to time t gives the related-rates equation dA/dt = 2*pi*r*(dr/dt). Substituting r = 3 cm and dr/dt = 2 cm/s yields dA/dt = 2*pi(3)(2) = 12 pi cm^2/s.",
       "choiceRationales": [
         "Using r=2 instead of r=3 in dA/dt=2 pi r(dr/dt) swaps the current radius with its rate of change dr/dt=2 cm/s.",
         "This evaluates only the circumference 2 pi r=6 pi at r=3 while omitting the related-rates chain-rule factor dr/dt=2 cm/s.",
-        "Best answer. Differentiate A=pi r^2 in time and substitute after differentiating.",
+        "Best answer. Differentiating A = pi*r^2 with respect to time t gives the related-rates equation dA/dt = 2*pi*r*(dr/dt). Substituting r = 3 cm and dr/dt = 2 cm/s yields dA/dt = 2*pi(3)(2) = 12 pi cm^2/s.",
         "Substituting r=3 into pi r^2 times dr/dt computes 2 pi r^2=18 pi without differentiating r^2 into 2r."
       ],
       "misconceptionTags": [
@@ -4656,12 +4656,12 @@
         "-3/4 ft/s"
       ],
       "answerIndex": 3,
-      "rationale": "x dx/dt+y dy/dt=0 gives dy/dt=-6/8.",
+      "rationale": "Differentiate x^2+y^2=100 with respect to time t to get 2x(dx/dt)+2y(dy/dt)=0. Substituting x=6, y=8, and dx/dt=1 yields 12+16(dy/dt)=0, so dy/dt=-12/16=-3/4 ft/s.",
       "choiceRationales": [
         "As the base x increases, the top of the ladder slides downward, so dy/dt must be negative rather than positive.",
         "Differentiating x^2+y^2=100 with respect to time gives 2x(dx/dt)+2y(dy/dt)=0, so dy/dt equals -(x/y)(dx/dt)=-3/4; writing -4/3 inverts the ratio x/y into y/x.",
         "Setting dy/dt equal to dx/dt ignores that x=6 and y=8 have different lengths and opposite directions of change.",
-        "Best answer. x dx/dt+y dy/dt=0 gives dy/dt=-6/8."
+        "Best answer. Differentiate x^2+y^2=100 with respect to time t to get 2x(dx/dt)+2y(dy/dt)=0. Substituting x=6, y=8, and dx/dt=1 yields 12+16(dy/dt)=0, so dy/dt=-12/16=-3/4 ft/s."
       ],
       "misconceptionTags": [
         "Substitute instant values after differentiating."
@@ -4773,9 +4773,9 @@
         "4.025"
       ],
       "answerIndex": 0,
-      "rationale": "At 4 the value is 2 and derivative is 1/4, so add (1/4)(0.1).",
+      "rationale": "For f(x) = sqrt(x), f(4) = 2 and f'(x) = 1/(2*sqrt(x)) gives f'(4) = 1/4 = 0.25. The tangent-line approximation L(x) = 2 + 0.25(x - 4) evaluated at x = 4.1 gives 2 + 0.25(0.1) = 2.025.",
       "choiceRationales": [
-        "Best answer. At 4 the value is 2 and derivative is 1/4, so add (1/4)(0.1).",
+        "Best answer. For f(x) = sqrt(x), f(4) = 2 and f'(x) = 1/(2*sqrt(x)) gives f'(4) = 1/4 = 0.25. The tangent-line approximation L(x) = 2 + 0.25(x - 4) evaluated at x = 4.1 gives 2 + 0.25(0.1) = 2.025.",
         "Multiplying delta x=0.1 by 0.1 instead of the tangent slope f prime(4)=1/(2 sqrt(4))=1/4 underestimates the linear rise from 0.025 to 0.01.",
         "Using 1/2 instead of f prime(4)=1/(2 sqrt(4))=1/4 doubles the linear increment from 0.025 to 0.05 and overshoots the tangent-line estimate.",
         "This starts from the input x=4 instead of the function height f(4)=sqrt(4)=2 before adding the tangent-line increment (1/4)(0.1)=0.025."
@@ -4890,10 +4890,10 @@
         "1.30"
       ],
       "answerIndex": 1,
-      "rationale": "The local linearization is 1+x.",
+      "rationale": "At x=0, f(x)=e^x has value f(0)=1 and slope f'(0)=e^0=1, producing the tangent-line linearization L(x)=1+x. Substituting x=0.03 approximates e^0.03 as L(0.03)=1.03.",
       "choiceRationales": [
         "This keeps only the differential increment f prime(0)(0.03)=0.03 and omits adding it to the base point value f(0)=e^0=1.",
-        "Best answer. The local linearization is 1+x.",
+        "Best answer. At x=0, f(x)=e^x has value f(0)=1 and slope f'(0)=e^0=1, producing the tangent-line linearization L(x)=1+x. Substituting x=0.03 approximates e^0.03 as L(0.03)=1.03.",
         "This misplaces the decimal point in delta x=0.03 by adding 0.003 instead of 0.03 to the starting value f(0)=1.",
         "This shifts the decimal one place to the left in reverse, adding 0.30 instead of 0.03 to the base height f(0)=1."
       ],
@@ -5007,11 +5007,11 @@
         "The limit does not exist"
       ],
       "answerIndex": 2,
-      "rationale": "The 0/0 form becomes e^x/1 after differentiation.",
+      "rationale": "Both numerator e^x-1 and denominator x approach 0 as x approaches 0, confirming a 0/0 form. L'Hospital's Rule differentiates top and bottom to lim e^x/1=e^0=1.",
       "choiceRationales": [
         "This substitutes x=0 into only the numerator e^x-1 or misreads e^0 as 0 instead of 1 after L Hospital Rule.",
         "After applying L Hospital Rule to get e^x/1, substituting x=0 evaluates e^0=1; reporting e mistakenly substitutes x=1 instead of x=0.",
-        "Best answer. The 0/0 form becomes e^x/1 after differentiation.",
+        "Best answer. Both numerator e^x-1 and denominator x approach 0 as x approaches 0, confirming a 0/0 form. L'Hospital's Rule differentiates top and bottom to lim e^x/1=e^0=1.",
         "The 0/0 form is indeterminate rather than undefined; differentiating numerator and denominator gives a finite limit of 1."
       ],
       "misconceptionTags": [
@@ -5124,12 +5124,12 @@
         "0"
       ],
       "answerIndex": 3,
-      "rationale": "The infinity/infinity form becomes (1/x)/1, which approaches zero.",
+      "rationale": "As x -> infinity, both ln x and x grow without bound, forming an infinity/infinity indeterminate form. Applying L'Hospital's Rule differentiates numerator and denominator to lim (1/x)/1 = 0.",
       "choiceRationales": [
         "Treating infinity/infinity as equal to 1 fails because x grows much faster than ln x as x approaches infinity.",
         "Applying L Hospital Rule to the infinity/infinity form replaces (ln x)/x with (1/x)/1, which shrinks to 0 rather than diverging to positive infinity.",
         "Because the L Hospital quotient (1/x)/1 approaches 0 cleanly as x grows without bound, the original limit exists and equals the finite value 0.",
-        "Best answer. The infinity/infinity form becomes (1/x)/1, which approaches zero."
+        "Best answer. As x -> infinity, both ln x and x grow without bound, forming an infinity/infinity indeterminate form. Applying L'Hospital's Rule differentiates numerator and denominator to lim (1/x)/1 = 0."
       ],
       "misconceptionTags": [
         "The rule does not apply to every quotient."
@@ -5241,9 +5241,9 @@
         "4"
       ],
       "answerIndex": 0,
-      "rationale": "The secant slope is 4 and f prime(c)=2c=4.",
+      "rationale": "Because f(x)=x^2 is continuous on [1,3] and differentiable on (1,3), the Mean Value Theorem sets f'(c)=[f(3)-f(1)]/(3-1)=(9-1)/2=4. Solving 2c=4 gives c=2 in (1,3).",
       "choiceRationales": [
-        "Best answer. The secant slope is 4 and f prime(c)=2c=4.",
+        "Best answer. Because f(x)=x^2 is continuous on [1,3] and differentiable on (1,3), the Mean Value Theorem sets f'(c)=[f(3)-f(1)]/(3-1)=(9-1)/2=4. Solving 2c=4 gives c=2 in (1,3).",
         "At x=1 the instantaneous slope is f prime(1)=2, which fails to match the average secant slope (9-1)/(3-1)=4 required by the Mean Value Theorem.",
         "At the right endpoint x=3, f prime(3)=6 exceeds the secant slope 4, and MVT guarantees an interior point.",
         "This reports the average secant slope (9-1)/(3-1)=4 itself rather than solving f prime(c)=2c=4 to find the guaranteed interior input c=2."
@@ -5358,10 +5358,10 @@
         "The interval contains negative inputs."
       ],
       "answerIndex": 1,
-      "rationale": "The function is continuous but has a corner inside the interval.",
+      "rationale": "The Mean Value Theorem requires continuity on [-1, 1] and differentiability on (-1, 1). Although f(x) = |x| is continuous everywhere, its sharp corner at x = 0 makes it non-differentiable inside (-1, 1).",
       "choiceRationales": [
         "The absolute value function |x| is continuous on all of [-1,1]; its failure is the sharp corner where f prime(0) fails to exist.",
-        "Best answer. The function is continuous but has a corner inside the interval.",
+        "Best answer. The Mean Value Theorem requires continuity on [-1, 1] and differentiability on (-1, 1). Although f(x) = |x| is continuous everywhere, its sharp corner at x = 0 makes it non-differentiable inside (-1, 1).",
         "Equal endpoint values do not prevent MVT; in fact they satisfy Rolle Theorem whenever differentiability holds.",
         "The Mean Value Theorem imposes no restriction against negative x-values; it fails on [-1,1] solely because f(x)=|x| has a corner and lacks a derivative at x=0."
       ],
@@ -5592,12 +5592,12 @@
         "A critical number need not be an extremum."
       ],
       "answerIndex": 3,
-      "rationale": "The function increases through zero despite its horizontal tangent.",
+      "rationale": "For f(x) = x^3, f'(x) = 3x^2 vanishes at x = 0 yet stays positive on both sides, so f increases through a horizontal tangent without a max or min; thus a critical number need not be an extremum.",
       "choiceRationales": [
         "At x=0, f(x)=x^3 has f prime(0)=0 yet has neither a maximum nor a minimum because f prime(x)=3x^2 remains nonnegative on both sides.",
         "A function must have f prime(x)=0 on an entire interval to be constant, not just at one isolated point.",
         "Knowing that f prime(0)=0 explicitly confirms that the derivative exists and equals zero at x=0, producing a horizontal tangent line.",
-        "Best answer. The function increases through zero despite its horizontal tangent."
+        "Best answer. For f(x) = x^3, f'(x) = 3x^2 vanishes at x = 0 yet stays positive on both sides, so f increases through a horizontal tangent without a max or min; thus a critical number need not be an extremum."
       ],
       "misconceptionTags": [
         "A critical number is only a candidate."
@@ -5830,10 +5830,10 @@
         "f''(c)=0 alone"
       ],
       "answerIndex": 1,
-      "rationale": "Negative-to-positive means the function changes from decreasing to increasing.",
+      "rationale": "By the first derivative test, a local minimum occurs at a critical point x = c when f' changes sign from negative to positive, indicating f transitions from decreasing before c to increasing after c.",
       "choiceRationales": [
         "A zero derivative identifies only a stationary candidate; as x^3 shows, f prime can be 0 without a local minimum.",
-        "Best answer. Negative-to-positive means the function changes from decreasing to increasing.",
+        "Best answer. By the first derivative test, a local minimum occurs at a critical point x = c when f' changes sign from negative to positive, indicating f transitions from decreasing before c to increasing after c.",
         "When f prime changes from positive to negative at x=c, the graph shifts from rising to falling, which identifies a local maximum rather than a minimum.",
         "A zero second derivative signals a possible inflection point and does not establish a local minimum."
       ],
@@ -5948,11 +5948,11 @@
         "All real x"
       ],
       "answerIndex": 2,
-      "rationale": "Concavity is upward where 6x-12 is positive.",
+      "rationale": "By the second-derivative concavity test, a twice-differentiable function f is concave up wherever f''(x)>0. Solving 6x-12>0 gives 6x>12, so f is concave up for x>2.",
       "choiceRationales": [
         "For every x<2, the second derivative f double prime(x)=6x-12 is negative, which makes the graph concave down rather than concave up.",
         "Solving 6x-12>0 adds 12 to both sides and divides by 6 to yield x>2, so writing x>-2 introduces a sign error.",
-        "Best answer. Concavity is upward where 6x-12 is positive.",
+        "Best answer. By the second-derivative concavity test, a twice-differentiable function f is concave up wherever f''(x)>0. Solving 6x-12>0 gives 6x>12, so f is concave up for x>2.",
         "Because f double prime(x)=6x-12 changes sign at x=2, the curve switches from concave down to concave up instead of staying concave up everywhere."
       ],
       "misconceptionTags": [
@@ -6066,12 +6066,12 @@
         "A local maximum at x=3"
       ],
       "answerIndex": 3,
-      "rationale": "A critical point with negative second derivative is locally concave down.",
+      "rationale": "Because f'(3) = 0 marks a horizontal tangent and f''(3) < 0 means the curve is concave down at x = 3, the second derivative test guarantees a local maximum at x = 3.",
       "choiceRationales": [
         "A local minimum occurs when f double prime(3)>0 (concave up), whereas f double prime(3)<0 is concave down.",
         "An inflection point requires f double prime to change sign, not stay strictly negative at a stationary point.",
         "The second derivative test is inconclusive only when f double prime(3)=0; a negative value proves a local maximum.",
-        "Best answer. A critical point with negative second derivative is locally concave down."
+        "Best answer. Because f'(3) = 0 marks a horizontal tangent and f''(3) < 0 means the curve is concave down at x = 3, the second derivative test guarantees a local maximum at x = 3."
       ],
       "misconceptionTags": [
         "f double prime equal to zero gives only a candidate."
@@ -6185,9 +6185,9 @@
         "Decreasing and concave up"
       ],
       "answerIndex": 0,
-      "rationale": "Positive f' gives increase, while decreasing f' gives negative f double prime.",
+      "rationale": "Where f' lies above the x-axis, f'(x) > 0, so f is increasing. Where f' is decreasing, its derivative satisfies f''(x) < 0, which makes f concave down on that interval.",
       "choiceRationales": [
-        "Best answer. Positive f' gives increase, while decreasing f' gives negative f double prime.",
+        "Best answer. Where f' lies above the x-axis, f'(x) > 0, so f is increasing. Where f' is decreasing, its derivative satisfies f''(x) < 0, which makes f concave down on that interval.",
         "A concave-up graph requires f prime to be increasing, whereas the prompt states that f prime is decreasing across the interval.",
         "Because the graph of f prime lies above the x-axis (f prime>0), the original function f must be increasing rather than decreasing.",
         "Both behaviors are reversed: positive f prime means f increases, and decreasing f prime means f is concave down."
@@ -6304,10 +6304,10 @@
         "1 by 9"
       ],
       "answerIndex": 1,
-      "rationale": "A=x(10-x) is a concave-down quadratic with vertex at x=5.",
+      "rationale": "From perimeter 2x+2y=20, substitute y=10-x into area to get Area(x)=10x-x^2. Setting Area'(x)=10-2x=0 gives x=5, and Area''(x)=-2<0 confirms a maximum at 5 by 5.",
       "choiceRationales": [
         "A 2 by 8 rectangle satisfies the perimeter constraint 2(2+8)=20, but its area is 16, well below the maximum area of 25 at x=5.",
-        "Best answer. A=x(10-x) is a concave-down quadratic with vertex at x=5.",
+        "Best answer. From perimeter 2x+2y=20, substitute y=10-x into area to get Area(x)=10x-x^2. Setting Area'(x)=10-2x=0 gives x=5, and Area''(x)=-2<0 confirms a maximum at 5 by 5.",
         "A 4 by 6 rectangle uses perimeter 20 and yields area 24, yet optimizing A(x)=x(10-x) shows the 5 by 5 square achieves a larger area of 25.",
         "A 1 by 9 rectangle meets the perimeter condition of 20 but encloses an area of only 9, far below the maximum attained at x=5."
       ],
@@ -6421,11 +6421,11 @@
         "24 liters"
       ],
       "answerIndex": 2,
-      "rationale": "The integral of 3t^2 from 0 to 2 is 8.",
+      "rationale": "Total water accumulated equals the definite integral of the inflow rate from t=0 to t=2: integral_0^2 3t^2 dt = [t^3]_0^2 = 8-0 = 8 liters.",
       "choiceRationales": [
         "This evaluates t^2=4 at t=2 instead of integrating r(t)=3t^2 to get the antiderivative t^3 and evaluating 2^3-0^3=8 liters.",
         "Evaluating the rate r(2)=3(2)^2=12 gives the final flow rate in L/hr instead of total liters accumulated.",
-        "Best answer. The integral of 3t^2 from 0 to 2 is 8.",
+        "Best answer. Total water accumulated equals the definite integral of the inflow rate from t=0 to t=2: integral_0^2 3t^2 dt = [t^3]_0^2 = 8-0 = 8 liters.",
         "Multiplying the final rate 12 L/hr by 2 hours treats a growing rate as if it were constant over [0,2]."
       ],
       "misconceptionTags": [
@@ -6538,12 +6538,12 @@
         "4"
       ],
       "answerIndex": 3,
-      "rationale": "Net change is the signed sum 6+(-2).",
+      "rationale": "By the Net Change Theorem, net change equals the definite integral of the rate function, which combines signed areas above and below the axis: 6+(-2)=4.",
       "choiceRationales": [
         "Adding the magnitudes 6+2=8 computes total variation (or total distance) rather than signed net change, which combines positive and negative areas.",
         "This reverses the subtraction order to 2-6=-4 instead of adding the positive area above the axis and negative area below: 6+(-2)=4.",
         "Multiplying 6 by 2 treats the two separate rate regions as a product instead of summing their signed areas 6 and -2.",
-        "Best answer. Net change is the signed sum 6+(-2)."
+        "Best answer. By the Net Change Theorem, net change equals the definite integral of the rate function, which combines signed areas above and below the axis: 6+(-2)=4."
       ],
       "misconceptionTags": [
         "Net change differs from total magnitude."
@@ -6656,9 +6656,9 @@
         "9"
       ],
       "answerIndex": 0,
-      "rationale": "Width is 1 and the left endpoint heights are 1 and 3.",
+      "rationale": "With two equal subintervals on [0,2], each width is dx=(2-0)/2=1. Using left endpoints x=0 and x=1, the left Riemann sum is 1*f(0)+1*f(1)=1(1)+1(3)=4.",
       "choiceRationales": [
-        "Best answer. Width is 1 and the left endpoint heights are 1 and 3.",
+        "Best answer. With two equal subintervals on [0,2], each width is dx=(2-0)/2=1. Using left endpoints x=0 and x=1, the left Riemann sum is 1*f(0)+1*f(1)=1(1)+1(3)=4.",
         "Using the midpoint or trapezoidal average gives 6, whereas the left sum uses heights f(0)=1 and f(1)=3.",
         "Using the right endpoints f(1)=3 and f(2)=5 gives the right Riemann sum 8 rather than the left sum 4.",
         "Summing all three table outputs 1+3+5=9 uses three rectangle heights for only two subintervals; a left sum on [0,2] uses only f(0) and f(1)."
@@ -6774,10 +6774,10 @@
         "4[f(1)+f(3)]"
       ],
       "answerIndex": 1,
-      "rationale": "Each width is 2 and the midpoints are 1 and 3.",
+      "rationale": "Dividing [0,4] into two equal subintervals [0,2] and [2,4] gives width dx=2 and midpoints x=1 and x=3. Summing width times midpoint heights yields 2[f(1)+f(3)].",
       "choiceRationales": [
         "Evaluating f at x=0 and x=2 uses the left endpoints of [0,2] and [2,4], forming the left Riemann sum instead of the midpoint sum.",
-        "Best answer. Each width is 2 and the midpoints are 1 and 3.",
+        "Best answer. Dividing [0,4] into two equal subintervals [0,2] and [2,4] gives width dx=2 and midpoints x=1 and x=3. Summing width times midpoint heights yields 2[f(1)+f(3)].",
         "Evaluating f at x=2 and x=4 uses the right endpoints of [0,2] and [2,4], forming the right Riemann sum rather than the midpoint sum.",
         "This multiplies by the entire interval length 4 instead of using the individual subinterval width delta x=(4-0)/2=2 for each rectangle."
       ],
@@ -6893,11 +6893,11 @@
         "1"
       ],
       "answerIndex": 2,
-      "rationale": "The Fundamental Theorem returns the integrand at the moving upper bound.",
+      "rationale": "By Part 1 of the Fundamental Theorem of Calculus, differentiating an accumulation function with a constant lower limit 1 and upper limit x replaces t with x in the integrand, giving G'(x) = x^2 + 1.",
       "choiceRationales": [
         "This differentiates the integrand t^2+1 a second time instead of stopping at the integrand evaluated at x.",
         "This computes an antiderivative of t^2+1 instead of applying FTC Part 1, which differentiates the accumulation integral and recovers the integrand at x.",
-        "Best answer. The Fundamental Theorem returns the integrand at the moving upper bound.",
+        "Best answer. By Part 1 of the Fundamental Theorem of Calculus, differentiating an accumulation function with a constant lower limit 1 and upper limit x replaces t with x in the integrand, giving G'(x) = x^2 + 1.",
         "Reporting only the constant term 1 or the lower limit ignores the variable upper bound x, which FTC Part 1 substitutes directly into t^2+1."
       ],
       "misconceptionTags": [
@@ -7012,12 +7012,12 @@
         "2x cos(x^2)"
       ],
       "answerIndex": 3,
-      "rationale": "FTC gives cos(x^2), and the chain rule contributes 2x.",
+      "rationale": "By the Fundamental Theorem of Calculus (Part 1) combined with the chain rule, evaluate the integrand at the upper bound x^2 and multiply by d/dx(x^2)=2x to get 2x cos(x^2).",
       "choiceRationales": [
         "This substitutes the upper bound x^2 into cos(t) but forgets to multiply by the chain-rule derivative 2x.",
         "This differentiates cos(x^2) into -sin(x^2) instead of applying FTC Part 1 with the chain rule, which keeps the integrand cos(x^2) and multiplies by 2x.",
         "This integrates cos(t) to sin(t) instead of differentiating the integral with FTC and the chain rule.",
-        "Best answer. FTC gives cos(x^2), and the chain rule contributes 2x."
+        "Best answer. By the Fundamental Theorem of Calculus (Part 1) combined with the chain rule, evaluate the integrand at the upper bound x^2 and multiply by d/dx(x^2)=2x to get 2x cos(x^2)."
       ],
       "misconceptionTags": [
         "A composite upper bound adds a derivative factor."
@@ -7129,9 +7129,9 @@
         "10"
       ],
       "answerIndex": 0,
-      "rationale": "Use antiderivative x^2 and compute 9-1.",
+      "rationale": "An antiderivative of 2x is x^2. Applying the Fundamental Theorem of Calculus on [1,3] gives [x^2]_1^3 = 3^2-1^2 = 9-1 = 8.",
       "choiceRationales": [
-        "Best answer. Use antiderivative x^2 and compute 9-1.",
+        "Best answer. An antiderivative of 2x is x^2. Applying the Fundamental Theorem of Calculus on [1,3] gives [x^2]_1^3 = 3^2-1^2 = 9-1 = 8.",
         "Evaluating 2x at the interval length 2 gives 4 instead of applying the antiderivative x^2 from 1 to 3.",
         "Evaluating the integrand 2x at the upper limit x=3 gives 6 rather than the definite integral 3^2-1^2=8.",
         "Computing 3^2+1^2=10 adds the endpoint antiderivative values together instead of subtracting F(3)-F(1)=9-1=8 as required by the Evaluation Theorem."
@@ -7246,10 +7246,10 @@
         "10"
       ],
       "answerIndex": 1,
-      "rationale": "Additivity over adjacent intervals gives 5+(-2).",
+      "rationale": "By the interval additivity property of definite integrals, integral_a^c f(x)dx = integral_a^b f(x)dx + integral_b^c f(x)dx = 5+(-2) = 3.",
       "choiceRationales": [
         "Multiplying 5 by -2 treats adjacent definite integrals as factors in a product rather than combining them additively across [a,b] and [b,c].",
-        "Best answer. Additivity over adjacent intervals gives 5+(-2).",
+        "Best answer. By the interval additivity property of definite integrals, integral_a^c f(x)dx = integral_a^b f(x)dx + integral_b^c f(x)dx = 5+(-2) = 3.",
         "Subtracting 5-(-2)=7 reverses the sign of the second integral instead of applying integral additivity to sum 5+(-2)=3.",
         "This multiplies the magnitudes 5 and 2 (or doubles 5) instead of adding the signed integrals over [a,b] and [b,c] to obtain 5+(-2)=3."
       ],
@@ -7364,11 +7364,11 @@
         "x^2-4x+C"
       ],
       "answerIndex": 2,
-      "rationale": "Reverse the power rule term by term and include the arbitrary constant.",
+      "rationale": "Antidifferentiate term by term using the reverse power rule: integral(3x^2 dx) = 3(x^3/3) = x^3 and integral(-4 dx) = -4x. Adding the constant of integration yields x^3 - 4x + C.",
       "choiceRationales": [
         "Turning 3x^2 into 6x differentiates the leading term instead of antidifferentiating it; integration raises the power of x^2 to produce x^3.",
         "The first term integrates properly to x^3, but the constant term -4 must also be integrated to -4x rather than remaining -4.",
-        "Best answer. Reverse the power rule term by term and include the arbitrary constant.",
+        "Best answer. Antidifferentiate term by term using the reverse power rule: integral(3x^2 dx) = 3(x^3/3) = x^3 and integral(-4 dx) = -4x. Adding the constant of integration yields x^3 - 4x + C.",
         "This divides the coefficient 3 by 3 without increasing the exponent on x^2 from 2 to 3 as required by the reverse power rule."
       ],
       "misconceptionTags": [
@@ -7599,9 +7599,9 @@
         "The population decreases by 4 percent each time unit."
       ],
       "answerIndex": 0,
-      "rationale": "The rate is positively proportional to the current population.",
+      "rationale": "The differential equation dP/dt = 0.04P states that the instantaneous rate of population change equals 0.04 (4%) times the current population P per unit of time, representing exponential growth.",
       "choiceRationales": [
-        "Best answer. The rate is positively proportional to the current population.",
+        "Best answer. The differential equation dP/dt = 0.04P states that the instantaneous rate of population change equals 0.04 (4%) times the current population P per unit of time, representing exponential growth.",
         "That describes a constant rate dP/dt=0.04, ignoring the factor P that makes growth proportional to current size.",
         "In dP/dt=0.04P, the constant 0.04 represents a proportional rate of change per time unit, not a fixed headcount of 4 individuals.",
         "Because the proportionality constant +0.04 is positive for P>0, the derivative dP/dt is positive, indicating exponential growth rather than decay."
@@ -7716,10 +7716,10 @@
         "The temperature immediately becomes 20."
       ],
       "answerIndex": 1,
-      "rationale": "When T-20 is positive, the derivative is negative.",
+      "rationale": "With k>0 and T>20, the factor T-20 is positive, making dT/dt=-k(T-20)<0. Thus temperature decreases toward the stable equilibrium T=20 where dT/dt=0.",
       "choiceRationales": [
         "When both k>0 and T>20 hold, the product dT/dt=-k(T-20) is negative, which drives the temperature downward toward 20 rather than upward.",
-        "Best answer. When T-20 is positive, the derivative is negative.",
+        "Best answer. With k>0 and T>20, the factor T-20 is positive, making dT/dt=-k(T-20)<0. Thus temperature decreases toward the stable equilibrium T=20 where dT/dt=0.",
         "Temperature remains constant only at the equilibrium T=20 where dT/dt=0; for T>20 the nonzero negative derivative forces T to decrease.",
         "A continuous differential equation pulls T asymptotically toward equilibrium 20 over time rather than producing an instantaneous discontinuous jump."
       ],
@@ -7833,11 +7833,11 @@
         "Every exponential satisfies every differential equation"
       ],
       "answerIndex": 2,
-      "rationale": "Direct differentiation verifies the equation for every input.",
+      "rationale": "Applying the chain rule to y = Ce^(2x) multiplies by the inner derivative 2, giving y' = 2Ce^(2x). Since y = Ce^(2x), substituting back shows y' = 2y holds identically for all real x.",
       "choiceRationales": [
         "This forgets the chain-rule factor 2 from differentiating the inner exponent 2x; properly differentiating y=Ce^(2x) gives y prime=2Ce^(2x)=2y.",
         "Matching a differential equation at one input does not verify that it holds across an entire interval.",
-        "Best answer. Direct differentiation verifies the equation for every input.",
+        "Best answer. Applying the chain rule to y = Ce^(2x) multiplies by the inner derivative 2, giving y' = 2Ce^(2x). Since y = Ce^(2x), substituting back shows y' = 2y holds identically for all real x.",
         "Only functions whose derivative equals 2y satisfy y prime=2y; other exponentials such as e^x or e^(3x) fail when substituted into the equation."
       ],
       "misconceptionTags": [
@@ -7950,12 +7950,12 @@
         "No, because 2x != x^2 across the domain."
       ],
       "answerIndex": 3,
-      "rationale": "Verification requires equality throughout an interval, not at isolated points.",
+      "rationale": "For y = x^2, y' = 2x matches y = x^2 only at x = 0 and x = 2. Because a differential-equation solution must hold identically across an interval rather than isolated points, 2x != x^2 rules it out.",
       "choiceRationales": [
         "Merely sharing the variable x does not make the derivative 2x identical to the function x^2 across all real numbers, since 2x equals x^2 only at 0 and 2.",
         "Agreement at x=0 (or x=2) fails verification because a solution must satisfy y prime=y on an entire interval.",
         "The polynomial x^2 is differentiable everywhere; it fails because its derivative 2x does not equal x^2.",
-        "Best answer. Verification requires equality throughout an interval, not at isolated points."
+        "Best answer. For y = x^2, y' = 2x matches y = x^2 only at x = 0 and x = 2. Because a differential-equation solution must hold identically across an interval rather than isolated points, 2x != x^2 rules it out."
       ],
       "misconceptionTags": [
         "One matching point does not verify a solution."
@@ -8067,9 +8067,9 @@
         "2"
       ],
       "answerIndex": 0,
-      "rationale": "Substitution gives slope 1-1=0.",
+      "rationale": "Each segment in a slope field has slope equal to dy/dx at that point. Substituting (x,y)=(1,1) into the differential equation y'=x-y gives 1-1=0.",
       "choiceRationales": [
-        "Best answer. Substitution gives slope 1-1=0.",
+        "Best answer. Each segment in a slope field has slope equal to dy/dx at that point. Substituting (x,y)=(1,1) into the differential equation y'=x-y gives 1-1=0.",
         "Computing -1-1=-2 incorrectly negates the x-coordinate instead of substituting (1,1) directly into the slope equation y prime=x-y=1-1=0.",
         "This reports the x-coordinate or y-coordinate by itself instead of subtracting y from x in y prime=x-y to obtain 1-1=0 at (1,1).",
         "Adding 1+1=2 evaluates x+y instead of x-y, using the wrong sign when finding the slope-field segment at the point (1,1)."
@@ -8184,10 +8184,10 @@
         "None"
       ],
       "answerIndex": 1,
-      "rationale": "Equilibria make y prime zero, so solve y(3-y)=0.",
+      "rationale": "Equilibrium solutions are constant functions whose derivative is identically zero. Setting y'=y(3-y)=0 yields the two constant equilibrium solutions y=0 and y=3.",
       "choiceRationales": [
         "Substituting y=1 into y prime=y(3-y) produces 1(3-1)=2, which is nonzero, so y=1 is not a constant equilibrium solution.",
-        "Best answer. Equilibria make y prime zero, so solve y(3-y)=0.",
+        "Best answer. Equilibrium solutions are constant functions whose derivative is identically zero. Setting y'=y(3-y)=0 yields the two constant equilibrium solutions y=0 and y=3.",
         "Substituting y=-3 yields (-3)(6)=-18 instead of 0; setting y(3-y)=0 shows that the constant equilibrium solutions occur at y=0 and y=3.",
         "Constant equilibrium solutions exist wherever the autonomous right-hand side equals zero, which occurs here at the two values y=0 and y=3."
       ],
@@ -8302,11 +8302,11 @@
         "y=x^2/2+C"
       ],
       "answerIndex": 2,
-      "rationale": "dy/y=x dx integrates to ln|y|=x^2/2+C.",
+      "rationale": "Divide by y!=0 and multiply by dx to separate variables into (1/y)dy=x dx. Integrating both sides yields the implicit solution family ln|y|=x^2/2+C.",
       "choiceRationales": [
         "This integrates the left side to ln|y| but leaves x undifferentiated on the right instead of integrating to x^2/2.",
         "Multiplying both sides by y instead of dividing by y treats the separable equation dy/dx=xy as though it were dy/dx=x/y.",
-        "Best answer. dy/y=x dx integrates to ln|y|=x^2/2+C.",
+        "Best answer. Divide by y!=0 and multiply by dx to separate variables into (1/y)dy=x dx. Integrating both sides yields the implicit solution family ln|y|=x^2/2+C.",
         "Integrating x dx to x^2/2 without first dividing both sides by y skips separating the dependent variable y into (1/y)dy."
       ],
       "misconceptionTags": [
@@ -8420,12 +8420,12 @@
         "y=3e^(2x)"
       ],
       "answerIndex": 3,
-      "rationale": "The family y=Ce^(2x) and the condition give C=3.",
+      "rationale": "Separating variables gives dy/y=2dx, which integrates to the exponential family y=Ce^(2x). Applying the initial condition y(0)=3 yields C=3, so y=3e^(2x).",
       "choiceRationales": [
         "This swaps the initial value C=3 from y(0)=3 with the exponential rate constant k=2 from the differential equation dy/dx=2y.",
         "Dropping the factor 2 from the exponent produces a function satisfying y prime=y rather than matching the given rate equation dy/dx=2y.",
         "This treats dy/dx=2y as a constant-slope linear equation dy/dx=2 instead of separating variables to obtain exponential growth y=3e^(2x).",
-        "Best answer. The family y=Ce^(2x) and the condition give C=3."
+        "Best answer. Separating variables gives dy/y=2dx, which integrates to the exponential family y=Ce^(2x). Applying the initial condition y(0)=3 yields C=3, so y=3e^(2x)."
       ],
       "misconceptionTags": [
         "Check equilibria that division may discard."
@@ -8538,9 +8538,9 @@
         "ln(d)/2"
       ],
       "answerIndex": 0,
-      "rationale": "From 2=e^(kd), taking logs gives kd=ln 2.",
+      "rationale": "Exponential growth P'=kP has solution P(t)=P(0)e^(kt). Setting P(d)=2P(0) cancels P(0) to give e^(kd)=2; taking natural logs yields kd=ln(2), so k=ln(2)/d.",
       "choiceRationales": [
-        "Best answer. From 2=e^(kd), taking logs gives kd=ln 2.",
+        "Best answer. Exponential growth P'=kP has solution P(t)=P(0)e^(kt). Setting P(d)=2P(0) cancels P(0) to give e^(kd)=2; taking natural logs yields kd=ln(2), so k=ln(2)/d.",
         "Setting e^(kd)=2 requires taking the natural logarithm of both sides to get kd=ln(2) before dividing by d, rather than dividing 2 directly by d.",
         "This inverts the quotient when solving kd=ln(2) for k; isolating k divides ln(2) by the doubling time d, not d by ln(2).",
         "This mistakenly applies the natural logarithm to the doubling time d and divides by 2 instead of taking ln(2) and dividing by d."
@@ -8656,10 +8656,10 @@
         "500"
       ],
       "answerIndex": 1,
-      "rationale": "A logistic rate is greatest at half the carrying capacity.",
+      "rationale": "In the logistic equation P'=0.2P(1-P/500), the carrying capacity is L=500. Because P' is a concave-down quadratic in P with zeros 0 and 500, growth is fastest at L/2=250.",
       "choiceRationales": [
         "At P=0 the logistic rate P prime=0.2(0)(1-0/500) equals 0, which is a stationary equilibrium rather than the point of fastest growth.",
-        "Best answer. A logistic rate is greatest at half the carrying capacity.",
+        "Best answer. In the logistic equation P'=0.2P(1-P/500), the carrying capacity is L=500. Because P' is a concave-down quadratic in P with zeros 0 and 500, growth is fastest at L/2=250.",
         "Multiplying the rate constant 0.2 by the carrying capacity 500 gives 100, whereas maximum logistic growth always occurs at half the carrying capacity, K/2=250.",
         "At carrying capacity P=500, the factor (1-P/500) vanishes so P prime=0, meaning population growth has slowed to zero rather than peaked."
       ],
@@ -8773,11 +8773,11 @@
         "27"
       ],
       "answerIndex": 2,
-      "rationale": "The integral is 9 and interval length is 3.",
+      "rationale": "By the average value formula (1/(b-a)) integral_a^b f(x)dx, compute (1/3) integral_0^3 x^2 dx = (1/3)[x^3/3]_0^3 = (1/3)(9) = 3.",
       "choiceRationales": [
         "This reports the definite integral of x^2 over [0,3] itself without dividing by the interval length b-a=3-0=3 to compute the average value.",
         "Dividing the definite integral 9 by 3^2=9 divides by the square of the upper endpoint instead of dividing by the interval width b-a=3.",
-        "Best answer. The integral is 9 and interval length is 3.",
+        "Best answer. By the average value formula (1/(b-a)) integral_a^b f(x)dx, compute (1/3) integral_0^3 x^2 dx = (1/3)[x^3/3]_0^3 = (1/3)(9) = 3.",
         "Multiplying the definite integral 9 by the interval width 3 performs multiplication instead of applying the average-value factor 1/(b-a)=1/3."
       ],
       "misconceptionTags": [
@@ -8890,12 +8890,12 @@
         "4"
       ],
       "answerIndex": 3,
-      "rationale": "Divide the integral by interval length 5.",
+      "rationale": "The average value of f on [2,7] equals the definite integral divided by the interval width b-a=7-2=5. Computing 20/5 gives an average value of 4.",
       "choiceRationales": [
         "Dividing the integral 20 by 8 miscomputes the interval width; on [2,7] the length is b-a=7-2=5, so the average value is 20/5=4.",
         "This reports only the interval length b-a=7-2=5 rather than dividing the given definite integral 20 by 5 to find the average value 4.",
         "This returns the total definite integral 20 directly without dividing by the interval width 7-2=5 as required by the average-value formula.",
-        "Best answer. Divide the integral by interval length 5."
+        "Best answer. The average value of f on [2,7] equals the definite integral divided by the interval width b-a=7-2=5. Computing 20/5 gives an average value of 4."
       ],
       "misconceptionTags": [
         "Average value is not total accumulation."
@@ -9008,9 +9008,9 @@
         "24 meters"
       ],
       "answerIndex": 0,
-      "rationale": "Displacement is the integral of velocity, [t^3] from 0 to 2.",
+      "rationale": "Displacement equals the definite integral of velocity over [0, 2]: integral_0^2 3t^2 dt = [t^3]_0^2. Evaluating at the bounds gives 2^3 - 0^3 = 8 - 0 = 8 meters.",
       "choiceRationales": [
-        "Best answer. Displacement is the integral of velocity, [t^3] from 0 to 2.",
+        "Best answer. Displacement equals the definite integral of velocity over [0, 2]: integral_0^2 3t^2 dt = [t^3]_0^2. Evaluating at the bounds gives 2^3 - 0^3 = 8 - 0 = 8 meters.",
         "Evaluating the acceleration a(t)=6t at t=1 or integrating 3t instead of 3t^2 fails to compute the definite integral of v(t)=3t^2 on [0,2].",
         "Evaluating v(2)=3(2)^2=12 reports the instantaneous velocity at t=2 instead of integrating v(t) from t=0 to t=2 to find net displacement.",
         "Multiplying the final velocity 12 m/s by 2 seconds assumes constant velocity rather than integrating 3t^2."
@@ -9126,10 +9126,10 @@
         "V0 times integral of I(t)"
       ],
       "answerIndex": 1,
-      "rationale": "Final amount equals initial amount plus accumulated net rate.",
+      "rationale": "The net rate of volume change is inflow minus outflow, V'(t) = I(t) - O(t). By the Net Change Theorem, volume at time T equals initial volume plus accumulated net change: V0 + integral_0^T [I(t) - O(t)] dt.",
       "choiceRationales": [
         "The difference I(T)-O(T) gives an instantaneous net rate at time T rather than the total accumulated volume change integrated across [0,T].",
-        "Best answer. Final amount equals initial amount plus accumulated net rate.",
+        "Best answer. The net rate of volume change is inflow minus outflow, V'(t) = I(t) - O(t). By the Net Change Theorem, volume at time T equals initial volume plus accumulated net change: V0 + integral_0^T [I(t) - O(t)] dt.",
         "This omits the starting volume V0 and mistakenly adds the outflow rate O(t) to the inflow rate I(t) instead of subtracting outflow.",
         "Initial volume adds to accumulated net change rather than multiplying an inflow integral, and outflow is omitted."
       ],
@@ -9245,11 +9245,11 @@
         "1/2"
       ],
       "answerIndex": 2,
-      "rationale": "Integrate upper minus lower: x-x^2.",
+      "rationale": "On [0,1], y=x lies above y=x^2, so integrate upper minus lower: integral_0^1 (x-x^2)dx = [x^2/2 - x^3/3]_0^1 = 1/2 - 1/3 = 1/6.",
       "choiceRationales": [
         "On [0,1], y=x lies above y=x^2, so integrating x^2-x subtracts the upper curve from the lower curve and produces a negative area.",
         "This evaluates only the definite integral of x^2 on [0,1] instead of finding the enclosed area between the upper line y=x and lower parabola y=x^2.",
-        "Best answer. Integrate upper minus lower: x-x^2.",
+        "Best answer. On [0,1], y=x lies above y=x^2, so integrate upper minus lower: integral_0^1 (x-x^2)dx = [x^2/2 - x^3/3]_0^1 = 1/2 - 1/3 = 1/6.",
         "This evaluates only the definite integral of y=x on [0,1] without subtracting the area 1/3 underneath the lower boundary curve y=x^2."
       ],
       "misconceptionTags": [
@@ -9364,12 +9364,12 @@
         "Integral 0 to 2 of (2y-y^2)dy"
       ],
       "answerIndex": 3,
-      "rationale": "Horizontal slices use right minus left.",
+      "rationale": "For 0<=y<=2, the line x=2y lies to the right of the parabola x=y^2. Integrating horizontal slices (right minus left) yields Integral 0 to 2 of (2y-y^2)dy.",
       "choiceRationales": [
         "For 0<=y<=2, the line x=2y lies to the right of x=y^2, so integrating y^2-2y reverses right minus left and produces a negative value.",
         "Adding the two boundary curves sums their distances instead of measuring the horizontal width between them.",
         "This integrates the derivative or drops a power of y instead of subtracting the actual boundary curves.",
-        "Best answer. Horizontal slices use right minus left."
+        "Best answer. For 0<=y<=2, the line x=2y lies to the right of the parabola x=y^2. Integrating horizontal slices (right minus left) yields Integral 0 to 2 of (2y-y^2)dy."
       ],
       "misconceptionTags": [
         "Unsplit signed integrals may cancel regions."
@@ -9482,9 +9482,9 @@
         "Integral of 4x"
       ],
       "answerIndex": 0,
-      "rationale": "Square cross-sectional area is x squared.",
+      "rationale": "Volume by known cross sections integrates cross-sectional area over the interval. Because each square slice of side x has area x^2, the volume is Integral_0^2 of x^2 dx.",
       "choiceRationales": [
-        "Best answer. Square cross-sectional area is x squared.",
+        "Best answer. Volume by known cross sections integrates cross-sectional area over the interval. Because each square slice of side x has area x^2, the volume is Integral_0^2 of x^2 dx.",
         "Integrating the side length x without squaring it computes a two-dimensional area rather than summing the square cross-sectional areas A(x)=x^2.",
         "Multiplying by pi applies a circular-disk volume formula rather than integrating square cross sections whose area is simply side squared, x^2.",
         "Integrating 4x sums the perimeters of the square slices across [0,2] rather than integrating their cross-sectional areas A(x)=x^2."
@@ -9600,10 +9600,10 @@
         "pi d(x)/2"
       ],
       "answerIndex": 1,
-      "rationale": "Radius is d/2, and half of pi r squared is pi d squared over 8.",
+      "rationale": "A semicircle with diameter d(x) has radius r = d(x)/2 and area A = (1/2)*pi*r^2. Substituting r = d(x)/2 gives (1/2)*pi*[d(x)/2]^2 = (1/2)*pi*[d(x)]^2/4 = pi*[d(x)]^2/8.",
       "choiceRationales": [
         "This substitutes the diameter d(x) directly for the radius r in (1/2)pi r^2, making the area four times too large.",
-        "Best answer. Radius is d/2, and half of pi r squared is pi d squared over 8.",
+        "Best answer. A semicircle with diameter d(x) has radius r = d(x)/2 and area A = (1/2)*pi*r^2. Substituting r = d(x)/2 gives (1/2)*pi*[d(x)/2]^2 = (1/2)*pi*[d(x)]^2/4 = pi*[d(x)]^2/8.",
         "This uses full-circle area with diameter in place of radius, omitting both halving the diameter and halving the circle.",
         "Multiplying diameter d(x) by pi/2 computes the semicircular arc length (half the circumference) rather than the semicircular cross-sectional area (1/2)pi r^2."
       ],
@@ -9720,11 +9720,11 @@
         "32 pi/3"
       ],
       "answerIndex": 2,
-      "rationale": "Disk area is pi x, whose integral from 0 to 4 is 8 pi.",
+      "rationale": "Using the disk method with radius R(x)=sqrt(x), the volume is pi integral_0^4 (sqrt(x))^2 dx = pi integral_0^4 x dx = pi[x^2/2]_0^4 = 8 pi.",
       "choiceRationales": [
         "Forgetting to integrate x to x^2/2 properly or using upper limit 2 halves the true disk volume 8 pi.",
         "Omitting the factor 1/2 when integrating r(x)^2=x into x^2/2 over [0,4] doubles the true solid-of-revolution volume from 8 pi to 16 pi.",
-        "Best answer. Disk area is pi x, whose integral from 0 to 4 is 8 pi.",
+        "Best answer. Using the disk method with radius R(x)=sqrt(x), the volume is pi integral_0^4 (sqrt(x))^2 dx = pi integral_0^4 x dx = pi[x^2/2]_0^4 = 8 pi.",
         "Integrating x^2 instead of (sqrt(x))^2=x squares the radius twice and yields 32 pi/3 instead of 8 pi."
       ],
       "misconceptionTags": [
@@ -9840,12 +9840,12 @@
         "pi integral 0 to 1 of (x^2-x^4)dx"
       ],
       "answerIndex": 3,
-      "rationale": "Outer radius is x and inner radius is x squared.",
+      "rationale": "On [0,1], y=x is farther from the x-axis than y=x^2, so outer radius R=x and inner radius r=x^2. The washer formula pi integral (R^2-r^2)dx gives pi integral 0 to 1 of (x^2-x^4)dx.",
       "choiceRationales": [
         "The washer formula squares each radius separately (R^2-r^2), so failing to square x and x^2 is invalid.",
         "On [0,1], the line y=x lies farther from the x-axis than y=x^2, so writing x^4-x^2 reverses outer and inner squared radii and yields a negative value.",
         "This sets up the cylindrical-shell integral for revolving around the y-axis rather than the washer integral pi(R^2-r^2) for rotation about the x-axis.",
-        "Best answer. Outer radius is x and inner radius is x squared."
+        "Best answer. On [0,1], y=x is farther from the x-axis than y=x^2, so outer radius R=x and inner radius r=x^2. The washer formula pi integral (R^2-r^2)dx gives pi integral 0 to 1 of (x^2-x^4)dx."
       ],
       "misconceptionTags": [
         "A shifted axis changes both radii."
@@ -10191,11 +10191,11 @@
         "8"
       ],
       "answerIndex": 2,
-      "rationale": "Factoring the difference of cubes leaves x^2+2x+4, which approaches 12.",
+      "rationale": "Because x = 2 produces 0/0, factor the difference of cubes: x^3 - 8 = (x - 2)(x^2 + 2x + 4). Canceling (x - 2) for x != 2 leaves x^2 + 2x + 4, which evaluates at x = 2 to 4 + 4 + 4 = 12.",
       "choiceRationales": [
         "Although direct substitution gives 0/0, canceling (x-2) removes the hole and leaves a finite limit of 12.",
         "Factoring (x^3-8)/(x-2) produces x^2+2x+4; substituting x=2 into only x^2=4 drops both the linear 2x term and the constant 4.",
-        "Best answer. Factoring the difference of cubes leaves x^2+2x+4, which approaches 12.",
+        "Best answer. Because x = 2 produces 0/0, factor the difference of cubes: x^3 - 8 = (x - 2)(x^2 + 2x + 4). Canceling (x - 2) for x != 2 leaves x^2 + 2x + 4, which evaluates at x = 2 to 4 + 4 + 4 = 12.",
         "Evaluating x^2+2x=8 at x=2 (or computing 2^3=8) omits the constant +4 in the simplified difference-of-cubes quotient x^2+2x+4."
       ],
       "misconceptionTags": [
@@ -10308,12 +10308,12 @@
         "5"
       ],
       "answerIndex": 3,
-      "rationale": "Rewrite as 5[sin(5x)/(5x)] and use the standard sine limit.",
+      "rationale": "Multiply and divide by 5 to rewrite sin(5x)/x as 5*[sin(5x)/(5x)]. Since 5x approaches 0 with x and lim_{u->0} sin(u)/u=1, the limit evaluates to 5*1=5.",
       "choiceRationales": [
         "Evaluating only the numerator sin(0)=0 overlooks that the denominator also approaches 0, creating a 0/0 indeterminate form rather than a limit of 0.",
         "Dividing by 5 instead of multiplying by 5 inverts the scaling factor needed to rewrite sin(5x)/x as 5 times sin(5x)/(5x).",
         "Applying lim sin(u)/u=1 directly without matching the denominator to 5x drops the inner coefficient 5 from the limit of sin(5x)/x.",
-        "Best answer. Rewrite as 5[sin(5x)/(5x)] and use the standard sine limit."
+        "Best answer. Multiply and divide by 5 to rewrite sin(5x)/x as 5*[sin(5x)/(5x)]. Since 5x approaches 0 with x and lim_{u->0} sin(u)/u=1, the limit evaluates to 5*1=5."
       ],
       "misconceptionTags": [
         "Cancellation preserves nearby behavior while respecting the excluded input."
@@ -10426,9 +10426,9 @@
         "3"
       ],
       "answerIndex": 0,
-      "rationale": "The left limit is 3, so continuity requires 3+k=3 and therefore k=0.",
+      "rationale": "Continuity at x = 1 requires the left-hand limit, right-hand limit, and f(1) to match. From the left, lim_{x->1-} (x + 2) = 3, and from the right f(1) = 3(1) + k = 3 + k; setting 3 + k = 3 gives k = 0.",
       "choiceRationales": [
-        "Best answer. The left limit is 3, so continuity requires 3+k=3 and therefore k=0.",
+        "Best answer. Continuity at x = 1 requires the left-hand limit, right-hand limit, and f(1) to match. From the left, lim_{x->1-} (x + 2) = 3, and from the right f(1) = 3(1) + k = 3 + k; setting 3 + k = 3 gives k = 0.",
         "Setting 3+k=0 instead of matching the left-hand limit 1+2=3 produces k=-3 and creates a 3-unit jump discontinuity at x=1.",
         "Choosing k=1 sets the right-hand value to 3(1)+1=4, which fails to match the left-hand limit 1+2=3 needed for continuity at x=1.",
         "Setting k equal to the left-hand limit 3 forgets that 3x already contributes 3 at x=1, giving 6 instead of 3."
@@ -10544,10 +10544,10 @@
         "No discontinuity"
       ],
       "answerIndex": 1,
-      "rationale": "The function is unbounded near x=-2, producing a vertical asymptote.",
+      "rationale": "At x = -2, the denominator x + 2 equals 0 while the nonzero numerator remains 1, so |f(x)| grows without bound on both sides. This vertical asymptote defines an infinite discontinuity.",
       "choiceRationales": [
         "A jump discontinuity has two finite one-sided limits, whereas 1/(x+2) diverges to minus and plus infinity.",
-        "Best answer. The function is unbounded near x=-2, producing a vertical asymptote.",
+        "Best answer. At x = -2, the denominator x + 2 equals 0 while the nonzero numerator remains 1, so |f(x)| grows without bound on both sides. This vertical asymptote defines an infinite discontinuity.",
         "No factor cancels (x+2) in 1/(x+2), so redefining a single point cannot remove the vertical asymptote.",
         "Because substituting x=-2 makes the denominator x+2 equal to zero, f(-2) is undefined and the function has a vertical asymptote there."
       ],
@@ -10662,11 +10662,11 @@
         "Positive infinity"
       ],
       "answerIndex": 2,
-      "rationale": "Equal degrees make the limit the ratio 2/5 of the leading coefficients.",
+      "rationale": "Divide numerator and denominator by x^3 to rewrite the expression as (2 + 1/x^2)/(5 - 4/x^3). As x -> -infinity, both 1/x^2 and 4/x^3 vanish, yielding the leading-coefficient ratio 2/5.",
       "choiceRationales": [
         "When numerator and denominator share the same leading degree (x^3), the end-behavior limit approaches the ratio of leading coefficients 2/5, not 0.",
         "Both leading terms 2x^3 and 5x^3 are odd powers, so their negative signs cancel as x approaches negative infinity.",
-        "Best answer. Equal degrees make the limit the ratio 2/5 of the leading coefficients.",
+        "Best answer. Divide numerator and denominator by x^3 to rewrite the expression as (2 + 1/x^2)/(5 - 4/x^3). As x -> -infinity, both 1/x^2 and 4/x^3 vanish, yielding the leading-coefficient ratio 2/5.",
         "A rational function with equal top and bottom degrees approaches a finite horizontal asymptote rather than diverging."
       ],
       "misconceptionTags": [
@@ -11132,11 +11132,11 @@
         "3"
       ],
       "answerIndex": 2,
-      "rationale": "The secant slopes approach -3 from both sides, estimating the tangent slope.",
+      "rationale": "The derivative f'(3) is the limit of secant slopes as the second point approaches x = 3. Since the slopes -2.8, -2.98 and -3.2, -3.02 bracket and converge toward -3 from both sides, f'(3) = -3.",
       "choiceRationales": [
         "Shifting the decimal place turns the limiting secant slope -3 into -0.3, which disagrees with the table values.",
         "The observed secant slopes -2.8, -2.98, -3.02, and -3.2 bracket and converge toward -3 rather than approaching a horizontal slope of 0.",
-        "Best answer. The secant slopes approach -3 from both sides, estimating the tangent slope.",
+        "Best answer. The derivative f'(3) is the limit of secant slopes as the second point approaches x = 3. Since the slopes -2.8, -2.98 and -3.2, -3.02 bracket and converge toward -3 from both sides, f'(3) = -3.",
         "Dropping the minus sign reverses the direction of the secant slopes from decreasing (-3) to increasing (+3)."
       ],
       "misconceptionTags": [
@@ -11250,12 +11250,12 @@
         "f'(2)=5"
       ],
       "answerIndex": 3,
-      "rationale": "The derivative at the input 2 equals the tangent-line slope 5.",
+      "rationale": "In calculus notation, f'(a) denotes the slope of the tangent line to y = f(x) at input x = a, whereas f(a) is the y-coordinate. A tangent slope of 5 at x = 2 is therefore written f'(2) = 5.",
       "choiceRationales": [
         "Writing f(2)=5 records the vertical point height y=5 on the graph at x=2 rather than stating that the tangent-line slope is 5.",
         "This swaps input and output and uses the second derivative (concavity) instead of the first derivative (slope).",
         "This reverses the input coordinate x=2 and the tangent-line slope 5 inside derivative notation; the slope at x=2 is written f prime(2)=5.",
-        "Best answer. The derivative at the input 2 equals the tangent-line slope 5."
+        "Best answer. In calculus notation, f'(a) denotes the slope of the tangent line to y = f(x) at input x = a, whereas f(a) is the y-coordinate. A tangent slope of 5 at x = 2 is therefore written f'(2) = 5."
       ],
       "misconceptionTags": [
         "A derivative value is a rate, not the function value."
@@ -11602,11 +11602,11 @@
         "6"
       ],
       "answerIndex": 2,
-      "rationale": "The derivative is 1/(2sqrt(x)), which equals 1/6 at x=9.",
+      "rationale": "Rewrite f(x)=sqrt(x) as x^(1/2) and apply the power rule to obtain f'(x)=(1/2)x^(-1/2)=1/(2sqrt(x)). Substituting x=9 gives 1/(2*3)=1/6.",
       "choiceRationales": [
         "Omitting the power-rule coefficient 1/2 when differentiating x^(1/2) gives 1/sqrt(9)=1/3 at x=9 instead of the true derivative value 1/(2 sqrt(9))=1/6.",
         "Multiplying (1/2) by sqrt(9)=3 instead of dividing by sqrt(9) treats the exponent as +1/2 rather than -1/2.",
-        "Best answer. The derivative is 1/(2sqrt(x)), which equals 1/6 at x=9.",
+        "Best answer. Rewrite f(x)=sqrt(x) as x^(1/2) and apply the power rule to obtain f'(x)=(1/2)x^(-1/2)=1/(2sqrt(x)). Substituting x=9 gives 1/(2*3)=1/6.",
         "This evaluates only the denominator 2 sqrt(9)=6 of f prime(9)=1/(2 sqrt(9)) instead of taking its reciprocal to get 1/6."
       ],
       "misconceptionTags": [
@@ -11720,12 +11720,12 @@
         "-12/x^4 - 2"
       ],
       "answerIndex": 3,
-      "rationale": "Rewrite 4/x^3 as 4x^(-3), then apply the power rule to both terms.",
+      "rationale": "Rewrite f(x) = 4x^(-3) - 2x so the power rule applies cleanly. Differentiating each term gives 4(-3)x^(-4) - 2 = -12x^(-4) - 2, which rewrites as -12/x^4 - 2.",
       "choiceRationales": [
         "Differentiating 4x^(-3) lowers the exponent to -4 and introduces a minus sign, rather than raising it to -2.",
         "Differentiating the linear term -2x yields the constant -2, so retaining -2x leaves the second term completely undifferentiated.",
         "Rewriting 4/x^3 as 4x^(-3) gives -12x^(-4), so writing 4/x^2 forgets both multiplying by -3 and decreasing the exponent to -4.",
-        "Best answer. Rewrite 4/x^3 as 4x^(-3), then apply the power rule to both terms."
+        "Best answer. Rewrite f(x) = 4x^(-3) - 2x so the power rule applies cleanly. Differentiating each term gives 4(-3)x^(-4) - 2 = -12x^(-4) - 2, which rewrites as -12/x^4 - 2."
       ],
       "misconceptionTags": [
         "The derivative of a constant is zero."
@@ -11837,9 +11837,9 @@
         "ln 2"
       ],
       "answerIndex": 0,
-      "rationale": "The chain rule gives 2/(2x), which simplifies to 1/x.",
+      "rationale": "Apply the logarithm chain rule d/dx[ln(u)]=u'/u with u=2x to get 2/(2x), which cancels to 1/x (also clear from rewriting ln(2x)=ln 2+ln x).",
       "choiceRationales": [
-        "Best answer. The chain rule gives 2/(2x), which simplifies to 1/x.",
+        "Best answer. Apply the logarithm chain rule d/dx[ln(u)]=u'/u with u=2x to get 2/(2x), which cancels to 1/x (also clear from rewriting ln(2x)=ln 2+ln x).",
         "This writes 1/u=1/(2x) but omits the chain-rule factor u prime=2, which cancels the 2 in the denominator.",
         "This multiplies 1/x by 2 as if the constant 2 were outside the logarithm rather than inside ln(2x)=ln 2+ln x.",
         "Because ln(2x)=ln 2 + ln x, the constant ln 2 differentiates to 0 rather than surviving in the derivative."
@@ -11954,10 +11954,10 @@
         "-3xe^(-3x)"
       ],
       "answerIndex": 1,
-      "rationale": "Differentiate the exponential and multiply by the inner derivative -3.",
+      "rationale": "Using the chain rule for e^(u(x)), d/dx[e^u] = e^u * u'. With outer function e^u and inner function u = -3x (so u' = -3), differentiating produces f'(x) = e^(-3x)*(-3) = -3e^(-3x).",
       "choiceRationales": [
         "This leaves the exponential unchanged without multiplying by the chain-rule derivative d/dx(-3x)=-3 required for a composite exponent.",
-        "Best answer. Differentiate the exponential and multiply by the inner derivative -3.",
+        "Best answer. Using the chain rule for e^(u(x)), d/dx[e^u] = e^u * u'. With outer function e^u and inner function u = -3x (so u' = -3), differentiating produces f'(x) = e^(-3x)*(-3) = -3e^(-3x).",
         "This drops the negative sign when differentiating the inner linear exponent -3x, producing +3 instead of the required factor -3.",
         "This multiplies by the entire inner exponent -3x instead of multiplying by its derivative d/dx(-3x)=-3 under the chain rule."
       ],
@@ -12072,11 +12072,11 @@
         "6"
       ],
       "answerIndex": 2,
-      "rationale": "The product rule gives (-1)(4)+(2)(3)=2.",
+      "rationale": "By the product rule, h'(1)=f'(1)g(1)+f(1)g'(1). Substituting the given values at x=1 gives (-1)(4)+(2)(3)=-4+6=2.",
       "choiceRationales": [
         "This evaluates only the first product-rule term f prime(1)g(1)=(-1)(4)=-4 and leaves out the second term f(1)g prime(1)=(2)(3)=6.",
         "Miscombining table values or summing derivatives directly misses the product-rule formula, which combines f prime(1)g(1)=(-1)(4) and f(1)g prime(1)=(2)(3) to give 2.",
-        "Best answer. The product rule gives (-1)(4)+(2)(3)=2.",
+        "Best answer. By the product rule, h'(1)=f'(1)g(1)+f(1)g'(1). Substituting the given values at x=1 gives (-1)(4)+(2)(3)=-4+6=2.",
         "This evaluates only the second product-rule term f(1)g prime(1)=(2)(3)=6 while completely omitting the first product-rule term f prime(1)g(1)=(-1)(4)=-4."
       ],
       "misconceptionTags": [
@@ -12190,12 +12190,12 @@
         "-5/8"
       ],
       "answerIndex": 3,
-      "rationale": "The quotient rule gives [(-1)(4)-(2)(3)]/16=-10/16=-5/8.",
+      "rationale": "By the quotient rule, h'(1)=[f'(1)g(1)-f(1)g'(1)]/[g(1)]^2. Plugging in the values at x=1 yields [(-1)(4)-(2)(3)]/4^2=-10/16=-5/8.",
       "choiceRationales": [
         "Dividing f prime(1)/g prime(1) or forgetting to square g(1)=4 in the denominator misses the quotient-rule formula [f prime g - f g prime]/g^2.",
         "Adding instead of subtracting in the quotient-rule numerator produces 2/16=1/8 rather than evaluating [(-1)(4)-(2)(3)] divided by 4^2 to get -5/8.",
         "Reversing the subtraction order in the quotient-rule numerator to f g prime - f prime g flips the final sign from -5/8 to +5/8.",
-        "Best answer. The quotient rule gives [(-1)(4)-(2)(3)]/16=-10/16=-5/8."
+        "Best answer. By the quotient rule, h'(1)=[f'(1)g(1)-f(1)g'(1)]/[g(1)]^2. Plugging in the values at x=1 yields [(-1)(4)-(2)(3)]/4^2=-10/16=-5/8."
       ],
       "misconceptionTags": [
         "Products and quotients do not differentiate componentwise."
@@ -12307,9 +12307,9 @@
         "cos(e^x)"
       ],
       "answerIndex": 0,
-      "rationale": "The outer exponential remains unchanged and the inner derivative is cos x.",
+      "rationale": "Treat y = e^(sin x) as outer function e^u composed with inner function u = sin x. By the chain rule, dy/dx = e^u * du/dx = e^(sin x) * cos x.",
       "choiceRationales": [
-        "Best answer. The outer exponential remains unchanged and the inner derivative is cos x.",
+        "Best answer. Treat y = e^(sin x) as outer function e^u composed with inner function u = sin x. By the chain rule, dy/dx = e^u * du/dx = e^(sin x) * cos x.",
         "This differentiates the inner exponent in place instead of keeping e^(sin x) intact and multiplying by cos x.",
         "By the chain rule, differentiating e^(sin x) multiplies by d/dx(sin x)=cos x rather than multiplying by the undifferentiated exponent sin x.",
         "This reverses the function composition by placing e^x inside cosine instead of differentiating the outer exponential with inner function sin x."
@@ -12424,10 +12424,10 @@
         "-2x/(1+x^2)"
       ],
       "answerIndex": 1,
-      "rationale": "The chain rule gives -(1+x^2)^(-2) times 2x.",
+      "rationale": "Using the chain rule with outer u^(-1) and inner u=1+x^2, differentiate to -(1+x^2)^(-2)*(2x) and rewrite the negative exponent as -2x/(1+x^2)^2.",
       "choiceRationales": [
         "This applies the outer power rule to (1+x^2)^(-1) but omits the inner derivative 2x from the chain rule.",
-        "Best answer. The chain rule gives -(1+x^2)^(-2) times 2x.",
+        "Best answer. Using the chain rule with outer u^(-1) and inner u=1+x^2, differentiate to -(1+x^2)^(-2)*(2x) and rewrite the negative exponent as -2x/(1+x^2)^2.",
         "This drops both the negative sign and the squared denominator from differentiating u^(-1) into -u^(-2) u prime.",
         "The power rule lowers the exponent from -1 to -2, so the denominator must be (1+x^2)^2 rather than (1+x^2)."
       ],
@@ -12658,12 +12658,12 @@
         "1/4"
       ],
       "answerIndex": 3,
-      "rationale": "Differentiate with respect to x: 1=(3y^2+1)dy/dx, then substitute y=1.",
+      "rationale": "Differentiate x = y^3 + y implicitly with respect to x: 1 = (3y^2 + 1)(dy/dx), so dy/dx = 1/(3y^2 + 1). Substituting y = 1 gives dy/dx = 1/(3(1)^2 + 1) = 1/4.",
       "choiceRationales": [
         "Differentiating y^3+y gives (3y^2+1)(dy/dx), so dropping the +1 term from d/dx(y) yields 1/3 instead of 1/4.",
         "Using 2y instead of 3y^2+1 misapplies the power rule to x=y^3+y; differentiating with respect to y gives dx/dy=3(1)^2+1=4.",
         "This computes the derivative dx/dy=3y^2+1=4 at y=1 without taking the reciprocal 1/(dx/dy) required to obtain the slope dy/dx=1/4.",
-        "Best answer. Differentiate with respect to x: 1=(3y^2+1)dy/dx, then substitute y=1."
+        "Best answer. Differentiate x = y^3 + y implicitly with respect to x: 1 = (3y^2 + 1)(dy/dx), so dy/dx = 1/(3y^2 + 1). Substituting y = 1 gives dy/dx = 1/(3(1)^2 + 1) = 1/4."
       ],
       "misconceptionTags": [
         "Treat y as a function of x."
@@ -12776,9 +12776,9 @@
         "2.0"
       ],
       "answerIndex": 0,
-      "rationale": "The inverse-derivative rule gives 1/f prime of 4, which is -1/2.",
+      "rationale": "Because f(4) = 1 implies f^-1(1) = 4, the inverse derivative formula gives (f^-1)'(1) = 1 / f'(f^-1(1)) = 1 / f'(4). Substituting f'(4) = -2 yields 1/(-2) = -0.5.",
       "choiceRationales": [
-        "Best answer. The inverse-derivative rule gives 1/f prime of 4, which is -1/2.",
+        "Best answer. Because f(4) = 1 implies f^-1(1) = 4, the inverse derivative formula gives (f^-1)'(1) = 1 / f'(f^-1(1)) = 1 / f'(4). Substituting f'(4) = -2 yields 1/(-2) = -0.5.",
         "This reports the original slope f prime(4)=-2 directly instead of taking its reciprocal 1/(-2)=-0.5 via the inverse-derivative theorem.",
         "Taking the reciprocal of 2 while dropping the negative sign of f prime(4)=-2 flips the inverse slope to positive.",
         "This negates the given slope f prime(4)=-2 without taking the reciprocal 1/f prime(4) required for the derivative of the inverse at 1."
@@ -12894,10 +12894,10 @@
         "-2/sqrt(1-4x^2)"
       ],
       "answerIndex": 1,
-      "rationale": "Apply the inverse-sine derivative and multiply by the inner derivative 2.",
+      "rationale": "By the inverse-sine derivative rule d/dx[arcsin(u)] = u' / sqrt(1 - u^2), set u = 2x so u' = 2 and u^2 = 4x^2. Substituting gives f'(x) = 2 / sqrt(1 - 4x^2).",
       "choiceRationales": [
         "This substitutes u=2x into 1/sqrt(1-u^2) properly but forgets to multiply the numerator by the chain-rule factor u prime=2.",
-        "Best answer. Apply the inverse-sine derivative and multiply by the inner derivative 2.",
+        "Best answer. By the inverse-sine derivative rule d/dx[arcsin(u)] = u' / sqrt(1 - u^2), set u = 2x so u' = 2 and u^2 = 4x^2. Substituting gives f'(x) = 2 / sqrt(1 - 4x^2).",
         "Squaring the inner argument u=2x inside sqrt(1-u^2) produces (2x)^2=4x^2 rather than 2x^2, because the coefficient 2 must be squared.",
         "The negative sign belongs to the derivative of arccos(2x), whereas the derivative of arcsin(2x) is positive on its domain."
       ],
@@ -13245,9 +13245,9 @@
         "ln x"
       ],
       "answerIndex": 0,
-      "rationale": "Differentiate f prime of x=1/x once more.",
+      "rationale": "First differentiate f(x)=ln x to get f'(x)=1/x=x^(-1). Differentiating a second time with the power rule produces f''(x)=-x^(-2)=-1/x^2.",
       "choiceRationales": [
-        "Best answer. Differentiate f prime of x=1/x once more.",
+        "Best answer. First differentiate f(x)=ln x to get f'(x)=1/x=x^(-1). Differentiating a second time with the power rule produces f''(x)=-x^(-2)=-1/x^2.",
         "Differentiating x^(-1) brings down -1 as a coefficient, so omitting the negative sign flips the concavity.",
         "This differentiates once too many times (with a sign slip) rather than stopping at the second derivative -x^(-2).",
         "The logarithm does not repeat under differentiation the way e^x does; its second derivative is -1/x^2."
@@ -13362,10 +13362,10 @@
         "96"
       ],
       "answerIndex": 1,
-      "rationale": "Successive derivatives are 4t^3, 12t^2, and 24t; at t=2 the value is 48.",
+      "rationale": "Apply the power rule three times to s(t) = t^4: s'(t) = 4t^3, s''(t) = 12t^2, and s'''(t) = 24t (the jerk). Evaluating the third derivative at t = 2 gives 24(2) = 48.",
       "choiceRationales": [
         "Evaluating s(2)=2^4=16 computes the particle position at t=2 instead of differentiating three times to evaluate the jerk s triple prime(t)=24t.",
-        "Best answer. Successive derivatives are 4t^3, 12t^2, and 24t; at t=2 the value is 48.",
+        "Best answer. Apply the power rule three times to s(t) = t^4: s'(t) = 4t^3, s''(t) = 12t^2, and s'''(t) = 24t (the jerk). Evaluating the third derivative at t = 2 gives 24(2) = 48.",
         "This reports only the constant coefficient 24 of the third derivative s triple prime(t)=24t without substituting t=2 to obtain 48.",
         "Multiplying 24 by t^2=4 evaluates the wrong power of t; after three derivatives of t^4, the formula is 24t, which equals 48 at t=2."
       ],
@@ -13598,12 +13598,12 @@
         "Degrees Celsius per meter"
       ],
       "answerIndex": 3,
-      "rationale": "Derivative units are output units divided by input units.",
+      "rationale": "The derivative T'(h)=dT/dh measures how temperature changes per unit change in altitude, so its units are output units per input unit: degrees Celsius per meter.",
       "choiceRationales": [
         "Derivative units divide output units by input units (dT/dh), so meters per degree Celsius inverts the ratio into dh/dT instead of T prime(h).",
         "Multiplying output and input units corresponds to integrating T(h) dh rather than differentiating T with respect to h.",
         "Neither temperature nor altitude here is measured in seconds, so time units do not belong in T prime(h).",
-        "Best answer. Derivative units are output units divided by input units."
+        "Best answer. The derivative T'(h)=dT/dh measures how temperature changes per unit change in altitude, so its units are output units per input unit: degrees Celsius per meter."
       ],
       "misconceptionTags": [
         "A derivative is a local rate, not accumulation."
@@ -13715,9 +13715,9 @@
         "(1,infinity)"
       ],
       "answerIndex": 0,
-      "rationale": "The velocity is positive before 1 and after 4; velocity is zero at t=1 and t=4.",
+      "rationale": "Motion to the right occurs when v(t) > 0. The zeros of v(t) = (t - 1)(t - 4) are t = 1 and t = 4; testing signs on t >= 0 shows v > 0 on [0, 1) and (4, infinity), while v < 0 on (1, 4).",
       "choiceRationales": [
-        "Best answer. The velocity is positive before 1 and after 4; velocity is zero at t=1 and t=4.",
+        "Best answer. Motion to the right occurs when v(t) > 0. The zeros of v(t) = (t - 1)(t - 4) are t = 1 and t = 4; testing signs on t >= 0 shows v > 0 on [0, 1) and (4, infinity), while v < 0 on (1, 4).",
         "On (1,4), the factors (t-1) and (t-4) have opposite signs so velocity is negative (moving left), whereas velocity is positive on [0,1) and (4,infinity).",
         "Because v(t) changes sign from positive to negative at t=1, the particle moves left rather than right on (1,4).",
         "Velocity is negative throughout (1,4) and zero at t=4, so the particle does not move right across all of (1,infinity)."
@@ -13832,10 +13832,10 @@
         "t=3 alone"
       ],
       "answerIndex": 1,
-      "rationale": "At-rest times solve v(t)=s prime of t=3(t-1)(t-3)=0.",
+      "rationale": "A particle is at rest when velocity v(t)=s'(t) equals zero. Differentiating gives v(t)=3t^2-12t+9=3(t-1)(t-3), which equals 0 at positive times t=1 and t=3.",
       "choiceRationales": [
         "At t=0 velocity is v(0)=9, and t=2 makes acceleration a(t)=6t-12 equal zero rather than solving v(t)=3(t-1)(t-3)=0 for rest times.",
-        "Best answer. At-rest times solve v(t)=s prime of t=3(t-1)(t-3)=0.",
+        "Best answer. A particle is at rest when velocity v(t)=s'(t) equals zero. Differentiating gives v(t)=3t^2-12t+9=3(t-1)(t-3), which equals 0 at positive times t=1 and t=3.",
         "Solving a(t)=6t-12=0 finds zero acceleration, not the times when the particle is momentarily at rest (v=0).",
         "Setting v(t)=3(t-1)(t-3)=0 identifies two positive rest times; reporting only t=3 catches one root while overlooking the earlier rest time t=1."
       ],
@@ -13950,11 +13950,11 @@
         "36 pi cubic centimeters per second"
       ],
       "answerIndex": 2,
-      "rationale": "From V=(4/3)pi r^3, dV/dt=4pi r^2 dr/dt=48pi.",
+      "rationale": "Differentiate sphere volume V=(4/3)pi r^3 with respect to time to get dV/dt=4 pi r^2 (dr/dt). Plugging in r=2 and dr/dt=3 gives 4 pi(4)(3)=48 pi cubic centimeters per second.",
       "choiceRationales": [
         "Using 4 pi r(dr/dt) instead of dV/dt=4 pi r^2(dr/dt) forgets to square the radius r=2 when differentiating V=(4/3)pi r^3.",
         "Differentiating V=(4/3)pi r^3 gives dV/dt=4 pi r^2(dr/dt)=4 pi(2^2)(3)=48 pi, so 24 pi drops a factor of 2 in the arithmetic.",
-        "Best answer. From V=(4/3)pi r^3, dV/dt=4pi r^2 dr/dt=48pi.",
+        "Best answer. Differentiate sphere volume V=(4/3)pi r^3 with respect to time to get dV/dt=4 pi r^2 (dr/dt). Plugging in r=2 and dr/dt=3 gives 4 pi(4)(3)=48 pi cubic centimeters per second.",
         "Swapping r=2 and dr/dt=3 or miscomputing 4(4)(3) as 36 fails to evaluate dV/dt=4 pi(2^2)(3), which equals 48 pi cm^3/s."
       ],
       "misconceptionTags": [
@@ -14068,12 +14068,12 @@
         "4 pi cubic centimeters per second"
       ],
       "answerIndex": 3,
-      "rationale": "With h=6, V=2pi r^2, so dV/dt=4pi r dr/dt=4pi.",
+      "rationale": "With fixed height h=6, cone volume V=(1/3)pi r^2 h reduces to V=2 pi r^2. Differentiating yields dV/dt=4 pi r (dr/dt), so r=2 and dr/dt=0.5 give 4 pi(2)(0.5)=4 pi cubic centimeters per second.",
       "choiceRationales": [
         "Forgetting the power-rule factor 2 when differentiating 2 pi r^2 gives 2 pi r dr/dt=2 pi instead of 4 pi.",
         "With fixed h=6, V=2 pi r^2 gives dV/dt=4 pi r(dr/dt)=4 pi(2)(0.5)=4 pi; arriving at 6 pi misapplies the cone factor 1/3 or arithmetic.",
         "Omitting the factor 1/3 from the cone volume formula V=(1/3)pi r^2 h triples the true volume rate from 4 pi to 12 pi.",
-        "Best answer. With h=6, V=2pi r^2, so dV/dt=4pi r dr/dt=4pi."
+        "Best answer. With fixed height h=6, cone volume V=(1/3)pi r^2 h reduces to V=2 pi r^2. Differentiating yields dV/dt=4 pi r (dr/dt), so r=2 and dr/dt=0.5 give 4 pi(2)(0.5)=4 pi cubic centimeters per second."
       ],
       "misconceptionTags": [
         "Substitute instant values after differentiating."
@@ -14185,9 +14185,9 @@
         "2.00"
       ],
       "answerIndex": 0,
-      "rationale": "The tangent-line model is L(x)=x-1, so L(1.02)=0.02.",
+      "rationale": "At x=1, f(x)=ln x has value f(1)=0 and slope f'(1)=1/1=1, giving the tangent-line approximation L(x)=0+1(x-1)=x-1. Evaluating at x=1.02 gives L(1.02)=0.02.",
       "choiceRationales": [
-        "Best answer. The tangent-line model is L(x)=x-1, so L(1.02)=0.02.",
+        "Best answer. At x=1, f(x)=ln x has value f(1)=0 and slope f'(1)=1/1=1, giving the tangent-line approximation L(x)=0+1(x-1)=x-1. Evaluating at x=1.02 gives L(1.02)=0.02.",
         "Subtracting 0.02 from 1 computes 1 minus 0.02 instead of using the tangent-line linearization L(x)=ln(1)+(1/1)(x-1), which evaluates to 0+0.02=0.02 at x=1.02.",
         "Because ln(1)=0 rather than 1, adding delta x=0.02 to 1 mistakenly uses the x-coordinate 1 in place of the function height f(1)=0.",
         "Using 1+1=2 ignores both the base height ln(1)=0 and the small displacement delta x=0.02 in the tangent-line formula."
@@ -14302,10 +14302,10 @@
         "No comparison is possible from concavity."
       ],
       "answerIndex": 1,
-      "rationale": "For a concave-down graph, nearby tangent-line points lie above the curve.",
+      "rationale": "When a differentiable function is concave down (f''(x) < 0), its slope decreases so the graph bends below every tangent line. Consequently, the tangent-line linearization overestimates nearby values of sqrt(x).",
       "choiceRationales": [
         "Tangent lines underestimate curve values when a graph is concave up, whereas sqrt(x) is concave down.",
-        "Best answer. For a concave-down graph, nearby tangent-line points lie above the curve.",
+        "Best answer. When a differentiable function is concave down (f''(x) < 0), its slope decreases so the graph bends below every tangent line. Consequently, the tangent-line linearization overestimates nearby values of sqrt(x).",
         "A tangent line matches a curved function exactly only at the point of tangency; on a concave-down curve it lies above nearby points.",
         "Consistent concavity on an interval directly determines whether the tangent line lies above or below the curve."
       ],
@@ -14536,12 +14536,12 @@
         "0"
       ],
       "answerIndex": 3,
-      "rationale": "The form infinity over infinity permits L Hospital rule, giving lim 1/e^x=0.",
+      "rationale": "As x -> infinity, both x and e^x approach infinity, giving an infinity/infinity indeterminate form. Applying L'Hospital's Rule yields lim_{x->infinity} (1 / e^x) = 0 as the exponential grows unboundedly.",
       "choiceRationales": [
         "Treating the infinity/infinity indeterminate form as 1 overlooks that exponential growth e^x outpaces linear growth x without bound.",
         "After applying L Hospital Rule once, x/e^x becomes 1/e^x, which shrinks toward 0 as x increases rather than growing toward infinity.",
         "Because 1/e^x converges smoothly to 0 as x approaches positive infinity, the original limit exists and equals the finite value 0.",
-        "Best answer. The form infinity over infinity permits L Hospital rule, giving lim 1/e^x=0."
+        "Best answer. As x -> infinity, both x and e^x approach infinity, giving an infinity/infinity indeterminate form. Applying L'Hospital's Rule yields lim_{x->infinity} (1 / e^x) = 0 as the exponential grows unboundedly."
       ],
       "misconceptionTags": [
         "The rule does not apply to every quotient."
@@ -14770,10 +14770,10 @@
         "The given interval contains negative inputs."
       ],
       "answerIndex": 1,
-      "rationale": "The function is undefined at x=0, so the required continuity hypothesis fails.",
+      "rationale": "The Mean Value Theorem requires f to be continuous on the entire closed interval [-1, 1]. Because f(x) = 1/x is undefined with an infinite discontinuity at x = 0 inside [-1, 1], that hypothesis fails.",
       "choiceRationales": [
         "For f(x)=1/x, f(-1)=-1 and f(1)=1 are not equal, and equal endpoints would never disqualify MVT anyway.",
-        "Best answer. The function is undefined at x=0, so the required continuity hypothesis fails.",
+        "Best answer. The Mean Value Theorem requires f to be continuous on the entire closed interval [-1, 1]. Because f(x) = 1/x is undefined with an infinite discontinuity at x = 0 inside [-1, 1], that hypothesis fails.",
         "At x=0, both the function f(x)=1/x and its derivative f prime(x)=-1/x^2 are undefined due to division by zero rather than equal to zero.",
         "Intervals spanning negative and positive x-values satisfy the Mean Value Theorem whenever continuity on [a,b] and differentiability on (a,b) hold."
       ],
@@ -15716,10 +15716,10 @@
         "Two 75-meter sides and one 50-meter side"
       ],
       "answerIndex": 1,
-      "rationale": "With 2x+y=200, area A=x(200-2x) is maximized at x=50 and y=100.",
+      "rationale": "Let x be each perpendicular side and y = 200 - 2x be the river-parallel side, giving area A(x) = x(200 - 2x) = 200x - 2x^2. Setting A'(x) = 200 - 4x = 0 gives x = 50 m and y = 100 m (with A'' = -4 < 0).",
       "choiceRationales": [
         "These dimensions satisfy 2(25)+150=200 meters of fence, yet the enclosed area is 25(150)=3,750 square meters, well below the 5,000 square meter maximum.",
-        "Best answer. With 2x+y=200, area A=x(200-2x) is maximized at x=50 and y=100.",
+        "Best answer. Let x be each perpendicular side and y = 200 - 2x be the river-parallel side, giving area A(x) = x(200 - 2x) = 200x - 2x^2. Setting A'(x) = 200 - 4x = 0 gives x = 50 m and y = 100 m (with A'' = -4 < 0).",
         "Making all three sides equal ignores the river boundary and encloses only about 4,444 m^2 instead of 5,000 m^2.",
         "Setting x=75 and y=50 uses all 200 meters of fence but yields only 3,750 square meters, below the vertex optimum x=50, y=100 giving 5,000."
       ],
@@ -15833,11 +15833,11 @@
         "Displacement 14; total distance 14"
       ],
       "answerIndex": 2,
-      "rationale": "Displacement adds signed areas, while total distance adds their magnitudes.",
+      "rationale": "Displacement equals the net signed integral of velocity, 10 + (-4) = 6, whereas total distance traveled integrates speed |v(t)| by summing absolute areas: |10| + |-4| = 10 + 4 = 14.",
       "choiceRationales": [
         "This swaps the definitions: displacement uses signed net area (6), while total distance sums absolute areas (14).",
         "Total distance integrates |v(t)|, so the negative velocity area -4 must be added positively (10+4=14) rather than canceling part of the motion.",
-        "Best answer. Displacement adds signed areas, while total distance adds their magnitudes.",
+        "Best answer. Displacement equals the net signed integral of velocity, 10 + (-4) = 6, whereas total distance traveled integrates speed |v(t)| by summing absolute areas: |10| + |-4| = 10 + 4 = 14.",
         "Displacement integrates signed velocity v(t), keeping backward motion negative to give 10-4=6 rather than adding both areas as positive."
       ],
       "misconceptionTags": [
@@ -16068,9 +16068,9 @@
         "36"
       ],
       "answerIndex": 0,
-      "rationale": "Each width is 2, and the right endpoints contribute 2[f(2)+f(4)]=2(5+9)=28.",
+      "rationale": "The two subintervals [0, 2] and [2, 4] each have width delta x = 2 and right endpoints x = 2 and x = 4. Summing width times right-endpoint heights gives 2*f(2) + 2*f(4) = 2(5) + 2(9) = 10 + 18 = 28.",
       "choiceRationales": [
-        "Best answer. Each width is 2, and the right endpoints contribute 2[f(2)+f(4)]=2(5+9)=28.",
+        "Best answer. The two subintervals [0, 2] and [2, 4] each have width delta x = 2 and right endpoints x = 2 and x = 4. Summing width times right-endpoint heights gives 2*f(2) + 2*f(4) = 2(5) + 2(9) = 10 + 18 = 28.",
         "Using left endpoints f(0)=1 and f(2)=5 gives the left Riemann sum 2(1+5)=12 instead of the right sum 28.",
         "Averaging left and right sums produces the trapezoidal approximation 20 rather than the right Riemann sum 28.",
         "Using width 2 on all three table entries 2(1+5+9)=30 or misusing width 4 overcounts the two subintervals."
@@ -16186,10 +16186,10 @@
         "40"
       ],
       "answerIndex": 1,
-      "rationale": "The trapezoidal sum is (2/2)[1+2(5)+9]=20.",
+      "rationale": "On [0,4] with two subintervals of width dx=2, the trapezoidal rule computes (dx/2)[f(0)+2f(2)+f(4)]=(2/2)[1+2(5)+9]=20.",
       "choiceRationales": [
         "Adding the two right-endpoint heights 5+9=14 omits the width factor and does not apply the trapezoid formula.",
-        "Best answer. The trapezoidal sum is (2/2)[1+2(5)+9]=20.",
+        "Best answer. On [0,4] with two subintervals of width dx=2, the trapezoidal rule computes (dx/2)[f(0)+2f(2)+f(4)]=(2/2)[1+2(5)+9]=20.",
         "Computing 2(5+9)=28 evaluates the right Riemann sum on [0,4] rather than averaging adjacent heights in the trapezoidal sum 2[(1+5)/2+(5+9)/2]=20.",
         "Forgetting the 1/2 in the trapezoid area formula (h/2)(b1+b2) doubles the approximation from 20 to 40."
       ],
@@ -16424,12 +16424,12 @@
         "2x^3-x"
       ],
       "answerIndex": 3,
-      "rationale": "Differentiate both moving bounds: (x^2)(2x)-x=2x^3-x.",
+      "rationale": "Applying the Fundamental Theorem of Calculus with the chain rule to both moving limits gives F'(x)=(x^2)*d/dx(x^2) - x*d/dx(x) = (x^2)(2x)-x = 2x^3-x.",
       "choiceRationales": [
         "This substitutes both bounds into the integrand t but omits multiplying the upper-bound term by the chain-rule derivative d/dx(x^2)=2x.",
         "This differentiates the limits into 2x and 1 without substituting the upper limit x^2 and lower limit x properly into the integrand t.",
         "This multiplies x^2 by x instead of 2x, dropping the coefficient 2 from the chain-rule derivative of the upper limit x^2.",
-        "Best answer. Differentiate both moving bounds: (x^2)(2x)-x=2x^3-x."
+        "Best answer. Applying the Fundamental Theorem of Calculus with the chain rule to both moving limits gives F'(x)=(x^2)*d/dx(x^2) - x*d/dx(x) = (x^2)(2x)-x = 2x^3-x."
       ],
       "misconceptionTags": [
         "A composite upper bound adds a derivative factor."
@@ -16541,9 +16541,9 @@
         "14"
       ],
       "answerIndex": 0,
-      "rationale": "Reversing the limits of integration changes the sign.",
+      "rationale": "By the reversal property of definite integrals, swapping the upper and lower limits negates the integral: integral_b^a f(x)dx = -integral_a^b f(x)dx = -7.",
       "choiceRationales": [
-        "Best answer. Reversing the limits of integration changes the sign.",
+        "Best answer. By the reversal property of definite integrals, swapping the upper and lower limits negates the integral: integral_b^a f(x)dx = -integral_a^b f(x)dx = -7.",
         "Reversing endpoints a and b flips the sign of the integral; an integral is guaranteed 0 only when both limits are equal.",
         "Keeping +7 ignores the definite-integral reversal property: swapping upper and lower bounds reverses the orientation and negates the value.",
         "Doubling 7 does not follow from interchanging integration limits; swapping the bounds from [a,b] to [b,a] negates the integral to -7."
@@ -16658,10 +16658,10 @@
         "-2 times the integral from 0 to 3 of f(x)dx"
       ],
       "answerIndex": 1,
-      "rationale": "Even-function symmetry makes the contributions on the two halves equal.",
+      "rationale": "An even function satisfies f(-x) = f(x), making its graph symmetric across the y-axis. Therefore the integral over [-3, 0] equals the integral over [0, 3], so integral_-3^3 f(x) dx = 2*integral_0^3 f(x) dx.",
       "choiceRationales": [
         "Symmetric cancellation to 0 applies to odd functions, whereas even functions mirror identically across the y-axis.",
-        "Best answer. Even-function symmetry makes the contributions on the two halves equal.",
+        "Best answer. An even function satisfies f(-x) = f(x), making its graph symmetric across the y-axis. Therefore the integral over [-3, 0] equals the integral over [0, 3], so integral_-3^3 f(x) dx = 2*integral_0^3 f(x) dx.",
         "Keeping only the half-interval [0,3] drops the equal signed area over [-3,0], cutting the total symmetric integral in half.",
         "Because an even function satisfies f(-x)=f(x), the left and right halves contribute identical signs rather than negating the integral."
       ],
@@ -17362,12 +17362,12 @@
         "Yes, because both sides equal e^x."
       ],
       "answerIndex": 3,
-      "rationale": "The derivative is e^x, and substituting the function into y-2 also gives e^x.",
+      "rationale": "Differentiating y = e^x + 2 gives y' = e^x, since the constant 2 has derivative 0. Substituting y = e^x + 2 into the right side gives y - 2 = (e^x + 2) - 2 = e^x, so both sides equal e^x for all x.",
       "choiceRationales": [
         "The constant term +2 has derivative 0 rather than surviving differentiation, leaving y prime=e^x, which exactly matches y-2=(e^x+2)-2=e^x.",
         "Substituting y=e^x+2 into the right-hand side y-2 cancels the constant 2 and simplifies to e^x rather than 2.",
         "Both y prime and y-2 simplify identically to e^x for every real number x, so the equation holds across the entire real line.",
-        "Best answer. The derivative is e^x, and substituting the function into y-2 also gives e^x."
+        "Best answer. Differentiating y = e^x + 2 gives y' = e^x, since the constant 2 has derivative 0. Substituting y = e^x + 2 into the right side gives y - 2 = (e^x + 2) - 2 = e^x, so both sides equal e^x for all x."
       ],
       "misconceptionTags": [
         "One matching point does not verify a solution."
@@ -17479,9 +17479,9 @@
         "3"
       ],
       "answerIndex": 0,
-      "rationale": "Substitute the point into the differential equation: -1+2=1.",
+      "rationale": "Each slope-field segment at (x, y) has slope equal to the value of dy/dx there. Substituting x = -1 and y = 2 into y' = x + y yields a slope of -1 + 2 = 1.",
       "choiceRationales": [
-        "Best answer. Substitute the point into the differential equation: -1+2=1.",
+        "Best answer. Each slope-field segment at (x, y) has slope equal to the value of dy/dx there. Substituting x = -1 and y = 2 into y' = x + y yields a slope of -1 + 2 = 1.",
         "Computing -1-2=-3 subtracts the y-coordinate instead of adding it; substituting (-1,2) directly into y prime=x+y gives -1+2=1.",
         "This reports only the x-coordinate -1 (or flips the sign of 1) instead of summing both coordinates x+y=-1+2=1.",
         "Adding the absolute values |-1|+|2|=3 drops the negative sign on x=-1 when evaluating the slope-field formula x+y."
@@ -17596,10 +17596,10 @@
         "x=0"
       ],
       "answerIndex": 1,
-      "rationale": "Horizontal segments have slope zero, so x-y=0 and therefore y=x.",
+      "rationale": "Slope-field segments are horizontal wherever the derivative equals zero. Setting y' = x - y = 0 and solving for y gives the line y = x, along which every segment has slope 0.",
       "choiceRationales": [
         "Along the line y=-x, the slope formula gives y prime=x-(-x)=2x, which is nonzero wherever x is nonzero rather than horizontal.",
-        "Best answer. Horizontal segments have slope zero, so x-y=0 and therefore y=x.",
+        "Best answer. Slope-field segments are horizontal wherever the derivative equals zero. Setting y' = x - y = 0 and solving for y gives the line y = x, along which every segment has slope 0.",
         "Along the x-axis y=0, the slope equals x-0=x, so the segments are horizontal only at the origin rather than along the whole line.",
         "Along the y-axis x=0, the slope equals 0-y=-y, which varies with y instead of remaining zero along the vertical axis."
       ],
@@ -17950,9 +17950,9 @@
         "1/(2h)"
       ],
       "answerIndex": 0,
-      "rationale": "The condition Q(h)=Q(0)/2 gives e^(kh)=1/2, so k=-ln(2)/h.",
+      "rationale": "Exponential decay Q'=kQ satisfies Q(t)=Q(0)e^(kt). Setting Q(h)=Q(0)/2 yields e^(kh)=1/2; taking natural logs gives kh=ln(1/2)=-ln(2), so k=-ln(2)/h.",
       "choiceRationales": [
-        "Best answer. The condition Q(h)=Q(0)/2 gives e^(kh)=1/2, so k=-ln(2)/h.",
+        "Best answer. Exponential decay Q'=kQ satisfies Q(t)=Q(0)e^(kt). Setting Q(h)=Q(0)/2 yields e^(kh)=1/2; taking natural logs gives kh=ln(1/2)=-ln(2), so k=-ln(2)/h.",
         "For decay to half the initial amount, ln(1/2)=-ln(2) is negative, so a positive k models doubling rather than half-life.",
         "Setting e^(kh)=1/2 gives kh=-ln(2), so solving for k divides by the half-life h rather than multiplying by h.",
         "Solving e^(kh)=1/2 for k requires taking the natural logarithm of 1/2 to get -ln(2) before dividing by h, not dividing 1/2 by h."
@@ -18068,10 +18068,10 @@
         "There are no equilibria"
       ],
       "answerIndex": 1,
-      "rationale": "Equilibria make the rate zero, which occurs when P=0 or 1-P/K=0.",
+      "rationale": "Equilibrium (constant) solutions satisfy P' = 0 for all t. Setting kP(1 - P/K) = 0 with k > 0 gives P = 0 or 1 - P/K = 0, yielding the two equilibrium populations P = 0 and P = K.",
       "choiceRationales": [
         "At P=K/2 the logistic growth rate P prime reaches its positive maximum rather than zero, so P=K/2 is an inflection level, not an equilibrium.",
-        "Best answer. Equilibria make the rate zero, which occurs when P=0 or 1-P/K=0.",
+        "Best answer. Equilibrium (constant) solutions satisfy P' = 0 for all t. Setting kP(1 - P/K) = 0 with k > 0 gives P = 0 or 1 - P/K = 0, yielding the two equilibrium populations P = 0 and P = K.",
         "The growth-rate parameter k is not a root of kP(1-P/K)=0; setting the first factor to zero gives the lower equilibrium P=0.",
         "Setting the autonomous logistic right-hand side kP(1-P/K) equal to zero yields two constant equilibrium solutions, namely P=0 and P=K."
       ],
@@ -18420,9 +18420,9 @@
         "7"
       ],
       "answerIndex": 0,
-      "rationale": "Final position equals initial position plus displacement: 5+(-2)=3.",
+      "rationale": "By the Fundamental Theorem of Calculus, final position equals initial position plus net displacement: x(4) = x(0) + integral_0^4 v(t) dt. Substituting x(0) = 5 and displacement -2 gives 5 + (-2) = 3.",
       "choiceRationales": [
-        "Best answer. Final position equals initial position plus displacement: 5+(-2)=3.",
+        "Best answer. By the Fundamental Theorem of Calculus, final position equals initial position plus net displacement: x(4) = x(0) + integral_0^4 v(t) dt. Substituting x(0) = 5 and displacement -2 gives 5 + (-2) = 3.",
         "Computing -2-5=-7 subtracts the starting position instead of adding initial position s(0)=5 plus net displacement -2 to get s(4)=3.",
         "This reports only the net displacement integral over [0,4] without adding it to the starting position s(0)=5.",
         "Adding 5+2=7 ignores the negative sign on the velocity integral -2, treating backward displacement as forward motion."
@@ -19252,12 +19252,12 @@
         "8pi/3"
       ],
       "answerIndex": 3,
-      "rationale": "Integrating pi(2-x)^2 from 0 to 2 gives 8pi/3.",
+      "rationale": "Each circular cross section of radius 2-x has area pi(2-x)^2. Integrating from 0 to 2 gives pi[-(2-x)^3/3]_0^2 = pi(0 - (-8/3)) = 8pi/3.",
       "choiceRationales": [
         "Using 2^2=4 instead of 2^3=8 when evaluating pi[(2-x)^3/3] across [0,2] forgets to cube the radius endpoint and halves the volume.",
         "Integrating pi(2-x) without squaring the radius computes a linear integral rather than summing circular areas pi r^2.",
         "Omitting the denominator 3 from the reverse power rule when integrating (2-x)^2 triples the true solid volume from 8pi/3 to 8pi.",
-        "Best answer. Integrating pi(2-x)^2 from 0 to 2 gives 8pi/3."
+        "Best answer. Each circular cross section of radius 2-x has area pi(2-x)^2. Integrating from 0 to 2 gives pi[-(2-x)^3/3]_0^2 = pi(0 - (-8/3)) = 8pi/3."
       ],
       "misconceptionTags": [
         "A shifted axis changes both radii."

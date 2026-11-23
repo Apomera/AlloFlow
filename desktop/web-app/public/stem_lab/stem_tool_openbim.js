@@ -911,13 +911,37 @@
                 rooms.map(function (sp, rIdx) {
                   var rx = bldgLeft + rIdx * roomW;
                   var winW = Math.min(22, Math.max(10, roomW - 14));
-                  var shortSp = plain(sp, rooms.length >= 4 ? 11 : (rooms.length === 3 ? 15 : 22));
+                  var maxCh = rooms.length >= 4 ? 13 : (rooms.length === 3 ? 17 : 24);
+                  var cleanSp = plain(sp, 40);
+                  var spLines = (function () {
+                    if (cleanSp.length <= maxCh) return [cleanSp];
+                    var words = cleanSp.split(/\s+/);
+                    if (floorH >= 38 && words.length > 1) {
+                      var l1 = '', l2 = '';
+                      for (var wi = 0; wi < words.length; wi++) {
+                        var cand = l1 ? (l1 + ' ' + words[wi]) : words[wi];
+                        if (!l2 && cand.length <= maxCh) l1 = cand;
+                        else l2 = l2 ? (l2 + ' ' + words[wi]) : words[wi];
+                      }
+                      if (l2.length > maxCh) l2 = l2.slice(0, maxCh - 1).trim() + '\u2026';
+                      return l1 && l2 ? [l1, l2] : [cleanSp.slice(0, maxCh - 1).trim() + '\u2026'];
+                    }
+                    var cut = cleanSp.slice(0, maxCh - 1);
+                    var spIdx = cut.lastIndexOf(' ');
+                    return [(spIdx > 3 ? cut.slice(0, spIdx) : cut).trim() + '\u2026'];
+                  })();
+                  var spCenterX = rx + roomW / 2;
+                  var spBaseY = spLines.length > 1 ? (yBottom - Math.max(16, floorH * 0.34)) : (yBottom - Math.max(9, floorH * 0.28));
                   return el('g', { key: sp + '-' + rIdx },
                     rIdx > 0 ? el('line', { className: 'ob-cad-dash-slow', x1: rx, y1: yTop, x2: rx, y2: yBottom - 3, stroke: colors.bpStroke, strokeWidth: 1.1, strokeDasharray: '4 2' }) : null,
                     // Schematic window mullion with subtle glazing sheen
                     el('rect', { x: rx + 6, y: yTop + 6, width: winW, height: 8, rx: 1.5, fill: colors.bpFill, stroke: colors.bpMuted, strokeWidth: 0.9 }),
                     !isContrast && el('line', { className: 'ob-glaze-shimmer', x1: rx + 9, y1: yTop + 13, x2: rx + 14, y2: yTop + 7, stroke: '#e0f2fe', strokeWidth: 0.9, style: { animationDelay: ((idx * 4 + rIdx) * 0.35) + 's' } }),
-                    el('text', { x: rx + roomW / 2, y: yBottom - Math.max(9, floorH * 0.28), textAnchor: 'middle', fill: colors.bpInk, fontSize: rooms.length >= 4 ? 8 : 9, fontWeight: '700' }, shortSp)
+                    el('text', { x: spCenterX, y: spBaseY, textAnchor: 'middle', fill: colors.bpInk, fontSize: rooms.length >= 4 ? 8 : 9, fontWeight: '700' },
+                      spLines.length > 1
+                        ? spLines.map(function (ln, li) { return el('tspan', { key: li, x: spCenterX, dy: li === 0 ? 0 : 9.5 }, ln); })
+                        : spLines[0]
+                    )
                   );
                 })
               );

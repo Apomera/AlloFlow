@@ -117,18 +117,16 @@
       "memoryAids": 10,
       "diagrams": 5,
       "diagramPlacements": 5,
-      "glossaryTerms": 0,
+      "glossaryTerms": 25,
       "constructedResponseWorkshops": 9,
       "topicDiagnosticRoutes": 0,
-      "remediationPlaybooks": 0,
+      "remediationPlaybooks": 6,
       "studySessionPlans": 0,
       "spacedReviewPlans": 0,
       "sourceCatalog": 3
     },
     "emptyLibraryLayers": [
-      "glossaryTerms",
       "topicDiagnosticRoutes",
-      "remediationPlaybooks",
       "studySessionPlans",
       "spacedReviewPlans"
     ],
@@ -198,8 +196,8 @@
     "nativeLearningRoutes": 240
   },
   "inputs": {
-    "packSha256": "905eece1f28583275233ae422bf78cdb250b042a1c8b764cb3a2a459add49ead",
-    "learningLibrarySha256": "2a7efc3b3ed043a1d2e4a2014bd2027c2e3129f796a5442b5177153fca820465",
+    "packSha256": "126c0b8f5e9b70dfcb5fc660353924f19d3d1f9bf069046e42ae128256cabc26",
+    "learningLibrarySha256": "b09298db91f62341e637a08080568785ed52d45a99f6ca6e4fd6c2523b40d262",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
     "reviewedAt": "2026-08-20"
   },

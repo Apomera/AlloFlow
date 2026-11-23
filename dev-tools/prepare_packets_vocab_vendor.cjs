@@ -12,6 +12,8 @@
 //     --wordnet <english-wordnet-2025.xml.gz>     Open English WordNet 2025 (WN-LMF XML)
 //     --nawl    <NAWL_12_with_en_definitions.csv> New Academic Word List 1.2
 //     --units   <unit_words.json>                 the hand-made K-8 unit list (science, social, ela)
+//     [--max-common 10000]                        optional cap on common words by reading-library rank (e.g. 40000 for extended shards)
+//     [--phrases]                                 optional: also retain clean 2-3 word multi-word phrases from Wiktionary/WordNet
 //
 // Writes data/vendor/vocab/{simple_wiktionary_en.json, wiktionary_en.json, wordnet_en.json, wordlists_en.json}.
 // The word list and familiarity numbers come from word_sounds_wordlist_en.js (CYP-LEX Zipf, CC BY 4.0).
@@ -32,11 +34,13 @@ const SKIP_TAGS = /vulgar|offensive|derogat|slur|ethnic|swear|profan|disparag|se
 
 function main() {
   const files = { simple: need('--simple'), wiktionary: need('--wiktionary'), wordnet: need('--wordnet'), nawl: need('--nawl'), units: need('--units') };
+  const maxCommon = Math.max(1000, Number(arg('--max-common')) || 10000);
+  const keepPhrases = process.argv.includes('--phrases');
   // ---- word lists ----
   const ws = require(path.join(ROOT, 'word_sounds_wordlist_en.js'));
   const rows = ws.rows();
   const builtin = rows.filter((r) => r.hasClip && !r.blocked && !r.soft).map((r) => r.word);
-  const common = rows.filter((r) => r.rank > 0 && !r.blocked && !r.soft && /^[a-z]+$/.test(r.word)).sort((a, b) => a.rank - b.rank || (a.word < b.word ? -1 : 1)).slice(0, 10000).map((r) => r.word);
+  const common = rows.filter((r) => r.rank > 0 && !r.blocked && !r.soft && /^[a-z]+$/.test(r.word)).sort((a, b) => a.rank - b.rank || (a.word < b.word ? -1 : 1)).slice(0, maxCommon).map((r) => r.word);
   const units = JSON.parse(fs.readFileSync(files.units, 'utf8'));
   const PW = { n: 'noun', v: 'verb', adj: 'adj', adv: 'adv' };
   const unit = {};
@@ -81,8 +85,11 @@ function main() {
           cats: (s.categories || []).map((x) => typeof x === 'string' ? x : x.name).filter((n) => /vulgar|offensive|derogat|slur|sex|drug|slang|ethnic|swear|profan|disparag/i.test(n)).slice(0, 6),
           ex: (s.examples || []).map((x) => ({ t: x.text, ref: x.ref ? 1 : 0 })).slice(0, 8), syn: (s.synonyms || []).map((x) => x.word).slice(0, 10) })) };
     }
-    if (!c.word || !(want.has(c.word))) continue;
+    if (!c.word || !(want.has(c.word) || (keepPhrases && /^[a-z]+(?: [a-z]+){1,2}$/.test(c.word)))) continue;
     (enAll[c.word] || (enAll[c.word] = [])).push(c);
+  }
+  if (keepPhrases) {
+    for (const w of Object.keys(enAll)) if (w.includes(' ')) want.add(w);
   }
   for (const w of [...want]) for (const e of enAll[w] || []) for (const s of e.senses) for (const b of s.form_of || []) if (WORD.test(b)) want.add(b);
 

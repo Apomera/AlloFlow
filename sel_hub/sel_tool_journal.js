@@ -28,6 +28,29 @@ window.SelHub = window.SelHub || {
     lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(lr);
   })();
+  // WCAG 2.3.3 / 2.4.7 / forced-colors scoped styles for Feelings Journal
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-journal-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-journal-a11y-css';
+    st.textContent = [
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .selh-journal *, .selh-journal *::before, .selh-journal *::after {',
+      '    animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;',
+      '    transition-duration: 0.01ms !important; scroll-behavior: auto !important;',
+      '  }',
+      '}',
+      '.selh-journal button:focus-visible, .selh-journal input:focus-visible, .selh-journal select:focus-visible, .selh-journal textarea:focus-visible, .selh-journal summary:focus-visible, .selh-journal a:focus-visible, .selh-journal [tabindex]:focus-visible {',
+      '  outline: 3px solid #ec4899 !important; outline-offset: 2px !important;',
+      '}',
+      '@media (forced-colors: active) {',
+      '  .selh-journal button:focus-visible, .selh-journal input:focus-visible, .selh-journal select:focus-visible, .selh-journal textarea:focus-visible, .selh-journal summary:focus-visible, .selh-journal a:focus-visible, .selh-journal [tabindex]:focus-visible {',
+      '    outline: 2px solid Highlight !important; outline-offset: 2px !important;',
+      '  }',
+      '}'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
 
   // ══════════════════════════════════════════════════════════════
   // ── Sound Effects Engine (Web Audio API) ──
@@ -639,7 +662,7 @@ window.SelHub = window.SelHub || {
       var _jouT = (ctx && ctx.theme) || {};
       var _jouHC = !!_jouT.isContrast, _jouL = !_jouHC && !_jouT.isDark;
       var _jou_BGL = {'#1e293b':'#ffffff','#0f172a':'#f8fafc'}, _jou_BGH = {'#1e293b':'#000000','#0f172a':'#000000'};
-      var _jou_FGL = {'#94a3b8':'#475569','#cbd5e1':'#334155','#f1f5f9':'#0f172a','#e2e8f0':'#1e293b','#ec4899':'#9d174d','#10b981':'#047857','#22c55e':'#15803d','#a855f7':'#7e22ce','#8b5cf6':'#6d28d9','#0ea5e9':'#0369a1','#f59e0b':'#b45309','#d97706':'#b45309','#ef4444':'#b91c1c','#3b82f6':'#1d4ed8'}, _jou_FGH = {'#ec4899':'#ffff00','#94a3b8':'#ffff00','#cbd5e1':'#ffff00','#f1f5f9':'#ffff00','#f59e0b':'#ffff00','#d97706':'#ffff00','#10b981':'#ffff00','#22c55e':'#ffff00','#a855f7':'#ffff00','#0ea5e9':'#ffff00','#3b82f6':'#ffff00','#e2e8f0':'#ffff00','#fff':'#ffff00','#ef4444':'#ffff00','#8b5cf6':'#ffff00'};
+      var _jou_FGL = {'#94a3b8':'#475569','#64748b':'#475569','#cbd5e1':'#334155','#f1f5f9':'#0f172a','#e2e8f0':'#1e293b','#ec4899':'#9d174d','#10b981':'#047857','#22c55e':'#15803d','#a855f7':'#7e22ce','#8b5cf6':'#6d28d9','#0ea5e9':'#0369a1','#f59e0b':'#b45309','#d97706':'#b45309','#ef4444':'#b91c1c','#3b82f6':'#1d4ed8'}, _jou_FGH = {'#ec4899':'#ffff00','#94a3b8':'#ffff00','#cbd5e1':'#ffff00','#f1f5f9':'#ffff00','#f59e0b':'#ffff00','#d97706':'#ffff00','#10b981':'#ffff00','#22c55e':'#ffff00','#a855f7':'#ffff00','#0ea5e9':'#ffff00','#3b82f6':'#ffff00','#e2e8f0':'#ffff00','#fff':'#ffff00','#ef4444':'#ffff00','#8b5cf6':'#ffff00'};
       var _jou_BDL = {'#1e293b':'#e5e7eb','#334155':'#e2e8f0','#475569':'#cbd5e1'}, _jou_BDH = {'#1e293b':'#ffff00','#334155':'#ffff00','#475569':'#ffff00'};
       var _jouBg = function(h){ return _jouHC ? (_jou_BGH[h]||h) : (_jouL ? (_jou_BGL[h]||h) : h); };
       // Dark-mode foreground remap. The tool shell is always dark, so these
@@ -854,26 +877,47 @@ window.SelHub = window.SelHub || {
           { id: 'badges',   icon: '\uD83C\uDFC5', label: 'Badges' }
         ];
 
+        function isImeComposing(e) {
+          return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+        }
+
         var tabBar = h('div', { style: { display: 'flex', borderBottom: '1px solid ' + _jouBd('#1e293b'), padding: '0 8px', alignItems: 'center', flexShrink: 0, overflowX: 'auto', WebkitOverflowScrolling: 'touch' } },
           h('div', { role: 'tablist', 'aria-label': 'Feelings Journal tabs', style: { display: 'flex' } },
             TABS.map(function(t, ti) {
             var isActive = activeTab === t.id;
-            return h('button', { 'aria-label': t.icon + ' ' + t.label,
+            return h('button', { type: 'button', 'aria-label': t.icon + ' ' + t.label,
               key: t.id,
               id: 'journal-tab-' + t.id,
               role: 'tab', 'aria-selected': isActive, 'aria-controls': 'sel-journal-content',
               tabIndex: isActive ? 0 : -1,
               onClick: function() { upd('activeTab', t.id); if (soundEnabled) sfxClick(); },
+              onKeyDown: function(e) {
+                if (isImeComposing(e) || e.ctrlKey || e.metaKey || e.altKey) return;
+                var next = null;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (ti + 1) % TABS.length;
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (ti - 1 + TABS.length) % TABS.length;
+                else if (e.key === 'Home') next = 0;
+                else if (e.key === 'End') next = TABS.length - 1;
+                if (next === null) return;
+                e.preventDefault();
+                var targetId = TABS[next].id;
+                upd('activeTab', targetId);
+                if (soundEnabled) sfxClick();
+                setTimeout(function() {
+                  var el = typeof document !== 'undefined' && document.getElementById('journal-tab-' + targetId);
+                  if (el && el.focus) el.focus();
+                }, 0);
+              },
               onFocus: function(ev) { if (ev.currentTarget && ev.currentTarget.scrollIntoView) ev.currentTarget.scrollIntoView({ block: 'nearest', inline: 'nearest' }); },
               style: {
-                padding: '10px 14px', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: isActive ? 700 : 500,
+                padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderTop: 'none', borderRight: 'none', borderLeft: 'none', cursor: 'pointer', fontSize: 12, fontWeight: isActive ? 700 : 500,
                 background: isActive ? (_jouHC ? '#000000' : ACCENT_DIM) : 'transparent', color: isActive ? _jouFg(ACCENT) : _jouFg('#94a3b8'), transition: 'all 0.15s',
                 borderBottom: isActive ? '2px solid ' + (_jouHC ? '#ffff00' : ACCENT) : '2px solid transparent', borderRadius: 0
               }
             }, t.icon + ' ' + t.label);
             })
           ),
-          h('button', { 'aria-label': soundEnabled ? 'Mute' : 'Unmute', onClick: function() { upd('soundEnabled', !soundEnabled); }, onFocus: function(ev) { if (ev.currentTarget && ev.currentTarget.scrollIntoView) ev.currentTarget.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }, style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _jouFg('#94a3b8') }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07')
+          h('button', { type: 'button', 'aria-label': soundEnabled ? 'Mute' : 'Unmute', 'aria-pressed': !!soundEnabled, onClick: function() { upd('soundEnabled', !soundEnabled); }, onFocus: function(ev) { if (ev.currentTarget && ev.currentTarget.scrollIntoView) ev.currentTarget.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }, style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '8px 10px', minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: _jouFg('#94a3b8') }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07')
         );
 
         // ══════════════════════════════════════════════════════
@@ -889,13 +933,16 @@ window.SelHub = window.SelHub || {
           };
           var _selHdrInk = function(c) { if (!/^#[0-9a-fA-F]{6}$/.test(c || '')) return c; var p = [1, 3, 5].map(function(i) { return parseInt(c.slice(i, i + 2), 16); }); var L = function(a) { return a.reduce(function(s, v, i) { v /= 255; v = v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); return s + [0.2126, 0.7152, 0.0722][i] * v; }, 0); }; var lb = L(p.map(function(v, i) { return v * 0.25 + [15, 23, 42][i] * 0.75; })); for (var m = 0; m <= 1; m += 0.04) { var q = p.map(function(v) { return Math.round(v + (255 - v) * m); }); if ((L(q) + 0.05) / (lb + 0.05) >= 4.6) return m ? 'rgb(' + q.join(',') + ')' : c; } return '#ffffff'; }; // section title ink on the tinted dark card (1.4.3)
           var meta = TAB_META[activeTab] || TAB_META.checkin;
+          var heroEdge = _jouHC ? '1px solid #ffff00' : ('1px solid ' + meta.accent + '55');
           return h('div', {
             style: {
               margin: '8px 12px 12px',
               padding: '12px 14px',
               borderRadius: 12,
               background: _jouHC ? '#000000' : (_jouL ? _jouBg('#0f172a') : ('linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), ' + _jouBg('#0f172a'))),
-              border: _jouHC ? '1px solid #ffff00' : ('1px solid ' + meta.accent + '55'),
+              borderTop: heroEdge,
+              borderRight: heroEdge,
+              borderBottom: heroEdge,
               borderLeft: '4px solid ' + (_jouHC ? '#ffff00' : meta.accent),
               display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
             }
@@ -912,13 +959,16 @@ window.SelHub = window.SelHub || {
         // ── Badge Popup Overlay ──
         // ══════════════════════════════════════════════════════
         function journalLaunchMetric(label, value, hint, color) {
+          var mEdge = '1px solid ' + _jouBd('#334155');
           return h('div', {
             style: {
               minHeight: 74,
               padding: 12,
               borderRadius: 10,
               background: _jouBg('#0f172a'),
-              border: '1px solid ' + _jouBd('#334155'),
+              borderTop: mEdge,
+              borderRight: mEdge,
+              borderBottom: mEdge,
               borderLeft: '4px solid ' + color
             }
           },
@@ -929,14 +979,18 @@ window.SelHub = window.SelHub || {
         }
 
         function journalLaunchCard(title, blurb, actionLabel, tabId, color) {
+          var cEdge = '1px solid ' + _jouBd('#334155');
           return h('button', {
+            type: 'button',
             onClick: function() { journalFocus(tabId === 'journal' ? 'sel-journal-entry' : 'sel-journal-content'); if (tabId === 'journal') upd({ activeTab: tabId, letterMode: null, letterViewingPast: false, jViewingPast: false }); else upd('activeTab', tabId); if (soundEnabled) sfxClick(); },
             'aria-label': actionLabel + ': ' + title,
             style: {
               minHeight: 124,
               padding: 14,
               borderRadius: 12,
-              border: '1px solid ' + _jouBd('#334155'),
+              borderTop: cEdge,
+              borderRight: cEdge,
+              borderBottom: cEdge,
               borderLeft: '4px solid ' + color,
               background: _jouBg('#0f172a'),
               color: _jouFg('#e2e8f0'),
@@ -1009,6 +1063,7 @@ window.SelHub = window.SelHub || {
             // failure: three seconds is the whole interaction for anyone reading
             // slowly, listening to a screen reader, or working a switch.
             onKeyDown: function(e) {
+              if (isImeComposing(e)) return;
               if (e.key === 'Escape') { e.preventDefault(); upd('showBadgePopup', null); return; }
               // Honour aria-modal: keep Tab inside the dialog. One control here,
               // so first === last and Tab holds focus on it.
@@ -1020,16 +1075,16 @@ window.SelHub = window.SelHub || {
               if (e.shiftKey && (act === first || act === e.currentTarget)) { e.preventDefault(); last.focus(); }
               else if (!e.shiftKey && act === last) { e.preventDefault(); first.focus(); }
             },
-            style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, background: 'rgba(0,0,0,0.6)' }, onClick: function() { upd('showBadgePopup', null); } },
+            style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, background: 'rgba(0,0,0,0.6)' }, onClick: function(e) { if (e.target === e.currentTarget) upd('showBadgePopup', null); } },
               h('div', { style: { background: _jouBg('#1e293b'), border: '2px solid ' + ACCENT, borderRadius: 20, padding: '32px 40px', textAlign: 'center', maxWidth: 300 } },
-                h('div', { style: { fontSize: 48, marginBottom: 8 } }, popBadge.icon),
+                h('div', { style: { fontSize: 48, marginBottom: 8 }, 'aria-hidden': 'true' }, popBadge.icon),
                 h('div', { style: { fontSize: 10, color: _jouFg(ACCENT), textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4, fontWeight: 700 } }, 'Badge Earned!'),
                 h('div', { style: { fontSize: 16, fontWeight: 700, color: _jouFg('#f1f5f9'), marginBottom: 4 } }, popBadge.name),
                 h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8') } }, popBadge.desc),
               h('button', {
                 type: 'button',
                 onClick: function() { upd('showBadgePopup', null); },
-                style: { marginTop: 18, padding: '9px 22px', borderRadius: 10, border: _jouHC ? '1px solid #ffff00' : 'none', background: _jouHC ? '#000000' : '#9d174d', color: _jouHC ? '#ffff00' : '#ffffff', fontSize: 14, fontWeight: 800, cursor: 'pointer' }
+                style: { marginTop: 18, padding: '10px 22px', minHeight: 44, borderRadius: 10, border: _jouHC ? '1px solid #ffff00' : 'none', background: _jouHC ? '#000000' : '#9d174d', color: _jouHC ? '#ffff00' : '#ffffff', fontSize: 14, fontWeight: 800, cursor: 'pointer' }
               }, 'Nice')
               )
             );
@@ -1228,6 +1283,7 @@ window.SelHub = window.SelHub || {
                 id: 'sel-checkin-gratitude', type: 'text', value: ciGratitude,
                 'aria-label': 'Gratitude entry',
                 onChange: function(e) { upd('ciGratitude', e.target.value); },
+                onKeyDown: function(e) { if (!isImeComposing(e) && e.key === 'Escape' && ciGratitude) { e.preventDefault(); upd('ciGratitude', ''); } },
                 placeholder: band === 'elementary' ? 'I\u2019m thankful for... Don\'t share personal info (like full names).' : 'Something I appreciate... Don\'t share personal info (names, school, etc.).',
                 style: { width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + ACCENT_MED, background: _jouBg('#0f172a'), color: _jouFg('#e2e8f0'), fontSize: 16, minHeight: 44, boxSizing: 'border-box' }
               })
@@ -2058,7 +2114,7 @@ window.SelHub = window.SelHub || {
                     '\u2605 Emotion Wordsmith! You\u2019ve used 10+ feeling words.'
                   ),
                   vocabCount < 10 && h('div', { style: { marginTop: 8 } },
-                    h('div', { style: { width: '100%', height: 6, borderRadius: 3, background: _jouBg('#1e293b'), overflow: 'hidden' } },
+                    h('div', { role: 'progressbar', 'aria-label': 'Emotion vocabulary badge progress', 'aria-valuenow': vocabCount, 'aria-valuemin': 0, 'aria-valuemax': 10, 'aria-valuetext': vocabCount + ' of 10 feeling words used', style: { width: '100%', height: 6, borderRadius: 3, background: _jouBg('#1e293b'), overflow: 'hidden' } },
                       h('div', { style: { width: Math.round(vocabCount / 10 * 100) + '%', height: '100%', borderRadius: 3, background: ACCENT, transition: 'width 0.3s' } })
                     ),
                     h('div', { style: { fontSize: 10, color: _jouFg('#94a3b8'), textAlign: 'center', marginTop: 4 } },
@@ -2074,12 +2130,12 @@ window.SelHub = window.SelHub || {
                 (_journalTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null,
                 aiInsight ? h('div', null,
                   h('p', { style: { fontSize: 13, color: _jouFg('#e2e8f0'), lineHeight: 1.6 } }, aiInsight),
-                  callTTS && h('button', { 'aria-label': 'Read aloud',
+                  callTTS && h('button', { type: 'button', 'aria-label': 'Read aloud',
                     onClick: function() { speak(aiInsight); },
-                    style: { marginTop: 6, background: 'none', border: 'none', color: _jouFg(ACCENT), fontSize: 10, cursor: 'pointer' }
+                    style: { marginTop: 6, background: 'none', border: '1px solid ' + ACCENT_MED, borderRadius: 8, padding: '8px 12px', minHeight: 44, color: _jouFg(ACCENT), fontSize: 12, fontWeight: 700, cursor: 'pointer' }
                   }, '\uD83D\uDD0A Read aloud')
                 ) : !_jrAiOn ? null :
-                h('button', { 'aria-label': aiLoading ? 'Generating insight\u2026' : 'Generate AI insight',
+                h('button', { type: 'button', 'aria-label': aiLoading ? 'Generating insight\u2026' : 'Generate AI insight',
                   onClick: function() {
                     if (!_jrAiOn || aiLoading || checkIns.length < 2) {
                       if (checkIns.length < 2) addToast('Need at least 2 check-ins for AI insights!', 'warning');
@@ -2147,7 +2203,7 @@ window.SelHub = window.SelHub || {
                   },
                   disabled: aiLoading || checkIns.length < 2,
                   style: {
-                    padding: '10px 20px', borderRadius: 10, border: _jouHC ? '1px solid #ffff00' : 'none',
+                    padding: '10px 20px', minHeight: 44, borderRadius: 10, border: _jouHC ? '1px solid #ffff00' : 'none',
                     background: _jouHC ? '#000000' : (checkIns.length >= 2 ? '#9d174d' : '#334155'), color: _jouHC ? '#ffff00' : '#ffffff',
                     fontWeight: 600, fontSize: 12, cursor: checkIns.length >= 2 ? 'pointer' : 'not-allowed'
                   }
@@ -2170,7 +2226,7 @@ window.SelHub = window.SelHub || {
               earnedCount + ' of ' + shownBadges.length + ' earned'
             ),
             h('div', { style: { textAlign: 'center', marginBottom: 20 } },
-              h('div', { style: { width: '100%', height: 8, borderRadius: 4, background: _jouBg('#1e293b'), overflow: 'hidden' } },
+              h('div', { role: 'progressbar', 'aria-label': 'Badges earned progress', 'aria-valuenow': earnedCount, 'aria-valuemin': 0, 'aria-valuemax': shownBadges.length, 'aria-valuetext': earnedCount + ' of ' + shownBadges.length + ' badges earned', style: { width: '100%', height: 8, borderRadius: 4, background: _jouBg('#1e293b'), overflow: 'hidden' } },
                 h('div', { style: { width: Math.round(Math.min(1, earnedCount / shownBadges.length) * 100) + '%', height: '100%', borderRadius: 4, background: ACCENT, transition: 'width 0.3s' } })
               )
             ),
@@ -2183,7 +2239,7 @@ window.SelHub = window.SelHub || {
                   border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? ACCENT_MED : '#475569'),
                   transition: 'all 0.2s'
                 } },
-                  h('div', { style: { fontSize: 28, marginBottom: 4, filter: earned ? 'none' : 'grayscale(1)' } }, b.icon),
+                  h('div', { style: { fontSize: 28, marginBottom: 4, filter: earned ? 'none' : 'grayscale(1)' }, 'aria-hidden': 'true' }, b.icon),
                   h('div', { style: { fontSize: 12, fontWeight: 700, color: earned ? _jouFg('#f1f5f9') : _jouFg('#94a3b8'), marginBottom: 2 } }, b.name),
                   h('div', { style: { fontSize: 10, color: _jouFg('#94a3b8'), lineHeight: 1.4 } }, b.desc),
                   earned && h('div', { style: { fontSize: 11, color: _jouFg(ACCENT), marginTop: 4 } }, '\u2713 ' + new Date(earnedBadges[b.id]).toLocaleDateString())
@@ -2198,7 +2254,7 @@ window.SelHub = window.SelHub || {
         // ══════════════════════════════════════════════════════
         var content = checkinContent || journalContent || calendarContent || insightsContent || badgesContent;
 
-        return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
+        return h('div', { className: 'selh-journal', style: { display: 'flex', flexDirection: 'column', height: '100%' } },
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('journal', h, ctx) : null),
           tabBar,
           heroBand,

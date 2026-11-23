@@ -5738,7 +5738,10 @@
     "source_choice_ambiguous": "Hitamwo uburyo bwo gusoma muri Hisunzwe imbere yo gukora. Hari uburyo burenze bumwe bwo gusoma.",
     "source_choices_load_failed": "Amahitamwo y'uburyo bwo gusoma ntiyashoboye kuza. Ongera ugerageze.",
     "submission_tools_still_loading": "Ibikoresho vyo kwohereza biracariko biraza. Ongera ukande Ohereza.",
-    "blank_created": "Hakozwe {title} itarimwo ikintu. Uyuzuze imbere yo kuyisangiza."
+    "blank_created": "Hakozwe {title} itarimwo ikintu. Uyuzuze imbere yo kuyisangiza.",
+    "sent_to_read_along": "Igice c'inyandiko carungitswe mu Gakoresho ko Gusoma Hamwe ku rundi rupapuro.",
+    "read_along_handoff_failed": "Ntivyashobotse kurungika inyandiko y'imfatakibanza mu Gakoresho ko Gusoma Hamwe.",
+    "read_along_no_text": "Shiramwo canke wandike n'ijwi inyandiko nshingiro imbere yo kurungika mu Gakoresho ko Gusoma Hamwe."
   },
   "large_file": {
     "modal_title": "Inyinjiza Idosiye Nini ya Audio",
@@ -5755,7 +5758,8 @@
     "chunk_info": "Audio igabanyirizwa mu chunks z'amaminota 5 ku gutunganya",
     "chunk_progress": "Chunk {current} muri {total}",
     "audio_only_error": "Ubu ni idosiye z'ijwi gusa (MP3, WAV, n'izindi) zishyigikiwe ku chunked transcription.",
-    "starting": "Iratangira..."
+    "starting": "Iratangira...",
+    "engine_legend": "Uburyo bwo guhindura ijwi mu nyandiko"
   },
   "formatting": {
     "bold": "Bold (**inyandiko**)",
@@ -6096,7 +6100,8 @@
       "analyzing_short": "Birasesengurwa...",
       "generate_short": "Kora",
       "books_short": "Ibitabu",
-      "books_hint": "Ugurura ibitabu bifise amashusho: igitabu ico ari co cose gishobora kuba icandikano cawe c'inkomoko"
+      "books_hint": "Ugurura ibitabu bifise amashusho: igitabu ico ari co cose gishobora kuba icandikano cawe c'inkomoko",
+      "dictate_hint": "Andika inyandiko yawe nshingiro n'ijwi ukoresheje Whisper yo ku gikoresho n'isuzuma rya Gemini ubishatse"
     },
     "status_generating": "Generating imvo inyandiko...",
     "success_long_form": "birebire-form inyandiko vyakozwe successfully!",
@@ -6141,7 +6146,8 @@
     "qs_generate": "Kora uhereye ku ngingo",
     "qs_generate_sub": "AI irakwandikira",
     "length_presets": "Uburebure bwateguwe",
-    "length_preset_choose": "Ivyateguwe…"
+    "length_preset_choose": "Ivyateguwe…",
+    "dictate_or_record": "Kwandika n'ijwi canke gufata ijwi"
   },
   "wizard": {
     "title": "vyihuta Tangura",
@@ -6275,7 +6281,12 @@
     "paste_word_count": "Amajambo {count}",
     "length_custom": "Ivyo wihitiyemwo…",
     "length_custom_label": "Igitigiri c'amajambo",
-    "length_custom_hint": "Amajambo 50 gushika 5.000"
+    "length_custom_hint": "Amajambo 50 gushika 5.000",
+    "dictate_desc": "Kwandika n'ijwi ku gikoresho na Whisper hamwe n'isuzuma ubishatse",
+    "dictate_title": "Andika n'ijwi canke ufate ijwi ry'inyandiko yawe nshingiro",
+    "dictate_helper": "Ubwa mbere ikoresha Whisper yo ku gikoresho mu bwibanga. Hindura uko ushaka, tunganya inyandiko ubishatse, canke uyigereranye n'ijwi wafashe ukoresheje Gemini.",
+    "dictate_loading": "Uburiro bwo Kwandika n'Ijwi (Whisper yo ku Gikoresho) buriko burugururwa… Urashobora no kwandika canke guhindura hasi mu gihe buriko burugururwa.",
+    "words_dictated_unit": "amajambo yanditswe n'ijwi"
   },
   "settings": {
     "immersive_options": "Birimo amahitamwo",
@@ -106188,5 +106199,75 @@
     "sc_findText": "Rondera umwandiko mu gishushanyo",
     "sc_commandPalette": "Ugurura ibikorwa vyihuta",
     "sc_help": "Erekana uru rutonde rw'inzira ngufi"
+  },
+  "source_view": {
+    "dictate": "Kwandika n'ijwi",
+    "close_dictate": "Kugara kwandika n'ijwi",
+    "send_read_along": "Kurungika mu Gakoresho ko Gusoma Hamwe",
+    "upload_verify_banner": "Ijwi/videwo vyahinduwe mu nyandiko ku gikoresho ukoresheje Whisper (ibice {count} vyabitswe mu bubiko bw'akanya)",
+    "clear_audio": "Guhanagura ijwi"
+  },
+  "dictation": {
+    "badge_desktop": "Whisper yo kuri Mudasobwa Iteguye",
+    "badge_download_needed": "Whisper yo ku Gikoresho · Kuvoma ubwa Mbere",
+    "badge_local_ready": "Whisper yo ku Gikoresho Iteguye · {name}",
+    "cleanup_apply": "Gushiraho itunganya",
+    "cleanup_failed": "Ntivyashobotse gutunganya inyandiko ubu.",
+    "cleanup_fillers": "Gukuramwo amajambo atari ngombwa",
+    "cleanup_heading": "Itunganya ry'inyandiko na AI (ubishatse)",
+    "cleanup_keep": "Kugumana inyandiko y'intango",
+    "cleanup_no_changes": "Nta mpinduka zasabwe kuri iyi nyandiko y'imfatakibanza.",
+    "cleanup_notes": "Gutunganya nk'ivyigwa vyo mw'ishure",
+    "cleanup_punctuation": "Gutunganya utwatuzo n'imiterere",
+    "cleanup_review_title": "Itunganya ryasabwe ririteguye — inyandiko yawe ntarahinduka",
+    "cleanup_text_only": "inyandiko gusa — nta jwi rirungikwa",
+    "cleanup_unavailable": "Itunganya ry'inyandiko na AI ntiriboneka ubu.",
+    "cleanup_undo": "Guhagarika itunganya",
+    "cleanup_working": "Biriko biratunganywa…",
+    "clear_audio": "Guhanagura ijwi ryafashwe ({mb} MB)",
+    "crosscheck_all_resolved": "Ibibanza vyose vyashizweko ikimenyetso vyasuzumwe.",
+    "crosscheck_btn": "Gusuzuma ugereranije n'ijwi na Gemini",
+    "crosscheck_count": "Ibibanza {count} vyashizweko ikimenyetso vyo gusuzuma:",
+    "crosscheck_disabled_note": "Ntibiboneka ubu (vyahagaritswe igihe ata internet ihari / uburyo bw'umunyeshure budakoresha AI canke ata rufunguzo rwa Gemini). Kwandika n'ijwi na Whisper yo ku gikoresho kuguma gukora ata internet na ntoya.",
+    "crosscheck_disclosure": "Bikora gusa niwafyonze hasi: birungika ibice vy'ijwi biri mu bubiko bw'akanya n'inyandiko y'imfatakibanza kuri Gemini kugira vyerekane amakosa ashoboka y'amajambo.",
+    "crosscheck_failed": "Isuzuma ry'ijwi rya Gemini ntiryaheze. Inyandiko yawe yo ku gikoresho ntiyakozweko.",
+    "crosscheck_heading": "Kugereranya n'ijwi ukoresheje Gemini (ubishatse)",
+    "crosscheck_none": "Nta tandukaniro rinini ryabonetse hagati ya Whisper yo ku Gikoresho na Gemini Audio.",
+    "crosscheck_running": "Biriko birasuzumwa n'ijwi…",
+    "crosscheck_unavailable": "Kugereranya ijwi na Gemini ntibiboneka ubu.",
+    "download_now": "Kuvoma Whisper yo ku Gikoresho ({size} MB)",
+    "download_warning": "Itangazo ryo kuvoma: Whisper yo ku Gikoresho ikoresha ubwa mbere ubuhinga bwibanga bwo kumenya ijwi ku gikoresho. Kuvoma umudeli wa {name} bisaba ~{size} MB rimwe gusa (hafi iminota 1–2 bivanye n'umuvuduko wa internet), biguma mu bubiko bwa navigateur ata internet, kandi amajwi yawe aguma kuri iki gikoresho.",
+    "draft_label": "Inyandiko y'imfatakibanza (ishobora guhindurwa)",
+    "draft_placeholder": "Fyonza Tangura kwandika n'ijwi hejuru, canke wandike/uhindure inyandiko yawe ngaha nyene…",
+    "guide_both_body": "Tangurira mu bwibanga ukoresheje Whisper yo ku Gikoresho kugira kwandika n'ijwi kugume kwihuta kandi gukore ata internet. Niwashaka iciyumviro ca kabiri ku majambo agoye canke amazina, hitamo kugereranya na Gemini kugira ugereranye imideri ibiri yigenga n'ijwi ryawe wongere wumvirize uduce tw'amasegonda 5 ahashizweko ikimenyetso.",
+    "guide_both_label": "Kuki wokoresha vyose uko ari bibiri (Kugereranya):",
+    "guide_gemini_body": "Ntibisaba kuvoma umudeli. Irushiriza gukora neza ku majambo y'ubuhinga, amazina bwite, imvugo zihariye, amashure arimwo urwamo n'utwatuzo — irungika uduce tw'ijwi kuri Gemini gusa niwahisemwo kubikora.",
+    "guide_gemini_title": "Gemini Audio (Isuzuma ubishatse)",
+    "guide_summary": "Whisper yo ku Gikoresho na Gemini Audio — ubushobozi n'igituma wokoresha vyose",
+    "guide_whisper_body": "Mu bwibanga kandi ikora ata internet inyuma yo kuvoma rimwe (~39–73 MB). Nta jwi riva ku gikoresho cawe, nta rufunguzo rwa API canke urugero rukenewe, kandi kwandika n'ijwi igihe kirekire bikora neza.",
+    "guide_whisper_title": "Whisper yo ku Gikoresho (Uburyo busanzwe)",
+    "ios_canvas_blocked": "Whisper yo ku Gikoresho yahagaritswe akanya gato kuri iPhone/iPad muri Gemini Canvas. Andika ngaha hasi canke ugurure AlloFlow muri navigateur ya mudasobwa.",
+    "ios_canvas_hint": "Urashobora kwandika ngaha hasi, ukugurura AlloFlow muri navigateur ya mudasobwa kuri Whisper yo ku Gikoresho, canke ugakoresha Gemini Audio niba yatunganijwe.",
+    "ios_canvas_title": "Whisper yo ku gikoresho yahagaritswe akanya gato kuri iPhone/iPad muri Gemini Canvas",
+    "listening_local": "Biriko birumviriza ku gikoresho na Whisper… ruhuka akanya gato canke ubandanye uvuga kugira wongereko inyandiko.",
+    "mic_start_failed": "Ntivyashobotse gutanguza mikoro. Suzuma uruhusha rwa navigateur.",
+    "model_size_label": "Ubunini bw'umudeli wa Whisper yo ku Gikoresho",
+    "pause_recording": "Guhagarika akanya",
+    "paused_note": "Vyahagaritswe akanya. Urashobora guhindura inyandiko hasi canke ugafyonza Kubandanya kugira ubandanye kwandika n'ijwi.",
+    "privacy_tag": "Mu bwibanga · Ata internet inyuma yo kuvoma · Nta rufunguzo rwa API rukenewe",
+    "resume_recording": "Kubandanya",
+    "send_read_along": "Kurungika mu Gakoresho ko Gusoma Hamwe",
+    "speech_settings": "Imitunganyirize y'ijwi",
+    "speed_badge_lesson": "Vyasuzumwe: vyihuta incuro {speed}x kurusha kuvuga · Vyiza ku kwandika kurekire",
+    "speed_badge_short": "Vyasuzumwe: vyihuta incuro {speed}x kurusha kuvuga · Vyiza cane ku duce tugufi",
+    "speed_badge_slow": "Vyasuzumwe: {speed}x · Biteba kurusha igihe nyaco (itege akaruhuko gato)",
+    "speed_badge_upgrade": "Vyasuzumwe: vyihuta incuro {speed}x kurusha kuvuga · Vyiza ku kwandika kurekire (urashobora no kugerageza {name})",
+    "start_recording": "Tangura kwandika n'ijwi (Whisper yo ku Gikoresho)",
+    "stop_recording": "Guhagarika",
+    "studio_title": "Uburiro bwo Kwandika n'Ijwi",
+    "test_mic": "Gerageza mikoro (4s)",
+    "upload_media": "Guhindura idosiye y'ijwi/videwo mu nyandiko",
+    "use_text": "Koresha inyandiko yanditswe n'ijwi",
+    "voice_unavailable": "Igikoresho co gufata ijwi kiracafungurwa. Niwihangane usubire ugerageze mu kanya."
   }
 }

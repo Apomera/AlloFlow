@@ -33852,7 +33852,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
             ),
             h('button', { type: 'button',
               onClick: function() { upd('activeTab', 'history'); if (soundEnabled) sfxClick(); },
-              'aria-label': 'Open zone history',
+              'aria-label': 'View history — open zone check-in log',
               style: { padding: '8px 12px', borderRadius: 8, border: '1px solid ' + _zoBd('#334155'), background: _zoBg('#1e293b'), color: _zoFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 800 }
             }, 'View history')
           ),
@@ -34179,7 +34179,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
                   h('button', { type: 'button',
                     onClick: function() { upd({ lastSaveTs: 0, lastSaveZone: null }); },
                     style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #475569', background: 'transparent', color: _zoFg('#94a3b8'), fontSize: 12, fontWeight: 600, cursor: 'pointer' },
-                    'aria-label': 'Dismiss re-check offer'
+                    'aria-label': 'Not this time — dismiss re-check offer'
                   }, 'Not this time')
                 )
               )
@@ -35188,7 +35188,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
             announceToSR('Opening check-in tab');
           },
           style: { padding: '7px 14px', borderRadius: 8, border: 'none', background: _zoBg('#fff'), color: _zoFg('#7c3aed'), fontSize: 12, fontWeight: 800, cursor: 'pointer' },
-          'aria-label': 'Open check-in tab now'
+          'aria-label': 'Check in now — open check-in tab'
         }, '🚦 Check in now'),
         h('button', { type: 'button',
           onClick: function() { upd({ reCheckAt: 0 }); },

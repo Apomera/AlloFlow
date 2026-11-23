@@ -6719,11 +6719,14 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'throwlab-sim-toolbar', 'data-throwlab-canvas-toolbar': 'true' },
               h('div', { style: { fontSize: 12, fontWeight: 900, color: '#fde68a' } },
                 __alloT('stem.throwlab.trajectory_field', 'Trajectory field')),
-              h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', fontSize: 11, fontWeight: 700 } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', fontSize: 11, fontWeight: 700 } },
                 h('span', {
                   style: {
-                    padding: '4px 8px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    padding: '5px 10px',
                     borderRadius: 18,
+                    lineHeight: 1.2,
                     background: 'rgba(14,165,233,0.14)',
                     color: '#bae6fd',
                     border: '1px solid rgba(56,189,248,0.26)'
@@ -6731,8 +6734,11 @@ window.StemLab = window.StemLab || {
                 }, lr ? (resultTrial.presetLabel || resultTrial.shotKind || modeMeta.label) : (activePreset.label || modeMeta.label)),
                 h('span', {
                   style: {
-                    padding: '4px 8px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    padding: '5px 10px',
                     borderRadius: 18,
+                    lineHeight: 1.2,
                     background: 'rgba(251,191,36,0.14)',
                     color: '#fde68a',
                     border: '1px solid rgba(251,191,36,0.28)'

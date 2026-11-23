@@ -112,13 +112,25 @@
           // As MP3 when the encoder is here (about 8 to 10 times smaller than WAV), else the WAV.
           names.forEach(function (w) {
             if (!/^data:audio\/(?:wav|x-wav|wave)[;,]/i.test(todo.audio[w])) return;
-            var mp3 = kit ? kit.wavUriToMp3Uri(todo.audio[w], 48) : null;
+            var mp3 = null;
+            if (kit && typeof kit.wavUriToMp3Uri === 'function') {
+              try { mp3 = kit.wavUriToMp3Uri(todo.audio[w], 48); } catch (_) { mp3 = null; }
+            }
             wavs[w] = mp3 || todo.audio[w];
           });
         });
       }).then(function () {
         var out = {};
-        want.forEach(function (w) { if (own(wavs, w)) out[w] = wavs[w]; });
+        want.forEach(function (w) {
+          if (!own(wavs, w)) return;
+          if (readyKit && typeof readyKit.wavUriToMp3Uri === 'function' && /^data:audio\/(?:wav|x-wav|wave)[;,]/i.test(wavs[w])) {
+            try {
+              var upgraded = readyKit.wavUriToMp3Uri(wavs[w], 48);
+              if (upgraded) wavs[w] = upgraded;
+            } catch (_) {}
+          }
+          out[w] = wavs[w];
+        });
         return out;
       });
     });
@@ -127,15 +139,25 @@
   // Loading starts the first time recordings are asked for; wait briefly (up to 1.5 s) so even the first build encodes MP3 instead of caching WAV.
   var gettingKit = null, readyKit = null;
   var KIT_WAIT_MS = 1500;
+  var KIT_LOAD_MS = 15000;
+  function startTimer(fn, ms) {
+    if (root && typeof root.setTimeout === 'function') return root.setTimeout(fn, ms);
+    return typeof setTimeout === 'function' ? setTimeout(fn, ms) : null;
+  }
+  function stopTimer(id) {
+    if (id == null) return;
+    if (root && typeof root.clearTimeout === 'function') { root.clearTimeout(id); return; }
+    if (typeof clearTimeout === 'function') clearTimeout(id);
+  }
   function smaller() {
     if (readyKit) return Promise.resolve(readyKit);
     if (!gettingKit) startKit();
     var timer = null;
     var cap = new Promise(function (resolve) {
-      timer = (typeof root.setTimeout === 'function' ? root.setTimeout : setTimeout)(function () { resolve(readyKit); }, KIT_WAIT_MS);
+      timer = startTimer(function () { resolve(readyKit); }, KIT_WAIT_MS);
     });
     return Promise.race([gettingKit, cap]).then(function (kit) {
-      if (timer != null && typeof (root.clearTimeout || clearTimeout) === 'function') (root.clearTimeout || clearTimeout)(timer);
+      stopTimer(timer);
       return kit || readyKit;
     });
   }
@@ -143,13 +165,21 @@
     gettingKit = new Promise(function (resolve) {
       if (root.AlloPacketAudioKit) { resolve(root.AlloPacketAudioKit); return; }
       var doc = root.document, script = doc && doc.createElement ? doc.createElement('script') : null;
-      if (!script) { resolve(null); return; }
-      script.src = 'packets_audio_kit.js';
-      script.onload = function () { resolve(root.AlloPacketAudioKit || null); };
-      script.onerror = function () {
-        try { if (script.parentNode) script.parentNode.removeChild(script); } catch (_) {}
-        resolve(null);
+      if (!script || !doc.head) { resolve(null); return; }
+      var settled = false, timer = null;
+      var finish = function (val, remove) {
+        if (settled) return;
+        settled = true;
+        stopTimer(timer);
+        script.onload = null;
+        script.onerror = null;
+        if (remove) { try { if (script.parentNode) script.parentNode.removeChild(script); } catch (_) {} }
+        resolve(val);
       };
+      script.src = 'packets_audio_kit.js';
+      script.onload = function () { finish(root.AlloPacketAudioKit || null, false); };
+      script.onerror = function () { finish(null, true); };
+      timer = startTimer(function () { finish(null, true); }, KIT_LOAD_MS);
       doc.head.appendChild(script);
     }).then(function (kit) {
       return kit ? kit.getMp3().then(function (ok) { readyKit = ok ? kit : null; return readyKit; }, function () { return null; }) : null;
@@ -161,6 +191,44 @@
   }
   // The picture set's drawings, all of its data files, once.
   var loadingPictures = null;
+  function loadLocalScript(src) {
+    return new Promise(function (resolve) {
+      var doc = root.document, script = doc && doc.createElement ? doc.createElement('script') : null;
+      if (!script || !doc.head) { resolve(false); return; }
+      var settled = false, timer = null;
+      var finish = function (ok) {
+        if (settled) return;
+        settled = true;
+        stopTimer(timer);
+        script.onload = null; script.onerror = null;
+        resolve(ok);
+      };
+      script.src = src;
+      script.onload = function () { finish(true); };
+      script.onerror = function () { finish(false); };
+      timer = startTimer(function () { finish(false); }, KIT_LOAD_MS);
+      doc.head.appendChild(script);
+    });
+  }
+  var loadingPictureExtras = null;
+  function pictureExtras() {
+    if (loadingPictureExtras) return loadingPictureExtras;
+    var needExt = !(root.AlloReadingSymbolsExt || (root.AlloModules && root.AlloModules.ReadingSymbolsExt));
+    var needSem = !(root.AlloWordPictureSemantic || (root.AlloModules && root.AlloModules.WordPictureSemantic));
+    loadingPictureExtras = Promise.all([
+      needExt ? loadLocalScript('reading_symbols_ext_en.js') : Promise.resolve(true),
+      needSem ? loadLocalScript('word_picture_semantic_en.js') : Promise.resolve(true),
+    ]).then(function () {
+      var ext = root.AlloReadingSymbolsExt || (root.AlloModules && root.AlloModules.ReadingSymbolsExt) || null;
+      if (ext && Array.isArray(ext.shards) && !(typeof ext.ready === 'function' && ext.ready()) && typeof root.fetch === 'function') {
+        return Promise.all(ext.shards.map(function (shard) {
+          return getJson(shard.url).then(function (data) { ext.add(data); }, function () {});
+        })).then(function () { return true; });
+      }
+      return true;
+    }, function () { loadingPictureExtras = null; return false; });
+    return loadingPictureExtras;
+  }
   function pictures(symbols) {
     if (!symbols || typeof symbols.ready !== 'function') return Promise.reject(new Error('the picture list is missing'));
     if (symbols.ready()) return Promise.resolve(true);
@@ -172,5 +240,5 @@
     return loadingPictures;
   }
 
-  root.AlloVocabMedia = { INDEX: INDEX, store: store, plan: plan, clips: clips, pictures: pictures, ready: function () { return !!index; } };
+  root.AlloVocabMedia = { INDEX: INDEX, store: store, plan: plan, clips: clips, pictures: pictures, pictureExtras: pictureExtras, ready: function () { return !!index; } };
 })(typeof window !== 'undefined' ? window : globalThis);

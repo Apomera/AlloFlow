@@ -100,6 +100,9 @@ module.exports = {
   'ec5025-b2-057': {
     answer: 'A photograph taken during an event can be primary evidence; a later textbook is a secondhand source.',
   },
+  'ec5025-b2-059': {
+    answer: 'Class norms guide daily school participation; municipal ordinances carry local legal authority and penalties.',
+  },
   'ec5025-b2-061': {
     prompt: 'A teacher is checking content accuracy in a learning experience about foundational early-childhood economic categories. Which statement is correct?',
   },

@@ -7,6 +7,7 @@
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.ProjectSettingsView) {
     console.log('[CDN] ViewProjectSettingsModule already loaded, skipping'); return;
   }
@@ -16,7 +17,7 @@
 
   var _lazyIcon = function (name) {
     return function (props) {
-      var I = window.AlloIcons && window.AlloIcons[name];
+      var I = typeof window !== 'undefined' && window.AlloIcons && window.AlloIcons[name];
       return I ? React.createElement(I, props) : null;
     };
   };
@@ -27,13 +28,60 @@
   var Lock = _lazyIcon('Lock');
   var CircleHelp = _lazyIcon('CircleHelp');
 
-  function EvaluationPortalQr(props) {
-  var React = window.React;
-  var url = String(props && props.url || '').trim();
+  var _PS_CRISIS_RE = /\b(?:kill\s+myself|end\s+my\s+life|commit\s+suicide|suicid(?:e|al)|want\s+to\s+die|hurt\s+myself|self[\s-]?harm|cut\s+myself|overdose\s+on)\b/i;
+function _psSafePortalUrl(raw) {
+  var value = String(raw || '').trim();
+  if (!value || /[\u0000-\u001F\u007F]/.test(value)) return '';
+  try {
+    var parsed = new URL(value);
+    if (parsed.protocol !== 'https:' || parsed.username || parsed.password) return '';
+    return parsed.href;
+  } catch (_) {
+    return '';
+  }
+}
+function _psSanitizeQrSvg(svg) {
+  var raw = String(svg || '').trim();
+  if (!raw) return '';
+  if (typeof window !== 'undefined' && typeof window.sanitizeSvgGraph === 'function') {
+    try {
+      var cleaned = window.sanitizeSvgGraph(raw);
+      return typeof cleaned === 'string' && cleaned.trim() ? cleaned : '';
+    } catch (_) {
+      return '';
+    }
+  }
+  if (!/^<svg[\s>]/i.test(raw)) return '';
+  if (/<(?:script|foreignObject|iframe|object|embed|style|link|meta)\b/i.test(raw)) return '';
+  if (/\son[a-z]+\s*=/i.test(raw) || /(?:javascript|vbscript|data\s*:\s*text\/html)\s*:/i.test(raw)) return '';
+  return raw;
+}
+function _psIsQrStudentMode() {
+  return typeof window !== 'undefined' && Boolean(window.__alloQrStudentMode);
+}
+function _psManagedAiBlocked() {
+  if (typeof window === 'undefined') return false;
+  if (window.__alloOfflineOnly === true || window.__alloAiSecretsLocked === true) return true;
+  if (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false) return true;
+  return false;
+}
+function _psScreenCrisis(text) {
+  var sample = String(text || '').trim();
+  if (!sample) return false;
+  try {
+    if (typeof window !== 'undefined' && window.SafetyContentChecker && typeof window.SafetyContentChecker.checkSelfHarm === 'function') {
+      var res = window.SafetyContentChecker.checkSelfHarm(sample);
+      if (res && (res.flagged || res.isSelfHarm || res.detected || res.matched || res.crisis)) return true;
+    }
+  } catch (_) {}
+  return _PS_CRISIS_RE.test(sample);
+}
+function EvaluationPortalQr(props) {
+  var url = _psSafePortalUrl(props && props.url);
   // Routed through the same translator the rest of this file uses. Keys are not
   // in ui_strings.js yet, and the host t() returns undefined on a miss, so the
   // English fallback renders until the translation lane adds them.
-  var t = props && props.t || function () {
+  var t = props && typeof props.t === 'function' ? props.t : function () {
     return undefined;
   };
   var _state = React.useState({
@@ -46,6 +94,13 @@
   var _copyMsg = React.useState('');
   var copyMsg = _copyMsg[0];
   var setCopyMsg = _copyMsg[1];
+  var mountedRef = React.useRef(true);
+  React.useEffect(function () {
+    mountedRef.current = true;
+    return function () {
+      mountedRef.current = false;
+    };
+  }, []);
   React.useEffect(function () {
     if (!url) return undefined;
     var cancelled = false;
@@ -53,7 +108,7 @@
     var attempts = 0;
     var build = function () {
       if (cancelled) return;
-      var makeQr = window.__alloMakeQrSvg;
+      var makeQr = typeof window !== 'undefined' ? window.__alloMakeQrSvg : null;
       if (typeof makeQr !== 'function') {
         if (attempts++ < 20) {
           timer = setTimeout(build, 250);
@@ -67,11 +122,21 @@
         return;
       }
       Promise.resolve(makeQr(url, 'Educator Evaluation district portal')).then(function (svg) {
-        if (!cancelled) setState({
-          status: 'ready',
-          svg: String(svg || ''),
-          error: ''
-        });
+        if (cancelled) return;
+        var safeSvg = _psSanitizeQrSvg(svg);
+        if (!safeSvg) {
+          setState({
+            status: 'error',
+            svg: '',
+            error: 'The QR code could not be generated safely.'
+          });
+        } else {
+          setState({
+            status: 'ready',
+            svg: safeSvg,
+            error: ''
+          });
+        }
       }).catch(function (error) {
         if (!cancelled) setState({
           status: 'error',
@@ -94,10 +159,12 @@
   if (!url) return null;
   var copyPortalLink = function () {
     var notify = function (ok) {
+      if (!mountedRef.current) return;
       setCopyMsg(ok ? t('project_settings.portal_link_copied') || 'Portal link copied.' : t('project_settings.portal_link_copy_failed') || 'Could not copy portal link.');
     };
+    var input = null;
     try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
+      if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
         Promise.resolve(navigator.clipboard.writeText(url)).then(function () {
           notify(true);
         }, function () {
@@ -105,7 +172,11 @@
         });
         return;
       }
-      var input = document.createElement('textarea');
+      if (typeof document === 'undefined' || !document.body) {
+        notify(false);
+        return;
+      }
+      input = document.createElement('textarea');
       input.value = url;
       input.setAttribute('readonly', '');
       input.style.position = 'fixed';
@@ -113,10 +184,13 @@
       document.body.appendChild(input);
       input.select();
       var ok = document.execCommand('copy');
-      input.remove();
       notify(ok !== false);
     } catch (_) {
       notify(false);
+    } finally {
+      try {
+        if (input && input.parentNode) input.remove();
+      } catch (_) {}
     }
   };
   return /*#__PURE__*/React.createElement("div", {
@@ -169,7 +243,6 @@
   }, copyMsg))));
 }
 function ProjectSettingsDisclosure(props) {
-  var React = window.React;
   var pair = React.useState(Boolean(props.defaultOpen));
   var open = pair[0];
   var setOpen = pair[1];
@@ -182,8 +255,10 @@ function ProjectSettingsDisclosure(props) {
   }, props.children);
 }
 function ProjectSettingsDialogFocusManager(props) {
-  var React = window.React;
+  var onCloseRef = React.useRef(props.onClose);
+  onCloseRef.current = props.onClose;
   React.useEffect(function () {
+    if (typeof document === 'undefined' || typeof window === 'undefined') return undefined;
     var root = document.getElementById(props.dialogId);
     if (!root) return undefined;
     var previouslyFocused = document.activeElement;
@@ -246,19 +321,23 @@ function ProjectSettingsDialogFocusManager(props) {
       });
     };
     var handleKeyDown = function (event) {
-      if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
-      if (!isTopTrap()) return;
-      if (event.key === 'Escape' && typeof props.onClose === 'function') {
+      if (event.defaultPrevented || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+      if (!root.isConnected || !isTopTrap()) return;
+      var activeEl = document.activeElement;
+      if (activeEl && activeEl !== document.body && activeEl !== document.documentElement && !root.contains(activeEl)) return;
+      if (event.key === 'Escape' && !event.ctrlKey && !event.metaKey && !event.altKey && typeof onCloseRef.current === 'function') {
         event.preventDefault();
         event.stopPropagation();
-        props.onClose();
+        onCloseRef.current();
         return;
       }
       if (event.key !== 'Tab') return;
       var focusableElements = getFocusableElements();
       if (!focusableElements.length) {
         event.preventDefault();
-        root.focus();
+        try {
+          root.focus();
+        } catch (_) {}
         return;
       }
       var first = focusableElements[0];
@@ -266,10 +345,14 @@ function ProjectSettingsDialogFocusManager(props) {
       var activeIndex = focusableElements.indexOf(document.activeElement);
       if (event.shiftKey && (activeIndex <= 0 || !root.contains(document.activeElement))) {
         event.preventDefault();
-        last.focus();
+        try {
+          last.focus();
+        } catch (_) {}
       } else if (!event.shiftKey && (activeIndex === -1 || activeIndex === focusableElements.length - 1)) {
         event.preventDefault();
-        first.focus();
+        try {
+          first.focus();
+        } catch (_) {}
       }
     };
     document.addEventListener('keydown', handleKeyDown);
@@ -299,11 +382,10 @@ function ProjectSettingsDialogFocusManager(props) {
         } catch (_) {}
       }
     };
-  }, [props.dialogId, props.onClose]);
+  }, [props.dialogId]);
   return null;
 }
 function PortalUrlConnectionForm(props) {
-  var React = window.React;
   var savedUrl = String(props.savedUrl || '');
   var isConnected = props.isConnected === true;
   var _draftState = React.useState(savedUrl);
@@ -414,17 +496,22 @@ function PortalUrlConnectionForm(props) {
   }, props.helpText)), props.children);
 }
 function ProjectSettingsView(props) {
-  var t = props.t;
+  var t = typeof props.t === 'function' ? props.t : function (key) {
+    return key;
+  };
   var studentProjectSettings = props.studentProjectSettings || {};
   var setStudentProjectSettings = props.setStudentProjectSettings;
-  var isTeacherMode = props.isTeacherMode;
+  var qrStudentModeActive = _psIsQrStudentMode();
+  var managedAiBlocked = _psManagedAiBlocked();
+  var isTeacherMode = Boolean(props.isTeacherMode) && !qrStudentModeActive;
+  var canEditTeacherSettings = !qrStudentModeActive;
   // Family mode and independent mode both run with isTeacherMode true, so
   // "is this a school user?" is isTeacherMode AND neither of these. Anything
   // school-only in this modal has to test isSchoolRole, not isTeacherMode.
   var isParentMode = props.isParentMode === true;
   var isIndependentMode = props.isIndependentMode === true;
   var isSchoolRole = isTeacherMode && !isParentMode && !isIndependentMode;
-  var handleSetIsProjectSettingsOpenToFalse = props.handleSetIsProjectSettingsOpenToFalse;
+  var handleSetIsProjectSettingsOpenToFalse = typeof props.handleSetIsProjectSettingsOpenToFalse === 'function' ? props.handleSetIsProjectSettingsOpenToFalse : function () {};
   var onOpenPrincipalEvaluation = props.onOpenPrincipalEvaluation;
   var evaluationPortalUrl = props.evaluationPortalUrl || '';
   var isEvaluationPortalConnected = props.isEvaluationPortalConnected === true;
@@ -523,9 +610,13 @@ function ProjectSettingsView(props) {
     }
   };
   var updateSetting = function (key, value) {
+    if (!canEditTeacherSettings || typeof setStudentProjectSettings !== 'function') return;
+    if (managedAiBlocked && (key === 'allowStudentByokAi' || key === 'studentByokAdultsConfirmed')) return;
+    if (managedAiBlocked && key === 'hideStudentAiFeatures' && !value) return;
     setStudentProjectSettings(function (prev) {
+      var safePrev = prev && typeof prev === 'object' ? prev : {};
       var next = {
-        ...prev,
+        ...safePrev,
         [key]: value
       };
       if (key === 'allowStudentByokAi' && !value) next.studentByokAdultsConfirmed = false;
@@ -533,11 +624,13 @@ function ProjectSettingsView(props) {
     });
   };
   var updatePermission = function (key, value) {
+    if (!canEditTeacherSettings || typeof setStudentProjectSettings !== 'function') return;
     setStudentProjectSettings(function (prev) {
+      var safePrev = prev && typeof prev === 'object' ? prev : {};
       return {
-        ...prev,
+        ...safePrev,
         adventurePermissions: {
-          ...(prev.adventurePermissions || {}),
+          ...(safePrev.adventurePermissions || {}),
           [key]: value
         }
       };
@@ -618,17 +711,20 @@ function ProjectSettingsView(props) {
     });
   };
   var applyPreset = function (name) {
+    if (!canEditTeacherSettings || typeof setStudentProjectSettings !== 'function') return;
     var preset = presets[name];
+    if (!preset) return;
     setStudentProjectSettings(function (prev) {
+      var safePrev = prev && typeof prev === 'object' ? prev : {};
       return {
-        ...prev,
-        hideStudentAiFeatures: preset.hideStudentAiFeatures,
+        ...safePrev,
+        hideStudentAiFeatures: managedAiBlocked ? true : preset.hideStudentAiFeatures,
         allowDictation: preset.allowDictation,
         allowSocraticTutor: preset.allowSocraticTutor,
         allowFreeResponse: preset.allowFreeResponse,
         allowPersonaFreeResponse: preset.allowPersonaFreeResponse,
         adventurePermissions: {
-          ...(prev.adventurePermissions || {}),
+          ...(safePrev.adventurePermissions || {}),
           ...preset.adventurePermissions
         }
       };
@@ -637,15 +733,20 @@ function ProjectSettingsView(props) {
   var renderFeatureToggle = function (id, settingKey, label, description, defaultValue) {
     var checked = studentProjectSettings[settingKey];
     if (checked === undefined) checked = defaultValue;
+    var isByokKey = settingKey === 'allowStudentByokAi' || settingKey === 'studentByokAdultsConfirmed';
+    var disabled = !canEditTeacherSettings || managedAiBlocked && (isByokKey || settingKey === 'hideStudentAiFeatures');
+    if (managedAiBlocked && settingKey === 'hideStudentAiFeatures') checked = true;
+    if (managedAiBlocked && isByokKey) checked = false;
     return /*#__PURE__*/React.createElement("label", {
       htmlFor: id,
-      className: `flex min-h-[88px] cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors motion-reduce:transition-none ${checked ? 'border-indigo-200 bg-indigo-50' : 'border-slate-200 bg-white hover:border-slate-300'}`
+      className: `flex min-h-[88px] items-start gap-3 rounded-xl border p-3 transition-colors motion-reduce:transition-none ${disabled ? 'cursor-not-allowed opacity-65' : 'cursor-pointer'} ${checked ? 'border-indigo-200 bg-indigo-50' : 'border-slate-200 bg-white hover:border-slate-300'}`
     }, /*#__PURE__*/React.createElement("input", {
       id: id,
       type: "checkbox",
+      disabled: disabled,
       checked: Boolean(checked),
       onChange: event => updateSetting(settingKey, event.target.checked),
-      className: "mt-0.5 h-5 w-5 flex-none cursor-pointer rounded border-slate-300 text-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
+      className: "mt-0.5 h-5 w-5 flex-none cursor-pointer rounded border-slate-300 text-indigo-600 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
     }), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("span", {
       className: "block text-sm font-bold text-slate-800"
     }, label), /*#__PURE__*/React.createElement("span", {
@@ -656,9 +757,10 @@ function ProjectSettingsView(props) {
     var checked = permissions[permissionKey];
     if (checked === undefined) checked = defaultValue;
     var danger = tone === 'danger';
+    var disabled = !canEditTeacherSettings;
     return /*#__PURE__*/React.createElement("label", {
       htmlFor: id,
-      className: `flex cursor-pointer items-start justify-between gap-4 rounded-lg border p-3 transition-colors motion-reduce:transition-none ${danger ? 'border-rose-200 bg-rose-50' : 'border-slate-200 bg-white'}`
+      className: `flex items-start justify-between gap-4 rounded-lg border p-3 transition-colors motion-reduce:transition-none ${disabled ? 'cursor-not-allowed opacity-65' : 'cursor-pointer'} ${danger ? 'border-rose-200 bg-rose-50' : 'border-slate-200 bg-white'}`
     }, /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("span", {
       className: `block text-sm font-bold ${danger ? 'text-rose-800' : 'text-slate-800'}`
     }, label), description && /*#__PURE__*/React.createElement("span", {
@@ -666,9 +768,10 @@ function ProjectSettingsView(props) {
     }, description)), /*#__PURE__*/React.createElement("input", {
       id: id,
       type: "checkbox",
+      disabled: disabled,
       checked: Boolean(checked),
       onChange: event => updatePermission(permissionKey, event.target.checked),
-      className: `mt-0.5 h-5 w-5 flex-none cursor-pointer rounded border-slate-300 focus-visible:ring-2 focus-visible:ring-offset-1 ${danger ? 'text-rose-600 focus-visible:ring-rose-600' : 'text-indigo-600 focus-visible:ring-indigo-600'}`
+      className: `mt-0.5 h-5 w-5 flex-none cursor-pointer rounded border-slate-300 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-offset-1 ${danger ? 'text-rose-600 focus-visible:ring-rose-600' : 'text-indigo-600 focus-visible:ring-indigo-600'}`
     }));
   };
   var activePresetLabel = presetMatches('guided') ? tx('project_settings.preset_guided', 'Guided') : presetMatches('balanced') ? tx('project_settings.preset_balanced', 'Balanced') : presetMatches('open') ? tx('project_settings.preset_open', 'Open exploration') : tx('project_settings.preset_custom', 'Custom');
@@ -698,6 +801,7 @@ function ProjectSettingsView(props) {
     description: tx('project_settings.preset_open_desc', 'More student control and customization.')
   }];
   return /*#__PURE__*/React.createElement("div", {
+    role: "presentation",
     className: "fixed inset-0 z-[300] flex items-center justify-center bg-slate-950/80 p-3 backdrop-blur-sm animate-in fade-in duration-200 motion-reduce:animate-none sm:p-6",
     onMouseDown: event => {
       if (event.target === event.currentTarget) handleSetIsProjectSettingsOpenToFalse();
@@ -733,7 +837,8 @@ function ProjectSettingsView(props) {
     className: "absolute right-3 top-3 min-h-11 min-w-11 grid place-items-center rounded-full p-2 text-slate-600 transition-colors motion-reduce:transition-none hover:bg-white hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
     "aria-label": t('common.close')
   }, /*#__PURE__*/React.createElement(X, {
-    size: 20
+    size: 20,
+    "aria-hidden": "true"
   }))), /*#__PURE__*/React.createElement("div", {
     className: "min-h-0 flex-1 space-y-6 overflow-y-auto px-5 py-5 sm:px-6"
   }, /*#__PURE__*/React.createElement("div", {
@@ -853,7 +958,10 @@ function ProjectSettingsView(props) {
     rows: 3,
     placeholder: t('project_settings.socratic_instructions_placeholder'),
     className: "mt-2 w-full resize-y rounded-lg border-2 border-slate-200 bg-white p-3 text-sm text-slate-800 focus-visible:outline-none focus-visible:border-indigo-600 focus-visible:ring-4 focus-visible:ring-indigo-600/20"
-  }), /*#__PURE__*/React.createElement("div", {
+  }), _psScreenCrisis(studentProjectSettings.socraticCustomInstructions) && /*#__PURE__*/React.createElement("div", {
+    role: "alert",
+    className: "mt-2 rounded-xl border-2 border-rose-300 bg-rose-50 p-3 text-xs leading-relaxed text-rose-900"
+  }, /*#__PURE__*/React.createElement("strong", null, "Safety support notice:"), " Sensitive self-harm language was detected. If you or someone you know needs immediate support, call or text ", /*#__PURE__*/React.createElement("strong", null, "988"), " (Suicide & Crisis Lifeline), text ", /*#__PURE__*/React.createElement("strong", null, "HOME to 741741"), " (Crisis Text Line), or call ", /*#__PURE__*/React.createElement("strong", null, "911"), "."), /*#__PURE__*/React.createElement("div", {
     className: "mt-1 text-right text-xs font-medium text-slate-600"
   }, (studentProjectSettings.socraticCustomInstructions || '').length, "/600")), /*#__PURE__*/React.createElement("section", {
     "aria-labelledby": "project-settings-progression-heading"
@@ -874,10 +982,15 @@ function ProjectSettingsView(props) {
     "data-help-key": "settings_unlock_xp",
     type: "number",
     min: "0",
+    max: "100000",
     step: "100",
+    disabled: !canEditTeacherSettings,
     value: studentProjectSettings.adventureUnlockXP ?? 0,
-    onChange: event => updateSetting('adventureUnlockXP', Math.max(0, parseInt(event.target.value, 10) || 0)),
-    className: "mt-1 min-h-11 w-full rounded-lg border-2 border-slate-200 px-3 py-2 text-sm focus-visible:outline-none focus-visible:border-indigo-600 focus-visible:ring-4 focus-visible:ring-indigo-600/20"
+    onChange: event => {
+      var parsed = parseInt(event.target.value, 10);
+      updateSetting('adventureUnlockXP', Number.isNaN(parsed) ? 0 : Math.min(100000, Math.max(0, parsed)));
+    },
+    className: "mt-1 min-h-11 w-full rounded-lg border-2 border-slate-200 px-3 py-2 text-sm disabled:opacity-60 focus-visible:outline-none focus-visible:border-indigo-600 focus-visible:ring-4 focus-visible:ring-indigo-600/20"
   }), /*#__PURE__*/React.createElement("span", {
     className: "mt-1 block text-xs font-normal leading-relaxed text-slate-600"
   }, t('project_settings.unlock_xp_desc'))), /*#__PURE__*/React.createElement("label", {
@@ -892,10 +1005,15 @@ function ProjectSettingsView(props) {
     "data-help-key": "settings_base_xp",
     type: "number",
     min: "10",
+    max: "10000",
     step: "10",
+    disabled: !canEditTeacherSettings,
     value: studentProjectSettings.baseXP ?? 100,
-    onChange: event => updateSetting('baseXP', Math.max(10, parseInt(event.target.value, 10) || 100)),
-    className: "mt-1 min-h-11 w-full rounded-lg border-2 border-slate-200 px-3 py-2 text-sm focus-visible:outline-none focus-visible:border-indigo-600 focus-visible:ring-4 focus-visible:ring-indigo-600/20"
+    onChange: event => {
+      var parsed = parseInt(event.target.value, 10);
+      updateSetting('baseXP', Number.isNaN(parsed) ? 100 : Math.min(10000, Math.max(10, parsed)));
+    },
+    className: "mt-1 min-h-11 w-full rounded-lg border-2 border-slate-200 px-3 py-2 text-sm disabled:opacity-60 focus-visible:outline-none focus-visible:border-indigo-600 focus-visible:ring-4 focus-visible:ring-indigo-600/20"
   }), /*#__PURE__*/React.createElement("span", {
     className: "mt-1 block text-xs font-normal leading-relaxed text-slate-600"
   }, t('project_settings.base_xp_desc'))), /*#__PURE__*/React.createElement("label", {
@@ -910,10 +1028,15 @@ function ProjectSettingsView(props) {
     "data-help-key": "settings_adventure_xp",
     type: "number",
     min: "0",
+    max: "100000",
     step: "100",
+    disabled: !canEditTeacherSettings,
     value: studentProjectSettings.adventureMinXP ?? 0,
-    onChange: event => updateSetting('adventureMinXP', Math.max(0, parseInt(event.target.value, 10) || 0)),
-    className: "mt-1 min-h-11 w-full rounded-lg border-2 border-slate-200 px-3 py-2 text-sm focus-visible:outline-none focus-visible:border-indigo-600 focus-visible:ring-4 focus-visible:ring-indigo-600/20"
+    onChange: event => {
+      var parsed = parseInt(event.target.value, 10);
+      updateSetting('adventureMinXP', Number.isNaN(parsed) ? 0 : Math.min(100000, Math.max(0, parsed)));
+    },
+    className: "mt-1 min-h-11 w-full rounded-lg border-2 border-slate-200 px-3 py-2 text-sm disabled:opacity-60 focus-visible:outline-none focus-visible:border-indigo-600 focus-visible:ring-4 focus-visible:ring-indigo-600/20"
   }), /*#__PURE__*/React.createElement("span", {
     className: "mt-1 block text-xs font-normal leading-relaxed text-slate-600"
   }, t('project_settings.storybook_xp_desc'))))), /*#__PURE__*/React.createElement("fieldset", null, /*#__PURE__*/React.createElement("legend", {
@@ -1029,6 +1152,10 @@ function ProjectSettingsView(props) {
         if (reporter && (typeof reporter.openManualReport === 'function' || typeof reporter.openPanel === 'function')) {
           if (typeof reporter.openManualReport === 'function') reporter.openManualReport();else reporter.openPanel('errors');
           handleSetIsProjectSettingsOpenToFalse();
+        } else if (qrStudentModeActive || window.__alloOfflineOnly === true) {
+          try {
+            window.alert('External feedback links are disabled in this classroom or offline configuration.');
+          } catch (_) {}
         } else {
           window.open('https://docs.google.com/forms/d/e/1FAIpQLSd9dJexeOjd6fvFio9V0Jd45FDpuL7cSQNnm-BLmqyTwrPrhg/viewform', '_blank', 'noopener,noreferrer');
         }

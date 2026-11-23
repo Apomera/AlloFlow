@@ -487,8 +487,10 @@
           return raw.replace(/\{(\w+)\}/g, function(m, k) { return vars[k] != null ? vars[k] : m; });
       };
       var tr = function(key, fallback, vars) {
-          var v = t(key, vars);
-          return v || fallback;
+          var raw = (ctx.t && key) ? ctx.t(key, fallback) : '';
+          if (!raw || raw === key) raw = fallback || '';
+          if (!vars) return raw;
+          return raw.replace(/\{(\w+)\}/g, function(m, k) { return vars[k] != null ? vars[k] : m; });
       };
 
       return (function() {

@@ -32,6 +32,21 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
     document.body.appendChild(liveRegion);
   })();
 
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-wot-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-wot-a11y-css';
+    st.textContent =
+      '.selh-wot button:focus-visible, .selh-wot input:focus-visible, .selh-wot summary:focus-visible, .selh-wot a:focus-visible, .selh-wot [tabindex]:focus-visible { outline: 3px solid #14b8a6 !important; outline-offset: 2px !important; }\n' +
+      '@media (prefers-reduced-motion: reduce) { .selh-wot *, .selh-wot *::before, .selh-wot *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }\n' +
+      '@media (forced-colors: active) { .selh-wot button, .selh-wot input, .selh-wot summary { forced-color-adjust: auto; } .selh-wot button:focus-visible, .selh-wot input:focus-visible, .selh-wot summary:focus-visible, .selh-wot a:focus-visible { outline: 2px solid Highlight !important; outline-offset: 2px !important; } }\n';
+    document.head.appendChild(st);
+  })();
+
+  function isImeComposing(e) {
+    return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+  }
+
   // Suggested starters for each zone (the student picks, adds, edits)
   var STARTERS = {
     hyper: [
@@ -128,7 +143,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
       var _wtT = (ctx && ctx.theme) || {};
       var _wtHC = !!_wtT.isContrast, _wtL = !_wtHC && !_wtT.isDark;
       var _wt_BGL = {'#1e293b':'#ffffff','#0f172a':'#f8fafc'}, _wt_BGH = {'#1e293b':'#000000','#0f172a':'#000000','#fff':'#000000'};
-      var _wt_FGL = {'#cbd5e1':'#334155','#5eead4':'#0f766e','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#99f6e4':'#0f766e','#fbbf24':'#854d0e','#a78bfa':'#6d28d9','#fecaca':'#b91c1c','#e9d5ff':'#581c87','#fcd34d':'#78350f','#fde68a':'#92400e','#ef4444':'#b91c1c','#14b8a6':'#0f766e','#0ea5e9':'#0369a1','#bae6fd':'#0369a1'}, _wt_FGH = {'#cbd5e1':'#ffff00','#5eead4':'#ffff00','#94a3b8':'#ffff00','#e2e8f0':'#ffff00','#64748b':'#ffff00','#99f6e4':'#ffff00','#fff':'#ffff00','#fbbf24':'#ffff00','#a78bfa':'#ffff00','#fecaca':'#ffff00','#ef4444':'#ffff00','#14b8a6':'#ffff00','#bae6fd':'#ffff00','#0ea5e9':'#ffff00','#e9d5ff':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
+      var _wt_FGL = {'#cbd5e1':'#334155','#5eead4':'#0f766e','#94a3b8':'#475569','#64748b':'#475569','#e2e8f0':'#1e293b','#99f6e4':'#0f766e','#fbbf24':'#854d0e','#a78bfa':'#6d28d9','#fecaca':'#b91c1c','#e9d5ff':'#581c87','#fcd34d':'#78350f','#fde68a':'#92400e','#ef4444':'#b91c1c','#14b8a6':'#0f766e','#0ea5e9':'#0369a1','#bae6fd':'#0369a1'}, _wt_FGH = {'#cbd5e1':'#ffff00','#5eead4':'#ffff00','#94a3b8':'#ffff00','#e2e8f0':'#ffff00','#64748b':'#ffff00','#99f6e4':'#ffff00','#fff':'#ffff00','#fbbf24':'#ffff00','#a78bfa':'#ffff00','#fecaca':'#ffff00','#ef4444':'#ffff00','#14b8a6':'#ffff00','#bae6fd':'#ffff00','#0ea5e9':'#ffff00','#e9d5ff':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
       var _wt_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _wt_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#a78bfa':'#ffff00','#14b8a6':'#ffff00','#cbd5e1':'#ffff00','#0d9488':'#ffff00','#f59e0b':'#ffff00'};
       var _wtBg = function(h){ return _wtHC ? (_wt_BGH[h]||h) : (_wtL ? (_wt_BGL[h]||h) : h); };
       var _wtFg = function(h){ return _wtHC ? (_wt_FGH[h]||h) : (_wtL ? (_wt_FGL[h]||h) : h); };
@@ -185,16 +200,28 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
       }
       var WOT_VIEW_LABELS = { window: 'My Window', edit: 'Edit', checkin: 'Check in', print: 'Print view', about: 'About' };
       var view = (d.view && Object.prototype.hasOwnProperty.call(WOT_VIEW_LABELS, d.view)) ? d.view : 'window';
+      function announceWOT(msg) {
+        if (!msg) return;
+        if (typeof announceToSR === 'function') { try { announceToSR(msg); } catch (_) {} }
+        if (typeof document !== 'undefined') {
+          var lr = document.getElementById('allo-live-wot');
+          if (lr) lr.textContent = msg;
+        }
+      }
       function goto(v) {
         setWOT({ view: v });
         if (announceToSR) announceToSR((WOT_VIEW_LABELS[v] || v) + ' section selected');
+        if (typeof document !== 'undefined') {
+          var lr = document.getElementById('allo-live-wot');
+          if (lr) lr.textContent = (WOT_VIEW_LABELS[v] || v) + ' section selected';
+        }
       }
       function printNow() { try { window.print(); } catch (e) {} }
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
-          h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: _wtHC ? '#000000' : 'rgba(255,255,255,0.05)', border: '1px solid ' + _wtBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _wtFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+          h('button', { type: 'button', onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
+            style: { background: _wtHC ? '#000000' : (_wtL ? '#ffffff' : 'rgba(255,255,255,0.05)'), border: '1px solid ' + _wtBd('#334155'), borderRadius: 8, padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', color: _wtFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _wtFg('#5eead4'), fontSize: 22, fontWeight: 900 } }, '🪟 Window of Tolerance'),
             h('div', { style: { fontSize: 12, color: _wtFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A map of your three arousal zones and what brings you back to the window.')
@@ -219,6 +246,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
               var active = view === t.id;
               return h('button', {
                 key: t.id,
+                type: 'button',
                 id: 'wot-tab-' + t.id,
                 'data-wot-tab': t.id,
                 'aria-label': t.label,
@@ -228,6 +256,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
                 tabIndex: active ? 0 : -1,
                 onClick: function() { goto(t.id); },
                 onKeyDown: function(e) {
+                  if (isImeComposing(e)) return;
                   var currentIndex = tabs.indexOf(t);
                   var nextIndex = currentIndex;
                   if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (currentIndex + 1) % tabs.length;
@@ -243,7 +272,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
                     if (target) target.focus();
                   }, 0);
                 },
-                style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? _wtFg('#14b8a6') : _wtBd('#334155')),
+                style: { padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + (active ? _wtFg('#14b8a6') : _wtBd('#334155')),
                   background: active ? (_wtHC ? '#000000' : 'rgba(20,184,166,0.18)') : _wtBg('#1e293b'),
                   color: active ? _wtFg('#99f6e4') : _wtFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 }
               }, t.icon + ' ' + t.label);
@@ -275,8 +304,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
           var borderColor = _wtHC ? '#ffff00' : _wtFg(color);
           var bgColor = filled ? (_wtHC ? '#000000' : color) : _wtBg('#0f172a');
           var fgColor = _wtHC ? '#ffff00' : (filled ? '#0f172a' : _wtInk(_wtFg(color)));
-          return h('button', { onClick: function() { goto(target); }, 'aria-label': label,
-            style: { padding: '9px 12px', borderRadius: 8, border: '1px solid ' + borderColor, background: bgColor, color: fgColor, cursor: 'pointer', fontWeight: 900, fontSize: 12 } },
+          return h('button', { type: 'button', onClick: function() { goto(target); }, 'aria-label': label,
+            style: { padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + borderColor, background: bgColor, color: fgColor, cursor: 'pointer', fontWeight: 900, fontSize: 12 } },
             label
           );
         }
@@ -309,7 +338,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
       // ═══════════════════════════════════════════════════════════
       function renderWindow() {
         function zone(label, color, signs, blurb) {
-          return h('div', { style: { padding: 14, borderRadius: 10, background: color + '14', border: '1px solid ' + color + '66', borderLeft: '4px solid ' + color, marginBottom: 8 } },
+          var borderCol = _wtHC ? '#ffff00' : (color + '66');
+          return h('div', { style: { padding: 14, borderRadius: 10, background: _wtHC ? '#000000' : (color + '14'), borderTop: '1px solid ' + borderCol, borderRight: '1px solid ' + borderCol, borderBottom: '1px solid ' + borderCol, borderLeft: '4px solid ' + (_wtHC ? '#ffff00' : color), marginBottom: 8 } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: color, textTransform: 'uppercase', letterSpacing: 0.5, flex: 1 } }, label)
             ),
@@ -329,12 +359,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
           return h('div', null,
             windowCommandPanel(),
             h('div', { style: { padding: 28, borderRadius: 14, background: _wtHC ? '#000000' : (_wtL ? '#f8fafc' : 'linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(15,23,42,0.4) 60%)'), border: '1px solid ' + (_wtHC ? '#ffff00' : 'rgba(20,184,166,0.4)'), textAlign: 'center', marginBottom: 14 } },
-              h('div', { style: { fontSize: 56, marginBottom: 8 } }, '🪟'),
+              h('div', { 'aria-hidden': 'true', style: { fontSize: 56, marginBottom: 8 } }, '🪟'),
               h('h3', { style: { margin: '0 0 8px', color: _wtFg('#99f6e4'), fontSize: 18 } }, 'Your Window is empty'),
               h('p', { style: { margin: '0 0 14px', color: _wtFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
                 'The Window of Tolerance is your body and brain\'s "regulated" zone. Above it: too activated (heart racing, snappy, overwhelmed). Below it: too shut down (foggy, numb, going through motions). Your personal signs of each zone are uniquely yours. Build the map.'),
-              h('button', { onClick: function() { goto('edit'); }, 'aria-label': 'Start building my Window',
-                style: { padding: '10px 22px', borderRadius: 10, border: _wtHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _wtHC ? '#000000' : 'linear-gradient(135deg, #115e59 0%, #0f766e 100%)', color: _wtFg('#fff'), fontWeight: 800, fontSize: 14 } },
+              h('button', { type: 'button', onClick: function() { goto('edit'); }, 'aria-label': 'Start building my Window',
+                style: { padding: '10px 22px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 10, border: _wtHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _wtHC ? '#000000' : 'linear-gradient(135deg, #115e59 0%, #0f766e 100%)', color: _wtFg('#fff'), fontWeight: 800, fontSize: 14 } },
                 '+ Start building my Window')
             ),
             softPointer()
@@ -375,13 +405,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
           ),
 
           h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
-            h('button', { onClick: function() { goto('edit'); }, 'aria-label': 'Edit my Window',
-              style: { padding: '10px 20px', borderRadius: 10, border: _wtHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _wtHC ? '#000000' : 'linear-gradient(135deg, #115e59 0%, #0f766e 100%)', color: _wtFg('#fff'), fontWeight: 800, fontSize: 14 } },
+            h('button', { type: 'button', onClick: function() { goto('edit'); }, 'aria-label': 'Edit my Window',
+              style: { padding: '10px 20px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 10, border: _wtHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _wtHC ? '#000000' : 'linear-gradient(135deg, #115e59 0%, #0f766e 100%)', color: _wtFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '✏️ Edit'),
-            h('button', { onClick: function() { goto('checkin'); }, 'aria-label': 'Check in on my zone right now',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _wtBd('#475569'), background: _wtBg('#1e293b'), color: _wtFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '📍 Check in'),
-            h('button', { onClick: function() { goto('print'); }, 'aria-label': 'Print',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _wtBd('#475569'), background: _wtBg('#1e293b'), color: _wtFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
+            h('button', { type: 'button', onClick: function() { goto('checkin'); }, 'aria-label': 'Check in on my zone right now',
+              style: { padding: '10px 20px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 10, border: '1px solid ' + _wtBd('#475569'), background: _wtBg('#1e293b'), color: _wtFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '📍 Check in'),
+            h('button', { type: 'button', onClick: function() { goto('print'); }, 'aria-label': 'Print',
+              style: { padding: '10px 20px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 10, border: '1px solid ' + _wtBd('#475569'), background: _wtBg('#1e293b'), color: _wtFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
           ),
 
           softPointer()
@@ -402,6 +432,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
             var patch = {}; patch[key] = list;
             return patch;
           });
+          announceWOT('Added: ' + trimmed);
         }
         function removeFrom(key, idx) {
           setWOT(function(prior) {
@@ -410,6 +441,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
             var patch = {}; patch[key] = list;
             return patch;
           });
+          announceWOT('Removed item.');
         }
 
         function listEditor(key, title, color, starters, blurb) {
@@ -430,7 +462,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
                   items.map(function(s, i) {
                     return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 14, background: _wtBg('#1e293b'), border: '1px solid ' + color + '44', fontSize: 12, color: _wtFg('#e2e8f0') } },
                       h('span', null, s),
-                      h('button', { onClick: function() { removeFrom(key, i); }, 'aria-label': 'Remove ' + s,
+                      h('button', { type: 'button', onClick: function() { removeFrom(key, i); }, 'aria-label': 'Remove ' + s,
                         style: { minWidth: 24, minHeight: 24, background: 'transparent', border: 'none', color: _wtFg('#94a3b8'), cursor: 'pointer', fontSize: 11, padding: 0 } }, '✕')
                     );
                   })
@@ -441,19 +473,23 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
               h('label', { htmlFor: inputId, className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } }, 'Add to ' + title),
               h('input', { id: inputId, type: 'text',
                 placeholder: 'Type and press Enter, or pick a starter below...',
-                onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } },
-                style: { flex: 1, minWidth: 180, padding: 8, borderRadius: 6, border: '1px solid ' + _wtBd('#334155'), background: _wtBg('#1e293b'), color: _wtFg('#e2e8f0'), fontSize: 13 } }),
-              h('button', { onClick: submit, 'aria-label': 'Add to ' + title,
-                style: { padding: '8px 14px', borderRadius: 6, border: _wtHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _wtSolid(color), color: _wtFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+                onKeyDown: function(e) {
+                  if (isImeComposing(e)) return;
+                  if (e.key === 'Enter') { e.preventDefault(); submit(); }
+                  else if (e.key === 'Escape' && e.currentTarget.value) { e.preventDefault(); e.currentTarget.value = ''; announceWOT('Cleared input.'); }
+                },
+                style: { flex: 1, minWidth: 180, minHeight: 44, boxSizing: 'border-box', padding: 8, borderRadius: 6, border: '1px solid ' + _wtBd('#334155'), background: _wtBg('#1e293b'), color: _wtFg('#e2e8f0'), fontSize: 13 } }),
+              h('button', { type: 'button', onClick: submit, 'aria-label': 'Add to ' + title,
+                style: { padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 6, border: _wtHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _wtSolid(color), color: _wtFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
             ),
 
             h('details', null,
-              h('summary', { style: { cursor: 'pointer', fontSize: 11, color: _wtFg('#94a3b8'), userSelect: 'none' } }, 'Need ideas? Tap a starter to add (you can edit after)'),
+              h('summary', { style: { cursor: 'pointer', fontSize: 11.5, color: _wtFg('#94a3b8'), userSelect: 'none', minHeight: 44, display: 'flex', alignItems: 'center' } }, 'Need ideas? Tap a starter to add (you can edit after)'),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 } },
                 starters.map(function(s, si) {
                   var already = items.indexOf(s) !== -1;
-                  return h('button', { key: si, onClick: function() { addTo(key, s); }, disabled: already, 'aria-label': 'Add starter: ' + s,
-                    style: { padding: '4px 10px', borderRadius: 14, border: '1px solid ' + (_wtHC ? '#ffff00' : color + '66'), background: already ? _wtBg('#1e293b') : _wtBg('#0f172a'), color: already ? _wtFg('#94a3b8') : _wtFg('#cbd5e1'), cursor: already ? 'not-allowed' : 'pointer', fontSize: 11, opacity: already ? 0.6 : 1 } },
+                  return h('button', { key: si, type: 'button', onClick: function() { addTo(key, s); }, disabled: already, 'aria-label': 'Add starter: ' + s,
+                    style: { padding: '8px 12px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 14, border: '1px solid ' + (_wtHC ? '#ffff00' : color + '66'), background: already ? _wtBg('#1e293b') : _wtBg('#0f172a'), color: already ? _wtFg('#94a3b8') : _wtFg('#cbd5e1'), cursor: already ? 'not-allowed' : 'pointer', fontSize: 11.5, opacity: already ? 0.6 : 1 } },
                     (already ? '✓ ' : '+ ') + s);
                 })
               )
@@ -478,11 +514,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
       function renderCheckin() {
         function setZone(z) {
           setWOT({ currentZone: z, selectedPractice: null });
-          if (announceToSR) announceToSR((z === 'hyper' ? 'Hyperarousal' : z === 'hypo' ? 'Hypoarousal' : 'In the window') + ' selected');
+          announceWOT((z === 'hyper' ? 'Hyperarousal' : z === 'hypo' ? 'Hypoarousal' : 'In the window') + ' selected');
         }
         function choosePractice(practice) {
           setWOT({ selectedPractice: practice });
-          if (announceToSR) announceToSR('Regulation practice selected: ' + practice);
+          announceWOT('Regulation practice selected: ' + practice);
         }
         var cur = d.currentZone;
         var practices = (Array.isArray(d.practices) ? d.practices : []);
@@ -526,9 +562,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
               h('div', { style: { padding: '6px 9px', borderRadius: 999, background: _wtBg('#0f172a'), border: '1px solid #334155', color: _wtFg('#94a3b8'), fontSize: 10.5, fontWeight: 850, letterSpacing: 0.35 } }, '↑ MORE ACTIVATION')
             ),
             h('div', { role: 'group', 'aria-label': 'Nervous system activation continuum', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-              h('button', { onClick: function() { setZone('hyper'); }, 'aria-label': 'I am hyperaroused right now', 'aria-pressed': cur === 'hyper',
+              h('button', { type: 'button', onClick: function() { setZone('hyper'); }, 'aria-label': 'I am hyperaroused right now', 'aria-pressed': cur === 'hyper',
                 'data-wot-zone': 'hyper',
-                style: { width: '100%', padding: 12, borderRadius: 12, border: '2px solid ' + (cur === 'hyper' ? _wtFg('#ef4444') : '#334155'), background: cur === 'hyper' ? 'rgba(239,68,68,0.22)' : _wtBg('#1e293b'), color: _wtFg('#fecaca'), cursor: 'pointer', textAlign: 'left', display: 'grid', gridTemplateColumns: '42px minmax(0, 1fr) auto', alignItems: 'center', gap: 11, boxShadow: cur === 'hyper' && !_wtHC ? '0 10px 28px rgba(239,68,68,0.16)' : 'none' } },
+                style: { width: '100%', padding: 12, minHeight: 44, borderRadius: 12, border: '2px solid ' + (cur === 'hyper' ? _wtFg('#ef4444') : '#334155'), background: cur === 'hyper' ? 'rgba(239,68,68,0.22)' : _wtBg('#1e293b'), color: _wtFg('#fecaca'), cursor: 'pointer', textAlign: 'left', display: 'grid', gridTemplateColumns: '42px minmax(0, 1fr) auto', alignItems: 'center', gap: 11, boxShadow: cur === 'hyper' && !_wtHC ? '0 10px 28px rgba(239,68,68,0.16)' : 'none' } },
                 h('span', { 'aria-hidden': 'true', style: { width: 40, height: 40, borderRadius: 12, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(239,68,68,0.16)', border: '1px solid rgba(239,68,68,0.45)', fontSize: 20 } }, '⚡'),
                 h('span', null,
                   h('span', { style: { display: 'block', fontSize: 14, fontWeight: 900, color: _wtInk(_wtFg('#ef4444')), marginBottom: 3 } }, 'High activation · Hyperarousal'),
@@ -536,9 +572,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
                 ),
                 cur === 'hyper' ? h('span', { style: { padding: '5px 8px', borderRadius: 999, background: _wtHC ? '#000000' : 'rgba(239,68,68,0.2)', border: '1px solid ' + _wtInk(_wtFg('#ef4444')), color: _wtInk(_wtFg('#ef4444')), fontSize: 10.5, fontWeight: 900, whiteSpace: 'nowrap' } }, '● HERE') : h('span', { 'aria-hidden': 'true', style: { width: 8, height: 8, borderRadius: '50%', background: 'rgba(239,68,68,0.45)' } })
               ),
-              h('button', { onClick: function() { setZone('window'); }, 'aria-label': 'I am in the window right now', 'aria-pressed': cur === 'window',
+              h('button', { type: 'button', onClick: function() { setZone('window'); }, 'aria-label': 'I am in the window right now', 'aria-pressed': cur === 'window',
                 'data-wot-zone': 'window',
-                style: { width: '100%', padding: 12, borderRadius: 12, border: '2px solid ' + (cur === 'window' ? _wtFg('#14b8a6') : '#334155'), background: cur === 'window' ? 'rgba(20,184,166,0.22)' : _wtBg('#1e293b'), color: _wtFg('#99f6e4'), cursor: 'pointer', textAlign: 'left', display: 'grid', gridTemplateColumns: '42px minmax(0, 1fr) auto', alignItems: 'center', gap: 11, boxShadow: cur === 'window' && !_wtHC ? '0 10px 28px rgba(20,184,166,0.18)' : 'none' } },
+                style: { width: '100%', padding: 12, minHeight: 44, borderRadius: 12, border: '2px solid ' + (cur === 'window' ? _wtFg('#14b8a6') : '#334155'), background: cur === 'window' ? 'rgba(20,184,166,0.22)' : _wtBg('#1e293b'), color: _wtFg('#99f6e4'), cursor: 'pointer', textAlign: 'left', display: 'grid', gridTemplateColumns: '42px minmax(0, 1fr) auto', alignItems: 'center', gap: 11, boxShadow: cur === 'window' && !_wtHC ? '0 10px 28px rgba(20,184,166,0.18)' : 'none' } },
                 h('span', { 'aria-hidden': 'true', style: { width: 40, height: 40, borderRadius: 12, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(20,184,166,0.16)', border: '1px solid rgba(20,184,166,0.45)', fontSize: 20 } }, '🪟'),
                 h('span', null,
                   h('span', { style: { display: 'block', fontSize: 14, fontWeight: 900, color: _wtFg('#14b8a6'), marginBottom: 3 } }, 'Ready zone · In the window'),
@@ -546,9 +582,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
                 ),
                 cur === 'window' ? h('span', { style: { padding: '5px 8px', borderRadius: 999, background: _wtHC ? '#000000' : 'rgba(20,184,166,0.2)', border: '1px solid ' + _wtFg('#14b8a6'), color: _wtFg('#14b8a6'), fontSize: 10.5, fontWeight: 900, whiteSpace: 'nowrap' } }, '● HERE') : h('span', { 'aria-hidden': 'true', style: { width: 8, height: 8, borderRadius: '50%', background: 'rgba(20,184,166,0.45)' } })
               ),
-              h('button', { onClick: function() { setZone('hypo'); }, 'aria-label': 'I am hypoaroused right now', 'aria-pressed': cur === 'hypo',
+              h('button', { type: 'button', onClick: function() { setZone('hypo'); }, 'aria-label': 'I am hypoaroused right now', 'aria-pressed': cur === 'hypo',
                 'data-wot-zone': 'hypo',
-                style: { width: '100%', padding: 12, borderRadius: 12, border: '2px solid ' + (cur === 'hypo' ? _wtFg('#0ea5e9') : '#334155'), background: cur === 'hypo' ? 'rgba(14,165,233,0.22)' : _wtBg('#1e293b'), color: _wtFg('#bae6fd'), cursor: 'pointer', textAlign: 'left', display: 'grid', gridTemplateColumns: '42px minmax(0, 1fr) auto', alignItems: 'center', gap: 11, boxShadow: cur === 'hypo' && !_wtHC ? '0 10px 28px rgba(14,165,233,0.16)' : 'none' } },
+                style: { width: '100%', padding: 12, minHeight: 44, borderRadius: 12, border: '2px solid ' + (cur === 'hypo' ? _wtFg('#0ea5e9') : '#334155'), background: cur === 'hypo' ? 'rgba(14,165,233,0.22)' : _wtBg('#1e293b'), color: _wtFg('#bae6fd'), cursor: 'pointer', textAlign: 'left', display: 'grid', gridTemplateColumns: '42px minmax(0, 1fr) auto', alignItems: 'center', gap: 11, boxShadow: cur === 'hypo' && !_wtHC ? '0 10px 28px rgba(14,165,233,0.16)' : 'none' } },
                 h('span', { 'aria-hidden': 'true', style: { width: 40, height: 40, borderRadius: 12, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(14,165,233,0.16)', border: '1px solid rgba(14,165,233,0.45)', fontSize: 20 } }, '🌙'),
                 h('span', null,
                   h('span', { style: { display: 'block', fontSize: 14, fontWeight: 900, color: _wtFg('#0ea5e9'), marginBottom: 3 } }, 'Low activation · Hypoarousal'),
@@ -574,14 +610,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
                 ? h('div', { role: 'group', 'aria-label': 'Choose regulation practice', style: { display: 'flex', flexWrap: 'wrap', gap: 7 } },
                     practices.map(function(s, i) {
                       var selected = chosenPractice === s;
-                      return h('button', { key: i, onClick: function() { choosePractice(s); }, 'aria-pressed': chosenPractice === s,
-                        style: { padding: '7px 11px', borderRadius: 999, background: selected ? (_wtHC ? '#000000' : 'rgba(167,139,250,0.24)') : _wtBg('#1e293b'), border: '1px solid ' + (selected ? _wtFg('#a78bfa') : _wtBd('#475569')), fontSize: 12, color: selected ? _wtFg('#e9d5ff') : _wtFg('#cbd5e1'), fontWeight: selected ? 850 : 650, cursor: 'pointer', textAlign: 'left' } },
+                      return h('button', { key: i, type: 'button', onClick: function() { choosePractice(s); }, 'aria-pressed': chosenPractice === s,
+                        style: { padding: '8px 12px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 999, background: selected ? (_wtHC ? '#000000' : 'rgba(167,139,250,0.24)') : _wtBg('#1e293b'), border: '1px solid ' + (selected ? _wtFg('#a78bfa') : _wtBd('#475569')), fontSize: 12, color: selected ? _wtFg('#e9d5ff') : _wtFg('#cbd5e1'), fontWeight: selected ? 850 : 650, cursor: 'pointer', textAlign: 'left' } },
                         (selected ? '✓ ' : '') + s);
                     })
                   )
                 : h('div', { style: { fontSize: 12, color: _wtFg('#94a3b8'), fontStyle: 'italic' } },
                     activeInfo.fallback + ' ',
-                    h('button', { onClick: function() { goto('edit'); }, style: { background: 'transparent', border: 'none', color: _wtFg('#a78bfa'), cursor: 'pointer', textDecoration: 'underline', fontSize: 12 } }, 'Add some.'))
+                    h('button', { type: 'button', onClick: function() { goto('edit'); }, style: { minHeight: 44, padding: '8px 10px', display: 'inline-flex', alignItems: 'center', background: 'transparent', border: 'none', color: _wtFg('#a78bfa'), cursor: 'pointer', textDecoration: 'underline', fontSize: 12 } }, 'Add some.'))
             ),
             h('section', { 'aria-label': 'Notice choose recheck regulation path', style: { padding: 15, borderRadius: 12, background: _wtHC ? '#000000' : (_wtL ? '#f8fafc' : 'linear-gradient(135deg, rgba(167,139,250,0.13), rgba(15,23,42,0.58))'), border: '1px solid ' + (_wtHC ? '#ffff00' : 'rgba(167,139,250,0.34)') } },
               h('div', { style: { fontSize: 12, color: _wtFg('#e9d5ff'), fontWeight: 900, textTransform: 'uppercase', letterSpacing: 0.7, marginBottom: 9 } }, 'Notice → Choose → Recheck'),
@@ -634,9 +670,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _wtFg('#99f6e4'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _wtHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _wtHC ? '#000000' : 'linear-gradient(135deg, #115e59 0%, #0f766e 100%)', color: _wtFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
-            h('button', { onClick: function() { goto('window'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _wtBd('#475569'), background: _wtBg('#1e293b'), color: _wtFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+            h('button', { type: 'button', onClick: printNow, style: { padding: '10px 18px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: _wtHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _wtHC ? '#000000' : 'linear-gradient(135deg, #115e59 0%, #0f766e 100%)', color: _wtFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { type: 'button', onClick: function() { goto('window'); }, 'aria-label': 'Back',
+              style: { padding: '10px 18px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + _wtBd('#475569'), background: _wtBg('#1e293b'), color: _wtFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
@@ -733,7 +769,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
           h('div', { style: { fontSize: 11, color: _wtFg('#5eead4'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: _wtFg('#99f6e4'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+                style: { fontSize: 13, color: _wtFg('#99f6e4'), fontWeight: 700, textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', minHeight: 44, marginBottom: 4 } }, title + ' ↗')
             : h('div', { style: { fontSize: 13, color: _wtFg('#99f6e4'), fontWeight: 700, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _wtFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );
@@ -746,7 +782,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
       else if (view === 'about') body = renderAbout();
       else body = renderWindow();
 
-      return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Window of Tolerance' },
+      return h('div', { className: 'selh-wot', style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Window of Tolerance' },
         header(),
         navTabs(),
         (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')

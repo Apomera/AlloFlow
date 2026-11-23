@@ -155,7 +155,12 @@
     "refine_go": "Propuneți o rescriere",
     "refining": "Se scrie o propunere…",
     "made_from_version": "Creat din versiunea {version} a sursei dumneavoastră",
-    "remake": "Refaceți din versiunea curentă"
+    "remake": "Refaceți din versiunea curentă",
+    "dictate": "Dictează",
+    "close_dictate": "Închide dictarea",
+    "send_read_along": "Trimite la Pachetul de Lectură Ghidată",
+    "upload_verify_banner": "Audio/video transcris local cu Whisper ({count} segmente păstrate în memorie)",
+    "clear_audio": "Șterge audio"
   },
   "sel": {
     "peersupport": {
@@ -5936,7 +5941,10 @@
     "source_choice_ambiguous": "Alegeți o variantă de lectură în Bazat pe înainte de generare. Este disponibilă mai mult de o variantă.",
     "source_choices_load_failed": "Variantele de lectură nu au putut fi încărcate. Încercați din nou.",
     "submission_tools_still_loading": "Instrumentele de trimitere se încarcă încă. Apasă din nou Trimite.",
-    "blank_created": "Resursă goală creată: {title}. Completați-o înainte de a o partaja."
+    "blank_created": "Resursă goală creată: {title}. Completați-o înainte de a o partaja.",
+    "sent_to_read_along": "Fragmentul a fost trimis la Pachetul de Lectură Ghidată într-o filă nouă.",
+    "read_along_handoff_failed": "Nu s-a putut transfera ciorna către Pachetul de Lectură Ghidată.",
+    "read_along_no_text": "Adaugă sau dictează textul sursă înainte de a trimite la Pachetul de Lectură Ghidată."
   },
   "large_file": {
     "modal_title": "Importă Large audio fișier",
@@ -5953,7 +5961,8 @@
     "chunk_info": "Fișierul audio este împărțit în segmente de 5 minute pentru procesare",
     "chunk_progress": "Chunk {current} de {total}",
     "audio_only_error": "Momentan, pentru transcrierea pe segmente sunt acceptate doar fișiere audio (MP3, WAV etc.).",
-    "starting": "Se pornește..."
+    "starting": "Se pornește...",
+    "engine_legend": "Motor de Transcriere"
   },
   "formatting": {
     "bold": "Aldin (**text**)",
@@ -6357,7 +6366,8 @@
       "analyzing_short": "Se analizează...",
       "generate_short": "Generează",
       "books_short": "Cărți",
-      "books_hint": "Deschide cărți ilustrate: orice carte poate deveni textul tău sursă"
+      "books_hint": "Deschide cărți ilustrate: orice carte poate deveni textul tău sursă",
+      "dictate_hint": "Dictează textul sursă cu Whisper pe dispozitiv și verificare opțională cu Gemini"
     },
     "status_generating": "Generating sursă text...",
     "success_long_form": "lung-form text generat successfully!",
@@ -6407,7 +6417,8 @@
     "empty_desc_teacher": "Adăugați un text, apoi alegeți instrumentele care îl adaptează pentru elevii dumneavoastră.",
     "empty_desc_family": "Adăugați ceva ce citește copilul dumneavoastră, apoi alegeți cum doriți să-l ajutați.",
     "reading_catalog": "Catalog de lectură",
-    "find_online": "Caută online"
+    "find_online": "Caută online",
+    "dictate_or_record": "Dictează sau înregistrează"
   },
   "wizard": {
     "title": "rapid Începe",
@@ -6541,7 +6552,12 @@
     "paste_word_count": "Cuvinte: {count}",
     "length_custom": "Personalizată…",
     "length_custom_label": "Numărul de cuvinte",
-    "length_custom_hint": "De la 50 la 5.000 de cuvinte"
+    "length_custom_hint": "De la 50 la 5.000 de cuvinte",
+    "dictate_desc": "Dictare vocală Whisper locală și verificare opțională",
+    "dictate_title": "Dictează sau înregistrează textul sursă",
+    "dictate_helper": "Folosește implicit dictarea privată Whisper pe dispozitiv. Editează liber, curăță opțional textul sau verifică-l față de înregistrarea ta cu Gemini.",
+    "dictate_loading": "Se încarcă Studioul de Dictare (Whisper local)… Poți tasta sau edita mai jos în timp ce se încarcă.",
+    "words_dictated_unit": "cuvinte dictate"
   },
   "settings": {
     "immersive_options": "Imersiv opțiuni",
@@ -108936,5 +108952,68 @@
     "sc_findText": "Caută text în design",
     "sc_commandPalette": "Deschide acțiunile rapide",
     "sc_help": "Arată această listă de scurtături"
+  },
+  "dictation": {
+    "badge_desktop": "Whisper Desktop Pregătit",
+    "badge_download_needed": "Whisper Local · Descărcare Inițială",
+    "badge_local_ready": "Whisper Local Pregătit · {name}",
+    "cleanup_apply": "Aplică curățarea",
+    "cleanup_failed": "Textul nu a putut fi curățat acum.",
+    "cleanup_fillers": "Elimină cuvintele de umplutură",
+    "cleanup_heading": "Curățare opțională a textului cu IA",
+    "cleanup_keep": "Păstrează originalul",
+    "cleanup_no_changes": "Nu au fost sugerate modificări pentru această ciornă.",
+    "cleanup_notes": "Formatează ca notițe de clasă",
+    "cleanup_punctuation": "Corectează punctuația și formatarea",
+    "cleanup_review_title": "Sugestia de curățare este gata — ciorna ta nu s-a modificat încă",
+    "cleanup_text_only": "doar text — nu se trimite niciun fișier audio",
+    "cleanup_unavailable": "Curățarea textului cu IA este indisponibilă acum.",
+    "cleanup_undo": "Anulează curățarea",
+    "cleanup_working": "Se curăță…",
+    "clear_audio": "Șterge audio înregistrat ({mb} MB)",
+    "crosscheck_all_resolved": "Toate punctele semnalate au fost verificate.",
+    "crosscheck_btn": "Verifică față de audio cu Gemini",
+    "crosscheck_count": "{count} punct(e) semnalat(e) de verificat:",
+    "crosscheck_disabled_note": "Indisponibil acum (dezactivat în modul offline / IA oprită pentru elevi sau fără cheie Gemini). Dictarea ta Whisper locală funcționează în continuare complet offline.",
+    "crosscheck_disclosure": "Rulează doar dacă apeși mai jos: trimite segmentele audio înregistrate în memorie și ciorna textului către Gemini pentru a semnala posibile greșeli de cuvinte.",
+    "crosscheck_failed": "Verificarea audio Gemini nu s-a finalizat. Transcrierea ta locală a rămas neatinsă.",
+    "crosscheck_heading": "Verificare încrucișată cu audio prin Gemini (Opțional)",
+    "crosscheck_none": "Nu s-au găsit diferențe semnificative între Whisper Local și Gemini Audio.",
+    "crosscheck_running": "Se verifică față de audio…",
+    "crosscheck_unavailable": "Verificarea încrucișată audio Gemini este indisponibilă acum.",
+    "download_now": "Descarcă Whisper Local ({size} MB)",
+    "download_warning": "Notificare de descărcare: Whisper Local folosește implicit recunoașterea vocală privată pe dispozitiv. Descărcarea modelului {name} necesită ~{size} MB o singură dată (~1–2 minute în funcție de conexiune), se salvează offline în browser și păstrează înregistrările vocale pe acest dispozitiv.",
+    "draft_label": "Ciornă transcriere (editabilă)",
+    "draft_placeholder": "Apasă Pornește dictarea mai sus sau tastează/editează transcrierea direct aici…",
+    "guide_both_body": "Începe privat cu Whisper Local pentru ca dictarea să rămână rapidă și offline. Dacă dorești o a doua opinie pentru termeni dificili sau nume proprii, activează verificarea încrucișată Gemini pentru a compara două modele independente cu înregistrarea ta și a reasculta fragmente de 5 secunde la orice punct semnalat.",
+    "guide_both_label": "De ce să le folosești pe ambele (Verificare încrucișată):",
+    "guide_gemini_body": "Nu necesită descărcarea unui model. Mai bun pentru vocabular specializat, nume proprii, accente, săli de clasă zgomotoase și punctuație — trimite fragmente audio înregistrate către Gemini doar dacă alegi acest lucru.",
+    "guide_gemini_title": "Gemini Audio (Verificare opțională)",
+    "guide_summary": "Whisper Local vs. Gemini Audio — puncte forte și de ce să le folosești pe ambele",
+    "guide_whisper_body": "Privat și offline după o singură descărcare (~39–73 MB). Niciun fișier audio nu părăsește dispozitivul, nu necesită cheie API sau cotă, iar dictarea continuă lungă funcționează stabil.",
+    "guide_whisper_title": "Whisper Local (Implicit)",
+    "ios_canvas_blocked": "Whisper Local este întrerupt pe iPhone/iPad în interiorul Gemini Canvas. Tastează direct mai jos sau deschide AlloFlow într-un browser desktop.",
+    "ios_canvas_hint": "Poți tasta direct mai jos, poți deschide AlloFlow într-un browser desktop pentru Whisper Local sau poți folosi Gemini Audio dacă este configurat.",
+    "ios_canvas_title": "Whisper pe dispozitiv este întrerupt pe iPhone/iPad în Gemini Canvas",
+    "listening_local": "Se ascultă local cu Whisper… fă o scurtă pauză sau continuă să vorbești pentru a adăuga text.",
+    "mic_start_failed": "Microfonul nu a putut fi pornit. Verifică permisiunile browserului.",
+    "model_size_label": "Dimensiunea modelului Whisper Local",
+    "pause_recording": "Pauză",
+    "paused_note": "În pauză. Poți edita transcrierea mai jos sau poți apăsa Continuă pentru a relua dictarea.",
+    "privacy_tag": "Privat · Offline după descărcare · Fără cheie API",
+    "resume_recording": "Continuă",
+    "send_read_along": "Trimite la Pachetul de Lectură Ghidată",
+    "speech_settings": "Setări vocale",
+    "speed_badge_lesson": "Testat: de {speed}x mai rapid decât vorbirea · Bun pentru dictări lungi",
+    "speed_badge_short": "Testat: de {speed}x mai rapid decât vorbirea · Ideal pentru fragmente scurte",
+    "speed_badge_slow": "Testat: {speed}x · Mai lent decât timpul real (așteaptă-te la pauze)",
+    "speed_badge_upgrade": "Testat: de {speed}x mai rapid decât vorbirea · Bun pentru dictări lungi (poți încerca și {name})",
+    "start_recording": "Pornește dictarea (Whisper Local)",
+    "stop_recording": "Oprește",
+    "studio_title": "Studiou de Dictare",
+    "test_mic": "Testează microfonul (4s)",
+    "upload_media": "Transcrie fișier audio/video",
+    "use_text": "Folosește textul dictat",
+    "voice_unavailable": "Înregistratorul vocal încă se încarcă. Încearcă din nou în câteva clipe."
   }
 }

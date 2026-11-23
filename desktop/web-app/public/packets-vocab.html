@@ -27,6 +27,7 @@
 <script src="packets_vocab_media.js" defer></script>
 <script src="packet_vocab_builder.js" defer></script>
 <script src="packets-print-cards.js" defer></script>
+<script src="packets_word_starters.js" defer></script>
 <script src="packets-vocab.js" defer></script>
 </head>
 <body>
@@ -38,6 +39,19 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 3 7.5l9 4.5 9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
       <span id="product-name">AlloFlow Packets</span>
     </a>
+    <details class="top-menu">
+      <summary>Switch maker</summary>
+      <nav aria-label="Other Packets tools">
+        <a href="packets-make.html">Word Sounds</a>
+        <a href="packets-vocab.html" aria-current="page">Vocabulary</a>
+        <a href="packets-math-practice.html">Math Fact Practice</a>
+        <a href="packets-check.html">Math Check</a>
+        <a href="packets-read-along.html">Read-Along</a>
+        <a href="packets-symbol-runner.html">Symbol Runner</a>
+        <a href="packets-present-export.html">Present &amp; print</a>
+        <a href="packets-results.html">Add up results</a>
+      </nav>
+    </details>
     <a class="top-link" href="packets-results.html">Add up results</a>
   </div>
 <details class="proof">
@@ -84,13 +98,16 @@
     <div id="reopen" class="reopen" hidden>
       <p class="reopen-row">
         <button type="button" class="btn btn-text btn-small" id="reopen-choose" aria-describedby="reopen-hint">Open a file I made</button>
-        <span class="hint" id="reopen-hint">Start from a file you saved before.<span class="reopen-more"> Then change what you want. It is read on this device only.</span></span>
+        <span class="hint" id="reopen-hint">Start from a file you saved before.<span class="reopen-more"> Then change what you want. You can also drop the file here. It is read on this device only.</span></span>
       </p>
       <input type="file" id="reopen-file" accept=".html,.htm,text/html" hidden aria-label="A file you made before">
       <div id="reopen-note" class="note reopen-note" tabindex="-1" hidden>
         <p id="reopen-line" class="reopen-line"></p>
         <ul id="reopen-list"></ul>
-        <p class="row"><a id="reopen-page" class="btn btn-small" href="packets.html" hidden>Open that page</a></p>
+        <p class="row reopen-actions">
+          <a id="reopen-page" class="btn btn-small" href="packets.html" hidden>Open that page</a>
+          <button type="button" class="btn btn-text btn-small" id="reopen-close">Close this note</button>
+        </p>
       </div>
     </div>
 
@@ -119,6 +136,12 @@
       <p class="kicker">Step 1 of 3</p>
       <h2 id="step-1-title" tabindex="-1">Your words</h2>
       <p class="sheet-intro">Type or paste the words of the unit. Each word is looked up in the word list on this device.</p>
+      <div class="starter-row" id="starter-row" hidden>
+        <label for="f-starter">Load a starter set</label>
+        <select id="f-starter">
+          <option value="">Choose a word set</option>
+        </select>
+      </div>
       <div class="field block">
         <label for="f-words">Words</label>
         <span class="hint" id="words-hint">One word on each line, or commas between them. Up to 40 words.</span>
@@ -181,8 +204,6 @@
 
       <div class="actions actions-file">
         <button type="button" class="btn" id="back-3">Back</button>
-        <button type="button" class="btn" id="print-cards" hidden>Print word cards</button>
-        <a class="btn" id="open-present-export" href="packets-present-export.html#from-vocab" target="_blank" rel="noopener">Present &amp; print word cards <span class="sr-only">(opens in a new tab)</span></a>
         <a class="btn push" id="try" href="packets-try.html" target="_blank" rel="noopener" hidden>Try it <span class="sr-only">(opens in a new tab)</span></a>
         <button type="button" class="btn btn-primary" id="save" hidden>Save the file</button>
       </div>
@@ -202,6 +223,15 @@
         <legend>Kinds of questions</legend>
         <div class="choices" id="types"></div>
       </fieldset>
+
+      <div class="block mix-field" id="v-mix-field" hidden>
+        <div class="row">
+          <label class="radio"><input type="checkbox" id="v-mix" aria-describedby="v-mix-hint"> <span>Mix the question types</span></label>
+          <button type="button" class="btn btn-small" id="v-mix-again" hidden>Mix again</button>
+        </div>
+        <span class="hint" id="v-mix-hint">Practice only. Question types take turns while keeping each word's questions spaced apart, with Meaning to word before Word to meaning for the same word.</span>
+        <span class="sr-only" id="v-mix-said" role="status"></span>
+      </div>
 
       <details class="why code-box" id="picture-more">
         <summary>More pictures and school concept diagrams</summary>
@@ -257,26 +287,40 @@
         </div>
       </div>
 
-      <details class="why code-box" id="more">
-        <summary>More choices</summary>
-        <div class="block">
-          <label class="radio"><input type="checkbox" id="f-read" aria-describedby="read-hint"> <span>Read aloud buttons</span></label>
-          <span class="hint" id="read-hint">The student can hear the word, the question and each answer, read by the voice built into their device, one at a time or all in turn with Hear all. Only a voice that runs on the device is used. Devices with no such voice show no buttons.</span>
-        </div>
-        <div class="block">
-          <label class="radio"><input type="checkbox" id="f-voices" aria-describedby="voices-hint voices-line"> <span>Recordings of the words</span></label>
-          <span class="hint" id="voices-hint">Many words have a recording made ahead of time, a machine voice, the same as in Word Sounds files. The file plays it for the word itself. The device voice reads the meanings and the questions. Recordings make the file bigger.</span>
-          <span class="hint" id="voices-line" role="status"></span>
-        </div>
-        <div class="block" id="repeat-block">
-          <label class="radio"><input type="checkbox" id="f-repeat-missed" aria-describedby="repeat-missed-hint"> <span>At the end, go over the missed questions once more</span></label>
-          <span class="hint" id="repeat-missed-hint">Practice only. Each question the student missed on the first try comes back once, after the others. The results still show how the first time went.</span>
+      <details class="more" id="more">
+        <summary><span class="more-name">More choices</span><span class="more-now" id="more-now"></span></summary>
+        <div class="more-body">
+          <div class="block">
+            <label class="radio"><input type="checkbox" id="f-read" aria-describedby="read-hint"> <span>Read aloud buttons</span></label>
+            <span class="hint" id="read-hint">The student can hear the word, the question and each answer, read by the voice built into their device, one at a time or all in turn with Hear all. Only a voice that runs on the device is used. Devices with no such voice show no buttons.</span>
+          </div>
+          <div class="block">
+            <label class="radio"><input type="checkbox" id="f-voices" aria-describedby="voices-hint voices-line"> <span>Recordings of the words</span></label>
+            <span class="hint" id="voices-hint">Many words have a recording made ahead of time, a machine voice, the same as in Word Sounds files. The file plays it for the word itself. The device voice reads the meanings and the questions. Recordings make the file bigger.</span>
+            <span class="hint" id="voices-line" role="status"></span>
+          </div>
+          <div class="block" id="repeat-block">
+            <label class="radio"><input type="checkbox" id="f-repeat-missed" aria-describedby="repeat-missed-hint"> <span>At the end, go over the missed questions once more</span></label>
+            <span class="hint" id="repeat-missed-hint">Practice only. Each question the student missed on the first try comes back once, after the others. The results still show how the first time went.</span>
+          </div>
         </div>
       </details>
 
       <div class="summary summary-list" id="summary-list">
         <h3>What is in the file</h3>
         <dl id="summary-rows"></dl>
+      </div>
+
+      <div class="block paper" id="paper">
+        <h3>Paper and screen</h3>
+        <p class="hint">The same words as cards to print, on a screen for the whole class, or for quick naming practice.</p>
+        <p class="row paper-row">
+          <button type="button" class="btn btn-small" id="print-cards" hidden>Print word cards</button>
+          <button type="button" class="btn btn-small" id="print-worksheet" hidden>Print vocabulary worksheet</button>
+          <button type="button" class="btn btn-small" id="download-bundle" hidden>Download classroom bundle (.zip)</button>
+          <a class="btn btn-small" id="open-present-export" href="packets-present-export.html#from-vocab" target="_blank" rel="noopener">Present &amp; print word cards <span class="sr-only">(opens in a new tab)</span></a>
+          <a class="btn btn-small" id="open-symbol-runner" href="packets-symbol-runner.html" target="_blank" rel="noopener" hidden>Practice in Symbol Runner <span class="sr-only">(opens in a new tab)</span></a>
+        </p>
       </div>
 
       <details class="batch" id="batch">
@@ -292,6 +336,10 @@
             <button type="button" class="btn btn-small" id="batch-load">Load list from a .txt file</button>
             <input type="file" id="batch-file" accept=".txt,text/plain" aria-label="A text file of code names" hidden>
           </p>
+          <div id="batch-rotate-wrap" class="block" hidden>
+            <label class="radio"><input type="checkbox" id="f-batch-rotate" aria-describedby="batch-rotate-hint"> <span>Give students different question orders</span></label>
+            <span class="hint" id="batch-rotate-hint">Practice with mixed question types only. Each student gets a different question order.</span>
+          </div>
           <p id="batch-said" class="result-sub" role="status"></p>
           <p class="row batch-row">
             <button type="button" class="btn" id="batch-make" hidden>Save .zip</button>

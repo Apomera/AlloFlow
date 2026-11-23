@@ -874,8 +874,8 @@ describe('the pages as files', () => {
 
   it('say "AI" only to say that none runs here', () => {
     const allowed = { [PAGE]: ['This page runs without AI.', 'This page runs without AI.', 'Runs without AI.'], [GUIDE]: ['This page runs without AI.',
-      // 2026-11-16, deliberately: the guide names the TWO pages that use AI (packets-voice.html and packets-read-along.html; tests/packets_voice_page_2026_11_16.test.js, tests/packets_read_along_2026_11_16.test.js).
-      'Two more pages, Make recordings with a computer voice (packets-voice.html) and Make a read-along (packets-read-along.html), are the only pages of this site that use AI: after the teacher presses Get the voice, the page downloads a voice (Kokoro, about 88 MB) from Hugging Face (huggingface.co) and runs it on the device.',
+      // 2026-11-16 (updated 2026-11-22): the guide names the TWO pages that use AI (packets-voice.html and packets-read-along.html) and both hosts (alloflow-cdn.pages.dev + huggingface.co).
+      "Two more pages, Make recordings with a computer voice (packets-voice.html) and Make a read-along (packets-read-along.html), are the only pages of this site that use AI: after the teacher presses Get the voice, the page downloads the voice runtime from AlloFlow's CDN (alloflow-cdn.pages.dev) and a voice (Kokoro, about 88 MB) from Hugging Face (huggingface.co) and runs it on the device.",
       'Runs without AI.'] };
     const sentences = (text) => text.replace(/\s+/g, ' ').trim().split(/(?<=[.!?])\s+/).filter((sentence) => /\bAI\b/.test(sentence));
     const BLOCK = 'title, h1, h2, h3, p, li, span, legend, label, button, option, td, th';
@@ -1061,9 +1061,9 @@ describe('the guide for school IT', () => {
     // The label a student types is asked for in these words, and may be left out.
     expect(fact['What is collected']).toContain('A label the student types (a code name or a first name; it can be left blank)');
     expect([loader.DEFAULT_LABELS.learner_label, loader.DEFAULT_LABELS.name_prompt_skip]).toEqual(['Your code name or first name', 'Continue without a name']);
-    // Everything a results file records is named (2026-11-12), and each is a column or a trailer cell the file really writes.
+    // Everything a results file records is named (2026-11-12, updated 2026-11-22 for reading tools parity), and each is a column or a trailer cell the file really writes.
     expect(fact['What is collected']).toBe('A label the student types (a code name or a first name; it can be left blank). For each item: each answer, the number of tries, the time on the item, '
-      + 'how often each help was used (a count for each, such as hearing a word again, and the reading tools: bigger text, contrast, spacing, reading focus and the magnifier), '
+      + 'how often each help was used (a count for each, such as hearing a word again, and the reading tools: bigger text and exact text size, contrast and custom colors, spacing, bold start, reading focus and the magnifier), '
       + 'and a note when an item was skipped, ran out of time or was open when the file was opened again. The start and finish times from the device clock, with its offset from UTC, '
       + 'and a random session number. A check also records the seconds the page was hidden, the try number, and whether the page was left for more than 3 seconds, reloaded, '
       + 'or had its clock set back. Listening choices inside a file (voice speed and spoken directions) stay on the device and are not written to the results file. Nothing else: no email address, no account, no details of the device or the browser, no location.');
@@ -1144,10 +1144,13 @@ describe('the guide for school IT', () => {
       + 'It sends them the word searched for and asks them for the pictures it shows. '
       // 2026-11-12, deliberately: the vocabulary lookup page (packets-vocab-lookup.html, tests/packets_vocab_pictures.test.js).
       + 'One more page, Look up a word online (packets-vocab-lookup.html), can send one word that is not in the vocabulary word list to the Free Dictionary API (api.dictionaryapi.dev), after the teacher allows it and presses Look it up. '
-      // 2026-11-16, deliberately: the computer-voice page (packets-voice.html, tests/packets_voice_page_2026_11_16.test.js).
-      + 'Two more pages, Make recordings with a computer voice (packets-voice.html) and Make a read-along (packets-read-along.html), are the only pages of this site that use AI: after the teacher presses Get the voice, the page downloads a voice (Kokoro, about 88 MB) from Hugging Face (huggingface.co) and runs it on the device. '
-      + 'They send no words: Hugging Face sees only that the browser asked for the voice. '
+      // 2026-11-16 (updated 2026-11-22): disclose alloflow-cdn.pages.dev alongside huggingface.co, plus opt-in local Read-Along Device Voice and Student Voice Practice.
+      + "Two more pages, Make recordings with a computer voice (packets-voice.html) and Make a read-along (packets-read-along.html), are the only pages of this site that use AI: after the teacher presses Get the voice, the page downloads the voice runtime from AlloFlow's CDN (alloflow-cdn.pages.dev) and a voice (Kokoro, about 88 MB) from Hugging Face (huggingface.co) and runs it on the device. "
+      + 'They send no words: those hosts see only that the browser asked for the runtime and the voice. '
       + 'A read-along file that a teacher saves holds recordings and plays them: it runs no voice and reaches no site. '
+      + 'If a teacher turns on optional Device Voice in a read-along file, it reads aloud only with a voice that runs on the device. '
+      + "If a teacher turns on optional Student Voice Practice in a read-along file, the student's microphone stays in browser memory only for local playback and is never saved or sent. "
+      + 'Standard practice files and checks never use the microphone. '
       // 2026-11-17: a check for the youngest students may carry a recording of its directions.
       + 'A check for the youngest students (Quantity Discrimination or Missing Number) holds a recording of its directions, made ahead of time with the same computer voice and stored on this site with the page; it plays only when the student presses Hear the directions, and the results say how often that was. '
       + 'Every other page of this site reaches only this site. '
@@ -1314,7 +1317,9 @@ describe('the page: from a dropped file to its report', () => {
     for (const cell of found.querySelectorAll('tbody td')) expect(['Line', 'Found', 'Kind', 'Why', 'In the file']).toContain(cell.getAttribute('data-label'));
     expect(it.textContent).toContain(verify.HASH_LIMIT);
     expect(it.textContent).toContain(LIMITS);
-    expect([...it.querySelectorAll('.actions button')].map((node) => node.textContent)).toEqual(['Copy this report', 'Print']);
+    // Copy and Print sit right below the verdict card, outside closed "For IT staff".
+    expect([...report.querySelectorAll('.verdict .actions button')].map((node) => node.textContent)).toEqual(['Copy this report', 'Print']);
+    expect([...it.querySelectorAll('.actions button')]).toEqual([]);
     expect(it.textContent).not.toContain('tulip-47');
   });
 

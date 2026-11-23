@@ -546,7 +546,7 @@ function DiscussionKitBody(props) {
       }, []);
       _brainstormSpeakText([activityDisplayText(item.title), activityDisplayText(item.openingQuestion)].concat(qTexts).filter(Boolean).join('. '));
     },
-    "aria-label": (t('a11y.read_aloud') || 'Listen') + ': ' + activityDisplayText(item.title),
+    "aria-label": (t('common.listen') || 'Listen') + ': ' + activityDisplayText(item.title),
     title: t('a11y.read_aloud') || 'Listen',
     className: "no-print min-h-11 shrink-0 inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, /*#__PURE__*/React.createElement("span", {
@@ -668,7 +668,7 @@ function JigsawBody(props) {
     onClick: function () {
       _brainstormSpeakText([activityDisplayText(item.title), activityDisplayText(item.homeGroupTask), activityDisplayText(item.synthesisOrganizer)].filter(Boolean).join('. '));
     },
-    "aria-label": (t('a11y.read_aloud') || 'Listen') + ': ' + activityDisplayText(item.title),
+    "aria-label": (t('common.listen') || 'Listen') + ': ' + activityDisplayText(item.title),
     title: t('a11y.read_aloud') || 'Listen',
     className: "no-print min-h-11 shrink-0 inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, /*#__PURE__*/React.createElement("span", {
@@ -702,7 +702,7 @@ function JigsawBody(props) {
         var spoken = [chunkTitle, activityDisplayText(chunk.expertPacket || '')].concat(keyPoints.map(activityDisplayText)).filter(Boolean).join('. ');
         _brainstormSpeakText(spoken);
       },
-      "aria-label": (t('a11y.read_aloud') || 'Listen') + ': ' + activityDisplayText(chunk.label || (t('brainstorm.expert_group') || 'Expert group') + ' ' + (cIdx + 1)),
+      "aria-label": activityT(t, 'brainstorm.listen_packet', 'Listen to packet') + ': ' + activityDisplayText(chunk.label || (t('brainstorm.expert_group') || 'Expert group') + ' ' + (cIdx + 1)),
       className: "no-print min-h-11 inline-flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-900 hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
     }, /*#__PURE__*/React.createElement("span", {
       "aria-hidden": "true"
@@ -960,7 +960,7 @@ function BrainstormView(props) {
     type: "button",
     "data-brainstorm-listen": idx,
     onClick: () => _brainstormSpeakText([activityDisplayText(idea.title), activityDisplayText(idea.description), activityDisplayText(idea.connection)].filter(Boolean).join('. ')),
-    "aria-label": (t('a11y.read_aloud') || 'Listen') + ': ' + activityDisplayText(idea.title),
+    "aria-label": (t('common.listen') || 'Listen') + ': ' + activityDisplayText(idea.title),
     title: t('a11y.read_aloud') || 'Listen',
     className: "no-print min-h-11 shrink-0 inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, /*#__PURE__*/React.createElement("span", {

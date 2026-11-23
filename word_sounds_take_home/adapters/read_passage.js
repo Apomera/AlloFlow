@@ -96,12 +96,36 @@ module.exports = {
   render: function (item, ctx) {
     // The key prepare() uses (2026-11-13): spaces or an accent written two ways are one choice.
     var norm = function (s) { var t = String(s == null ? '' : s); try { t = t.normalize('NFC'); } catch (_) {} return t.toLowerCase().trim().replace(/\s+/g, ' '); };
+    var doc = ctx.root.ownerDocument;
     var picture = ctx.image(item.picture);
     var blanks = [];
     var lineNodes = [];
+    var run = 0;
+    var watchingStop = false;
+    var mark = function (index) {
+      lineNodes.forEach(function (n, i) {
+        var on = i === index;
+        n.style.background = on ? 'var(--ok-bg)' : '';
+        if (on) n.setAttribute('aria-current', 'true'); else n.removeAttribute('aria-current');
+      });
+    };
+    var onDocStop = function (e) {
+      if (!ctx.root.isConnected || (e && e.target && e.target.closest && e.target.closest('[data-player-stop-audio]'))) halt();
+    };
+    var onDocKey = function (e) {
+      var k = String((e && e.key) || '');
+      if (!ctx.root.isConnected || k === 'Escape' || k === 'Esc') halt();
+    };
+    var watchStop = function (on) {
+      if (!doc || !doc.addEventListener || watchingStop === on) return;
+      watchingStop = on;
+      if (on) { doc.addEventListener('click', onDocStop, true); doc.addEventListener('keydown', onDocKey, true); }
+      else { doc.removeEventListener('click', onDocStop, true); doc.removeEventListener('keydown', onDocKey, true); }
+    };
+    var halt = function () { run++; watchStop(false); mark(-1); };
     // data-read: running text, where the shell's reading focus can go.
     var storyBox = ctx.el('div', { role: 'group', 'aria-label': ctx.L.read_passage_story, class: 'letters', lang: 'en', dir: 'ltr', 'data-read': '',
-      style: 'font-size:1.6rem;border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin:12px 0' });
+      style: 'font-size:clamp(1.2rem,4.5vw,1.6rem);border:1px solid var(--line);border-radius:14px;padding:12px clamp(12px,3.5vw,16px);margin:12px 0;overflow-wrap:anywhere' });
     item.lines.forEach(function (line) {
       var node;
       if (line.text != null) node = ctx.el('p', { style: 'margin:6px 0;padding:2px 6px;border-radius:8px', text: line.text });
@@ -121,7 +145,7 @@ module.exports = {
     else ctx.root.appendChild(ctx.el('p', {}, [ctx.L.read_passage_word_hint + ' ', ctx.el('span', { class: 'letters', lang: 'en', text: item.target })]));
     ctx.root.appendChild(storyBox);
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
-      ctx.el('button', { type: 'button', on: { click: function () { run++; mark(-1); ctx.support('questionReplays'); ctx.play(item.prompt); } }, text: ctx.L.read_passage_hear_instructions }),
+      ctx.el('button', { type: 'button', on: { click: function () { halt(); ctx.support('questionReplays'); ctx.play(item.prompt); } }, text: ctx.L.read_passage_hear_instructions }),
     ]));
     var cards = [];
     var list = ctx.el('ul', { class: 'choices' });
@@ -140,29 +164,45 @@ module.exports = {
     ctx.root.appendChild(list);
     ctx.root.appendChild(after);
     // Follow-along read-back: each line is highlighted while its clip plays.
-    // A newer run, or leaving the screen (which pauses the clip), ends the old one.
-    var run = 0;
-    var mark = function (index) {
-      lineNodes.forEach(function (n, i) {
-        var on = i === index;
-        n.style.background = on ? 'var(--ok-bg)' : '';
-        if (on) n.setAttribute('aria-current', 'true'); else n.removeAttribute('aria-current');
-      });
-    };
+    // A newer run, Escape/stop, or leaving the screen ends the old one.
     // auto: the read-back after a right answer (not a help the student asked for).
     var readBack = function (auto) {
       var mine = ++run;
       if (auto !== true) ctx.support('storyReadBacks');
-      if (!item.readBackByLine) { mark(-1); ctx.play(item.readBack[0]); return; }
+      if (!item.readBackByLine) { watchStop(false); mark(-1); ctx.play(item.readBack[0]); return; }
+      watchStop(true);
       var step = function (i) {
-        if (mine !== run || !ctx.root.isConnected) return;
-        if (i >= item.readBack.length) { mark(-1); return; }
+        if (mine !== run) return;
+        if (!ctx.root.isConnected || i >= item.readBack.length) { watchStop(false); mark(-1); return; }
         mark(i);
-        ctx.play(item.readBack[i]).then(function (ok) { if (mine !== run || ok === false) { if (mine === run) mark(-1); return; } step(i + 1); });
+        ctx.play(item.readBack[i]).then(function (ok) {
+          if (mine !== run) return;
+          if (ok === false) { watchStop(false); mark(-1); return; }
+          step(i + 1);
+        });
       };
       step(0);
     };
+    if (typeof ctx.keys === 'function') {
+      ctx.keys(function (key) {
+        var k = String(key == null ? '' : key);
+        if (k === 'Escape' || k === 'Esc') {
+          var active = watchingStop;
+          halt();
+          if (typeof ctx.stop === 'function') ctx.stop();
+          return active;
+        }
+        return false;
+      });
+    }
     return {
+      stop: halt,
+      // The R key: clear any read-back line highlight and replay the instructions.
+      replay: function () {
+        halt();
+        if (!item.prompt) return false;
+        ctx.play(item.prompt);
+      },
       // After a right answer, once the praise is over, the story is read back line by line (the app's payoff).
       payoff: function () { if (item.readBack && item.readBack.length) readBack(true); },
       reveal: function () {

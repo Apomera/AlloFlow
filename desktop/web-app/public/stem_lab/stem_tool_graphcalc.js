@@ -2288,7 +2288,6 @@
         /* ── Canvas (callback ref, zero-GC live-motion engine, no useEffect) ── */
         var canvasRef = function(canvas) {
           if (!canvas) return;
-          if (!window.math) return;
           var c = canvas._gcCtx || (canvas._gcCtx = canvas.getContext('2d'));
           if (!c) return;
           var dpr = window.devicePixelRatio || 1;
@@ -2400,6 +2399,7 @@
 
           for (var ci = 0; ci < GC_MAX_CURVES; ci++) {
             M.curveActive[ci] = 0; M.ptLen[ci] = 0; M.asymLen[ci] = 0; M.traceActive[ci] = 0;
+            if (!window.math) continue;
             var fn = funcs[ci];
             if (!fn || !fn.expr || !fn.expr.trim()) continue;
             try {

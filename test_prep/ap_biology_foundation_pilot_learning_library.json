@@ -2254,7 +2254,26 @@
             "Compare dehydration synthesis with hydrolysis.",
             "Connect one macromolecule structure to one biological function."
           ],
-          "transferMove": "When a prompt names a molecule, identify the structural feature first and then predict the biological consequence that feature makes possible."
+          "transferMove": "When a prompt names a molecule, identify the structural feature first and then predict the biological consequence that feature makes possible.",
+          "workedExample": {
+            "prompt": "A linear glycogen chain holds 25 glucose monomers joined by glycosidic bonds. Calculate how many water molecules complete hydrolysis consumes, and explain how water polarity aids cleavage.",
+            "steps": [
+              "Step 1: Count covalent linkages in a linear polymer of n monomers using bonds = n − 1, giving 25 − 1 = 24 glycosidic bonds.",
+              "Step 2: Complete hydrolysis breaks each glycosidic linkage by adding one H2O (−H to one monomer and −OH to the other), consuming exactly 24 water molecules.",
+              "Step 3: Water polarity (δ− oxygen, δ+ hydrogens) stabilizes polar transition states during enzymatic cleavage and forms hydrogen bonds that keep released glucose soluble."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students often assume a polymer with n monomers contains n linkages and therefore requires n water molecules for complete hydrolysis.",
+              "repair": "Sketch a 3-monomer chain to verify there are only 2 internal bonds, then apply the general rule of n − 1 water molecules for any linear polymer."
+            },
+            {
+              "misconception": "Many learners confuse polar covalent O−H bonds inside one water molecule with the hydrogen bonds linking neighboring water molecules.",
+              "repair": "Distinguish strong intramolecular covalent bonds within H2O from weaker intermolecular hydrogen bonds between δ+ H and δ− O of adjacent molecules."
+            }
+          ]
         },
         {
           "id": "ap-bio-ch-01-section-02",
@@ -2634,7 +2653,26 @@
             "Describe how a phospholipid orients itself in water and why.",
             "Predict how membrane fluidity changes with saturation and temperature."
           ],
-          "transferMove": "When a question names a carbohydrate or lipid, identify the monomer or chain structure first, then reason from packing, branching, or polarity to the property being asked about."
+          "transferMove": "When a question names a carbohydrate or lipid, identify the monomer or chain structure first, then reason from packing, branching, or polarity to the property being asked about.",
+          "workedExample": {
+            "prompt": "A cold-water fish increases cis-unsaturated phospholipids in its gill membranes from 35% to 62% as water cools from 20°C to 4°C. Explain how fatty acid structure preserves fluidity.",
+            "steps": [
+              "Step 1: Identify fatty acid geometry: cis carbon-carbon double bonds introduce rigid kinks in hydrocarbon tails, whereas saturated chains remain straight.",
+              "Step 2: Kinked unsaturated tails prevent adjacent phospholipids from packing tightly, weakening intermolecular van der Waals attractions between hydrophobic chains.",
+              "Step 3: Reduced packing density lowers the membrane solidification temperature, preserving fluidity so transport proteins continue functioning normally at 4°C."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students frequently think starch and cellulose have different properties because they are built from completely different monosaccharide monomers.",
+              "repair": "Both polymers are built from glucose, but α-1,4 linkages yield helical digestible starch whereas β-1,4 linkages form straight hydrogen-bonded cellulose fibrils."
+            },
+            {
+              "misconception": "Some learners assume cis double bonds stiffen phospholipid bilayers and raise the melting temperature of animal membranes in cold water.",
+              "repair": "Cis double bonds bend hydrocarbon tails outward, increasing spacing between lipids and lowering the temperature at which a membrane solidifies."
+            }
+          ]
         },
         {
           "id": "ap-bio-ch-01-section-03",
@@ -3014,7 +3052,26 @@
             "Explain how primary structure leads to tertiary structure.",
             "Describe one condition that denatures a protein and what it changes."
           ],
-          "transferMove": "For a protein question, trace the chain from sequence to fold to function and ask at which level the described change acts before predicting the outcome."
+          "transferMove": "For a protein question, trace the chain from sequence to fold to function and ask at which level the described change acts before predicting the outcome.",
+          "workedExample": {
+            "prompt": "In a cytosolic enzyme, a point mutation replaces an interior nonpolar valine with a positively charged lysine. Predict how tertiary folding and catalytic activity change, citing R-group interactions.",
+            "steps": [
+              "Step 1: Compare R-group chemistry: valine has a hydrophobic nonpolar hydrocarbon side chain, while lysine has a hydrophilic positively charged amine group at cellular pH.",
+              "Step 2: Burying a charged side chain inside the nonpolar core is energetically unfavorable, disrupting hydrophobic interactions and shifting local polypeptide folding.",
+              "Step 3: Altered tertiary structure distorts the three-dimensional active site geometry, reducing substrate binding affinity and sharply decreasing catalytic rate."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students often claim that heat or pH denaturation breaks covalent peptide bonds and destroys a protein's primary amino acid sequence.",
+              "repair": "Denaturation disrupts noncovalent hydrogen, ionic, and hydrophobic interactions maintaining 3D structure while leaving the primary peptide backbone intact."
+            },
+            {
+              "misconception": "Learners sometimes think antiparallel DNA strands run 5' to 3' in the same spatial direction side by side along the double helix.",
+              "repair": "Antiparallel means one DNA strand runs 5' to 3' while its complementary partner runs 3' to 5', aligning nitrogenous bases for complementary H-bonding."
+            }
+          ]
         }
       ],
       "knowledgeChecks": [
@@ -3507,7 +3564,26 @@
             "Predict a plant-cell response to a hypotonic solution.",
             "Explain why increasing cell size can limit exchange."
           ],
-          "transferMove": "For a transport item, name the moving substance, compare concentrations or water potential, and then decide whether a membrane protein or energy input is required."
+          "transferMove": "For a transport item, name the moving substance, compare concentrations or water potential, and then decide whether a membrane protein or energy input is required.",
+          "workedExample": {
+            "prompt": "Compare two cubic cells with side lengths of 2 μm and 6 μm. Calculate each cell's surface-area-to-volume (SA:V) ratio and explain how cell size affects passive diffusion efficiency.",
+            "steps": [
+              "Step 1: Compute SA = 6s² and V = s³ for the 2 μm cube: SA = 24 μm², V = 8 μm³, giving SA:V = 24 / 8 = 3.0 μm⁻¹.",
+              "Step 2: Compute SA and V for the 6 μm cube: SA = 216 μm², V = 216 μm³, giving SA:V = 216 / 216 = 1.0 μm⁻¹.",
+              "Step 3: The 2 μm cell has a 3-fold greater SA:V ratio and shorter diffusion path, allowing faster nutrient uptake and waste removal per unit volume."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students often assume larger cells have a higher surface-area-to-volume ratio simply because their total membrane surface area is larger.",
+              "repair": "As cell radius grows, volume increases cubically while surface area rises only quadratically, so SA:V decreases and limits transport per unit cytoplasm."
+            },
+            {
+              "misconception": "Many learners believe small ions like Na+ and K+ cross the hydrophobic phospholipid bilayer freely by simple diffusion because of their tiny size.",
+              "repair": "Charged ions are strongly hydrated and repelled by the nonpolar fatty acid core, so they require specific channel or carrier proteins for membrane transport."
+            }
+          ]
         },
         {
           "id": "ap-bio-ch-02-section-02",
@@ -3887,7 +3963,26 @@
             "Explain why surface-area-to-volume ratio limits cell size.",
             "Describe the components of the fluid mosaic model."
           ],
-          "transferMove": "When a structure is described, ask what surface, compartment, or protein it provides, then connect that to the rate or specificity of the process the question is about."
+          "transferMove": "When a structure is described, ask what surface, compartment, or protein it provides, then connect that to the rate or specificity of the process the question is about.",
+          "workedExample": {
+            "prompt": "Pancreatic acinar cells receive radioactive leucine for 3 minutes, then unlabeled leucine for 60 minutes. Trace the endomembrane organelle sequence that processes and secretes the labeled enzyme.",
+            "steps": [
+              "Step 1: Ribosomes docked on the rough endoplasmic reticulum translate the labeled polypeptide and thread it into the rough ER lumen for folding.",
+              "Step 2: Transport vesicles bud from the rough ER and fuse with the cis face of the Golgi apparatus, where enzymes chemically modify and sort the protein.",
+              "Step 3: Secretory vesicles pinch off the trans Golgi face and fuse with the plasma membrane via exocytosis, releasing the digestive enzyme extracellularly."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students sometimes state that prokaryotic cells lack ribosomes and plasma membranes because they do not possess eukaryotic organelles.",
+              "repair": "All cells share a plasma membrane, cytosol, DNA, and ribosomes; prokaryotes specifically lack a membrane-bound nucleus and internal membrane organelles."
+            },
+            {
+              "misconception": "Learners frequently assign secretory protein synthesis to the smooth ER instead of distinguishing smooth ER and rough ER functions.",
+              "repair": "Rough ER bears bound ribosomes for secretory and membrane proteins, whereas smooth ER synthesizes lipids, detoxifies drugs, and stores Ca2+ ions."
+            }
+          ]
         },
         {
           "id": "ap-bio-ch-02-section-03",
@@ -4267,7 +4362,26 @@
             "State the two components of water potential and how each changes it.",
             "List three lines of evidence for the endosymbiotic origin of mitochondria."
           ],
-          "transferMove": "For any water-movement question, write the water potential on each side, decide which is lower, and only then describe what the cell does about it."
+          "transferMove": "For any water-movement question, write the water potential on each side, decide which is lower, and only then describe what the cell does about it.",
+          "workedExample": {
+            "prompt": "A potato cell (Ψs = −6.2 bar, Ψp = +2.0 bar) is placed in an open beaker of 0.30 M sucrose at 27°C (i = 1, R = 0.0831 L·bar/(mol·K)). Calculate both water potentials and predict net osmosis.",
+            "steps": [
+              "Step 1: Find the potato cell water potential: Ψ_cell = Ψs + Ψp = −6.2 + 2.0 = −4.2 bar; convert temperature to Kelvin: T = 27 + 273 = 300 K.",
+              "Step 2: Calculate the open-beaker solution water potential (Ψp = 0): Ψs = −iCRT = −(1)(0.30)(0.0831)(300) = −7.48 bar ≈ −7.5 bar.",
+              "Step 3: Water moves from higher (less negative) Ψ (−4.2 bar) to lower (more negative) Ψ (−7.5 bar), exiting the cell into the hypertonic sucrose and causing plasmolysis."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students often forget the negative sign in Ψs = −iCRT or predict that water flows toward higher water potential instead of lower water potential.",
+              "repair": "Always verify that adding solutes makes Ψs more negative and remember water flows passively from higher (less negative) Ψ to lower (more negative) Ψ."
+            },
+            {
+              "misconception": "Some learners think mitochondria and chloroplasts arose by plasma membrane infolding just like the nuclear envelope and endoplasmic reticulum.",
+              "repair": "Double membranes, circular DNA, and 70S ribosomes show that mitochondria and chloroplasts originated via endosymbiosis of ancestral aerobic and photosynthetic bacteria."
+            }
+          ]
         }
       ],
       "knowledgeChecks": [
@@ -4827,7 +4941,26 @@
             "Distinguish the outputs of light reactions from the inputs of carbon fixation.",
             "State what oxygen does at the end of aerobic electron transport."
           ],
-          "transferMove": "For an energetics data set, identify the measured proxy, locate the limiting step, and separate a rate claim from a claim about total energy or pathway completion."
+          "transferMove": "For an energetics data set, identify the measured proxy, locate the limiting step, and separate a rate claim from a claim about total energy or pathway completion.",
+          "workedExample": {
+            "prompt": "Adding compound X reduces an enzyme's reaction rate by 60% at 2 mM substrate, but raising substrate to 50 mM restores the uninhibited maximum velocity. Identify the inhibition type and mechanism.",
+            "steps": [
+              "Step 1: Note the kinetic signature: restoring full Vmax at saturating substrate shows that substrate molecules can outcompete inhibitor X for binding.",
+              "Step 2: Compound X is a competitive inhibitor that binds reversibly to the enzyme active site, temporarily blocking substrate entry without permanently denaturing the protein.",
+              "Step 3: At 50 mM substrate, high substrate frequency keeps active sites occupied by substrate, allowing normal catalytic lowering of activation energy."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students commonly claim enzymes make endergonic reactions exergonic by changing the overall free-energy difference (ΔG) of the reaction.",
+              "repair": "Enzymes lower only the activation energy barrier (Ea) to accelerate reaching equilibrium while leaving the net ΔG between reactants and products unchanged."
+            },
+            {
+              "misconception": "Learners often assume adding excess substrate will overcome noncompetitive inhibition just as it overcomes competitive inhibition.",
+              "repair": "Noncompetitive inhibitors bind allosteric sites and alter active-site shape, reducing functional enzyme capacity and lowering Vmax regardless of substrate excess."
+            }
+          ]
         },
         {
           "id": "ap-bio-ch-03-section-02",
@@ -5207,7 +5340,26 @@
             "Explain how a proton gradient leads to ATP synthesis.",
             "State what the Calvin cycle needs from the light reactions and why."
           ],
-          "transferMove": "When a photosynthesis question changes one condition, decide which stage that condition feeds, then trace the effect forward to the product the question asks about."
+          "transferMove": "When a photosynthesis question changes one condition, decide which stage that condition feeds, then trace the effect forward to the product the question asks about.",
+          "workedExample": {
+            "prompt": "An herbicide blocks electron flow from Photosystem II to the thylakoid electron transport chain in illuminated chloroplasts. Predict immediate effects on lumen pH, O2 release, and Calvin cycle G3P output.",
+            "steps": [
+              "Step 1: Blocking PSII halts water photolysis and stops electron movement through the cytochrome complex that pumps H+ ions from the stroma into the thylakoid lumen.",
+              "Step 2: As H+ pumping ceases, the proton gradient collapses so thylakoid lumen pH increases (less acidic), O2 evolution stops, and ATP and NADPH production plummets.",
+              "Step 3: Without stromal ATP and NADPH to drive reduction and RuBP regeneration in the Calvin cycle, carbon fixation stalls and G3P synthesis rapidly drops."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students frequently believe the O2 gas released by plants comes from splitting CO2 molecules during the Calvin cycle rather than from water.",
+              "repair": "Isotopic 18O tracing confirms that all released O2 comes from splitting H2O at Photosystem II during the light-dependent reactions."
+            },
+            {
+              "misconception": "Many learners assume the Calvin cycle only runs at night because textbooks historically called it the dark reactions.",
+              "repair": "The Calvin cycle depends directly on ATP and NADPH generated by the light reactions, so it operates primarily in the light and stops shortly after darkness."
+            }
+          ]
         },
         {
           "id": "ap-bio-ch-03-section-03",
@@ -5587,7 +5739,26 @@
             "Explain why oxygen is needed for the electron transport chain.",
             "Describe what fermentation accomplishes for a cell."
           ],
-          "transferMove": "For a respiration question, locate the stage affected, ask whether it blocks electron flow, the proton gradient, or NAD+ regeneration, and predict ATP yield from that."
+          "transferMove": "For a respiration question, locate the stage affected, ask whether it blocks electron flow, the proton gradient, or NAD+ regeneration, and predict ATP yield from that.",
+          "workedExample": {
+            "prompt": "Dinitrophenol (DNP) makes the inner mitochondrial membrane leaky to H+ ions. Predict how DNP alters O2 consumption, NADH oxidation, and ATP yield per glucose in actively respiring muscle cells.",
+            "steps": [
+              "Step 1: DNP allows protons pumped into the intermembrane space to diffuse directly back into the matrix, bypassing ATP synthase and dissipating the proton-motive force.",
+              "Step 2: Because chemiosmosis fails, oxidative phosphorylation ATP output falls sharply, leaving mostly the small substrate-level ATP yield from glycolysis and the citric acid cycle.",
+              "Step 3: With proton back-pressure removed, the electron transport chain accelerates NADH oxidation and O2 reduction while releasing the uncoupled energy as heat."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students often think fermentation directly generates ATP during pyruvate reduction instead of merely sustaining glycolysis.",
+              "repair": "Fermentation produces zero additional ATP itself; its essential role is oxidizing NADH back to NAD+ so glycolysis can continue yielding 2 net ATP per glucose."
+            },
+            {
+              "misconception": "Learners sometimes claim oxygen directly oxidizes glucose during glycolysis rather than acting at the end of aerobic respiration.",
+              "repair": "Glycolysis is oxygen-independent; O2 functions specifically as the terminal electron acceptor of the inner mitochondrial electron transport chain."
+            }
+          ]
         }
       ],
       "knowledgeChecks": [
@@ -6148,7 +6319,26 @@
             "Explain how cyclins and checkpoints coordinate cell-cycle timing.",
             "Predict why a receptor blocker may affect only a subset of cells."
           ],
-          "transferMove": "When a signaling prompt reports a response, work backward from the affected cell and ask which receptor, relay, feedback loop, or checkpoint could connect the evidence to the claim."
+          "transferMove": "When a signaling prompt reports a response, work backward from the affected cell and ask which receptor, relay, feedback loop, or checkpoint could connect the evidence to the claim.",
+          "workedExample": {
+            "prompt": "A bacterial toxin permanently locks a G-protein alpha subunit in its GTP-bound form inside liver cells stimulated by epinephrine. Predict effects on adenylyl cyclase, cAMP, and glycogenolysis after epinephrine leaves.",
+            "steps": [
+              "Step 1: Normally, G-alpha hydrolyzes GTP to GDP to switch off signaling once ligand unbinds; blocking GTP hydrolysis leaves G-alpha constitutively active.",
+              "Step 2: Persistently active G-alpha continually stimulates adenylyl cyclase, maintaining elevated intracellular cAMP that keeps protein kinase A active.",
+              "Step 3: The active phosphorylation cascade continuously activates glycogen phosphorylase, driving sustained glycogen breakdown into glucose even without epinephrine."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students often think water-soluble peptide hormones diffuse straight across the plasma membrane to bind DNA directly inside the nucleus.",
+              "repair": "Hydrophilic ligands cannot cross the nonpolar lipid core and instead bind membrane receptors that trigger intracellular second-messenger cascades."
+            },
+            {
+              "misconception": "Learners assume every tissue exposed to the same circulating hormone produces the identical cellular response across the entire body.",
+              "repair": "Cell-specific responses depend on which receptor subtypes, relay proteins, and target enzymes each differentiated cell expresses."
+            }
+          ]
         },
         {
           "id": "ap-bio-ch-04-section-02",
@@ -6528,7 +6718,26 @@
             "Identify the sensor, control center, and effector in temperature regulation.",
             "Give one example where positive feedback is useful."
           ],
-          "transferMove": "When a question describes a response, ask whether the response opposes or amplifies the original change; that single decision classifies the loop and predicts what happens next."
+          "transferMove": "When a question describes a response, ask whether the response opposes or amplifies the original change; that single decision classifies the loop and predicts what happens next.",
+          "workedExample": {
+            "prompt": "After a high-carbohydrate meal, a patient's blood glucose climbs from 90 mg/dL to 240 mg/dL and stays elevated even though muscle insulin receptors work normally. Identify the disrupted feedback step and outcome.",
+            "steps": [
+              "Step 1: In normal negative feedback, pancreatic beta cells detect elevated blood glucose and secrete insulin to activate glucose uptake by liver and muscle effectors.",
+              "Step 2: Because target cell insulin receptors function properly, persistent hyperglycemia points to failure of pancreatic beta cells to produce or secrete insulin.",
+              "Step 3: Without insulin signaling to insert GLUT4 channels and stimulate glycogen storage, blood glucose cannot be restored toward the ~90 mg/dL homeostatic set point."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students routinely interpret positive feedback as beneficial and negative feedback as harmful to an organism's health.",
+              "repair": "Negative feedback counteracts deviations to stabilize a set point (like blood glucose), while positive feedback amplifies a stimulus to drive completion (like childbirth)."
+            },
+            {
+              "misconception": "Learners sometimes believe homeostasis keeps physiological variables frozen at one fixed number without any oscillation.",
+              "repair": "Homeostasis maintains dynamic equilibrium where sensors and effectors continuously adjust a variable within a narrow viable range around its set point."
+            }
+          ]
         },
         {
           "id": "ap-bio-ch-04-section-03",
@@ -6908,7 +7117,26 @@
             "Explain what a checkpoint decides and what information it uses.",
             "Describe how a loss of cell-cycle control can contribute to cancer."
           ],
-          "transferMove": "For a cell-cycle question, place the described event on the cycle first, then ask which checkpoint would normally catch it and what happens if that checkpoint fails."
+          "transferMove": "For a cell-cycle question, place the described event on the cycle first, then ask which checkpoint would normally catch it and what happens if that checkpoint fails.",
+          "workedExample": {
+            "prompt": "UV light introduces double-strand DNA breaks in a skin cell with homozygous loss-of-function mutations in p53. Predict how G1/S checkpoint arrest and apoptosis differ from a normal cell.",
+            "steps": [
+              "Step 1: In normal cells, DNA damage activates p53, inducing Cdk-inhibitor proteins that pause the G1/S checkpoint for DNA repair or trigger apoptosis if damage is irreparable.",
+              "Step 2: Without functional p53, active cyclin-Cdk complexes continue signaling entry into S phase despite unresolved double-strand breaks.",
+              "Step 3: Replicating damaged chromosomes while bypassing apoptosis propagates mutations into daughter cells, promoting genomic instability and tumor progression."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students frequently assume cyclin-dependent kinase (Cdk) concentration fluctuates across the cell cycle while cyclin levels stay steady.",
+              "repair": "Cdk concentration remains relatively constant throughout the cycle; periodic synthesis and degradation of cyclin subunits is what switches Cdk activity on and off."
+            },
+            {
+              "misconception": "Many learners state that chromosomal DNA replicates during prophase of mitosis rather than earlier in interphase.",
+              "repair": "Complete semiconservative DNA replication occurs during S phase of interphase so sister chromatids are already paired before mitotic prophase begins."
+            }
+          ]
         }
       ],
       "knowledgeChecks": [
@@ -7468,7 +7696,26 @@
             "Calculate a simple joint probability using independent loci.",
             "Distinguish genotype, phenotype, and environmental contribution."
           ],
-          "transferMove": "For an inheritance problem, state the parental genotypes or assumptions before calculating; then check whether the observed phenotype is being modified by dominance, sex linkage, or environment."
+          "transferMove": "For an inheritance problem, state the parental genotypes or assumptions before calculating; then check whether the observed phenotype is being modified by dominance, sex linkage, or environment.",
+          "workedExample": {
+            "prompt": "A diploid species has 2n = 12 chromosomes with no crossing over. Calculate the number of genetically distinct gametes possible from independent assortment alone, and give the chromosome count after meiosis I.",
+            "steps": [
+              "Step 1: Determine the haploid chromosome count n = 12 / 2 = 6 homologous pairs that orient randomly along the metaphase I equator.",
+              "Step 2: Apply the independent assortment formula 2^n = 2^6 = 64 unique maternal and paternal chromosome combinations in gametes.",
+              "Step 3: Because homologous chromosomes separate during anaphase I, each cell completing meiosis I is haploid with n = 6 chromosomes (12 sister chromatids)."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students often call cells diploid after meiosis I because each chromosome still consists of two joined sister chromatids.",
+              "repair": "Ploidy counts homologous chromosome sets, not chromatids; separating homologs in meiosis I immediately reduces cells from diploid (2n) to haploid (n)."
+            },
+            {
+              "misconception": "Learners sometimes describe crossing over as genetic exchange between identical sister chromatids during mitotic metaphase.",
+              "repair": "Crossing over occurs during prophase I of meiosis between nonsister chromatids of homologous chromosomes, producing recombinant allele combinations."
+            }
+          ]
         },
         {
           "id": "ap-bio-ch-05-section-02",
@@ -7848,7 +8095,26 @@
             "Calculate the probability of two independent events both occurring.",
             "Explain what a test cross reveals."
           ],
-          "transferMove": "For a genetics problem, write the parental gametes first, apply the product rule to each combination, and only then assign phenotypes using the dominance relationship given."
+          "transferMove": "For a genetics problem, write the parental gametes first, apply the product rule to each combination, and only then assign phenotypes using the dominance relationship given.",
+          "workedExample": {
+            "prompt": "Two parents with genotypes AaBbCc and AaBbcc are crossed for three independently assorting genes. Use the product rule to compute the exact probability of producing an Aabbcc offspring.",
+            "steps": [
+              "Step 1: Decompose the trihybrid cross into three independent single-gene crosses: Aa × Aa, Bb × Bb, and Cc × cc.",
+              "Step 2: Find each individual genotype probability: P(Aa) = 1/2, P(bb) = 1/4, and P(cc) = 1/2.",
+              "Step 3: Multiply independent probabilities using the product rule: (1/2) × (1/4) × (1/2) = 1/16 (6.25%) probability of genotype Aabbcc."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students frequently add individual gene probabilities instead of multiplying them when finding the probability of a combined multi-locus genotype.",
+              "repair": "Use the product rule (multiply) for simultaneous independent events (\"and\"), and reserve the sum rule (add) for mutually exclusive alternatives (\"or\")."
+            },
+            {
+              "misconception": "Many learners equate a genetically dominant allele with the most common or most evolutionarily beneficial allele in a population.",
+              "repair": "Dominance describes only heterozygote phenotypic expression; dominant alleles (like polydactyly) can be rare while recessive alleles can be widespread."
+            }
+          ]
         },
         {
           "id": "ap-bio-ch-05-section-03",
@@ -8228,7 +8494,26 @@
             "Explain why X-linked recessive traits appear more often in males.",
             "Describe how recombination frequency is used to map genes."
           ],
-          "transferMove": "When a ratio departs from Mendelian expectations, test the alternatives in order: intermediate phenotype, both alleles shown, sex-linkage, linkage, many genes, or an environmental effect."
+          "transferMove": "When a ratio departs from Mendelian expectations, test the alternatives in order: intermediate phenotype, both alleles shown, sex-linkage, linkage, many genes, or an environmental effect.",
+          "workedExample": {
+            "prompt": "A fruit fly testcross (BbVv × bbvv) produces 410 gray-normal, 390 black-vestigial, 104 gray-vestigial, and 96 black-normal offspring. Determine linkage and compute the recombination frequency.",
+            "steps": [
+              "Step 1: Sum all offspring (410 + 390 + 104 + 96 = 1,000) and note that parental phenotypes (800) vastly outnumber recombinants (200), ruling out a 1:1:1:1 unlinked ratio.",
+              "Step 2: Calculate recombination frequency: (104 + 96) / 1,000 × 100% = 200 / 1,000 × 100% = 20%.",
+              "Step 3: Because recombination frequency is significantly below 50%, genes B and V are linked on the same chromosome approximately 20 map units (cM) apart."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students sometimes predict that an affected father can transmit an X-linked recessive allele directly to his biological sons.",
+              "repair": "Fathers pass their Y chromosome to sons and their X chromosome exclusively to daughters, so male-to-male transmission immediately rules out X-linkage."
+            },
+            {
+              "misconception": "Learners frequently confuse codominance with incomplete dominance when interpreting heterozygote phenotypes in non-Mendelian crosses.",
+              "repair": "In codominance both alleles express distinctly at once (AB blood antigens), whereas incomplete dominance produces an intermediate blended phenotype (pink snapdragons)."
+            }
+          ]
         }
       ],
       "knowledgeChecks": [
@@ -8791,7 +9076,26 @@
             "Predict one effect of a promoter or enhancer change.",
             "Explain why a frameshift can affect downstream codons."
           ],
-          "transferMove": "Trace an information-flow prompt from DNA sequence or regulatory region to RNA abundance, protein sequence, and phenotype; stop at the first step that the evidence actually measures."
+          "transferMove": "Trace an information-flow prompt from DNA sequence or regulatory region to RNA abundance, protein sequence, and phenotype; stop at the first step that the evidence actually measures.",
+          "workedExample": {
+            "prompt": "Given the DNA template strand 3'-TAC GGA CTT ACT-5', write both the complementary newly synthesized DNA strand from replication and the mRNA sequence produced during transcription.",
+            "steps": [
+              "Step 1: Apply antiparallel base pairing (A-T and C-G for DNA; A-U, T-A, and C-G for RNA), reading the template 3' to 5' so new polymers grow 5' to 3'.",
+              "Step 2: During replication, DNA polymerase III synthesizes the complementary strand 5'-ATG CCT GAA TGA-3'.",
+              "Step 3: During transcription, RNA polymerase builds 5'-AUG CCU GAA UGA-3', which encodes the short polypeptide sequence Met-Pro-Glu-Stop."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students often assume DNA polymerase can elongate a new strand in either the 5' or 3' direction depending on the replication fork side.",
+              "repair": "All nucleic acid polymerases add nucleotides exclusively to a free 3' hydroxyl group, which is why the lagging strand must be built in Okazaki fragments."
+            },
+            {
+              "misconception": "Learners frequently transcribe mRNA directly from the 5'-to-3' coding DNA strand instead of using the complementary template strand.",
+              "repair": "RNA polymerase reads the 3'-to-5' template strand to synthesize 5'-to-3' mRNA matching the coding strand with U replacing T."
+            }
+          ]
         },
         {
           "id": "ap-bio-ch-06-section-02",
@@ -9171,7 +9475,26 @@
             "Explain how a tRNA links a codon to an amino acid.",
             "Describe one way eukaryotes regulate transcription that bacteria do not use."
           ],
-          "transferMove": "For an expression question, locate the step affected on the path from DNA to protein, then ask whether the change alters how much product is made, its sequence, or its timing."
+          "transferMove": "For an expression question, locate the step affected on the path from DNA to protein, then ask whether the change alters how much product is made, its sequence, or its timing.",
+          "workedExample": {
+            "prompt": "An E. coli strain has a lac operator mutation (lacO^c) that prevents LacI repressor binding. Predict lacZ transcription in high glucose without lactose versus low glucose with lactose.",
+            "steps": [
+              "Step 1: Because the LacI repressor cannot bind the mutated operator, negative transcriptional repression is permanently disabled even when lactose is absent.",
+              "Step 2: In high glucose without lactose, low intracellular cAMP leaves CAP inactive, so RNA polymerase initiates only low basal constitutive lacZ transcription.",
+              "Step 3: In low glucose with lactose, elevated cAMP activates CAP to bind the promoter region and strongly recruit RNA polymerase, yielding maximal lacZ expression."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students routinely flip splicing vocabulary by claiming introns are expressed as coding regions while exons are excised from pre-mRNA.",
+              "repair": "Introns are intervening noncoding segments removed by the spliceosome in the nucleus, while exons are ligated together and exported for translation."
+            },
+            {
+              "misconception": "Learners sometimes assume bacterial mRNAs undergo nuclear 5' capping, polyadenylation, and extensive intron splicing before translation.",
+              "repair": "Prokaryotes lack a nucleus and couple transcription directly to translation in the cytoplasm without eukaryotic cap, poly-A tail, or spliceosome processing."
+            }
+          ]
         },
         {
           "id": "ap-bio-ch-06-section-03",
@@ -9551,7 +9874,26 @@
             "Explain why a frameshift is usually more disruptive than a substitution.",
             "Describe what PCR requires and what it produces."
           ],
-          "transferMove": "For a mutation question, translate the change into its effect on codons first, then predict the protein; for a biotechnology question, name what each tool separates, cuts, copies, or reads."
+          "transferMove": "For a mutation question, translate the change into its effect on codons first, then predict the protein; for a biotechnology question, name what each tool separates, cuts, copies, or reads.",
+          "workedExample": {
+            "prompt": "A circular 4,800 bp plasmid contains two EcoRI restriction sites spaced 1,300 bp apart. Predict the band sizes after complete EcoRI digestion on an agarose gel and identify which migrates farthest.",
+            "steps": [
+              "Step 1: Cutting a closed circular plasmid at two distinct recognition sites yields exactly two linear double-stranded DNA fragments summing to 4,800 bp.",
+              "Step 2: Subtract the shorter arc from the total length to find the band sizes: 1,300 bp and 4,800 − 1,300 = 3,500 bp.",
+              "Step 3: Negatively charged DNA travels toward the positive anode, and the smaller 1,300 bp fragment faces less agarose pore resistance so it migrates farthest."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students often think inserting a single base pair alters only one amino acid at the mutation site rather than affecting downstream codons.",
+              "repair": "Any insertion or deletion not divisible by three shifts the entire downstream triplet reading frame, altering all subsequent amino acids and often creating an early stop codon."
+            },
+            {
+              "misconception": "Learners sometimes claim larger DNA fragments move faster through gel electrophoresis because they carry a greater total negative phosphate charge.",
+              "repair": "Charge-to-mass ratio is uniform across DNA lengths, so separation depends on size sieving through agarose pores where smaller fragments travel much farther."
+            }
+          ]
         }
       ],
       "knowledgeChecks": [
@@ -10118,7 +10460,26 @@
             "Use p and q to interpret a Hardy-Weinberg calculation.",
             "Explain what a sister-taxon relationship does and does not mean."
           ],
-          "transferMove": "For an evolutionary data set, identify whether the evidence concerns inheritance, reproductive success, chance sampling, migration, or reproductive isolation before naming the mechanism."
+          "transferMove": "For an evolutionary data set, identify whether the evidence concerns inheritance, reproductive success, chance sampling, migration, or reproductive isolation before naming the mechanism.",
+          "workedExample": {
+            "prompt": "A colony of 10^8 bacteria contains 50 pre-existing streptomycin-resistant mutants before treatment. After antibiotic exposure, 99% of survivors are resistant. Explain why this demonstrates natural selection.",
+            "steps": [
+              "Step 1: Random DNA replication errors produced heritable resistance alleles before streptomycin was introduced; the antibiotic did not generate the mutation.",
+              "Step 2: Streptomycin acted as a selective agent that killed susceptible bacteria while resistant mutants survived and reproduced at a far higher rate.",
+              "Step 3: Over generations, differential reproductive success shifted the population allele frequency toward resistance, illustrating population-level evolution."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students commonly argue that antibiotics or environmental stresses cause organisms to mutate specifically to gain traits they need to survive.",
+              "repair": "Mutations arise randomly with respect to organismal need; natural selection merely filters pre-existing heritable variation in a given environment."
+            },
+            {
+              "misconception": "Learners often describe an individual organism as evolving new adaptations during its own lifetime in response to environmental change.",
+              "repair": "Individuals can acclimatize physiologically, but biological evolution occurs only when heritable allele frequencies change across generations in a population."
+            }
+          ]
         },
         {
           "id": "ap-bio-ch-07-section-02",
@@ -10498,7 +10859,26 @@
             "Calculate allele frequencies from the frequency of a recessive phenotype.",
             "Explain why drift matters more in small populations."
           ],
-          "transferMove": "When given a phenotype frequency, find q from the recessive phenotype first, derive p, then compute the genotype frequencies and compare them with what is observed."
+          "transferMove": "When given a phenotype frequency, find q from the recessive phenotype first, derive p, then compute the genotype frequencies and compare them with what is observed.",
+          "workedExample": {
+            "prompt": "In a meadow of 500 wildflowers in Hardy-Weinberg equilibrium, 45 plants exhibit the recessive white phenotype (aa). Compute q, p, and the expected number of heterozygous carriers (Aa).",
+            "steps": [
+              "Step 1: Find the homozygous recessive genotype frequency q² = 45 / 500 = 0.09, then take the square root to obtain q = 0.30.",
+              "Step 2: Apply p + q = 1 to calculate the dominant allele frequency: p = 1 − 0.30 = 0.70.",
+              "Step 3: Compute heterozygote frequency 2pq = 2(0.70)(0.30) = 0.42, giving 0.42 × 500 = 210 expected heterozygous Aa plants."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students frequently plug the recessive phenotype proportion directly in as q instead of recognizing that recessive individuals represent q².",
+              "repair": "Always equate the recessive phenotype frequency to q² first, take its square root to find q, and then compute p = 1 − q and 2pq."
+            },
+            {
+              "misconception": "Learners often assume genetic drift changes allele frequencies at the same rate regardless of population size.",
+              "repair": "Random sampling fluctuations intensify dramatically in small populations, making bottlenecks and founder events powerful drivers of allele loss."
+            }
+          ]
         },
         {
           "id": "ap-bio-ch-07-section-03",
@@ -10878,7 +11258,26 @@
             "Explain what a node on a phylogenetic tree represents.",
             "Describe one prezygotic and one postzygotic barrier to reproduction."
           ],
-          "transferMove": "For a phylogeny question, find the most recent shared node for the taxa named before deciding which are more closely related; for a speciation question, identify the barrier before naming the mode."
+          "transferMove": "For a phylogeny question, find the most recent shared node for the taxa named before deciding which are more closely related; for a speciation question, identify the barrier before naming the mode.",
+          "workedExample": {
+            "prompt": "Four vertebrates possess derived traits as follows: A (jaws), B (jaws, lungs), C (jaws, lungs, amniotic egg), and D (jaws, lungs, amniotic egg, feathers). Identify the closest relatives using synapomorphies.",
+            "steps": [
+              "Step 1: Apply maximum parsimony by ordering nested shared derived traits (synapomorphies) from jaws (all four) to lungs (B, C, D) to amniotic egg (C, D).",
+              "Step 2: Taxa C and D uniquely share the amniotic egg synapomorphy, placing them together as sister taxa branching after taxon B.",
+              "Step 3: C and D share the most recent common ancestor on the cladogram, while feathers evolved as a derived trait along the lineage leading specifically to D."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students routinely judge evolutionary relatedness by how close two species names sit side by side along the top of a phylogenetic tree.",
+              "repair": "Branches can swivel freely around any node without changing relationships; always determine relatedness by locating the most recent common ancestor node."
+            },
+            {
+              "misconception": "Learners often mistake analogous structures formed by convergent evolution, such as insect and bird wings, for homologous traits from common ancestry.",
+              "repair": "Confirm structural and developmental homology (such as vertebrate forelimb bones) before using a shared feature to group taxa into a clade."
+            }
+          ]
         }
       ],
       "knowledgeChecks": [
@@ -11440,7 +11839,26 @@
             "Distinguish density-dependent from density-independent limits.",
             "Use niche dimensions to explain coexistence or competition."
           ],
-          "transferMove": "Match the scale of the evidence to the ecological claim: individual response, population growth, community interaction, or ecosystem disruption; then name the comparison that makes the inference credible."
+          "transferMove": "Match the scale of the evidence to the ecological claim: individual response, population growth, community interaction, or ecosystem disruption; then name the comparison that makes the inference credible.",
+          "workedExample": {
+            "prompt": "A prairie ecosystem fixes 18,000 kJ/m²/yr of gross primary productivity (GPP) while plants use 7,200 kJ/m²/yr in respiration. Calculate NPP and estimate energy reaching secondary consumers at 10% trophic transfer.",
+            "steps": [
+              "Step 1: Calculate net primary productivity using NPP = GPP − R = 18,000 − 7,200 = 10,800 kJ/m²/yr available to herbivores.",
+              "Step 2: Apply 10% trophic transfer efficiency to primary consumers: 0.10 × 10,800 = 1,080 kJ/m²/yr.",
+              "Step 3: Apply 10% transfer again to secondary consumers: 0.10 × 1,080 = 108 kJ/m²/yr, explaining why ecosystems rarely support more than 4–5 trophic levels."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students often claim energy recycles continuously through food webs in the same closed loop as carbon and nitrogen atoms.",
+              "repair": "Matter cycles repeatedly through biogeochemical pools, whereas energy flows unidirectionally from sunlight through trophic levels and exits as metabolic heat."
+            },
+            {
+              "misconception": "Learners frequently treat gross primary productivity as the total biomass energy directly available to primary consumers.",
+              "repair": "Producers consume part of GPP for their own cellular respiration, so only net primary productivity (NPP = GPP − R) enters higher trophic levels."
+            }
+          ]
         },
         {
           "id": "ap-bio-ch-08-section-02",
@@ -11820,7 +12238,26 @@
             "Give one density-dependent and one density-independent limiting factor.",
             "Explain what makes a species a keystone species."
           ],
-          "transferMove": "For a population question, decide whether the limiting factor depends on density, then predict whether the effect strengthens as numbers rise; for a community question, name the interaction before predicting the outcome."
+          "transferMove": "For a population question, decide whether the limiting factor depends on density, then predict whether the effect strengthens as numbers rise; for a community question, name the interaction before predicting the outcome.",
+          "workedExample": {
+            "prompt": "A deer herd has r_max = 0.40 yr⁻¹ and carrying capacity K = 600. Compute the logistic growth rate dN/dt at N = 450 individuals and explain why it is lower than at N = 300.",
+            "steps": [
+              "Step 1: Use the logistic growth equation dN/dt = r_max·N·(K − N)/K with r_max = 0.40 yr⁻¹, N = 450, and K = 600.",
+              "Step 2: Substitute values: dN/dt = 0.40 × 450 × (600 − 450)/600 = 180 × 0.25 = 45 deer/yr (compared to 60 deer/yr at N = 300).",
+              "Step 3: At N = 450, intensifying density-dependent competition shrinks the unexploited capacity factor (K − N)/K from 0.50 to 0.25, slowing net additions."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students often assume a logistic population adds individuals fastest right before reaching carrying capacity K because N is largest there.",
+              "repair": "In logistic growth, dN/dt peaks at N = K/2 where population size and remaining resource fraction balance; as N nears K, dN/dt approaches zero."
+            },
+            {
+              "misconception": "Learners frequently classify natural disasters like floods or severe freezes as density-dependent limiting factors.",
+              "repair": "Abiotic disturbances affect mortality regardless of crowding (density-independent), whereas competition, predation, and disease intensify as density increases."
+            }
+          ]
         },
         {
           "id": "ap-bio-ch-08-section-03",
@@ -12200,7 +12637,26 @@
             "Explain why an invasive species can spread rapidly in a new range.",
             "Distinguish primary from secondary succession."
           ],
-          "transferMove": "For a disruption question, trace the change through at least one trophic link or nutrient pathway before predicting the wider effect, and check whether diversity would buffer it."
+          "transferMove": "For a disruption question, trace the change through at least one trophic link or nutrient pathway before predicting the wider effect, and check whether diversity would buffer it.",
+          "workedExample": {
+            "prompt": "Plot X has 100 trees split evenly across 4 species (25 each), while plot Y has 100 trees with 85 of one species and 5 each of three others. Compute Simpson's Diversity Index for both and compare resilience.",
+            "steps": [
+              "Step 1: Apply Simpson's Diversity Index = 1 − Σ(n/N)² to plot X: 1 − 4(0.25)² = 1 − 0.25 = 0.75.",
+              "Step 2: Compute the index for plot Y: 1 − [(0.85)² + 3(0.05)²] = 1 − (0.7225 + 0.0075) = 1 − 0.73 = 0.27.",
+              "Step 3: Although both plots share species richness of 4, plot X's higher evenness (0.75 vs 0.27) confers greater functional redundancy and resilience to a species-specific pest."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students routinely equate biodiversity exclusively with species richness while overlooking relative abundance and species evenness.",
+              "repair": "A community dominated by one species has low Simpson diversity and weak resilience even if its total species count matches an evenly balanced habitat."
+            },
+            {
+              "misconception": "Learners sometimes assume secondary succession begins on bare rock without soil and takes as long as primary succession.",
+              "repair": "Secondary succession follows disturbances like wildfires that leave soil and seed banks intact, enabling far faster community recovery than primary succession."
+            }
+          ]
         }
       ],
       "knowledgeChecks": [
@@ -12278,484 +12734,860 @@
   "diagrams": [
     {
       "id": "ap-bio-flow-01",
+      "chapterId": "ap-bio-ch-01",
       "domainId": "chemistry-of-life",
       "title": "Water polarity and macromolecule structure-to-function flow",
       "type": "optional-concept-flow",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Trace the Unit 1 sequence connecting core biological mechanisms from molecular or population inputs to system-level outcomes.",
+      "caption": "An original AP Biology Unit 1 concept flow summarizing water polarity and macromolecule structure-to-function flow.",
       "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
         "nodes": [
           {
             "id": "bonds",
-            "label": "Polar covalent bonds & hydrogen bonding"
+            "label": "Polar covalent bonds & hydrogen bonding",
+            "detail": "Polar covalent bonds create partial charges and hydrogen bonding networks in water and functional groups."
           },
           {
             "id": "monomers",
-            "label": "Dehydration synthesis links monomers"
+            "label": "Dehydration synthesis links monomers",
+            "detail": "Dehydration synthesis removes water to join monomers into directional polymers, whereas hydrolysis breaks them."
           },
           {
             "id": "folding",
-            "label": "R-group & base interactions set 3D shape"
+            "label": "R-group & base interactions set 3D shape",
+            "detail": "Noncovalent interactions and covalent disulfide bridges fold proteins and pair nucleic acid strands into specific 3D structures."
           },
           {
             "id": "function",
-            "label": "Shape & polarity govern biological function"
+            "label": "Shape & polarity govern biological function",
+            "detail": "Changing monomer sequence, pH, or temperature alters structure and therefore alters catalytic, transport, or information function."
           }
         ],
         "edges": [
           {
+            "id": "bonds-to-monomers",
             "from": "bonds",
-            "to": "monomers"
+            "to": "monomers",
+            "label": "shapes"
           },
           {
+            "id": "monomers-to-folding",
             "from": "monomers",
-            "to": "folding"
+            "to": "folding",
+            "label": "drives"
           },
           {
+            "id": "folding-to-function",
             "from": "folding",
-            "to": "function"
+            "to": "function",
+            "label": "governs"
           }
-        ]
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
       },
       "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Four-step AP Biology Unit 1 concept flow: Polar covalent bonds & hydrogen bonding -> Dehydration synthesis links monomers -> R-group & base interactions set 3D shape -> Shape & polarity govern biological function.",
+        "longDescription": "Read from left to right. Polar covalent bonds create partial charges and hydrogen bonding networks in water and functional groups. Dehydration synthesis removes water to join monomers into directional polymers, whereas hydrolysis breaks them. Noncovalent interactions and covalent disulfide bridges fold proteins and pair nucleic acid strands into specific 3D structures. Changing monomer sequence, pH, or temperature alters structure and therefore alters catalytic, transport, or information function.",
         "textEquivalent": [
           "Polar covalent bonds create partial charges and hydrogen bonding networks in water and functional groups.",
           "Dehydration synthesis removes water to join monomers into directional polymers, whereas hydrolysis breaks them.",
           "Noncovalent interactions and covalent disulfide bridges fold proteins and pair nucleic acid strands into specific 3D structures.",
           "Changing monomer sequence, pH, or temperature alters structure and therefore alters catalytic, transport, or information function."
         ],
-        "fallbackMode": "ordered-text-equivalent"
+        "readingOrder": [
+          "bonds",
+          "monomers",
+          "folding",
+          "function"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
       },
       "unscored": true,
       "officialItem": false,
-      "releaseEligible": false
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      }
     },
     {
       "id": "ap-bio-flow-02",
+      "chapterId": "ap-bio-ch-02",
       "domainId": "cells",
       "title": "Membrane selectivity, compartmentalization, and water potential flow",
       "type": "optional-concept-flow",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Trace the Unit 2 sequence connecting core biological mechanisms from molecular or population inputs to system-level outcomes.",
+      "caption": "An original AP Biology Unit 2 concept flow summarizing membrane selectivity, compartmentalization, and water potential flow.",
       "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
         "nodes": [
           {
             "id": "bilayer",
-            "label": "Amphipathic phospholipid bilayer + proteins"
+            "label": "Amphipathic phospholipid bilayer + proteins",
+            "detail": "The amphipathic phospholipid bilayer restricts large or charged solutes while embedded proteins provide selective channels and pumps."
           },
           {
             "id": "gradient",
-            "label": "Solute & electrochemical gradients"
+            "label": "Solute & electrochemical gradients",
+            "detail": "Concentration, charge, and solute gradients establish the direction of passive movement and the solute potential component of water potential."
           },
           {
             "id": "transport",
-            "label": "Passive diffusion vs. ATP-driven active transport"
+            "label": "Passive diffusion vs. ATP-driven active transport",
+            "detail": "Passive transport moves solutes down gradients without direct ATP input, whereas active transport uses energy to move solutes against gradients."
           },
           {
             "id": "homeostasis",
-            "label": "Water potential & compartmentalized homeostasis"
+            "label": "Water potential & compartmentalized homeostasis",
+            "detail": "Net water flows from higher to lower water potential, and eukaryotic organelles maintain distinct internal environments for incompatible reactions."
           }
         ],
         "edges": [
           {
+            "id": "bilayer-to-gradient",
             "from": "bilayer",
-            "to": "gradient"
+            "to": "gradient",
+            "label": "shapes"
           },
           {
+            "id": "gradient-to-transport",
             "from": "gradient",
-            "to": "transport"
+            "to": "transport",
+            "label": "drives"
           },
           {
+            "id": "transport-to-homeostasis",
             "from": "transport",
-            "to": "homeostasis"
+            "to": "homeostasis",
+            "label": "governs"
           }
-        ]
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
       },
       "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Four-step AP Biology Unit 2 concept flow: Amphipathic phospholipid bilayer + proteins -> Solute & electrochemical gradients -> Passive diffusion vs. ATP-driven active transport -> Water potential & compartmentalized homeostasis.",
+        "longDescription": "Read from left to right. The amphipathic phospholipid bilayer restricts large or charged solutes while embedded proteins provide selective channels and pumps. Concentration, charge, and solute gradients establish the direction of passive movement and the solute potential component of water potential. Passive transport moves solutes down gradients without direct ATP input, whereas active transport uses energy to move solutes against gradients. Net water flows from higher to lower water potential, and eukaryotic organelles maintain distinct internal environments for incompatible reactions.",
         "textEquivalent": [
           "The amphipathic phospholipid bilayer restricts large or charged solutes while embedded proteins provide selective channels and pumps.",
           "Concentration, charge, and solute gradients establish the direction of passive movement and the solute potential component of water potential.",
           "Passive transport moves solutes down gradients without direct ATP input, whereas active transport uses energy to move solutes against gradients.",
           "Net water flows from higher to lower water potential, and eukaryotic organelles maintain distinct internal environments for incompatible reactions."
         ],
-        "fallbackMode": "ordered-text-equivalent"
+        "readingOrder": [
+          "bilayer",
+          "gradient",
+          "transport",
+          "homeostasis"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
       },
       "unscored": true,
       "officialItem": false,
-      "releaseEligible": false
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      }
     },
     {
       "id": "ap-bio-flow-03",
+      "chapterId": "ap-bio-ch-03",
       "domainId": "cellular-energetics",
       "title": "Enzyme catalysis and coupled energy-transfer flow",
       "type": "optional-concept-flow",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Trace the Unit 3 sequence connecting core biological mechanisms from molecular or population inputs to system-level outcomes.",
+      "caption": "An original AP Biology Unit 3 concept flow summarizing enzyme catalysis and coupled energy-transfer flow.",
       "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
         "nodes": [
           {
             "id": "enzyme",
-            "label": "Enzyme lowers activation energy via active site"
+            "label": "Enzyme lowers activation energy via active site",
+            "detail": "Enzymes stabilize transition states to lower activation energy without changing overall free-energy change, and respond to inhibitors, pH, and temperature."
           },
           {
             "id": "capture",
-            "label": "Light reactions & oxidation harvest high-energy electrons"
+            "label": "Light reactions & oxidation harvest high-energy electrons",
+            "detail": "Photosynthesis captures light energy into ATP and NADPH, while cellular respiration oxidizes organic molecules to load NADH and FADH2."
           },
           {
             "id": "chemiosmosis",
-            "label": "Proton gradient drives ATP synthase"
+            "label": "Proton gradient drives ATP synthase",
+            "detail": "Electron transport chains pump protons across thylakoid or inner mitochondrial membranes so chemiosmosis drives ATP synthesis."
           },
           {
             "id": "coupling",
-            "label": "ATP & electron carriers power cellular work"
+            "label": "ATP & electron carriers power cellular work",
+            "detail": "Cells couple exergonic ATP hydrolysis to endergonic biosynthesis, transport, and carbon fixation while conserving matter and energy."
           }
         ],
         "edges": [
           {
+            "id": "enzyme-to-capture",
             "from": "enzyme",
-            "to": "capture"
+            "to": "capture",
+            "label": "shapes"
           },
           {
+            "id": "capture-to-chemiosmosis",
             "from": "capture",
-            "to": "chemiosmosis"
+            "to": "chemiosmosis",
+            "label": "drives"
           },
           {
+            "id": "chemiosmosis-to-coupling",
             "from": "chemiosmosis",
-            "to": "coupling"
+            "to": "coupling",
+            "label": "governs"
           }
-        ]
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
       },
       "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Four-step AP Biology Unit 3 concept flow: Enzyme lowers activation energy via active site -> Light reactions & oxidation harvest high-energy electrons -> Proton gradient drives ATP synthase -> ATP & electron carriers power cellular work.",
+        "longDescription": "Read from left to right. Enzymes stabilize transition states to lower activation energy without changing overall free-energy change, and respond to inhibitors, pH, and temperature. Photosynthesis captures light energy into ATP and NADPH, while cellular respiration oxidizes organic molecules to load NADH and FADH2. Electron transport chains pump protons across thylakoid or inner mitochondrial membranes so chemiosmosis drives ATP synthesis. Cells couple exergonic ATP hydrolysis to endergonic biosynthesis, transport, and carbon fixation while conserving matter and energy.",
         "textEquivalent": [
           "Enzymes stabilize transition states to lower activation energy without changing overall free-energy change, and respond to inhibitors, pH, and temperature.",
           "Photosynthesis captures light energy into ATP and NADPH, while cellular respiration oxidizes organic molecules to load NADH and FADH2.",
           "Electron transport chains pump protons across thylakoid or inner mitochondrial membranes so chemiosmosis drives ATP synthesis.",
           "Cells couple exergonic ATP hydrolysis to endergonic biosynthesis, transport, and carbon fixation while conserving matter and energy."
         ],
-        "fallbackMode": "ordered-text-equivalent"
+        "readingOrder": [
+          "enzyme",
+          "capture",
+          "chemiosmosis",
+          "coupling"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
       },
       "unscored": true,
       "officialItem": false,
-      "releaseEligible": false
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      }
     },
     {
       "id": "ap-bio-flow-04",
+      "chapterId": "ap-bio-ch-04",
       "domainId": "cell-communication-and-cell-cycle",
       "title": "Signal transduction, feedback, and cell-cycle checkpoint flow",
       "type": "optional-concept-flow",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Trace the Unit 4 sequence connecting core biological mechanisms from molecular or population inputs to system-level outcomes.",
+      "caption": "An original AP Biology Unit 4 concept flow summarizing signal transduction, feedback, and cell-cycle checkpoint flow.",
       "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
         "nodes": [
           {
             "id": "reception",
-            "label": "Ligand binds specific membrane or intracellular receptor"
+            "label": "Ligand binds specific membrane or intracellular receptor",
+            "detail": "A chemical signal binds a complementary receptor on the plasma membrane or inside the target cell, triggering a conformational change."
           },
           {
             "id": "transduction",
-            "label": "Phosphorylation cascade & second messengers amplify"
+            "label": "Phosphorylation cascade & second messengers amplify",
+            "detail": "Relay proteins, phosphorylation cascades, and second messengers amplify and route the signal to specific intracellular targets."
           },
           {
             "id": "response",
-            "label": "Gene expression, enzyme activity, or checkpoint control"
+            "label": "Gene expression, enzyme activity, or checkpoint control",
+            "detail": "Target responses alter enzyme activity, open channels, change transcription, or advance cyclin-CDK cell-cycle checkpoints (G1, G2, M)."
           },
           {
             "id": "feedback",
-            "label": "Negative or positive feedback regulates the system"
+            "label": "Negative or positive feedback regulates the system",
+            "detail": "Negative feedback restores a set point, positive feedback amplifies a transition, and checkpoint failure permits unregulated division."
           }
         ],
         "edges": [
           {
+            "id": "reception-to-transduction",
             "from": "reception",
-            "to": "transduction"
+            "to": "transduction",
+            "label": "shapes"
           },
           {
+            "id": "transduction-to-response",
             "from": "transduction",
-            "to": "response"
+            "to": "response",
+            "label": "drives"
           },
           {
+            "id": "response-to-feedback",
             "from": "response",
-            "to": "feedback"
+            "to": "feedback",
+            "label": "governs"
           }
-        ]
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
       },
       "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Four-step AP Biology Unit 4 concept flow: Ligand binds specific membrane or intracellular receptor -> Phosphorylation cascade & second messengers amplify -> Gene expression, enzyme activity, or checkpoint control -> Negative or positive feedback regulates the system.",
+        "longDescription": "Read from left to right. A chemical signal binds a complementary receptor on the plasma membrane or inside the target cell, triggering a conformational change. Relay proteins, phosphorylation cascades, and second messengers amplify and route the signal to specific intracellular targets. Target responses alter enzyme activity, open channels, change transcription, or advance cyclin-CDK cell-cycle checkpoints (G1, G2, M). Negative feedback restores a set point, positive feedback amplifies a transition, and checkpoint failure permits unregulated division.",
         "textEquivalent": [
           "A chemical signal binds a complementary receptor on the plasma membrane or inside the target cell, triggering a conformational change.",
           "Relay proteins, phosphorylation cascades, and second messengers amplify and route the signal to specific intracellular targets.",
           "Target responses alter enzyme activity, open channels, change transcription, or advance cyclin-CDK cell-cycle checkpoints (G1, G2, M).",
           "Negative feedback restores a set point, positive feedback amplifies a transition, and checkpoint failure permits unregulated division."
         ],
-        "fallbackMode": "ordered-text-equivalent"
+        "readingOrder": [
+          "reception",
+          "transduction",
+          "response",
+          "feedback"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
       },
       "unscored": true,
       "officialItem": false,
-      "releaseEligible": false
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      }
     },
     {
       "id": "ap-bio-flow-05",
+      "chapterId": "ap-bio-ch-05",
       "domainId": "heredity",
       "title": "Meiotic variation and inheritance-pattern evidence flow",
       "type": "optional-concept-flow",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Trace the Unit 5 sequence connecting core biological mechanisms from molecular or population inputs to system-level outcomes.",
+      "caption": "An original AP Biology Unit 5 concept flow summarizing meiotic variation and inheritance-pattern evidence flow.",
       "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
         "nodes": [
           {
             "id": "meiosis",
-            "label": "Crossing over & independent assortment in Meiosis I"
+            "label": "Crossing over & independent assortment in Meiosis I",
+            "detail": "Meiosis halves chromosome number while crossing over and independent assortment generate genetically diverse combinations of alleles."
           },
           {
             "id": "gametes",
-            "label": "Haploid gametes unite randomly at fertilization"
+            "label": "Haploid gametes unite randomly at fertilization",
+            "detail": "Random fertilization combines haploid gametes to produce diploid offspring with predictable probability distributions."
           },
           {
             "id": "ratios",
-            "label": "Compare observed progeny to expected ratios"
+            "label": "Compare observed progeny to expected ratios",
+            "detail": "Chi-square tests compare observed phenotype counts against expected genetic ratios to evaluate whether chance alone explains deviations."
           },
           {
             "id": "model",
-            "label": "Distinguish Mendelian, linked, sex-linked, or non-nuclear"
+            "label": "Distinguish Mendelian, linked, sex-linked, or non-nuclear",
+            "detail": "Systematic departures point to gene linkage, sex-linked inheritance, epistasis, incomplete dominance, environmental effects, or mitochondrial inheritance."
           }
         ],
         "edges": [
           {
+            "id": "meiosis-to-gametes",
             "from": "meiosis",
-            "to": "gametes"
+            "to": "gametes",
+            "label": "shapes"
           },
           {
+            "id": "gametes-to-ratios",
             "from": "gametes",
-            "to": "ratios"
+            "to": "ratios",
+            "label": "drives"
           },
           {
+            "id": "ratios-to-model",
             "from": "ratios",
-            "to": "model"
+            "to": "model",
+            "label": "governs"
           }
-        ]
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
       },
       "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Four-step AP Biology Unit 5 concept flow: Crossing over & independent assortment in Meiosis I -> Haploid gametes unite randomly at fertilization -> Compare observed progeny to expected ratios -> Distinguish Mendelian, linked, sex-linked, or non-nuclear.",
+        "longDescription": "Read from left to right. Meiosis halves chromosome number while crossing over and independent assortment generate genetically diverse combinations of alleles. Random fertilization combines haploid gametes to produce diploid offspring with predictable probability distributions. Chi-square tests compare observed phenotype counts against expected genetic ratios to evaluate whether chance alone explains deviations. Systematic departures point to gene linkage, sex-linked inheritance, epistasis, incomplete dominance, environmental effects, or mitochondrial inheritance.",
         "textEquivalent": [
           "Meiosis halves chromosome number while crossing over and independent assortment generate genetically diverse combinations of alleles.",
           "Random fertilization combines haploid gametes to produce diploid offspring with predictable probability distributions.",
           "Chi-square tests compare observed phenotype counts against expected genetic ratios to evaluate whether chance alone explains deviations.",
           "Systematic departures point to gene linkage, sex-linked inheritance, epistasis, incomplete dominance, environmental effects, or mitochondrial inheritance."
         ],
-        "fallbackMode": "ordered-text-equivalent"
+        "readingOrder": [
+          "meiosis",
+          "gametes",
+          "ratios",
+          "model"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
       },
       "unscored": true,
       "officialItem": false,
-      "releaseEligible": false
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      }
     },
     {
       "id": "ap-bio-flow-06",
+      "chapterId": "ap-bio-ch-06",
       "domainId": "gene-expression-and-regulation",
       "title": "Replication, gene expression, and regulatory control flow",
       "type": "optional-concept-flow",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Trace the Unit 6 sequence connecting core biological mechanisms from molecular or population inputs to system-level outcomes.",
+      "caption": "An original AP Biology Unit 6 concept flow summarizing replication, gene expression, and regulatory control flow.",
       "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
         "nodes": [
           {
             "id": "dna",
-            "label": "Semiconservative 5-to-3 DNA replication"
+            "label": "Semiconservative 5-to-3 DNA replication",
+            "detail": "DNA polymerases synthesize complementary strands 5-prime to 3-prime on leading and lagging strands using base-pairing rules."
           },
           {
             "id": "transcription",
-            "label": "RNA polymerase transcribes & eukaryotic mRNA processes"
+            "label": "RNA polymerase transcribes & eukaryotic mRNA processes",
+            "detail": "RNA polymerase transcribes DNA into RNA; eukaryotes add a 5-prime cap, poly-A tail, and splice introns to generate mature or alternative mRNAs."
           },
           {
             "id": "translation",
-            "label": "Ribosome & tRNAs translate codons into polypeptide"
+            "label": "Ribosome & tRNAs translate codons into polypeptide",
+            "detail": "Ribosomes read mRNA codons sequentially with charged tRNAs to assemble amino acids into polypeptides whose mutations vary by codon impact."
           },
           {
             "id": "regulation",
-            "label": "Operons, transcription factors, & epigenetics tune output"
+            "label": "Operons, transcription factors, & epigenetics tune output",
+            "detail": "Prokaryotic operons and eukaryotic chromatin remodeling, enhancers, and microRNAs regulate when and how much protein each cell produces."
           }
         ],
         "edges": [
           {
+            "id": "dna-to-transcription",
             "from": "dna",
-            "to": "transcription"
+            "to": "transcription",
+            "label": "shapes"
           },
           {
+            "id": "transcription-to-translation",
             "from": "transcription",
-            "to": "translation"
+            "to": "translation",
+            "label": "drives"
           },
           {
+            "id": "translation-to-regulation",
             "from": "translation",
-            "to": "regulation"
+            "to": "regulation",
+            "label": "governs"
           }
-        ]
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
       },
       "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Four-step AP Biology Unit 6 concept flow: Semiconservative 5-to-3 DNA replication -> RNA polymerase transcribes & eukaryotic mRNA processes -> Ribosome & tRNAs translate codons into polypeptide -> Operons, transcription factors, & epigenetics tune output.",
+        "longDescription": "Read from left to right. DNA polymerases synthesize complementary strands 5-prime to 3-prime on leading and lagging strands using base-pairing rules. RNA polymerase transcribes DNA into RNA; eukaryotes add a 5-prime cap, poly-A tail, and splice introns to generate mature or alternative mRNAs. Ribosomes read mRNA codons sequentially with charged tRNAs to assemble amino acids into polypeptides whose mutations vary by codon impact. Prokaryotic operons and eukaryotic chromatin remodeling, enhancers, and microRNAs regulate when and how much protein each cell produces.",
         "textEquivalent": [
           "DNA polymerases synthesize complementary strands 5-prime to 3-prime on leading and lagging strands using base-pairing rules.",
           "RNA polymerase transcribes DNA into RNA; eukaryotes add a 5-prime cap, poly-A tail, and splice introns to generate mature or alternative mRNAs.",
           "Ribosomes read mRNA codons sequentially with charged tRNAs to assemble amino acids into polypeptides whose mutations vary by codon impact.",
           "Prokaryotic operons and eukaryotic chromatin remodeling, enhancers, and microRNAs regulate when and how much protein each cell produces."
         ],
-        "fallbackMode": "ordered-text-equivalent"
+        "readingOrder": [
+          "dna",
+          "transcription",
+          "translation",
+          "regulation"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
       },
       "unscored": true,
       "officialItem": false,
-      "releaseEligible": false
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      }
     },
     {
       "id": "ap-bio-flow-07",
+      "chapterId": "ap-bio-ch-07",
       "domainId": "natural-selection",
       "title": "Population variation, evolutionary mechanisms, and phylogeny flow",
       "type": "optional-concept-flow",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Trace the Unit 7 sequence connecting core biological mechanisms from molecular or population inputs to system-level outcomes.",
+      "caption": "An original AP Biology Unit 7 concept flow summarizing population variation, evolutionary mechanisms, and phylogeny flow.",
       "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
         "nodes": [
           {
             "id": "variation",
-            "label": "Random mutation & recombination create heritable variation"
+            "label": "Random mutation & recombination create heritable variation",
+            "detail": "Mutations and sexual recombination arise randomly with respect to need, supplying heritable phenotypic variation within a population."
           },
           {
             "id": "mechanisms",
-            "label": "Selection, genetic drift, & gene flow shift allele frequencies"
+            "label": "Selection, genetic drift, & gene flow shift allele frequencies",
+            "detail": "Natural selection favors traits increasing relative reproductive success in a given environment, while drift and gene flow alter frequencies non-adaptively."
           },
           {
             "id": "equilibrium",
-            "label": "Test allele frequencies against Hardy-Weinberg null model"
+            "label": "Test allele frequencies against Hardy-Weinberg null model",
+            "detail": "Hardy-Weinberg equations provide a non-evolving baseline; sustained departures indicate at least one evolutionary mechanism is acting."
           },
           {
             "id": "speciation",
-            "label": "Reproductive isolation drives divergence & cladograms"
+            "label": "Reproductive isolation drives divergence & cladograms",
+            "detail": "Reproductive barriers split lineages into distinct species, whose shared derived characters and molecular data support phylogenetic hypotheses."
           }
         ],
         "edges": [
           {
+            "id": "variation-to-mechanisms",
             "from": "variation",
-            "to": "mechanisms"
+            "to": "mechanisms",
+            "label": "shapes"
           },
           {
+            "id": "mechanisms-to-equilibrium",
             "from": "mechanisms",
-            "to": "equilibrium"
+            "to": "equilibrium",
+            "label": "drives"
           },
           {
+            "id": "equilibrium-to-speciation",
             "from": "equilibrium",
-            "to": "speciation"
+            "to": "speciation",
+            "label": "governs"
           }
-        ]
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
       },
       "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Four-step AP Biology Unit 7 concept flow: Random mutation & recombination create heritable variation -> Selection, genetic drift, & gene flow shift allele frequencies -> Test allele frequencies against Hardy-Weinberg null model -> Reproductive isolation drives divergence & cladograms.",
+        "longDescription": "Read from left to right. Mutations and sexual recombination arise randomly with respect to need, supplying heritable phenotypic variation within a population. Natural selection favors traits increasing relative reproductive success in a given environment, while drift and gene flow alter frequencies non-adaptively. Hardy-Weinberg equations provide a non-evolving baseline; sustained departures indicate at least one evolutionary mechanism is acting. Reproductive barriers split lineages into distinct species, whose shared derived characters and molecular data support phylogenetic hypotheses.",
         "textEquivalent": [
           "Mutations and sexual recombination arise randomly with respect to need, supplying heritable phenotypic variation within a population.",
           "Natural selection favors traits increasing relative reproductive success in a given environment, while drift and gene flow alter frequencies non-adaptively.",
           "Hardy-Weinberg equations provide a non-evolving baseline; sustained departures indicate at least one evolutionary mechanism is acting.",
           "Reproductive barriers split lineages into distinct species, whose shared derived characters and molecular data support phylogenetic hypotheses."
         ],
-        "fallbackMode": "ordered-text-equivalent"
+        "readingOrder": [
+          "variation",
+          "mechanisms",
+          "equilibrium",
+          "speciation"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
       },
       "unscored": true,
       "officialItem": false,
-      "releaseEligible": false
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      }
     },
     {
       "id": "ap-bio-flow-08",
+      "chapterId": "ap-bio-ch-08",
       "domainId": "ecology",
       "title": "Energy flow, population dynamics, and community stability flow",
       "type": "optional-concept-flow",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Trace the Unit 8 sequence connecting core biological mechanisms from molecular or population inputs to system-level outcomes.",
+      "caption": "An original AP Biology Unit 8 concept flow summarizing energy flow, population dynamics, and community stability flow.",
       "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
         "nodes": [
           {
             "id": "energy",
-            "label": "Primary producers fix energy; ~10% transfers per trophic level"
+            "label": "Primary producers fix energy; ~10% transfers per trophic level",
+            "detail": "Autotrophs convert solar or chemical energy into biomass while heat loss at each trophic step limits food-chain energy transfer."
           },
           {
             "id": "populations",
-            "label": "Exponential vs. carrying-capacity-limited logistic growth"
+            "label": "Exponential vs. carrying-capacity-limited logistic growth",
+            "detail": "Unconstrained populations grow exponentially, whereas density-dependent limits slow growth toward carrying capacity K in logistic models."
           },
           {
             "id": "interactions",
-            "label": "Competition, predation, mutualism, & keystone effects"
+            "label": "Competition, predation, mutualism, & keystone effects",
+            "detail": "Species interactions—including keystone predators and invasive competitors—restructure trophic cascades and realized niches."
           },
           {
             "id": "resilience",
-            "label": "Biodiversity & disturbance shape ecosystem stability"
+            "label": "Biodiversity & disturbance shape ecosystem stability",
+            "detail": "Higher genetic and species diversity generally buffers ecosystems against environmental disturbances and supports nutrient cycling."
           }
         ],
         "edges": [
           {
+            "id": "energy-to-populations",
             "from": "energy",
-            "to": "populations"
+            "to": "populations",
+            "label": "shapes"
           },
           {
+            "id": "populations-to-interactions",
             "from": "populations",
-            "to": "interactions"
+            "to": "interactions",
+            "label": "drives"
           },
           {
+            "id": "interactions-to-resilience",
             "from": "interactions",
-            "to": "resilience"
+            "to": "resilience",
+            "label": "governs"
           }
-        ]
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
       },
       "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Four-step AP Biology Unit 8 concept flow: Primary producers fix energy; ~10% transfers per trophic level -> Exponential vs. carrying-capacity-limited logistic growth -> Competition, predation, mutualism, & keystone effects -> Biodiversity & disturbance shape ecosystem stability.",
+        "longDescription": "Read from left to right. Autotrophs convert solar or chemical energy into biomass while heat loss at each trophic step limits food-chain energy transfer. Unconstrained populations grow exponentially, whereas density-dependent limits slow growth toward carrying capacity K in logistic models. Species interactions—including keystone predators and invasive competitors—restructure trophic cascades and realized niches. Higher genetic and species diversity generally buffers ecosystems against environmental disturbances and supports nutrient cycling.",
         "textEquivalent": [
           "Autotrophs convert solar or chemical energy into biomass while heat loss at each trophic step limits food-chain energy transfer.",
           "Unconstrained populations grow exponentially, whereas density-dependent limits slow growth toward carrying capacity K in logistic models.",
           "Species interactions—including keystone predators and invasive competitors—restructure trophic cascades and realized niches.",
           "Higher genetic and species diversity generally buffers ecosystems against environmental disturbances and supports nutrient cycling."
         ],
-        "fallbackMode": "ordered-text-equivalent"
+        "readingOrder": [
+          "energy",
+          "populations",
+          "interactions",
+          "resilience"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
       },
       "unscored": true,
       "officialItem": false,
-      "releaseEligible": false
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      }
     }
   ],
   "diagramPlacements": [
     {
       "id": "ap-bio-placement-01",
       "diagramId": "ap-bio-flow-01",
+      "chapterId": "ap-bio-ch-01",
       "sectionId": "ap-bio-ch-01-section-01",
+      "position": "after-section-content",
+      "learnerPurpose": "Trace the Unit 1 sequence connecting core biological mechanisms from molecular or population inputs to system-level outcomes.",
       "fallbackMode": "diagram-text-equivalent",
       "requiredForComprehension": false,
+      "unscored": true,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
       "releaseEligible": false
     },
     {
       "id": "ap-bio-placement-02",
       "diagramId": "ap-bio-flow-02",
+      "chapterId": "ap-bio-ch-02",
       "sectionId": "ap-bio-ch-02-section-01",
+      "position": "after-section-content",
+      "learnerPurpose": "Trace the Unit 2 sequence connecting core biological mechanisms from molecular or population inputs to system-level outcomes.",
       "fallbackMode": "diagram-text-equivalent",
       "requiredForComprehension": false,
+      "unscored": true,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
       "releaseEligible": false
     },
     {
       "id": "ap-bio-placement-03",
       "diagramId": "ap-bio-flow-03",
+      "chapterId": "ap-bio-ch-03",
       "sectionId": "ap-bio-ch-03-section-01",
+      "position": "after-section-content",
+      "learnerPurpose": "Trace the Unit 3 sequence connecting core biological mechanisms from molecular or population inputs to system-level outcomes.",
       "fallbackMode": "diagram-text-equivalent",
       "requiredForComprehension": false,
+      "unscored": true,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
       "releaseEligible": false
     },
     {
       "id": "ap-bio-placement-04",
       "diagramId": "ap-bio-flow-04",
+      "chapterId": "ap-bio-ch-04",
       "sectionId": "ap-bio-ch-04-section-01",
+      "position": "after-section-content",
+      "learnerPurpose": "Trace the Unit 4 sequence connecting core biological mechanisms from molecular or population inputs to system-level outcomes.",
       "fallbackMode": "diagram-text-equivalent",
       "requiredForComprehension": false,
+      "unscored": true,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
       "releaseEligible": false
     },
     {
       "id": "ap-bio-placement-05",
       "diagramId": "ap-bio-flow-05",
+      "chapterId": "ap-bio-ch-05",
       "sectionId": "ap-bio-ch-05-section-01",
+      "position": "after-section-content",
+      "learnerPurpose": "Trace the Unit 5 sequence connecting core biological mechanisms from molecular or population inputs to system-level outcomes.",
       "fallbackMode": "diagram-text-equivalent",
       "requiredForComprehension": false,
+      "unscored": true,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
       "releaseEligible": false
     },
     {
       "id": "ap-bio-placement-06",
       "diagramId": "ap-bio-flow-06",
+      "chapterId": "ap-bio-ch-06",
       "sectionId": "ap-bio-ch-06-section-01",
+      "position": "after-section-content",
+      "learnerPurpose": "Trace the Unit 6 sequence connecting core biological mechanisms from molecular or population inputs to system-level outcomes.",
       "fallbackMode": "diagram-text-equivalent",
       "requiredForComprehension": false,
+      "unscored": true,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
       "releaseEligible": false
     },
     {
       "id": "ap-bio-placement-07",
       "diagramId": "ap-bio-flow-07",
+      "chapterId": "ap-bio-ch-07",
       "sectionId": "ap-bio-ch-07-section-01",
+      "position": "after-section-content",
+      "learnerPurpose": "Trace the Unit 7 sequence connecting core biological mechanisms from molecular or population inputs to system-level outcomes.",
       "fallbackMode": "diagram-text-equivalent",
       "requiredForComprehension": false,
+      "unscored": true,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
       "releaseEligible": false
     },
     {
       "id": "ap-bio-placement-08",
       "diagramId": "ap-bio-flow-08",
+      "chapterId": "ap-bio-ch-08",
       "sectionId": "ap-bio-ch-08-section-01",
+      "position": "after-section-content",
+      "learnerPurpose": "Trace the Unit 8 sequence connecting core biological mechanisms from molecular or population inputs to system-level outcomes.",
       "fallbackMode": "diagram-text-equivalent",
       "requiredForComprehension": false,
+      "unscored": true,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
       "releaseEligible": false
     }
   ],
@@ -13995,7 +14827,10 @@
     "sourceReviewedChapters": 8,
     "sourceReviewedFlashcards": 24,
     "sourceReviewedMemoryAids": 8,
-    "releaseEligibleRecords": 0
+    "releaseEligibleRecords": 0,
+    "glossaryTerms": 24,
+    "quickReferenceCards": 8,
+    "misconceptionPlaybooks": 6
   },
   "accessibility": {
     "contentForm": "text-first, linear lessons and single-choice items",
@@ -14042,5 +14877,1421 @@
     "richLessonPrototypes": 8,
     "status": "foundation-prototype",
     "note": "All eight unit chapters now carry three navigable lesson sections split by framework topic, each with structured examples, boundaries, misconception guidance, worked data, retrieval, and transfer; independent review remains pending."
-  }
+  },
+  "glossary": [
+    {
+      "id": "ap-bio-gloss-01",
+      "term": "Hydrogen bonding",
+      "definition": "Weak electrostatic attraction between a partially positive hydrogen covalently bonded to O, N, or F and an electronegative atom, giving water cohesion, high specific heat, and stabilizing protein and DNA structure.",
+      "aliases": [
+        "H-bonding"
+      ],
+      "chapterIds": [
+        "ap-bio-ch-01"
+      ],
+      "domainIds": [
+        "chemistry-of-life"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-bio-ch-01",
+            "chapterTitle": "Unit 1: Chemistry of Life",
+            "domainId": "chemistry-of-life",
+            "domain": "Unit 1: Chemistry of Life",
+            "sectionId": "ap-bio-ch-01-section-01",
+            "sectionHeading": "Water, macromolecules, and structure-function reasoning",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology"
+      ]
+    },
+    {
+      "id": "ap-bio-gloss-02",
+      "term": "Dehydration synthesis",
+      "definition": "Enzymatic reaction that links monomers into biological polymers such as polysaccharides, proteins, or nucleic acids by forming a covalent bond while removing a water molecule; reversed by hydrolysis.",
+      "aliases": [
+        "Condensation reaction"
+      ],
+      "chapterIds": [
+        "ap-bio-ch-01"
+      ],
+      "domainIds": [
+        "chemistry-of-life"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-bio-ch-01",
+            "chapterTitle": "Unit 1: Chemistry of Life",
+            "domainId": "chemistry-of-life",
+            "domain": "Unit 1: Chemistry of Life",
+            "sectionId": "ap-bio-ch-01-section-02",
+            "sectionHeading": "Carbohydrates and lipids",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology"
+      ]
+    },
+    {
+      "id": "ap-bio-gloss-03",
+      "term": "Protein denaturation",
+      "definition": "Loss of a protein’s native tertiary or quaternary three-dimensional structure—and thus biological function—when heat, pH shifts, or salinity disrupt noncovalent R-group interactions while leaving peptide bonds intact.",
+      "aliases": [
+        "Denaturation"
+      ],
+      "chapterIds": [
+        "ap-bio-ch-01"
+      ],
+      "domainIds": [
+        "chemistry-of-life"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-bio-ch-01",
+            "chapterTitle": "Unit 1: Chemistry of Life",
+            "domainId": "chemistry-of-life",
+            "domain": "Unit 1: Chemistry of Life",
+            "sectionId": "ap-bio-ch-01-section-03",
+            "sectionHeading": "Nucleic acids and proteins",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology"
+      ]
+    },
+    {
+      "id": "ap-bio-gloss-04",
+      "term": "Surface-area-to-volume ratio",
+      "definition": "Quotient of plasma membrane surface area divided by cytoplasmic volume (SA/V); decreases as cell size increases, limiting passive exchange rates and favoring small cells, membrane folding, or compartmentalization.",
+      "aliases": [
+        "SA/V ratio"
+      ],
+      "chapterIds": [
+        "ap-bio-ch-02"
+      ],
+      "domainIds": [
+        "cells"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-bio-ch-02",
+            "chapterTitle": "Unit 2: Cells",
+            "domainId": "cells",
+            "domain": "Unit 2: Cells",
+            "sectionId": "ap-bio-ch-02-section-01",
+            "sectionHeading": "Membranes, transport, and cell size",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology"
+      ]
+    },
+    {
+      "id": "ap-bio-gloss-05",
+      "term": "Fluid mosaic model",
+      "definition": "Structural model of biological membranes depicting a dynamic phospholipid bilayer embedded with amphipathic proteins, cholesterol buffers, and glycoproteins that allow lateral mobility and selective permeability.",
+      "aliases": [
+        "Phospholipid bilayer model"
+      ],
+      "chapterIds": [
+        "ap-bio-ch-02"
+      ],
+      "domainIds": [
+        "cells"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-bio-ch-02",
+            "chapterTitle": "Unit 2: Cells",
+            "domainId": "cells",
+            "domain": "Unit 2: Cells",
+            "sectionId": "ap-bio-ch-02-section-02",
+            "sectionHeading": "Cell structure, cell size, and the plasma membrane",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology"
+      ]
+    },
+    {
+      "id": "ap-bio-gloss-06",
+      "term": "Water potential",
+      "definition": "Measure of the potential energy of water per unit volume (Ψ = Ψs + Ψp) that predicts net osmotic flow; water always diffuses passively from regions of higher (less negative) to lower water potential.",
+      "aliases": [
+        "Ψ"
+      ],
+      "chapterIds": [
+        "ap-bio-ch-02"
+      ],
+      "domainIds": [
+        "cells"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-bio-ch-02",
+            "chapterTitle": "Unit 2: Cells",
+            "domainId": "cells",
+            "domain": "Unit 2: Cells",
+            "sectionId": "ap-bio-ch-02-section-03",
+            "sectionHeading": "Tonicity, osmoregulation, and the origins of cells",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology"
+      ]
+    },
+    {
+      "id": "ap-bio-gloss-07",
+      "term": "Allosteric regulation",
+      "definition": "Control of enzyme catalysis when a regulatory molecule binds a site distinct from the active site, inducing a conformational shift that stabilizes either the active or inactive state of the enzyme.",
+      "aliases": [
+        "Allosteric modulation"
+      ],
+      "chapterIds": [
+        "ap-bio-ch-03"
+      ],
+      "domainIds": [
+        "cellular-energetics"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-bio-ch-03",
+            "chapterTitle": "Unit 3: Cellular Energetics",
+            "domainId": "cellular-energetics",
+            "domain": "Unit 3: Cellular Energetics",
+            "sectionId": "ap-bio-ch-03-section-01",
+            "sectionHeading": "Enzymes, energy, and metabolic pathways",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology"
+      ]
+    },
+    {
+      "id": "ap-bio-gloss-08",
+      "term": "Calvin cycle",
+      "definition": "Light-independent photosynthetic pathway in the chloroplast stroma where rubisco fixes CO2 into organic intermediates, consuming ATP and NADPH from the light reactions to produce G3P sugars.",
+      "aliases": [
+        "Light-independent reactions"
+      ],
+      "chapterIds": [
+        "ap-bio-ch-03"
+      ],
+      "domainIds": [
+        "cellular-energetics"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-bio-ch-03",
+            "chapterTitle": "Unit 3: Cellular Energetics",
+            "domainId": "cellular-energetics",
+            "domain": "Unit 3: Cellular Energetics",
+            "sectionId": "ap-bio-ch-03-section-02",
+            "sectionHeading": "Photosynthesis",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology"
+      ]
+    },
+    {
+      "id": "ap-bio-gloss-09",
+      "term": "Chemiosmosis",
+      "definition": "Energy-coupling mechanism in which an electrochemical H+ gradient across the inner mitochondrial or thylakoid membrane drives ATP synthesis as protons flow down their gradient through ATP synthase.",
+      "aliases": [
+        "Proton-motive ATP synthesis"
+      ],
+      "chapterIds": [
+        "ap-bio-ch-03"
+      ],
+      "domainIds": [
+        "cellular-energetics"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-bio-ch-03",
+            "chapterTitle": "Unit 3: Cellular Energetics",
+            "domainId": "cellular-energetics",
+            "domain": "Unit 3: Cellular Energetics",
+            "sectionId": "ap-bio-ch-03-section-03",
+            "sectionHeading": "Cellular respiration and fermentation",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology"
+      ]
+    },
+    {
+      "id": "ap-bio-gloss-10",
+      "term": "Signal transduction pathway",
+      "definition": "Multistep molecular relay converting an extracellular ligand binding a specific receptor into an amplified intracellular response, commonly via G proteins, second messengers such as cAMP, and phosphorylation cascades.",
+      "aliases": [
+        "Signal transduction"
+      ],
+      "chapterIds": [
+        "ap-bio-ch-04"
+      ],
+      "domainIds": [
+        "cell-communication-and-cell-cycle"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-bio-ch-04",
+            "chapterTitle": "Unit 4: Cell Communication and Cell Cycle",
+            "domainId": "cell-communication-and-cell-cycle",
+            "domain": "Unit 4: Cell Communication and Cell Cycle",
+            "sectionId": "ap-bio-ch-04-section-01",
+            "sectionHeading": "Signal transduction and cell-cycle control",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology"
+      ]
+    },
+    {
+      "id": "ap-bio-gloss-11",
+      "term": "Negative feedback",
+      "definition": "Homeostatic control loop in which an effector response counteracts the initial stimulus to restore an internal variable toward its set point, such as insulin lowering elevated blood glucose.",
+      "aliases": [
+        "Negative feedback loop"
+      ],
+      "chapterIds": [
+        "ap-bio-ch-04"
+      ],
+      "domainIds": [
+        "cell-communication-and-cell-cycle"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-bio-ch-04",
+            "chapterTitle": "Unit 4: Cell Communication and Cell Cycle",
+            "domainId": "cell-communication-and-cell-cycle",
+            "domain": "Unit 4: Cell Communication and Cell Cycle",
+            "sectionId": "ap-bio-ch-04-section-02",
+            "sectionHeading": "Feedback and homeostasis",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology"
+      ]
+    },
+    {
+      "id": "ap-bio-gloss-12",
+      "term": "Cyclin-dependent kinase",
+      "definition": "Regulatory kinase that phosphorylates target proteins to drive progression through cell-cycle checkpoints (G1, G2, M) only when complexed with its periodically synthesized cyclin partner.",
+      "aliases": [
+        "Cdk"
+      ],
+      "chapterIds": [
+        "ap-bio-ch-04"
+      ],
+      "domainIds": [
+        "cell-communication-and-cell-cycle"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-bio-ch-04",
+            "chapterTitle": "Unit 4: Cell Communication and Cell Cycle",
+            "domainId": "cell-communication-and-cell-cycle",
+            "domain": "Unit 4: Cell Communication and Cell Cycle",
+            "sectionId": "ap-bio-ch-04-section-03",
+            "sectionHeading": "The cell cycle and its regulation",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology"
+      ]
+    },
+    {
+      "id": "ap-bio-gloss-13",
+      "term": "Crossing over",
+      "definition": "Reciprocal exchange of corresponding DNA segments between nonsister chromatids of homologous chromosomes during prophase I of meiosis, generating recombinant chromatids and increased gametic variation.",
+      "aliases": [
+        "Genetic recombination"
+      ],
+      "chapterIds": [
+        "ap-bio-ch-05"
+      ],
+      "domainIds": [
+        "heredity"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-bio-ch-05",
+            "chapterTitle": "Unit 5: Heredity",
+            "domainId": "heredity",
+            "domain": "Unit 5: Heredity",
+            "sectionId": "ap-bio-ch-05-section-01",
+            "sectionHeading": "Meiosis, inheritance, and phenotype",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology"
+      ]
+    },
+    {
+      "id": "ap-bio-gloss-14",
+      "term": "Law of independent assortment",
+      "definition": "Mendelian principle stating that alleles of genes located on different chromosomes segregate independently during metaphase I of meiosis, yielding predictable multi-trait probabilities via the product rule.",
+      "aliases": [
+        "Independent assortment"
+      ],
+      "chapterIds": [
+        "ap-bio-ch-05"
+      ],
+      "domainIds": [
+        "heredity"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-bio-ch-05",
+            "chapterTitle": "Unit 5: Heredity",
+            "domainId": "heredity",
+            "domain": "Unit 5: Heredity",
+            "sectionId": "ap-bio-ch-05-section-02",
+            "sectionHeading": "Mendelian genetics and probability",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology"
+      ]
+    },
+    {
+      "id": "ap-bio-gloss-15",
+      "term": "Phenotypic plasticity",
+      "definition": "Capacity of a single genotype to produce distinct observable phenotypes in response to environmental factors such as temperature, nutrition, or soil pH without changing the underlying DNA sequence.",
+      "aliases": [],
+      "chapterIds": [
+        "ap-bio-ch-05"
+      ],
+      "domainIds": [
+        "heredity"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-bio-ch-05",
+            "chapterTitle": "Unit 5: Heredity",
+            "domainId": "heredity",
+            "domain": "Unit 5: Heredity",
+            "sectionId": "ap-bio-ch-05-section-03",
+            "sectionHeading": "Non-Mendelian inheritance and environmental effects",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology"
+      ]
+    },
+    {
+      "id": "ap-bio-gloss-16",
+      "term": "Semiconservative replication",
+      "definition": "Mechanism of DNA synthesis in which each parental strand serves as a template for DNA polymerase elongating a new complementary 5’→3’ strand, producing daughter duplexes with one old and one new strand.",
+      "aliases": [
+        "DNA replication"
+      ],
+      "chapterIds": [
+        "ap-bio-ch-06"
+      ],
+      "domainIds": [
+        "gene-expression-and-regulation"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-bio-ch-06",
+            "chapterTitle": "Unit 6: Gene Expression and Regulation",
+            "domainId": "gene-expression-and-regulation",
+            "domain": "Unit 6: Gene Expression and Regulation",
+            "sectionId": "ap-bio-ch-06-section-01",
+            "sectionHeading": "DNA, gene expression, and regulation",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology"
+      ]
+    },
+    {
+      "id": "ap-bio-gloss-17",
+      "term": "Operon",
+      "definition": "Prokaryotic regulatory cluster comprising a promoter, an operator binding site, and functionally related structural genes transcribed together into one polycistronic mRNA, exemplified by the lac and trp operons.",
+      "aliases": [
+        "Bacterial operon"
+      ],
+      "chapterIds": [
+        "ap-bio-ch-06"
+      ],
+      "domainIds": [
+        "gene-expression-and-regulation"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-bio-ch-06",
+            "chapterTitle": "Unit 6: Gene Expression and Regulation",
+            "domainId": "gene-expression-and-regulation",
+            "domain": "Unit 6: Gene Expression and Regulation",
+            "sectionId": "ap-bio-ch-06-section-02",
+            "sectionHeading": "Transcription, translation, and gene regulation",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology"
+      ]
+    },
+    {
+      "id": "ap-bio-gloss-18",
+      "term": "Polymerase chain reaction",
+      "definition": "Cyclic in vitro method using thermal denaturation, sequence-specific primers, and thermostable Taq DNA polymerase to exponentially amplify a targeted DNA segment for electrophoresis or sequencing.",
+      "aliases": [
+        "PCR"
+      ],
+      "chapterIds": [
+        "ap-bio-ch-06"
+      ],
+      "domainIds": [
+        "gene-expression-and-regulation"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-bio-ch-06",
+            "chapterTitle": "Unit 6: Gene Expression and Regulation",
+            "domainId": "gene-expression-and-regulation",
+            "domain": "Unit 6: Gene Expression and Regulation",
+            "sectionId": "ap-bio-ch-06-section-03",
+            "sectionHeading": "Mutations and biotechnology",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology"
+      ]
+    },
+    {
+      "id": "ap-bio-gloss-19",
+      "term": "Genetic drift",
+      "definition": "Random, non-adaptive changes in population allele frequencies across generations caused by chance sampling, exerting its strongest evolutionary effects in small populations during bottlenecks or founder events.",
+      "aliases": [],
+      "chapterIds": [
+        "ap-bio-ch-07"
+      ],
+      "domainIds": [
+        "natural-selection"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-bio-ch-07",
+            "chapterTitle": "Unit 7: Natural Selection",
+            "domainId": "natural-selection",
+            "domain": "Unit 7: Natural Selection",
+            "sectionId": "ap-bio-ch-07-section-01",
+            "sectionHeading": "Natural selection, population genetics, and speciation",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology"
+      ]
+    },
+    {
+      "id": "ap-bio-gloss-20",
+      "term": "Hardy-Weinberg equilibrium",
+      "definition": "Null population-genetics model predicting constant allele and genotype frequencies (p + q = 1; p^2 + 2pq + q^2 = 1) when a population is large, mates randomly, and experiences no mutation, gene flow, or selection.",
+      "aliases": [
+        "HWE"
+      ],
+      "chapterIds": [
+        "ap-bio-ch-07"
+      ],
+      "domainIds": [
+        "natural-selection"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-bio-ch-07",
+            "chapterTitle": "Unit 7: Natural Selection",
+            "domainId": "natural-selection",
+            "domain": "Unit 7: Natural Selection",
+            "sectionId": "ap-bio-ch-07-section-02",
+            "sectionHeading": "Population genetics and Hardy-Weinberg",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology"
+      ]
+    },
+    {
+      "id": "ap-bio-gloss-21",
+      "term": "Allopatric speciation",
+      "definition": "Divergence of one ancestral population into reproductively isolated species after a geographic barrier interrupts gene flow, allowing independent mutation, genetic drift, and natural selection to accumulate differences.",
+      "aliases": [
+        "Geographic speciation"
+      ],
+      "chapterIds": [
+        "ap-bio-ch-07"
+      ],
+      "domainIds": [
+        "natural-selection"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-bio-ch-07",
+            "chapterTitle": "Unit 7: Natural Selection",
+            "domainId": "natural-selection",
+            "domain": "Unit 7: Natural Selection",
+            "sectionId": "ap-bio-ch-07-section-03",
+            "sectionHeading": "Evidence, phylogeny, speciation, and the origin of life",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology"
+      ]
+    },
+    {
+      "id": "ap-bio-gloss-22",
+      "term": "Trophic efficiency",
+      "definition": "Percentage of net chemical energy transferred from one trophic level to the next (typically about 10%), because most assimilated energy is dissipated as metabolic heat during respiration or remains unconsumed.",
+      "aliases": [
+        "10% rule"
+      ],
+      "chapterIds": [
+        "ap-bio-ch-08"
+      ],
+      "domainIds": [
+        "ecology"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-bio-ch-08",
+            "chapterTitle": "Unit 8: Ecology",
+            "domainId": "ecology",
+            "domain": "Unit 8: Ecology",
+            "sectionId": "ap-bio-ch-08-section-01",
+            "sectionHeading": "Energy flow, populations, and ecosystems",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology"
+      ]
+    },
+    {
+      "id": "ap-bio-gloss-23",
+      "term": "Carrying capacity",
+      "definition": "Maximum population size (K) an environment can sustainably support over time, causing logistic growth (dN/dt = rmax N((K - N)/K)) to decelerate and plateau as density-dependent limiting factors intensify.",
+      "aliases": [
+        "K"
+      ],
+      "chapterIds": [
+        "ap-bio-ch-08"
+      ],
+      "domainIds": [
+        "ecology"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-bio-ch-08",
+            "chapterTitle": "Unit 8: Ecology",
+            "domainId": "ecology",
+            "domain": "Unit 8: Ecology",
+            "sectionId": "ap-bio-ch-08-section-02",
+            "sectionHeading": "Population and community ecology",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology"
+      ]
+    },
+    {
+      "id": "ap-bio-gloss-24",
+      "term": "Ecological succession",
+      "definition": "Directional change in community species composition after disturbance, progressing from hardy pioneer organisms to more diverse assemblages via primary succession on bare substrate or faster secondary succession on intact soil.",
+      "aliases": [
+        "Primary and secondary succession"
+      ],
+      "chapterIds": [
+        "ap-bio-ch-08"
+      ],
+      "domainIds": [
+        "ecology"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-bio-ch-08",
+            "chapterTitle": "Unit 8: Ecology",
+            "domainId": "ecology",
+            "domain": "Unit 8: Ecology",
+            "sectionId": "ap-bio-ch-08-section-03",
+            "sectionHeading": "Biodiversity and ecosystem disruption",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology"
+      ]
+    }
+  ],
+  "quickReference": [
+    {
+      "id": "ap-bio-reference-01",
+      "domainId": "chemistry-of-life",
+      "domainLabel": "Chemistry of Life",
+      "title": "Water Properties & Macromolecule Structure",
+      "purpose": "Anchors how hydrogen bonding, polymer assembly, and directional monomer linkages dictate biological structure and function on AP Biology items.",
+      "checklistLabel": "Before answering",
+      "formulasLabel": "Core mechanisms & pathways",
+      "checklist": [
+        "Identify whether the prompt focuses on polar water interactions or covalent linkages inside a specific macromolecule class.",
+        "Check polymer directionality (N-terminus to C-terminus for polypeptides; 5' to 3' for nucleic acids) before interpreting structural diagrams.",
+        "Trace how a change in R-group polarity, charge, or pH alters tertiary folding rather than primary amino acid sequence."
+      ],
+      "formulas": [
+        "Water properties from H-bonding: cohesion (transpiration pull), adhesion, high specific heat, evaporative cooling, and lower solid density (ice floats).",
+        "Dehydration synthesis removes H2O to join monomers (glycosidic, ester, peptide, phosphodiester bonds); hydrolysis consumes H2O to cleave polymers.",
+        "Protein hierarchy: primary (peptide bonds), secondary (backbone H-bonds: alpha-helices/beta-sheets), tertiary (R-group interactions), quaternary (multi-subunit).",
+        "Nucleic acids: antiparallel DNA strands pair A-T (2 H-bonds) and G-C (3 H-bonds); RNA uses ribose, uracil, and typically folds single-stranded."
+      ],
+      "decisionRules": [
+        "When you see a point mutation replacing a hydrophilic charged R-group with a nonpolar R-group → predict disrupted surface folding or altered active-site binding.",
+        "When you see a double-stranded DNA sample with a higher G-C percentage → choose a higher melting temperature due to more hydrogen bonds per base pair.",
+        "When you see a lipid with cis double bonds in its hydrocarbon tails → interpret kinks that prevent tight packing and increase membrane fluidity.",
+        "When you see a coastal climate moderating temperature swings or organisms cooling via sweating → attribute the effect to hydrogen bonds requiring high heat energy to break."
+      ],
+      "cautions": [
+        "Hydrogen bonds between water molecules or DNA base pairs are intermolecular/noncovalent attractions, not covalent bonds within a single water molecule.",
+        "Denaturation unfolds secondary, tertiary, and quaternary protein structure by disrupting weak R-group/backbone interactions, leaving primary peptide bonds intact.",
+        "Lipids are hydrophobic macromolecules assembled from glycerol and fatty acids (or steroid rings), not true repeating-monomer polymers."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-bio-reference-02",
+      "domainId": "cells",
+      "domainLabel": "Cells",
+      "title": "Compartmentalization, Transport & Water Potential",
+      "purpose": "Links organelle trafficking, surface-area-to-volume limits, membrane permeability, and quantitative water potential calculations.",
+      "checklistLabel": "Before answering",
+      "formulasLabel": "Core mechanisms & pathways",
+      "checklist": [
+        "Determine whether solute movement goes down its electrochemical gradient (passive) or against it using ATP or a coupled gradient (active).",
+        "Check if solutes are permeable or impermeable to the membrane before predicting net osmotic water movement.",
+        "Verify temperature is converted to Kelvin (K = °C + 273) and ionization constant i matches electrolyte dissociation before solving water potential."
+      ],
+      "formulas": [
+        "Surface-area-to-volume ratios: cube SA/V = 6/s and sphere SA/V = 3/r; smaller cells or folded membranes maximize exchange efficiency.",
+        "Water potential: Ψ = Ψp + Ψs, where solute potential Ψs = −iCRT with R = 0.0831 L·bar/(mol·K) and water always flows from higher Ψ to lower Ψ.",
+        "Endomembrane export pathway: rough ER ribosome synthesis → transport vesicle → cis-to-trans Golgi modification → secretory vesicle exocytosis.",
+        "Endosymbiotic evidence for mitochondria and chloroplasts: double membranes, circular DNA, independent binary-like division, and bacterial-type ribosomes."
+      ],
+      "decisionRules": [
+        "When you see a plant cell placed in a solution with a more negative Ψ than the cell interior → predict net water efflux, loss of turgor pressure, and plasmolysis.",
+        "When you see small nonpolar molecules (O2, CO2, steroid hormones) crossing a phospholipid bilayer → choose simple diffusion without transport proteins.",
+        "When you see ions or polar molecules moving down their gradient across a hydrophobic bilayer core → choose facilitated diffusion via channel or carrier proteins.",
+        "When you see a cell line with extensive rough ER and Golgi stacks → interpret specialization for synthesizing and secreting proteins."
+      ],
+      "cautions": [
+        "Adding solute always makes solute potential Ψs more negative; pure water in an open beaker has Ψp = 0 and Ψs = 0.",
+        "Do not confuse hypertonic with high water potential: a hypertonic solution has higher solute concentration and therefore lower (more negative) water potential.",
+        "Prokaryotes lack membrane-bound organelles, but they still possess a plasma membrane, cytosol, circular DNA, and ribosomes."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-bio-reference-03",
+      "domainId": "cellular-energetics",
+      "domainLabel": "Cellular Energetics",
+      "title": "Enzymes, Photosynthesis & Cellular Respiration",
+      "purpose": "Organizes enzyme catalysis kinetics alongside the compartmentalized inputs, outputs, and proton-gradient coupling of photosynthesis and respiration.",
+      "checklistLabel": "Before answering",
+      "formulasLabel": "Core mechanisms & pathways",
+      "checklist": [
+        "Separate reaction rate changes caused by substrate/inhibitor concentration from structural enzyme denaturation caused by extreme heat or pH.",
+        "Pinpoint the exact sub-organelle compartment (cytosol, mitochondrial matrix, cristae, thylakoid membrane, or stroma) where each energetic step occurs.",
+        "Track electron carriers (NADH, FADH2, NADPH) to distinguish ATP-generating chemiosmosis from carbon-fixing or substrate-level steps."
+      ],
+      "formulas": [
+        "Enzyme catalysis: lowers activation energy (Ea) by stabilizing the transition state without altering overall ΔG of reactants and products.",
+        "Photosynthesis: thylakoid light reactions split H2O to produce O2, ATP, and NADPH; stroma Calvin cycle uses ATP, NADPH, and Rubisco to fix CO2 into G3P.",
+        "Aerobic respiration: glycolysis (cytosol) → pyruvate oxidation & citric acid cycle (matrix) → ETC + chemiosmosis across inner mitochondrial membrane (O2 → H2O).",
+        "Fermentation (lactic acid or alcoholic): occurs anaerobically in cytosol solely to oxidize NADH back to NAD+ so glycolysis can continue producing 2 net ATP."
+      ],
+      "decisionRules": [
+        "When you see reaction rate restored to maximum Vmax by flooding the assay with excess substrate → identify competitive inhibition at the active site.",
+        "When you see a protonophore making the inner mitochondrial or thylakoid membrane leaky to H+ → predict collapsed proton motive force, halted ATP synthase output, and continued electron flow as heat.",
+        "When you see leaves placed in darkness after light exposure → predict light reactions stop immediately and the Calvin cycle soon stalls once ATP and NADPH run out.",
+        "When you see O2 removed from facultative anaerobes → predict the mitochondrial ETC backs up and cells switch to fermentation to regenerate NAD+."
+      ],
+      "cautions": [
+        "Enzymes never make an endergonic reaction exergonic; they speed approach to equilibrium without changing ΔG.",
+        "Plants perform both photosynthesis and cellular respiration continuously (respiration runs in light and dark alike).",
+        "Fermentation produces zero additional ATP beyond glycolysis; its metabolic role is regenerating the NAD+ pool."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-bio-reference-04",
+      "domainId": "cell-communication-and-cell-cycle",
+      "domainLabel": "Cell Communication and Cell Cycle",
+      "title": "Signal Transduction, Feedback & Cell Cycle Control",
+      "purpose": "Connects ligand-receptor specificity, second-messenger amplification, homeostatic feedback loops, and checkpoint regulation of mitosis.",
+      "checklistLabel": "Before answering",
+      "formulasLabel": "Core mechanisms & pathways",
+      "checklist": [
+        "Check whether the signaling ligand is hydrophilic (binds plasma-membrane receptor) or hydrophobic/steroid (crosses membrane to intracellular receptor).",
+        "Trace upstream vs. downstream components in a transduction pathway to predict which step still activates if a mutation locks one protein ON or OFF.",
+        "Distinguish interphase preparation (G1, S, G2) from mitotic nuclear division (PMAT) and cytokinesis before counting DNA content or chromatids."
+      ],
+      "formulas": [
+        "Signal transduction stages: reception (ligand-receptor conformational change) → transduction (phosphorylation cascade, cAMP/Ca2+ second messengers) → cellular response.",
+        "Signaling range: direct contact (gap junctions, plasmodesmata, immune APCs), local (paracrine/synaptic), and long-distance (endocrine hormones in bloodstream).",
+        "Feedback loops: negative feedback opposes deviations to restore a set point (insulin/glucagon blood glucose); positive feedback amplifies a process to completion (oxytocin in labor, ethylene fruit ripening).",
+        "Cell cycle control: G1, G2, and M (spindle) checkpoints governed by oscillating cyclins binding constant CDKs; DNA damage triggers p53 arrest or apoptosis."
+      ],
+      "decisionRules": [
+        "When you see two different target cell types exposed to the same hormone producing distinct responses → attribute the difference to distinct receptor isoforms or intracellular relay proteins.",
+        "When you see a drug blocking a downstream kinase while the receptor still binds its ligand → predict signal amplification halts downstream of the blocked kinase.",
+        "When you see loss-of-function mutations in both alleles of a tumor suppressor gene (like p53) or gain-of-function in a proto-oncogene → predict checkpoint bypass and uncontrolled proliferation.",
+        "When you see rising product concentration inhibiting an early pathway step to stabilize an internal variable → classify the mechanism as negative feedback."
+      ],
+      "cautions": [
+        "A ligand does not enter the cell during GPCR or RTK signaling; only conformational information is relayed across the membrane.",
+        "DNA replication occurs during S phase of interphase, not during prophase or metaphase of mitosis.",
+        "Positive feedback is not inherently harmful or \"good\"; it simply amplifies change away from baseline until a terminating event occurs."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-bio-reference-05",
+      "domainId": "heredity",
+      "domainLabel": "Heredity",
+      "title": "Meiosis, Pedigrees & Chi-Square Genetics",
+      "purpose": "Guides chromosome segregation accounting, inheritance-pattern deduction, and statistical hypothesis testing with chi-square distributions.",
+      "checklistLabel": "Before answering",
+      "formulasLabel": "Core mechanisms & pathways",
+      "checklist": [
+        "Identify whether a cross tests independent assortment, sex linkage, autosomal linkage, or non-nuclear maternal inheritance before calculating expected ratios.",
+        "Count degrees of freedom as phenotypic categories minus one (df = n − 1) and use the p = 0.05 row unless the prompt specifies another alpha level.",
+        "Verify whether pedigree traits skip generations (recessive) or affect fathers-to-all-daughters (X-linked dominant) versus carrier mothers-to-sons (X-linked recessive)."
+      ],
+      "formulas": [
+        "Meiosis variation mechanisms: prophase I crossing over (chiasmata), metaphase I independent assortment (2^n combinations), and random fertilization.",
+        "Probability laws: multiplication rule P(A and B) = P(A) × P(B) for independent events; addition rule P(A or B) = P(A) + P(B) for mutually exclusive outcomes.",
+        "Chi-square goodness-of-fit: χ² = Σ((O − E)² / E), df = n − 1; reject the null hypothesis when calculated χ² exceeds the critical value at p = 0.05.",
+        "Gene linkage: recombination frequency = (recombinant offspring / total offspring) × 100%; frequencies below 50% indicate genes linked on the same chromosome."
+      ],
+      "decisionRules": [
+        "When you see a dihybrid testcross yielding far more parental phenotypes than recombinant phenotypes → conclude the two loci are physically linked on the same chromosome.",
+        "When you see every offspring of an affected mother inherit a trait regardless of the father's phenotype → identify mitochondrial or chloroplast (extranuclear) inheritance.",
+        "When you see calculated χ² smaller than the p = 0.05 critical value → fail to reject the null hypothesis and conclude deviations are consistent with random chance.",
+        "When you see genetically identical plants showing different flower colors in acidic vs. alkaline soil → identify phenotypic plasticity driven by environmental interaction."
+      ],
+      "cautions": [
+        "Never say a low chi-square value \"proves\" the null hypothesis; AP rubrics require \"fail to reject the null hypothesis.\"",
+        "Homologous chromosomes separate in anaphase I (halving ploidy 2n → n), whereas sister chromatids separate in anaphase II.",
+        "Nondisjunction in meiosis I produces all four gametes with abnormal chromosome numbers, whereas nondisjunction in meiosis II leaves half the gametes normal."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-bio-reference-06",
+      "domainId": "gene-expression-and-regulation",
+      "domainLabel": "Gene Expression and Regulation",
+      "title": "DNA Replication, Transcription, Operons & Biotech",
+      "purpose": "Synthesizes nucleic acid polarity rules, prokaryotic vs. eukaryotic gene regulation, mutation effects, and core molecular biotechnology assays.",
+      "checklistLabel": "Before answering",
+      "formulasLabel": "Core mechanisms & pathways",
+      "checklist": [
+        "Confirm strand labels (3'→5' template vs. 5'→3' coding/mRNA) before transcribing codons or reading the genetic code table.",
+        "Check whether the organism is prokaryotic (coupled transcription-translation, operons, no introns) or eukaryotic (nuclear mRNA processing, enhancers, chromatin remodeling).",
+        "Examine how a single nucleotide insertion or deletion shifts the downstream reading frame relative to a base substitution."
+      ],
+      "formulas": [
+        "Semiconservative DNA replication: helicase unwinds, topoisomerase relieves supercoiling, primase lays RNA primer, DNA polymerase III extends 5'→3' (leading continuous; lagging Okazaki fragments), ligase seals nicks.",
+        "Eukaryotic mRNA processing: 5' GTP cap, 3' poly-A tail, and spliceosome intron removal; alternative splicing generates distinct protein isoforms from one gene.",
+        "Prokaryotic operons: lac operon (inducible: allolactose inactivates repressor; high cAMP-CAP boosts transcription when glucose is low); trp operon (repressible: tryptophan activates repressor).",
+        "Chromatin epigenetics: histone acetylation loosens nucleosomes to increase transcription; DNA/histone methylation typically condenses chromatin and silences expression."
+      ],
+      "decisionRules": [
+        "When you see DNA fragments separated on an agarose gel → read smaller fragments closer to the positive (anode) end because negatively charged DNA migrates faster when shorter.",
+        "When you see a bacterial transformation plate with LB + ampicillin + arabinose showing glowing colonies → confirm bacteria took up the plasmid carrying both ampR and an inducible reporter gene.",
+        "When you see a base substitution changing a sense codon into UAA, UAG, or UGA → classify it as a nonsense mutation producing a truncated, usually nonfunctional polypeptide.",
+        "When you see a eukaryotic liver cell and neuron expressing different proteins despite identical genomes → explain differential expression via cell-specific transcription factors binding enhancers."
+      ],
+      "cautions": [
+        "DNA and RNA polymerases ALWAYS synthesize new nucleic acid strands in the 5'→3' direction by reading the template strand 3'→5'.",
+        "Retroviruses use reverse transcriptase to make cDNA from an RNA template, which does not violate the broader flow of genetic information once integrated into host DNA.",
+        "Introns are spliced out of eukaryotic pre-mRNA and are not translated; exons are the retained sequences expressed in mature mRNA."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-bio-reference-07",
+      "domainId": "natural-selection",
+      "domainLabel": "Natural Selection",
+      "title": "Evolutionary Mechanisms, Hardy-Weinberg & Phylogenies",
+      "purpose": "Anchors quantitative allele-frequency equilibrium checks, modes of selection and speciation, and rigorous phylogenetic tree reading.",
+      "checklistLabel": "Before answering",
+      "formulasLabel": "Core mechanisms & pathways",
+      "checklist": [
+        "Determine whether given percentages represent genotype frequencies (q², 2pq, p²) or allele frequencies (p, q) before solving Hardy-Weinberg problems.",
+        "Check if a trait reflects shared ancestry (homologous/synapomorphy) or independent adaptation to similar environments (convergent/analogous).",
+        "Verify evolutionary statements act on populations over generations rather than individuals intentionally adapting during their lifetimes."
+      ],
+      "formulas": [
+        "Hardy-Weinberg equilibrium: p + q = 1 and p² + 2pq + q² = 1; requires large population, random mating, no mutation, no gene flow, and no natural selection.",
+        "Evolutionary drivers: natural selection (adaptive), genetic drift (random bottleneck/founder effects strongest in small populations), gene flow (homogenizes populations), and mutation (source of new alleles).",
+        "Speciation modes: allopatric (geographic barrier isolates gene pools) vs. sympatric (polyploidy, habitat/behavioral isolation without physical barrier), maintained by prezygotic or postzygotic barriers.",
+        "Phylogenetics: nodes represent most recent common ancestors; rotating branches around a node leaves evolutionary relationships unchanged; parsimony favors the fewest evolutionary events."
+      ],
+      "decisionRules": [
+        "When you see 16% of a population displaying a recessive phenotype in Hardy-Weinberg equilibrium → set q² = 0.16, take q = 0.4, find p = 0.6, and compute heterozygote frequency 2pq = 0.48.",
+        "When you see two taxa sharing the most recent node on a cladogram → identify them as sister taxa regardless of visual left-to-right tip spacing.",
+        "When you see pesticide resistance emerging rapidly after spraying → explain that pre-existing resistant variants survived and reproduced more, shifting allele frequencies.",
+        "When you see an allele rapidly fixed or lost following a hurricane that leaves only 15 survivors → attribute the shift to a population bottleneck (genetic drift), not selection."
+      ],
+      "cautions": [
+        "Never take the square root of the dominant phenotype frequency (p² + 2pq) to find p; always start from the homozygous recessive frequency q².",
+        "Antibiotics and pesticides do not cause targeted resistance mutations; random mutations arise prior to selection.",
+        "Cladogram branch tip proximity does not measure relatedness; always trace back to the most recent shared internal node."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-bio-reference-08",
+      "domainId": "ecology",
+      "domainLabel": "Ecology",
+      "title": "Population Growth, Energy Flow & Community Dynamics",
+      "purpose": "Links differential population models, diversity indices, trophic energy budgets, and ecological disruption cascades.",
+      "checklistLabel": "Before answering",
+      "formulasLabel": "Core mechanisms & pathways",
+      "checklist": [
+        "Check whether population data show unrestricted exponential acceleration or a plateau approaching carrying capacity K.",
+        "Distinguish primary productivity terms (GPP, NPP, cellular respiration R) and ensure energy units match across trophic levels.",
+        "Trace both direct predation and indirect trophic cascade ripples across food webs before predicting species abundance shifts."
+      ],
+      "formulas": [
+        "Exponential growth: dN/dt = rmax·N (J-curve with abundant resources); Logistic growth: dN/dt = rmax·N·((K − N)/K) (S-curve, fastest growth at N = K/2).",
+        "Simpson's Diversity Index: SDI = 1 − Σ(n/N)², ranging from 0 to 1; higher values signify greater species richness and evenness and stronger ecosystem resilience.",
+        "Primary productivity & trophic transfer: NPP = GPP − R; roughly 10% of assimilated energy transfers to the next trophic level while ~90% is lost as metabolic heat and waste.",
+        "Community structure: competitive exclusion prevents identical-niche coexistence; resource partitioning enables coexistence; keystone species exert disproportionate control over biodiversity."
+      ],
+      "decisionRules": [
+        "When you see a population size N exceed carrying capacity K → predict dN/dt turns negative and population declines due to density-dependent resource limits.",
+        "When you see removal of a top predator followed by herbivore explosion and kelp/plant collapse → identify a top-down trophic cascade indicating a keystone predator.",
+        "When you see a non-native species expanding exponentially in a new habitat → attribute its success to release from native predators, pathogens, and competitors.",
+        "When you see an animal sacrificing personal reproduction to help siblings raise offspring → explain the behavior via kin selection and inclusive fitness."
+      ],
+      "cautions": [
+        "Energy flows one-way through ecosystems and dissipates as heat, whereas matter (carbon, nitrogen, phosphorus, water) recycles continuously.",
+        "In logistic growth, per-capita growth rate decreases continuously as N approaches K, while total population growth rate dN/dt peaks at N = K/2.",
+        "A species with the largest biomass (foundation species/dominant producer) is not automatically a keystone species, whose impact is disproportionate to its low abundance."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    }
+  ],
+  "misconceptionFamilies": [
+    {
+      "id": "ap-bio-mf-correlation-vs-mechanism",
+      "label": "Correlation vs. Biological Mechanism",
+      "description": "Learners mistake a co-occurring trend in a data table or graph for a proven causal cellular or physiological pathway, skipping the intermediate molecular step that links stimulus to response.",
+      "remediationMove": "Trace the explicit molecular chain from signal or perturbation → intermediate molecule or pathway step → measured biological outcome before accepting any causal claim.",
+      "remediationPlaybookId": "ap-bio-pb-correlation-vs-mechanism",
+      "itemIds": [
+        "ap-bio-u3-013",
+        "ap-bio-u3-014",
+        "ap-bio-u3-015",
+        "ap-bio-u3-016",
+        "ap-bio-u3-017",
+        "ap-bio-u3-018",
+        "ap-bio-u4-019",
+        "ap-bio-u4-020",
+        "ap-bio-u4-021",
+        "ap-bio-u4-022",
+        "ap-bio-u4-023",
+        "ap-bio-u4-024"
+      ]
+    },
+    {
+      "id": "ap-bio-mf-teleology-evolution",
+      "label": "Teleological and Need-Driven Evolution",
+      "description": "Learners select distractors claiming organisms mutate, adapt, or develop traits in order to survive an environmental change, rather than recognizing pre-existing heritable variation filtered by differential reproductive success.",
+      "remediationMove": "Rewrite every evolutionary explanation in three strict steps: pre-existing random variation → selective pressure → higher reproductive fitness increasing allele frequency across generations.",
+      "remediationPlaybookId": "ap-bio-pb-teleology-evolution",
+      "itemIds": [
+        "ap-bio-u7-038",
+        "ap-bio-u7-039",
+        "ap-bio-u7-040",
+        "ap-bio-u7-041",
+        "ap-bio-u7-042",
+        "ap-bio-u7-043",
+        "ap-bio-u7-044",
+        "ap-bio-u7-089",
+        "ap-bio-u7-090",
+        "ap-bio-u7-091",
+        "ap-bio-u7-092",
+        "ap-bio-u7-093"
+      ]
+    },
+    {
+      "id": "ap-bio-mf-water-potential-osmosis-sign",
+      "label": "Water Potential and Osmosis Sign Reversal",
+      "description": "Learners drop the negative sign in solute potential (Ψs = −iCRT), omit turgor pressure potential (Ψp), or reverse net osmotic flow by moving water toward higher solute potential instead of from higher total Ψ to lower total Ψ.",
+      "remediationMove": "Compute Ψ = Ψp + Ψs for both compartments with explicit signs, place both values on a signed number line, and draw the osmosis arrow strictly from the more positive Ψ → more negative Ψ.",
+      "remediationPlaybookId": "ap-bio-pb-water-potential-osmosis-sign",
+      "itemIds": [
+        "ap-bio-u2-007",
+        "ap-bio-u2-008",
+        "ap-bio-u2-009",
+        "ap-bio-u2-010",
+        "ap-bio-u2-011",
+        "ap-bio-u2-012",
+        "ap-bio-u2-058",
+        "ap-bio-u2-059",
+        "ap-bio-u2-060",
+        "ap-bio-u2-061",
+        "ap-bio-u2-062",
+        "ap-bio-u2-063"
+      ]
+    },
+    {
+      "id": "ap-bio-mf-gene-regulation-operon",
+      "label": "Gene Regulation and Operon Logic Inversion",
+      "description": "Learners invert inducible (lac) and repressible (trp) operon switches, confuse corepressors with inducers, or conflate cis-acting promoter/operator mutations with trans-acting repressor protein mutations.",
+      "remediationMove": "Build a 2-state operon truth table mapping effector presence → repressor conformation → operator occupancy → RNA polymerase transcription rate before reading the answer choices.",
+      "remediationPlaybookId": "ap-bio-pb-gene-regulation-operon",
+      "itemIds": [
+        "ap-bio-u6-031",
+        "ap-bio-u6-032",
+        "ap-bio-u6-033",
+        "ap-bio-u6-034",
+        "ap-bio-u6-035",
+        "ap-bio-u6-036",
+        "ap-bio-u6-037",
+        "ap-bio-u6-083",
+        "ap-bio-u6-084",
+        "ap-bio-u6-085",
+        "ap-bio-u6-086",
+        "ap-bio-u6-087"
+      ]
+    },
+    {
+      "id": "ap-bio-mf-experimental-control-confounding",
+      "label": "Experimental Control and Confounding Variable Blindness",
+      "description": "Learners misclassify negative vs. positive controls, treat overlapping ±2 SE error bars as statistically distinct outcomes, or attribute treatment differences to the wrong independent variable when two conditions vary simultaneously.",
+      "remediationMove": "Audit the experimental design by naming the single manipulated independent variable, the matched negative control baseline, and whether ±2 SE error bars overlap before endorsing any data conclusion.",
+      "remediationPlaybookId": "ap-bio-pb-experimental-control-confounding",
+      "itemIds": [
+        "ap-bio-u1-001",
+        "ap-bio-u1-002",
+        "ap-bio-u1-003",
+        "ap-bio-u1-004",
+        "ap-bio-u1-005",
+        "ap-bio-u1-006",
+        "ap-bio-u3-065",
+        "ap-bio-u3-066",
+        "ap-bio-u3-067",
+        "ap-bio-u3-068",
+        "ap-bio-u3-069",
+        "ap-bio-u3-070"
+      ]
+    },
+    {
+      "id": "ap-bio-mf-population-vs-individual",
+      "label": "Population vs. Individual Scale Conflation",
+      "description": "Learners apply single-organism physiology, gamete segregation, or individual acclimation directly to population-level metrics such as allele frequencies (p and q), genetic drift, or logistic carrying capacity (K).",
+      "remediationMove": "Tag the unit of analysis first (single cell, individual organism, or breeding population) and match the quantitative tool (Punnett ratio vs. Hardy-Weinberg p² + 2pq + q² = 1 vs. dN/dt) strictly to that scale.",
+      "remediationPlaybookId": "ap-bio-pb-population-vs-individual",
+      "itemIds": [
+        "ap-bio-u5-025",
+        "ap-bio-u5-026",
+        "ap-bio-u5-027",
+        "ap-bio-u5-028",
+        "ap-bio-u5-029",
+        "ap-bio-u5-030",
+        "ap-bio-u8-045",
+        "ap-bio-u8-046",
+        "ap-bio-u8-047",
+        "ap-bio-u8-048",
+        "ap-bio-u8-049",
+        "ap-bio-u8-050"
+      ]
+    }
+  ],
+  "misconceptionRemediationPlaybooks": [
+    {
+      "id": "ap-bio-pb-correlation-vs-mechanism",
+      "familyId": "ap-bio-mf-correlation-vs-mechanism",
+      "familyLabel": "Correlation vs. Biological Mechanism",
+      "title": "Separating Observed Biological Trends from Proven Cellular Mechanisms",
+      "recognitionCue": "You selected an option asserting that variable X directly activates or inhibits pathway Y even though the graph only reports an association without blocking or isolating an intermediate step.",
+      "repairQuestion": "What specific molecular intermediate or experimental perturbation would be required to prove direct causation rather than a shared upstream trigger?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Inspect the stimulus figure or table and circle the exact measured variables on both axes, flagging any answer choice that inserts an unmeasured enzyme, receptor, or direct causal verb.",
+          "requiredOutput": "A two-column note listing what the graph directly measures versus the unproven causal step claimed by the distractor."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Map the cellular pathway using a three-node chain (input signal → tested intermediate → measured readout) and note where an alternative shared factor could produce the same correlation.",
+          "requiredOutput": "A completed three-node mechanism diagram plus one plausible third biological factor that could explain the observed association."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Compare two AP Biology energetics or signal-transduction data sets: one with an inhibitor knockout and one purely observational, labeling which supports a mechanistic claim.",
+          "requiredOutput": "A side-by-side justification showing why the inhibitor trial supports causation while the observational dataset supports only association."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Re-attempt the missed item and solve a new cell-communication or enzyme-kinetics graph item by disqualifying every distractor that overstates mechanism beyond the experimental evidence.",
+          "requiredOutput": "Correct selection on both items accompanied by a one-sentence evidence check tying the winning choice to the exact experimental manipulation."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-bio-pb-teleology-evolution",
+      "familyId": "ap-bio-mf-teleology-evolution",
+      "familyLabel": "Teleological and Need-Driven Evolution",
+      "title": "Replacing Need-Based Adaptation Language with Selection Mechanics",
+      "recognitionCue": "You chose an answer containing goal-directed phrasing such as \"mutated to resist\", \"adapted so it could survive\", or \"developed traits because the habitat changed\".",
+      "repairQuestion": "Did the favorable allele appear after the selective pressure as a purposeful response, or did it already exist randomly before selection shifted survival and reproduction?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Underline every teleological trigger phrase (\"in order to\", \"needed to\", \"tried to\", \"became resistant to survive\") across the answer choices of the missed natural-selection item.",
+          "requiredOutput": "A marked list of goal-directed distractor phrases and why each violates random mutation and non-random selection."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Rebuild the evolutionary explanation using the AP Bio 4-part frame: pre-existing variation → selective agent → differential reproductive success → shift in population allele frequency.",
+          "requiredOutput": "A four-clause non-teleological explanation of the scenario that never attributes intent or need to organisms or mutations."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Rewrite two classic AP evolution prompts (antibiotic resistance in bacteria and pesticide resistance in insects) from teleological statements into mechanistic selection statements.",
+          "requiredOutput": "Two corrected mechanistic paragraphs specifying the timing of mutation relative to exposure and the fitness metric (offspring count)."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Re-solve the missed Unit 7 item and one novel speciation or genetic-drift item, eliminating any distractor that describes individuals evolving during a single lifetime.",
+          "requiredOutput": "Verified correct responses on both items with explicit identification of the selective pressure and population-level allele shift."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-bio-pb-water-potential-osmosis-sign",
+      "familyId": "ap-bio-mf-water-potential-osmosis-sign",
+      "familyLabel": "Water Potential and Osmosis Sign Reversal",
+      "title": "Locking Down Water Potential Signs and Net Osmosis Direction",
+      "recognitionCue": "You calculated a positive solute potential, treated a more negative Ψ value as \"larger\", or predicted water moving out of a hypotonic bath into a higher-Ψ cell.",
+      "repairQuestion": "After computing Ψ = Ψp + (−iCRT) for both the cell and the surrounding solution, which numerical value sits further to the right on the number line?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Audit your calculation from the missed cell-transport item to pinpoint whether the error came from dropping the minus sign in −iCRT, misreading ionization constant i (sucrose i = 1 vs. NaCl i = 2), or comparing absolute values instead of signed numbers.",
+          "requiredOutput": "An error diagnosis tagging the exact sign, constant, or direction reversal in the original calculation."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Plot both Ψ_cell and Ψ_solution on a horizontal number line from −15 bar to +5 bar and draw the net water-movement arrow strictly from right (higher Ψ) → left (lower Ψ).",
+          "requiredOutput": "A labeled signed calculation for both compartments, the number-line placement, and the resulting tonicity and mass-change prediction."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Solve two paired osmosis drills: one open-beaker plant cell (Ψp = 0 in beaker, positive Ψp in turgid cell) and one sucrose-vs-NaCl comparison at equal molarity.",
+          "requiredOutput": "Step-by-step Ψs, Ψp, and total Ψ values for both drills showing why 0.2 M NaCl has twice the magnitude of Ψs compared with 0.2 M sucrose."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Re-attempt the original Unit 2 transport item and a fresh dialysis-tubing or potato-core percent-mass-change graph item using the signed number-line check.",
+          "requiredOutput": "Accurate answers on both items plus a brief explanation of the zero-percent-mass-change x-intercept (isotonic molarity)."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-bio-pb-gene-regulation-operon",
+      "familyId": "ap-bio-mf-gene-regulation-operon",
+      "familyLabel": "Gene Regulation and Operon Logic Inversion",
+      "title": "Tracing Inducible vs. Repressible Operon and Mutation Logic",
+      "recognitionCue": "You predicted transcription turns ON when tryptophan binds the trp repressor, or assumed a mutated operator still allows a normal repressor protein to block RNA polymerase.",
+      "repairQuestion": "In this operon, is the default repressor active or inactive without its small-molecule effector, and does the mutation break DNA binding at the operator or effector binding on the repressor?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Classify the operon in the prompt as inducible (catabolic, default OFF, such as lac) or repressible (anabolic, default ON, such as trp) and mark where your original prediction flipped the switch.",
+          "requiredOutput": "A clear label of operon class, default transcriptional state, and the exact polarity flip in your previous answer."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Construct a 4-row state table (effector absent/present × wild-type/mutant) tracking repressor shape → operator binding → RNA polymerase access → mRNA output.",
+          "requiredOutput": "A completed 4-row operon logic table distinguishing loss of operator affinity (constitutive ON) from loss of inducer affinity (constitutive OFF)."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Predict transcription outcomes for three classic AP Bio mutations: a deleted promoter, a mutated lac operator that cannot bind repressor, and a lac repressor unable to bind allolactose.",
+          "requiredOutput": "Three concise predictions specifying whether structural enzymes are never made or continuously made regardless of lactose presence."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Re-solve the missed Unit 6 item and transfer the regulatory-switch checklist to a eukaryotic transcription-factor or epigenetic chromatin-remodeling question.",
+          "requiredOutput": "Correct selections on both items with a note explaining how DNA accessibility governs RNA polymerase initiation in both prokaryotes and eukaryotes."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-bio-pb-experimental-control-confounding",
+      "familyId": "ap-bio-mf-experimental-control-confounding",
+      "familyLabel": "Experimental Control and Confounding Variable Blindness",
+      "title": "Auditing Controls, Confounders, and ±2 SE Error Bars",
+      "recognitionCue": "You claimed two treatment means were significantly different despite overlapping ±2 SE error bars, or picked a control group that changed more than one variable at once.",
+      "repairQuestion": "Which single variable differs between the experimental and control treatments, and do the ±2 SE bars separate cleanly enough to reject the null hypothesis?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Inspect the experimental setup and bar/line graph from the missed item, highlighting any secondary condition (pH, temperature, solvent, or buffer) not held constant and checking error-bar overlap.",
+          "requiredOutput": "An audit listing the intended independent variable, any uncontrolled confounder, and a yes/no check on ±2 SE error-bar overlap."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Specify what a proper negative control (baseline without active treatment) and positive control (known working response) must contain so only one factor varies.",
+          "requiredOutput": "A two-line control specification stating the exact composition and expected baseline reading for both negative and positive controls."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Evaluate two enzyme-assay scenarios: one where boiled enzyme serves as a negative control and one where two treatments have overlapping 95% CI bars despite different sample means.",
+          "requiredOutput": "Written verdicts explaining why boiled enzyme isolates catalytic activity and why overlapping ±2 SE bars prevent claiming a statistically significant difference."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Re-attempt the missed AP Biology lab-design item and solve a second unfamiliar data-analysis prompt using the single-variable and error-bar checklist.",
+          "requiredOutput": "Correct choices on both items supported by explicit reference to the control baseline and error-bar separation."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-bio-pb-population-vs-individual",
+      "familyId": "ap-bio-mf-population-vs-individual",
+      "familyLabel": "Population vs. Individual Scale Conflation",
+      "title": "Matching Biological Reasoning to Individual vs. Population Scale",
+      "recognitionCue": "You used an individual Punnett-square genotype ratio to answer a population allele-frequency question, or claimed an individual organism evolves or shifts carrying capacity on its own.",
+      "repairQuestion": "Is the prompt asking about one organism and its offspring, or about allele frequencies and density-dependent growth across an entire interbreeding population?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Underline the biological unit named in the stem (\"individual\", \"gamete\", \"offspring\", \"population\", \"gene pool\", or \"community\") and compare it against the scale assumed by your missed answer.",
+          "requiredOutput": "A brief mismatch note stating the scale required by the prompt versus the scale used in the distractor."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Pair each biological scale with its governing math: individual cross → Punnett probability; population genetics → q² (homozygous recessive frequency) → q → p = 1 − q → 2pq; ecology → dN/dt = r_max N (K − N)/K.",
+          "requiredOutput": "A scale-to-tool reference card showing why dominant phenotype frequency equals p² + 2pq rather than p alone."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Work two contrasting items: a Hardy-Weinberg problem starting from 16% recessive phenotype (q² = 0.16 → q = 0.4 → 2pq = 0.48) and a logistic growth problem explaining why per-capita growth slows as N approaches K.",
+          "requiredOutput": "Exact carrier-frequency calculation and a density-dependent explanation of why population growth rate peaks near K/2 rather than at K."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Re-solve the original Unit 5 or Unit 8 item and complete one cross-unit transfer item linking genetic drift or bottleneck effects to population-level heterozygosity.",
+          "requiredOutput": "Correct solutions on both items with an explicit scale verification line before each final choice."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ]
 }

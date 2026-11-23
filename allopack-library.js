@@ -65,7 +65,19 @@
     if (subject) subject.value = '';
     if (grade) grade.value = '';
     filter();
+    setStatus('Filters cleared.');
   });
+  if (search) {
+    search.addEventListener('keydown', function (event) {
+      if (event.isComposing || event.keyCode === 229) return;
+      if (event.key === 'Escape' && search.value) {
+        event.preventDefault();
+        search.value = '';
+        filter();
+        setStatus('Search cleared.');
+      }
+    }, true);
+  }
   // Retain the visitor's existing browser-app storage origin on either supported host.
   if (['https://alloflow.dev', 'https://alloflow-cdn.pages.dev'].includes(window.location.origin)) {
     document.querySelectorAll('[data-pack-alias]').forEach(function (link) {
@@ -92,7 +104,21 @@
         if (fallback) {
           fallback.hidden = false;
           var input = fallback.querySelector('input');
-          if (input) { input.focus(); input.select(); }
+          if (input) {
+            if (!input.dataset.escBound) {
+              input.dataset.escBound = '1';
+              input.addEventListener('keydown', function (ev) {
+                if (ev.isComposing || ev.keyCode === 229) return;
+                if (ev.key === 'Escape') {
+                  ev.preventDefault();
+                  fallback.hidden = true;
+                  button.focus();
+                }
+              });
+            }
+            input.focus();
+            input.select();
+          }
         }
         setStatus('Select and copy the link below the pack.');
       }

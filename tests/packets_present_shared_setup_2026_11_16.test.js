@@ -166,7 +166,7 @@ describe('the presenter lets the teacher edit a meaning and a sentence', () => {
     expect(SCRIPT).not.toContain('AlloPacketsHandoff');
     expect(doc.querySelector('footer.foot a').getAttribute('href')).toBe('./');
     expect(doc.querySelector('details.proof [data-show-rule]')).toBeTruthy();
-    expect(doc.querySelector('details.proof').textContent).toContain('twenty files from this site');
+    expect(doc.querySelector('details.proof').textContent).toContain('twenty-one files from this site');
 
     // Verify customPicture SVG <script> is refused in readVocabMakerSaved.
     const dom = new JSDOM(PAGE, { runScripts: 'outside-only', url: 'https://packets.example/packets-present-export.html#from-vocab' });
@@ -180,6 +180,7 @@ describe('the presenter lets the teacher edit a meaning and a sentence', () => {
     }));
     let mountedPack = null;
     w.AlloModules = { WordPractice: { mount(_h, pack) { mountedPack = pack; return { setPack(p) { mountedPack = p; }, getPack() { return mountedPack; } }; } } };
+    w.eval(read('packets_word_starters.js'));
     w.eval(SCRIPT);
     await w.AlloPacketsPresentExport.loadVocabMakerWords({ quiet: true });
     const badItem = (mountedPack.words || []).find((it) => it.word === 'badword');
@@ -216,6 +217,7 @@ describe('the presenter lets the teacher edit a meaning and a sentence', () => {
     w.eval(read('word_practice_media.js'));
     w.eval(read('word_practice_ui.js'));
     w.AlloModules.WordPractice.rasterizeImage = async () => fakePng;
+    w.eval(read('packets_word_starters.js'));
     w.eval(SCRIPT);
     await new Promise((r) => setTimeout(r, 40));
 

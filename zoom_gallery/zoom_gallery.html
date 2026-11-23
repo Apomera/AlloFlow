@@ -96,7 +96,7 @@
 <style>
   :root {
     --bg: #0f172a; --panel: #1e293b; --panel2: #273449; --line: #334155; --control-line: #64748b; --focus: #facc15;
-    --text: #e2e8f0; --dim: #94a3b8; --accent: #38bdf8; --accent2: #0369a1; --ok: #4ade80; --warn: #fbbf24;
+    --text: #e2e8f0; --dim: #cbd5e1; --accent: #38bdf8; --accent2: #0369a1; --ok: #4ade80; --warn: #fbbf24;
     --chip: #0f172a; --chip-fg: #f1f5f9; --chip-line: #94a3b8; --chip-link: #bae6fd; --chip-pin: #fbbf24;
     --heading: #bae6fd; --sel-bg: #0c4a6e; --sel-fg: #e0f2fe; --pin: #f59e0b;
   }
@@ -140,7 +140,7 @@
   header { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: var(--panel); border-bottom: 1px solid var(--line); flex: 0 0 auto; flex-wrap: wrap; }
   header h1 { font-size: 0.9375rem; margin: 0; font-weight: 700; }
   header .sub { color: var(--dim); font-size: 0.71875rem; }
-  header select { margin-left: auto; background: var(--bg); color: var(--text); border: 1px solid var(--control-line); border-radius: 8px; padding: 6px 8px; font-size: 0.8125rem; max-width: 46vw; }
+  header select { margin-left: auto; min-height: 44px; background: var(--bg); color: var(--text); border: 1px solid var(--control-line); border-radius: 8px; padding: 8px 10px; font-size: 0.8125rem; max-width: 46vw; }
   .wrap { flex: 1 1 auto; display: flex; min-height: 0; }
   .coach { flex: 0 0 330px; display: flex; flex-direction: column; background: var(--panel); border-right: 1px solid var(--line); min-width: 0; overflow-y: auto; }
   .coach h2 { font-size: 0.75rem; margin: 0; padding: 10px 12px 4px; color: var(--heading); text-transform: uppercase; letter-spacing: 0.06em; }
@@ -148,16 +148,16 @@
   .ai-state .on { color: var(--ok); font-weight: 700; }
   .ai-state .off { color: var(--warn); font-weight: 700; }
   .steps { display: flex; gap: 4px; padding: 4px 12px 8px; }
-  .steps button { flex: 1; background: var(--panel2); color: var(--dim); border: 1px solid var(--control-line); border-radius: 8px; padding: 6px 4px; font-size: 0.71875rem; font-weight: 700; cursor: pointer; }
+  .steps button { flex: 1; min-height: 44px; background: var(--panel2); color: var(--dim); border: 1px solid var(--control-line); border-radius: 8px; padding: 8px 4px; font-size: 0.71875rem; font-weight: 700; cursor: pointer; }
   .steps button[aria-selected="true"] { background: var(--sel-bg); color: var(--sel-fg); border-color: var(--accent); }
   .steps button.done { color: var(--ok); }
   .steps button[aria-selected="true"].done { color: var(--sel-fg); }
   .body { padding: 4px 12px 12px; display: flex; flex-direction: column; gap: 8px; }
   .qcard { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; font-size: 0.8125rem; line-height: 1.5; }
   textarea { width: 100%; min-height: 84px; background: var(--bg); border: 1px solid var(--control-line); color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 0.8125rem; font-family: inherit; resize: vertical; }
-  button.go { background: var(--accent2); color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 0.8125rem; font-weight: 700; cursor: pointer; }
+  button.go { min-height: 44px; background: var(--accent2); color: #fff; border: none; border-radius: 8px; padding: 10px 14px; font-size: 0.8125rem; font-weight: 700; cursor: pointer; }
   button.go:disabled, button.go[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }
-  button.sec { background: var(--panel2); color: var(--text); border: 1px solid var(--control-line); border-radius: 8px; padding: 7px 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
+  button.sec { min-height: 44px; background: var(--panel2); color: var(--text); border: 1px solid var(--control-line); border-radius: 8px; padding: 8px 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
   button.sec[aria-pressed="true"] { border-color: var(--pin); color: var(--pin); }
   .row { display: flex; gap: 6px; flex-wrap: wrap; }
   .locked { background: var(--panel2); border: 1px solid var(--accent); border-radius: 10px; padding: 8px 11px; font-size: 0.78125rem; white-space: pre-wrap; }
@@ -182,20 +182,20 @@
   .custom { margin-top: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
   .custom h3 { margin: 0 0 6px; font-size: 0.8125rem; }
   .custom p { margin: 0 0 8px; font-size: 0.71875rem; color: var(--dim); line-height: 1.45; }
-  .custom input { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--control-line); border-radius: 8px; padding: 7px 9px; font-size: 0.8125rem; margin-bottom: 8px; }
+  .custom input { width: 100%; min-height: 44px; background: var(--bg); color: var(--text); border: 1px solid var(--control-line); border-radius: 8px; padding: 8px 10px; font-size: 0.8125rem; margin-bottom: 8px; }
   .custom .err { color: var(--warn); font-size: 0.71875rem; margin-top: 6px; }
   .credit-line { position: absolute; bottom: 8px; left: 8px; right: 8px; z-index: 6; font-size: 0.65625rem; color: var(--chip-fg); background: var(--chip); border: 1px solid var(--chip-line); border-radius: 8px; padding: 4px 9px; line-height: 1.35; }
   .credit-line a { color: var(--chip-link); text-decoration: underline; display: inline-block; padding: 5px 2px; }
-  button.sec.speak { margin-top: 8px; padding: 4px 8px; min-height: 28px; font-size: 0.6875rem; }
+  button.sec.speak { margin-top: 8px; padding: 8px 10px; min-height: 44px; font-size: 0.75rem; }
   .backbar { position: absolute; top: 8px; left: 8px; z-index: 6; display: flex; gap: 6px; }
   /* Chips float over the photograph, so they carry an opaque ground: over an
      arbitrary image a translucent chip has no computable contrast ratio. */
-  .backbar button { background: var(--chip); color: var(--chip-fg); border: 1px solid var(--chip-line); border-radius: 8px; padding: 5px 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
+  .backbar button { min-height: 44px; background: var(--chip); color: var(--chip-fg); border: 1px solid var(--chip-line); border-radius: 8px; padding: 8px 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
   .backbar button[aria-pressed="true"] { border-color: var(--chip-pin); color: var(--chip-pin); }
   .backbar .stagectl { margin-left: auto; display: flex; gap: 6px; }
-  .backbar .stagectl button { min-width: 34px; font-size: 0.875rem; }
+  .backbar .stagectl button { min-width: 44px; min-height: 44px; font-size: 0.875rem; }
   .describe { padding: 8px 12px 0; }
-  .describe > button { width: 100%; text-align: left; background: var(--panel2); color: var(--text); border: 1px solid var(--control-line); border-radius: 8px; padding: 7px 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
+  .describe > button { width: 100%; min-height: 44px; text-align: left; background: var(--panel2); color: var(--text); border: 1px solid var(--control-line); border-radius: 8px; padding: 8px 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
   .describe > button::before { content: "▸ "; }
   .describe > button[aria-expanded="true"]::before { content: "▾ "; }
   .describe #describeBody { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; margin-top: 6px; font-size: 0.78125rem; line-height: 1.55; }
@@ -208,8 +208,8 @@
   .zoomread { position: absolute; top: 48px; right: 8px; z-index: 6; font-size: 0.6875rem; color: var(--chip-fg); background: var(--chip); border: 1px solid var(--chip-line); border-radius: 8px; padding: 3px 8px; }
   .loadmsg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--chip-fg); font-size: 0.8125rem; z-index: 3; text-align: center; padding: 20px; }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  .skip-link { position: absolute; left: -9999px; top: 8px; z-index: 9999; background: var(--accent2); color: #fff; padding: 8px 14px; border-radius: 8px; font-weight: 700; text-decoration: none; }
-  .skip-link:focus { left: 12px; }
+  .skip-link { position: absolute; inset-inline-start: 8px; top: 8px; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; pointer-events: none; z-index: 9999; min-height: 44px; display: inline-flex; align-items: center; background: var(--accent2); color: #fff; padding: 10px 14px; border-radius: 8px; font-weight: 700; text-decoration: none; }
+  .skip-link:focus { inset-inline-start: 12px; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; pointer-events: auto; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
   @media (max-width: 760px) { .wrap { flex-direction: column; } .coach { flex: 0 0 46%; border-right: 0; border-bottom: 1px solid var(--line); } }
 </style>
@@ -912,6 +912,7 @@
       osdCanvas = viewer.canvas || osdEl.querySelector('.openseadragon-canvas');
       if (osdCanvas) {
         osdCanvas.addEventListener('keydown', function (e) {
+          if (e.isComposing || e.keyCode === 229) return;
           if (!pinMode) return;
           if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
           e.preventDefault(); e.stopPropagation();
@@ -1074,7 +1075,7 @@
       if (!viewer || !current || current.cors === false) return null;
       var src = viewer.drawer && viewer.drawer.canvas; if (!src || !src.width) return null;
       var scale = Math.min(1, 768 / Math.max(src.width, src.height));
-      var c = document.createElement('canvas'); c.width = Math.round(src.width * scale); c.height = Math.round(src.height * scale);
+      var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true'); c.width = Math.round(src.width * scale); c.height = Math.round(src.height * scale);
       c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
       var url = c.toDataURL('image/jpeg', 0.72);
       return { data: url.split(',')[1], mime: 'image/jpeg' };
@@ -1207,7 +1208,11 @@
     loadImage('custom');
   }
   customGo.addEventListener('click', openCustom);
-  customUrl.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); openCustom(); } });
+  customUrl.addEventListener('keydown', function (e) {
+    if (e.isComposing || e.keyCode === 229) return;
+    if (e.key === 'Enter') { e.preventDefault(); openCustom(); }
+    else if (e.key === 'Escape' && customUrl.value) { e.preventDefault(); customUrl.value = ''; customErr.textContent = ''; }
+  });
 
   // ── Picker ───────────────────────────────────────────────────────────
   function buildPicker() {

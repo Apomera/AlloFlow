@@ -86,7 +86,8 @@ describe('the builder', () => {
       // Still a file that can reach nothing: no address, no request, no speech engine.
       const script = [...new JSDOM(made.html).window.document.querySelectorAll('script')].find((node) => !node.type).textContent;
       expect(script).not.toMatch(/https?:\/\/|fetch\s*\(|XMLHttpRequest|WebSocket|sendBeacon|speechSynthesis|getUserMedia/);
-      expect(Buffer.byteLength(made.html, 'utf8')).toBeLessThan(305000);
+      // Re-pinned 2026-11-22 (Show my teacher) from 305000: Waves 1-6 + deskside conferencing fold & coded check focus box (~316.5 KB).
+      expect(Buffer.byteLength(made.html, 'utf8')).toBeLessThan(322000);
     }
   });
 

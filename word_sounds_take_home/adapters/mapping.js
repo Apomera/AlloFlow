@@ -252,6 +252,7 @@ module.exports = {
       picked = null; errors = [];
       for (var i = 0; i < n; i++) slots[i] = null;
       draw(); ctx.announce(L.mapping_cleared);
+      if (chipEls[0] && chipEls[0].pick) { try { chipEls[0].pick.focus(); } catch (_) {} }
     } }, text: L.mapping_clear });
 
     var draw = function () {
@@ -370,6 +371,65 @@ module.exports = {
       if (si + spanOf(picked) > n) { ctx.announce(ctx.fmt(L.mapping_needs_two, { spelling: text(picked) })); return; }
       placeChip(picked, si, e);
     };
+
+    if (typeof ctx.keys === 'function') {
+      ctx.keys(function (key) {
+        if (locked()) return false;
+        var k = String(key == null ? '' : key);
+        if (k === 'Escape' || k === 'Esc') {
+          if (picked == null) return false;
+          var drop = picked;
+          picked = null;
+          draw();
+          ctx.announce(ctx.fmt(L.mapping_dropped, { spelling: text(drop) }));
+          if (chipEls[drop] && chipEls[drop].pick) { try { chipEls[drop].pick.focus(); } catch (_) {} }
+          return true;
+        }
+        if (k === 'Backspace') {
+          for (var si = n - 1; si >= 0; si--) {
+            if (slots[si] != null) {
+              var out = slots[si];
+              var first = slots.indexOf(out);
+              takeOut(out);
+              picked = null; errors = [];
+              draw();
+              ctx.announce(ctx.fmt(L.mapping_removed, { spelling: text(out), n: first + 1 }));
+              return true;
+            }
+          }
+          return false;
+        }
+        if (k === 'Enter') {
+          var ae = doc && doc.activeElement;
+          var onBtn = !!(ae && String(ae.tagName || '').toUpperCase() === 'BUTTON' && !ae.closest('[hidden]') && !ae.disabled && ae.getAttribute('aria-disabled') !== 'true');
+          if (onBtn || picked == null) return false;
+          var sp = spanOf(picked);
+          for (var ei = 0; ei <= n - sp; ei++) {
+            var fits = true;
+            for (var kk = 0; kk < sp; kk++) if (slots[ei + kk] != null) { fits = false; break; }
+            if (fits) { placeChip(picked, ei, { detail: 1 }); return true; }
+          }
+          if (sp > 1) { ctx.announce(ctx.fmt(L.mapping_needs_two, { spelling: text(picked) })); return true; }
+          return false;
+        }
+        if (/^[1-9]$/.test(k)) {
+          var idx = Number(k) - 1;
+          if (picked != null) {
+            if (idx < n && !covered(idx)) {
+              if (idx + spanOf(picked) > n) { ctx.announce(ctx.fmt(L.mapping_needs_two, { spelling: text(picked) })); return true; }
+              placeChip(picked, idx, { detail: 1 });
+              return true;
+            }
+            return false;
+          }
+          if (idx < chipEls.length && slots.indexOf(idx) < 0) {
+            onChip(idx, { detail: 1 });
+            return true;
+          }
+        }
+        return false;
+      });
+    }
 
     ctx.root.appendChild(ctx.el('p', { class: 'letters', text: L.mapping_question }));
     ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.fmt(L.mapping_word, { word: item.word }) }));

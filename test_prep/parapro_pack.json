@@ -11965,7 +11965,7 @@
       "choices": [
         "made mainly for performances",
         "capable of carrying sound",
-        "lacking the item named by the base word",
+        "lacking what the base word names",
         "located a long distance away"
       ],
       "answerIndex": 2,
@@ -12161,7 +12161,7 @@
         "the sentence contains no action verb",
         "the word schedule has no dictionary meaning",
         "a comma must always follow the word club",
-        "the pronoun its could point to either of the two student organizations"
+        "the pronoun its could refer to either group"
       ],
       "answerIndex": 3,
       "rationale": "Both the debate team and the drama club are singular collective nouns that could possess an adviser, so the pronoun its has two plausible antecedents. Naming the organization would remove the ambiguity.",
@@ -14194,10 +14194,10 @@
       "difficulty": "foundation",
       "prompt": "What is the complete subject of the sentence \"Several boxes of donated novels arrived before noon\"?",
       "choices": [
-        "donated novels",
-        "arrived before noon",
-        "Several boxes",
-        "Several boxes of donated novels"
+        "The middle phrase \"donated novels\"",
+        "The closing phrase \"arrived before noon\"",
+        "The opening phrase \"Several boxes\"",
+        "The phrase \"Several boxes of donated novels\""
       ],
       "answerIndex": 3,
       "rationale": "The complete subject includes the simple subject \"boxes\" and all words that modify it: \"Several boxes of donated novels.\" The words \"arrived before noon\" form the predicate.",
@@ -14355,8 +14355,8 @@
       "prompt": "A field-trip notice reads, \"On friday, our class will visit the National Air and Space museum in washington, D.C.\" Which set lists all words in the sentence that need initial capital letters?",
       "choices": [
         "friday only",
-        "friday and museum",
-        "museum and washington",
+        "both friday and museum",
+        "both museum and washington",
         "friday, museum, and washington"
       ],
       "answerIndex": 3,
@@ -14839,7 +14839,7 @@
         "The school mascot was selected in 1972.",
         "The auditorium seats 450 people.",
         "The roof can be seen from the soccer field.",
-        "Rain barrels collect roof runoff for watering the courtyard garden."
+        "Rain barrels collect roof runoff for garden use."
       ],
       "answerIndex": 3,
       "rationale": "Collecting runoff for later irrigation directly explains how a roof feature conserves water, so it supports the outline heading. The other details do not address the roof's role in conserving resources.",
@@ -17386,7 +17386,7 @@
       "prompt": "Which figure always has exactly one line of symmetry?",
       "choices": [
         "A non-equilateral isosceles triangle",
-        "A nonsquare rectangle",
+        "A rectangle with unequal adjacent sides",
         "A scalene triangle",
         "A circle"
       ],
@@ -19458,7 +19458,7 @@
             "file": "parapro_batch4_reading_34.json",
             "reviewReport": "parapro_batch4_reading_34.review.json",
             "itemCount": 34,
-            "sha256": "a09c80d03c2e382d797cd7986b003ed49b03ccde141e9f6e96470590ccbbd8a9"
+            "sha256": "85384f1e76d4c3a57510c869a349804828ae4a5445eb32c1a905c48d75a0c2ad"
           },
           {
             "file": "parapro_batch4_mathematics_33.json",
@@ -19470,7 +19470,7 @@
             "file": "parapro_batch4_writing_33.json",
             "reviewReport": "parapro_batch4_writing_33.review.json",
             "itemCount": 33,
-            "sha256": "b133f012dd9ab73c82eee605b4ce719c90a1e8a2be993c7ac66756a9630cc5a2"
+            "sha256": "1ceefab83bbd80ea1092755d1e3c8bcdf6939e627e472836cab2a65836fda732"
           }
         ]
       },
@@ -19489,7 +19489,7 @@
             "file": "parapro_batch5_mathematics_33.json",
             "reviewReport": "parapro_batch5_mathematics_33.review.json",
             "itemCount": 33,
-            "sha256": "64997881d3e8ca70a8ace47c0146c9be9fd69bc149041ba7b67d8ba82143be20"
+            "sha256": "451e0da0a59d35561589ac43e10e8610d2b286e7b7f20ad60d8512bc612221c1"
           },
           {
             "file": "parapro_batch5_writing_33.json",
@@ -19598,7 +19598,7 @@
           {
             "file": "parapro_batch4_reading_34.json",
             "algorithm": "sha256",
-            "sha256": "a09c80d03c2e382d797cd7986b003ed49b03ccde141e9f6e96470590ccbbd8a9",
+            "sha256": "85384f1e76d4c3a57510c869a349804828ae4a5445eb32c1a905c48d75a0c2ad",
             "itemCount": 34
           },
           {
@@ -19610,7 +19610,7 @@
           {
             "file": "parapro_batch4_writing_33.json",
             "algorithm": "sha256",
-            "sha256": "b133f012dd9ab73c82eee605b4ce719c90a1e8a2be993c7ac66756a9630cc5a2",
+            "sha256": "1ceefab83bbd80ea1092755d1e3c8bcdf6939e627e472836cab2a65836fda732",
             "itemCount": 33
           }
         ]
@@ -19639,7 +19639,7 @@
           {
             "file": "parapro_batch5_mathematics_33.json",
             "algorithm": "sha256",
-            "sha256": "64997881d3e8ca70a8ace47c0146c9be9fd69bc149041ba7b67d8ba82143be20",
+            "sha256": "451e0da0a59d35561589ac43e10e8610d2b286e7b7f20ad60d8512bc612221c1",
             "itemCount": 33
           },
           {

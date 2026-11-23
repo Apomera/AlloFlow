@@ -67,7 +67,7 @@
 <style>
   :root {
     --bg: #0f172a; --panel: #1e293b; --panel2: #273449; --line: #334155; --control-line: #64748b;
-    --text: #e2e8f0; --dim: #94a3b8; --heading: #fcd34d; --focus: #fbbf24;
+    --text: #e2e8f0; --dim: #cbd5e1; --heading: #fcd34d; --focus: #fbbf24;
     --accent: #f59e0b; --accent2: #4f46e5; --btn-fg: #ffffff; --ok: #4ade80; --warn: #fbbf24;
     --tab-active-bg: #78350f; --tab-active-fg: #fde68a; --backbar-bg: #0f172a; --backbar-fg: #f8fafc;
   }
@@ -117,7 +117,7 @@
   header { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: var(--panel); border-bottom: 1px solid var(--line); flex: 0 0 auto; flex-wrap: wrap; }
   header h1 { font-size: 15px; margin: 0; font-weight: 700; }
   header .sub { color: var(--dim); font-size: 11.5px; }
-  header select { margin-left: auto; background: var(--bg); color: var(--text); border: 1px solid var(--control-line); border-radius: 8px; padding: 6px 8px; font-size: 13px; max-width: 46vw; min-height: 36px; }
+  header select { margin-left: auto; background: var(--bg); color: var(--text); border: 1px solid var(--control-line); border-radius: 8px; padding: 8px 10px; font-size: 13px; max-width: 46vw; min-height: 44px; }
   .wrap { flex: 1 1 auto; display: flex; min-height: 0; }
   .coach { flex: 0 0 330px; display: flex; flex-direction: column; background: var(--panel); border-right: 1px solid var(--line); min-width: 0; overflow-y: auto; }
   .coach h2 { font-size: 12px; margin: 0; padding: 10px 12px 4px; color: var(--heading); text-transform: uppercase; letter-spacing: 0.06em; }
@@ -125,7 +125,7 @@
   .ai-state .on { color: var(--ok); font-weight: 700; }
   .ai-state .off { color: var(--warn); font-weight: 700; }
   .steps { display: flex; gap: 4px; padding: 4px 12px 8px; }
-  .steps button { flex: 1; background: var(--panel2); color: var(--dim); border: 1px solid var(--control-line); border-radius: 8px; padding: 6px 4px; min-height: 36px; font-size: 11.5px; font-weight: 700; cursor: pointer; }
+  .steps button { flex: 1; background: var(--panel2); color: var(--dim); border: 1px solid var(--control-line); border-radius: 8px; padding: 8px 4px; min-height: 44px; font-size: 11.5px; font-weight: 700; cursor: pointer; }
   .steps button.done { color: var(--ok); }
   .steps button[aria-selected="true"], .steps button.done[aria-selected="true"] { background: var(--tab-active-bg); color: var(--tab-active-fg); border-color: var(--accent); }
   .steps button[aria-disabled="true"] { opacity: 0.6; cursor: not-allowed; }
@@ -151,10 +151,10 @@
   .simcard .name { font-weight: 700; font-size: 13px; margin: 6px 0 3px; }
   .simcard .meta { font-size: 11px; color: var(--dim); line-height: 1.4; }
   .backbar { position: absolute; top: 8px; left: 8px; z-index: 5; }
-  .backbar button { background: var(--backbar-bg); color: var(--backbar-fg); border: 1px solid var(--control-line); border-radius: 8px; padding: 6px 10px; min-height: 36px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .backbar button { background: var(--backbar-bg); color: var(--backbar-fg); border: 1px solid var(--control-line); border-radius: 8px; padding: 8px 12px; min-height: 44px; font-size: 12px; font-weight: 700; cursor: pointer; }
   @media (max-width: 760px) { .wrap { flex-direction: column; } .coach { flex: 0 0 46%; border-right: 0; border-bottom: 1px solid var(--line); } }
-  .skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 10000; }
-  .skip-link:focus { position: fixed; left: 8px; top: 8px; width: auto; height: auto; padding: 10px 18px; background: #0f172a; color: #f8fafc; font: 700 14px system-ui, sans-serif; border-radius: 8px; outline: 3px solid #facc15; text-decoration: none; }
+  .skip-link { position: absolute; inset-inline-start: 8px; top: 8px; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; z-index: 10000; }
+  .skip-link:focus { position: fixed; inset-inline-start: 8px; top: 8px; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; min-height: 44px; display: inline-flex; align-items: center; padding: 10px 18px; background: #0f172a; color: #f8fafc; font: 700 14px system-ui, sans-serif; border-radius: 8px; outline: 3px solid #facc15; text-decoration: none; }
 </style>
 </head>
 <body>
@@ -495,6 +495,7 @@
   tabOrder.forEach(function (k, idx) {
     tabs[k].addEventListener('click', function () { if (current) setStep(k); });
     tabs[k].addEventListener('keydown', function (e) {
+      if (e.isComposing || e.keyCode === 229) return;
       if (!current) return;
       var nextIdx = -1;
       if (e.key === 'ArrowRight') nextIdx = (idx + 1) % tabOrder.length;

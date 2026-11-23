@@ -79,11 +79,12 @@ const outputCode = `/**
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   // WCAG 2.2 AA: Accessibility CSS
-  if (!document.getElementById("student-interaction-module-a11y")) { var _s = document.createElement("style"); _s.id = "student-interaction-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }"; document.head.appendChild(_s); }
+  if (typeof document !== 'undefined' && document.head && !document.getElementById("student-interaction-module-a11y")) { var _s = document.createElement("style"); _s.id = "student-interaction-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }"; document.head.appendChild(_s); }
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
-    if (document.getElementById('allo-live-student-interaction')) return;
+    if (typeof document === 'undefined' || !document.body || document.getElementById('allo-live-student-interaction')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-student-interaction';
     liveRegion.setAttribute('aria-live', 'polite');
@@ -110,7 +111,8 @@ const outputCode = `/**
   var useMemo = React.useMemo;
   var useContext = React.useContext;
 
-  var LanguageContext = window.AlloLanguageContext;
+  var _fallbackLangCtx = React.createContext ? React.createContext({ t: function(k) { return k; } }) : null;
+  var LanguageContext = window.AlloLanguageContext || _fallbackLangCtx;
   var _shared = window.__alloShared || {};
   var safeGetItem = _shared.safeGetItem || function(k) { try { return localStorage.getItem(k); } catch(e) { return null; } };
   var safeSetItem = _shared.safeSetItem || function(k,v) { try { localStorage.setItem(k,v); } catch(e) {} };

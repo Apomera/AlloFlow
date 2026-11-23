@@ -270,9 +270,14 @@ describe('running the file', () => {
     expect(frame.srcdoc.replace(/<script type="application\/json" id="packet-store-snapshot">.*?<\/script>/, '')).toBe(WORDS_FILE);
     p.$('start').click();
     expect(p.d.querySelectorAll('#run-host iframe')).toHaveLength(1);
+    // Unfinished file: first tap asks "Tap again to close", second tap closes cleanly.
+    p.$('run-close').click();
+    expect(p.$('run-close').textContent).toBe('Tap again to close');
+    expect(p.frame()).toBeTruthy();
     p.$('run-close').click();
     expect(p.frame()).toBeNull();
     expect(p.$('run').hidden).toBe(true);
+    expect(p.$('run-close').textContent).toBe('Close');
     expect(p.d.body.classList.contains('is-running')).toBe(false);
     expect(p.d.activeElement).toBe(p.$('start'));
   });
@@ -297,6 +302,7 @@ describe('running the file', () => {
     p.post('alloflow-packet-store');
     expect(JSON.stringify(p.kept())).toBe(before);
     p.$('run-close').click();
+    p.$('run-close').click();
     expect(p.$('place-line').hidden).toBe(false);
     expect(p.$('place-line').textContent).toBe('Your place in this file is kept on this device. Start goes on from there.');
     // Started again: the place is in the data block.
@@ -305,6 +311,7 @@ describe('running the file', () => {
     // A removal (Start over) removes it.
     p.post({ kind: 'alloflow-packet-store', key: KEY + ':blueheron7', value: null });
     expect(p.kept()[KEY + ':blueheron7']).toBeUndefined();
+    p.$('run-close').click();
     p.$('run-close').click();
     // Another file that says it is this lesson gets nothing, and cannot overwrite the place.
     const impostor = WORDS_FILE.replace('<title>Short a</title>', '<title>Short a!</title>');
@@ -319,10 +326,14 @@ describe('running the file', () => {
     const same = await openPage({ storage: p.kept() });
     await same.choose(WORDS_FILE);
     expect(same.$('place-line').hidden).toBe(false);
-    // Forget the places: all of them go.
+    // Forget the places: first tap asks to confirm, second tap forgets all of them.
+    same.$('forget').click();
+    expect(same.$('forget').textContent).toBe('Tap again to forget 1 saved place');
+    expect(Object.keys(same.kept()).length).toBeGreaterThan(0);
     same.$('forget').click();
     expect(Object.keys(same.kept())).toEqual([]);
     expect(same.$('forget-said').textContent).toBe('Done. No places are kept on this device now.');
+    expect(same.$('forget').disabled).toBe(true);
     expect(same.$('place-line').hidden).toBe(true);
   });
 
@@ -524,6 +535,7 @@ describe('where people are pointed to it', () => {
     expect(p.$('run').hidden).toBe(false);
     expect(p.$('problem').hidden).toBe(true);
 
+    p.$('run-close').click();
     p.$('run-close').click();
     expect(p.$('run').hidden).toBe(true);
     expect(p.$('main').hasAttribute('inert')).toBe(false);

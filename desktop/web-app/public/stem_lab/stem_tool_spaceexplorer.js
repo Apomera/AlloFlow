@@ -3984,11 +3984,13 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 h('span', { role: 'listitem', className: 'se-telemetry-pill' }, '\u26A1 ' + unlockedTech.length + '/' + TECH_TREE.length + ' ' + t('stem.spaceexplorer.stat_tech', 'tech')),
                 h('span', { role: 'listitem', className: 'se-telemetry-pill' }, '\uD83C\uDF0D ' + unlockedCount + '/' + DESTINATIONS.length + ' ' + t('stem.spaceexplorer.stat_worlds', 'worlds')),
                 badgeCount > 0 && h('span', { role: 'listitem', className: 'se-telemetry-pill' }, '\uD83C\uDFC5 ' + badgeCount + '/' + BADGES.length + ' ' + t('stem.spaceexplorer.stat_badges', 'badges')),
-                h('button', {
-                  type: 'button',
-                  onClick: function() { updAll({ missionPhase: 'orbitHunt' }); },
-                  className: 'rounded-xl border border-cyan-300/60 bg-cyan-950/80 px-3 py-2 text-xs font-bold text-cyan-100 hover:bg-cyan-900 transition-colors'
-                }, t('stem.spaceexplorer.open_orbit_lab', '\uD83D\uDEF0\uFE0F Orbital Lab'))
+                h('span', { role: 'listitem' },
+                  h('button', {
+                    type: 'button',
+                    onClick: function() { updAll({ missionPhase: 'orbitHunt' }); },
+                    className: 'rounded-xl border border-cyan-300/60 bg-cyan-950/80 px-3 py-2 text-xs font-bold text-cyan-100 hover:bg-cyan-900 transition-colors'
+                  }, t('stem.spaceexplorer.open_orbit_lab', '\uD83D\uDEF0\uFE0F Orbital Lab'))
+                )
               )
             ),
             badgeCount > 0 && h('div', { className: 'flex items-center gap-2 mt-3 pt-2.5 border-t border-white/15 flex-wrap', role: 'list', 'aria-label': t('stem.spaceexplorer.earned_badges', 'Achievement badges') },

@@ -1,0 +1,1941 @@
+{
+  "note": "Ratchet baseline for dev-tools/check_xss_surface.cjs. Pins pre-existing suspect HTML sinks by (file, sink, kind, normalizedSignature, maxCount). Any NEW or MODIFIED unsanitized dangerouslySetInnerHTML, innerHTML/outerHTML, insertAdjacentHTML, document.write, or interpolated template literal fails CI.",
+  "accepted": {
+    "AlloFlowANTI.txt": [
+      {
+        "sink": "dom:document.write",
+        "kind": "dynamic-concat",
+        "signature": "'<!DOCTYPE html><html><body data-allo-preview-pending='1' style='margin:0;background:#f8fafc;color:#334155;font-family:s",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "interpolated-template",
+        "signature": "` .help-mode-active { cursor: help !important; } .help-mode-active #tour-header-utils button { pointer-events: auto !imp",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "DICE_CSS",
+        "count": 1
+      },
+      {
+        "sink": "jsx:dangerouslySetInnerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "semanticMath || fallbackHtml",
+        "count": 1
+      }
+    ],
+    "allohaven_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      }
+    ],
+    "applied_challenge_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "dynamic-concat",
+        "signature": "'<!doctype html><html lang='' + lang + '' dir='' + dir + `'><head><meta charset='utf-8'><meta http-equiv='Content-Securi",
+        "count": 1
+      }
+    ],
+    "applied_challenge_source.jsx": [
+      {
+        "sink": "dom:document.write",
+        "kind": "dynamic-concat",
+        "signature": "'<!doctype html><html lang='' + lang + '' dir='' + dir + ''><head><meta charset='utf-8'><meta http-equiv='Content-Securi",
+        "count": 1
+      }
+    ],
+    "behavior_lens_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "dynamic-concat",
+        "signature": "'<!doctype html><html><head><meta charset='utf-8'><title>Behavior Lens review</title><style>@page{size:auto;margin:18mm}",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "interpolated-template",
+        "signature": "`<html><head><title>${esc(graphTitle) || 'ABA Graph'}</title><style>body{margin:20px;font-family:Arial,sans-serif}svg{wi",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 3
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "printContent",
+        "count": 1
+      }
+    ],
+    "catalog_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      }
+    ],
+    "doc_pipeline_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "_neutralizeForAuditFrame(htmlContent)",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "_safeHtml",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "_sanitizedPreviewHtml",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "sanitizedHtml",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<p style='color:#0369a1;font-weight:bold;font-size:0.9em'>\\u23f3 Retrying section ' + (chunkIdx + 1) + '...</p>'",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<summary>Chart description (AI-generated)</summary>' + (_sumText && !_sumRepeats ? '<p>' + esc2(_sumText) + '</p>' : ''",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<summary>Math (navigable MathML + LaTeX)</summary>' + mathml + '<pre class='allo-latex'>' + im.getAttribute('data-allo-",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<summary>Text from this image (AI-transcribed)</summary>' + String(parsed.extractedText).trim().split(/\\n\\n+/).slice(0,",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "_emitAccessibleTableHtml(t.grid, {})",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "_retryHtmlFragment",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "_snapshot",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "block.innerHTML",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "c.innerHTML",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "first.innerHTML",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "items[ii]",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "newInner",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "newTableHtml",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "String(out).replace(/^[\\s\\S]*?<body[^>]*>/i, '').replace(/<\\/body>[\\s\\S]*$/i, '')",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "ths[i].innerHTML",
+        "count": 1
+      },
+      {
+        "sink": "dom:outerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "_retryHtmlFragment",
+        "count": 1
+      }
+    ],
+    "doc_pipeline_source.jsx": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "_neutralizeForAuditFrame(htmlContent)",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "_safeHtml",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "_sanitizedPreviewHtml",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "sanitizedHtml",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<p style='color:#0369a1;font-weight:bold;font-size:0.9em'>\\u23f3 Retrying section ' + (chunkIdx + 1) + '...</p>'",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<summary>Chart description (AI-generated)</summary>' + (_sumText && !_sumRepeats ? '<p>' + esc2(_sumText) + '</p>' : ''",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<summary>Math (navigable MathML + LaTeX)</summary>' + mathml + '<pre class='allo-latex'>' + im.getAttribute('data-allo-",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<summary>Text from this image (AI-transcribed)</summary>' + String(parsed.extractedText).trim().split(/\\n\\n+/).slice(0,",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "_emitAccessibleTableHtml(t.grid, {})",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "_retryHtmlFragment",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "_snapshot",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "block.innerHTML",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "c.innerHTML",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "first.innerHTML",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "items[ii]",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "newInner",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "newTableHtml",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "String(out).replace(/^[\\s\\S]*?<body[^>]*>/i, '').replace(/<\\/body>[\\s\\S]*$/i, '')",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "ths[i].innerHTML",
+        "count": 1
+      },
+      {
+        "sink": "dom:outerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "_retryHtmlFragment",
+        "count": 1
+      }
+    ],
+    "educator_evaluation_module.js": [
+      {
+        "sink": "js:dangerouslySetInnerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "svg",
+        "count": 1
+      }
+    ],
+    "educator_evaluation_source.jsx": [
+      {
+        "sink": "jsx:dangerouslySetInnerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "svg",
+        "count": 1
+      }
+    ],
+    "error_reporter_module.js": [
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "panelHtml()",
+        "count": 2
+      }
+    ],
+    "export_handlers_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "htmlContent",
+        "count": 2
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<style>[data-allo-read-aloud-modal] button:focus-visible,[data-allo-read-aloud-modal] input:focus-visible{outline:3px s",
+        "count": 1
+      }
+    ],
+    "export_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "storyHtml",
+        "count": 1
+      }
+    ],
+    "export_source.jsx": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "storyHtml",
+        "count": 1
+      }
+    ],
+    "fluency_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      }
+    ],
+    "games_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "dynamic-concat",
+        "signature": "'<!DOCTYPE html><html lang='' + esc(root.lang || 'en') + '' dir='' + esc(root.dir || 'ltr') + ''><head><meta charset='ut",
+        "count": 1
+      }
+    ],
+    "games_source.jsx": [
+      {
+        "sink": "dom:document.write",
+        "kind": "dynamic-concat",
+        "signature": "'<!DOCTYPE html><html lang='' + esc(root.lang || 'en') + '' dir='' + esc(root.dir || 'ltr') + ''><head><meta charset='ut",
+        "count": 1
+      }
+    ],
+    "host_handlers_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "dynamic-concat",
+        "signature": "'<!doctype html><html lang=''+esc(document.documentElement.lang||'en')+'' dir=''+direction+''><head><meta charset='utf-8",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "interpolated-template",
+        "signature": "`<!doctype html><html lang='${String(document.documentElement.lang||'en').replace(/[^\\w-]/g,'')}'${document.documentElem",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      }
+    ],
+    "host_handlers_source.jsx": [
+      {
+        "sink": "dom:document.write",
+        "kind": "dynamic-concat",
+        "signature": "'<!doctype html><html lang='' + esc(document.documentElement.lang || 'en') + '' dir='' + direction + ''><head><meta char",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "interpolated-template",
+        "signature": "`<!doctype html><html lang='${String(document.documentElement.lang || 'en').replace(/[^\\w-]/g, '')}'${document.documentE",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      }
+    ],
+    "item_correction_module.js": [
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<div style='display:flex;justify-content:space-between;align-items:start;gap:12px;margin-bottom:12px'>' + '<h2 style='m",
+        "count": 1
+      }
+    ],
+    "math_fluency_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      }
+    ],
+    "memory_aid_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "dynamic-concat",
+        "signature": "'<!doctype html><html lang='' + String(document.documentElement.lang || 'en').replace(/[^\\w-]/g, '') + ''' + (document.d",
+        "count": 1
+      }
+    ],
+    "memory_aid_source.jsx": [
+      {
+        "sink": "dom:document.write",
+        "kind": "dynamic-concat",
+        "signature": "'<!doctype html><html lang='' + String(document.documentElement.lang || 'en').replace(/[^\\w-]/g, '') + ''' + (document.d",
+        "count": 1
+      }
+    ],
+    "note_taking_templates_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      }
+    ],
+    "note_taking_templates_source.jsx": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      }
+    ],
+    "poet_tree_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 2
+      }
+    ],
+    "reading_library_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      }
+    ],
+    "report_writer_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      },
+      {
+        "sink": "js:dangerouslySetInnerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "_rwTrendSvg(rtiTrendSeries)",
+        "count": 1
+      }
+    ],
+    "sel_hub/sel_hub_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      }
+    ],
+    "sel_hub/sel_safety_layer.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      }
+    ],
+    "sel_hub/sel_tool_crisiscompanion.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      }
+    ],
+    "sel_hub/sel_tool_cultureexplorer.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "dynamic-concat",
+        "signature": "'<!doctype html><html lang='' + pageLang + ''' + pageDir + '><head><meta charset='utf-8'><title>' + esc(title) + '</titl",
+        "count": 1
+      }
+    ],
+    "sel_hub/sel_tool_digitalwellbeing.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      }
+    ],
+    "sel_hub/sel_tool_upstander.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_aquarium.js": [
+      {
+        "sink": "js:dangerouslySetInnerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "plan.svg(400, 250, SPECIES_COLORS[viewingAnatomy])",
+        "count": 1
+      },
+      {
+        "sink": "js:dangerouslySetInnerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "svgHtml",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_archstudio.js": [
+      {
+        "sink": "js:dangerouslySetInnerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "archDrawingSvg(projection, { width: 320, height: 248, labels: drawingLabels, dimensions: false })",
+        "count": 1
+      },
+      {
+        "sink": "js:dangerouslySetInnerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "archDrawingSvg(projection, { width: 320, height: 260, labels: drawingLabels, dimensions: false })",
+        "count": 1
+      },
+      {
+        "sink": "js:dangerouslySetInnerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "archDrawingSvg(projection, { width: 360, height: 250, labels: drawingLabels, dimensions: true })",
+        "count": 1
+      },
+      {
+        "sink": "js:dangerouslySetInnerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "props.svg",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_birdlab.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "[ '<defs>', // Top-left highlight — soft sheen for feather roundness '<radialGradient id='blHiTL' cx='32%' cy='24%' r='7",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_calculus.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "dynamic-concat",
+        "signature": "'<!doctype html><html lang='en'><head><meta charset='utf-8'><title>' + esc(title) + '</title><style>body{font-family:sys",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_cellular.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "partially-escaped-concat",
+        "signature": "'<!doctype html><html lang='' + pageLang + ''' + pageDir + '><head><meta charset='utf-8'><title>' + escHtml(t('stem.cell",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_cephalopodlab.js": [
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<div class='cl-hud-identity'><span data-hud='species'></span><span data-hud='phase'></span></div>'+ '<div class='cl-hud",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<div style='font-size:42px;line-height:1;margin-bottom:6px'>'+(gameState.missionComplete?'✓':'◉')+'</div>' + '<div id='",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "text",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_citylab.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "memoHtml()",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_coasterlab.js": [
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<b>' + copy[1].split(' - ')[0] + '</b> - ' + copy[1].split(' - ')[1]",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<div class='clab-pit-heading'>' + physicsPitEmblem() + '<div><p class='eyebrow'>Think · check · try</p><h3 id='clab-pit",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<p class='eyebrow'>Your next experiment · ' + item.label + '</p><div class='clab-pit-heading'>' + physicsPitEmblem() + ",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "`Coaster <b>#${res.seed}</b> · ${res.meta ? res.meta.label : 'generated'}, ` + `${Math.round(res.meta ? res.meta.crestH ",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "interpolated-template",
+        "signature": "` <div class='ride-result-grid'> <div class='ride-accuracy' style='--pct:${accuracy}'><span>${accuracy}%<small>accuracy<",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "interpolated-template",
+        "signature": "`<b class='no'>✗</b>${val == null ? ' Time!' : ''}${shown} ${q.explain}`",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "interpolated-template",
+        "signature": "`<b class='ok'>✓</b> ${q.explain}`",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "interpolated-template",
+        "signature": "`<span class='hudk'>${cfg.label}</span><div class='xbar'></div><div class='xlabels'><span>${fmt(cfg.min, cfg.min % 1 ? 1",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "interpolated-template",
+        "signature": "`${fmt(v, 1)} <small>m/s</small>`",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "interpolated-template",
+        "signature": "`${fmt(ySeat, 1)} <small>m</small>`",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "CLAB_HTML",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "dots.join('')",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "guidedRubricBody(summary, !!guidedReview.locked)",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 5
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "lapMilestones().map(([label, s]) => `<b style='left:${Math.max(0, Math.min(100, s / track.L * 100))}%' data-label='${lab",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "MISSIONS.map(m => ` <div class='mission ${missionsDone[m.id] ? 'done' : ''}'> <span class='mi'>${m.icon}</span> <span><s",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "opts.map(([v, label]) => `<option value='${v}'>🚃 ${label}</option>`).join('')",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "progress.items.map(item => { const color = item.active ? 'var(--accent)' : item.evidence || item.passed ? 'var(--good)' ",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "renderExperimentComparisonSummary(history, fromIndex, toIndex)",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "renderGuidedTraceOverlay(history, fromIndex, toIndex, true)",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "renderGuidedTraceReadout(earlier, later, distance)",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "ride.current.choices .map(([v, label], i) => `<button data-v='${v}' data-key='${String.fromCharCode(65 + i)}'>${label}</",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "ride.current.text",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "ride.current.vizSvg",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "safetyFindings.map((f, i) => ` <div class='clab-safety-item ${f.severity}'> <span class='clab-safety-num'>${i + 1}</span",
+        "count": 1
+      },
+      {
+        "sink": "dom:insertAdjacentHTML",
+        "kind": "interpolated-template",
+        "signature": "`<svg viewBox='0 0 120 52' aria-hidden='true' focusable='false'><text class='clab-piece-view' x='8' y='7'>${art.view}</t",
+        "count": 1
+      },
+      {
+        "sink": "dom:outerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "next",
+        "count": 1
+      },
+      {
+        "sink": "js:dangerouslySetInnerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "CLAB_CSS",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_companionplanting.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "reportHtml",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_coordgrid.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "dynamic-concat",
+        "signature": "'<!doctype html><html lang='en'><head><meta charset='utf-8'><title>' + esc(title) + '</title><style>body{font-family:sys",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_coralreef.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "pr4Document(title, body, false, __alloT)",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "body",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_cyberdefense.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_dataplot.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "dynamic-concat",
+        "signature": "'<!doctype html><html lang='en'><head><meta charset='utf-8'><title>' + esc(title) + '</title><style>body{font-family:sys",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_dinolab.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 2
+      }
+    ],
+    "stem_lab/stem_tool_ecosystem.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "partially-escaped-concat",
+        "signature": "'<!doctype html><html lang='' + String(document.documentElement.lang || 'en').replace(/[^\\w-]/g, '') + ''' + (document.d",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_fractions.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 5
+      }
+    ],
+    "stem_lab/stem_tool_funcgrapher.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "dynamic-concat",
+        "signature": "'<!doctype html><html lang='en'><head><meta charset='utf-8'><title>' + esc(title) + '</title><style>body{font-family:sys",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_geometryworld.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "card",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "generateWorksheetHTML(target, options)",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "h",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_geosandbox.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "dynamic-concat",
+        "signature": "'<!doctype html><title>' + _netTitle + '</title><style>body{margin:24px;font-family:sans-serif}svg{width:100%;max-width:",
+        "count": 1
+      },
+      {
+        "sink": "js:dangerouslySetInnerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "svg",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_gisstudio.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "buildDataQualityReport({ review: qualityReview, reviewState: qualityReviewState }, localeInfo)",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "buildEvidenceReport(makeEvidenceModel(), localeInfo)",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "buildInvestigationPacketReport(investigationPacketModel(), localeInfo)",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "buildMapComposerReport(composerModel, localeInfo)",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "buildRemoteSensingReport({ scene: remoteScene, state: remoteSensing }, localeInfo)",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "buildStoryMapReport({ story: storyMap, rows: composerRows, generated: display.dateTime(new Date()) }, localeInfo)",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "buildTeacherReviewReport({ review: teacherReview }, localeInfo)",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_graphcalc.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "dynamic-concat",
+        "signature": "'<!doctype html><html lang='en'><head><meta charset='utf-8'><title>' + esc(title) + '</title><style>body{font-family:sys",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_heatlab.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_lifeskills.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "dynamic-concat",
+        "signature": "'<!doctype html><html lang='' + String(document.documentElement.lang || 'en').replace(/[^\\w-]/g, '') + ''' + (document.d",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_magnetism.js": [
+      {
+        "sink": "js:dangerouslySetInnerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'.mag-root .mag-electro-workbench{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(240px,1fr);gap:16px;align-it",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_moonmission.js": [
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<div style='font-weight:bold;font-size:11px;color:#fbbf24;margin-bottom:4px'>\\uD83D\\uDC68\\u200D\\uD83D\\uDE80 LUNAR EVA</",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<div style='font-weight:bold;font-size:12px;color:#fbbf24;margin-bottom:3px'>' + nearestLM.icon + ' ' + nearestLM.name ",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<span style='display:inline-block;transform:rotate(' + deg + 'deg)'>↑</span> ' + Math.round(bestD) + ' m'",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "row(evaSampleCount >= 4, 'Collect 4 rock samples (' + Math.min(evaSampleCount, 4) + '/4)') + row(seismoDeployed, 'Deploy",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_music.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "dynamic-concat",
+        "signature": "'<p style='font-family:system-ui,sans-serif;margin:2em'>' + vsrEsc(t('stem.music.rg_print_preparing', 'Getting the page ",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_openbim.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "dynamic-concat",
+        "signature": "'<!doctype html><html lang='' + String(document.documentElement.lang || 'en').replace(/[^\\w-]/g, '') + ''' + (document.d",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_platetectonics.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_playlab.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "cardHtml",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "sheetHtml",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_printingpress.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "dynamic-concat",
+        "signature": "'<!doctype html><html lang='' + String(document.documentElement.lang || 'en').replace(/[^a-z0-9-]/gi, '') + ''' + (docum",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 2
+      }
+    ],
+    "stem_lab/stem_tool_renewables.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_roadready.js": [
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<div aria-hidden='true' style='background:linear-gradient(135deg,#78350f,#0f172a);border:3px solid #fbbf24;border-radiu",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_singing.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "dynamic-concat",
+        "signature": "'<p style='font-family:system-ui,sans-serif;margin:2em'>' + vsEsc(t('stem.singing.vs_print_preparing', 'Getting the page",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_skatelab.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_solarsystem.js": [
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'\\u2611 <span style='color:#34d399;text-decoration:line-through'>' + poi.name + '</span> \\u2714'",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'\\uD83D\\uDCA1 ' + scienceFacts[0]",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'\\uD83D\\uDCA1 ' + scienceFacts[factIdx]",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'\\uD83D\\uDCCF Total distance: <span style='color:#38bdf8'>' + total.toFixed(0) + ' m</span> \\u2022 Waypoints: ' + plotte",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<div style='display:flex;align-items:center;gap:8px;margin-bottom:4px'><span style='font-size:18px'>' + sd.icon + '</sp",
+        "count": 2
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<div style='display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px'>' + '<div><div s",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<div style='display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:5px'>' + '<span style=",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<div style='font-size:24px;margin-bottom:8px'>' + (isOcean ? '\\uD83D\\uDEA4' : isGas ? '\\uD83D\\uDEF8' : '\\uD83D\\uDE80') ",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<div style='font-weight:bold;font-size:13px;color:#34d399;margin-bottom:4px'>\\u2705 TARGET REACHED!</div>' + '<div styl",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<div style='font-weight:bold;font-size:13px;color:#a78bfa;margin-bottom:6px'>\\uD83E\\uDDED NAVIGATION CHALLENGE</div>' +",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<div style='font-weight:bold;font-size:13px;color:#fbbf24;margin-bottom:4px'>\\uD83D\\uDD0D DISCOVERY: ' + poi.name + '</",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<div style='text-align:center;margin-bottom:12px'>' + '<div style='font-size:32px;margin-bottom:4px'>' + missionIcon + ",
+        "count": 2
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "barsHTML",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "barsHTML2",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "hudStaticHTML",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "plotterWaypoints.map(function (wp, i) { var label = i === 0 ? '\\uD83D\\uDFE2 START' : i === plotterWaypoints.length - 1 ?",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "scanHTML",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_sourcebook.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "buildPrintSheetHtml(items, preparation, title)",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_throwlab.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "cardHtml",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "sheetHtml",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_titration.js": [
+      {
+        "sink": "js:dangerouslySetInnerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "titrationInvestigationVolumeSVG(frame,labels)",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_typingpractice.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      }
+    ],
+    "stem_lab/stem_tool_weldlab.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      }
+    ],
+    "story_forge_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 4
+      }
+    ],
+    "story_forge_source.jsx": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 4
+      }
+    ],
+    "story_stage_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 2
+      }
+    ],
+    "student_analytics_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 4
+      }
+    ],
+    "symbol_studio_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 4
+      }
+    ],
+    "teacher_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      }
+    ],
+    "teacher_source.jsx": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      }
+    ],
+    "translation_feedback_module.js": [
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<div style='display:flex;justify-content:space-between;align-items:start;gap:12px;margin-bottom:12px'>' + '<h2 id='allo",
+        "count": 1
+      }
+    ],
+    "view_alignment_report_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "dynamic-concat",
+        "signature": "'<!doctype html><html lang='' + esc(reportLang && reportLang !== 'und' ? reportLang : 'en') + ''><head><meta charset='ut",
+        "count": 1
+      }
+    ],
+    "view_alignment_report_source.jsx": [
+      {
+        "sink": "dom:document.write",
+        "kind": "dynamic-concat",
+        "signature": "'<!doctype html><html lang='' + esc(reportLang && reportLang !== 'und' ? reportLang : 'en') + ''><head><meta charset='ut",
+        "count": 1
+      }
+    ],
+    "view_dbq_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "finalPrintHtml",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<div style='background:#92400e;color:white;padding:10px 16px;font-family:system-ui;display:flex;align-items:center;gap:",
+        "count": 1
+      }
+    ],
+    "view_dbq_source.jsx": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "finalPrintHtml",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<div style='background:#92400e;color:white;padding:10px 16px;font-family:system-ui;display:flex;align-items:center;gap:",
+        "count": 1
+      }
+    ],
+    "view_directions_result_module.js": [
+      {
+        "sink": "js:dangerouslySetInnerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "(() => { const clean = typeof window !== 'undefined' && typeof window.sanitizeHtml === 'function' ? window.sanitizeHtml(",
+        "count": 1
+      }
+    ],
+    "view_directions_result_source.jsx": [
+      {
+        "sink": "jsx:dangerouslySetInnerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "(() => { const clean = (typeof window !== 'undefined' && typeof window.sanitizeHtml === 'function') ? window.sanitizeHtm",
+        "count": 1
+      }
+    ],
+    "view_export_preview_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 2
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "safeResultHtml",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 3
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "nextHtml",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "parsed.body.innerHTML",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "String(html || '').slice(0, 25e4)",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "String(replacementHtml || '').trim()",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "String(snapshot.html || '')",
+        "count": 2
+      }
+    ],
+    "view_export_preview_source.jsx": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 2
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "safeResultHtml",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 3
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "nextHtml",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "parsed.body.innerHTML",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "String(html || '').slice(0, 250000)",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "String(replacementHtml || '').trim()",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "String(snapshot.html || '')",
+        "count": 2
+      }
+    ],
+    "view_gemini_bridge_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "printContent",
+        "count": 1
+      }
+    ],
+    "view_gemini_bridge_source.jsx": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "printContent",
+        "count": 1
+      }
+    ],
+    "view_lesson_plan_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 2
+      }
+    ],
+    "view_lesson_plan_source.jsx": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 2
+      }
+    ],
+    "view_lesson_teaching_script_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "dynamic-concat",
+        "signature": "'<!doctype html><html lang='' + escape(document.documentElement.lang || 'en') + ''><head><meta charset='utf-8'><meta htt",
+        "count": 2
+      }
+    ],
+    "view_lesson_teaching_script_source.jsx": [
+      {
+        "sink": "dom:document.write",
+        "kind": "dynamic-concat",
+        "signature": "'<!doctype html><html lang='' + escape(document.documentElement.lang || 'en') + ''><head><meta charset='utf-8'><meta htt",
+        "count": 2
+      }
+    ],
+    "view_math_module.js": [
+      {
+        "sink": "js:dangerouslySetInnerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "_suppSvg",
+        "count": 1
+      },
+      {
+        "sink": "js:dangerouslySetInnerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "graphHtml",
+        "count": 1
+      }
+    ],
+    "view_math_source.jsx": [
+      {
+        "sink": "jsx:dangerouslySetInnerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "_suppSvg",
+        "count": 1
+      },
+      {
+        "sink": "jsx:dangerouslySetInnerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "graphHtml",
+        "count": 1
+      }
+    ],
+    "view_pdf_audit_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "interpolated-template",
+        "signature": "`<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><title>Accessibility Review Dashboard</title> <style> *{box-",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "interpolated-template",
+        "signature": "`<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><title>Before / After Comparison</title> <style> * { box-siz",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "interpolated-template",
+        "signature": "`<!DOCTYPE html><html${_langAttr} dir='${dir}'><head><meta charset='UTF-8'><title>Plain Language Summary: ${_safeLang}</",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 3
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<div style='font-weight:800;font-size:13px;color:#92400e;margin-bottom:8px;display:flex;justify-content:space-between;a",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<div style='font-weight:800;font-size:14px;color:#4338ca;margin-bottom:8px;display:flex;align-items:center;gap:6px'>\\u{",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<span class='allo-fn-text' contenteditable='true'>Footnote text \\u2014 click to edit.</span> <a href='#fnref-' + uid + ",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "(removeBtn ? removeBtn.outerHTML : '') + tpl + (picker ? picker.outerHTML : '')",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "`<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:8px;border-b",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "cap.innerHTML + ' <em style='color:#0d9488'>' + (t('pdf_audit.genimg.label') || '(AI-generated illustration \\u2014 verif",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "interpolated-template",
+        "signature": "` <div style='display:flex;align-items:center;gap:8px;margin-bottom:12px'> <span style='font-size:24px'>\\u267F</span> <d",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "interpolated-template",
+        "signature": "`<div style='font-weight:800;font-size:14px;color:#1e293b;margin-bottom:8px;display:flex;justify-content:space-between;a",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "nd.body.innerHTML",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "safeBrandHtml.replace(/^<!DOCTYPE html>\\s*<html[^>]*>/i, '').replace(/<\\/html>\\s*$/i, '')",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "safeRestyledHtml.replace(/^<!DOCTYPE html>\\s*<html[^>]*>/i, '').replace(/<\\/html>\\s*$/i, '')",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "section",
+        "count": 1
+      }
+    ],
+    "view_pdf_audit_source.jsx": [
+      {
+        "sink": "dom:document.write",
+        "kind": "interpolated-template",
+        "signature": "`<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><title>Accessibility Review Dashboard</title> <style> *{box-",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "interpolated-template",
+        "signature": "`<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><title>Before / After Comparison</title> <style> * { box-siz",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "interpolated-template",
+        "signature": "`<!DOCTYPE html><html${_langAttr} dir='${dir}'><head><meta charset='UTF-8'><title>Plain Language Summary: ${_safeLang}</",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 3
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:8px;border-b",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<div style='font-weight:800;font-size:13px;color:#92400e;margin-bottom:8px;display:flex;justify-content:space-between;a",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<div style='font-weight:800;font-size:14px;color:#4338ca;margin-bottom:8px;display:flex;align-items:center;gap:6px'>📑 ",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<span class='allo-fn-text' contenteditable='true'>Footnote text — click to edit.</span> <a href='#fnref-' + uid + '' cl",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "(removeBtn ? removeBtn.outerHTML : '') + tpl + (picker ? picker.outerHTML : '')",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "`<div style='font-weight:800;font-size:14px;color:#1e293b;margin-bottom:8px;display:flex;justify-content:space-between;a",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "cap.innerHTML + ' <em style='color:#0d9488'>' + (t('pdf_audit.genimg.label') || '(AI-generated illustration — verify it ",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "interpolated-template",
+        "signature": "` <div style='display:flex;align-items:center;gap:8px;margin-bottom:12px'> <span style='font-size:24px'>♿</span> <div> <",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "nd.body.innerHTML",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "safeBrandHtml.replace(/^<!DOCTYPE html>\\s*<html[^>]*>/i, '').replace(/<\\/html>\\s*$/i, '')",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "safeRestyledHtml.replace(/^<!DOCTYPE html>\\s*<html[^>]*>/i, '').replace(/<\\/html>\\s*$/i, '')",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "section",
+        "count": 1
+      }
+    ],
+    "view_project_settings_module.js": [
+      {
+        "sink": "js:dangerouslySetInnerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "state.svg",
+        "count": 1
+      }
+    ],
+    "view_project_settings_source.jsx": [
+      {
+        "sink": "jsx:dangerouslySetInnerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "state.svg",
+        "count": 1
+      }
+    ],
+    "view_renderers_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "dynamic-concat",
+        "signature": "'<!doctype html><html lang='' + String(document.documentElement.lang || 'en').replace(/[^\\w-]/g, '') + ''' + (document.d",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      }
+    ],
+    "view_renderers_source.jsx": [
+      {
+        "sink": "dom:document.write",
+        "kind": "dynamic-concat",
+        "signature": "'<!doctype html><html lang='' + String(document.documentElement.lang || 'en').replace(/[^\\w-]/g, '') + ''' + (document.d",
+        "count": 1
+      },
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 1
+      }
+    ],
+    "view_session_modal_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "interpolated-template",
+        "signature": "`<!doctype html><html lang='${String(document.documentElement.lang || 'en').replace(/[^\\w-]/g, '')}'${document.documentE",
+        "count": 1
+      },
+      {
+        "sink": "js:dangerouslySetInnerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "liveQrSvg",
+        "count": 1
+      }
+    ],
+    "view_session_modal_source.jsx": [
+      {
+        "sink": "dom:document.write",
+        "kind": "interpolated-template",
+        "signature": "`<!doctype html><html lang='${String(document.documentElement.lang || 'en').replace(/[^\\w-]/g, '')}'${document.documentE",
+        "count": 1
+      },
+      {
+        "sink": "jsx:dangerouslySetInnerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "liveQrSvg",
+        "count": 1
+      }
+    ],
+    "view_share_session_surfaces_module.js": [
+      {
+        "sink": "js:dangerouslySetInnerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "mbQrSvg",
+        "count": 1
+      },
+      {
+        "sink": "js:dangerouslySetInnerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "qrShareSvg",
+        "count": 1
+      }
+    ],
+    "view_share_session_surfaces_source.jsx": [
+      {
+        "sink": "jsx:dangerouslySetInnerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "mbQrSvg",
+        "count": 1
+      },
+      {
+        "sink": "jsx:dangerouslySetInnerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "qrShareSvg",
+        "count": 1
+      }
+    ],
+    "word_practice_module.js": [
+      {
+        "sink": "dom:innerHTML",
+        "kind": "dynamic-concat",
+        "signature": "'<svg>'+t.valueOf().toString()+'</svg>'",
+        "count": 1
+      },
+      {
+        "sink": "dom:innerHTML",
+        "kind": "unsanitized-expr",
+        "signature": "t",
+        "count": 1
+      }
+    ],
+    "word_sounds_module.js": [
+      {
+        "sink": "dom:document.write",
+        "kind": "unsanitized-expr",
+        "signature": "html",
+        "count": 2
+      }
+    ]
+  }
+}

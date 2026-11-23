@@ -11903,7 +11903,7 @@
     "choices": [
       "made mainly for performances",
       "capable of carrying sound",
-      "lacking the item named by the base word",
+      "lacking what the base word names",
       "located a long distance away"
     ],
     "answerIndex": 2,
@@ -12099,7 +12099,7 @@
       "the sentence contains no action verb",
       "the word schedule has no dictionary meaning",
       "a comma must always follow the word club",
-      "the pronoun its could point to either of the two student organizations"
+      "the pronoun its could refer to either group"
     ],
     "answerIndex": 3,
     "rationale": "Both the debate team and the drama club are singular collective nouns that could possess an adviser, so the pronoun its has two plausible antecedents. Naming the organization would remove the ambiguity.",
@@ -14132,10 +14132,10 @@
     "difficulty": "foundation",
     "prompt": "What is the complete subject of the sentence \"Several boxes of donated novels arrived before noon\"?",
     "choices": [
-      "donated novels",
-      "arrived before noon",
-      "Several boxes",
-      "Several boxes of donated novels"
+      "The middle phrase \"donated novels\"",
+      "The closing phrase \"arrived before noon\"",
+      "The opening phrase \"Several boxes\"",
+      "The phrase \"Several boxes of donated novels\""
     ],
     "answerIndex": 3,
     "rationale": "The complete subject includes the simple subject \"boxes\" and all words that modify it: \"Several boxes of donated novels.\" The words \"arrived before noon\" form the predicate.",
@@ -14293,8 +14293,8 @@
     "prompt": "A field-trip notice reads, \"On friday, our class will visit the National Air and Space museum in washington, D.C.\" Which set lists all words in the sentence that need initial capital letters?",
     "choices": [
       "friday only",
-      "friday and museum",
-      "museum and washington",
+      "both friday and museum",
+      "both museum and washington",
       "friday, museum, and washington"
     ],
     "answerIndex": 3,
@@ -14777,7 +14777,7 @@
       "The school mascot was selected in 1972.",
       "The auditorium seats 450 people.",
       "The roof can be seen from the soccer field.",
-      "Rain barrels collect roof runoff for watering the courtyard garden."
+      "Rain barrels collect roof runoff for garden use."
     ],
     "answerIndex": 3,
     "rationale": "Collecting runoff for later irrigation directly explains how a roof feature conserves water, so it supports the outline heading. The other details do not address the roof's role in conserving resources.",
@@ -17324,7 +17324,7 @@
     "prompt": "Which figure always has exactly one line of symmetry?",
     "choices": [
       "A non-equilateral isosceles triangle",
-      "A nonsquare rectangle",
+      "A rectangle with unequal adjacent sides",
       "A scalene triangle",
       "A circle"
     ],

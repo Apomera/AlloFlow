@@ -11,7 +11,7 @@
 
   .paper { font-family: var(--font); color: #000000; background: #ffffff; }
   .paper h2, .paper h3 { color: #000000; }
-  .paper-sheet { break-after: page; page-break-after: always; }
+  .paper-sheet + .paper-sheet { break-before: page; page-break-before: always; }
   .paper-teacher { break-before: page; page-break-before: always; break-after: auto; page-break-after: auto; }
 
   /* The learner sheet */
@@ -64,13 +64,14 @@
   .pblank-wide { width: 30mm; }
 
   /* Two numbers in a box: circle the bigger one. */
-  .pp { display: flex; justify-content: space-around; align-items: center; height: 17mm; margin-top: 0.5mm; border: 0.3mm solid #000000; border-radius: 2mm; font-size: 26pt; line-height: 1; }
+  .pp { display: flex; justify-content: space-around; align-items: center; height: 15.5mm; margin-top: 0.5mm; border: 0.3mm solid #000000; border-radius: 2mm; font-size: 26pt; line-height: 1; }
   .pp-n { padding: 0 2mm; }
 
   .paper-empty-line { margin-top: 30mm; font-size: 11pt; text-align: center; }
 
   /* The teacher page */
   .paper-teacher { font-size: 11pt; line-height: 1.35; }
+  .paper-teacher h2, .paper-teacher h3, .paper-sub { break-after: avoid; page-break-after: avoid; }
   .paper-teacher .paper-sub { height: auto; margin: 4mm 0 1.5mm; }
   .paper-keep { margin: 0 0 2mm; font-weight: 700; }
   .paper-steps { margin: 0; padding-left: 6mm; list-style: disc; }

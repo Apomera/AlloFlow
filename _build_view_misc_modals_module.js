@@ -31,6 +31,7 @@ try { fs.unlinkSync(TMP + '.compiled.js'); } catch(_){}
 
 const outputCode = `(function() {
 'use strict';
+if (typeof window === 'undefined') return;
 if (window.AlloModules && window.AlloModules.ViewMiscModalsModule) { console.log('[CDN] ViewMiscModalsModule already loaded, skipping'); return; }
 var React = window.React || React;
 var useState = React.useState;

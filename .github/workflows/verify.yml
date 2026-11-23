@@ -167,6 +167,25 @@ jobs:
       - name: Cloud deploy mirror and config parity preflight
         run: node dev-tools/check_cloud_deploy_parity.cjs
 
+  security:
+    name: Security scanners (secrets + CORS + XSS + eval + audit + Firebase + shells)
+    runs-on: windows-latest
+    steps:
+      - name: Enable Git long paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: verify:security (blocking security scanner suite)
+        run: npm run verify:security
+
   adventure-journey:
     name: Adventure journey (choice + free response + debate)
     runs-on: windows-latest

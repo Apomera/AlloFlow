@@ -33,13 +33,22 @@
   markers so a value a student types into a cell cannot act as an instruction.
 -->
 <style>
+  :root { color-scheme: light; }
   body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; padding: 8px 10px; background: #eef2fb; color: #24304f; font-size: 12px; }
   h1 { display: inline; font-size: inherit; font-weight: 700; margin: 0; }
   .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #64748b; margin-right: 6px; vertical-align: baseline; }
   .dot.on { background: #15803d; }
-  .skip-link { position: absolute; left: -9999px; top: 4px; z-index: 9999; background: #1e3a8a; color: #fff; padding: 6px 10px; border-radius: 6px; font-weight: 700; text-decoration: none; }
-  .skip-link:focus { left: 6px; }
+  .skip-link { position: absolute; inset-inline-start: 8px; top: 4px; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; pointer-events: none; z-index: 9999; min-height: 44px; display: inline-flex; align-items: center; background: #1e3a8a; color: #fff; padding: 8px 12px; border-radius: 6px; font-weight: 700; text-decoration: none; }
+  .skip-link:focus { inset-inline-start: 6px; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; pointer-events: auto; }
   :focus-visible { outline: 3px solid #1d4ed8; outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
+  @media (forced-colors: active) {
+    body { background: Canvas; color: CanvasText; }
+    .dot { border: 1px solid CanvasText; }
+    .dot.on { background: Highlight; border-color: Highlight; }
+    .skip-link:focus { background: Canvas; color: CanvasText; border: 2px solid Highlight; }
+    :focus-visible { outline: 3px solid Highlight !important; outline-offset: 2px; }
+  }
 </style>
 </head>
 <body>

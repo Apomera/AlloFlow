@@ -89,8 +89,9 @@ const outputCode = `/**
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   // WCAG 2.2 AA: Accessibility CSS
-  if (!document.getElementById("visual-panel-a11y")) { var _s = document.createElement("style"); _s.id = "visual-panel-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .visual-label:focus-visible, .visual-label input:focus-visible, .visual-label button:focus-visible, .visual-panel-actions button:focus-visible, .visual-grid-controls button:focus-visible, .visual-panel-add-label-target:focus-visible { outline: 3px solid #1d4ed8 !important; outline-offset: 2px !important; } .label-delete-btn { min-width: 32px; min-height: 32px; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; } @media (forced-colors: active) { .visual-label:focus-visible, .visual-label input:focus-visible, .visual-label button:focus-visible, .visual-panel-actions button:focus-visible, .visual-grid-controls button:focus-visible, .visual-panel-add-label-target:focus-visible { outline-color: Highlight !important; } }"; document.head.appendChild(_s); }
+  if (typeof document !== 'undefined' && document.head && !document.getElementById("visual-panel-a11y")) { var _s = document.createElement("style"); _s.id = "visual-panel-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .visual-label:focus-visible, .visual-label input:focus-visible, .visual-label button:focus-visible, .visual-panel-actions button:focus-visible, .visual-grid-controls button:focus-visible, .visual-panel-add-label-target:focus-visible { outline: 3px solid #1d4ed8 !important; outline-offset: 2px !important; } .label-delete-btn { min-width: 32px; min-height: 32px; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; } @media (forced-colors: active) { .visual-label:focus-visible, .visual-label input:focus-visible, .visual-label button:focus-visible, .visual-panel-actions button:focus-visible, .visual-grid-controls button:focus-visible, .visual-panel-add-label-target:focus-visible { outline-color: Highlight !important; } }"; document.head.appendChild(_s); }
 
   // ── Duplicate-load guard ──
   if (window.__visualPanelModuleLoaded) {
@@ -112,19 +113,17 @@ const outputCode = `/**
   // The CDN module IIFE can't see top-level monolith consts. We use a wrapper that
   // resolves window.sanitizeHtml at CALL time (not module-load time), so it works
   // even if the module loads before the monolith populates window.sanitizeHtml.
-  // Falls back to a minimal inline sanitizer matching the monolith's behavior.
+  // Falls back to strict HTML entity escaping when running standalone.
   function sanitizeHtml(html) {
     var fn = (typeof window !== 'undefined' && window.sanitizeHtml);
     if (typeof fn === 'function' && fn !== sanitizeHtml) return fn(html);
-    // Inline fallback — matches AlloFlowANTI.txt sanitizeHtml output
     if (!html || typeof html !== 'string') return '';
-    var clean = html.replace(/<script[\\s\\S]*?<\\/script>/gi, '');
-    clean = clean.replace(/\\s+on\\w+\\s*=\\s*["'][^"']*["']/gi, '');
-    clean = clean.replace(/\\s+on\\w+\\s*=\\s*\\S+/gi, '');
-    clean = clean.replace(/<\\/?(iframe|object|embed|form|link|meta|base)[^>]*>/gi, '');
-    clean = clean.replace(/href\\s*=\\s*["']?javascript:/gi, 'href="');
-    clean = clean.replace(/src\\s*=\\s*["']?javascript:/gi, 'src="');
-    return clean;
+    return html
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   // ═══════════════════════════════════════════════════════════════

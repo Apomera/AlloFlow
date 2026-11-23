@@ -28,6 +28,7 @@ const outputCode = `/**
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.HeaderBar) {
     console.log('[CDN] HeaderBar already loaded, skipping');
     return;

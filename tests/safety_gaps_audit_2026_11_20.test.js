@@ -356,6 +356,8 @@ describe('STEM Lab host passes onSafetyFlag end-to-end into tool ctx', () => {
             expect(src, host).toContain(".replace(/\\bAIza[A-Za-z0-9_-]{10,}\\b/g, '[redacted]')");
             expect(src, host).toContain(".replace(/\\bsk-[A-Za-z0-9_-]{10,}\\b/g, '[redacted]')");
             expect(src, host).toContain("allo_mbp?|allo_pack");
+            // AI-setup toasts offer one-click Open AI settings recovery for non-student roles
+            expect(src, host).toContain("label: 'Open AI settings', onClick: () => { try { setShowAIBackendModal(true); } catch (_) {} }");
             // FERPA / educator-only leadership & SpEd panels cannot render outside Teacher mode
             for (const gate of [
                 'isOpen={isAdminHubOpen && isTeacherMode && !isIndependentMode}',

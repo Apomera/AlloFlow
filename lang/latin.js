@@ -155,7 +155,12 @@
     "refine_go": "Rescriptionem propone",
     "refining": "Propositum scribitur…",
     "made_from_version": "Factum ex versione {version} fontis tui",
-    "remake": "Ex versione praesenti denuo fac"
+    "remake": "Ex versione praesenti denuo fac",
+    "dictate": "Dictare",
+    "close_dictate": "Claudere dictationem",
+    "send_read_along": "Mittere ad Fasciculum Lectionis Concomitantis",
+    "upload_verify_banner": "Sonus/video localiter cum Whisper transscriptus ({count} segmenta in memoria servata)",
+    "clear_audio": "Purgare sonum"
   },
   "sel": {
     "peersupport": {
@@ -5936,7 +5941,10 @@
     "source_choice_ambiguous": "Versionem elige in «Fundatum in» antequam generas. Plures versiones praesto sunt.",
     "source_choices_load_failed": "Optiones versionum onerari non potuerunt. Quaeso iterum tempta.",
     "submission_tools_still_loading": "Instrumenta submittendi adhuc onerantur. «Submitte» iterum tempta.",
-    "blank_created": "Subsidium vacuum creatum est: {title}. Imple antequam communicas."
+    "blank_created": "Subsidium vacuum creatum est: {title}. Imple antequam communicas.",
+    "sent_to_read_along": "Locus ad Fasciculum Lectionis Concomitantis in nova tabella missus est.",
+    "read_along_handoff_failed": "Exemplar ad Fasciculum Lectionis Concomitantis tradi non potuit.",
+    "read_along_no_text": "Adde vel dicta textum fontis antequam ad Fasciculum Lectionis Concomitantis mittas."
   },
   "large_file": {
     "modal_title": "Importā Large sonus tabula",
@@ -5953,7 +5961,8 @@
     "chunk_info": "Sonus in partes 5 minutorum ad tractationem dividitur",
     "chunk_progress": "Chunk {current} {total}",
     "audio_only_error": "Nunc transcriptio per segmenta solas tabulas sonoras (MP3, WAV, etc.) admittit.",
-    "starting": "Incipiens..."
+    "starting": "Incipiens...",
+    "engine_legend": "Machina Transscriptionis"
   },
   "formatting": {
     "bold": "Bold (**textus**)",
@@ -6351,7 +6360,8 @@
       "analyzing_short": "Analysis fit...",
       "generate_short": "Generā",
       "books_short": "Libri",
-      "books_hint": "Libros pictos aperi: quilibet liber fons textus tui fieri potest"
+      "books_hint": "Libros pictos aperi: quilibet liber fons textus tui fieri potest",
+      "dictate_hint": "Dicta textum fontis cum Whisper in machina et recognitione Gemini ad libitum"
     },
     "status_generating": "Generating fōns textus...",
     "success_long_form": "longus-form textus generātum successfully!",
@@ -6396,7 +6406,8 @@
     "qs_generate": "Ex themate genera",
     "qs_generate_sub": "IA pro te scribit",
     "length_presets": "Longitudines praedefinitae",
-    "length_preset_choose": "Praedefinita…"
+    "length_preset_choose": "Praedefinita…",
+    "dictate_or_record": "Dictare vel notare voce"
   },
   "wizard": {
     "title": "celer Incipe",
@@ -6530,7 +6541,12 @@
     "paste_word_count": "Verba: {count}",
     "length_custom": "Proprium…",
     "length_custom_label": "Numerus verborum",
-    "length_custom_hint": "Ab 50 ad 5000 verba"
+    "length_custom_hint": "Ab 50 ad 5000 verba",
+    "dictate_desc": "Dictatio vocis Whisper localis et recognitio ad libitum",
+    "dictate_title": "Dicta vel voce nota textum fontis",
+    "dictate_helper": "Praedefinitur dictatio privata Whisper in machina. Libere recense, textum ad libitum expoli, vel cum Gemini contra sonum notatum confer.",
+    "dictate_loading": "Officina Dictationis (Whisper localis) oneratur… Dum oneratur, etiam infra scribere vel recensere potes.",
+    "words_dictated_unit": "verba dictata"
   },
   "settings": {
     "immersive_options": "Immersive optiōnēs",
@@ -106589,5 +106605,68 @@
     "sc_findText": "Textum in designatione inveni",
     "sc_commandPalette": "Actiones celeres aperi",
     "sc_help": "Hunc indicem compendiorum monstra"
+  },
+  "dictation": {
+    "badge_desktop": "Whisper Mensalis Paratus",
+    "badge_download_needed": "Whisper Localis · Prima Depromptio",
+    "badge_local_ready": "Whisper Localis Paratus · {name}",
+    "cleanup_apply": "Adhibere expolitionem",
+    "cleanup_failed": "Textus hoc tempore expoliri non potuit.",
+    "cleanup_fillers": "Comprimere verba supervacanea",
+    "cleanup_heading": "Expolitio textus per IA ad libitum",
+    "cleanup_keep": "Servare pristinum",
+    "cleanup_no_changes": "Nullae mutationes huic exemplari propositae sunt.",
+    "cleanup_notes": "Formare ut notas scholares",
+    "cleanup_punctuation": "Emendare interpunctionem et formam",
+    "cleanup_review_title": "Expolitio proposita parata est — exemplar tuum nondum mutatum est",
+    "cleanup_text_only": "tantum textus — nullus sonus mittitur",
+    "cleanup_unavailable": "Expolitio textus per IA hoc tempore non praesto est.",
+    "cleanup_undo": "Revocare expolitionem",
+    "cleanup_working": "Expolitur…",
+    "clear_audio": "Purgare sonum notatum ({mb} MB)",
+    "crosscheck_all_resolved": "Omnes loci signati recensiti sunt.",
+    "crosscheck_btn": "Verificare contra sonum cum Gemini",
+    "crosscheck_count": "{count} locus(i) signatus(i) recensendus(i):",
+    "crosscheck_disabled_note": "Hoc tempore non praesto est (in modo sine rete / IA discipulorum clausa aut sine clave Gemini inhibitum). Dictatio tua Whisper localis omnino sine rete operari pergit.",
+    "crosscheck_disclosure": "Tantum currit si infra premas: segmenta soni in memoria servata et exemplar textus ad Gemini mittit ut mendas verborum possibiles signet.",
+    "crosscheck_failed": "Recognitio soni Gemini non perfecta est. Transscriptum tuum locale intactum manet.",
+    "crosscheck_heading": "Collatio mutua contra sonum cum Gemini (Ad libitum)",
+    "crosscheck_none": "Nullae discrepantiae graves inter Whisper Localem et Gemini Audio inventae sunt.",
+    "crosscheck_running": "Contra sonum verificatur…",
+    "crosscheck_unavailable": "Collatio mutua soni Gemini hoc tempore non praesto est.",
+    "download_now": "Depromere Whisper Localem ({size} MB)",
+    "download_warning": "Monitum depromptionis: Whisper Localis recognitioni sermonis privatae in machina praedefinitur. Depromptio exemplaris {name} semel ~{size} MB capit (~1–2 minuta pro conexione), sine rete in navigatro conditur, et voces tuas notatas in hac machina servat.",
+    "draft_label": "Exemplar transscripti (recensibile)",
+    "draft_placeholder": "Preme Incipere dictationem supra, vel directe hic transscriptum tuum scribe aut recense…",
+    "guide_both_body": "Incipe privatim cum Whisper Locali ut dictatio tua celerrima et sine rete maneat. Si secundum iudicium de vocabulis difficilibus vel nominibus cupis, elige collationem mutuam Gemini ut duo exemplaria libera contra sonum tuum compares et fragmenta 5 secundorum in quovis loco signato rursus audias.",
+    "guide_both_label": "Cur utroque uti (Collatio mutua):",
+    "guide_gemini_body": "Nulla depromptio exemplaris requiritur. Validius in vocabulis propriis, nominibus propriis, accentibus, scholis strepentibus et interpunctione — fragmenta soni notata ad Gemini tantum si eligis mittit.",
+    "guide_gemini_title": "Gemini Audio (Recognitio ad libitum)",
+    "guide_summary": "Whisper Localis contra Gemini Audio — vires et cur utroque uti",
+    "guide_whisper_body": "Privatus et sine rete post unicam depromptionem (~39–73 MB). Nullus sonus machinam tuam relinquit, nulla clavis API aut mensura opus est, et longa dictatio continua fideliter procedit.",
+    "guide_whisper_title": "Whisper Localis (Praedefinitus)",
+    "ios_canvas_blocked": "Whisper Localis in iPhone/iPad intra Gemini Canvas intermissus est. Scribe directe infra vel aperi AlloFlow in navigatro mensali.",
+    "ios_canvas_hint": "Potes directe infra scribere, aperire AlloFlow in navigatro mensali pro Whisper Locali, vel Gemini Audio uti si paratum est.",
+    "ios_canvas_title": "Whisper in machina in iPhone/iPad intra Gemini Canvas intermissus est",
+    "listening_local": "Localiter cum Whisper auscultatur… breviter quiesce vel loqui perge ut textum adiungas.",
+    "mic_start_failed": "Microphonium incipi non potuit. Permissiones navigatri inspice.",
+    "model_size_label": "Magnitudo exemplaris Whisper Localis",
+    "pause_recording": "Intermittere",
+    "paused_note": "Intermissum. Potes transscriptum infra recensere vel Pergere premere ut dictare pergas.",
+    "privacy_tag": "Privatum · Sine rete post depromptionem · Nulla clavis API necessaria",
+    "resume_recording": "Pergere",
+    "send_read_along": "Mittere ad Fasciculum Lectionis Concomitantis",
+    "speech_settings": "Praeferentiae sermonis",
+    "speed_badge_lesson": "Probatum: {speed}x celerius sermone · Bonum dictationi longae",
+    "speed_badge_short": "Probatum: {speed}x celerius sermone · Optimum fragmentis brevibus",
+    "speed_badge_slow": "Probatum: {speed}x · Tardius tempore reali (intermissiones exspecta)",
+    "speed_badge_upgrade": "Probatum: {speed}x celerius sermone · Bonum dictationi longae (etiam {name} temptare potes)",
+    "start_recording": "Incipere dictationem (Whisper Localis)",
+    "stop_recording": "Sistere",
+    "studio_title": "Officina Dictationis",
+    "test_mic": "Probare microphonium (4s)",
+    "upload_media": "Transscribere fasciculum soni/video",
+    "use_text": "Uti textu dictato",
+    "voice_unavailable": "Notator vocis adhuc oneratur. Quaeso paulo post iterum tempta."
   }
 }

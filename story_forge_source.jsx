@@ -7597,8 +7597,8 @@ Return ONLY JSON:
 <meta name="description" content="A storybook by ${author}, made with StoryForge.">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-.skip-link{position:absolute;left:-9999px;top:0;padding:8px 14px;background:#0f172a;color:#fff;text-decoration:none;font-weight:700}
-.skip-link:focus{left:0;top:0;z-index:1000}
+.skip-link{position:absolute;inset-inline-start:0;top:0;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;pointer-events:none;padding:8px 14px;background:#0f172a;color:#fff;text-decoration:none;font-weight:700}
+.skip-link:focus{inset-inline-start:0;top:0;width:auto;height:auto;overflow:visible;clip-path:none;white-space:normal;pointer-events:auto;z-index:1000}
 body{font-family:Georgia,'Times New Roman',serif;line-height:1.8;color:#1e293b;max-width:800px;margin:0 auto;padding:40px 20px;background:#fefce8}
 main{display:block}
 .cover{text-align:center;padding:60px 20px;border:4px double #d4af37;border-radius:12px;margin-bottom:40px;background:linear-gradient(135deg,#fffbeb,#fef3c7)}

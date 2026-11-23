@@ -1,0 +1,155 @@
+/* The maker page (packets-make.html): "Open a file I made" at the top, a student's code name and
+   "Make one for each student" in step 3. Colors come from packets.css. No address, no font, no image. */
+
+.reopen { margin: 0.25rem 0 1rem; }
+.reopen-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.15rem 0.5rem; }
+.reopen-row .btn-text { padding-left: 0; font-weight: 600; }
+.reopen-row .hint { flex: 1 1 16rem; }
+.reopen.is-dropping { outline: 3px dashed var(--accent); outline-offset: 6px; border-radius: 8px; }
+.reopen-note { margin-top: 0.5rem; }
+.reopen-line { font-weight: 600; color: var(--ink); }
+.reopen-note ul { margin: 0.4rem 0 0; padding-left: 1.25rem; }
+.reopen-note li { margin-top: 0.2rem; }
+.reopen-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; margin-top: 0.4rem; }
+.reopen-note .btn { margin: 0; }
+
+.code-box { margin-top: 1rem; }
+.code-box .field { margin-top: 0.5rem; max-width: 30rem; }
+
+.batch { margin-top: 1.75rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); }
+.batch > summary { display: flex; align-items: center; min-height: 3rem; padding: 0.5rem 1rem; cursor: pointer; font-weight: 600; color: var(--accent); }
+.batch > summary:hover { color: var(--accent-dark); }
+.batch-body { padding: 0 1rem 1rem; }
+.batch-body .field { margin-top: 0.75rem; max-width: 30rem; }
+.batch-body .why { margin-top: 0.5rem; }
+.batch-body .why .radio { margin-top: 0.25rem; }
+.batch-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; margin-top: 0.75rem; }
+.batch-body .making { margin-top: 0.75rem; padding-top: 0.75rem; }
+
+/* Letter Trace: capital, lowercase or both (shown when Letter Trace is chosen); Choices (shown with an activity it changes). */
+.trace-cases, .choice-level { margin: 0.75rem 0 0; max-width: 30rem; }
+.choice-level .why ul { margin: 0.25rem 0 0; padding-left: 1.25rem; color: var(--muted); }
+.choice-level .why li { margin-top: 0.2rem; }
+
+/* 2026-11-18: "Grade for each level" under the Level list (levels are named by what they practice, not by grade). */
+.stage-key .stage-key-head { margin-top: 0.4rem; font-weight: 600; color: var(--ink); }
+.stage-key-list { margin: 0.2rem 0 0; padding-left: 1.25rem; list-style: disc; color: var(--muted); }
+.stage-key-list li { margin-top: 0.15rem; }
+.stage-key-list b { font-weight: 600; color: var(--ink); }
+
+/* 2026-11-18 / 2026-11-21: "Mix the activities" (step 1) / "Mix the question types" (vocab) and "Question order" (step 3). */
+.mix-field { margin: 0.9rem 0 0; max-width: 38rem; }
+.mix-field .row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.75rem; margin: 0; }
+.mix-field .row .radio { margin: 0; }
+.mix-field .hint { display: block; margin-top: 0.25rem; }
+
+/* 2026-11-21: compact checkbox pills for Sound patterns and multi-level selection in step 2. */
+.stage-pick-field { margin-top: 1.5rem; }
+.stage-pick-field select { max-width: 30rem; }
+.multi-toggle { margin-top: 0.5rem; }
+.multi-toggle .radio { margin: 0; }
+.pill-group { margin-top: 0.75rem; padding: 0; border: 0; }
+.pill-group > legend { padding: 0; font-weight: 600; color: var(--ink); }
+.pill-group > .hint { display: block; margin-top: 0.15rem; }
+.pill-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.6rem; margin-top: 0.35rem; font-size: 0.9375rem; color: var(--muted); }
+.pill-meta .btn-text { padding-left: 0.25rem; padding-right: 0.25rem; min-height: 2.25rem; }
+.pill-list { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.5rem; }
+.pill { display: inline-flex; align-items: center; gap: 0.4rem; min-height: 2.75rem; padding: 0.35rem 0.75rem; border: 1.5px solid var(--line-strong); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; font-size: 0.9375rem; line-height: 1.3; }
+.pill:hover { border-color: var(--accent); }
+.pill:focus-within { outline: 3px solid var(--accent); outline-offset: 2px; }
+.pill.is-on { border-color: var(--accent); background: var(--accent-soft); }
+.pill input[type="checkbox"] { width: 1.1rem; height: 1.1rem; margin: 0; accent-color: var(--accent); }
+.pill-name { font-weight: 600; }
+.pill-ex { color: var(--muted); font-size: 0.875rem; }
+.own-limit-note { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.75rem; margin-top: 0.5rem; }
+.example-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.75rem; margin-top: 0.45rem; }
+.starter-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.75rem; margin-top: 0.6rem; }
+.starter-row label { font-size: 0.9375rem; font-weight: 600; color: var(--ink); }
+.starter-row select { width: auto; max-width: 100%; min-height: 2.75rem; margin-top: 0; }
+.order-title { font-weight: 600; color: var(--ink); }
+.order-title span { font-weight: 400; }
+.order-editor { margin-top: 0.5rem; }
+.order-list { counter-reset: question; max-height: 26rem; overflow-y: auto; margin: 0.5rem 0 0; padding: 0 0.25rem 0 0; border-top: 1px solid var(--line); }
+.order-row { counter-increment: question; display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.5rem; padding: 0.3rem 0; border-bottom: 1px solid var(--line); }
+.order-row::before { content: counter(question) "."; min-width: 2.25rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.order-name { flex: 1 1 12rem; min-width: 0; }
+.order-move { min-height: 2.25rem; padding: 0.2rem 0.7rem; }
+
+/* 2026-11-13 (teacher-journey L12): on a phone the "Open a file I made" hint keeps its first sentence, so step 1 starts higher. */
+@media (max-width: 40rem) { .reopen-more { display: none; } }
+
+/* 2026-11-16: a shorter maker. "Make it with the usual settings" in step 1; one "More options" box in each step
+   (its top line says what is set); the activity groups are boxes that open; the word count and "Pick different
+   words" sit beside the picked words. Every choice is still on the page. */
+.quick { margin-top: 1rem; padding: 0.85rem 1rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--accent-soft); }
+.quick .btn { margin: 0; }
+.quick .hint { display: block; margin-top: 0.4rem; }
+.quick-recipes { display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem; margin-top: 0.7rem; padding-top: 0.65rem; border-top: 1px solid var(--line); }
+.quick-recipes-label { font-size: 0.875rem; font-weight: 600; color: var(--muted); margin-right: 0.15rem; }
+.quick-recipes .btn[aria-pressed="true"] { border-color: var(--accent); background: var(--surface); box-shadow: inset 0 0 0 1px var(--accent); }
+
+.more { margin-top: 1.25rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); }
+.more > summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.15rem 0.75rem; min-height: 3rem; padding: 0.6rem 1rem; cursor: pointer; }
+.more > summary:hover .more-name { color: var(--accent-dark); }
+.more-name { font-weight: 600; color: var(--accent); }
+.more-now { color: var(--muted); font-size: 0.9375rem; }
+.more-body { padding: 0 1rem 1rem; }
+.more-body > .block:first-child, .more-body > .field:first-child { margin-top: 0.25rem; }
+
+details.strand { margin-top: 0.75rem; border: 1px solid var(--line); border-radius: 8px; }
+details.strand > summary.strand-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.15rem 1rem; min-height: 3rem; padding: 0.6rem 1rem; border-bottom: 0; cursor: pointer; }
+details.strand[open] > summary.strand-head { border-bottom: 1px solid var(--line); }
+details.strand > :not(summary) { margin-left: 1rem; margin-right: 1rem; }
+details.strand > :last-child { margin-bottom: 0.75rem; }
+.strand-count { color: var(--muted); font-size: 0.9375rem; font-weight: 400; }
+.strand-area { font-weight: 400; color: var(--muted); }
+.strand-line { flex-basis: 100%; color: var(--muted); font-size: 0.9375rem; font-weight: 400; }
+.strand-usual { margin-top: 0.5rem; padding-left: 0; }
+
+.pick-bar { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0.75rem 2rem; margin: 0.75rem 0; }
+.pick-bar .field { margin: 0; }
+.pick-again { flex: 1 1 16rem; }
+.pick-again .row { margin: 0; }
+.pick-again .hint { display: block; margin-top: 0.3rem; }
+.stepper { display: flex; align-items: center; gap: 0.4rem; margin-top: 0.25rem; }
+.stepper input { width: 4.5rem; text-align: center; }
+.stepper-btn { min-width: 2.75rem; min-height: 2.75rem; margin: 0; font-size: 1.125rem; line-height: 1; }
+.count-home:empty { display: none; }
+.count-home .count-field { max-width: 22rem; }
+
+.paper { margin-top: 1.5rem; }
+.paper h3 { font-size: 1rem; }
+.paper-row { margin-top: 0.5rem; }
+.summary-more { margin-top: 1rem; }
+
+/* 2026-11-16: more groups of words, with a label only the teacher sees, and the note on what the words do not suit. */
+.chip-tag { margin-left: 0.4rem; padding: 0.05rem 0.45rem; border: 1px solid var(--line-strong); border-radius: 999px; font-size: 0.75rem; font-weight: 700; color: var(--muted); background: var(--surface); }
+.pick-labels { margin-top: 0.5rem; }
+.mix-notes { margin-top: 0.75rem; display: grid; gap: 0.5rem; }
+.mix-note { margin: 0; }
+.mix-on { margin: 0; }
+.groups-box { margin-top: 1rem; }
+.groups { display: grid; gap: 0.75rem; }
+.group { margin: 0; padding: 0.75rem 1rem 1rem; border: 1px solid var(--line-strong); border-radius: var(--radius); }
+.group legend { padding: 0 0.4rem; font-weight: 700; }
+.group-fields { display: grid; gap: 0.75rem; grid-template-columns: 1fr; }
+.group-fields .field { margin: 0; }
+.group-said { margin: 0.6rem 0 0.3rem; overflow-wrap: anywhere; }
+.groups-row { margin-top: 0.75rem; align-items: center; }
+@media (min-width: 44rem) { .group-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* 2026-11-17: groups of words live in More options; the first group is one field, each further group one compact row. */
+.more-2-words { margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--line); }
+.group-first { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.75rem; }
+.group-first select { width: auto; min-width: 9rem; }
+.group-row { padding: 0.5rem 0.75rem 0.4rem; }
+.group-row legend { font-size: 0.95rem; }
+.group-row .group-fields { gap: 0.5rem 0.75rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 29.99rem) {
+  .group-row .group-fields { grid-template-columns: 1fr; }
+  #f-shapes.pill-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.35rem; }
+  #f-shapes .pill { padding: 0.35rem 0.55rem; font-size: 0.875rem; flex-wrap: wrap; gap: 0.15rem 0.35rem; }
+  #f-shapes .pill-ex { font-size: 0.8125rem; }
+}
+@media (min-width: 44rem) { .group-row .group-fields { grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr) minmax(0, 1.2fr) minmax(0, 1.2fr) 4.5rem; } }
+.group-foot { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.25rem 0.75rem; }
+.group-foot .group-said { margin: 0.4rem 0 0; }

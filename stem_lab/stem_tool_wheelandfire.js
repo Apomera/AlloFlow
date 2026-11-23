@@ -2,6 +2,7 @@
 // A volume-aware clay-forming, drying, glazing, and kiln simulation with
 // cross-cultural technique studies grounded in named communities and sources.
 (function () {
+  'use strict';
   // Translator reachable from module scope, IIFE-private so it is not a global.
   // Installed because this tool had no fallback-aware helper: labels built in
   // helpers defined above render() could not see a render-scoped one, and a
@@ -12,8 +13,11 @@
     try { v = (__alloWheelCtx && typeof __alloWheelCtx.t === "function") ? __alloWheelCtx.t(k, fb) : null; } catch (e) { v = null; }
     return (v == null) ? (fb != null ? fb : k) : v;
   };
-  'use strict';
+  function _wfHasOwn(obj, key) {
+    return !!obj && typeof obj === 'object' && typeof key === 'string' && key !== '__proto__' && key !== 'constructor' && key !== 'prototype' && Object.prototype.hasOwnProperty.call(obj, key);
+  }
 
+  if (typeof window !== 'undefined') {
   window.StemLab = window.StemLab || {
     _registry: {}, _order: [],
     registerTool: function (id, config) {
@@ -28,9 +32,10 @@
       return tool && tool.render ? tool.render(ctx) : null;
     }
   };
+  }
 
   (function installStyles() {
-    if (typeof document === 'undefined' || document.getElementById('allo-wheel-fire-css')) return;
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-wheel-fire-css')) return;
     var style = document.createElement('style');
     style.id = 'allo-wheel-fire-css';
     style.textContent = [
@@ -99,12 +104,12 @@
       '.wheel-fire-shell[data-wf-theme="dark"] .text-slate-600,.dark .wheel-fire-shell .text-slate-600,.wheel-fire-shell[data-wf-theme="dark"] .text-slate-500,.dark .wheel-fire-shell .text-slate-500,.wheel-fire-shell[data-wf-theme="dark"] .text-stone-600,.dark .wheel-fire-shell .text-stone-600{color:#d6d3d1!important}',
       '.wheel-fire-shell[data-wf-theme="dark"] .text-amber-950,.dark .wheel-fire-shell .text-amber-950,.wheel-fire-shell[data-wf-theme="dark"] .text-amber-900,.dark .wheel-fire-shell .text-amber-900,.wheel-fire-shell[data-wf-theme="dark"] .text-amber-800,.dark .wheel-fire-shell .text-amber-800,.wheel-fire-shell[data-wf-theme="dark"] .text-orange-950,.dark .wheel-fire-shell .text-orange-950,.wheel-fire-shell[data-wf-theme="dark"] .text-orange-900,.dark .wheel-fire-shell .text-orange-900,.wheel-fire-shell[data-wf-theme="dark"] .text-orange-800,.dark .wheel-fire-shell .text-orange-800{color:#fde68a!important}',
       '.wheel-fire-shell[data-wf-theme="dark"] .text-teal-950,.dark .wheel-fire-shell .text-teal-950,.wheel-fire-shell[data-wf-theme="dark"] .text-teal-900,.dark .wheel-fire-shell .text-teal-900{color:#99f6e4!important}',
-      '.wheel-fire-shell[data-wf-theme="dark"] .text-cyan-950,.dark .wheel-fire-shell .text-cyan-950,.wheel-fire-shell[data-wf-theme="dark"] .text-cyan-900,.dark .wheel-fire-shell .text-cyan-900{color:#a5f3fc!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .text-cyan-950,.dark .wheel-fire-shell .text-cyan-950,.wheel-fire-shell[data-wf-theme="dark"] .text-cyan-900,.dark .wheel-fire-shell .text-cyan-900,.wheel-fire-shell[data-wf-theme="dark"] .text-cyan-800,.dark .wheel-fire-shell .text-cyan-800{color:#a5f3fc!important}',
       '.wheel-fire-shell[data-wf-theme="dark"] .text-sky-950,.dark .wheel-fire-shell .text-sky-950,.wheel-fire-shell[data-wf-theme="dark"] .text-sky-900,.dark .wheel-fire-shell .text-sky-900{color:#bae6fd!important}',
       '.wheel-fire-shell[data-wf-theme="dark"] .text-blue-950,.dark .wheel-fire-shell .text-blue-950,.wheel-fire-shell[data-wf-theme="dark"] .text-blue-900,.dark .wheel-fire-shell .text-blue-900{color:#bfdbfe!important}',
-      '.wheel-fire-shell[data-wf-theme="dark"] .text-indigo-950,.dark .wheel-fire-shell .text-indigo-950,.wheel-fire-shell[data-wf-theme="dark"] .text-indigo-900,.dark .wheel-fire-shell .text-indigo-900{color:#c7d2fe!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .text-indigo-950,.dark .wheel-fire-shell .text-indigo-950,.wheel-fire-shell[data-wf-theme="dark"] .text-indigo-900,.dark .wheel-fire-shell .text-indigo-900,.wheel-fire-shell[data-wf-theme="dark"] .text-indigo-800,.dark .wheel-fire-shell .text-indigo-800{color:#c7d2fe!important}',
       '.wheel-fire-shell[data-wf-theme="dark"] .text-violet-950,.dark .wheel-fire-shell .text-violet-950,.wheel-fire-shell[data-wf-theme="dark"] .text-violet-900,.dark .wheel-fire-shell .text-violet-900{color:#ddd6fe!important}',
-      '.wheel-fire-shell[data-wf-theme="dark"] .text-fuchsia-950,.dark .wheel-fire-shell .text-fuchsia-950,.wheel-fire-shell[data-wf-theme="dark"] .text-fuchsia-900,.dark .wheel-fire-shell .text-fuchsia-900{color:#f5d0fe!important}',
+      '.wheel-fire-shell[data-wf-theme="dark"] .text-fuchsia-950,.dark .wheel-fire-shell .text-fuchsia-950,.wheel-fire-shell[data-wf-theme="dark"] .text-fuchsia-900,.dark .wheel-fire-shell .text-fuchsia-900,.wheel-fire-shell[data-wf-theme="dark"] .text-fuchsia-800,.dark .wheel-fire-shell .text-fuchsia-800{color:#f5d0fe!important}',
       '.wheel-fire-shell[data-wf-theme="dark"] .text-emerald-950,.dark .wheel-fire-shell .text-emerald-950,.wheel-fire-shell[data-wf-theme="dark"] .text-emerald-900,.dark .wheel-fire-shell .text-emerald-900,.wheel-fire-shell[data-wf-theme="dark"] .text-emerald-800,.dark .wheel-fire-shell .text-emerald-800{color:#a7f3d0!important}',
       '.wheel-fire-shell[data-wf-theme="dark"] .text-rose-950,.dark .wheel-fire-shell .text-rose-950,.wheel-fire-shell[data-wf-theme="dark"] .text-rose-900,.dark .wheel-fire-shell .text-rose-900,.wheel-fire-shell[data-wf-theme="dark"] .text-red-950,.dark .wheel-fire-shell .text-red-950,.wheel-fire-shell[data-wf-theme="dark"] .text-red-900,.dark .wheel-fire-shell .text-red-900,.wheel-fire-shell[data-wf-theme="dark"] .text-red-800,.dark .wheel-fire-shell .text-red-800{color:#fecdd3!important}',
       '.wheel-fire-shell[data-wf-theme="dark"] input,.dark .wheel-fire-shell input,.wheel-fire-shell[data-wf-theme="dark"] select,.dark .wheel-fire-shell select,.wheel-fire-shell[data-wf-theme="dark"] textarea,.dark .wheel-fire-shell textarea{background-color:#292524!important;color:#f5f5f4!important;border-color:#78716c!important}',
@@ -207,8 +212,8 @@
 
   function clamp(value, min, max) { return Math.max(min, Math.min(max, Number(value) || 0)); }
   function finite(value, fallback) { value = Number(value); return isFinite(value) ? value : fallback; }
-  function clayBody(id) { return CLAY_BODIES[id] || CLAY_BODIES.stoneware; }
-  function glazeById(id) { return GLAZES[id] || GLAZES.clear; }
+  function clayBody(id) { return _wfHasOwn(CLAY_BODIES, id) ? CLAY_BODIES[id] : CLAY_BODIES.stoneware; }
+  function glazeById(id) { return _wfHasOwn(GLAZES, id) ? GLAZES[id] : GLAZES.clear; }
   function normalizeRecipe(recipe) {
     if (!recipe || typeof recipe !== 'object') return null;
     var next = {
@@ -226,7 +231,7 @@
     var recipe = null;
     if (typeof vesselOrId === 'string') {
       body = clayBody(vesselOrId);
-    } else if (vesselOrId && vesselOrId.id && CLAY_BODIES[vesselOrId.id] && !vesselOrId.clayBody) {
+    } else if (vesselOrId && vesselOrId.id && _wfHasOwn(CLAY_BODIES, vesselOrId.id) && !vesselOrId.clayBody) {
       body = clayBody(vesselOrId.id);
     } else {
       body = clayBody(vesselOrId && vesselOrId.clayBody);
@@ -294,7 +299,7 @@
     var heights = { lump: 14.5, bowl: 16, cylinder: 22, jar: 24 };
     return {
       version: 1,
-      clayBody: CLAY_BODIES[bodyId] ? bodyId : 'stoneware',
+      clayBody: _wfHasOwn(CLAY_BODIES, bodyId) ? bodyId : 'stoneware',
       preset: preset,
       radii: profile.radii,
       thickness: profile.thickness,
@@ -328,7 +333,7 @@
       return makeVessel(bodyId || 'stoneware', 'lump');
     }
     var next = copyVessel(vessel);
-    next.clayBody = CLAY_BODIES[next.clayBody] ? next.clayBody : (bodyId || 'stoneware');
+    next.clayBody = _wfHasOwn(CLAY_BODIES, next.clayBody) ? next.clayBody : (_wfHasOwn(CLAY_BODIES, bodyId) ? bodyId : 'stoneware');
     next.heightCm = clamp(finite(next.heightCm, 15), 5, 38);
     next.moisture = clamp(finite(next.moisture, 0.8), 0, 1);
     next.centered = clamp(finite(next.centered, 50), 0, 100);
@@ -2661,7 +2666,7 @@
     var next = normalizeVessel(vessel);
     if (next.stage !== 'bisque') return next;
     next.stage = 'glazed';
-    next.glazeId = GLAZES[glazeId] ? glazeId : 'clear';
+    next.glazeId = _wfHasOwn(GLAZES, glazeId) ? glazeId : 'clear';
     next.glazeThickness = clamp(finite(thickness, 50), 5, 100);
     next.lastOutcome = glazeById(next.glazeId).name + ' applied at ' + Math.round(next.glazeThickness) + '% thickness. The piece is ready for glaze firing.';
     return next;
@@ -2671,7 +2676,7 @@
     var kilnType = ['electric', 'gas', 'wood', 'open'].indexOf(settings.kilnType) >= 0 ? settings.kilnType : 'electric';
     return {
       modelVersion: Math.round(finite(settings.modelVersion, DIMENSION_MODEL_VERSION)),
-      clayBody: CLAY_BODIES[settings.clayBody] ? settings.clayBody : '',
+      clayBody: _wfHasOwn(CLAY_BODIES, settings.clayBody) ? settings.clayBody : '',
       materialRecipe: normalizeRecipe(settings.materialRecipe),
       method: settings.method === 'coil' ? 'coil' : 'wheel',
       humidity: clamp(finite(settings.humidity, 48), 10, 95),
@@ -3161,6 +3166,7 @@
     return { center: center, bottom: bottom, top: top, heightPx: heightPx, scale: scale, left: left, right: right, innerLeft: innerLeft, innerRight: innerRight, outer: outer, cavity: cavity };
   }
 
+  if (typeof window !== 'undefined') {
   window.__alloPotteryPure = {
     RING_COUNT: RING_COUNT,
     DIMENSION_MODEL_VERSION: DIMENSION_MODEL_VERSION,
@@ -3241,7 +3247,9 @@
     compareCycleSensitivity: compareCycleSensitivity,
     profileGeometry: profileGeometry
   };
+  }
 
+  if (typeof window !== 'undefined' && window.StemLab && typeof window.StemLab.registerTool === 'function') {
   window.StemLab.registerTool('wheelAndFire', {
     icon: '🏺',
     label: 'Wheel & Fire: Pottery Lab',
@@ -3258,7 +3266,7 @@
     ],
     render: function (ctx) {
       __alloWheelCtx = ctx;
-      var React = ctx.React || window.React;
+      var React = (ctx && ctx.React) || (typeof window !== 'undefined' ? window.React : null);
       var h = React.createElement;
       var rawData = ctx && ctx.toolData && ctx.toolData.wheelAndFire;
       var data = (rawData && typeof rawData === 'object' && !Array.isArray(rawData)) ? rawData : {};
@@ -3348,8 +3356,10 @@
       }
       function patchData(patch) {
         setToolData(function (previous) {
-          previous = previous || {};
-          return Object.assign({}, previous, { wheelAndFire: Object.assign({}, previous.wheelAndFire || {}, patch) });
+          var basePrev = (previous && typeof previous === 'object' && !Array.isArray(previous)) ? previous : {};
+          var prevSlice = (basePrev.wheelAndFire && typeof basePrev.wheelAndFire === 'object' && !Array.isArray(basePrev.wheelAndFire)) ? basePrev.wheelAndFire : {};
+          var nextPatch = (patch && typeof patch === 'object' && !Array.isArray(patch)) ? patch : {};
+          return Object.assign({}, basePrev, { wheelAndFire: Object.assign({}, prevSlice, nextPatch) });
         });
       }
       function vesselChange(previous, next, beforeStats, afterStats) {
@@ -3377,6 +3387,7 @@
         announce('Opened ' + viewLabel(safeView) + ' section.');
       }
       function handleTabKey(event, id) {
+        if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
         var index = VIEW_IDS.indexOf(id);
         if (index < 0) return;
         var nextIndex = index;
@@ -3713,9 +3724,11 @@
           onPointerUp: function (event) { if (activeGestureMode === 'ring-drag') finishGesture(); event.currentTarget.__wheelFireLastAppliedRing = null; try { event.currentTarget.releasePointerCapture(event.pointerId); } catch (error) {} },
           onPointerCancel: function (event) { if (activeGestureMode === 'ring-drag') finishGesture(); if (event.currentTarget) event.currentTarget.__wheelFireLastAppliedRing = null; },
           onKeyDown: function (event) {
-            if ((event.key === 'ArrowUp' || event.key === 'ArrowDown') && localRingTarget) { event.preventDefault(); patchData({ workRing: potteryFormingTarget(activeTool, workRing + (event.key === 'ArrowUp' ? 1 : -1)).ring }); }
-            else if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); applyActive(rimTarget ? RING_COUNT - 1 : workRing); }
-            else if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') { event.preventDefault(); undo(); }
+            if (event.isComposing || event.keyCode === 229) return;
+            var k = typeof event.key === 'string' ? event.key : '';
+            if ((k === 'ArrowUp' || k === 'ArrowDown') && localRingTarget) { if (event.ctrlKey || event.metaKey || event.altKey) return; event.preventDefault(); patchData({ workRing: potteryFormingTarget(activeTool, workRing + (k === 'ArrowUp' ? 1 : -1)).ring }); }
+            else if ((k === 'Enter' || k === ' ') && !event.ctrlKey && !event.metaKey && !event.altKey) { event.preventDefault(); applyActive(rimTarget ? RING_COUNT - 1 : workRing); }
+            else if ((event.ctrlKey || event.metaKey) && k.toLowerCase() === 'z') { event.preventDefault(); undo(); }
           }
         },
           h('defs', null,
@@ -4139,24 +4152,24 @@
       }
       function sciencePanel() {
         var allLogs = copyArray(data.measurementLog);
-        var seriesNames = {};
+        var seriesNames = Object.create(null);
         var seriesOrder = [];
         allLogs.forEach(function (row) {
           var rowSeriesId = String(row.seriesId || 'series-legacy');
           var rowSeriesName = String(row.seriesName || '').trim();
-          if (!Object.prototype.hasOwnProperty.call(seriesNames, rowSeriesId)) seriesOrder.push(rowSeriesId);
-          if (rowSeriesName || !Object.prototype.hasOwnProperty.call(seriesNames, rowSeriesId)) seriesNames[rowSeriesId] = rowSeriesName || (rowSeriesId === 'series-legacy' ? 'Unassigned trials' : 'Untitled series');
+          if (!(rowSeriesId in seriesNames)) seriesOrder.push(rowSeriesId);
+          if (rowSeriesName || !(rowSeriesId in seriesNames)) seriesNames[rowSeriesId] = rowSeriesName || (rowSeriesId === 'series-legacy' ? 'Unassigned trials' : 'Untitled series');
         });
         var inferredSeriesId = allLogs.length ? String(allLogs[allLogs.length - 1].seriesId || 'series-legacy') : 'series-1';
         var activeSeriesId = String(data.trialSeriesId || inferredSeriesId);
-        if (!Object.prototype.hasOwnProperty.call(seriesNames, activeSeriesId)) seriesOrder.push(activeSeriesId);
+        if (!(activeSeriesId in seriesNames)) seriesOrder.push(activeSeriesId);
         var activeSeriesName = String(data.trialSeriesName || seriesNames[activeSeriesId] || '').trim() || (activeSeriesId === 'series-legacy' ? 'Unassigned trials' : 'Current mechanics study');
         seriesNames[activeSeriesId] = activeSeriesName;
         var seriesCatalog = seriesOrder.map(function (id) { return { id: id, name: id === activeSeriesId ? activeSeriesName : seriesNames[id] }; });
         var logs = allLogs.filter(function (row) { return String(row.seriesId || 'series-legacy') === activeSeriesId; });
         var trialBaselineIds = data.trialBaselineIds && typeof data.trialBaselineIds === 'object' ? data.trialBaselineIds : {};
         function trialKey(row, index) { return row && row.id !== undefined ? String(row.id) : 'legacy-' + index; }
-        var selectedBaselineId = String(trialBaselineIds[activeSeriesId] || '');
+        var selectedBaselineId = String(_wfHasOwn(trialBaselineIds, activeSeriesId) ? trialBaselineIds[activeSeriesId] : '');
         var baselineLog = null;
         for (var baselineIndex = 0; baselineIndex < logs.length; baselineIndex += 1) {
           if (trialKey(logs[baselineIndex], baselineIndex) === selectedBaselineId) { baselineLog = logs[baselineIndex]; break; }
@@ -4273,7 +4286,7 @@
           if (Object.prototype.hasOwnProperty.call(row, 'materialRecipe')) {
             var replayRecipe = normalizeRecipe(row.materialRecipe);
             var replayVessel = copyVessel(vessel);
-            if (row.clayBody && CLAY_BODIES[row.clayBody]) replayVessel.clayBody = row.clayBody;
+            if (row.clayBody && _wfHasOwn(CLAY_BODIES, row.clayBody)) replayVessel.clayBody = row.clayBody;
             replayVessel.materialRecipe = replayRecipe;
             replayPatch.vessel = normalizeVessel(replayVessel);
             replayPatch.recipeDraft = replayRecipe;
@@ -4344,7 +4357,7 @@
             if (beforeKey !== afterKey) changed.push(label + ' (' + formatter(before) + ' → ' + formatter(after) + ')');
           }
           compareInput('method', 'forming method', function (value) { return value || 'unknown'; });
-          compareInput('clayBody', 'clay body', function (value) { return value && CLAY_BODIES[value] ? CLAY_BODIES[value].name : 'not recorded'; });
+          compareInput('clayBody', 'clay body', function (value) { return value && _wfHasOwn(CLAY_BODIES, value) ? CLAY_BODIES[value].name : 'not recorded'; });
           compareInput('materialRecipe', 'material recipe', function (value) { var recipe = normalizeRecipe(value); return recipe ? (recipe.label || (Math.round(recipe.temperPercent) + '% temper')) : 'named body'; });
           compareInput('tool', 'tool', function (value) { return value || 'not recorded'; });
           compareInput('workRing', 'work zone', function (value) { return value === undefined ? 'not recorded' : 'ring ' + (Number(value) + 1); });
@@ -4404,7 +4417,7 @@
           function setupValue(row, setup) {
             var value = row[setup.key];
             if (setup.key === 'method') return value === 'coil' ? 'coil' : 'wheel';
-            if (setup.key === 'clayBody') return value && CLAY_BODIES[value] ? CLAY_BODIES[value].name : 'not recorded';
+            if (setup.key === 'clayBody') return value && _wfHasOwn(CLAY_BODIES, value) ? CLAY_BODIES[value].name : 'not recorded';
             if (setup.key === 'materialRecipe') { var recipe = normalizeRecipe(value); return recipe ? (recipe.label || (Math.round(recipe.temperPercent) + '% temper')) : 'named body'; }
             if (setup.key === 'workRing') return value === undefined ? 'not recorded' : 'ring ' + (Number(value) + 1);
             if (setup.key === 'rpm') return value === undefined ? 'not recorded' : Math.round(finite(value, 0)) + ' RPM';
@@ -4559,7 +4572,7 @@
           var referenceIndex = reference ? logs.indexOf(reference) : -1;
           var selectedReferenceLabel = reference ? 'Trial ' + (referenceIndex + 1) : '';
           var referenceRecipe = reference ? normalizeRecipe(reference.materialRecipe) : null;
-          var referenceBody = reference && reference.clayBody && CLAY_BODIES[reference.clayBody] ? CLAY_BODIES[reference.clayBody].name : 'current clay body';
+          var referenceBody = reference && reference.clayBody && _wfHasOwn(CLAY_BODIES, reference.clayBody) ? CLAY_BODIES[reference.clayBody].name : 'current clay body';
           var referenceRing = reference && reference.workRing !== undefined ? 'ring ' + (Number(reference.workRing) + 1) : 'work zone not recorded';
           var referenceMethod = reference ? (reference.method === 'coil' ? 'coil' : 'wheel') : method;
           var referenceTool = reference && reference.tool ? reference.tool : 'tool not recorded';
@@ -6219,4 +6232,5 @@
       );
     }
   });
+  }
 })();

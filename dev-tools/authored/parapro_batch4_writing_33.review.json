@@ -27,6 +27,10 @@
     {
       "issue": "Non-EPPP editorial screening flagged residual lexical-leakage, brief distractor-rationale, or asymmetric-extreme-distractor warnings in 33 item(s).",
       "change": "Remediated 33 item(s) by hand via dev-tools/non_eppp_authored_remediation/parapro_batch4_writing_33.cjs without changing any answerIndex, domainId, rationale, or references. All editorial warning checks now report 0 findings across the batch."
+    },
+    {
+      "issue": "Non-EPPP editorial screening flagged residual lexical-leakage, brief distractor-rationale, or asymmetric-extreme-distractor warnings in 33 item(s).",
+      "change": "Remediated 33 item(s) by hand via dev-tools/non_eppp_authored_remediation/parapro_batch4_writing_33.cjs + length_balance_wave2_part1.cjs without changing any answerIndex, domainId, rationale, or references. All editorial warning checks now report 0 findings across the batch."
     }
   ],
   "checks": {
@@ -197,10 +201,10 @@
     }
   },
   "blockers": [],
-  "sourceSha256": "b133f012dd9ab73c82eee605b4ce719c90a1e8a2be993c7ac66756a9630cc5a2",
+  "sourceSha256": "1ceefab83bbd80ea1092755d1e3c8bcdf6939e627e472836cab2a65836fda732",
   "artifactBinding": {
     "algorithm": "sha256",
-    "sha256": "b133f012dd9ab73c82eee605b4ce719c90a1e8a2be993c7ac66756a9630cc5a2"
+    "sha256": "1ceefab83bbd80ea1092755d1e3c8bcdf6939e627e472836cab2a65836fda732"
   },
   "integration": {
     "packId": "parapro-1755-practice-1",
@@ -227,6 +231,16 @@
       "ledger": "dev-tools/non_eppp_authored_remediation/parapro_batch4_writing_33.cjs",
       "priorSha256": "48198d65b5f9429ea6d1154a10d6144ddf5d50cd962fe4a39665e3695daf5f71",
       "sha256": "b133f012dd9ab73c82eee605b4ce719c90a1e8a2be993c7ac66756a9630cc5a2",
+      "note": "Edited after the independent cross-review to eliminate editorial warning findings while preserving tested constructs and answer positions. The binding was renewed so the artifact stays self-consistent; the original reviewer did not review these replacements."
+    },
+    {
+      "at": "2026-11-21",
+      "by": "Antigravity — AlloFlow test-prep warning remediation pass",
+      "scope": "editorial warning remediation (lexical leakage / distractor feedback depth / extreme-qualifier balance)",
+      "itemsChanged": 33,
+      "ledger": "dev-tools/non_eppp_authored_remediation/parapro_batch4_writing_33.cjs + length_balance_wave2_part1.cjs",
+      "priorSha256": "b133f012dd9ab73c82eee605b4ce719c90a1e8a2be993c7ac66756a9630cc5a2",
+      "sha256": "1ceefab83bbd80ea1092755d1e3c8bcdf6939e627e472836cab2a65836fda732",
       "note": "Edited after the independent cross-review to eliminate editorial warning findings while preserving tested constructs and answer positions. The binding was renewed so the artifact stays self-consistent; the original reviewer did not review these replacements."
     }
   ]

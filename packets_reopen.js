@@ -186,16 +186,17 @@
     var text = String(line || '');
     if (typeof creditLine !== 'function' || !text) return null;
     if (text === creditLine({ own: true })) return { own: true };
-    var m = /^(?:"(.*)"(?: by (.*?))?|Picture by (.*?)|Picture), (CC0|Public domain|CC BY(?:-SA)?(?: \d(?:\.\d)?)?(?: [a-z]{2,5})?)(?: \(([^()\s]+)\))?(?:, from (.*?)(?: \(([^()\s]+)\))?)?(, made smaller)?\.$/i.exec(text);
+    var m = /^(?:"(.*)"(?: by (.*?))?|Picture by (.*?)|Picture), (CC0|Public domain|CC BY(?:-SA)?(?: \d(?:\.\d)?)?(?: [a-z]{2,5})?|AGPL-3\.0)(?: \(([^()\s]+)\))?(?:, from (.*?)(?: \(([^()\s]+)\))?)?(, made smaller)?\.$/i.exec(text);
     if (!m) return null;
     var credit = { title: m[1] || '', author: m[2] || m[3] || '', license: m[4], licenseUrl: m[5] ? 'https://' + m[5] : '', source: m[6] || '', sourceUrl: m[7] ? 'https://' + m[7] : '' };
+    if (/^agpl-3\.0$/i.test(credit.license) && !(credit.license === 'AGPL-3.0' && credit.author === 'AlloFlow' && credit.source === 'AlloFlow Curriculum Diagrams')) return null;
     if (m[8]) credit.resized = true;
     return creditLine(credit) === text ? credit : null;
   }
 
   function read(input, env) {
     var e = env || {};
-    var out = { ok: false, kind: 'other', why: '', page: null, teacherCode: false, title: '', activities: [], words: [], version: '', pictures: false, directionsOnce: false, learner: '', items: 0, own: {}, notes: [] };
+    var out = { ok: false, kind: 'other', why: '', page: null, teacherCode: false, title: '', activities: [], words: [], version: '', pictures: false, directionsOnce: false, showLetters: false, learner: '', items: 0, own: {}, notes: [] };
     var no = function (kind, why, page) { out.kind = kind; out.why = why; out.page = page || null; return out; };
     if (!e.verify || typeof e.verify.readParts !== 'function') return no('other', 'This page could not read the file. Load the page again.');
     var parts = e.verify.readParts(input);
@@ -254,6 +255,7 @@
     var level = isObject(m.builder) ? m.builder.choices : null;
     out.choices = level === 'easy' || level === 'medium' || level === 'all' ? level : 'all';
     out.directionsOnce = !!(lesson && lesson.instructionsOnce === true) || !!(isObject(m.builder) && m.builder.directionsOnce === true);
+    out.showLetters = !!(lesson && lesson.showLetters === true) || !!(isObject(m.builder) && m.builder.showLetters === true);
     // 2026-11-17: the missed questions once more at the end.
     out.repeatMissed = !!(lesson && lesson.repeatMissed === true);
     // 2026-11-18: the questions' order: 'mixed' (with its mix, orderSeed), the teacher's own ('activity|word' keys), or
@@ -336,10 +338,11 @@
     var lesson = parts.lesson, m = parts.manifest || {}, packet = isObject(m.packet) ? m.packet : {};
     var blocks = list(lesson.blocks).filter(function (block) { return isObject(block) && typeof block.activity === 'string' && Array.isArray(block.items); });
     var check = packet.mode === 'check' || packet.mode === 'probe' || lesson.mode === 'probe';
-    var kind = blocks.length && blocks.every(function (block) { return /^vocab_/.test(block.activity); }) ? 'vocab'
-      : blocks.length && blocks.every(function (block) { return block.activity === 'symbol_runner'; }) ? 'symbol'
-      : blocks.length && blocks.every(function (block) { return block.activity === 'read_along'; }) ? 'read'
-      : check ? 'check' : blocks.length && blocks.every(function (block) { return /^math_/.test(block.activity); }) ? 'math' : 'words';
+    var kind = !blocks.length ? 'other'
+      : blocks.every(function (block) { return /^vocab_/.test(block.activity); }) ? 'vocab'
+      : blocks.every(function (block) { return block.activity === 'symbol_runner'; }) ? 'symbol'
+      : blocks.every(function (block) { return block.activity === 'read_along'; }) ? 'read'
+      : check ? 'check' : blocks.every(function (block) { return /^math_/.test(block.activity); }) ? 'math' : 'words';
     return { parts: parts, lesson: lesson, manifest: m, blocks: blocks, kind: kind };
   }
   function elsewhere(kind, out) {
@@ -508,13 +511,25 @@
         if (w && !seen[k]) { seen[k] = true; words.push(w); }
       });
     });
-    var mode = (isObject(got.manifest.packet) && got.manifest.packet.mode === 'check') || got.lesson.mode === 'probe' ? 'check' : 'practice';
+    var v = isObject(got.manifest.vocab) ? got.manifest.vocab : null;
+    var mode = (v && v.mode === 'check') || (isObject(got.manifest.packet) && got.manifest.packet.mode === 'check') || got.lesson.mode === 'probe' ? 'check' : 'practice';
+    var hasReadOn = got.blocks.some(function (b) { return list(b.items).some(function (it) { return isObject(it) && it.read === true; }); });
+    var hasReadOff = got.blocks.some(function (b) { return list(b.items).some(function (it) { return isObject(it) && it.read === false; }); });
+    var readAloud = v ? v.readAloud !== false
+      : (isObject(got.manifest.speech) && got.manifest.speech.engine === 'none' ? false : (hasReadOn || !hasReadOff));
+    var voices = v ? v.voices !== false : true;
+    var diagrams = !!(v && v.diagrams === true);
+    var repeatMissed = mode !== 'check' && ((v && v.repeatMissed === true) || got.lesson.repeatMissed === true);
+    var order = mode !== 'check' && ((v && (v.order === 'mix' || v.order === 'mixed')) || (Array.isArray(got.lesson.sequence) && got.lesson.sequence.length > 0)) ? 'mix' : 'blocks';
+    var orderSeed = mode !== 'check' && order === 'mix' && v && typeof v.orderSeed === 'number' && isFinite(v.orderSeed) ? Math.floor(v.orderSeed) : null;
+    var noPicture = list(v && v.noPicture).map(function (w) { return typeof w === 'string' ? w.replace(/\s+/g, ' ').trim().slice(0, 60) : ''; }).filter(Boolean).slice(0, 40);
     out.ok = true;
     out.kind = 'vocab';
     out.title = String(got.lesson.title || got.manifest.title || '').replace(/\s+/g, ' ').trim().slice(0, 80);
     out.learner = learnerOf(got.manifest, e);
     out.teacherCode = isObject(got.lesson.check) && isObject(got.lesson.check.lock);
-    out.vocab = { ok: true, words: words, types: types, mode: mode, title: out.title, learner: out.learner, teacherCode: out.teacherCode };
+    out.vocab = { ok: true, words: words, types: types, mode: mode, title: out.title, learner: out.learner, teacherCode: out.teacherCode,
+      readAloud: readAloud, voices: voices, diagrams: diagrams, repeatMissed: repeatMissed, order: order, orderSeed: orderSeed, noPicture: noPicture };
     return out;
   }
 

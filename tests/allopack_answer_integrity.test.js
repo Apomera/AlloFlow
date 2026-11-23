@@ -1,13 +1,17 @@
-// Structural integrity for every quiz and math activity, in both editions.
+// Structural integrity for every quiz and math activity in the current AlloPack collection.
 // Factual accuracy and the adequacy of an answer guide still require content review.
 import {describe,it,expect} from 'vitest';
 import {readFileSync,readdirSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {createRequire} from 'node:module';
 const {validateAnswers}=createRequire(import.meta.url)('../dev-tools/lib/allopack_answer_integrity.cjs');
-const dir=resolve(process.cwd(),'allopacks');
-const files=readdirSync(dir).filter(f=>f.endsWith('.allopack.json'));
-files.push(...readdirSync(resolve(dir,'illustrated')).filter(f=>f.endsWith('.allopack.json')).map(f=>'illustrated/'+f));
+const dir=resolve(process.cwd(),'allopacks','current');
+const files=readdirSync(dir).filter(f=>f.endsWith('.allopack.json')).sort();
+describe('answer integrity collection guard',()=>{
+ it('scans the active AlloPack collection instead of an empty retired directory',()=>{
+  expect(files.length).toBeGreaterThanOrEqual(67);
+ });
+});
 describe.each(files)('answer integrity: %s',file=>{
  it('checks every quiz and math resource for usable answer keys',()=>{
   const p=JSON.parse(readFileSync(resolve(dir,file),'utf8').replace(/^\uFEFF/,''));

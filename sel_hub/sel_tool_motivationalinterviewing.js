@@ -37,6 +37,21 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
     document.body.appendChild(liveRegion);
   })();
 
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-mi-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-mi-a11y-css';
+    st.textContent =
+      '.selh-mi button:focus-visible, .selh-mi input:focus-visible, .selh-mi textarea:focus-visible, .selh-mi a:focus-visible, .selh-mi [tabindex]:focus-visible { outline: 3px solid #3b82f6 !important; outline-offset: 2px !important; }\n' +
+      '@media (prefers-reduced-motion: reduce) { .selh-mi *, .selh-mi *::before, .selh-mi *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }\n' +
+      '@media (forced-colors: active) { .selh-mi button, .selh-mi input, .selh-mi textarea { forced-color-adjust: auto; } .selh-mi button:focus-visible, .selh-mi input:focus-visible, .selh-mi textarea:focus-visible, .selh-mi a:focus-visible { outline: 2px solid Highlight !important; outline-offset: 2px !important; } }\n';
+    document.head.appendChild(st);
+  })();
+
+  function isImeComposing(e) {
+    return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+  }
+
   // OARS — the four core MI skills
   var OARS = [
     {
@@ -165,7 +180,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
       var _moiT = (ctx && ctx.theme) || {};
       var _moiHC = !!_moiT.isContrast, _moiL = !_moiHC && !_moiT.isDark;
       var _moi_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _moi_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#fff':'#000000','#3b82f6':'#000000','#1d4ed8':'#000000','#0ea5e9':'#000000','#0369a1':'#000000','#a855f7':'#000000','#7e22ce':'#000000'};
-      var _moi_FGL = {'#cbd5e1':'#334155','#93c5fd':'#1e3a8a','#94a3b8':'#475569','#bfdbfe':'#1e40af','#e2e8f0':'#1e293b','#fecaca':'#b91c1c','#fde68a':'#92400e','#e9d5ff':'#581c87','#fcd34d':'#78350f','#bbf7d0':'#166534','#0ea5e9':'#0369a1','#22c55e':'#166534','#a855f7':'#7e22ce','#f59e0b':'#92400e'}, _moi_FGH = {'#cbd5e1':'#ffff00','#93c5fd':'#ffff00','#94a3b8':'#ffff00','#bfdbfe':'#ffff00','#e2e8f0':'#ffff00','#bbf7d0':'#ffff00','#fecaca':'#ffff00','#fde68a':'#ffff00','#e9d5ff':'#ffff00','#fcd34d':'#ffff00','#fff':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#0ea5e9':'#ffff00','#22c55e':'#ffff00','#a855f7':'#ffff00','#f59e0b':'#ffff00'};
+      var _moi_FGL = {'#cbd5e1':'#334155','#93c5fd':'#1e3a8a','#94a3b8':'#475569','#64748b':'#475569','#bfdbfe':'#1e40af','#e2e8f0':'#1e293b','#fecaca':'#b91c1c','#fde68a':'#92400e','#e9d5ff':'#581c87','#fcd34d':'#78350f','#bbf7d0':'#166534','#0ea5e9':'#0369a1','#22c55e':'#166534','#a855f7':'#7e22ce','#f59e0b':'#92400e'}, _moi_FGH = {'#cbd5e1':'#ffff00','#93c5fd':'#ffff00','#94a3b8':'#ffff00','#bfdbfe':'#ffff00','#e2e8f0':'#ffff00','#bbf7d0':'#ffff00','#fecaca':'#ffff00','#fde68a':'#ffff00','#e9d5ff':'#ffff00','#fcd34d':'#ffff00','#fff':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#0ea5e9':'#ffff00','#22c55e':'#ffff00','#a855f7':'#ffff00','#f59e0b':'#ffff00'};
       var _moi_BDL = {'#334155':'#cbd5e1','#1e293b':'#cbd5e1','#475569':'#cbd5e1'}, _moi_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#3b82f6':'#ffff00','#a855f7':'#ffff00','#22c55e':'#ffff00','#ef4444':'#ffff00','#f59e0b':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#2563eb':'#ffff00','#e2e8f0':'#ffff00'};
       var _moiBg = function(h){ return _moiHC ? (_moi_BGH[h]||h) : (_moiL ? (_moi_BGL[h]||h) : h); };
       var _moiFg = function(h){ return _moiHC ? (_moi_FGH[h]||h) : (_moiL ? (_moi_FGL[h]||h) : h); };
@@ -222,13 +237,21 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
       }
       var VALID_VIEWS = ['home', 'oars', 'rulers', 'changetalk', 'self', 'print', 'about'];
       var view = VALID_VIEWS.indexOf(d.view) !== -1 ? d.view : 'home';
+      function announceMI(msg) {
+        if (!msg) return;
+        if (typeof announceToSR === 'function') { try { announceToSR(msg); } catch (_) {} }
+        if (typeof document !== 'undefined') {
+          var lr = document.getElementById('allo-live-mi');
+          if (lr) lr.textContent = msg;
+        }
+      }
       function goto(v) { setMI({ view: v }); }
       function printNow() { try { window.print(); } catch (e) {} }
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
-          h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: _moiHC ? '#000000' : (_moiL ? '#ffffff' : 'rgba(255,255,255,0.05)'), border: '1px solid ' + _moiBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _moiFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+          h('button', { type: 'button', onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
+            style: { background: _moiHC ? '#000000' : (_moiL ? '#ffffff' : 'rgba(255,255,255,0.05)'), border: '1px solid ' + _moiBd('#334155'), borderRadius: 8, padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', color: _moiFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _moiFg('#93c5fd'), fontSize: 22, fontWeight: 900 } }, '👂 Motivational Interviewing'),
             h('div', { style: { fontSize: 12, color: _moiFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A conversation style for helping someone think through a change.')
@@ -246,13 +269,30 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
           { id: 'print', label: 'Print', icon: '🖨' },
           { id: 'about', label: 'About', icon: 'ℹ' }
         ];
+        function onTabKeyDown(e, idx) {
+          if (isImeComposing(e)) return;
+          var nextIdx = null;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIdx = (idx + 1) % tabs.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIdx = (idx - 1 + tabs.length) % tabs.length;
+          else if (e.key === 'Home') nextIdx = 0;
+          else if (e.key === 'End') nextIdx = tabs.length - 1;
+          if (nextIdx === null) return;
+          e.preventDefault();
+          var target = tabs[nextIdx];
+          goto(target.id);
+          setTimeout(function() {
+            var el = typeof document !== 'undefined' ? document.getElementById('moi-tab-' + target.id) : null;
+            if (el && typeof el.focus === 'function') el.focus();
+          }, 0);
+        }
         return h('div', { className: 'no-print', role: 'tablist', 'aria-label': 'Motivational Interviewing sections',
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
-          tabs.map(function(t) {
+          tabs.map(function(t, idx) {
             var active = view === t.id;
-            return h('button', { key: t.id, id: 'moi-tab-' + t.id, onClick: function() { goto(t.id); },
-              role: 'tab', 'aria-selected': active, 'aria-controls': 'moi-panel',
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? _moiBd('#3b82f6') : _moiBd('#334155')),
+            return h('button', { key: t.id, type: 'button', id: 'moi-tab-' + t.id, onClick: function() { goto(t.id); },
+              onKeyDown: function(e) { onTabKeyDown(e, idx); },
+              role: 'tab', 'aria-selected': active, tabIndex: active ? 0 : -1, 'aria-controls': 'moi-panel',
+              style: { padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + (active ? _moiBd('#3b82f6') : _moiBd('#334155')),
                 background: active ? (_moiHC ? '#000000' : 'rgba(59,130,246,0.18)') : _moiBg('#1e293b'),
                 color: active ? _moiFg('#bfdbfe') : _moiFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
@@ -302,8 +342,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
       }
 
       function stepCard(title, blurb, onClick, color) {
-        return h('button', { onClick: onClick, 'aria-label': title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid ' + _moiBd('#1e293b'), borderRight: '1px solid ' + _moiBd('#1e293b'), borderBottom: '1px solid ' + _moiBd('#1e293b'), borderLeft: '4px solid ' + (_moiHC ? '#ffff00' : color), background: _moiBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _moiFg('#e2e8f0') } },
+        return h('button', { type: 'button', onClick: onClick, 'aria-label': title,
+          style: { width: '100%', textAlign: 'left', padding: 14, minHeight: 44, borderRadius: 10, borderTop: '1px solid ' + _moiBd('#1e293b'), borderRight: '1px solid ' + _moiBd('#1e293b'), borderBottom: '1px solid ' + _moiBd('#1e293b'), borderLeft: '4px solid ' + (_moiHC ? '#ffff00' : color), background: _moiBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _moiFg('#e2e8f0') } },
           h('div', { style: { fontSize: 14, fontWeight: 800, color: _moiFg(color), marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _moiFg('#94a3b8'), lineHeight: 1.55 } }, blurb)
         );
@@ -471,8 +511,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
             h('input', { id: 'mi-change', type: 'text', value: safePersonalChange,
               placeholder: 'e.g. I want to stop scrolling at night so I can sleep.',
               onChange: function(e) { setMI({ personalChange: e.target.value }); },
+              onKeyDown: function(e) { if (e.key === 'Escape' && !isImeComposing(e) && safePersonalChange) { e.preventDefault(); setMI({ personalChange: '' }); announceMI('Cleared change input.'); } },
               onBlur: function(e) { scanMIText(e.target.value); },
-              style: { width: '100%', padding: 10, borderRadius: 6, border: '1px solid ' + _moiBd('#334155'), background: _moiBg('#1e293b'), color: _moiFg('#e2e8f0'), fontSize: 13.5 } })
+              style: { width: '100%', boxSizing: 'border-box', minHeight: 44, padding: 10, borderRadius: 6, border: '1px solid ' + _moiBd('#334155'), background: _moiBg('#1e293b'), color: _moiFg('#e2e8f0'), fontSize: 13.5 } })
           ),
 
           // Three rulers
@@ -487,18 +528,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
               : '';
             return h('div', { key: rk.id, style: { padding: 14, borderRadius: 10, background: _moiBg('#0f172a'), borderTop: '1px solid ' + _moiBd('#1e293b'), borderRight: '1px solid ' + _moiBd('#1e293b'), borderBottom: '1px solid ' + _moiBd('#1e293b'), borderLeft: '3px solid ' + (_moiHC ? '#ffff00' : rk.color), marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
-                h('span', { style: { fontSize: 18 } }, rk.icon),
+                h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, rk.icon),
                 h('span', { style: { fontSize: 13, fontWeight: 800, color: _moiFg(rk.color) } }, rk.label)
               ),
               h('div', { style: { fontSize: 12, color: _moiFg('#cbd5e1'), marginBottom: 6, fontStyle: 'italic' } }, rk.question),
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
                 h('input', { type: 'range', min: 0, max: 10, value: hasVal ? v : 5,
                   onChange: function(e) { setRuler(rk.id, parseInt(e.target.value, 10)); },
-                  style: { flex: 1, minWidth: 180 }, 'aria-label': rk.label + ' rating',
+                  style: { flex: 1, minWidth: 180, minHeight: 44 }, 'aria-label': rk.label + ' rating',
                   'aria-valuetext': hasVal ? (v + ' out of 10') : 'Not yet rated (default 5)' }),
                 h('span', { style: { fontSize: 18, fontWeight: 900, color: _moiFg(rk.color), minWidth: 50, textAlign: 'right' } }, hasVal ? v + '/10' : '–'),
-                !hasVal ? h('button', { type: 'button', onClick: function() { setRuler(rk.id, 5); }, 'aria-label': 'Set ' + rk.label + ' rating to 5',
-                  style: { padding: '4px 8px', borderRadius: 4, border: '1px solid ' + (_moiHC ? '#ffff00' : rk.color), background: 'transparent', color: _moiFg(rk.color), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'Set 5') : null
+                !hasVal ? h('button', { type: 'button', onClick: function() { setRuler(rk.id, 5); announceMI(rk.label + ' rated 5 out of 10.'); }, 'aria-label': 'Set ' + rk.label + ' rating to 5',
+                  style: { padding: '8px 12px', minHeight: 44, minWidth: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, border: '1px solid ' + (_moiHC ? '#ffff00' : rk.color), background: 'transparent', color: _moiFg(rk.color), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, 'Set 5') : null
               ),
               hasVal ? h('div', { style: { fontSize: 11.5, color: _moiFg('#94a3b8'), marginTop: 8, lineHeight: 1.6, fontStyle: 'italic' } }, followText) : null
             );
@@ -512,7 +553,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
               placeholder: 'This matters to me because... It\'s hard because... A small first move would be...',
               onChange: function(e) { setMI({ myReflection: e.target.value }); },
               onBlur: function(e) { scanMIText(e.target.value); },
-              style: { width: '100%', minHeight: 120, padding: 10, borderRadius: 6, border: '1px solid ' + _moiBd('#334155'), background: _moiBg('#1e293b'), color: _moiFg('#e2e8f0'), fontSize: 13.5, fontFamily: 'inherit', lineHeight: 1.7, resize: 'vertical' } })
+              style: { width: '100%', boxSizing: 'border-box', minHeight: 120, padding: 10, borderRadius: 6, border: '1px solid ' + _moiBd('#334155'), background: _moiBg('#1e293b'), color: _moiFg('#e2e8f0'), fontSize: 13.5, fontFamily: 'inherit', lineHeight: 1.7, resize: 'vertical' } })
           ),
 
           softPointer()
@@ -578,7 +619,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
           h('div', { style: { fontSize: 11, color: _moiFg('#93c5fd'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: _moiFg('#bfdbfe'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+                style: { fontSize: 13, color: _moiFg('#bfdbfe'), fontWeight: 700, textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', minHeight: 44, marginBottom: 4 } }, title + ' ↗')
             : h('div', { style: { fontSize: 13, color: _moiFg('#bfdbfe'), fontWeight: 700, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _moiFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );
@@ -594,9 +635,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _moiFg('#bfdbfe'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'MI self-reflection — useful for a counselor session, peer support practice, or your own records.'),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _moiHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _moiHC ? '#000000' : 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)', color: _moiFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
-            h('button', { onClick: function() { goto('home'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _moiBd('#475569'), background: _moiBg('#1e293b'), color: _moiFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+            h('button', { type: 'button', onClick: printNow, style: { padding: '10px 18px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: _moiHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _moiHC ? '#000000' : 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)', color: _moiFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { type: 'button', onClick: function() { goto('home'); }, 'aria-label': 'Back',
+              style: { padding: '10px 18px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + _moiBd('#475569'), background: _moiBg('#1e293b'), color: _moiFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
@@ -668,7 +709,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
       else if (view === 'about') body = renderAbout();
       else body = renderHome();
 
-      return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Motivational Interviewing' },
+      return h('div', { className: 'selh-mi', style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Motivational Interviewing' },
         header(),
         navTabs(),
         (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')

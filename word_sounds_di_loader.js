@@ -1174,6 +1174,115 @@ function createWordSoundsCore(options = {}) {
     });
     return next;
   };
+  // Stratified random sample across one or more ready-made lists: balanced quota per list via
+  // round-robin over shuffled per-list buckets, case-insensitive dedup, optional eligible/syllable
+  // filter, and avoids repeating `previous` when the eligible pool exceeds `count`.
+  const sampleReadyListWords = (lists, count = READY_LIST_FIRST, rng = Math.random, options = {}) => {
+    const targetCount = count == null ? READY_LIST_FIRST : Math.max(0, Math.floor(Number(count) || 0));
+    if (!targetCount || !Array.isArray(lists) || !lists.length) return [];
+    const opts = (rng && typeof rng === 'object') ? { ...rng, ...(options || {}) } : (options || {});
+    const rawRng = (rng && typeof rng === 'object') ? opts.rng : rng;
+    const makeSeeded = (seed) => {
+      let a = (Number(seed) || 0) >>> 0;
+      return () => {
+        a = (a + 0x6D2B79F5) >>> 0;
+        let t = Math.imul(a ^ (a >>> 15), a | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    };
+    const nextRand = typeof rawRng === 'function' ? rawRng : typeof rawRng === 'number' ? makeSeeded(rawRng) : Math.random;
+    const drawUnit = () => {
+      const v = Number(nextRand());
+      return Number.isFinite(v) ? Math.min(0.999999999999, Math.max(0, v)) : 0;
+    };
+    const shuffleWith = (items) => {
+      const out = items.slice();
+      for (let i = out.length - 1; i > 0; i--) {
+        const j = Math.floor(drawUnit() * (i + 1));
+        const tmp = out[i]; out[i] = out[j]; out[j] = tmp;
+      }
+      return out;
+    };
+    const explicitFilter = typeof opts.filter === 'function' ? opts.filter : null;
+    const syllableFilter = typeof opts.withinSyllableRange === 'function' ? opts.withinSyllableRange : null;
+    const poolByKey = new Map();
+    const buckets = [];
+    lists.forEach(entry => {
+      const rawWords = Array.isArray(entry) ? entry : (Array.isArray(entry?.words) ? entry.words : []);
+      const filterBySyllables = Array.isArray(entry) ? true : entry?.filterBySyllables !== false;
+      const seenLocal = new Set(), bucket = [];
+      rawWords.forEach(raw => {
+        const word = String(raw || '').trim();
+        const key = foldWord(word);
+        if (!key || seenLocal.has(key)) return;
+        if (explicitFilter && !explicitFilter(word, entry)) return;
+        if (syllableFilter && filterBySyllables && !syllableFilter(word)) return;
+        seenLocal.add(key);
+        const canonical = poolByKey.has(key) ? poolByKey.get(key) : (poolByKey.set(key, word), word);
+        bucket.push(canonical);
+      });
+      if (bucket.length) buckets.push(bucket);
+    });
+    const pool = [...poolByKey.values()];
+    if (!pool.length) return [];
+    if (pool.length <= targetCount) return pool;
+    const drawOnce = () => {
+      const shuffledBuckets = shuffleWith(buckets.map(b => ({ words: shuffleWith(b), at: 0 })));
+      const picked = [], pickedKeys = new Set();
+      let progressed = true;
+      while (picked.length < targetCount && progressed) {
+        progressed = false;
+        for (let i = 0; i < shuffledBuckets.length && picked.length < targetCount; i++) {
+          const b = shuffledBuckets[i];
+          while (b.at < b.words.length) {
+            const candidate = b.words[b.at++];
+            const key = foldWord(candidate);
+            if (!pickedKeys.has(key)) {
+              pickedKeys.add(key);
+              picked.push(candidate);
+              progressed = true;
+              break;
+            }
+          }
+        }
+      }
+      return picked;
+    };
+    const prevRaw = opts.previous ? [...opts.previous] : [];
+    const prevKeys = new Set(prevRaw.map(foldWord).filter(key => poolByKey.has(key)));
+    const sameAsPrevious = (candidate) => prevKeys.size > 0 && candidate.length === prevKeys.size
+      && candidate.every(word => prevKeys.has(foldWord(word)));
+    let picked = drawOnce();
+    if (sameAsPrevious(picked)) {
+      for (let attempt = 0; attempt < 8 && sameAsPrevious(picked); attempt++) {
+        picked = drawOnce();
+      }
+      if (sameAsPrevious(picked)) {
+        const pickedKeys = new Set(picked.map(foldWord));
+        let swapped = false;
+        for (let bIdx = 0; bIdx < buckets.length && !swapped; bIdx++) {
+          const replacement = buckets[bIdx].find(word => !pickedKeys.has(foldWord(word)));
+          if (!replacement) continue;
+          const bucketKeys = new Set(buckets[bIdx].map(foldWord));
+          const replaceAt = picked.findIndex(word => bucketKeys.has(foldWord(word)));
+          if (replaceAt >= 0) {
+            picked = picked.slice();
+            picked[replaceAt] = replacement;
+            swapped = true;
+          }
+        }
+        if (!swapped) {
+          const replacement = pool.find(word => !pickedKeys.has(foldWord(word)));
+          if (replacement) {
+            picked = picked.slice();
+            picked[picked.length - 1] = replacement;
+          }
+        }
+      }
+    }
+    return picked;
+  };
   const isSyllableLanguageSupported = language => !String(language || '').trim() || /^(?:en(?:[-_][a-z0-9]+)*|english(?:\s*\([^)]*\))?)$/i.test(String(language).trim());
   const syllableLanguageKey = language => isSyllableLanguageSupported(language) ? 'en' : normalize(language).replace(/_/g, '-');
   const validSyllableCount = count => Number.isInteger(count) && count >= 1 && count <= 12;
@@ -2551,7 +2660,7 @@ function createWordSoundsCore(options = {}) {
       orthographyDistractors: misspellings(target, { sounds, isRealWord: real }) };
   };
   // END WORD SOUNDS SOUND DICTIONARY
-  return {OG_CONVENTIONS,SOUND_SOURCES,arpabetToSounds,arpabetEntry,loadPhonemeDictionary,dictionarySounds,alignGraphemes,soundAnalysis,mappingChipSpans,soundsNeedGlance,misspellings,derivedAnswerSets,LESSON_STARTING_POINTS,LESSON_LENGTHS,LESSON_LENGTH_DEFAULT,startingPoints,startingPointLabel,startingPointPlan,startingPointStatus,matchStartingPoint,suggestStartingPoint,scaleLessonCounts,lessonLengthOf,lessonPlanItems,lessonPlanMinutes,activityRunsInLanguage,activityBlockedBy,ACTIVITY_NEEDS,SYLLABLE_ACTIVITY_IDS,SYLLABLE_PLAN_DEFAULT_COUNT,isTopUpItem,lessonOwnItems,topUpItems,packItemPlaysIn,wordsForActivity,syllableActivityHasWords,syllableActivityPlan,compoundPartWords,ACTIVITY_SKILLS,SKILL_STRANDS,BIG5_NAMES,activityIds,activityEnglishName,activityLabel,activitySkillLabel,activityStrand,activityBig5,strandOrder,strandLabel,strandBig5,big5Label,strandBig5Label,groupActivitiesByStrand,soundAnswerMatches,phonemeBankCandidates,PHONEME_BANK_SPECIAL,PHONEME_BANK_MATCHES,lessonItemCeiling,PLAN_EXTENSION,planExtensionDecision,preparedSentenceParts,loadSyllablePronunciations,resolveSyllableCount,isTeacherSpokenSyllableCount,createReviewedSyllableCount,createSyllableCountAudioContext,selectSyllableCountAudio,recoverSyllableRecordingDraft,syllableCountWords,syllableRecordingTemplate,normalizeRecordedSyllableDependencies,packAudioLanguageKey,packAudioKey,packAudioAssets,portablePackAsset,packAudioProvenance,packAudioProfileStatus,packAudioInventory,planPackRepair,replacePackAssets,createReviewedSyllableTask,reviewedSyllableReady,syllableAssetSource,resolveSyllableTask,syllableReady,validSyllableBoard,syllableWords,isSyllableLanguageSupported,SYLLABLE_COMPOUNDS_VETTED,compoundWords,longerSyllableWords,READY_LIST_FIRST,readyMadeListGroups,readyListIdsFromDraft,defaultTickOffers,defaultTickedWords,mergeTickedWords,reviewedRhymeEdit,rhymePairStatus,createRhymeSession,buildSessionRhymeBoard,buildRhymeBoard,resolveManipulationTask,manipulationReady,VERSION,phonemeToken,phonemeLabel,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,choiceLimit,soundCloseness,wordCloseness,trimChoices,countingChoices,isolationPositions,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES).filter(w=>!NOT_OFFERED.has(w)),edgeWords:Object.keys(EDGES)};
+  return {OG_CONVENTIONS,SOUND_SOURCES,arpabetToSounds,arpabetEntry,loadPhonemeDictionary,dictionarySounds,alignGraphemes,soundAnalysis,mappingChipSpans,soundsNeedGlance,misspellings,derivedAnswerSets,LESSON_STARTING_POINTS,LESSON_LENGTHS,LESSON_LENGTH_DEFAULT,startingPoints,startingPointLabel,startingPointPlan,startingPointStatus,matchStartingPoint,suggestStartingPoint,scaleLessonCounts,lessonLengthOf,lessonPlanItems,lessonPlanMinutes,activityRunsInLanguage,activityBlockedBy,ACTIVITY_NEEDS,SYLLABLE_ACTIVITY_IDS,SYLLABLE_PLAN_DEFAULT_COUNT,isTopUpItem,lessonOwnItems,topUpItems,packItemPlaysIn,wordsForActivity,syllableActivityHasWords,syllableActivityPlan,compoundPartWords,ACTIVITY_SKILLS,SKILL_STRANDS,BIG5_NAMES,activityIds,activityEnglishName,activityLabel,activitySkillLabel,activityStrand,activityBig5,strandOrder,strandLabel,strandBig5,big5Label,strandBig5Label,groupActivitiesByStrand,soundAnswerMatches,phonemeBankCandidates,PHONEME_BANK_SPECIAL,PHONEME_BANK_MATCHES,lessonItemCeiling,PLAN_EXTENSION,planExtensionDecision,preparedSentenceParts,loadSyllablePronunciations,resolveSyllableCount,isTeacherSpokenSyllableCount,createReviewedSyllableCount,createSyllableCountAudioContext,selectSyllableCountAudio,recoverSyllableRecordingDraft,syllableCountWords,syllableRecordingTemplate,normalizeRecordedSyllableDependencies,packAudioLanguageKey,packAudioKey,packAudioAssets,portablePackAsset,packAudioProvenance,packAudioProfileStatus,packAudioInventory,planPackRepair,replacePackAssets,createReviewedSyllableTask,reviewedSyllableReady,syllableAssetSource,resolveSyllableTask,syllableReady,validSyllableBoard,syllableWords,isSyllableLanguageSupported,SYLLABLE_COMPOUNDS_VETTED,compoundWords,longerSyllableWords,READY_LIST_FIRST,readyMadeListGroups,readyListIdsFromDraft,defaultTickOffers,defaultTickedWords,mergeTickedWords,sampleReadyListWords,reviewedRhymeEdit,rhymePairStatus,createRhymeSession,buildSessionRhymeBoard,buildRhymeBoard,resolveManipulationTask,manipulationReady,VERSION,phonemeToken,phonemeLabel,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,choiceLimit,soundCloseness,wordCloseness,trimChoices,countingChoices,isolationPositions,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES).filter(w=>!NOT_OFFERED.has(w)),edgeWords:Object.keys(EDGES)};
 }
 const WS_CORE = createWordSoundsCore();
 // END GENERATED WORD SOUNDS CORE

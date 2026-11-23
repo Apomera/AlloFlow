@@ -110,7 +110,7 @@
 .diss-quick-chip:hover:not(:disabled) { background: #f0fdfa; border-color: #087f78; transform: translateY(-1px); }
 .diss-quick-chip[aria-pressed="true"] { background: #087f78; border-color: #087f78; color: #ffffff; }
 .dark [data-dissection-root] .diss-quick-chip { background: #1e293b; color: #f1f5f9; border-color: #475569; }
-.dark [data-dissection-root] .diss-quick-chip[aria-pressed="true"] { background: #0d9488; border-color: #2dd4bf; color: #042f2e; }
+.dark [data-dissection-root] .diss-quick-chip[aria-pressed="true"] { background: #0f766e; border-color: #2dd4bf; color: #ffffff; }
 .theme-contrast [data-dissection-root] .diss-layer-telemetry,
 [data-dissection-root][data-high-contrast="true"] .diss-layer-telemetry { background: #000000 !important; border: 2px solid #facc15 !important; color: #ffffff !important; }
 .theme-contrast [data-dissection-root] .diss-layer-telemetry__head,
@@ -119,6 +119,8 @@
 [data-dissection-root][data-high-contrast="true"] .diss-quick-chip { background: #000000 !important; border: 2px solid #ffffff !important; color: #ffffff !important; }
 .theme-contrast [data-dissection-root] .diss-quick-chip[aria-pressed="true"],
 [data-dissection-root][data-high-contrast="true"] .diss-quick-chip[aria-pressed="true"] { background: #facc15 !important; border-color: #facc15 !important; color: #000000 !important; }
+.theme-contrast [data-dissection-root] .diss-quick-chip[aria-pressed="true"] *,
+[data-dissection-root][data-high-contrast="true"] .diss-quick-chip[aria-pressed="true"] * { color: #000000 !important; }
 
 /* Readable reference workbench: same content at every viewport size. */
 .diss-reference-context { padding: .8rem; margin: .65rem 0; border: 1px solid #b6cbdc; border-left: 4px solid #087f78; border-radius: .65rem; background: #f0fdfa; color: #173d48; }
@@ -26129,7 +26131,7 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
                   var missing = !evidence.hasNote && !evidence.confidence ? 'Note and confidence needed' : (!evidence.hasNote ? 'Note needed' : 'Confidence needed');
                   return React.createElement('li', { key: org.id, 'data-record-organ': org.id },
                     React.createElement('div', { className: 'diss-layer-records__label' }, React.createElement('strong', null, org.name), React.createElement('span', { id: 'diss-layer-record-missing-' + org.id }, missing)),
-                    React.createElement('button', { type: 'button', className: 'diss-layer-review__action', 'aria-label': 'Finish evidence for ' + org.name, 'aria-controls': 'diss-structure-directory', 'aria-describedby': 'diss-layer-record-missing-' + org.id, onClick: function () { finishLayerRecord(org); } }, 'Finish record')
+                    React.createElement('button', { type: 'button', className: 'diss-layer-review__action', 'aria-label': 'Finish record for ' + org.name, 'aria-controls': 'diss-structure-directory', 'aria-describedby': 'diss-layer-record-missing-' + org.id, onClick: function () { finishLayerRecord(org); } }, 'Finish record')
                   );
                 }))
               )
@@ -29777,7 +29779,7 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
                       : 'Pause this card to check the specimen or your existing notes. Resume flashcards keeps your draft and place in the round; it does not copy recall text into your evidence.'),
                     React.createElement("div", { className: 'diss-recall__actions' },
                       React.createElement("button", { type: 'button', 'data-flashcard-handoff': 'find', disabled: flashcardHandoffBlocked,
-                        'aria-label': 'Find ' + flashcardCurrent.name + ' on specimen', 'aria-describedby': 'diss-flashcard-handoff-help',
+                        'aria-label': 'Find on specimen: ' + flashcardCurrent.name, 'aria-describedby': 'diss-flashcard-handoff-help',
                         onClick: function () { pauseFlashcardsForSpecimen(false); } }, 'Find on specimen'),
                       structureEvidenceData(flashcardCurrent).inspected && React.createElement("button", { type: 'button', 'data-flashcard-handoff': 'record', disabled: flashcardHandoffBlocked,
                         'aria-label': 'Review my evidence for ' + flashcardCurrent.name, 'aria-describedby': 'diss-flashcard-handoff-help',

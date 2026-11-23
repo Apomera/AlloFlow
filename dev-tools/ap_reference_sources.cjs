@@ -62,6 +62,8 @@ const apCourseSources = (() => {
       cedUrl: 'https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf',
       cedTitle: 'AP U.S. Government and Politics Course and Exam Description',
       courseUrl: 'https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics',
+      examUrl: 'https://apcentral.collegeboard.org/courses/ap-united-states-government-and-politics/exam',
+      examNote: 'including the required foundational documents, Supreme Court cases, and four free-response question types',
       textUrl: 'https://openstax.org/details/books/american-government-3e',
       textTitle: 'American Government 3e',
       textOrg: 'OpenStax, Rice University',
@@ -104,8 +106,9 @@ const apCourseSources = (() => {
   return entries;
 })();
 
-// The Government clarifications document does not fit the per-course shape above.
-const AP_GOVERNMENT_CLARIFICATIONS = {
+// Additional AP exam pages and OpenStax U.S. History chapter/section references
+// cited by the AP Biology, AP U.S. Government, and AP U.S. History pilots.
+const AP_ADDITIONAL_SOURCES = {
   'https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description-clarifications-effective-fall-2026.pdf': {
     title: 'AP U.S. Government and Politics Course Framework Clarifications, Effective Fall 2026',
     organization: 'College Board',
@@ -113,6 +116,69 @@ const AP_GOVERNMENT_CLARIFICATIONS = {
     credibility: 'College Board publishes the AP U.S. Government and Politics framework and its clarifications, making this the primary source for official changes. Readers should confirm they are using the version that applies to their exam year.',
     metadataSource: 'explicit-override',
   },
+  'https://apcentral.collegeboard.org/courses/ap-biology/exam': {
+    title: 'AP Biology Exam',
+    organization: 'College Board',
+    summary: 'This official exam page describes the current AP Biology exam format, section timing, question types, scoring proportions, and published equation and formula sheet.',
+    credibility: 'College Board owns and administers the AP Biology exam, making this the primary public source for current exam structure and logistics. AlloFlow practice is independently authored and does not reproduce official exam questions.',
+    metadataSource: 'explicit-override',
+  },
+  'https://openstax.org/books/us-history/pages/2-2-the-arrival-of-the-spanish-and-the-establishment-of-the-colonies': {
+    title: 'U.S. History, Chapter 2: Early Globalization and Spanish Colonial Establishment',
+    organization: 'OpenStax, Rice University',
+    summary: 'This OpenStax U.S. History chapter reference addresses early Atlantic-world encounters, Spanish colonial arrival, and the establishment of European colonies in the Americas for AP U.S. History cross-checking.',
+    credibility: 'OpenStax is a nonprofit educational initiative at Rice University whose openly licensed textbooks use expert authorship, faculty review, and a documented errata process. It serves as an independent instructional reference rather than an official College Board blueprint.',
+    metadataSource: 'explicit-override',
+  },
+  'https://openstax.org/books/us-history/pages/4-3-the-french-and-indian-war': {
+    title: 'U.S. History, Chapter 4: Imperial Wars and the French and Indian War',
+    organization: 'OpenStax, Rice University',
+    summary: 'This OpenStax U.S. History chapter reference examines eighteenth-century imperial competition in North America, Indigenous diplomacy, and the causes and consequences of the French and Indian War.',
+    credibility: 'OpenStax is a nonprofit educational initiative at Rice University whose openly licensed textbooks use expert authorship, faculty review, and a documented errata process. It serves as an independent instructional reference rather than an official College Board blueprint.',
+    metadataSource: 'explicit-override',
+  },
+  'https://openstax.org/books/us-history/pages/7-introduction': {
+    title: 'U.S. History, Chapter 7: Creating Republican Governments, 1776–1790',
+    organization: 'OpenStax, Rice University',
+    summary: 'This chapter introduction frames the transition from revolutionary war to republican governance, covering state constitutions, the Articles of Confederation, debates over democracy, and the Constitutional Convention.',
+    credibility: 'OpenStax is a nonprofit educational initiative at Rice University whose openly licensed textbooks use expert authorship, faculty review, and a documented errata process. It serves as an independent instructional reference rather than an official College Board blueprint.',
+    metadataSource: 'explicit-override',
+  },
+  'https://openstax.org/books/us-history/pages/17-introduction': {
+    title: 'U.S. History, Chapter 17: Go West Young Man! Westward Expansion, 1840–1900',
+    organization: 'OpenStax, Rice University',
+    summary: 'This chapter introduction surveys nineteenth-century western migration, homesteading, mining and ranching economies, federal policy toward Native peoples, and impacts on Chinese immigrants and Hispanic citizens.',
+    credibility: 'OpenStax is a nonprofit educational initiative at Rice University whose openly licensed textbooks use expert authorship, faculty review, and a documented errata process. It serves as an independent instructional reference rather than an official College Board blueprint.',
+    metadataSource: 'explicit-override',
+  },
+  'https://openstax.org/books/us-history/pages/20-introduction': {
+    title: 'U.S. History, Chapter 20: Politics in the Gilded Age, 1870–1900',
+    organization: 'OpenStax, Rice University',
+    summary: 'This chapter introduction frames Gilded Age party politics, patronage and civil-service reform, tariff and monetary debates, Populist agrarian revolt, and social and labor unrest in the late nineteenth century.',
+    credibility: 'OpenStax is a nonprofit educational initiative at Rice University whose openly licensed textbooks use expert authorship, faculty review, and a documented errata process. It serves as an independent instructional reference rather than an official College Board blueprint.',
+    metadataSource: 'explicit-override',
+  },
+  'https://openstax.org/books/us-history/pages/25-introduction': {
+    title: 'U.S. History, Chapter 25: Brother, Can You Spare a Dime? The Great Depression, 1929–1932',
+    organization: 'OpenStax, Rice University',
+    summary: 'This chapter introduction examines the 1929 stock market crash, economic contraction, President Hoover’s policy responses, and the human toll of the early Great Depression.',
+    credibility: 'OpenStax is a nonprofit educational initiative at Rice University whose openly licensed textbooks use expert authorship, faculty review, and a documented errata process. It serves as an independent instructional reference rather than an official College Board blueprint.',
+    metadataSource: 'explicit-override',
+  },
+  'https://openstax.org/books/us-history/pages/26-introduction': {
+    title: 'U.S. History, Chapter 26: Franklin Roosevelt and the New Deal, 1932–1941',
+    organization: 'OpenStax, Rice University',
+    summary: 'This chapter introduction outlines Franklin D. Roosevelt’s election and the First and Second New Deal programs aimed at relief, economic recovery, financial regulation, and social-welfare reform.',
+    credibility: 'OpenStax is a nonprofit educational initiative at Rice University whose openly licensed textbooks use expert authorship, faculty review, and a documented errata process. It serves as an independent instructional reference rather than an official College Board blueprint.',
+    metadataSource: 'explicit-override',
+  },
+  'https://openstax.org/books/us-history/pages/29-introduction': {
+    title: 'U.S. History, Chapter 29: Contesting Futures: America in the 1960s',
+    organization: 'OpenStax, Rice University',
+    summary: 'This chapter introduction surveys 1960s domestic and foreign-policy transformations, including the Kennedy administration, Lyndon Johnson’s Great Society, civil rights organizing, Vietnam War debates, and social movements.',
+    credibility: 'OpenStax is a nonprofit educational initiative at Rice University whose openly licensed textbooks use expert authorship, faculty review, and a documented errata process. It serves as an independent instructional reference rather than an official College Board blueprint.',
+    metadataSource: 'explicit-override',
+  },
 };
 
-module.exports = { AP_REFERENCE_SOURCES: { ...apCourseSources, ...AP_GOVERNMENT_CLARIFICATIONS } };
+module.exports = { AP_REFERENCE_SOURCES: { ...apCourseSources, ...AP_ADDITIONAL_SOURCES } };

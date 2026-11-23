@@ -4,7 +4,15 @@
   function createWordPracticeCore() {
     const LIMITS = Object.freeze({ setFileBytes: 32 * 1024 * 1024, words: 200, wordLength: 120, translationLanguages: 256, instructionChars: 12000, totalInstructionChars: 512 * 1024, audioChars: 4 * 1024 * 1024, totalAudioChars: 24 * 1024 * 1024, pictureChars: 6 * 1024 * 1024, totalPictureChars: 20 * 1024 * 1024 });
     const own = (obj, key) => obj && Object.prototype.hasOwnProperty.call(obj, key) ? obj[key] : undefined;
-    const text = (value, max = 2000) => typeof value === 'string' ? value.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '').trim().slice(0, max) : '';
+    const text = (value, max = 2000) => {
+      if (typeof value !== 'string') return '';
+      const clean = value
+        .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f\ufffe\uffff]/g, '')
+        .replace(/[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/g, '')
+        .trim()
+        .slice(0, max);
+      return clean.replace(/[\ud800-\udbff]$/, '');
+    };
     const key = value => text(value).normalize('NFC').toLocaleLowerCase().replace(/\s+/g, ' ');
     const escapeHtml = value => String(value == null ? '' : value).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
     const safeJson = value => JSON.stringify(value).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
@@ -241,8 +249,15 @@
         const line = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AltText && window.AlloModules.AltText.openImageCreditLine;
         if (typeof line === 'function') return text(line(value), 400);
       } catch (_) {}
-      return ['set', 'author', 'license'].map(name => text(value[name], 160)).concat(value.modified === true ? ['edited'] : []).filter(Boolean).join(' · ');
+      const parts = [text(value.set || value.title || value.source, 160), text(value.author, 160), text(value.license, 160)].concat(value.modified === true ? ['edited'] : []).filter(Boolean);
+      if (parts.length) return parts.join(' · ');
+      return text(value.credit || value.text, 400);
     }
+    function formatPictureCredit(value) {
+      if (typeof value === 'string') return text(value, 400);
+      return pictureCredit(value);
+    }
+    const wordLanguage = (item, fallback = 'en') => fieldLanguage(item, 'term', fallback);
     // Accepts a glossary entry (image, imageAlt, imageDecorative, imageAttribution)
     // or a saved practice item's own { picture } on re-normalisation.
     function pictureFor(record, word) {
@@ -257,7 +272,7 @@
         if (!saved && alt && record.imageAltHash && typeof raw === 'string' && pictureHash(raw) !== record.imageAltHash) alt = '';
         alt = alt || text(word, LIMITS.wordLength);
       }
-      return { src, alt, decorative, credit: saved ? text(saved.credit, 400) : pictureCredit(record.imageAttribution) };
+      return { src, alt, decorative, credit: saved ? formatPictureCredit(saved.credit || saved.attribution) : formatPictureCredit(record.imageAttribution || record.imageCredit) };
     }
     // Keep the portable player independent of the live Word Sounds module.
     // These are its canonical phonics/IPA mappings, parity-checked against
@@ -662,9 +677,9 @@
       const escaped = target.normalize('NFC').replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
       try {
         // Scripts written without spaces have no word boundary to anchor on.
-        const pattern = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Thai}]/u.test(target)
-          ? new RegExp(escaped, 'giu')
-          : new RegExp('(?<![\\p{L}\\p{N}])' + escaped + "(?:s|es|ed|d|ing|'s)?(?![\\p{L}\\p{N}])", 'giu');
+        const pattern = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Thai}\p{Script=Lao}\p{Script=Khmer}\p{Script=Myanmar}]/u.test(target)
+          ? new RegExp(escaped + '(?![\\p{M}])', 'giu')
+          : new RegExp('(?<![\\p{L}\\p{N}\\p{M}])' + escaped + "(?:s|es|ed|d|ing|['\u2019]s)?(?![\\p{L}\\p{N}\\p{M}])", 'giu');
         const normalized = source.normalize('NFC'), masked = normalized.replace(pattern, '____');
         return masked === normalized ? source : masked;
       } catch (_) { return source; }
@@ -688,7 +703,7 @@
       return !!(item && (item.definition || item.example || visibleTranslations(item, options).length || (options && options.includePictures && item.picture)));
     }
     function serializePack(pack) { return safeJson(normalizeInput(pack)); }
-    return { LIMITS, text, key, languageInfo, languageLabel, translationLanguageKey, visibleTranslations, audioLanguageKey, fieldLanguage, audioCompatibility, audioIssueCounts, soundKey, soundBankSources, safeAudio, safePicture, maskWord, recallClue, hasMeaning, escapeHtml, safeJson, parseWords, normalizeAnnotations, normalizeInput, normalizeOptions, cardAppearance, playableItems, createSequence, audioCoverage, serializePack };
+    return { LIMITS, text, key, languageInfo, languageLabel, translationLanguageKey, visibleTranslations, audioLanguageKey, fieldLanguage, wordLanguage, formatPictureCredit, audioCompatibility, audioIssueCounts, soundKey, soundBankSources, safeAudio, safePicture, maskWord, recallClue, hasMeaning, escapeHtml, safeJson, parseWords, normalizeAnnotations, normalizeInput, normalizeOptions, cardAppearance, playableItems, createSequence, audioCoverage, serializePack };
   }
   root.AlloWordPracticeCore = createWordPracticeCore();
   // The standalone HTML player embeds this exact factory, keeping its validator

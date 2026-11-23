@@ -1301,16 +1301,24 @@ function expandExamples(topicId, desiredCount) {
   return output;
 }
 
-function conceptChoiceRationales(topicId, answerConceptIndex, choices, stemFocus) {
+function ensureTerminalPeriod(text) {
+  const trimmed = String(text || '').trim();
+  if (!trimmed) return '';
+  return /[.?!]$/.test(trimmed) ? trimmed : `${trimmed}.`;
+}
+
+function conceptChoiceRationales(topicId, answerConceptIndex, choices, scenarioText, plan) {
   const concepts = topicConcepts(topicId);
   const answer = concepts[answerConceptIndex];
+  const scenarioSentence = ensureTerminalPeriod(scenarioText);
+  const subjectLabel = plan?.subject ? ` within ${plan.subject}` : '';
   return choices.map((choice) => {
     const concept = concepts.find((candidate) => candidate.label === choice);
     if (!concept) return `${choice} is not the best interpretation because the data or scenario requires a different construct and a more specific explanation of the observed pattern.`;
     if (concept.label === answer.label) {
-      return `${concept.label} fits because ${answer.definition}. The example's defining pattern is ${stemFocus}, which matches this concept rather than a neighboring construct.`;
+      return `${concept.label} accurately accounts for this scenario because it refers to ${answer.definition}. ${scenarioSentence} That pattern directly exemplifies this mechanism${subjectLabel}.`;
     }
-    return `This option describes ${concept.definition}, which differs from the scenario's defining pattern rather than explaining the psychological mechanism shown here.`;
+    return `This option refers to ${concept.definition}. ${scenarioSentence} That pattern illustrates ${answer.definition} rather than this competing construct.`;
   });
 }
 
@@ -1454,15 +1462,16 @@ function makeConceptItem(topicId, plan, blueprint, id, answerIndex, generatedInd
     answerIndex,
     0x110000 + generatedIndex,
   );
-  const focus = `the defining pattern for ${answer.label}`;
+  const scenarioSentence = ensureTerminalPeriod(blueprint.text);
+  const subjectLabel = plan?.subject ? ` within ${plan.subject}` : '';
   const prompt = `${blueprint.text} ${p1Frames[generatedIndex % p1Frames.length]}`;
   const item = {
     ...baseMetadata(topicId, plan, 'P1', generatedIndex % 5 === 0 ? '1.B' : '1.A', answerIndex, id, generatedIndex % 3 === 0 ? 'advanced' : 'intermediate', 'application'),
     prompt,
     choices,
     answerIndex,
-    rationale: `${answer.label} is the best answer because ${answer.definition}. The example presents ${focus}, so the learner must distinguish this mechanism from related concepts rather than match a surface word.`,
-    choiceRationales: conceptChoiceRationales(topicId, blueprint.conceptIndex, choices, focus),
+    rationale: `${answer.label} is the best answer because it refers to ${answer.definition}. ${scenarioSentence} Recognizing that pattern distinguishes this mechanism${subjectLabel} from related concepts in the same topic.`,
+    choiceRationales: conceptChoiceRationales(topicId, blueprint.conceptIndex, choices, blueprint.text, plan),
   };
   assert(wordCount(item.rationale) >= 20, `${id} concept rationale is too short.`);
   return item;
@@ -1638,101 +1647,146 @@ function dataTopicPrefix(topicId, index) {
   return frames[Math.abs(index) % frames.length];
 }
 
-function targetedDistractorFeedback(choice, blueprint, practiceId) {
-  const option = String(choice || '').toLowerCase();
+function targetedDistractorFeedback(choice, blueprint, practiceId, plan) {
+  const rawChoice = String(choice || '')
+    .replace(/(?:\s+(?:in this case|for these participants|as measured here|under these conditions))+$/gi, '')
+    .trim();
+  const option = rawChoice.toLowerCase();
   const stem = String(blueprint.stem || '').toLowerCase();
+  const subject = plan && plan.subject ? plan.subject : 'the target psychological topic';
+  const variable = plan && plan.variable ? plan.variable : 'the assigned factor';
+  const outcome = plan && plan.outcome ? plan.outcome : 'the measured outcome';
   if (practiceId === 'P2') {
     if (option.includes('confounding')) {
-      return 'A confounding variable is an uncontrolled alternative explanation, not the measurement, sampling, or replication term requested by this stem.';
+      return `In this ${subject} study, a confounding variable is an uncontrolled alternative explanation rather than the measurement, sampling, or replication feature requested here.`;
     }
     if (option.includes('random sample')) {
-      return 'A random sample concerns representativeness and generalizability, whereas this stem asks about a different research feature.';
+      return `In this ${subject} study, a random sample addresses population representativeness and generalizability rather than the specific research design feature asked about.`;
     }
     if (option.includes('replication')) {
-      return 'Replication requires repeating the procedure with another sample; the described feature does not identify whether a finding was reproduced.';
+      return `Replication in ${subject} research requires repeating the procedure with a new sample; the feature described here does not evaluate whether findings were reproduced.`;
     }
-    if (option.includes('recorded') || option.includes('measured') || option.includes('dependent variable')) {
-      return 'This is the measured outcome rather than the condition the researchers assigned, so it is the dependent variable in this design.';
+    if (option.includes('demographic')) {
+      return `Demographic background traits describe who entered this ${subject} study rather than the ${variable} condition researchers actively manipulated across groups.`;
     }
-    if (option.includes('demographic') || option.includes('number of researchers')) {
-      return 'This describes a participant or research-team characteristic, not the experimental condition that was assigned to participants.';
-    }
-    if (option.includes('random assignment')) {
-      return 'Random assignment can strengthen causal inference, but it does not make volunteers from one course representative of the target population.';
-    }
-    if (option.includes('correlation')) {
-      return 'Correlation describes an association between measures; it does not determine whether a convenience sample represents the broader population.';
-    }
-    if (option.includes('cause') || option.includes('causal')) {
-      return 'This option treats an observed association as causal, but the nonexperimental design leaves directionality and third-variable explanations unresolved.';
+    if (option.includes('number of researchers')) {
+      return `Research-team size is an administrative staffing detail rather than the assigned ${variable} condition manipulated in this ${subject} experiment.`;
     }
     if (option.includes('no measurable')) {
-      return 'The study contains measurable variables; the issue is how the variables were observed and what conclusion that design permits.';
-    }
-    if (option.includes('necessarily randomly')) {
-      return 'The stem explicitly describes observation without assignment, so random assignment cannot be inferred from the reported correlation.';
+      return `This ${subject} study explicitly records measurable data on ${variable} and ${outcome}; the limitation concerns how the observational design restricts causal claims.`;
     }
     if (option.includes('deception')) {
-      return 'Deception without appropriate safeguards and debriefing would not represent the informed-consent and welfare protections described in the study.';
+      return `Deception without safeguards and debriefing conflicts with the informed-consent and participant-welfare protections described in this ${subject} protocol.`;
     }
     if (option.includes('placebo')) {
-      return 'A placebo is a treatment-control concept; it does not identify the ethical protections involving information, refusal, and participant welfare.';
+      return `A placebo is a treatment-control procedure in ${subject} experiments rather than the ethical requirement covering informed consent, voluntary withdrawal, and welfare.`;
     }
     if (option.includes('law of effect')) {
-      return 'The law of effect concerns consequences and future behavior, not the ethical responsibilities described before collecting research data.';
+      return `The law of effect explains how consequences shape future behavior rather than the pre-study ethical protections applied in this ${subject} research protocol.`;
+    }
+    if (option.includes('recorded') || option.includes('measured') || option.includes('dependent variable')) {
+      return `Recording ${outcome} captures the measured outcome (dependent variable) in this ${subject} design rather than the ${variable} condition assigned by researchers.`;
+    }
+    if (option.includes('random assignment')) {
+      return `Random assignment balances groups for causal inference in ${subject} experiments, yet it cannot make volunteers from one course representative of the broader population.`;
+    }
+    if (option.includes('correlation')) {
+      return `Correlation quantifies how ${variable} and ${outcome} covary, which does not resolve whether a single-course volunteer sample represents the target population.`;
+    }
+    if (/\b(?:cause|causal)\b/.test(option)) {
+      return `Treating the observed link between ${variable} and ${outcome} as causal overreaches because the nonexperimental ${subject} design leaves directionality and third variables open.`;
+    }
+    if (option.includes('necessarily randomly')) {
+      return `This ${subject} stem describes observing ${variable} and ${outcome} without experimental assignment, so random assignment cannot be inferred from the association.`;
     }
     if (option.includes('operational definition')) {
-      return 'An operational definition specifies how a construct is measured; it is not the same as repeating a study or naming an uncontrolled variable.';
+      return `An operational definition specifies how ${variable} or ${outcome} is measured, which differs from repeating a ${subject} procedure or identifying an uncontrolled confound.`;
     }
     if (option.includes('biased answer')) {
-      return 'A biased answer key is not the methodological result of repeating the same procedures with a new sample and obtaining a similar pattern.';
+      return `A biased answer key is an assessment scoring flaw rather than the methodological evidence gained when a ${subject} procedure yields consistent results in a new sample.`;
     }
     if (stem.includes('volunteers') && option.includes('population')) {
-      return 'This option does not identify the representativeness problem created by recruiting volunteers from one introductory course.';
+      return `Recruiting volunteers from one introductory course limits external validity for this ${subject} claim rather than solving representativeness across the wider population.`;
     }
   }
   if (practiceId === 'P3') {
     if (stem.includes('correlation')) {
-      if (option.includes('cause') || option.includes('causal') || option.includes('prove')) {
-        return 'A correlation describes how two measures vary together; without manipulation or stronger design evidence, it cannot establish causation.';
-      }
       if (option.includes('zero')) {
-        return 'A coefficient can be positive or negative and still be nonzero; the magnitude and sign, not equality with 1.00, carry the interpretation.';
+        return `In this ${subject} dataset, a correlation can be positive or negative and still be nonzero; the sign and magnitude between ${variable} and ${outcome} carry the interpretation.`;
       }
       if (option.includes('error')) {
-        return 'A correlation does not show that the measures are error-free; reliability and validity require separate evidence.';
+        return `An observed correlation between ${variable} and ${outcome} never proves error-free measurement; reliability and validity in ${subject} require separate psychometric evidence.`;
       }
-      return 'This choice does not correctly interpret the sign, magnitude, or noncausal limit of the reported correlation.';
+      if (/\b(?:cause|causal)\b/.test(option)) {
+        return `This correlation summarizes how ${variable} and ${outcome} vary together in ${subject}, but without manipulation or stronger design evidence it cannot establish causation.`;
+      }
+      return `This choice misreads the sign, strength, or noncausal boundary of the reported ${subject} correlation between ${variable} and ${outcome}.`;
     }
     if (stem.includes('median')) {
-      return 'This numerical choice does not identify the middle score after ordering the five observations; the mean and endpoints answer different questions.';
+      const value = Number.parseFloat(rawChoice);
+      const ans = Number.parseFloat(blueprint.answer);
+      const scoreMatch = String(blueprint.stem || '').match(/(\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*\d+)/);
+      const scores = scoreMatch ? scoreMatch[1].split(',').map((s) => Number(s.trim())).sort((a, b) => a - b) : [];
+      if (scores.length === 5 && Number.isFinite(value)) {
+        const min = scores[0];
+        const max = scores[4];
+        const mean = scores.reduce((a, b) => a + b, 0) / 5;
+        if (value === min) {
+          return `In this ${subject} sample, selecting ${value} points picks the minimum ordered score rather than the third (middle) value that defines the median.`;
+        }
+        if (value === max) {
+          return `In this ${subject} sample, selecting ${value} points picks the maximum ordered score rather than the third (middle) value that defines the median.`;
+        }
+        if (Math.abs(value - mean) < 0.01) {
+          return `In this ${subject} sample, ${value} points equals the arithmetic mean across all five ${outcome} scores rather than the middle ordered value.`;
+        }
+        if (value < ans) {
+          return `In this ${subject} sample, ${value} points lies below the middle ${outcome} score once the five observations are ordered from lowest to highest.`;
+        }
+        return `In this ${subject} sample, ${value} points exceeds the middle ${outcome} score once the five observations are ordered from lowest to highest.`;
+      }
+      return `Selecting ${rawChoice} does not identify the middle ${outcome} score after ordering the five ${subject} observations; the mean and endpoints answer different questions.`;
     }
     if (stem.includes('percentage')) {
-      return 'This percentage uses the wrong arithmetic relationship; divide the number showing the change by the total sample and multiply by 100.';
+      const value = Number.parseFloat(rawChoice);
+      const ans = Number.parseFloat(blueprint.answer);
+      if (Number.isFinite(value) && Number.isFinite(ans)) {
+        if (Math.abs(value - (100 - ans)) <= 1) {
+          return `In this ${subject} sample, ${value} percent represents the complementary participants who did not show the ${outcome} change rather than the group that did.`;
+        }
+        if (value < ans) {
+          return `In this ${subject} sample, ${value} percent understates the ${outcome} proportion because it misapplies the ratio instead of dividing the target count by total participants times 100.`;
+        }
+        return `In this ${subject} sample, ${value} percent overstates the ${outcome} proportion instead of dividing the target count by total participants and multiplying by 100.`;
+      }
+      return `Selecting ${rawChoice} uses the wrong arithmetic relationship for this ${subject} sample; divide the number showing the change by the total sample and multiply by 100.`;
     }
     if (stem.includes('standard deviation')) {
-      if (option.includes('standard deviation') || option.includes('variability')) {
-        return 'The standard deviation describes spread, not which group has the higher mean; compare the reported means for the average level.';
+      if (option.includes('standard deviation')) {
+        return `In this ${subject} comparison, standard deviation measures spread in ${outcome} around a mean rather than which group scored higher on average.`;
+      }
+      if (option.includes('variability')) {
+        return `Both groups in this ${subject} comparison report identical standard deviations for ${outcome}, so Group A neither has greater variability nor the higher mean.`;
       }
       if (option.includes('no comparison')) {
-        return 'Means can be compared directly to identify the groups’ average levels, while standard deviations separately describe variability.';
+        return `Group means on ${outcome} can be compared directly in this ${subject} dataset, while the reported standard deviations separately quantify score spread.`;
       }
-      return 'This choice reverses the reported group means or misreads the equal standard deviations as a difference in average level.';
+      return `This choice reverses the reported ${outcome} group means or misreads equal standard deviations as a difference in average level in this ${subject} study.`;
     }
     if (stem.includes('reliable') || stem.includes('validity') || stem.includes('established measure')) {
       if (option.includes('valid because') || option.includes('guarantees')) {
-        return 'Consistency across occasions supports reliability, but it does not guarantee that the measure captures the intended construct.';
+        return `Consistent scores across occasions support reliability for this ${subject} measure, yet consistency alone cannot guarantee it captures the intended construct.`;
       }
       if (option.includes('neither')) {
-        return 'Repeatedly similar scores provide evidence of reliability even though disagreement with an established measure limits validity evidence.';
+        return `Repeatedly similar ${outcome} scores provide evidence of reliability in this ${subject} assessment even though weak agreement with an established measure limits validity.`;
       }
       if (option.includes('validity but no reliability')) {
-        return 'The repeated scores support reliability, so this choice reverses the evidence supplied by the test-retest pattern.';
+        return `Repeatedly consistent scores on ${outcome} support reliability rather than validity, so this option reverses the psychometric pattern in the ${subject} stem.`;
       }
-      return 'This choice does not keep reliability, consistency across occasions, and validity, agreement with the intended construct, conceptually distinct.';
+      return `This choice blurs reliability (score consistency across occasions) with validity (agreement with the intended ${subject} construct).`;
     }
   }
-  return `This option does not follow the specific evidence or calculation in the stem. ${blueprint.why}`;
+  return `This option does not follow the specific evidence or calculation in the ${subject} stem. ${blueprint.why}`;
 }
 
 function makeGenericItem(topicId, plan, blueprint, practiceId, skillId, id, answerIndex, generatedIndex) {
@@ -1753,8 +1807,8 @@ function makeGenericItem(topicId, plan, blueprint, practiceId, skillId, id, answ
   const answerPosition = choices.indexOf(answerChoice);
   assert(answerPosition === answerIndex, `${id} answer position did not bind.`);
   const choiceRationales = choices.map((choice) => choice === answerChoice
-    ? `"${choice}" is correct because ${blueprint.why} This conclusion matches the specific design or evidence described in the stem.`
-    : `This option misinterprets the study evidence: ${targetedDistractorFeedback(choice, blueprint, practiceId)}`);
+    ? `"${choice}" is correct. ${blueprint.why} This conclusion matches the specific design or evidence described in the stem.`
+    : `This option misinterprets the study evidence. ${targetedDistractorFeedback(choice, blueprint, practiceId, plan)}`);
   const normalizedBlueprintStem = `${blueprint.stem.charAt(0).toUpperCase()}${blueprint.stem.slice(1)}`;
   const promptStem = practiceId === 'P2'
     ? insertBeforeFinalQuestion(

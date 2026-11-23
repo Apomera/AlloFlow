@@ -33,16 +33,7 @@ function FullPackRunView(props) {
                 {showDeliveryRoutes && (
                   <div role="region" aria-labelledby="guided-delivery-panel-title" data-testid="full-pack-delivery-routes" className="m-1 mb-2 rounded-2xl bg-white p-3 text-slate-800">
                     <div id="guided-delivery-panel-title" className="text-sm font-black text-indigo-900">{t('fullpack.delivery_title') || 'Preview, Package & Deliver'}</div>
-                    <p className="mt-1 text-xs leading-relaxed text-slate-600">{t('fullpack.delivery_help') || 'Choose formats by purpose. You can use more than one route, for example an accessible Word handout plus a Homework QR.'}</p>
-                    {deliveryGroups.length > 0 && <div role="list" aria-label={t('a11y.export_families') || 'Available export and delivery families'} className="mt-2 grid gap-2">
-                      {deliveryGroups.map(group => (
-                        <div role="listitem" key={group.id} className="rounded-xl border border-indigo-100 bg-indigo-50/60 p-2">
-                          <div className="text-xs font-black text-indigo-900">{group.label}</div>
-                          <div className="mt-0.5 text-xs leading-relaxed text-slate-600">{group.options.join(' · ')}</div>
-                        </div>
-                      ))}
-                    </div>}
-                    <p className="mt-2 text-xs leading-relaxed text-slate-600">{t('fullpack.delivery_notes') || 'QTI requires a quiz. H5P appears for compatible quiz or study-card content and needs matching H5P libraries at the destination. Storybook and Persona exports live inside those resource views. Homework sharing method and expiry depend on deployment.'}</p>
+                    <p className="mt-1 text-xs leading-relaxed text-slate-600">{t('fullpack.delivery_help') || 'Start with how students will use this: print or file, a student link/QR, or a live session.'}</p>
                     {isRunActive && <p role="status" data-testid="full-pack-delivery-locked" className="mt-2 text-xs font-semibold text-slate-700">{t('fullpack.delivery_wait_run') || 'Delivery opens when the Full Pack run finishes.'}</p>}
                     <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
                       <button type="button" disabled={isRunActive} onClick={() => openExportPreview('print')} className="min-h-11 rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1">{t('fullpack.delivery_document_builder') || 'Open Document Builder'}</button>
@@ -65,6 +56,23 @@ function FullPackRunView(props) {
                       )}
                       <button type="button" disabled={isRunActive || !latestStudentShare} onClick={testLatestStudentLink} className="min-h-11 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-1">{t('fullpack.delivery_test_link') || 'Test latest student link'}</button>
                     </div>
+                    {deliveryGroups.length > 0 && (
+                      <details data-testid="full-pack-all-formats" className="mt-2 rounded-xl border border-indigo-100 bg-indigo-50/40 px-2.5 py-1">
+                        <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-2 text-xs font-bold text-indigo-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 rounded-lg">
+                          <span>{t('fullpack.all_formats_summary') || 'See all export & delivery formats (PDF, Word, Slides, EPUB, Braille, QTI, H5P…)'}</span>
+                          <ChevronDown size={14} aria-hidden="true" className="shrink-0" />
+                        </summary>
+                        <div role="list" aria-label={t('a11y.export_families') || 'Available export and delivery families'} className="mt-1.5 grid gap-2 pb-1">
+                          {deliveryGroups.map(group => (
+                            <div role="listitem" key={group.id} className="rounded-xl border border-indigo-100 bg-white/90 p-2">
+                              <div className="text-xs font-black text-indigo-900">{group.label}</div>
+                              <div className="mt-0.5 text-xs leading-relaxed text-slate-600">{group.options.join(' · ')}</div>
+                            </div>
+                          ))}
+                        </div>
+                        <p className="mt-1.5 pb-1 text-xs leading-relaxed text-slate-600">{t('fullpack.delivery_notes') || 'QTI requires a quiz. H5P appears for compatible quiz or study-card content and needs matching H5P libraries at the destination. Storybook and Persona exports live inside those resource views. Homework sharing method and expiry depend on deployment.'}</p>
+                      </details>
+                    )}
                   </div>
                 )}
                 <details data-testid="full-pack-options" className="group/options mb-1 rounded-2xl text-white">

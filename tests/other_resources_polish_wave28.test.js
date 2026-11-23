@@ -99,7 +99,7 @@ describe('Other Resources Polish — Wave 28', () => {
     const copyBtn = doc.querySelector('.tool-page-copy-btn');
     const status = doc.querySelector('.tool-page-copy-status');
     expect(copyBtn).toBeTruthy();
-    expect(copyBtn.getAttribute('aria-label')).toBe('Copy Cloudflare direct link for Coaster Lab');
+    expect(copyBtn.getAttribute('aria-label')).toBe('Copy Cloudflare link for Coaster Lab');
     expect(status?.getAttribute('role')).toBe('status');
 
     copyBtn.click();

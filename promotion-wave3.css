@@ -276,15 +276,27 @@
 }
 
 .tool-feedback-link {
+    align-items: center;
+    border-radius: 8px;
     color: #475569;
+    display: inline-flex;
     font-size: 0.82rem;
     font-weight: 750;
+    min-height: 44px;
+    padding: 8px 10px;
 }
 
 .tool-feedback-link:hover {
     color: #3730a3;
     text-decoration: underline;
     text-underline-offset: 0.18em;
+}
+
+.community-feedback-inner a:focus-visible,
+.tool-feedback-link:focus-visible,
+.noscript-nav a:focus-visible {
+    outline: 3px solid #3730a3;
+    outline-offset: 2px;
 }
 
 @media (max-width: 1024px) {
@@ -330,9 +342,13 @@
     }
 
     .noscript-nav a {
+        align-items: center;
         color: #3730a3;
+        display: inline-flex;
         font-size: 0.9rem;
         font-weight: 750;
+        min-height: 44px;
+        padding: 6px 8px;
         text-decoration: underline;
         text-underline-offset: 0.18em;
     }
@@ -349,6 +365,10 @@
 @media (prefers-reduced-motion: reduce) {
     .home-entry-card {
         transition: none;
+    }
+
+    .home-entry-card:hover {
+        transform: none;
     }
 }
 
@@ -410,5 +430,13 @@
     .community-feedback-inner a,
     .feedback-route-card {
         border: 1px solid ButtonText;
+    }
+
+    .home-entry-card:focus-visible,
+    .community-feedback-inner a:focus-visible,
+    .tool-feedback-link:focus-visible,
+    .noscript-nav a:focus-visible {
+        outline: 3px solid Highlight !important;
+        outline-offset: 2px;
     }
 }

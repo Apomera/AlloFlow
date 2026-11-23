@@ -437,7 +437,7 @@
 
       return h('div', {
         'data-moleculeshelf-workbench': 'true',
-        className: 'flex flex-col gap-4 animate-in fade-in duration-300 w-full max-w-3xl',
+        className: 'flex flex-col gap-4 animate-in fade-in duration-300 w-full max-w-3xl mx-auto',
         style: {
           backgroundColor: pal.shellBg,
           border: (isContrast ? '2px' : '1px') + ' solid ' + pal.shellBorder,
@@ -667,7 +667,7 @@
                 border: (isContrast ? '2px' : '1px') + ' solid ' + pal.ctaBorder,
                 boxShadow: isContrast ? 'none' : '0 6px 16px -4px rgba(79, 70, 229, 0.45)'
               },
-              'aria-label': t('stem.moleculeShelf.open_title', 'Open the Molecule Shelf in a new window (Mol* viewer with the Notice-Wonder coach)')
+              title: t('stem.moleculeShelf.open_title', 'Open the Molecule Shelf in a new window (Mol* viewer with the Notice-Wonder coach)')
             }, selectedPdb
               ? (t('stem.moleculeShelf.open_selected_prefix', '🧬 Inspect in 3D: ') + selectedStarter.label + ' (' + selectedPdb + ')')
               : t('stem.moleculeShelf.open', '🧬 Open Molecule Shelf')),

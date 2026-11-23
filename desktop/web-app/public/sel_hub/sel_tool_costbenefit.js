@@ -150,7 +150,7 @@
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { type: 'button', onClick: function() { if (typeof setSelHubTool === 'function') setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: _cobSoftBg('rgba(255,255,255,0.05)', '#f1f5f9'), border: '1px solid ' + _cobBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _cobFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+            style: { minHeight: 44, background: _cobSoftBg('rgba(255,255,255,0.05)', '#f1f5f9'), border: '1px solid ' + _cobBd('#334155'), borderRadius: 8, padding: '8px 12px', cursor: 'pointer', color: _cobFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _cobFg('#c4b5fd'), fontSize: 22, fontWeight: 900 } }, '⚖️ Cost-Benefit Grid'),
             h('div', { style: { fontSize: 12, color: _cobFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A 2x2 decision-making grid for when emotion is pushing one direction.')
@@ -182,12 +182,13 @@
             return h('button', { key: t.id, id: 'cb-tab-' + t.id, type: 'button', onClick: function() { goto(t.id); },
               role: 'tab', 'aria-selected': active, 'aria-controls': 'cb-panel-' + t.id, tabIndex: active ? 0 : -1,
               onKeyDown: function(e) {
-                if (e.key === 'ArrowRight') { e.preventDefault(); selectTab(tabs[(ti + 1) % tabs.length].id); }
-                else if (e.key === 'ArrowLeft') { e.preventDefault(); selectTab(tabs[(ti - 1 + tabs.length) % tabs.length].id); }
+                if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)) return;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); selectTab(tabs[(ti + 1) % tabs.length].id); }
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); selectTab(tabs[(ti - 1 + tabs.length) % tabs.length].id); }
                 else if (e.key === 'Home') { e.preventDefault(); selectTab(tabs[0].id); }
                 else if (e.key === 'End') { e.preventDefault(); selectTab(tabs[tabs.length - 1].id); }
               },
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + _cobBd(active ? '#a78bfa' : '#334155'),
+              style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + _cobBd(active ? '#a78bfa' : '#334155'),
                 background: active ? _cobSoftBg('rgba(167,139,250,0.18)', '#f5f3ff') : _cobBg('#1e293b'),
                 color: active ? _cobFg('#e9d5ff') : _cobFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
@@ -220,7 +221,7 @@
               h('p', { style: { margin: '0 0 14px', color: _cobFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
                 'Name the decision you are wrestling with. Then list the pros and cons in two time horizons: short-term (the next day or week) and long-term (months and years). The 2x2 frame is built to surface what the short-term impulse leaves out.'),
               h('button', { type: 'button', onClick: function() { goto('edit'); }, 'aria-label': 'Start the grid',
-                style: { padding: '10px 22px', borderRadius: 10, border: _cobBtnBd(), cursor: 'pointer', background: _cobGradBtn('linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)'), color: _cobFg('#fff'), fontWeight: 800, fontSize: 14 } },
+                style: { minHeight: 44, padding: '10px 22px', borderRadius: 10, border: _cobBtnBd(), cursor: 'pointer', background: _cobGradBtn('linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)'), color: _cobFg('#fff'), fontWeight: 800, fontSize: 14 } },
                 '+ Start the grid')
             ),
             softPointer()
@@ -255,12 +256,12 @@
 
           h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
             h('button', { type: 'button', onClick: function() { goto('edit'); }, 'aria-label': 'Edit grid',
-              style: { padding: '10px 20px', borderRadius: 10, border: _cobBtnBd(), cursor: 'pointer', background: _cobGradBtn('linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)'), color: _cobFg('#fff'), fontWeight: 800, fontSize: 14 } },
+              style: { minHeight: 44, padding: '10px 20px', borderRadius: 10, border: _cobBtnBd(), cursor: 'pointer', background: _cobGradBtn('linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)'), color: _cobFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '✏️ Edit'),
             h('button', { type: 'button', onClick: function() { goto('reflect'); }, 'aria-label': 'Make the decision',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _cobBd('#475569'), background: _cobBg('#1e293b'), color: _cobFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '💭 Decide'),
+              style: { minHeight: 44, padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _cobBd('#475569'), background: _cobBg('#1e293b'), color: _cobFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '💭 Decide'),
             h('button', { type: 'button', onClick: function() { goto('print'); }, 'aria-label': 'Print',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _cobBd('#475569'), background: _cobBg('#1e293b'), color: _cobFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
+              style: { minHeight: 44, padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _cobBd('#475569'), background: _cobBg('#1e293b'), color: _cobFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
           ),
 
           softPointer()
@@ -272,6 +273,10 @@
       // ═══════════════════════════════════════════════════════════
       function renderEdit() {
         var cells = safeObj(d.cells);
+        function cellLabelFor(cellId) {
+          var found = CELLS.filter(function(c) { return c.id === cellId; })[0];
+          return found ? found.label : cellId;
+        }
         function addItem(cellId, value) {
           if (!value || !value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
           var text = value.trim();
@@ -282,6 +287,7 @@
             nx[cellId].push(text);
             return { cells: nx };
           });
+          if (typeof announceToSR === 'function') announceToSR('Added to ' + cellLabelFor(cellId) + '.');
         }
         function removeItem(cellId, idx) {
           setCB(function(prior) {
@@ -293,6 +299,7 @@
             nx[cellId] = list;
             return { cells: nx };
           });
+          if (typeof announceToSR === 'function') announceToSR('Removed from ' + cellLabelFor(cellId) + '.');
         }
 
         return h('div', null,
@@ -304,7 +311,7 @@
               placeholder: 'e.g. Should I tell my parents about [the thing]?',
               onChange: function(e) { setCB({ decision: e.target.value }); },
               onBlur: function(e) { scanCbText(e.target.value); },
-              style: { width: '100%', padding: 10, borderRadius: 6, border: '1px solid ' + _cobBd('#334155'), background: _cobBg('#1e293b'), color: _cobFg('#e2e8f0'), fontSize: 14, fontFamily: 'inherit' } })
+              style: { width: '100%', minHeight: 44, padding: 10, borderRadius: 6, border: '1px solid ' + _cobBd('#334155'), background: _cobBg('#1e293b'), color: _cobFg('#e2e8f0'), fontSize: 14, fontFamily: 'inherit' } })
           ),
 
           // 4 cells as editors
@@ -329,7 +336,7 @@
                     return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 6, padding: 6, borderRadius: 4, background: _cobBg('#1e293b'), marginBottom: 4 } },
                       h('span', { style: { flex: 1, fontSize: 12.5, color: _cobFg('#e2e8f0') } }, it),
                       h('button', { type: 'button', onClick: function() { removeItem(cell.id, i); }, 'aria-label': 'Remove from ' + cell.label,
-                        style: { background: 'transparent', border: '1px solid ' + _cobBd('#475569'), color: _cobFg('#94a3b8'), borderRadius: 4, padding: '2px 6px', cursor: 'pointer', fontSize: 12 } }, '✕')
+                        style: { minHeight: 44, minWidth: 44, background: 'transparent', border: '1px solid ' + _cobBd('#475569'), color: _cobFg('#94a3b8'), borderRadius: 4, padding: '6px 10px', cursor: 'pointer', fontSize: 12 } }, '✕')
                     );
                   })
                 ) : null,
@@ -338,10 +345,14 @@
                   h('label', { htmlFor: inputId, className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } }, 'Add to ' + cell.label),
                   h('input', { id: inputId, type: 'text', placeholder: 'Add...',
                     onBlur: function(e) { scanCbText(e.target.value); },
-                    onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } },
-                    style: { flex: 1, padding: 6, borderRadius: 4, border: '1px solid ' + _cobBd('#334155'), background: _cobBg('#1e293b'), color: _cobFg('#e2e8f0'), fontSize: 12.5 } }),
+                    onKeyDown: function(e) {
+                      if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)) return;
+                      if (e.key === 'Enter') { e.preventDefault(); submit(); }
+                      else if (e.key === 'Escape' && e.target && e.target.value) { e.preventDefault(); e.target.value = ''; }
+                    },
+                    style: { flex: 1, minHeight: 44, padding: '8px 10px', borderRadius: 4, border: '1px solid ' + _cobBd('#334155'), background: _cobBg('#1e293b'), color: _cobFg('#e2e8f0'), fontSize: 12.5 } }),
                   h('button', { type: 'button', onClick: submit, 'aria-label': 'Add to ' + cell.label,
-                    style: { padding: '6px 10px', borderRadius: 4, border: _cobBtnBd(), cursor: 'pointer', background: _cobSolid(cell.color), color: _cobFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+')
+                    style: { minHeight: 44, minWidth: 44, padding: '8px 12px', borderRadius: 4, border: _cobBtnBd(), cursor: 'pointer', background: _cobSolid(cell.color), color: _cobFg('#fff'), fontWeight: 700, fontSize: 14 } }, '+')
                 )
               );
             })
@@ -424,9 +435,9 @@
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _cobFg('#e9d5ff'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'),
-            h('button', { type: 'button', onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _cobBtnBd(), cursor: 'pointer', background: _cobGradBtn('linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)'), color: _cobFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { type: 'button', onClick: printNow, style: { minHeight: 44, padding: '8px 18px', borderRadius: 8, border: _cobBtnBd(), cursor: 'pointer', background: _cobGradBtn('linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)'), color: _cobFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { type: 'button', onClick: function() { goto('grid'); }, 'aria-label': 'Back to grid',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _cobBd('#475569'), background: _cobBg('#1e293b'), color: _cobFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+              style: { minHeight: 44, padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _cobBd('#475569'), background: _cobBg('#1e293b'), color: _cobFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
@@ -442,7 +453,7 @@
             ),
 
             h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid ' + _cobBd('#7c3aed') } },
-              h('div', { style: { fontSize: 12, color: _cobFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'Cost-Benefit Grid'),
+              h('div', { style: { fontSize: 12, color: _cobHC ? '#ffff00' : '#475569', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'Cost-Benefit Grid'),
               h('h1', { style: { margin: 0, fontSize: 22, fontWeight: 900 } }, decisionStr.trim() ? decisionStr : 'My decision'),
               updatedStr ? h('div', { style: { fontSize: 12, color: _cobFg('#475569'), marginTop: 4 } }, 'Updated ' + updatedStr) : null
             ),
@@ -451,7 +462,9 @@
             h('table', { 'aria-label': 'Short-term and long-term pros and cons', style: { width: '100%', borderCollapse: 'collapse', marginBottom: 18 } },
               h('thead', null,
                 h('tr', null,
-                  h('th', { scope: 'col', 'aria-label': 'Time frame', style: { width: '15%' } }),
+                  h('th', { scope: 'col', 'aria-label': 'Time frame', style: { width: '15%', position: 'relative' } },
+                    h('span', { className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } }, 'Time frame')
+                  ),
                   h('th', { scope: 'col', style: { padding: 8, background: _cobHC ? '#000000' : '#15803d', color: _cobHC ? '#ffff00' : '#ffffff', fontSize: 12, fontWeight: 800, textAlign: 'left' } }, 'PROS'),
                   h('th', { scope: 'col', style: { padding: 8, background: _cobHC ? '#000000' : '#dc2626', color: _cobHC ? '#ffff00' : '#ffffff', fontSize: 12, fontWeight: 800, textAlign: 'left' } }, 'CONS')
                 )
@@ -471,7 +484,7 @@
             ),
 
             finalStr.trim() ? h('div', { style: { padding: 14, background: _cobBg('#ede9fe'), borderLeft: '4px solid ' + _cobBd('#7c3aed'), marginBottom: 16 } },
-              h('div', { style: { fontSize: 12, color: _cobFg('#64748b'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 800, marginBottom: 4 } }, 'My decision'),
+              h('div', { style: { fontSize: 12, color: _cobHC ? '#ffff00' : '#475569', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 800, marginBottom: 4 } }, 'My decision'),
               h('p', { style: { margin: 0, color: _cobFg('#0f172a'), fontSize: 13, lineHeight: 1.65, whiteSpace: 'pre-wrap' } }, finalStr)
             ) : null,
 
@@ -554,7 +567,7 @@
           h('div', { style: { fontSize: 12, color: _cobFg('#c4b5fd'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: _cobFg('#e9d5ff'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+                style: { display: 'inline-flex', alignItems: 'center', minHeight: 44, fontSize: 13, color: _cobFg('#e9d5ff'), fontWeight: 700, textDecoration: 'underline', marginBottom: 4 } }, title + ' ↗')
             : h('div', { style: { fontSize: 13, color: _cobFg('#e9d5ff'), fontWeight: 700, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _cobFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );

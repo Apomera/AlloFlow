@@ -5739,7 +5739,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           nlH('p', { style: { fontSize: 13, margin: '5px 0' } }, str(safe.servings) + ' servings'),
         editable ? field('Notes', nlInput({ 'aria-label': 'Notes for ' + title, value: str(safe.notes), onChange: function(e) { setDraft({ meals: meals.map(function(other, i) { return i === index ? Object.assign({}, safe, { notes: e.target.value }) : other; }) }); }, style: { marginTop: 6 } })) : str(safe.notes) && nlH('p', { style: { fontSize: 12, whiteSpace: 'pre-wrap' } }, str(safe.notes)),
         !scaled.valid && nlH('p', { style: { fontSize: 12, color: '#991b1b' } }, scaled.error),
-        typeof props.onSavePlannedRecipe === 'function' && safe.recipeSnapshot && nlBtn({ variant: 'secondary', style: { marginTop: 10 }, 'aria-label': 'Save recipe from meal: ' + title + ' on ' + name(safe.day), onClick: function(event) { beginRecipeSave(safe, editable ? draft : savedPlan, event); } }, 'Save recipe to Recipe Box'),
+        typeof props.onSavePlannedRecipe === 'function' && safe.recipeSnapshot && nlBtn({ variant: 'secondary', style: { marginTop: 10 }, 'aria-label': 'Save recipe to Recipe Box from meal: ' + title + ' on ' + name(safe.day), onClick: function(event) { beginRecipeSave(safe, editable ? draft : savedPlan, event); } }, 'Save recipe to Recipe Box'),
         scaled.valid && safe.recipeSnapshot && typeof safe.recipeSnapshot.steps === 'string' && safe.recipeSnapshot.steps.trim() && nlBtn({ variant: 'secondary', style: { marginTop: 10 }, 'aria-label': 'Start cooking: ' + title + ' on ' + name(safe.day), onClick: function(event) {
           cookingTrigger.current = event.currentTarget;
           setCooking({ recipe: nlRecipeSnapshot(safe.recipeSnapshot), servings: Number(safe.servings) });
@@ -5865,7 +5865,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               if (original === null) { setNotice('This saved plan could not be opened. Your data is unchanged.'); return; }
               props.setData(Object.assign({}, data, { plans: plans.map(function(p) { return p === plan ? editablePlan : p; }), draft: Object.assign({}, editablePlan, { editingId: planId, editingOriginal: original, meals: plannedMeals.map(function(m) { return m && typeof m === 'object' ? Object.assign({}, m) : m; }) }) })); setRemoved(null); resetSwap(); setNotice('Plan opened for editing.');
             } }, 'Edit plan'),
-            nlBtn({ variant: 'secondary', 'aria-label': 'Reuse plan for next week of ' + str(plan.weekOf), onClick: function() { reusePlan(plan); } }, 'Reuse for next week'),
+            nlBtn({ variant: 'secondary', 'aria-label': 'Reuse for next week: plan for week of ' + str(plan.weekOf), onClick: function() { reusePlan(plan); } }, 'Reuse for next week'),
             nlBtn({ variant: 'secondary', 'aria-label': 'Create shopping list for week of ' + str(plan.weekOf), onClick: function() {
               var result = props.onCreateShoppingList ? props.onCreateShoppingList(plan) : { ok: false, message: 'Open this planner from My Nutrition Kit to create a shopping list.' }; setNotice(result.message);
             } }, 'Create shopping list'),
@@ -19423,10 +19423,11 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             },
             'aria-label': c.title + (visited ? ' (explored)' : '') + (notReady ? ' — coming soon' : ''),
             'aria-disabled': notReady ? 'true' : 'false',
-            className: 'relative text-left bg-white rounded-2xl shadow-lg border-2 ' +
+            className: 'relative min-w-0 break-words text-left bg-white rounded-2xl shadow-lg border-2 ' +
               (visited ? 'border-emerald-600' : 'border-slate-200') +
               ' overflow-hidden group focus:outline-none focus:ring-4 ' + c.ring +
-              (notReady ? ' opacity-70 cursor-not-allowed' : ' nutritionlab-card-lift hover:shadow-2xl hover:border-slate-400')
+              (notReady ? ' opacity-70 cursor-not-allowed' : ' nutritionlab-card-lift hover:shadow-2xl hover:border-slate-400'),
+            style: { overflowWrap: 'anywhere' }
           },
             visited && h('span', {
               'aria-hidden': true,
@@ -19564,7 +19565,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('button', {
                 type: 'button',
                 onClick: function() { upd('nlStartDismissed', true); announce(__alloT('stem.nutritionlab.sr_start_here_guide_hidden', 'Start-here guide hidden.')); },
-                'aria-label': __alloT('stem.nutritionlab.start_here_dismiss_aria', 'Hide the start-here guide'),
+                'aria-label': __alloT('stem.nutritionlab.start_here_dismiss', 'Got it') + ' — ' + __alloT('stem.nutritionlab.start_here_dismiss_aria', 'Hide the start-here guide'),
                 className: 'text-xs font-bold px-2.5 py-1 rounded-lg bg-white border border-fuchsia-300 text-fuchsia-900 hover:bg-fuchsia-100 focus:outline-none focus:ring-2 ring-fuchsia-500/40'
               }, __alloT('stem.nutritionlab.start_here_dismiss', 'Got it'))
             ),

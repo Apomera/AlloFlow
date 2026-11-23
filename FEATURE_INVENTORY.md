@@ -279,7 +279,7 @@ Underlying data: `WORD_SOUNDS_STRINGS`, `WORD_FAMILY_PRESETS`, `SOUND_MATCH_POOL
 | **Bookmarklet Audit Queue** | Teachers install a bookmarklet on their browser that captures URLs they want to audit; queued URLs surface in AlloFlow for processing. | Bookmarklet sends URLs → Sidebar → Bookmarklet Audit Queue panel | Teacher | Inline at AlloFlowANTI.txt:20144 + LMS bookmarklet endpoint at L2380 |
 | **Error Reporter** | In-app error capture + one-click bug report. Hidden by default; surfaces a small fixed-position red "⚠ N errors" badge in bottom-right after first capture. Solves the "users in Canvas/LMS embed can't access browser DevTools" problem. | Auto-surfaces only after errors occur | All | `error_reporter_module.js` |
 | **Voice Input (system-wide)** | Speech-to-text input usable across many features (lesson source, brainstorm, persona chat, Bridge mode). Uses Web Speech API + Gemini fallback. | Microphone icon on text inputs throughout app | All | `voice_module.js` (`window.AlloFlowVoice`) |
-| **LTI 1.3 LMS Integration (full)** | Full LTI 1.3 OIDC launch flow — AlloFlow can be installed in Canvas / Schoology / Brightspace / Moodle / D2L as an LTI tool with proper SSO + course/assignment/role context. UI surfaces a context banner on launch showing course + assignment. Backend: `ltiLogin` / `ltiLaunch` / `ltiSession` Firebase functions. | Configure in LMS admin → AlloFlow appears as an LTI tool; user clicks → auto-launched into context | Teacher, Student | Inline UI at AlloFlowANTI.txt:20240; backend at `desktop/web-app/functions/index.js:183-374` |
+| **LTI 1.3 LMS Integration** | **Retired / Fail-closed (Not Active).** Prior experimental `ltiLogin` / `ltiLaunch` / `ltiSession` Firebase functions are retired and banned by `dev-tools/check_lti_surface.cjs` and `dev-tools/check_firebase_security.cjs` until verified district identity, tenant isolation, and durable session state exist. Active LMS workflow is the client-side Bookmarklet (`lms_bookmarklet.js`). | Active path: install `lms_bookmarklet.js` bookmarklet on any LMS page; LTI launch routes fail closed | Teacher | `lms_bookmarklet.js`; fail-closed boundary in `AlloFlowANTI.txt` and `desktop/web-app/functions/index.js` |
 | **Class Roster Management** | Persistent cohort with student data: names, group assignments, XP totals, per-student profile (language, ttsSpeed, karaoke mode, communication mode). Persisted to `alloflow_roster_key` in localStorage; synced to Firestore for live sessions. | Teacher mode → Roster panel; auto-syncs in live sessions | Teacher | Inline AlloFlowANTI.txt:4675+; integrates with Group Session Modal |
 | **Group Management (within Live Sessions)** | Create/delete student groups, assign students to groups, assign per-group resources (a different lesson item per group). Each group has its own profile: language preference, TTS speed, karaoke mode, visual density, communication mode (verbal / AAC), simplification level, DOK level. | Live Session → Group Session Modal | Teacher | Inline handlers `handleCreateGroup`, `handleAssignStudent`, `handleSetGroupResource`, `handleDeleteGroup`; data structure at AlloFlowANTI.txt:13442 |
 | **Educator Hub launcher modal** | Dedicated launcher modal with card grid for educator-specific tools: BehaviorLens, ReportWriter, Symbol Studio, Print Export, AccessibilityLab. Different visual treatment from the SEL/STEM Hub modals to signal "professional clinical tools." | Header → Educator Tools button (teacher mode) | Teacher, Coach, Specialist | Inline at AlloFlowANTI.txt:25929-25970; gates on `showEducatorHub` |
@@ -349,26 +349,19 @@ Loaded via `games_module.js` (auto-generated from `games_source.jsx`). Each game
 
 Discoverability: surfaced contextually within Quiz mode (game variants), Adventure puzzles, sidebar Concept Sort tool, and live-session game broadcasts.
 
-### 3.20 Server-side Firebase Functions (12 endpoints)
+### 3.20 Server-side Firebase Functions (2 active optional proxies; 11 institutional endpoints retired)
 
-AlloFlow has a **full backend** in `desktop/web-app/functions/index.js`, deployed as Firebase Cloud Functions. This is significantly more infrastructure than typical AI ed-tech competitors:
+Default `desktop/web-app/firebase.json` is **hosting-only**. The optional backend in `desktop/web-app/functions/index.js` (deployed only via `desktop/web-app/firebase.functions.json`) intentionally exports **only 2 authenticated, POST-only proxies**, both requiring Firebase ID tokens, App Check, strict origin allowlists, and per-user Firestore rate limits:
 
-| Endpoint | Purpose |
-|---|---|
-| **`searchProxy`** | Backend proxy for Web Search Grounding (fact-checking AI claims against Google Search) — keeps API keys server-side |
-| **`ltiLogin`** | **LTI 1.3 OIDC login initiation** — first step of the LMS launch flow |
-| **`ltiLaunch`** | **LTI 1.3 launch handler** — receives signed launch from Canvas/Schoology/Brightspace/Moodle, creates session, redirects to AlloFlow with context |
-| **`ltiSession`** | Session validation + role/context retrieval for LTI users |
-| **`logRemediation`** | Logs PDF audit + remediation actions to backend (audit trail for compliance) |
-| **`dashboardData`** | Aggregated analytics endpoint for Educator Hub dashboards (cross-student data) |
-| **`lmsAuth`** | LMS authentication endpoint (separate from LTI for direct API integrations) |
-| **`lmsScan`** | **Scheduled cron** — automatic recurring scan of an LMS for new content to audit |
-| **`triggerLmsScan`** | Manual trigger for the LMS scan (teacher-initiated) |
-| **`scanResults`** | Returns results of LMS scans (queued documents from Bookmarklet Audit Queue + scheduled scans) |
-| **`accessible`** | Public accessibility-audit endpoint (likely powers an embeddable a11y badge / shareable audit link) |
-| **`storeRemediated`** | Stores remediated PDF/HTML output back to a persistent location (cloud storage hook) |
+| Endpoint | Status | Purpose |
+|---|---|---|
+| **`searchProxy`** | **Active (optional)** | Authenticated POST proxy for Web Search Grounding (Serper) — keeps `SERPER_API_KEY` server-side |
+| **`sourceFetchProxy`** | **Active (optional)** | Authenticated POST public-page importer for Lumen — pins DNS, blocks private/reserved IPs, caps redirects/bytes/types |
+| **`ltiLogin`**, **`ltiLaunch`**, **`ltiSession`** | **Retired / Fail-closed** | Prior experimental LTI 1.3 endpoints; removed and banned by `check_lti_surface.cjs` and `check_firebase_security.cjs` |
+| **`lmsAuth`**, **`lmsScan`**, **`triggerLmsScan`**, **`scanResults`** | **Retired / Fail-closed** | Prior experimental LMS OAuth/scanning endpoints; removed and banned by `check_firebase_security.cjs` |
+| **`logRemediation`**, **`dashboardData`**, **`accessible`**, **`storeRemediated`** | **Retired / Fail-closed** | Prior experimental institutional logging/dashboard/published-HTML endpoints; removed and banned by `check_firebase_security.cjs` |
 
-**This means AlloFlow has full LTI 1.3 integration ready** — Canvas / Schoology / Brightspace / Moodle / D2L can launch AlloFlow as an LTI tool with proper SSO + context. This is a major feature my earlier matrix marked as "⚠️ partial" — it should be **✅ full LTI 1.3**.
+**Current LMS posture:** Full LTI 1.3 is **not active** until verified district identity, tenant/course isolation, durable one-time session state, and emulator-backed authorization tests are built (see [DEPLOY_YOUR_OWN.md](DEPLOY_YOUR_OWN.md) and [LMS_INTEGRATION.md](LMS_INTEGRATION.md)). The active LMS helper is the zero-backend browser bookmarklet (`lms_bookmarklet.js`).
 
 ### 3.18 PDF Audit Modal — internal sub-features (22 distinct panels)
 
@@ -1419,8 +1412,8 @@ Five latent bugs surfaced by extraction work and fixed:
 ### Items mentioned in REFLECTIVE_JOURNAL.md worth re-verifying
 - "Spelling Bee", "Sound Sort", "Letter Tracing" activities in `word_sounds_module.js` — Entry 5 mentions a prior agent independently surfaced these as undocumented; worth confirming they're still in the current word_sounds module + included in any external feature lists
 
-### Server-side gaps (not in scope of this audit)
-- Firebase functions: `logRemediation`, `dashboardData`, `triggerLmsScan`, `scanResults`, `accessible`, `storeRemediated`, `lmsAuth` — referenced in deploy logs but their implementations weren't surveyed for this inventory
+### Server-side boundary (reconciled)
+- Retired Firebase functions: all 11 prior institutional/LTI endpoints (`ltiLogin`, `ltiLaunch`, `ltiSession`, `lmsAuth`, `lmsScan`, `triggerLmsScan`, `scanResults`, `storeRemediated`, `accessible`, `dashboardData`, `logRemediation`) are intentionally absent and blocked by `dev-tools/check_firebase_security.cjs` and `dev-tools/check_lti_surface.cjs`. Only `searchProxy` and `sourceFetchProxy` remain exported in `desktop/web-app/functions/index.js`.
 
 ### Known architectural off-limits (per project memory)
 - `useTranslation`, `useFocusTrap`, `useAudioRecorder` hooks — Rules-of-Hooks blocks delegation

@@ -2670,8 +2670,22 @@ function SourceView(props) {
     history, handleGenerate, isProcessing, isGeneratingSource, generationStep, isExtracting, setIsExtracting,
     setGenerationStep, callGeminiVision, addToast, checkAccuracyWithSearch, setCheckAccuracyWithSearch,
     handleFormatText, refineSourceSuggestion, openAnalysis, onRecheckAnalysis, aiTextAvailable, isDraftSaving, isCanvas,
-    focusRequest, onShowResources, setSourceTopic, handleSpeak, isPlaying, playingContentId, sourceCheckText, onSourceCheckChange, activeUnitId
+    focusRequest, onShowResources, setSourceTopic, handleSpeak, isPlaying, playingContentId, sourceCheckText, onSourceCheckChange, activeUnitId,
+    onSendToReadAlongPacket, uploadedAudioSegments, onClearUploadedAudioSegments
   } = props;
+  const sendToReadAlong = typeof onSendToReadAlongPacket === 'function'
+    ? onSendToReadAlongPacket
+    : (onSendToReadAlongPacket === undefined && typeof window !== 'undefined' && typeof window.__alloSendToReadAlongPacket === 'function'
+        ? window.__alloSendToReadAlongPacket
+        : null);
+  const rawUploadedSegments = uploadedAudioSegments !== undefined
+    ? uploadedAudioSegments
+    : (typeof window !== 'undefined' && Array.isArray(window.__alloUploadedAudioSegments) ? window.__alloUploadedAudioSegments : null);
+  const clearUploadedSegments = typeof onClearUploadedAudioSegments === 'function'
+    ? onClearUploadedAudioSegments
+    : (onClearUploadedAudioSegments === undefined && typeof window !== 'undefined' && typeof window.__alloClearUploadedAudioSegments === 'function'
+        ? window.__alloClearUploadedAudioSegments
+        : null);
   const say = (key, fallback) => { try { const value = t(key); return value && value !== key ? value : fallback; } catch (_) { return fallback; } };
   const fill = (text, values) => String(text).replace(/\{(\w+)\}/g, (match, name) => values[name] == null ? match : String(values[name]));
   const text = typeof inputText === 'string' ? inputText : '';
@@ -2683,10 +2697,45 @@ function SourceView(props) {
   const [checkRun, setCheckRun] = React.useState(null);
   const [refineInstruction, setRefineInstruction] = React.useState('');
   const [refining, setRefining] = React.useState(false);
+  const [dictateOpen, setDictateOpen] = React.useState(() => {
+    if (typeof window !== 'undefined' && window.__alloOpenSourceDictation) {
+      window.__alloOpenSourceDictation = false;
+      return true;
+    }
+    return false;
+  });
+  const [dictationMode, setDictationMode] = React.useState('append');
+  const [dictationDraft, setDictationDraft] = React.useState('');
+  const [dismissedUploadRef, setDismissedUploadRef] = React.useState(null);
+  const [, setDictationModTick] = React.useState(0);
+  const uploadedSegsWithBlob = (rawUploadedSegments && rawUploadedSegments !== dismissedUploadRef && Array.isArray(rawUploadedSegments))
+    ? rawUploadedSegments.filter((s) => s && s.blob)
+    : [];
   const editorRef = React.useRef(null);
   const checkLineRef = React.useRef(null);
   React.useEffect(() => { if (focusRequest && editorRef.current) editorRef.current.focus(); }, [focusRequest]);
   React.useEffect(() => { if (editing && editorRef.current) editorRef.current.focus(); }, [editing]);
+  React.useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return undefined;
+    const onOpenDict = () => {
+      window.__alloOpenSourceDictation = false;
+      setEditing(true);
+      setDictateOpen(true);
+    };
+    const onMod = () => setDictationModTick((n) => n + 1);
+    window.addEventListener('alloflow:open-source-dictation', onOpenDict);
+    window.addEventListener('alloflow:module-registry-changed', onMod);
+    return () => {
+      window.removeEventListener('alloflow:open-source-dictation', onOpenDict);
+      window.removeEventListener('alloflow:module-registry-changed', onMod);
+    };
+  }, []);
+  React.useEffect(() => {
+    if (!dictateOpen || typeof window === 'undefined') return;
+    if (!(window.AlloModules && window.AlloModules.SpeechSetup && window.AlloModules.SpeechSetup.DictationStudio)) {
+      try { if (typeof window.__alloLazySpeechSetup === 'function') window.__alloLazySpeechSetup(); } catch (_) {}
+    }
+  }, [dictateOpen]);
   const aiReady = aiTextAvailable !== false;
   const check = SourceRecord.checkFor(history, text);
   const incomplete = !check && (Array.isArray(history) ? history : []).slice().reverse().find(item => item?.type === 'analysis'
@@ -2846,8 +2895,98 @@ function SourceView(props) {
           {status === 'draft' && inUse && !(replacement && replacement.status === 'replaced' && replacement.previous === inUse.text) && <button type="button" data-source-discard disabled={checkBusy} onClick={discardChanges} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50 disabled:opacity-60">{fill(say('source_view.discard', 'Discard changes (back to version {version})'), { version: inUse.version })}</button>}
           {status === 'in-use' && <button type="button" data-source-make-resources data-help-key="source_view_make_resources" onClick={() => { if (typeof onShowResources === 'function') onShowResources(); }} className="min-h-11 rounded-lg bg-indigo-700 px-4 text-sm font-bold text-white hover:bg-indigo-800">{say('source_view.make_resources', 'Make resources')}</button>}
           {typeof handleSpeak === 'function' && !!text.trim() && <button type="button" data-source-read-aloud data-help-key="source_view_read_aloud" aria-pressed={reading} onClick={readAloud} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50">{reading ? say('source_view.stop_reading', 'Stop reading') : say('source_view.read_aloud', 'Read aloud')}</button>}
+          <button type="button" data-source-dictate data-help-key="source_view_dictate" aria-expanded={dictateOpen} onClick={() => { if (status === 'in-use' && !editing) setEditing(true); setDictationMode('append'); setDictateOpen((v) => !v); }} className="min-h-11 rounded-lg border border-emerald-600 bg-emerald-50 px-3 text-sm font-bold text-emerald-900 hover:bg-emerald-100">{dictateOpen ? say('source_view.close_dictate', 'Close dictation') : say('source_view.dictate', 'Dictate')}</button>
+          {typeof sendToReadAlong === 'function' && !!text.trim() && (
+            <button
+              type="button"
+              data-source-send-read-along
+              data-help-key="source_view_send_read_along"
+              onClick={() => sendToReadAlong({ text, segments: uploadedSegsWithBlob })}
+              className="min-h-11 rounded-lg border border-indigo-600 bg-indigo-50 px-3 text-sm font-bold text-indigo-900 hover:bg-indigo-100"
+            >
+              {say('source_view.send_read_along', 'Send to Read-Along Packet')}
+            </button>
+          )}
         </div>
       </header>
+      {uploadedSegsWithBlob.length > 0 && (
+        <div data-source-upload-verify-banner role="status" className="flex flex-wrap items-center justify-between gap-2 rounded-xl border-2 border-emerald-300 bg-gradient-to-r from-emerald-50 to-indigo-50 px-4 py-3 text-sm text-slate-900">
+          <span className="font-semibold text-emerald-950">
+            {fill(say('source_view.upload_verify_banner', 'Audio/video transcribed locally with Whisper ({count} segments kept in memory)'), { count: uploadedSegsWithBlob.length })}
+          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              data-source-upload-verify-btn
+              onClick={() => {
+                if (status === 'in-use' && !editing) setEditing(true);
+                setDictationMode('verify');
+                setDictationDraft(text);
+                setDictateOpen(true);
+              }}
+              className="min-h-11 rounded-lg bg-indigo-700 px-3 text-xs font-bold text-white hover:bg-indigo-800"
+            >
+              {say('dictation.crosscheck_btn', 'Verify against audio with Gemini')}
+            </button>
+            <button
+              type="button"
+              data-source-upload-clear-btn
+              onClick={() => {
+                setDismissedUploadRef(rawUploadedSegments);
+                if (typeof clearUploadedSegments === 'function') clearUploadedSegments();
+                if (dictationMode === 'verify') {
+                  setDictateOpen(false);
+                  setDictationMode('append');
+                }
+              }}
+              className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-xs font-bold text-slate-800 hover:bg-slate-100"
+            >
+              {say('source_view.clear_audio', 'Clear audio')}
+            </button>
+          </div>
+        </div>
+      )}
+      {dictateOpen && (() => {
+        const DictationStudio = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SpeechSetup && window.AlloModules.SpeechSetup.DictationStudio;
+        const isVerifyMode = dictationMode === 'verify';
+        return (
+          <section data-source-dictation-panel aria-label={say('dictation.studio_title', 'Dictation Studio')} className="rounded-xl border-2 border-emerald-200 bg-emerald-50/40 p-4 space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="m-0 text-sm font-black text-emerald-950">{say('dictation.studio_title', 'Dictation Studio (Local Whisper)')}</h3>
+              <button type="button" onClick={() => { setDictateOpen(false); setDictationMode('append'); }} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-100">{say('common.close', 'Close')}</button>
+            </div>
+            {DictationStudio ? (
+              <DictationStudio
+                t={t}
+                compact={true}
+                value={isVerifyMode ? text : dictationDraft}
+                onChange={isVerifyMode ? ((nextVal) => setInputText(nextVal)) : setDictationDraft}
+                initialSegments={uploadedSegsWithBlob.length > 0 ? uploadedSegsWithBlob : undefined}
+                onClearInitialSegments={() => {
+                  setDismissedUploadRef(rawUploadedSegments);
+                  if (typeof clearUploadedSegments === 'function') clearUploadedSegments();
+                }}
+                onSendToReadAlong={typeof sendToReadAlong === 'function' ? sendToReadAlong : undefined}
+                aiTextAvailable={aiReady}
+                onApplyToSource={(dictated) => {
+                  const clean = String(dictated || '').trim();
+                  if (!clean) return;
+                  if (isVerifyMode) {
+                    setInputText(clean);
+                  } else {
+                    setInputText((prev) => (prev && prev.trim() ? prev.trimEnd() + '\n\n' + clean : clean));
+                    setDictationDraft('');
+                  }
+                  setDictateOpen(false);
+                  setDictationMode('append');
+                }}
+              />
+            ) : (
+              <p role="status" className="text-xs font-semibold text-slate-700">{say('wizard.dictate_loading', 'Loading Dictation Studio (Local Whisper)…')}</p>
+            )}
+          </section>
+        );
+      })()}
       {readOnly ? (
         <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
           <div data-source-readonly aria-describedby="source-view-status" className="max-h-[60vh] overflow-y-auto whitespace-pre-wrap p-4 text-sm leading-relaxed text-slate-900">{text}</div>
@@ -5983,6 +6122,23 @@ function SourceInputShellView(props) {
                      >
                         <BookOpen size={12} aria-hidden="true" />
                         {t('input.reading_catalog') || 'Reading catalog'}
+                     </button>
+                     <button type="button"
+                        data-source-dictate-btn="true"
+                        data-help-key="source_dictate_btn"
+                        onClick={() => {
+                          if (typeof window !== 'undefined') {
+                            window.__alloOpenSourceDictation = true;
+                            try { window.dispatchEvent(new CustomEvent('alloflow:open-source-dictation')); } catch (_) {}
+                          }
+                          if (typeof openSourceView === 'function') openSourceView({ focus: false });
+                        }}
+                        disabled={isExtracting || isGeneratingSource}
+                        title={headerText('input.actions.dictate_hint', 'Dictate your source text with on-device Whisper and optional Gemini check')}
+                        className={sourcePillClass}
+                     >
+                        <span aria-hidden="true">🎙️</span>
+                        {headerText('input.dictate_or_record', 'Dictate')}
                      </button>
                      {/* Opens only PDF Accessibility work; lesson projects open from Class & Materials. */}
                      <label data-source-open-pdf-project="true" data-help-key="source_open_pdf_project_btn" className={sourcePillClass + ' cursor-pointer focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-1'} title={t('input.open_pdf_project_tooltip') || 'Reopen PDF Accessibility work you saved earlier. Lesson projects open from Class & Materials.'}>

@@ -14037,7 +14037,8 @@ if (!window._galaxyHasLoadedOnce) {
                         }
                       }),
                       React.createElement("div", {
-                        className: "absolute left-3 right-3 bottom-3 rounded-xl border border-slate-600 bg-slate-900/90 p-3 text-left",
+                        className: "absolute left-3 bottom-3 rounded-xl border border-slate-600 bg-slate-900/90 p-3 text-left",
+                        style: { right: '132px' },
                         role: "status"
                       },
                         React.createElement("p", { className: "text-xs font-bold text-amber-200 mb-1" },

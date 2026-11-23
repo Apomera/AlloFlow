@@ -336,7 +336,7 @@ describe('O6 Letter Trace start tip, O16 Hear the letter', () => {
     expect(note()).toBe('');
     t.button('Start again').click();
     stroke(t, [60, 230], [140, 230]);
-    expect(note()).toBe('Start at the green dot.');
+    expect(note()).toBe('Start at the green dot 1.');
     // Only the first stroke is looked at; a tap is not a stroke.
     t.button('Start again').click();
     stroke(t, [200, 200], [202, 201]);

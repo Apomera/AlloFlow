@@ -1,10 +1,47 @@
 
+function _wsIsGlobalMuted() {
+  if (typeof window === 'undefined') return false;
+  try {
+    if (window.__alloGlobalMuted === true || window._alloGlobalMute === true) return true;
+    if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted() === true) return true;
+  } catch (_) {}
+  return false;
+}
+
+function _wsHardAiBlocked(t) {
+  if (typeof window === 'undefined') return true;
+  try {
+    if (window.__alloStudentAiDisabled === true) return true;
+    if (window.__alloAiSecretsLocked === true) return true;
+    if (window.__alloQrStudentMode === true) return true;
+    if (window.__alloOfflineOnly === true) return true;
+    var mp = window.ALLOFLOW_MANAGED_AI_POLICY;
+    if (mp && typeof mp === 'object') {
+      if (mp.disabled === true || mp.allowAi === false) return true;
+      if (Array.isArray(mp.allowedBackends) && mp.allowedBackends.length === 0) return true;
+    }
+    var sp = window.AlloModules && window.AlloModules.StudentPolicy;
+    if (sp && typeof sp === 'object') {
+      if (sp.disabled === true || sp.allowAi === false || sp.aiEnabled === false) return true;
+      if (typeof sp.isAiBlocked === 'function' && sp.isAiBlocked()) return true;
+    }
+    if (typeof window.__alloAiSetupDoorway === 'function') {
+      var door = window.__alloAiSetupDoorway('tts', t);
+      if (door && door.disabled) return true;
+    }
+  } catch (_) {
+    return true;
+  }
+  return false;
+}
+
 function WordSoundsPreviewView(props) {
+  props = props && typeof props === 'object' ? props : {};
   function label(key, fallback, values) {
     var fullKey = 'word_sounds.' + key;
     var translated = typeof props.t === 'function' ? props.t(fullKey, values || {}) : '';
     var text = typeof translated === 'string' && translated && translated !== fullKey ? translated : fallback;
-    return text.replace(/\{(\w+)\}/g, function(match, name) { return values && values[name] != null ? String(values[name]) : match; });
+    return text.replace(/\{(\w+)\}/g, function(match, name) { return values && Object.prototype.hasOwnProperty.call(values, name) && values[name] != null ? String(values[name]) : match; });
   }
   var generatedContent = props.generatedContent;
   var wsActivitySequence = props.wsActivitySequence;
@@ -48,7 +85,7 @@ function WordSoundsPreviewView(props) {
     var active = document.activeElement;
     if (active && active !== document.body && !(readinessPanelRef.current && readinessPanelRef.current.contains(active))) return;
     var target = readinessBusy ? readinessCancelButtonRef.current : readinessNotice && readinessCheckButtonRef.current;
-    if (target) target.focus();
+    if (target && target.isConnected && typeof target.focus === 'function') target.focus();
   }, [readinessBusy, readinessNotice]);
   var inspectedAudioCoverage = readinessApi ? readinessApi.inspect(readinessResource, { route: 'student-pack' }) : null;
   wordSoundsAudioCoverage = inspectedAudioCoverage || Object.assign({
@@ -70,7 +107,8 @@ function WordSoundsPreviewView(props) {
   var readableAudioLabel = function (value) {
     var parts = String(value || '').split(': '), category = parts.shift(), name = parts.join(': ');
     if (category === 'instruction' || category === 'feedback') name = name.replace(/^(inst_|fb_)/, '').replace(/_/g, ' ');
-    return (readinessCategoryNames[category] || category) + ': ' + name;
+    var catLabel = Object.prototype.hasOwnProperty.call(readinessCategoryNames, category) ? readinessCategoryNames[category] : category;
+    return catLabel + ': ' + name;
   };
   var checkReadiness = function () {
     var current = readinessRunRef.current;
@@ -133,6 +171,12 @@ function WordSoundsPreviewView(props) {
   var practiceState = React.useState({ busy: false, notice: '' });
   var practiceStatus = practiceState[0], setPracticeStatus = practiceState[1];
   var practiceControllerRef = React.useRef(null);
+  var worksheetState = React.useState({ busy: false, notice: '' });
+  var worksheetStatus = worksheetState[0], setWorksheetStatus = worksheetState[1];
+  var worksheetBusyRef = React.useRef(false);
+  var packetState = React.useState({ busy: false, notice: '' });
+  var packetStatus = packetState[0], setPacketStatus = packetState[1];
+  var packetBusyRef = React.useRef(false);
   var canPresentPractice = isTeacherMode && !generatedContent?.sessionConfig?.fixedForm && !generatedContent?.sessionConfig?.studentLocked;
   var isAssessmentLocked = !!(generatedContent?.sessionConfig?.fixedForm || generatedContent?.sessionConfig?.studentLocked);
   var rawPreviewWords = Array.isArray(generatedContent?.wsPreloadedWords) && generatedContent.wsPreloadedWords.length
@@ -157,6 +201,7 @@ function WordSoundsPreviewView(props) {
   var speakingWordState = React.useState(null);
   var speakingWordIdx = speakingWordState[0], setSpeakingWordIdx = speakingWordState[1];
   var previewSpeechTokenRef = React.useRef(0);
+  var previewSpeechTimerRef = React.useRef(null);
   var previewMountedRef = React.useRef(true);
   var hasPreviewSpeech = typeof window !== 'undefined' && (
     (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function')
@@ -164,10 +209,15 @@ function WordSoundsPreviewView(props) {
   );
   var stopPreviewWordSpeech = React.useCallback(function () {
     previewSpeechTokenRef.current += 1;
+    if (previewSpeechTimerRef.current) {
+      clearTimeout(previewSpeechTimerRef.current);
+      previewSpeechTimerRef.current = null;
+    }
     try {
       if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === 'function') {
         window.AlloSpeechPlayer.stop();
-      } else if (typeof window !== 'undefined' && window.speechSynthesis) {
+      }
+      if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.speechSynthesis.cancel === 'function') {
         window.speechSynthesis.cancel();
       }
     } catch (_) {}
@@ -182,16 +232,28 @@ function WordSoundsPreviewView(props) {
         if (previewMountedRef.current) setSpeakingWordIdx(null);
       }
     };
-    if (typeof window !== 'undefined') window.addEventListener('allo-speech-state', onSpeechState);
+    var onMuteChanged = function (event) {
+      var muted = (event && event.detail && event.detail.muted === true) || _wsIsGlobalMuted();
+      if (muted) stopPreviewWordSpeech();
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('allo-speech-state', onSpeechState);
+      window.addEventListener('alloflow-mute-changed', onMuteChanged);
+    }
     return function () {
       previewMountedRef.current = false;
-      if (typeof window !== 'undefined') window.removeEventListener('allo-speech-state', onSpeechState);
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('allo-speech-state', onSpeechState);
+        window.removeEventListener('alloflow-mute-changed', onMuteChanged);
+      }
       stopPreviewWordSpeech();
     };
   }, [stopPreviewWordSpeech]);
   var speakPreviewWord = function (wordText, idx) {
     if (!wordText || requiresTeacherSpeech) return;
+    if (_wsIsGlobalMuted()) { stopPreviewWordSpeech(); return; }
     if (speakingWordIdx === idx) { stopPreviewWordSpeech(); return; }
+    if (previewSpeechTimerRef.current) { clearTimeout(previewSpeechTimerRef.current); previewSpeechTimerRef.current = null; }
     var token = ++previewSpeechTokenRef.current;
     var lang = generatedContent?.sessionConfig?.language || props.wordSoundsLanguage || undefined;
     try {
@@ -207,23 +269,158 @@ function WordSoundsPreviewView(props) {
       } else if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
         window.speechSynthesis.cancel();
         var utter = new window.SpeechSynthesisUtterance(wordText);
-        utter.onend = function () { if (previewMountedRef.current && previewSpeechTokenRef.current === token) setSpeakingWordIdx(null); };
-        utter.onerror = function () { if (previewMountedRef.current && previewSpeechTokenRef.current === token) setSpeakingWordIdx(null); };
+        if (typeof lang === 'string' && lang.trim()) utter.lang = lang.trim();
+        var rawSpeed = Number(props.ttsSpeed);
+        if (Number.isFinite(rawSpeed) && rawSpeed > 0) utter.rate = Math.max(0.5, Math.min(2, rawSpeed));
+        utter.volume = 1;
+        var clearSpeech = function () {
+          if (previewSpeechTimerRef.current) { clearTimeout(previewSpeechTimerRef.current); previewSpeechTimerRef.current = null; }
+          if (previewMountedRef.current && previewSpeechTokenRef.current === token) setSpeakingWordIdx(null);
+        };
+        utter.onend = clearSpeech;
+        utter.onerror = clearSpeech;
+        previewSpeechTimerRef.current = setTimeout(clearSpeech, 12000);
         setSpeakingWordIdx(idx);
         window.speechSynthesis.speak(utter);
       }
     } catch (_) {
+      if (previewSpeechTimerRef.current) { clearTimeout(previewSpeechTimerRef.current); previewSpeechTimerRef.current = null; }
       if (previewMountedRef.current) setSpeakingWordIdx(null);
     }
   };
   React.useEffect(function () {
     setPracticeStatus({ busy: false, notice: '' });
+    setWorksheetStatus({ busy: false, notice: '' });
+    setPacketStatus({ busy: false, notice: '' });
+    worksheetBusyRef.current = false;
+    packetBusyRef.current = false;
     stopPreviewWordSpeech();
     return function () {
       if (practiceControllerRef.current) practiceControllerRef.current.abort();
       practiceControllerRef.current = null;
+      worksheetBusyRef.current = false;
+      packetBusyRef.current = false;
     };
   }, [launchContext, stopPreviewWordSpeech]);
+  var sendToWordSoundsPacket = async function () {
+    if (!canPresentPractice || packetBusyRef.current) return;
+    var sendFn = (typeof props.onSendToWordSoundsPacket === 'function')
+      ? props.onSendToWordSoundsPacket
+      : (typeof window !== 'undefined' && typeof window.__alloSendToWordSoundsPacket === 'function' ? window.__alloSendToWordSoundsPacket : null);
+    if (typeof sendFn !== 'function') {
+      setPacketStatus({ busy: false, notice: 'Word Sounds Packet handoff is unavailable in this view.' });
+      return;
+    }
+    var wsWords = Array.isArray(generatedContent?.wsPreloadedWords) && generatedContent.wsPreloadedWords.length
+      ? generatedContent.wsPreloadedWords : (Array.isArray(generatedContent?.data) ? generatedContent.data : []);
+    var words = [];
+    var seen = new Set();
+    var pictures = {};
+    wsWords.forEach(function (entry) {
+      var w = typeof entry === 'string'
+        ? entry.trim()
+        : (entry && typeof entry === 'object' ? String(entry.targetWord || entry.word || entry.term || '').trim() : '');
+      if (!w) return;
+      var k = w.toLowerCase();
+      if (!seen.has(k)) {
+        seen.add(k);
+        words.push(w);
+      }
+      if (entry && typeof entry === 'object' && k !== '__proto__' && k !== 'constructor' && k !== 'prototype') {
+        var rawImg = String(entry.imgUri || entry.image || entry.imageUrl || entry.pictureUri || '').trim();
+        if (/^data:image\/(png|jpeg|jpg|webp|gif|svg\+xml)/i.test(rawImg) && !Object.prototype.hasOwnProperty.call(pictures, k)) {
+          pictures[k] = rawImg;
+        }
+      }
+    });
+    if (!words.length) {
+      setPacketStatus({ busy: false, notice: 'No words are available to send.' });
+      return;
+    }
+    packetBusyRef.current = true;
+    setPacketStatus({ busy: true, notice: '' });
+    try {
+      var ok = await sendFn({
+        title: generatedContent?.title || label('modal_title', 'Word Sounds'),
+        lang: generatedContent?.sessionConfig?.language || props.wordSoundsLanguage || 'English',
+        words: words,
+        pattern: String(generatedContent?.sessionConfig?.pattern || generatedContent?.sessionConfig?.phonicsPattern || generatedContent?.sessionConfig?.focusPattern || '').trim(),
+        activities: plannedSequence.slice(),
+        pictures: pictures
+      });
+      if (previewMountedRef.current) {
+        setPacketStatus({ busy: false, notice: ok === false ? 'Could not hand off draft to Word Sounds Packet.' : 'Sent word list to Word Sounds Packet in a new tab.' });
+      }
+    } catch (_) {
+      if (previewMountedRef.current) {
+        setPacketStatus({ busy: false, notice: 'Could not hand off draft to Word Sounds Packet.' });
+      }
+    } finally {
+      packetBusyRef.current = false;
+    }
+  };
+  var downloadActivityWorksheet = async function () {
+    if (!canPresentPractice || worksheetBusyRef.current) return;
+    worksheetBusyRef.current = true;
+    setWorksheetStatus({ busy: true, notice: '' });
+    try {
+      var resolveBuilder = function () {
+        if (typeof window === 'undefined') return null;
+        if (window.AlloWordPracticeMedia && typeof window.AlloWordPracticeMedia.buildWordSoundsWorksheetHtml === 'function') {
+          return window.AlloWordPracticeMedia.buildWordSoundsWorksheetHtml;
+        }
+        if (window.AlloModules && window.AlloModules.WordPractice && typeof window.AlloModules.WordPractice.buildWordSoundsWorksheetHtml === 'function') {
+          return window.AlloModules.WordPractice.buildWordSoundsWorksheetHtml;
+        }
+        if (window.AlloPacketPrintCards && typeof window.AlloPacketPrintCards.buildWordSoundsWorksheetHtml === 'function') {
+          return window.AlloPacketPrintCards.buildWordSoundsWorksheetHtml;
+        }
+        return null;
+      };
+      var buildFn = resolveBuilder();
+      if (!buildFn && typeof window !== 'undefined' && typeof window.__alloLoadPlugin === 'function') {
+        await window.__alloLoadPlugin('word_practice_module.js');
+        buildFn = resolveBuilder();
+      }
+      if (!buildFn) throw new Error('Worksheet builder unavailable');
+      var wsWords = Array.isArray(generatedContent?.wsPreloadedWords) && generatedContent.wsPreloadedWords.length
+        ? generatedContent.wsPreloadedWords : (generatedContent?.data || []);
+      var wsTitle = generatedContent?.title || label('modal_title', 'Word Sounds');
+      var wsInput = {
+        title: wsTitle,
+        words: wsWords,
+        activities: plannedSequence.length ? plannedSequence : undefined,
+        tracing: generatedContent?.sessionConfig?.tracingCases || 'both',
+        symbols: (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.WordSoundsSymbols) || null,
+        matcher: (typeof window !== 'undefined' && (window.AlloWordPictureMatcher || (window.AlloModules && window.AlloModules.WordPictureMatcher))) || null,
+      };
+      var html = buildFn(wsInput, { pictures: true, answerKey: true, hints: true });
+      if (!html || typeof html !== 'string') throw new Error('Empty worksheet');
+      var slug = String(wsTitle || 'word-sounds').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'word-sounds';
+      var fname = slug + '-activity-worksheet.html';
+      if (typeof window !== 'undefined' && typeof window.Blob === 'function' && window.URL && typeof window.URL.createObjectURL === 'function' && typeof document !== 'undefined' && document.body) {
+        var blob = new window.Blob([html], { type: 'text/html;charset=utf-8' });
+        var url = window.URL.createObjectURL(blob);
+        var link = document.createElement('a');
+        link.href = url;
+        link.download = fname;
+        link.hidden = true;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(function () { try { window.URL.revokeObjectURL(url); } catch (_) {} }, 15000);
+      }
+      if (previewMountedRef.current) {
+        setWorksheetStatus({ busy: false, notice: label('worksheet_downloaded', 'Downloaded {file}. Open it in any browser to print.', { file: fname }) });
+      }
+    } catch (_) {
+      if (previewMountedRef.current) {
+        setWorksheetStatus({ busy: false, notice: label('worksheet_failed', 'The activity worksheet could not be prepared. Please try again.') });
+      }
+    } finally {
+      worksheetBusyRef.current = false;
+    }
+  };
   var openWordPractice = async function () {
     if (!canPresentPractice || practiceControllerRef.current) return;
     var controller = new AbortController();
@@ -237,7 +434,7 @@ function WordSoundsPreviewView(props) {
         words: words,
         title: generatedContent?.title || label('practice_title', 'Word Fluency Pop-Up'),
         language: generatedContent?.sessionConfig?.language || props.wordSoundsLanguage || 'English',
-        source: 'word-sounds', callTTS: props.callTTS, selectedVoice: props.selectedVoice,
+        source: 'word-sounds', callTTS: _wsHardAiBlocked(props.t) ? undefined : props.callTTS, selectedVoice: props.selectedVoice,
         ttsSpeed: props.ttsSpeed, t: props.t, currentUiLanguage: props.currentUiLanguage, signal: controller.signal,
       });
       if (!controller.signal.aborted) setPracticeStatus({ busy: false, notice: '' });
@@ -270,10 +467,10 @@ function WordSoundsPreviewView(props) {
   return (
                   <div className="space-y-6">{launchError && <p role="alert" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">{launchError}</p>}
                     <div className="bg-gradient-to-br from-violet-50 to-indigo-50 p-6 rounded-2xl border border-violet-200 text-center">
-                      <div className="text-4xl mb-3">🎵</div>
+                      <div className="text-4xl mb-3" aria-hidden="true">🎵</div>
                       <h3 className="text-lg font-bold text-slate-800 mb-2">{generatedContent?.title || label('modal_title', 'Word Sounds')}</h3>
                       <p className="text-sm text-slate-600 mb-1">{generatedContent?.configSummary || label('preview_ready', 'Ready to practice')}</p>
-                      {generatedContent?.data && <p className="text-xs text-violet-700 font-medium">{label('preview_word_count', '{count} words loaded', { count: generatedContent.data.length })}</p>}
+                      {Array.isArray(generatedContent?.data) && <p className="text-xs text-violet-700 font-medium">{label('preview_word_count', '{count} words loaded', { count: generatedContent.data.length })}</p>}
                       {!isAssessmentLocked && plannedSequence.length > 0 && (
                         <div data-ws-preview-sequence="true" role="group" className="mt-3 flex flex-wrap items-center justify-center gap-1.5" aria-label={label('preview_activity_plan', 'Planned activities')}>
                           {plannedSequence.map(function (actId, actIdx) {
@@ -332,12 +529,18 @@ function WordSoundsPreviewView(props) {
                         </details>
                       )}
                       {canPresentPractice && <div className="mt-4 rounded-xl border border-violet-200 bg-white p-4 text-start">
-                        <button type="button" onClick={openWordPractice} disabled={practiceStatus.busy} aria-busy={practiceStatus.busy} aria-describedby="word-sounds-preview-presentation-help" className="min-h-11 rounded-lg border border-violet-300 px-4 py-2 text-sm font-bold text-violet-800 hover:bg-violet-50 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:ring-offset-2">{practiceStatus.busy ? label('practice_opening', 'Opening presentation tools…') : label('practice_present_export', 'Present & Export')}</button>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <button type="button" onClick={openWordPractice} disabled={practiceStatus.busy} aria-busy={practiceStatus.busy} aria-describedby="word-sounds-preview-presentation-help" className="min-h-11 rounded-lg border border-violet-300 px-4 py-2 text-sm font-bold text-violet-800 hover:bg-violet-50 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:ring-offset-2">{practiceStatus.busy ? label('practice_opening', 'Opening presentation tools…') : label('practice_present_export', 'Present & Export')}</button>
+                          <button type="button" data-ws-worksheet-btn="true" onClick={downloadActivityWorksheet} disabled={worksheetStatus.busy} aria-busy={worksheetStatus.busy} aria-describedby="word-sounds-preview-presentation-help" className="min-h-11 rounded-lg border border-indigo-300 bg-indigo-50 px-4 py-2 text-sm font-bold text-indigo-900 hover:bg-indigo-100 disabled:opacity-60 transition-colors motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">{worksheetStatus.busy ? label('worksheet_building', 'Preparing worksheet…') : label('practice_activity_worksheet', 'Print / Download Activity Worksheet')}</button>
+                          <button type="button" data-testid="word-sounds-send-packet" onClick={sendToWordSoundsPacket} disabled={packetStatus.busy || !previewWords.length} aria-busy={packetStatus.busy} aria-describedby="word-sounds-preview-presentation-help" className="min-h-11 rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-900 hover:bg-emerald-100 disabled:opacity-60 transition-colors motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2">{packetStatus.busy ? 'Sending to Packet…' : 'Send to Word Sounds Packet'}</button>
+                        </div>
                         <p id="word-sounds-preview-presentation-help" className="mt-2 text-sm text-slate-600">{label('practice_export_help', 'Project these words or download HTML and PowerPoint with optional audio and prepared activities.')}</p>
                         {practiceStatus.notice && <p role="status" aria-live="polite" aria-atomic="true" className="mt-1 text-sm text-amber-900">{practiceStatus.notice}</p>}
+                        {worksheetStatus.notice && <p role="status" aria-live="polite" aria-atomic="true" className="mt-1 text-sm text-indigo-900">{worksheetStatus.notice}</p>}
+                        {packetStatus.notice && <p role="status" aria-live="polite" aria-atomic="true" className="mt-1 text-sm text-emerald-900">{packetStatus.notice}</p>}
                       </div>}
                       {isTeacherMode && wordSoundsAudioCoverage && (
-                        <section ref={readinessPanelRef} className="mt-4 rounded-xl border border-violet-200 bg-white p-4 text-start" aria-label={label('readiness_panel', 'Ready for students: audio check')} aria-busy={readinessBusy} onKeyDown={event => { if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return; if (event.key === 'Escape' && readinessBusy) { event.preventDefault(); cancelReadiness(); } }}>
+                        <section ref={readinessPanelRef} className="mt-4 rounded-xl border border-violet-200 bg-white p-4 text-start" aria-label={label('readiness_panel', 'Ready for students: audio check')} aria-busy={readinessBusy} onKeyDown={event => { if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return; if (event.key === 'Escape' && readinessBusy) { event.preventDefault(); cancelReadiness(); } }}>
                           <h4 className="font-bold text-slate-800">{label('readiness_heading', 'Ready for students')} <span className="text-sm font-medium">{label('readiness_audio_qualifier', 'Audio check')}</span></h4>
                           <p role="status" aria-live="polite" aria-atomic="true" className={`mt-2 text-sm font-bold ${wordSoundsAudioCoverage.complete ? 'text-emerald-700' : 'text-amber-800'}`}>
                             {readinessBusy ? label('readiness_checking', 'Checking local clips. This may take up to 30 seconds.') : (wordSoundsAudioCoverage.teacherLedReady ? label('readiness_teacher_led_ready', 'Ready with a teacher present') : wordSoundsAudioCoverage.complete ? label('readiness_ready', 'Audio verified for this student pack') : label('readiness_review', 'Audio needs checking or review'))}

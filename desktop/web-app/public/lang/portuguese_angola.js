@@ -155,7 +155,12 @@
     "refine_go": "Sugerir uma reescrita",
     "refining": "A escrever uma sugestão…",
     "made_from_version": "Criado a partir da versão {version} do seu material-fonte",
-    "remake": "Recriar a partir da versão atual"
+    "remake": "Recriar a partir da versão atual",
+    "dictate": "Ditar texto",
+    "close_dictate": "Encerrar ditado",
+    "send_read_along": "Enviar para o Pacote de Leitura Guiada",
+    "upload_verify_banner": "Áudio/vídeo transcrito localmente no Whisper ({count} trechos guardados na memória)",
+    "clear_audio": "Apagar áudio"
   },
   "sel": {
     "peersupport": {
@@ -7187,7 +7192,10 @@
     "source_choice_ambiguous": "Escolha uma leitura em Com base em antes de gerar. Há mais de uma leitura disponível.",
     "source_choices_load_failed": "Não foi possível carregar as opções de leitura. Tente novamente.",
     "submission_tools_still_loading": "As ferramentas de envio ainda estão a carregar. Tente Enviar de novo.",
-    "blank_created": "Recurso em branco criado: {title}. Preencha-o antes de partilhar."
+    "blank_created": "Recurso em branco criado: {title}. Preencha-o antes de partilhar.",
+    "sent_to_read_along": "Texto enviado para o Pacote de Leitura Guiada num novo separador.",
+    "read_along_handoff_failed": "Não foi possível encaminhar o rascunho para o Pacote de Leitura Guiada.",
+    "read_along_no_text": "Escreva ou dite o texto base antes de enviar para o Pacote de Leitura Guiada."
   },
   "large_file": {
     "modal_title": "Importar Ficheiro de Áudio Grande",
@@ -7204,7 +7212,8 @@
     "chunk_info": "O áudio é dividido em partes de 5 minutos para processamento",
     "chunk_progress": "Parte {current} de {total}",
     "audio_only_error": "No momento, somente ficheiros de áudio (MP3, WAV, etc.) são suportados para transcrição em partes.",
-    "starting": "A iniciar..."
+    "starting": "A iniciar...",
+    "engine_legend": "Motor de Transcrição de Voz"
   },
   "formatting": {
     "bold": "Negrito (**texto**)",
@@ -7608,7 +7617,8 @@
       "analyzing_short": "A analisar...",
       "generate_short": "Gerar",
       "books_short": "Livros",
-      "books_hint": "Abra livros ilustrados: qualquer livro pode tornar-se o seu texto-fonte"
+      "books_hint": "Abra livros ilustrados: qualquer livro pode tornar-se o seu texto-fonte",
+      "dictate_hint": "Dite o texto base com o Whisper no aparelho e conferência opcional do Gemini"
     },
     "status_generating": "Gerando texto-fonte...",
     "success_long_form": "Texto longo gerado com sucesso!",
@@ -7658,7 +7668,8 @@
     "empty_desc_teacher": "Adicione um texto e escolha as ferramentas que o adaptam para os seus alunos.",
     "empty_desc_family": "Adicione algo que o seu filho ou a sua filha esteja a ler e escolha como quer ajudar.",
     "reading_catalog": "Catálogo de leitura",
-    "find_online": "Procurar online"
+    "find_online": "Procurar online",
+    "dictate_or_record": "Ditar ou gravar voz"
   },
   "wizard": {
     "title": "rápido Iniciar",
@@ -7792,7 +7803,12 @@
     "paste_word_count": "{count} palavras",
     "length_custom": "Personalizado…",
     "length_custom_label": "Número de palavras",
-    "length_custom_hint": "De 50 a 5.000 palavras"
+    "length_custom_hint": "De 50 a 5.000 palavras",
+    "dictate_desc": "Ditado de voz local com Whisper e conferência opcional",
+    "dictate_title": "Dite ou grave o seu texto base",
+    "dictate_helper": "Arranca com ditado privado do Whisper no próprio aparelho. Edite à vontade, melhore o texto se desejar ou confirme contra a gravação com o Gemini.",
+    "dictate_loading": "A abrir o Estúdio de Ditado (Whisper local)… Enquanto carrega, pode digitar ou ajustar abaixo.",
+    "words_dictated_unit": "palavras ditadas"
   },
   "settings": {
     "immersive_options": "Imersivo opções",
@@ -115604,5 +115620,68 @@
     "sc_findText": "Procurar texto no design",
     "sc_commandPalette": "Abrir ações rápidas",
     "sc_help": "Mostrar esta lista de atalhos"
+  },
+  "dictation": {
+    "badge_desktop": "Whisper de Secretária Pronto",
+    "badge_download_needed": "Whisper Local · Descarregamento Inicial",
+    "badge_local_ready": "Whisper Local Activo · {name}",
+    "cleanup_apply": "Aplicar melhoria",
+    "cleanup_failed": "Não foi possível melhorar o texto agora.",
+    "cleanup_fillers": "Cortar expressões repetitivas",
+    "cleanup_heading": "Melhoria opcional de texto por IA",
+    "cleanup_keep": "Conservar original",
+    "cleanup_no_changes": "Não foram propostas alterações para este rascunho.",
+    "cleanup_notes": "Organizar como apontamentos da sala de aula",
+    "cleanup_punctuation": "Ajustar pontuação e apresentação",
+    "cleanup_review_title": "Proposta de melhoria pronta — o seu rascunho ainda não mudou",
+    "cleanup_text_only": "somente texto — nenhum áudio sai do aparelho",
+    "cleanup_unavailable": "A melhoria de texto por IA não está disponível agora.",
+    "cleanup_undo": "Anular melhoria",
+    "cleanup_working": "A melhorar…",
+    "clear_audio": "Apagar áudio gravado ({mb} MB)",
+    "crosscheck_all_resolved": "Todos os trechos marcados foram confirmados.",
+    "crosscheck_btn": "Confirmar com o áudio no Gemini",
+    "crosscheck_count": "{count} trecho(s) marcado(s) para confirmar:",
+    "crosscheck_disabled_note": "Indisponível agora (bloqueado sem internet / IA de alunos desligada ou sem chave Gemini). O ditado local com Whisper continua a funcionar totalmente sem internet.",
+    "crosscheck_disclosure": "Só avança se clicar abaixo: envia os trechos de áudio gravados na memória e o rascunho para o Gemini assinalar eventuais falhas de palavras.",
+    "crosscheck_failed": "A conferência de áudio do Gemini não terminou. A transcrição local ficou intacta.",
+    "crosscheck_heading": "Conferência cruzada com o áudio no Gemini (Opcional)",
+    "crosscheck_none": "Não surgiram diferenças relevantes entre o Whisper Local e o Gemini Audio.",
+    "crosscheck_running": "A conferir com o áudio…",
+    "crosscheck_unavailable": "A conferência cruzada de áudio do Gemini está indisponível agora.",
+    "download_now": "Descarregar Whisper Local ({size} MB)",
+    "download_warning": "Nota de descarregamento: o Whisper Local faz reconhecimento de voz privado no próprio aparelho. Descarregar o modelo {name} consome ~{size} MB uma única vez (~1–2 minutos consoante a rede), fica guardado sem internet no navegador e mantém as gravações de voz neste aparelho.",
+    "draft_label": "Rascunho transcrito (editável)",
+    "draft_placeholder": "Carregue em Começar ditado acima ou escreva/corrija a transcrição directamente aqui…",
+    "guide_both_body": "Comece de forma privada no Whisper Local para ditar depressa e sem depender da internet. Quando precisar de uma segunda confirmação em termos técnicos ou nomes, active a conferência do Gemini para cruzar dois modelos independentes com o áudio e voltar a ouvir trechos de 5 segundos em cada ponto assinalado.",
+    "guide_both_label": "Vantagem de combinar ambos (Conferência cruzada):",
+    "guide_gemini_body": "Dispensa descarregamento de modelo. Tem melhor desempenho em vocabulário específico, nomes próprios, sotaques variados, turmas com ruído e pontuação — envia trechos gravados ao Gemini apenas mediante escolha sua.",
+    "guide_gemini_title": "Gemini Audio (Conferência opcional)",
+    "guide_summary": "Whisper Local vs. Gemini Audio — pontos fortes e porquê combinar ambos",
+    "guide_whisper_body": "Privado e funcional sem internet após um único descarregamento (~39–73 MB). Nenhum áudio sai do aparelho, não exige chave de API nem limite de uso e aguenta ditados longos e seguidos.",
+    "guide_whisper_title": "Whisper Local (Padrão)",
+    "ios_canvas_blocked": "O Whisper Local está suspenso no iPhone/iPad dentro do Gemini Canvas. Escreva directamente abaixo ou abra o AlloFlow num navegador de computador.",
+    "ios_canvas_hint": "Pode escrever directamente abaixo, abrir o AlloFlow num navegador de computador para usar o Whisper Local ou recorrer ao Gemini Audio se estiver configurado.",
+    "ios_canvas_title": "O Whisper no aparelho está suspenso no iPhone/iPad dentro do Gemini Canvas",
+    "listening_local": "A escutar localmente com o Whisper… faça uma pequena pausa ou continue a falar para acrescentar texto.",
+    "mic_start_failed": "Não foi possível activar o microfone. Confirme as autorizações do navegador.",
+    "model_size_label": "Tamanho do modelo Whisper Local",
+    "pause_recording": "Fazer pausa",
+    "paused_note": "Em pausa. Pode corrigir a transcrição abaixo ou carregar em Continuar para retomar o ditado.",
+    "privacy_tag": "Privado · Sem internet após descarregar · Sem chave de API",
+    "resume_recording": "Continuar",
+    "send_read_along": "Enviar para o Pacote de Leitura Guiada",
+    "speech_settings": "Opções de voz",
+    "speed_badge_lesson": "Medido: {speed}x mais veloz do que a fala · Óptimo para ditados longos",
+    "speed_badge_short": "Medido: {speed}x mais veloz do que a fala · Melhor para trechos curtos",
+    "speed_badge_slow": "Medido: {speed}x · Mais devagar do que o tempo real (conte com pausas)",
+    "speed_badge_upgrade": "Medido: {speed}x mais veloz do que a fala · Óptimo para ditados longos (também pode testar {name})",
+    "start_recording": "Começar ditado (Whisper Local)",
+    "stop_recording": "Terminar",
+    "studio_title": "Estúdio de Ditado",
+    "test_mic": "Testar microfone (4s)",
+    "upload_media": "Transcrever ficheiro de áudio/vídeo",
+    "use_text": "Aplicar texto ditado",
+    "voice_unavailable": "O gravador de voz ainda está a preparar-se. Volte a tentar daqui a pouco."
   }
 }

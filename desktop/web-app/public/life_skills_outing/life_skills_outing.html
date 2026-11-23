@@ -65,7 +65,7 @@
 <details id="planner" class="card planner-card">
 <summary><span>Make a plan before you act</span><span class="planner-optional">Optional</span></summary>
 <div class="planner-body"><p class="muted">Choose a few steps, put them in an order, then try your plan in the room. Planning takes no practice time.</p>
-<form id="planForm" class="plan-add"><label for="planAction">Add a step to your plan<select id="planAction"></select></label><button id="addPlanStep" class="quiet-button" type="submit">Add step</button></form>
+<form id="planForm" class="plan-add"><label for="planAction">Add a step to your plan</label><select id="planAction" aria-label="Add a step to your plan"></select><button id="addPlanStep" class="quiet-button" type="submit">Add step</button></form>
 <ol id="planSteps" class="plan-steps" aria-label="Your planned order"></ol>
 <div class="button-row"><button id="checkPlanButton" class="quiet-button" type="button">Check my plan</button><button id="nextPlanButton" class="primary-button" type="button">Go to my next step</button></div>
 <p id="planNext" class="muted small"></p><div id="planCheck" class="plan-check" hidden><p id="planSummary"></p><p id="planUncertainty" class="muted small"></p></div>
@@ -177,8 +177,8 @@
 <p id="packingStatus" class="packing-status" role="status" aria-live="polite" aria-atomic="true"></p>
 </div></details>
 <details id="rehearsal" class="rehearsal-panel"><summary>Rehearse a choice before you take it</summary><p class="muted">Think about what might change, then preview one action. The room and clock stay as they are while you rehearse.</p>
-<label for="rehearsalAction">Which action would you like to try?<select id="rehearsalAction"></select></label>
-<label for="prediction">What do you think will happen? <span class="muted">Optional</span><textarea id="prediction" rows="2" maxlength="240" placeholder="Think it through, talk with someone, or write a prediction."></textarea></label>
+<label for="rehearsalAction">Which action would you like to try?</label><select id="rehearsalAction" aria-label="Which action would you like to try?"></select>
+<label for="prediction">What do you think will happen? <span class="muted">Optional</span></label><textarea id="prediction" aria-label="What do you think will happen? Optional" rows="2" maxlength="240" placeholder="Think it through, talk with someone, or write a prediction."></textarea>
 <button id="previewActionButton" class="quiet-button" type="button">Preview this choice</button>
 <div id="rehearsalResult" class="rehearsal-result" hidden><h4 id="rehearsalTitle" tabindex="-1">What would change?</h4><p id="rehearsalPrediction" class="muted"></p><table class="comparison-table"><caption class="sr-only">Immediate effects of the rehearsed action</caption><thead><tr><th scope="col">What changes</th><th scope="col">Now</th><th scope="col">After this choice</th></tr></thead><tbody id="rehearsalChanges"></tbody></table><p id="rehearsalFeedback"></p><p id="rehearsalUncertainty" class="muted small"></p><p class="small">Compare this with your prediction. What would you check before taking the action?</p><button id="takeRehearsedAction" class="primary-button" type="button">Take this action in the outing</button></div>
 <p id="rehearsalStatus" class="muted small" role="status" aria-live="polite"></p></details>
@@ -188,7 +188,7 @@
 <section id="activityContinuation" class="activity-continuation" aria-labelledby="activityContinuationTitle" hidden><div id="activityContinuationPicture" class="continuation-picture" aria-hidden="true"></div><div class="continuation-copy"><p class="eyebrow">Your current preparation</p><h4 id="activityContinuationTitle"></h4><p id="activityContinuationCopy"></p><p id="activityNext" class="muted small" hidden></p><div class="button-row"><button id="continueGuide" class="quiet-button continue-guide" type="button" aria-describedby="activityNext" hidden>Go to the next step</button><button id="reviewPreparation" class="quiet-button" type="button" aria-controls="preparationBoard">See my preparation</button></div></div></section>
 <details id="choiceHistory" class="history-panel"><summary>Review a choice · try another way</summary>
 <p class="muted">Choose a step to see what happened. You can go back to just before that choice in a new practice.</p>
-<label for="reviewChoice">Which choice would you like to revisit?</label><select id="reviewChoice"></select>
+<label for="reviewChoice">Which choice would you like to revisit?</label><select id="reviewChoice" aria-label="Which choice would you like to revisit?"></select>
 <div id="decisionReview" class="decision-review" hidden><p id="reviewConsequence"></p><p class="muted">What do you think would happen if you chose differently?</p>
 <details id="retryExplore" class="retry-explore"><summary>Explore from before this choice</summary><div class="retry-explore-body">
 <div class="section-header"><h4 id="retryStartTitle"></h4><button id="readReview" class="quiet-button" type="button">Read this starting point aloud</button></div>
@@ -204,8 +204,8 @@
 <summary>Explore departure and arrival times <span class="planner-optional">Optional</span></summary>
 <div class="travel-lab-body">
 <p class="muted">Which route would still work if you left later? Move the example time and compare. Exploring takes no practice time.</p>
-<div class="travel-time-controls"><label for="departureTime">Imagine leaving at <output id="departureOutput" for="departureTime" aria-live="off">09:00</output></label>
-<input id="departureTime" type="range" min="0" max="60" step="1" value="0" aria-describedby="travelTimeNote">
+<div class="travel-time-controls"><label id="departureTimeLabel" for="departureTime">Imagine leaving at <output id="departureOutput" for="departureTime" aria-live="off">09:00</output></label>
+<input id="departureTime" type="range" min="0" max="60" step="1" value="0" aria-labelledby="departureTimeLabel" aria-describedby="travelTimeNote">
 <div class="button-row"><button id="earlierDeparture" class="quiet-button" type="button" aria-label="1 minute earlier — move example departure earlier">1 minute earlier</button><button id="laterDeparture" class="quiet-button" type="button" aria-label="1 minute later — move example departure later">1 minute later</button><button id="resetDeparture" class="quiet-button" type="button">Use practice clock</button></div></div>
 <p id="travelTimeNote" class="muted small"></p>
 <div class="timeline-key" aria-hidden="true"><span><i class="leaving-key"></i>Leave</span><span><i class="waiting-key"></i>Waiting</span><span><i class="journey-key"></i>Travel</span><span><i class="deadline-key"></i>09:35 start</span></div>

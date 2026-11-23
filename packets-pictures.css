@@ -62,7 +62,7 @@
 .mine-list img { grid-row: span 2; width: 4rem; height: 4rem; object-fit: contain; background: #ffffff; border: 1px solid var(--line-strong); border-radius: 8px; }
 .mine-word { font-size: 1.125rem; font-weight: 700; color: var(--ink); overflow-wrap: anywhere; }
 .mine-credit { font-size: 0.875rem; color: var(--muted); overflow-wrap: anywhere; }
-.mine-list .btn { grid-column: 2; justify-self: start; }
+.mine-list .btn { grid-column: 2; justify-self: start; min-height: 2.75rem; }
 
 @media (min-width: 40rem) {
   .mine-list li { grid-template-columns: 4rem minmax(0, 1fr) auto; }
@@ -74,5 +74,6 @@
 }
 
 @media (forced-colors: active) {
-  .saved { border-width: 3px; }
+  .saved { border-width: 3px; border-color: Highlight; }
+  .pic { border-color: CanvasText; }
 }

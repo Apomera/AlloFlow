@@ -138,21 +138,7 @@ function FullPackRunView(props) {
     className: "text-sm font-black text-indigo-900"
   }, t('fullpack.delivery_title') || 'Preview, Package & Deliver'), /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-xs leading-relaxed text-slate-600"
-  }, t('fullpack.delivery_help') || 'Choose formats by purpose. You can use more than one route, for example an accessible Word handout plus a Homework QR.'), deliveryGroups.length > 0 && /*#__PURE__*/React.createElement("div", {
-    role: "list",
-    "aria-label": t('a11y.export_families') || 'Available export and delivery families',
-    className: "mt-2 grid gap-2"
-  }, deliveryGroups.map(group => /*#__PURE__*/React.createElement("div", {
-    role: "listitem",
-    key: group.id,
-    className: "rounded-xl border border-indigo-100 bg-indigo-50/60 p-2"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "text-xs font-black text-indigo-900"
-  }, group.label), /*#__PURE__*/React.createElement("div", {
-    className: "mt-0.5 text-xs leading-relaxed text-slate-600"
-  }, group.options.join(' · '))))), /*#__PURE__*/React.createElement("p", {
-    className: "mt-2 text-xs leading-relaxed text-slate-600"
-  }, t('fullpack.delivery_notes') || 'QTI requires a quiz. H5P appears for compatible quiz or study-card content and needs matching H5P libraries at the destination. Storybook and Persona exports live inside those resource views. Homework sharing method and expiry depend on deployment.'), isRunActive && /*#__PURE__*/React.createElement("p", {
+  }, t('fullpack.delivery_help') || 'Start with how students will use this: print or file, a student link/QR, or a live session.'), isRunActive && /*#__PURE__*/React.createElement("p", {
     role: "status",
     "data-testid": "full-pack-delivery-locked",
     className: "mt-2 text-xs font-semibold text-slate-700"
@@ -190,7 +176,30 @@ function FullPackRunView(props) {
     disabled: isRunActive || !latestStudentShare,
     onClick: testLatestStudentLink,
     className: "min-h-11 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-1"
-  }, t('fullpack.delivery_test_link') || 'Test latest student link'))), /*#__PURE__*/React.createElement("details", {
+  }, t('fullpack.delivery_test_link') || 'Test latest student link')), deliveryGroups.length > 0 && /*#__PURE__*/React.createElement("details", {
+    "data-testid": "full-pack-all-formats",
+    className: "mt-2 rounded-xl border border-indigo-100 bg-indigo-50/40 px-2.5 py-1"
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "flex min-h-11 cursor-pointer items-center justify-between gap-2 text-xs font-bold text-indigo-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 rounded-lg"
+  }, /*#__PURE__*/React.createElement("span", null, t('fullpack.all_formats_summary') || 'See all export & delivery formats (PDF, Word, Slides, EPUB, Braille, QTI, H5P…)'), /*#__PURE__*/React.createElement(ChevronDown, {
+    size: 14,
+    "aria-hidden": "true",
+    className: "shrink-0"
+  })), /*#__PURE__*/React.createElement("div", {
+    role: "list",
+    "aria-label": t('a11y.export_families') || 'Available export and delivery families',
+    className: "mt-1.5 grid gap-2 pb-1"
+  }, deliveryGroups.map(group => /*#__PURE__*/React.createElement("div", {
+    role: "listitem",
+    key: group.id,
+    className: "rounded-xl border border-indigo-100 bg-white/90 p-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-xs font-black text-indigo-900"
+  }, group.label), /*#__PURE__*/React.createElement("div", {
+    className: "mt-0.5 text-xs leading-relaxed text-slate-600"
+  }, group.options.join(' · '))))), /*#__PURE__*/React.createElement("p", {
+    className: "mt-1.5 pb-1 text-xs leading-relaxed text-slate-600"
+  }, t('fullpack.delivery_notes') || 'QTI requires a quiz. H5P appears for compatible quiz or study-card content and needs matching H5P libraries at the destination. Storybook and Persona exports live inside those resource views. Homework sharing method and expiry depend on deployment.'))), /*#__PURE__*/React.createElement("details", {
     "data-testid": "full-pack-options",
     className: "group/options mb-1 rounded-2xl text-white"
   }, /*#__PURE__*/React.createElement("summary", {

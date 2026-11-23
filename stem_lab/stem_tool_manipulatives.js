@@ -1483,7 +1483,7 @@ window.StemLab = window.StemLab || {
                   streak > 0 && h('span', { className: 'manip-telemetry-pill' }, '🔥 ', h('strong', null, String(streak)))
                 )
               ),
-              h('div', { className: 'hidden sm:grid grid-cols-3 gap-2 lg:w-[22rem]' },
+              h('div', { className: 'hidden sm:grid gap-2 lg:w-[22rem]', style: { gridTemplateColumns: 'minmax(0, 1.75fr) minmax(0, 1fr) minmax(0, 1fr)' } },
                 [
                   { label: 'Model', value: manipModeLabel },
                   { label: 'Value', value: String(manipDisplayValue) },

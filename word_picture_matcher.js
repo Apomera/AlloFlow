@@ -11,7 +11,9 @@
 }(typeof globalThis !== 'undefined' ? globalThis : (typeof window !== 'undefined' ? window : this), function (root) {
   'use strict';
 
-  var IRREGULAR_BASES = {
+  function nullMap(obj) { return Object.assign(Object.create(null), obj); }
+
+  var IRREGULAR_BASES = nullMap({
     mice: 'mouse', geese: 'goose', feet: 'foot', teeth: 'tooth', children: 'child',
     men: 'man', women: 'woman', people: 'person',
     leaves: 'leaf', wolves: 'wolf', knives: 'knife', lives: 'life', halves: 'half',
@@ -31,18 +33,18 @@
     broken: 'break', stolen: 'steal', worn: 'wear', torn: 'tear', shown: 'show',
     grown: 'grow', thrown: 'throw', drawn: 'draw', flown: 'fly', known: 'know',
     better: 'good', best: 'good', worse: 'bad', worst: 'bad'
-  };
+  });
 
-  var KNOWN_COMPOUND_PARTS = {
+  var KNOWN_COMPOUND_PARTS = nullMap({
     rain: 1, snow: 1, sun: 1, moon: 1, star: 1, wind: 1, fire: 1, ice: 1, water: 1,
     earth: 1, sand: 1, rock: 1, wood: 1, tree: 1, leaf: 1, grass: 1, sea: 1, hill: 1,
     land: 1, river: 1, back: 1, flash: 1, note: 1, text: 1, chalk: 1, lunch: 1,
     play: 1, class: 1, bed: 1, home: 1, school: 1, book: 1, space: 1, flood: 1,
     wet: 1, dry: 1, wild: 1, green: 1, blue: 1, black: 1, white: 1, gold: 1,
     foot: 1, hand: 1, head: 1, ear: 1, eye: 1, tooth: 1, hair: 1, rail: 1
-  };
+  });
 
-  var CONCEPT_CUES = {
+  var CONCEPT_CUES = nullMap({
     // Science / Ecology / Earth
     photosynthesis: ['plant', 'leaf', 'sun', 'tree'],
     ecosystem: ['forest', 'tree', 'plant', 'earth'],
@@ -308,9 +310,9 @@
     wipe: ['soap', 'towel', 'sponge'],
     shut: ['door', 'lock'],
     tap: ['water', 'drum']
-  };
+  });
 
-  var STOP_TOKENS = {
+  var STOP_TOKENS = nullMap({
     a: 1, an: 1, and: 1, are: 1, as: 1, at: 1, be: 1, been: 1, being: 1,
     but: 1, by: 1, can: 1, did: 1, does: 1, each: 1, for: 1, form: 1,
     from: 1, had: 1, has: 1, have: 1, having: 1, her: 1, here: 1, his: 1,
@@ -327,11 +329,11 @@
     were: 1, what: 1, when: 1, where: 1, which: 1, who: 1, will: 1,
     with: 1, without: 1, would: 1, you: 1, your: 1, act: 1, action: 1,
     group: 1, able: 1, about: 1, above: 1, across: 1, after: 1, again: 1
-  };
+  });
 
   // Extra vague/generic words ignored ONLY during free-text definition fallback
   // so abstract words do not inherit misleading concrete icons (e.g. "discrimination" -> "come", "grasp" -> "first").
-  var DEF_STOP_TOKENS = {
+  var DEF_STOP_TOKENS = nullMap({
     good: 1, bad: 1, hard: 1, soft: 1, first: 1, last: 1, next: 1, second: 1, third: 1,
     right: 1, left: 1, high: 1, low: 1, long: 1, short: 1, fast: 1, slow: 1, full: 1, empty: 1,
     open: 1, close: 1, near: 1, far: 1, early: 1, late: 1, free: 1, real: 1, true: 1, false: 1,
@@ -354,7 +356,7 @@
     double: 1, whole: 1, total: 1, extra: 1, final: 1,
     makes: 1, past: 1, future: 1, before: 1, below: 1, against: 1, higher: 1,
     longer: 1, moved: 1, down: 1, spelling: 1, great: 1, stand: 1, fairy: 1
-  };
+  });
 
   function resolveSymbols(explicit) {
     if (explicit && typeof explicit.get === 'function') return explicit;
@@ -367,13 +369,77 @@
     return null;
   }
 
+  function resolveReadingSymbolsExt(options) {
+    if (options && options.useReadingExt === false) return null;
+    var explicit = options && options.readingSymbolsExt;
+    if (explicit && typeof explicit.get === 'function') return explicit;
+    if (root && root.AlloReadingSymbolsExt && typeof root.AlloReadingSymbolsExt.get === 'function') {
+      return root.AlloReadingSymbolsExt;
+    }
+    if (root && root.AlloModules && root.AlloModules.ReadingSymbolsExt && typeof root.AlloModules.ReadingSymbolsExt.get === 'function') {
+      return root.AlloModules.ReadingSymbolsExt;
+    }
+    return null;
+  }
+
+  function resolveSemanticBridge(options) {
+    if (options && options.useSemantic === false) return null;
+    var explicit = options && options.semantic;
+    if (explicit && typeof explicit.lookup === 'function') return explicit;
+    if (root && root.AlloWordPictureSemantic && typeof root.AlloWordPictureSemantic.lookup === 'function') {
+      return root.AlloWordPictureSemantic;
+    }
+    if (root && root.AlloModules && root.AlloModules.WordPictureSemantic && typeof root.AlloModules.WordPictureSemantic.lookup === 'function') {
+      return root.AlloModules.WordPictureSemantic;
+    }
+    return null;
+  }
+
+  function combineSymbolBanks(primary, secondary) {
+    if (primary && !secondary) return primary;
+    if (!primary && secondary) return secondary;
+    if (!primary && !secondary) return null;
+    if (primary === secondary) return primary;
+    return {
+      credit: primary.credit || secondary.credit || '',
+      credits: Object.assign({}, secondary.credits || {}, primary.credits || {}),
+      has: function (w) {
+        return (typeof primary.has === 'function' ? !!primary.has(w) : !!primary.get(w))
+          || (typeof secondary.has === 'function' ? !!secondary.has(w) : !!secondary.get(w));
+      },
+      get: function (w) {
+        var hit = primary.get(w);
+        if (hit && hit.svg) return hit;
+        return secondary.get(w);
+      },
+      words: function () {
+        var a = typeof primary.words === 'function' ? primary.words() : [];
+        var b = typeof secondary.words === 'function' ? secondary.words() : [];
+        if (!b.length) return a;
+        var seen = Object.create(null);
+        var out = [];
+        for (var i = 0; i < a.length; i++) { seen[a[i]] = true; out.push(a[i]); }
+        for (var j = 0; j < b.length; j++) { if (!seen[b[j]]) { seen[b[j]] = true; out.push(b[j]); } }
+        return out;
+      },
+      ready: function () {
+        var pOk = typeof primary.ready === 'function' ? !!primary.ready() : true;
+        var sOk = typeof secondary.ready === 'function' ? !!secondary.ready() : true;
+        return pOk && sOk;
+      }
+    };
+  }
+
   async function ensureSymbols(options) {
     var bank = resolveSymbols(options && options.symbols);
-    if (!bank) return null;
-    if (typeof bank.ready === 'function') {
+    var ext = resolveReadingSymbolsExt(options);
+    if (bank && typeof bank.ready === 'function') {
       try { await bank.ready(); } catch (_) {}
     }
-    return bank;
+    if (ext && typeof ext.load === 'function' && !(typeof ext.ready === 'function' && ext.ready())) {
+      try { await ext.load(); } catch (_) {}
+    }
+    return combineSymbolBanks(bank, ext);
   }
 
   function creditFor(bank, setName, options) {
@@ -381,7 +447,7 @@
       return options.creditForSet(setName, bank) || '';
     }
     if (!bank) return '';
-    if (setName && bank.credits && bank.credits[setName]) return String(bank.credits[setName]);
+    if (setName && bank.credits && Object.prototype.hasOwnProperty.call(bank.credits, setName) && bank.credits[setName]) return String(bank.credits[setName]);
     return bank.credit ? String(bank.credit) : '';
   }
 
@@ -412,8 +478,16 @@
     };
   }
 
+  function foldDiacritics(raw) {
+    var s = String(raw || '');
+    if (typeof s.normalize === 'function') {
+      try { s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); } catch (_) {}
+    }
+    return s;
+  }
+
   function normalizeWord(raw) {
-    return String(raw || '')
+    return foldDiacritics(raw)
       .trim()
       .toLowerCase()
       .replace(/['\u2019]s$/g, '')
@@ -421,7 +495,7 @@
   }
 
   function normalizePhrase(raw) {
-    return String(raw || '')
+    return foldDiacritics(raw)
       .trim()
       .toLowerCase()
       .replace(/['\u2019]s\b/g, '')
@@ -433,8 +507,23 @@
 
   function generateLemmaCandidates(w) {
     var cands = [];
+    var singleCvcRe = /^[^aeiouy]*[aeiou][bcdfghjklmnpqrstvz]$/;
     function push(s) {
       if (s && s.length >= 2 && cands.indexOf(s) < 0) cands.push(s);
+    }
+    function pushSuffixStem(stem) {
+      var doubled = stem.length >= 4 && stem.slice(-1) === stem.slice(-2, -1);
+      if (doubled) {
+        push(stem);
+        push(stem.slice(0, -1));
+      } else if (singleCvcRe.test(stem)) {
+        // Single-syllable CVC roots double before -ing/-ed/-er/-est (hop -> hopping/hopped),
+        // so an undoubled CVC stem signals a silent-e root (hoping -> hope, staring -> stare, caped -> cape).
+        push(stem + 'e');
+      } else {
+        push(stem + 'e');
+        push(stem);
+      }
     }
     if (IRREGULAR_BASES[w]) push(IRREGULAR_BASES[w]);
     if (w.length >= 5 && w.slice(-3) === 'ies') push(w.slice(0, -3) + 'y');
@@ -443,10 +532,14 @@
       push(w.slice(0, -3) + 'fe');
     }
     if (w.length >= 4 && w.slice(-2) === 'es') {
-      push(w.slice(0, -2));
-      push(w.slice(0, -1));
-    }
-    if (w.length >= 4 && w.slice(-1) === 's' && w.slice(-2) !== 'ss') {
+      var stemEs = w.slice(0, -2);
+      if (/(?:ch|sh|[sxz]|o)$/.test(stemEs)) {
+        push(stemEs);
+        push(w.slice(0, -1));
+      } else {
+        push(w.slice(0, -1));
+      }
+    } else if (w.length >= 4 && w.slice(-1) === 's' && w.slice(-2) !== 'ss') {
       push(w.slice(0, -1));
     }
     if (w.length >= 5 && w.slice(-3) === 'ied') push(w.slice(0, -3) + 'y');
@@ -454,36 +547,16 @@
     if (w.length >= 6 && w.slice(-4) === 'iest') push(w.slice(0, -4) + 'y');
     if (w.length >= 5 && w.slice(-3) === 'ily') push(w.slice(0, -3) + 'y');
     if (w.length >= 6 && w.slice(-3) === 'ing') {
-      var stemIng = w.slice(0, -3);
-      push(stemIng);
-      push(stemIng + 'e');
-      if (stemIng.length >= 4 && stemIng.slice(-1) === stemIng.slice(-2, -1)) {
-        push(stemIng.slice(0, -1));
-      }
+      pushSuffixStem(w.slice(0, -3));
     }
     if (w.length >= 5 && w.slice(-2) === 'ed') {
-      var stemEd = w.slice(0, -2);
-      push(stemEd);
-      push(stemEd + 'e');
-      if (stemEd.length >= 4 && stemEd.slice(-1) === stemEd.slice(-2, -1)) {
-        push(stemEd.slice(0, -1));
-      }
+      pushSuffixStem(w.slice(0, -2));
     }
     if (w.length >= 5 && w.slice(-2) === 'er') {
-      var stemEr = w.slice(0, -2);
-      push(stemEr);
-      push(stemEr + 'e');
-      if (stemEr.length >= 4 && stemEr.slice(-1) === stemEr.slice(-2, -1)) {
-        push(stemEr.slice(0, -1));
-      }
+      pushSuffixStem(w.slice(0, -2));
     }
     if (w.length >= 6 && w.slice(-3) === 'est') {
-      var stemEst = w.slice(0, -3);
-      push(stemEst);
-      push(stemEst + 'e');
-      if (stemEst.length >= 4 && stemEst.slice(-1) === stemEst.slice(-2, -1)) {
-        push(stemEst.slice(0, -1));
-      }
+      pushSuffixStem(w.slice(0, -3));
     }
     if (w.length >= 5 && w.slice(-2) === 'ly') push(w.slice(0, -2));
     if (w.length >= 7 && w.slice(-4) === 'ness') push(w.slice(0, -4));
@@ -517,7 +590,10 @@
     }
     addDeriv(w);
 
-    var PREFIXES = ['un', 're', 'dis', 'non', 'pre', 'mis', 'over', 'under', 'sub', 'inter', 'super', 'out', 'co', 'de'];
+    // Exclude negation/lexicalized prefixes (un-, dis-, mis-, non-, de-, re-, under-)
+    // so antonyms or unrelated roots (unplug->plug, disorder->order, missing->sing,
+    // mistake->take, understand->stand, depart->part, resort->sort) are not blindly stripped.
+    var PREFIXES = ['pre', 'over', 'sub', 'inter', 'super', 'out', 'co'];
     for (var p = 0; p < PREFIXES.length; p++) {
       var pref = PREFIXES[p];
       if (w.length - pref.length >= 4 && w.slice(0, pref.length) === pref) {
@@ -529,7 +605,7 @@
     return cands;
   }
 
-  var SAFE_SHORT_DEF_NOUNS = {
+  var SAFE_SHORT_DEF_NOUNS = nullMap({
     pen: 1, dog: 1, cat: 1, cow: 1, pig: 1, fox: 1, owl: 1, ant: 1, bug: 1, bat: 1,
     rat: 1, sun: 1, ice: 1, fog: 1, eye: 1, ear: 1, arm: 1, leg: 1, car: 1, bus: 1,
     van: 1, saw: 1, key: 1, mug: 1, pot: 1, jar: 1, cap: 1, bed: 1, rug: 1, pie: 1,
@@ -540,11 +616,11 @@
     pay: 1, pet: 1, pin: 1, pull: 1, red: 1, run: 1, sad: 1, sea: 1, see: 1, sit: 1,
     six: 1, sky: 1, ten: 1, tie: 1, toe: 1, top: 1, toy: 1, try: 1, two: 1, war: 1,
     wet: 1, win: 1, zoo: 1
-  };
+  });
 
   function matchCompound(bank, rawWord, clean, options) {
     // Hyphenated or multi-word inputs
-    var spaced = String(rawWord || '').trim().toLowerCase().replace(/[-_]+/g, ' ');
+    var spaced = foldDiacritics(rawWord).trim().toLowerCase().replace(/[-_]+/g, ' ');
     if (spaced.indexOf(' ') >= 0) {
       var parts = spaced.split(/\s+/).filter(Boolean);
       for (var i = parts.length - 1; i >= 0; i--) {
@@ -558,6 +634,7 @@
       for (var split = 3; split <= clean.length - 4; split++) {
         var left = clean.slice(0, split);
         var right = clean.slice(split);
+        if (left === 'under' && !/^(?:water|ground|world|pass|foot|shirt|arm|belly|growth|brush)$/.test(right)) continue;
         if ((KNOWN_COMPOUND_PARTS[left] || hasSymbol(bank, left)) && hasSymbol(bank, right)) {
           return buildMatch(bank, rawWord, right, 'compound', options);
         }
@@ -566,6 +643,7 @@
       for (var split2 = 4; split2 <= clean.length - 3; split2++) {
         var left2 = clean.slice(0, split2);
         var right2 = clean.slice(split2);
+        if (left2 === 'under') continue;
         if (hasSymbol(bank, left2) && (KNOWN_COMPOUND_PARTS[right2] || hasSymbol(bank, right2))) {
           return buildMatch(bank, rawWord, left2, 'compound', options);
         }
@@ -620,8 +698,41 @@
     return null;
   }
 
+  function matchSemanticBridge(bank, rawWord, clean, lemma, options) {
+    var semantic = resolveSemanticBridge(options);
+    if (!semantic) return null;
+    var tried = Object.create(null);
+    var cands = [];
+    function push(w) {
+      if (w && !tried[w]) { tried[w] = true; cands.push(w); }
+    }
+    push(clean);
+    push(lemma);
+    var morph = clean ? generateLemmaCandidates(clean) : [];
+    for (var i = 0; i < morph.length; i++) push(morph[i]);
+    for (var j = 0; j < cands.length; j++) {
+      var hit = semantic.lookup(cands[j]);
+      if (!hit || !hit.target) continue;
+      if (hit.kind === 'diag') {
+        var d = getDiagram(hit.target, '', rawWord);
+        if (d) {
+          d.matchTier = hit.tier || 'semantic-diagram';
+          d.alt = String(rawWord || clean) + ' (related diagram: ' + d.label + ')';
+          return d;
+        }
+      } else if (bank && hasSymbol(bank, hit.target)) {
+        var note = String(rawWord || clean) + ' (related visual: ' + hit.target + ')';
+        var built = buildMatch(bank, rawWord, hit.target, hit.tier || (hit.kind === 'hyp' ? 'semantic-hypernym' : 'semantic-synonym'), options, note);
+        if (built) return built;
+      }
+    }
+    return null;
+  }
+
   function matchWord(entryOrWord, options) {
-    var bank = resolveSymbols(options && options.symbols);
+    var primaryBank = resolveSymbols(options && options.symbols);
+    var extBank = resolveReadingSymbolsExt(options);
+    var bank = combineSymbolBanks(primaryBank, extBank);
     var preferDiagrams = Boolean(options && options.preferDiagrams);
     var isObj = entryOrWord && typeof entryOrWord === 'object';
     var rawWord = isObj ? (entryOrWord.word || '') : String(entryOrWord || '');
@@ -640,13 +751,23 @@
         return buildMatch(bank, rawWord, phrase, 'exact', options);
       }
 
-      // Exact curriculum diagram (when preferDiagrams) or curated concept cue takes priority
-      // over aggressive morphological prefix/suffix stripping (e.g., "predator" -> lion/owl/wolf, not "date").
-      if (preferDiagrams && clean && Object.prototype.hasOwnProperty.call(CURRICULUM_DIAGRAMS, clean)) {
-        var exactDiag = getDiagram(clean, lemma, rawWord);
-        if (exactDiag) return exactDiag;
+      // Exact curriculum diagram or diagram alias (when preferDiagrams) or curated concept cue
+      // takes priority over aggressive morphological prefix/suffix stripping (e.g., "predator" -> lion/owl/wolf, not "date").
+      if (preferDiagrams && (clean || phrase)) {
+        var directDiagKey = (phrase && (Object.prototype.hasOwnProperty.call(CURRICULUM_DIAGRAMS, phrase) || Object.prototype.hasOwnProperty.call(DIAGRAM_ALIASES, phrase))) ? phrase
+          : (clean && (Object.prototype.hasOwnProperty.call(CURRICULUM_DIAGRAMS, clean) || Object.prototype.hasOwnProperty.call(DIAGRAM_ALIASES, clean))) ? clean
+          : (phrase && Object.prototype.hasOwnProperty.call(CURRICULUM_DIAGRAMS, phrase.replace(/\s+/g, '_'))) ? phrase
+          : '';
+        if (directDiagKey) {
+          var exactDiag = getDiagram(directDiagKey, lemma, rawWord);
+          if (exactDiag) return exactDiag;
+        }
       }
       if (clean && Object.prototype.hasOwnProperty.call(CONCEPT_CUES, clean)) {
+        if (preferDiagrams) {
+          var cueDiag = getDiagram(phrase || clean, lemma, rawWord);
+          if (cueDiag) return cueDiag;
+        }
         var exactCue = matchConceptCue(bank, rawWord, clean, '', options);
         if (exactCue) return exactCue;
       }
@@ -682,7 +803,11 @@
       if (prefDiag) return prefDiag;
     }
 
-    // Tier 4b: Curated curriculum/academic concept cues & concrete definition nouns
+    // Tier 4b: Offline WordNet semantic bridge (synonym, pertainym, concrete hypernym, diagram synset)
+    var semHit = matchSemanticBridge(bank, rawWord, clean || phrase, lemma, options);
+    if (semHit) return semHit;
+
+    // Tier 4c: Curated curriculum/academic concept cues & concrete definition nouns
     if (bank) {
       var cueHit = matchConceptCue(bank, rawWord, clean || phrase, definition, options);
       if (cueHit) return cueHit;
@@ -698,7 +823,7 @@
     var q = String(query || '').trim().toLowerCase();
     var limit = Math.max(1, Math.min(48, Number(opts.limit) || 24));
     var hits = [];
-    var seen = {};
+    var seen = Object.create(null);
 
     function pushHit(hit) {
       if (!hit || !hit.word || seen[hit.word]) return;
@@ -762,8 +887,9 @@
       }
     }
 
-    // Optional Global Symbols online fallback (main app only)
-    if (opts.allowOnlineGlobalSymbols && q && typeof fetch === 'function' && hits.length < limit) {
+    // Optional Global Symbols online fallback (main app only; blocked in offline/QR student modes)
+    var onlineBlocked = !!(root && (root.__alloOfflineOnly === true || root._alloQrBlocked === true || root.__alloQrStudentMode === true || (root.__alloQrStudentMode && typeof root.__alloQrStudentMode === 'object' && root.__alloQrStudentMode.active === true)));
+    if (opts.allowOnlineGlobalSymbols && !onlineBlocked && q && typeof fetch === 'function' && hits.length < limit) {
       var timer = null;
       try {
         var url = 'https://globalsymbols.com/api/v1/labels/search?query=' +
@@ -771,7 +897,7 @@
           '&symbolset=mulberry&language=eng&language_iso_format=639-3&limit=20';
         var controller = typeof AbortController === 'function' ? new AbortController() : null;
         timer = controller ? setTimeout(function () { controller.abort(); }, 4500) : null;
-        var res = await fetch(url, controller ? { signal: controller.signal } : undefined);
+        var res = await fetch(url, controller ? { signal: controller.signal, credentials: 'omit', referrerPolicy: 'no-referrer' } : { credentials: 'omit', referrerPolicy: 'no-referrer' });
         if (res && res.ok) {
           var payload = await res.json();
           var list = Array.isArray(payload) ? payload : (Array.isArray(payload && payload.data) ? payload.data : []);
@@ -780,14 +906,21 @@
             var pic = item.pic || item.symbol || {};
             var imgUrl = String(pic.image_url || item.image_url || '').trim();
             var text = item.text || pic.name || q;
-            if (!imgUrl || imgUrl.length > 2048 || !/^https:\/\/[^\s"'<>\\]+$/i.test(imgUrl) || seen['gs:' + imgUrl]) continue;
+            var urlSafe = false;
+            if (imgUrl && imgUrl.length <= 2048 && !/[\u0000-\u001f\u007f\s"'<>\\]/.test(imgUrl)) {
+              try {
+                var parsedImg = new URL(imgUrl);
+                urlSafe = parsedImg.protocol === 'https:' && !parsedImg.username && !parsedImg.password;
+              } catch (_) { urlSafe = false; }
+            }
+            if (!urlSafe || seen['gs:' + imgUrl]) continue;
             seen['gs:' + imgUrl] = true;
             hits.push({
               word: String(text),
               label: String(text),
               src: imgUrl,
               set: 'globalsymbols',
-              credit: 'Global Symbols (Mulberry)',
+              credit: 'Global Symbols (Mulberry, CC BY-SA 4.0)',
               matchTier: 'online'
             });
           }
@@ -808,7 +941,10 @@
   }
 
   function diagLabel(x, y, text, fill, size) {
-    return '<text x="' + x + '" y="' + y + '" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="' + (size || 13) + '" fill="' + (fill || '#0f172a') + '">' + text + '</text>';
+    var safeText = String(text == null ? '' : text)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    return '<text x="' + x + '" y="' + y + '" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="' + (size || 13) + '" fill="' + (fill || '#0f172a') + '">' + safeText + '</text>';
   }
 
   var DIAGRAM_SPECS = [
@@ -2119,9 +2255,10 @@
       tags: sp[3],
       set: 'diagram',
       matchType: 'diagram',
+      matchTier: 'diagram',
       matchedKey: sp[0],
       alt: sp[1],
-      credit: 'AlloFlow Curriculum Diagram (offline SVG)',
+      credit: 'AlloFlow Curriculum Diagram (AGPL-3.0, offline SVG)',
       svg: makeDiagramSvg(sp[4])
     };
   }
@@ -3214,7 +3351,7 @@
     'warrant': 'rule_law', 'candidate': 'ballot', 'independence': 'freedom', 'necessarily': 'rule_law',
     'accomplish': 'goal', 'attain': 'goal', 'victory': 'celebrate', 'glory': 'celebrate',
     'fame': 'celebrate', 'celebrity': 'celebrate', 'famous': 'celebrate', 'winning': 'celebrate',
-    'successful': 'goal', 'failure': 'mistake_fix', 'mistaken': 'mistake_fix',
+    'successful': 'goal', 'failure': 'mistake_fix', 'mistake': 'mistake_fix', 'mistakes': 'mistake_fix', 'mistaken': 'mistake_fix',
     'careless': 'mistake_fix', 'undone': 'mistake_fix', 'fib': 'mistake_fix', 'false': 'mistake_fix', 'liar': 'mistake_fix',
     'improvement': 'progress',
     'believe': 'concept', 'believing': 'concept', 'faith': 'concept', 'hopeful': 'goal',
@@ -3345,7 +3482,12 @@
     "natural": "wilderness_nature", "naturally": "wilderness_nature", "vegetation": "wilderness_nature", "bracken": "wilderness_nature", "ecology": "ecosystem", "wheat": "grain_barley",
     "ravine": "valley", "stream": "creek_stream", "breeze": "atmosphere_layers", "rainfall": "precipitation", "sprinkle": "precipitation", "multi": "prefix_multi",
     "multinational": "prefix_multi", "many": "prefix_multi", "semi": "prefix_semi", "halfway": "prefix_semi", "micro": "prefix_micro", "bit": "prefix_micro",
-    "inch": "measure_tool", "anti": "prefix_anti", "unlike": "prefix_anti", "different": "prefix_anti", "uncommon": "question_unknown", "abnormal": "question_unknown",
+    "inch": "measure_tool", "meter": "measure_tool", "meters": "measure_tool", "unstable": "balance_scale",
+    "consultation": "council_meeting", "discrimination": "fairness", "effectiveness": "arrow_target",
+    "emergence": "life_cycle", "grasp": "support_helping", "actively": "activate_switch",
+    "positively": "advantage_scale", "incredible": "amaze_burst", "incredibly": "amaze_burst",
+    "terribly": "emotion_sorrow", "nasty": "emotion_anger", "primitive": "timeline_history",
+    "discharge": "signal", "anti": "prefix_anti", "unlike": "prefix_anti", "different": "prefix_anti", "uncommon": "question_unknown", "abnormal": "question_unknown",
     "quiz": "question_unknown", "exam": "question_unknown", "doubt": "question_unknown", "unaware": "question_unknown", "non": "prefix_non", "null": "prefix_non",
     "none": "prefix_non", "nothing": "prefix_non", "absence": "prefix_non", "inability": "prefix_non", "unable": "prefix_non", "useless": "prefix_non",
     "never": "prefix_non", "without": "prefix_non", "neo": "prefix_neo", "new": "prefix_neo", "fresh": "prefix_neo", "anew": "prefix_neo",
@@ -3432,7 +3574,7 @@
     "sigh": "jazz_notes", "gasp": "jazz_notes", "marble": "marble_sphere", "jewel": "marble_sphere", "amber": "marble_sphere", "silver": "marble_sphere",
     "gold": "marble_sphere", "golden": "marble_sphere", "metal": "marble_sphere", "rocky": "marble_sphere", "stony": "marble_sphere", "flint": "marble_sphere",
     "pod": "marble_sphere", "beam": "light_beam", "flash": "light_beam", "spark": "light_beam", "shine": "light_beam", "sunlight": "light_beam",
-    "sunshine": "light_beam", "neon": "light_beam", "dawn": "light_beam", "shadow": "light_beam", "shade": "light_beam", "glare": "emotion_anger",
+    "sunshine": "light_beam", "neon": "light_beam", "dawn": "light_beam", "shadow": "shadow_dark", "shade": "shadow_dark", "glare": "emotion_anger",
     "drain": "drain_funnel", "dipped": "drain_funnel", "mud": "drain_funnel", "dirt": "drain_funnel", "wash": "drain_funnel", "pool": "drain_funnel",
     "plop": "drain_funnel", "gauge": "gauge_dial", "weight": "gauge_dial", "audit": "gauge_dial", "check": "gauge_dial", "compensation": "gauge_dial",
     "polar": "polar_ice", "icy": "polar_ice", "shiver": "polar_ice", "tropical": "tropical_palm", "jungle": "tropical_palm", "forest": "tropical_palm",
@@ -3451,10 +3593,10 @@
     "sense": "mind_gears", "suppose": "mind_gears", "imagine": "mind_gears", "expect": "mind_gears", "expected": "mind_gears", "reckon": "mind_gears",
     "aware": "mind_gears", "unconsciously": "mind_gears", "interestingly": "mind_gears", "interested": "mind_gears", "interest": "mind_gears", "curious": "mind_gears",
     "concerned": "mind_gears", "concern": "mind_gears", "worry": "mind_gears", "worried": "mind_gears", "confused": "mind_gears", "distracted": "mind_gears",
-    "ego": "mind_gears", "cold": "cold_snowflake", "cool": "cold_snowflake", "warm": "cold_snowflake", "burn": "cold_snowflake", "sweat": "cold_snowflake",
+    "ego": "mind_gears", "cold": "cold_snowflake", "cool": "cold_snowflake", "warm": "thermometer", "burn": "thermometer", "sweat": "thermometer",
     "bare": "bare_branch", "dull": "bare_branch", "pale": "bare_branch", "faint": "bare_branch", "poor": "bare_branch", "weak": "bare_branch",
     "weakly": "bare_branch", "mixed": "mixed_bowl", "mess": "mixed_bowl", "chaos": "mixed_bowl", "trouble": "mixed_bowl", "troubled": "mixed_bowl",
-    "disaster": "mixed_bowl", "upset": "emotion_anger", "panic": "mixed_bowl", "amazement": "amaze_burst", "amazing": "amaze_burst", "surprise": "amaze_burst",
+    "disaster": "natural_disaster", "upset": "emotion_anger", "panic": "emotion_fear", "amazement": "amaze_burst", "amazing": "amaze_burst", "surprise": "amaze_burst",
     "shock": "amaze_burst", "startled": "amaze_burst", "surprisingly": "amaze_burst", "exciting": "amaze_burst", "excited": "amaze_burst", "wow": "amaze_burst",
     "chosen": "chosen_ribbon", "elite": "chosen_ribbon", "grace": "chosen_ribbon", "beauty": "chosen_ribbon", "beautiful": "chosen_ribbon", "fine": "chosen_ribbon",
     "nice": "chosen_ribbon", "nicely": "chosen_ribbon", "charm": "chosen_ribbon", "precious": "chosen_ribbon", "allied": "allied_flags", "fellow": "allied_flags",
@@ -3573,6 +3715,7 @@
       word: rawWord || clean || key,
       matchedKey: key,
       matchType: 'diagram',
+      matchTier: 'diagram',
       svg: entry.svg,
       label: entry.label,
       set: 'diagram',
@@ -3581,13 +3724,13 @@
     };
   }
 
-  function searchSymbolsWithDiagrams(query, options) {
+  async function searchSymbolsWithDiagrams(query, options) {
     var limit = Math.max(1, Number((options && options.limit) || 24));
     var preferDiagrams = Boolean(options && options.preferDiagrams);
     var q = normalizePhrase(query || '') || normalizeWord(query || '');
     var qUnderscore = q.replace(/\s+/g, '_');
     var diagHits = [];
-    var seen = {};
+    var seen = Object.create(null);
     if (q) {
       var directKey = resolveDiagramKey(q, '');
       var keys = Object.keys(CURRICULUM_DIAGRAMS);
@@ -3597,15 +3740,16 @@
         var hay = (k + ' ' + k.replace(/_/g, ' ') + ' ' + item.label + ' ' + item.category + ' ' + item.tags).toLowerCase();
         if (k === directKey || k.indexOf(qUnderscore) !== -1 || hay.indexOf(q) !== -1) {
           var score = k === directKey ? 3 : (k.indexOf(qUnderscore) === 0 || k.replace(/_/g, ' ').indexOf(q) === 0) ? 2 : 1;
-          diagHits.push({ score: score, entry: { word: k, matchedKey: k, matchType: 'diagram', svg: item.svg, label: item.label, set: 'diagram', alt: item.label, credit: item.credit } });
+          diagHits.push({ score: score, entry: { word: k, matchedKey: k, matchType: 'diagram', matchTier: 'diagram', svg: item.svg, label: item.label, set: 'diagram', alt: item.label, credit: item.credit } });
         }
       }
       diagHits.sort(function (a, b) { return b.score - a.score; });
     }
     var baseHits = [];
     try {
-      if (resolveSymbols(options && options.symbols)) {
-        baseHits = searchSymbols(query, options) || [];
+      if (resolveSymbols(options && options.symbols) || resolveReadingSymbolsExt(options) || resolveSemanticBridge(options) || (options && options.allowOnlineGlobalSymbols)) {
+        var resolvedBase = await searchSymbols(query, options);
+        baseHits = Array.isArray(resolvedBase) ? resolvedBase : [];
       }
     } catch (_e) {
       baseHits = [];

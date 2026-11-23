@@ -125,7 +125,20 @@
     }
 
     function clone(value) {
-        return value === undefined ? undefined : JSON.parse(JSON.stringify(value), (key, val) => (isBlockedKey(key) ? undefined : val));
+        if (value === undefined) return undefined;
+        try {
+            return JSON.parse(JSON.stringify(value), (key, val) => (isBlockedKey(key) ? undefined : val));
+        } catch (_) {
+            return undefined;
+        }
+    }
+    function deepFreeze(value, seen) {
+        if (!value || typeof value !== 'object') return value;
+        const visited = seen || new Set();
+        if (visited.has(value)) return value;
+        visited.add(value);
+        Object.keys(value).forEach((k) => { deepFreeze(value[k], visited); });
+        return Object.freeze(value);
     }
 
     function cleanText(value, limit) {
@@ -195,6 +208,7 @@
 
     function validSourceUrl(value) {
         if (typeof value !== 'string' || value.length > 1000 || /[\u0000-\u001f\u007f]/.test(value)) return false;
+        if (/^https:\/\/[^\/?#]*@/.test(value)) return false;
         if (!/^https:\/\/[A-Za-z0-9.-]+(?:[\/:?#].*)?$/.test(value)) return false;
         if (typeof URL === 'function') {
             try {
@@ -427,7 +441,15 @@
         }, snapshot.dataset);
         errors.push(...collectionReport.errors);
         warnings.push(...collectionReport.warnings);
-        return { ok: errors.length === 0, errors, warnings, value: errors.length ? null : clone(snapshot) };
+        let cloned = null;
+        if (errors.length === 0) {
+            cloned = clone(snapshot);
+            if (cloned === undefined) {
+                errors.push(issue('snapshot-unserializable', '', 'Snapshot must be JSON-serializable (no circular references or BigInt).'));
+                cloned = null;
+            }
+        }
+        return { ok: errors.length === 0, errors, warnings, value: cloned };
     }
 
     function validateGraph(graph) {
@@ -450,7 +472,15 @@
         if (validId(graph.focusId) && Array.isArray(graph.nodes) && !graph.nodes.some((node) => node && node.id === graph.focusId)) {
             errors.push(issue('graph-focus-missing', 'focusId', 'focusId must identify a node in the graph.'));
         }
-        return { ok: errors.length === 0, errors, warnings, value: errors.length ? null : clone(graph) };
+        let cloned = null;
+        if (errors.length === 0) {
+            cloned = clone(graph);
+            if (cloned === undefined) {
+                errors.push(issue('graph-unserializable', '', 'Graph must be JSON-serializable (no circular references or BigInt).'));
+                cloned = null;
+            }
+        }
+        return { ok: errors.length === 0, errors, warnings, value: cloned };
     }
 
     function boundedInteger(value, fallback, minimum, maximum, name) {
@@ -706,7 +736,7 @@
                 candidates = lexemes.filter((node) => {
                     if (requestedLanguage && normalizeLanguage(node.language) !== requestedLanguage) return false;
                     const aliases = [node.lemma, node.label].concat(Array.isArray(node.aliases) ? node.aliases : []);
-                    return aliases.some((alias) => normalizeToken(alias) === exact || foldToken(alias) === folded);
+                    return aliases.some((alias) => normalizeToken(alias) === exact || (folded && foldToken(alias) === folded));
                 });
             }
             if (requestedLanguage) candidates = candidates.filter((node) => normalizeLanguage(node.language) === requestedLanguage);
@@ -1072,7 +1102,7 @@
         return { schemaVersion: SNAPSHOT_VERSION, dataset, nodes, relationships };
     }
 
-    const PILOT_SNAPSHOT = createPilotSnapshot();
+    const PILOT_SNAPSHOT = deepFreeze(createPilotSnapshot());
 
     return Object.freeze({
         VERSION,

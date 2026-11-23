@@ -22,6 +22,7 @@ module.exports = {
     counting_sounds_more: '11 or more sounds',
     counting_correct: 'Yes! The word has {count}.',
     counting_missed: 'The word has {count}. Listen to it again.',
+    counting_answer_mark: '(the answer)',
   },
   prepare: function (w, env) {
     var phonemes = Array.isArray(w.phonemes) ? w.phonemes : [];
@@ -51,10 +52,10 @@ module.exports = {
       return v === '11+' ? ctx.L.counting_sounds_more : v === '1' ? ctx.L.counting_sounds_one : ctx.fmt(ctx.L.counting_sounds_n, { n: v });
     };
     var cards = [];
-    var list = ctx.el('ul', { class: 'counting-numbers', style: 'display:flex;flex-wrap:wrap;gap:10px;list-style:none;padding:0;margin:16px 0' });
+    var list = ctx.el('ul', { class: 'counting-numbers', style: 'display:flex;flex-wrap:wrap;gap:8px;list-style:none;padding:0;margin:16px 0' });
     values.forEach(function (v) {
       var button = ctx.el('button', { type: 'button', class: 'primary', 'aria-label': v === '11+' ? '11+ — ' + ctx.L.counting_sounds_more : countText(v),
-        style: 'min-width:64px;min-height:64px;font-size:1.4rem;font-weight:700',
+        style: 'min-width:56px;min-height:56px;padding:8px 10px;font-size:1.4rem;font-weight:700',
         on: { click: function () {
           if (ctx.isDone() || button.getAttribute('aria-disabled') === 'true') return;
           var outcome = ctx.answer(v, v === item.target, {
@@ -64,10 +65,22 @@ module.exports = {
           if (outcome !== 'correct') { box.classList.add('tried'); button.setAttribute('aria-disabled', 'true'); }
         } } }, [v]);
       // data-key: the number key that presses it (the same as its label, also when fewer numbers are shown).
-      var box = ctx.el('li', { class: 'choice solo', style: 'padding:6px', 'data-key': /^[1-9]$/.test(v) ? v : false }, [button]);
+      var box = ctx.el('li', { class: 'choice solo', style: 'padding:4px', 'data-key': /^[1-9]$/.test(v) ? v : false }, [button]);
       cards.push({ box: box, button: button, value: v });
       list.appendChild(box);
     });
+    if (typeof ctx.keys === 'function') {
+      ctx.keys(function (key) {
+        if (ctx.isDone()) return false;
+        var k = String(key == null ? '' : key);
+        var targetVal = k === '0' ? '10' : (k === '+' || k === '=') ? '11+' : '';
+        if (!targetVal) return false;
+        var hit = cards.filter(function (c) { return c.value === targetVal; })[0];
+        if (!hit || hit.button.disabled || hit.button.getAttribute('aria-disabled') === 'true') return false;
+        hit.button.click();
+        return true;
+      });
+    }
     ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.counting_question }));
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
       ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); ctx.play(item.promptAudio); } }, text: ctx.L.hear_question }),
@@ -77,7 +90,13 @@ module.exports = {
     ctx.root.appendChild(list);
     return {
       reveal: function () {
-        cards.forEach(function (c) { c.button.setAttribute('aria-disabled', 'true'); if (c.value === item.target) c.box.classList.add('right'); });
+        cards.forEach(function (c) {
+          c.button.setAttribute('aria-disabled', 'true');
+          if (c.value === item.target && !c.box.classList.contains('right')) {
+            c.box.classList.add('right');
+            c.button.setAttribute('aria-label', c.button.getAttribute('aria-label') + ' ' + (ctx.L.counting_answer_mark || '(the answer)'));
+          }
+        });
       },
     };
   },

@@ -1242,7 +1242,7 @@
                   h('div', { className: 'af-viz-foot' },
                     h('span', { className: 'af-viz-summary' }, activeSample.foldNote),
                     h('span', { className: 'af-viz-note', 'aria-hidden': 'true' }, t('stem.alphaFold.confidence_preview_note', 'Illustrative model | confidence is not correctness'))))
-              : h('figure', { className: 'af-protein-viz', role: 'img', 'aria-label': t('stem.alphaFold.pae_preview_aria', 'Illustrative Predicted Aligned Error heatmap showing intra-domain low error in dark green along the diagonal and higher inter-domain error off-diagonal.') },
+              : h('figure', { className: 'af-protein-viz', role: 'group', 'aria-label': t('stem.alphaFold.pae_preview_aria', 'Illustrative Predicted Aligned Error heatmap showing intra-domain low error in dark green along the diagonal and higher inter-domain error off-diagonal.') },
                   h('div', { className: 'af-viz-head' },
                     h('span', { className: 'af-viz-label', 'aria-hidden': 'true' }, t('stem.alphaFold.pae_preview_label', 'Predicted Aligned Error (PAE)')),
                     h('span', { className: 'af-viz-acc' }, activeSample.name + ' \u00b7 ' + activeSample.accession)),

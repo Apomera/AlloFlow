@@ -18,6 +18,7 @@
    shared.css does not paint this page's surfaces. */
 
 :root {
+    --mn-fs: 1;
     --mn-ink: #0f172a;
     --mn-body: #1e293b;
     --mn-soft: #475569;
@@ -61,8 +62,127 @@ body {
     margin: 0 auto;
     padding: 96px 24px 48px;
     color: var(--mn-body);
-    font-size: 1.02rem;
+    font-size: calc(1.02rem * var(--mn-fs));
     line-height: 1.75;
+}
+.rtools {
+    position: sticky;
+    top: 64px;
+    margin-top: 64px;
+    z-index: 45;
+    background: var(--mn-panel);
+    border-bottom: 1px solid var(--mn-line);
+    line-height: 1.3;
+    letter-spacing: normal;
+}
+.rtools + .manual-page {
+    padding-top: 28px;
+}
+.rtools-in {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 8px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    align-items: center;
+}
+.rtools-toggle {
+    font: 700 13px/1 ui-sans-serif, system-ui, sans-serif;
+    color: var(--mn-accent);
+    background: var(--mn-accent-soft);
+    border: 1px solid var(--mn-accent-bd);
+    border-radius: 999px;
+    min-height: 44px;
+    padding: 8px 14px;
+    cursor: pointer;
+}
+.rtools-toggle:hover {
+    border-color: var(--mn-accent);
+}
+.rtools-panel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    align-items: center;
+    font: 600 12.5px/1 ui-sans-serif, system-ui, sans-serif;
+    color: var(--mn-soft);
+}
+.rtools-panel[hidden] {
+    display: none;
+}
+.rtools-panel label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+.rtools select,
+.rtools input[type="range"],
+.rtools-panel button {
+    font: inherit;
+}
+.rtools select {
+    color: var(--mn-body);
+    background: var(--mn-bg);
+    border: 1px solid var(--mn-line);
+    border-radius: 7px;
+    min-height: 36px;
+    padding: 4px 8px;
+}
+.rtools input[type="range"] {
+    width: 86px;
+    accent-color: var(--mn-accent);
+    padding: 0;
+}
+.rtools-panel button {
+    color: var(--mn-body);
+    background: var(--mn-bg);
+    border: 1px solid var(--mn-line);
+    border-radius: 7px;
+    min-height: 44px;
+    padding: 6px 11px;
+    cursor: pointer;
+}
+.rtools-panel button[aria-pressed="true"] {
+    background: var(--mn-accent-soft);
+    border-color: var(--mn-accent);
+    color: var(--mn-accent);
+}
+.rtools-status {
+    font: 600 12px/1.3 ui-sans-serif, system-ui, sans-serif;
+    color: var(--mn-accent);
+}
+.rtools :focus-visible {
+    outline: 3px solid var(--mn-accent);
+    outline-offset: 2px;
+}
+#rtools-ruler {
+    position: fixed;
+    left: 0;
+    width: 100%;
+    height: 2.4em;
+    background: rgba(250, 204, 21, .16);
+    border-top: 2px solid rgba(250, 204, 21, .65);
+    border-bottom: 2px solid rgba(250, 204, 21, .65);
+    pointer-events: none;
+    z-index: 44;
+    display: none;
+}
+html[data-allo-ruler="1"] #rtools-ruler {
+    display: block;
+}
+html:root[data-allo-theme="warm"]{--mn-bg:#fdf3dd;--mn-panel:#fffcf3;--mn-ink:#432c10;--mn-body:#573a1c;--mn-soft:#7a5a34;--mn-line:#e6d3ae;--mn-code-bg:#f7ecd5;--mn-accent:#9a3412;--mn-accent-ink:#7c2d12;--mn-accent-soft:#fbeadb;--mn-accent-bd:#e4c3a6;}
+html:root[data-allo-theme="sepia"]{--mn-bg:#f4ecd8;--mn-panel:#fdf8ec;--mn-ink:#3f2d18;--mn-body:#5c4033;--mn-soft:#7b5f45;--mn-line:#ddcdb0;--mn-code-bg:#f0e6d0;--mn-accent:#8a4b1e;--mn-accent-ink:#6f3c18;--mn-accent-soft:#f7edda;--mn-accent-bd:#dcc3a2;}
+html:root[data-allo-theme="dark"]{--mn-bg:#12121f;--mn-panel:#1e1e33;--mn-ink:#f1f5fb;--mn-body:#d8e0ee;--mn-soft:#a3b0c8;--mn-line:#343a55;--mn-code-bg:#242440;--mn-accent:#8ab4ff;--mn-accent-ink:#c4d9ff;--mn-accent-soft:#1c2947;--mn-accent-bd:#33507f;}
+html:root[data-allo-theme="highContrast"]{--mn-bg:#000;--mn-panel:#000;--mn-ink:#ff0;--mn-body:#ff0;--mn-soft:#ff0;--mn-line:#ff0;--mn-code-bg:#000;--mn-accent:#ff0;--mn-accent-ink:#ff0;--mn-accent-soft:#000;--mn-accent-bd:#ff0;}
+html:root[data-allo-theme="blue"]{--mn-bg:#d9e9f6;--mn-panel:#f0f7fd;--mn-ink:#0d1f2e;--mn-body:#1b2631;--mn-soft:#41566a;--mn-line:#b2cfe5;--mn-code-bg:#e2eff9;--mn-accent:#0b4f7a;--mn-accent-ink:#083b5c;--mn-accent-soft:#e4f0fa;--mn-accent-bd:#a8c9e2;}
+html:root[data-allo-theme="green"]{--mn-bg:#e6f4e7;--mn-panel:#f4fbf5;--mn-ink:#0f3016;--mn-body:#1b5e20;--mn-soft:#3d6b42;--mn-line:#c0dfc3;--mn-code-bg:#ecf7ed;--mn-accent:#1b5e20;--mn-accent-ink:#12441a;--mn-accent-soft:#e9f6ea;--mn-accent-bd:#b5d8b8;}
+html:root[data-allo-theme="rose"]{--mn-bg:#fbe2ea;--mn-panel:#fef3f7;--mn-ink:#4f0a29;--mn-body:#7c0d47;--mn-soft:#8d4064;--mn-line:#f0c0d2;--mn-code-bg:#fbe8ef;--mn-accent:#9d1148;--mn-accent-ink:#7c0d38;--mn-accent-soft:#fceaf1;--mn-accent-bd:#eebccd;}
+html:root[data-allo-theme="easyread"]{--mn-bg:#faf8ef;--mn-panel:#fffefa;--mn-ink:#18202f;--mn-body:#26324a;--mn-soft:#57637d;--mn-line:#e2ddc8;--mn-code-bg:#f3f0e2;--mn-accent:#1d4ed8;--mn-accent-ink:#1e3a8a;--mn-accent-soft:#eef3fe;--mn-accent-bd:#c6d3f2;}
+html:root[data-allo-theme="dark"] .manual-page .manual-open,
+html:root[data-allo-theme="highContrast"] .manual-page .manual-open {
+    color: #0d1424;
 }
 #manual-main,
 .manual-block {
@@ -71,8 +191,14 @@ body {
 
 .skip-link {
     position: fixed;
-    left: -9999px;
+    inset-inline-start: 0;
     top: 0;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    pointer-events: none;
     z-index: 1000;
     padding: 12px 18px;
     background: var(--mn-panel);
@@ -81,7 +207,13 @@ body {
     border-radius: 0 0 8px 0;
 }
 .skip-link:focus {
-    left: 0;
+    inset-inline-start: 0;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+    pointer-events: auto;
     transform: none;
 }
 
@@ -160,6 +292,32 @@ body {
     font-size: .92rem;
     color: var(--mn-soft);
 }
+.manual-copy-btn,
+.manual-print-btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 8px 16px;
+    background: var(--mn-panel);
+    color: var(--mn-accent);
+    border: 1px solid var(--mn-accent-bd);
+    border-radius: 8px;
+    font: inherit;
+    font-size: .9rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+.manual-copy-btn:hover,
+.manual-print-btn:hover {
+    background: var(--mn-accent-soft);
+    border-color: var(--mn-accent);
+}
+.manual-copy-status {
+    font-size: .88rem;
+    font-weight: 600;
+    color: var(--mn-ink);
+    overflow-wrap: anywhere;
+}
 
 .manual-toc {
     margin: 32px 0 8px;
@@ -184,8 +342,13 @@ body {
 .manual-toc a {
     display: inline-flex;
     align-items: center;
-    min-height: 32px;
+    min-height: 44px;
     color: var(--mn-accent);
+}
+.manual-toc a[aria-current="location"] {
+    font-weight: 800;
+    text-decoration: underline;
+    text-underline-offset: 3px;
 }
 
 .manual-block {
@@ -238,12 +401,19 @@ body {
 }
 
 /* Wide tables scroll in their own container so the page never scrolls sideways. */
-.manual-table {
-    display: block;
+.manual-table-scroll {
     overflow-x: auto;
     width: 100%;
-    border-collapse: collapse;
     margin: 0 0 18px;
+}
+.manual-table-scroll:focus-visible {
+    outline: 2px solid var(--mn-accent);
+    outline-offset: 2px;
+}
+.manual-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
     font-size: .95rem;
 }
 .manual-table caption {
@@ -307,15 +477,36 @@ kbd {
 }
 
 .manual-page a:focus-visible,
+.manual-page button:focus-visible,
 .manual-footer a:focus-visible,
 .skip-link:focus-visible {
-    outline: 2px solid var(--mn-accent);
+    outline: 3px solid var(--mn-accent);
     outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .manual-page *,
+    .rtools * {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+@media (forced-colors: active) {
+    .manual-page .manual-open,
+    .manual-copy-btn,
+    .manual-print-btn,
+    .manual-toc,
+    .manual-callout,
+    .rtools-toggle,
+    .rtools-panel button {
+        border: 2px solid CanvasText;
+    }
 }
 
 @media (max-width: 600px) {
     .manual-page {
-        padding-top: 84px;
+        padding-top: 28px;
     }
     .manual-table {
         font-size: .9rem;
@@ -324,16 +515,32 @@ kbd {
 
 /* A teacher printing this wants the prose, not the chrome. */
 @media print {
+    html:root[data-allo-theme] {
+        --mn-bg: #fff;
+        --mn-panel: #fff;
+        --mn-ink: #000;
+        --mn-body: #000;
+        --mn-soft: #333;
+        --mn-line: #999;
+        --mn-code-bg: #f2f2f2;
+        --mn-accent: #000;
+        --mn-accent-ink: #000;
+        --mn-accent-soft: #fff;
+        --mn-accent-bd: #999;
+    }
     .navbar,
     .skip-link,
     .manual-actions,
-    .manual-footer {
+    .manual-footer,
+    .rtools,
+    #rtools-ruler,
+    .no-print {
         display: none !important;
     }
     .manual-page {
         max-width: none;
         padding: 0;
-        font-size: 11pt;
+        font-size: calc(11pt * var(--mn-fs));
     }
     .manual-block {
         page-break-inside: avoid;

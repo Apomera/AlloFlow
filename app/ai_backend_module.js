@@ -17,6 +17,33 @@
     if (window.__aiBackendModuleLoaded) return;
     window.__aiBackendModuleLoaded = true;
 
+    const _redactAiSecrets = (raw) => {
+        const str = String(raw == null ? '' : raw);
+        if (!str) return '';
+        return str
+            .replace(/AIza[0-9A-Za-z_-]{20,}/g, '[redacted-key]')
+            .replace(/\bsk-(?:ant-|proj-|live-|test-)?[0-9A-Za-z_-]{16,}/g, '[redacted-key]')
+            .replace(/\b(?:ya29\.[0-9A-Za-z_.-]{20,}|gsk_[0-9A-Za-z_-]{16,}|xai-[0-9A-Za-z_-]{16,})/g, '[redacted-token]')
+            .replace(/\beyJ[0-9A-Za-z_-]{10,}\.[0-9A-Za-z_-]{10,}\.[0-9A-Za-z_-]{10,}\b/g, '[redacted-token]')
+            .replace(/(\bBearer\s+)[A-Za-z0-9._~+/=-]{8,}/gi, '$1[redacted]')
+            .replace(/([?&#](?:key|api_?key|token|access_token|auth|allo_mbp|allo_pack)=)[^&\s#'"]+/gi, '$1[redacted]');
+    };
+    if (typeof window.__alloRedactSecrets !== 'function') window.__alloRedactSecrets = _redactAiSecrets;
+
+    const _isStudentOrQrAiBlocked = (operation = 'text') => {
+        if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true) return true;
+        const qr = window.__alloQrStudentMode;
+        if (qr === true || (qr && typeof qr === 'object' && qr.active !== false && qr.allowAi !== true)) return true;
+        const sp = window.StudentPolicy;
+        if (sp && typeof sp === 'object') {
+            if (sp.aiEnabled === false || sp.allowAi === false || sp.disableAi === true) return true;
+            if (typeof sp.isAiAllowed === 'function') {
+                try { if (!sp.isAiAllowed(operation)) return true; } catch (_) { return true; }
+            }
+        }
+        return false;
+    };
+
     // ═══════════════════════════════════════════════════════════════════
     // SECTION 1: Firebase Shim Factory
     // ═══════════════════════════════════════════════════════════════════
@@ -415,12 +442,15 @@ const WebSearchProvider = {
     // In Canvas, Serper proxy is the primary search source.
     // SearXNG (localhost) and DDG are skipped in Canvas.
     get _isCanvas() {
-        return typeof window !== 'undefined' && (
-            window.location.hostname.includes('googleusercontent') ||
-            window.location.hostname.includes('scf.usercontent') ||
-            window.location.hostname.includes('idx.google') ||
-            window.location.href.startsWith('blob:')
-        );
+        const loc = typeof window !== 'undefined' && window.location ? window.location : null;
+        const host = loc && typeof loc.hostname === 'string' ? loc.hostname : '';
+        const href = loc && typeof loc.href === 'string' ? loc.href : '';
+        return !!(loc && (
+            host.includes('googleusercontent') ||
+            host.includes('scf.usercontent') ||
+            host.includes('idx.google') ||
+            href.startsWith('blob:')
+        ));
     },
 
     // ── Serper.dev Search Proxy (via Firebase Cloud Function) ──
@@ -441,8 +471,9 @@ const WebSearchProvider = {
     _initSearchProxy() {
         if (this._serperInitialized) return;
         this._serperInitialized = true;
-        const isOwnedFirebaseHost = typeof window !== 'undefined'
-            && (/\.web\.app$/.test(window.location.hostname) || /\.firebaseapp\.com$/.test(window.location.hostname));
+        const locHost = typeof window !== 'undefined' && window.location && typeof window.location.hostname === 'string'
+            ? window.location.hostname : '';
+        const isOwnedFirebaseHost = /\.web\.app$/.test(locHost) || /\.firebaseapp\.com$/.test(locHost);
         const rawExplicitHost = typeof window !== 'undefined'
             ? String(window.ALLOFLOW_FUNCTIONS_HOST || window.ALLOFLOW_HOST || '').trim()
             : '';
@@ -575,7 +606,7 @@ const WebSearchProvider = {
     },
 
     async _search(query, maxResults, searchQueryOverride, intent) {
-        if (!managedExternalSearchAllowed()) return { results: [], contextPrompt: 'External search is disabled by the managed deployment.', groundingMetadata: null, privacyBlocked: true, policyBlocked: true };
+        if (!managedExternalSearchAllowed() || _isStudentOrQrAiBlocked('search') || window.__alloOfflineOnly === true) return { results: [], contextPrompt: 'External search is disabled by the managed deployment.', groundingMetadata: null, privacyBlocked: true, policyBlocked: true };
         const requestGuard = managedSearchRequestGuard();
         if (typeof query !== 'string' || !query.trim()) {
             return { results: [], contextPrompt: '', groundingMetadata: null };
@@ -994,7 +1025,7 @@ const WebSearchProvider = {
             console.log(`[WebSearch] ❌ Serper NETWORK ERROR:`, 'provider-request-failed');
             if (typeof window !== 'undefined') {
                 console.log(`[WebSearch] Serper proxy URL: ${_sanitizeUrlForLog(url)}`);
-                console.log(`[WebSearch] Page origin: ${window.location.origin}`);
+                console.log(`[WebSearch] Page origin: ${(window.location && window.location.origin) || 'unknown'}`);
             }
             this._serperConsecutiveFailures++;
             if (this._serperConsecutiveFailures >= 3) {
@@ -1282,8 +1313,9 @@ const LOCAL_MODEL_PROFILE_RULES = [
     { id: 'qwen-local', match: /qwen/i, contextWindow: 8192, outputTokenLimit: 1800, jsonOutputTokenLimit: 1400 },
 ];
 function clampLocalNumber(value, min, max, fallback) {
+    if (value === null || value === undefined || value === '') return fallback;
     const n = Number(value);
-    if (!Number.isFinite(n) || n <= 0) return fallback;
+    if (!Number.isFinite(n) || (min > 0 ? n <= 0 : n < 0)) return fallback;
     return Math.max(min, Math.min(max, Math.round(n)));
 }
 function normalizeLocalModelId(value) {
@@ -2573,7 +2605,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         const check = () => {
             const context = managedProviderRequests.get(this);
             if (context) context.guard();
-            if (window.__alloQrStudentMode || window.__alloStudentAiDisabled === true) throw managedAIError();
+            if (_isStudentOrQrAiBlocked('media')) throw managedAIError();
             if ((signal && signal.aborted) || !this._imagesAllowed() || !request.allowed()
                 || window.AlloDesktopImages !== request.bridge || request.bridge.isEnabled() !== true) {
                 const error = new Error('Image generation cancelled.'); error.name = 'AbortError'; throw error;
@@ -2607,7 +2639,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     async _sanaImage(prompt, image, width, quality, signal, referenceBase64 = null) {
-        if (window.__alloQrStudentMode || window.__alloStudentAiDisabled === true) throw managedAIError();
+        if (_isStudentOrQrAiBlocked('media')) throw managedAIError();
         const connection = validateSanaConnection(this._imageConnection);
         if (typeof prompt !== 'string' || !prompt.trim() || prompt.length > 4000) throw sanaConnectionError('Use an image prompt between 1 and 4,000 characters.');
         if (!Number.isInteger(width) || width < 64 || width > 1024) throw sanaConnectionError('Choose an image size between 64 and 1024 pixels.');
@@ -2616,7 +2648,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         const check = () => {
             const context = managedProviderRequests.get(this);
             if (context) context.guard();
-            if (window.__alloQrStudentMode || window.__alloStudentAiDisabled === true) throw managedAIError();
+            if (_isStudentOrQrAiBlocked('media')) throw managedAIError();
             if ((signal && signal.aborted) || !this._imagesAllowed() || this._imageProvider === 'off') {
                 const error = new Error('Image generation cancelled.'); error.name = 'AbortError'; throw error;
             }
@@ -3405,7 +3437,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         // Strip any data:audio/...;base64, prefix the caller may have left
         // on the string (recordAudioBlob returns a full data URI).
         let cleanData = base64Data || '';
-        const m = cleanData.match(/^data:([^;]+);base64,(.+)$/);
+        const m = cleanData.match(/^data:([^;,]+)(?:;[^;,]*)*;base64,(.+)$/i);
         if (m) {
             mimeType = m[1] || mimeType;
             cleanData = m[2];
@@ -3450,7 +3482,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             });
             if (!response.ok) {
                 const errBody = await response.json().catch(() => null);
-                const msg = (errBody && errBody.error && errBody.error.message) || ('Gemini audio analysis failed (HTTP ' + response.status + ')');
+                const msg = _redactAiSecrets((errBody && errBody.error && errBody.error.message) || ('Gemini audio analysis failed (HTTP ' + response.status + ')'));
                 throw new Error(msg);
             }
             data = await response.json();
@@ -3467,7 +3499,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             try { signal && signal.removeEventListener && signal.removeEventListener('abort', onCallerAbort); } catch (_) {}
         }
         if (data.error) {
-            throw new Error(data.error.message || 'Gemini audio analysis failed');
+            throw new Error(_redactAiSecrets(data.error.message || 'Gemini audio analysis failed'));
         }
         return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     }
@@ -3743,7 +3775,9 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                     if (!audioPart) throw new Error('No audio in response');
 
                     const base64 = _validateBase64Payload(audioPart.inlineData.data, 28 * 1024 * 1024, 'TTS audio');
-                    const binaryString = window.atob(base64);
+                    const binaryString = typeof window.atob === 'function'
+                        ? window.atob(base64)
+                        : (typeof atob === 'function' ? atob(base64) : (typeof Buffer !== 'undefined' ? Buffer.from(base64, 'base64').toString('binary') : ''));
                     const bytes = new Uint8Array(binaryString.length);
                     for (let i = 0; i < binaryString.length; i++) {
                         bytes[i] = binaryString.charCodeAt(i);
@@ -3969,30 +4003,22 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             // A catalog request alone does not prove that the key can generate,
             // that browser CORS is allowed, or that the selected model is usable.
             // Make the smallest real text request and require a non-empty reply.
-            const prevDefaultModel = this.models.default;
-            const prevFlashModel = this.models.flash;
-            this.models.default = selectedModel;
-            this.models.flash = selectedModel;
-            let reply;
-            try {
-                reply = await this.generateText('Reply with only OK.', {
-                    json: false,
-                    search: false,
-                    temperature: 0,
-                    maxTokens: 8,
-                    signal: controller ? controller.signal : null,
-                });
-            } catch (probeErr) {
-                this.models.default = prevDefaultModel;
-                this.models.flash = prevFlashModel;
-                throw probeErr;
-            }
+            // Probe on a scoped view so concurrent callers never observe transient model overrides.
+            const probeScope = Object.create(this);
+            probeScope.models = Object.assign({}, this.models, { default: selectedModel, flash: selectedModel });
+            const reply = await probeScope.generateText('Reply with only OK.', {
+                json: false,
+                search: false,
+                temperature: 0,
+                maxTokens: 8,
+                signal: controller ? controller.signal : null,
+            });
             const replyText = typeof reply === 'string' ? reply.trim() : String(reply?.text || '').trim();
             if (!replyText) {
-                this.models.default = prevDefaultModel;
-                this.models.flash = prevFlashModel;
                 throw new Error('The provider returned an empty text response.');
             }
+            this.models.default = selectedModel;
+            this.models.flash = selectedModel;
 
             const verifiedModels = usableModels.length > 0
                 ? usableModels
@@ -4017,7 +4043,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             const timedOut = e && e.name === 'AbortError';
             return {
                 success: false,
-                error: timedOut ? 'Connection test timed out after 15 seconds.' : (e && e.message ? e.message : String(e)),
+                error: timedOut ? 'Connection test timed out after 15 seconds.' : _redactAiSecrets(e && e.message ? e.message : String(e)),
             };
         } finally {
             if (timeoutId) clearTimeout(timeoutId);
@@ -4116,6 +4142,7 @@ for (const [name, operation] of Object.entries({ generateText: 'text', listAvail
             analyzeImage: 2, analyzeImages: 2, analyzeAudio: 2, textToSpeech: 1, checkSafety: 1 }[name];
         const requestControl = captureProviderRequestControls(supplied[optionIndex]);
         runProviderBeforeRequest(requestControl);
+        if (name !== 'textToSpeech' && _isStudentOrQrAiBlocked(operation)) throw managedAIError();
         const existing = managedProviderRequests.get(this);
         const args = supplied.map(value => copyProviderRequestData(value));
         if (existing && !requestControl) return invokeProviderRequest(method, this, existing, args);

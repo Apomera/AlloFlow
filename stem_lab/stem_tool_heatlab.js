@@ -4973,7 +4973,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             onChange: onChange,
             className: 'col-span-2 row-start-2 sm:col-span-1 sm:col-start-2 sm:row-start-1 w-full min-w-0 h-11 accent-orange-500'
           }),
-          h('output', { htmlFor: id, id: id + '-value', className: 'col-start-2 row-start-1 sm:col-start-3 text-[0.6875rem] font-bold text-right whitespace-nowrap', style: { color: isDark ? '#fdba74' : '#c2410c' } }, suffix)
+          h('output', { htmlFor: id, id: id + '-value', className: 'col-start-2 row-start-1 sm:col-start-3 text-[0.6875rem] font-bold text-right break-words', style: { color: isDark ? '#fdba74' : '#c2410c' } }, suffix)
         );
       };
 
@@ -7671,7 +7671,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               }, t('stem.heatlab.advance_n_s', 'Advance {n} s').replace('{n}', fmt(timeScale, timeScale % 1 ? 1 : 0))) : null,
               h('button', {
                 type: 'button',
-                'aria-label': t('stem.heatlab.record_trial_aria', 'Record this trial in your lab log'),
+                title: t('stem.heatlab.record_trial_aria', 'Record this trial in your lab log'),
                 onClick: recordRaceTrial,
                 className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold transition-colors',
                 style: neutralBtnStyle(false)

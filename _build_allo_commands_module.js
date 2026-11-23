@@ -35,6 +35,7 @@ const outputCode = `/**
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.AlloCommands) {
     console.log('[CDN] AlloCommands already loaded, skipping');
     return;

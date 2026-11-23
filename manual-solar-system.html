@@ -18,6 +18,7 @@
 <meta name="twitter:description" content="Teach the solar system with six guided journeys, a real scale walk, and orbit experiments.">
 <link rel="stylesheet" href="shared.css">
 <link rel="stylesheet" href="tool-manual.css">
+<script src="tool-manual.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#manual-main">Skip to content</a>
@@ -33,7 +34,7 @@
     </div>
 </nav>
 
-<main id="manual-main" class="manual-page">
+<main id="manual-main" tabindex="-1" class="manual-page">
     <nav class="manual-crumbs" aria-label="Breadcrumb">
         <ol>
             <li><a href="./">AlloFlow</a></li>
@@ -98,7 +99,8 @@
 
     <section class="manual-block" id="journeys" aria-labelledby="journeys-heading">
         <h2 id="journeys-heading">2. The six journeys</h2>
-        <table class="manual-table" tabindex="0">
+        <div class="manual-table-scroll" role="region" aria-label="Journeys, checkpoints, and what each is good for" tabindex="0">
+        <table class="manual-table">
             <caption>Journeys, checkpoints, and what each is good for</caption>
             <thead><tr><th scope="col">Journey</th><th scope="col">Checkpoints</th><th scope="col">Use it for</th></tr></thead>
             <tbody>
@@ -110,6 +112,7 @@
                 <tr><th scope="row">⬡ Collect → review → explore</th><td>2</td><td>The shortest. A good re-entry point after an absence, or a low-stakes first taste.</td></tr>
             </tbody>
         </table>
+        </div>
         <p>The dashboard tracks journeys complete and journal records, and can be collapsed to give
             the 3-D view the full screen when you are projecting.</p>
     </section>
@@ -119,7 +122,8 @@
         <p>Under "choose a scientific lens," each world can be examined three ways. Teaching the
             difference between these is itself a science-practice lesson: the same object, three
             questions, three representations.</p>
-        <table class="manual-table" tabindex="0">
+        <div class="manual-table-scroll" role="region" aria-label="The three lenses" tabindex="0">
+        <table class="manual-table">
             <caption>The three lenses</caption>
             <thead><tr><th scope="col">Lens</th><th scope="col">What it does</th><th scope="col">The question it answers</th></tr></thead>
             <tbody>
@@ -128,6 +132,7 @@
                 <tr><th scope="row">Orbit model</th><td>Test orbit shape, speed, period, and transfer ideas.</td><td>Why does it move like that?</td></tr>
             </tbody>
         </table>
+        </div>
         <p>Nine worlds are available — Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus,
             Neptune and Pluto — tagged by type: rocky, gas giant, ice giant, dwarf world. Earth is
             pinned as a reference world so every comparison has a familiar anchor, and visited

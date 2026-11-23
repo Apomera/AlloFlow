@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<!-- The product name is written once on this page, in #product-name. packets-page.js puts it in front of this title. -->
+<title>Collect by sealed QR</title>
+<meta name="description" content="Create an offline teacher keypair, attach your public key to AlloFlow Packets, and scan or paste encrypted student QR results with zero network connection. Runs without AI. No account.">
+<link rel="icon" type="image/svg+xml" href="packets-mark.svg">
+<link rel="stylesheet" href="packets.css">
+<link rel="stylesheet" href="packets-qr.css">
+<script src="packets-page.js" defer></script>
+<script src="packets_qr_crypto.js" defer></script>
+<script src="word_sounds_take_home_loader.js" defer></script>
+<script src="packets_zip.js" defer></script>
+<script src="packets_handoff.js" defer></script>
+<script src="packets-qr.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the main part</a>
+
+<header class="top">
+  <div class="wrap top-row">
+    <a class="brand" href="packets.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 3 7.5l9 4.5 9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
+      <span id="product-name">AlloFlow Packets</span>
+    </a>
+    <details class="top-menu">
+      <summary>Switch maker</summary>
+      <nav aria-label="Other Packets tools">
+        <a href="packets-make.html">Word Sounds</a>
+        <a href="packets-vocab.html">Vocabulary</a>
+        <a href="packets-math-practice.html">Math Fact Practice</a>
+        <a href="packets-check.html">Math Check</a>
+        <a href="packets-read-along.html">Read-Along</a>
+        <a href="packets-symbol-runner.html">Symbol Runner</a>
+        <a href="packets-present-export.html">Present &amp; print</a>
+        <a href="packets-results.html">Add up results</a>
+        <a href="packets-qr.html" aria-current="page">Collect by sealed QR</a>
+      </nav>
+    </details>
+    <a class="top-link" href="packets.html">Make a file</a>
+  </div>
+<details class="proof">
+  <summary class="wrap">
+    <span class="proof-line">This page runs without AI. No account. Keys, packets and scanned QR codes stay in this browser tab.</span>
+    <span class="proof-open proof-open-closed">See the details</span>
+    <span class="proof-open proof-open-opened">Hide the details</span>
+  </summary>
+  <div class="wrap proof-body">
+    <ul>
+      <li>Your teacher keypair is created in this tab with standard public-key authenticated encryption (X25519 + HKDF-SHA-256 + ChaCha20-Poly1305). Student packets carry only the public key, which can seal results but cannot unlock them.</li>
+      <li>Each student QR code holds opaque encrypted data starting with <code>AFQR1:</code>. It is never a web link and cannot be read by a regular phone camera or by anyone without your private key file.</li>
+      <li>Nothing is sent. This page cannot connect to anything: the rule below tells the browser to refuse every connection, and the browser enforces it.</li>
+      <li>The camera is never turned on unless you press <strong>Start camera</strong>. Video stays in memory in this tab and stops as soon as you press <strong>Stop camera</strong> or leave this page.</li>
+      <li>Nothing is kept in browser storage after you close this tab. If you press <strong>Open in Add up results</strong>, the zipped results pass through temporary site storage in this browser and are deleted as soon as <strong>Add up results</strong> reads them.</li>
+      <li>Use a school-managed computer or tablet when collecting student results, and store any saved private key file in your private school folder.</li>
+      <li>This page runs without AI. There are no cookies and nothing to sign in to.</li>
+      <li>This page loads ten files, all from this site: the page itself, two stylesheets (<code>packets.css</code>, <code>packets-qr.css</code>), six scripts (<code>packets-page.js</code>, <code>packets_qr_crypto.js</code>, <code>word_sounds_take_home_loader.js</code>, <code>packets_zip.js</code>, <code>packets_handoff.js</code>, <code>packets-qr.js</code>) and the icon in the browser tab. It loads no fonts, no trackers and nothing from another site.</li>
+      <li>Like any website, the server that sends these files can see that your browser asked for them. It receives nothing else.</li>
+    </ul>
+    <p>The rule this page gives your browser. The browser refuses anything the rule does not allow:
+      <code class="rule-text" data-show-rule>It is the Content-Security-Policy line near the top of this page's source.</code>
+    </p>
+  </div>
+</details>
+</header>
+
+<main id="main" tabindex="-1" class="qr-page">
+  <div class="wrap wrap-narrow">
+    <h1>Collect by sealed QR</h1>
+    <p class="qr-lead">Collect student results offline at the desk without students turning in files. Each student packet encrypts its results for your session key only.</p>
+    <p class="note qr-device-note"><strong>School-managed devices only:</strong> Scan and hold student results on a school-managed laptop or tablet, not a personal phone. Each QR code is encrypted data (not a web link) and stays inside this tab.</p>
+
+    <div class="qr-demo-bar">
+      <button type="button" class="btn btn-text" id="demo-start">Try with sample sealed QRs</button>
+      <span class="hint">Creates a live demo key, renders a real scannable encrypted QR, and lets you test unlocking, wrong keys and tamper rejection.</span>
+    </div>
+
+    <section id="demo-panel" class="qr-demo-card" aria-labelledby="demo-title" hidden>
+      <div class="qr-demo-head">
+        <div>
+          <h2 id="demo-title">Live sample sealed QR (made-up students)</h2>
+          <p class="hint">Point any regular phone camera at this QR to see for yourself: it shows only opaque <code>AFQR1:...</code> text, never a web link and never a student name.</p>
+        </div>
+        <button type="button" class="btn btn-small" id="demo-close">Hide sample</button>
+      </div>
+      <div class="qr-demo-grid">
+        <div class="qr-demo-qr-wrap">
+          <div id="demo-qr-slot" class="qr-demo-frame"></div>
+          <p id="demo-qr-caption" class="hint"></p>
+        </div>
+        <div class="qr-demo-controls">
+          <p>These 3 sample results (BlueHeron7, OakLeaf4 and RiverStone2) were just encrypted in your browser with the active demo key:</p>
+          <div class="qr-actions">
+            <button type="button" class="btn btn-primary" id="demo-unlock">Unlock all 3 sample QRs</button>
+            <button type="button" class="btn" id="demo-wrong-key">Test wrong teacher key</button>
+            <button type="button" class="btn" id="demo-tamper">Test 1-character tamper</button>
+          </div>
+          <p class="hint">After unlocking the 3 sample students below, press <strong>Open in Add up results</strong> to see them flow straight into the class dashboard.</p>
+        </div>
+      </div>
+    </section>
+
+    <noscript><p class="note note-problem">This page needs JavaScript to create keys, seal packets and unlock QR codes. Nothing is sent anywhere.</p></noscript>
+    <p id="said" class="sr-only" role="status" aria-live="polite"></p>
+
+    <section id="step-key" class="qr-step" aria-labelledby="step-key-title">
+      <div class="qr-step-head">
+        <span class="qr-badge" aria-hidden="true">1</span>
+        <div>
+          <h2 id="step-key-title">Create or load a teacher key</h2>
+          <p class="qr-step-sub">One key works for a lesson, week or class. Students' packets only get the public key; your private key unlocks their QR codes.</p>
+        </div>
+      </div>
+
+      <div id="key-setup" class="qr-panel-body">
+        <div class="qr-field">
+          <label for="key-label">Optional label for this key</label>
+          <input type="text" id="key-label" maxlength="80" autocomplete="off" placeholder="For example: Room 12 — Fall Math">
+        </div>
+        <div class="qr-actions">
+          <button type="button" class="btn btn-primary" id="make-key">Make a new session key</button>
+          <button type="button" class="btn" id="load-key-btn">Load saved key (.json)</button>
+          <input type="file" id="load-key-file" accept=".json,application/json" aria-label="Saved teacher key file" hidden>
+        </div>
+        <details class="qr-fold" id="pub-only-fold">
+          <summary>Sealing packets for another teacher? Paste their public key (AFPK1...)</summary>
+          <div class="qr-fold-body">
+            <p class="hint">A teammate or paraprofessional can seal packets in Step 2 using only the lead teacher's public key. No private key is shared.</p>
+            <div class="qr-pub-row">
+              <input type="text" id="pub-only-input" autocomplete="off" spellcheck="false" aria-label="Teacher public key starting with AFPK1." placeholder="AFPK1....">
+              <button type="button" class="btn btn-small" id="use-pub-only">Use public key only</button>
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <div id="key-active" class="qr-key-card" hidden>
+        <div class="qr-key-meta">
+          <p class="qr-key-id">
+            <strong>Key ID:</strong> <code id="key-fp"></code>
+            <span id="key-label-show" class="qr-key-label"></span>
+            <span id="key-unsaved-tag" class="qr-tag qr-tag-warn" hidden>Private key not saved yet</span>
+            <span id="key-pubonly-tag" class="qr-tag" hidden>Public key only (for sealing packets)</span>
+          </p>
+          <p class="hint">Check that this 8-character Key ID matches the Key ID shown under a student's QR code.</p>
+        </div>
+        <div class="qr-field">
+          <label for="key-pub">Public key (safe to put inside student packets or share with a teammate)</label>
+          <div class="qr-pub-row">
+            <input type="text" id="key-pub" readonly>
+            <button type="button" class="btn btn-small" id="copy-pub">Copy public key</button>
+          </div>
+        </div>
+        <div class="qr-actions">
+          <button type="button" class="btn btn-primary" id="save-key">Save private key (.json)</button>
+          <button type="button" class="btn" id="load-key-again">Load another key</button>
+          <button type="button" class="btn" id="clear-key">Clear key from tab</button>
+        </div>
+        <p id="key-save-hint" class="hint">Save the private key file in your private teacher folder if you plan to scan results later or in a new tab. Closing this tab clears the key from memory.</p>
+      </div>
+      <p id="key-status" class="qr-status" role="status" hidden></p>
+    </section>
+
+    <section id="step-seal" class="qr-step" aria-labelledby="step-seal-title">
+      <div class="qr-step-head">
+        <span class="qr-badge" aria-hidden="true">2</span>
+        <div>
+          <h2 id="step-seal-title">Attach your public key to packet files</h2>
+          <p class="qr-step-sub">Drop any practice file or check (.html), or a .zip folder of packets (including Windows, Mac, Drive or AlloFlow .zip files). Each packet stays 100% offline with <code>connect-src 'none'</code> and gains a <strong>Show sealed QR for teacher</strong> button at the end.</p>
+        </div>
+      </div>
+
+      <div id="seal-drop" class="drop qr-drop">
+        <h3 id="seal-drop-title">Drop packet files here</h3>
+        <p class="drop-sub" id="seal-drop-sub">One or more AlloFlow packet files (.html) or a .zip folder of packets.</p>
+        <p class="drop-go"><button type="button" class="btn btn-primary" id="seal-choose" aria-describedby="seal-drop-sub">Choose packet files</button></p>
+        <input type="file" id="seal-files" multiple accept=".html,.htm,.zip,text/html,application/zip" aria-label="Packet files to seal" hidden>
+      </div>
+
+      <p id="seal-status" class="qr-status" role="status" hidden></p>
+      <p id="seal-save-nudge" class="qr-status qr-status-warn" hidden>Reminder: press <strong>Save private key (.json)</strong> in Step 1 before closing this tab, or you will not be able to unlock these sealed packets later.</p>
+      <div id="seal-results" class="qr-seal-results" hidden>
+        <ul id="seal-list" class="qr-seal-list"></ul>
+        <div class="qr-actions">
+          <button type="button" class="btn btn-primary" id="seal-download">Download sealed packet</button>
+          <button type="button" class="btn" id="seal-clear">Clear list</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="step-collect" class="qr-step" aria-labelledby="step-collect-title">
+      <div class="qr-step-head">
+        <span class="qr-badge" aria-hidden="true">3</span>
+        <div>
+          <h2 id="step-collect-title">Scan or paste student sealed QR results</h2>
+          <p class="qr-step-sub">At the end of a packet, open <strong>Show my teacher</strong> (or <strong>For the teacher</strong> on a check) and press <strong>Show sealed QR for teacher</strong>.</p>
+        </div>
+      </div>
+
+      <div class="qr-collect-methods">
+        <div class="qr-method" id="cam-method">
+          <h3>Camera or QR photo</h3>
+          <p id="cam-hint" class="hint">Point the device camera at the student's sealed QR, or choose a QR photo or screenshot.</p>
+          <div class="qr-actions">
+            <button type="button" class="btn btn-primary" id="cam-toggle">Start camera</button>
+            <button type="button" class="btn" id="qr-img-btn">Scan QR photo</button>
+            <input type="file" id="qr-img-file" multiple accept="image/*" aria-label="QR code image files" hidden>
+          </div>
+          <label class="qr-check-opt"><input type="checkbox" id="cam-sound"> Play a short chime when a scan succeeds</label>
+          <div id="cam-box" class="qr-cam-box" hidden>
+            <video id="cam-video" class="qr-video" playsinline muted></video>
+            <p id="cam-toast" class="qr-cam-toast" role="status" hidden></p>
+            <p class="hint">Hold the sealed QR inside the frame. Each new student is unlocked automatically.</p>
+          </div>
+        </div>
+
+        <div class="qr-method">
+          <h3><label for="code-input">Paste sealed code (works in every browser)</label></h3>
+          <p class="hint">If the student pressed <strong>Copy sealed code</strong> (starting with <code>AFQR1:</code>), paste one or more codes below.</p>
+          <textarea id="code-input" class="qr-textarea" rows="3" spellcheck="false" placeholder="AFQR1:..."></textarea>
+          <div class="qr-actions">
+            <button type="button" class="btn btn-primary" id="code-add">Unlock and add</button>
+            <button type="button" class="btn" id="code-clear">Clear box</button>
+          </div>
+        </div>
+      </div>
+
+      <p id="collect-status" class="qr-status" role="status" hidden></p>
+
+      <div id="collected-wrap" class="qr-collected" hidden>
+        <div class="qr-collected-head">
+          <div>
+            <h3>Collected in this session</h3>
+            <p id="collected-count" class="hint"></p>
+          </div>
+          <div class="qr-actions">
+            <button type="button" class="btn btn-primary" id="open-results">Open in Add up results</button>
+            <button type="button" class="btn" id="download-zip">Download results (.zip)</button>
+            <button type="button" class="btn" id="clear-collected">Clear list</button>
+          </div>
+        </div>
+        <div class="qr-table-scroll" tabindex="0" role="region" aria-label="Collected student results">
+          <table class="qr-table">
+            <thead>
+              <tr>
+                <th scope="col">Student</th>
+                <th scope="col">Packet</th>
+                <th scope="col">Mode</th>
+                <th scope="col">Summary</th>
+                <th scope="col">To go over</th>
+                <th scope="col">Time</th>
+                <th scope="col">Action</th>
+              </tr>
+            </thead>
+            <tbody id="collected-body"></tbody>
+          </table>
+        </div>
+        <p class="hint">Opening in <strong>Add up results</strong> hands over standard CSV results with SHA-256 check values so you can view class charts, group focus items, and individual student trends over time.</p>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-row">
+    <p>Free to use. Open source, license AGPL-3.0.</p>
+    <p><a href="./">More from AlloFlow</a></p>
+  </div>
+</footer>
+</body>
+</html>

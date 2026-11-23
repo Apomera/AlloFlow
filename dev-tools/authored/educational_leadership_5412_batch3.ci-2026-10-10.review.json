@@ -40,6 +40,10 @@
     {
       "issue": "Non-EPPP editorial screening flagged residual lexical-leakage, brief distractor-rationale, or asymmetric-extreme-distractor warnings in 33 item(s).",
       "change": "Remediated 33 item(s) by hand via dev-tools/non_eppp_authored_remediation/educational_leadership_5412_batch3.cjs without changing any answerIndex, domainId, rationale, or references. All editorial warning checks now report 0 findings across the batch."
+    },
+    {
+      "issue": "Non-EPPP editorial screening flagged residual lexical-leakage, brief distractor-rationale, or asymmetric-extreme-distractor warnings in 51 item(s).",
+      "change": "Remediated 51 item(s) by hand via dev-tools/non_eppp_authored_remediation/educational_leadership_5412_batch3.cjs + length_balance_wave2_part2.cjs without changing any answerIndex, domainId, rationale, or references. All editorial warning checks now report 0 findings across the batch."
     }
   ],
   "checks": {
@@ -263,7 +267,7 @@
   },
   "artifactBinding": {
     "algorithm": "sha256",
-    "sha256": "03e97ccf97cd4f3be4c40c3ce2bd19e4c173f782e9e50c0fb69e2baefd4273d7"
+    "sha256": "e7f2eb0e42c2558db28be11aea6b61e24f31ba40efabcd4d84b796b7d133abba"
   },
   "integration": {
     "packId": "praxis-educational-leadership-5412",
@@ -324,6 +328,16 @@
       "priorSha256": "4e4f26feee925f95f41585a207f7f55189706e1906d5bd9c5cd35b4abfc5e431",
       "sha256": "03e97ccf97cd4f3be4c40c3ce2bd19e4c173f782e9e50c0fb69e2baefd4273d7",
       "note": "Edited after the independent cross-review to eliminate editorial warning findings while preserving tested constructs and answer positions. The binding was renewed so the artifact stays self-consistent; the original reviewer did not review these replacements."
+    },
+    {
+      "at": "2026-11-21",
+      "by": "Antigravity — AlloFlow test-prep warning remediation pass",
+      "scope": "editorial warning remediation (lexical leakage / distractor feedback depth / extreme-qualifier balance)",
+      "itemsChanged": 51,
+      "ledger": "dev-tools/non_eppp_authored_remediation/educational_leadership_5412_batch3.cjs + length_balance_wave2_part2.cjs",
+      "priorSha256": "03e97ccf97cd4f3be4c40c3ce2bd19e4c173f782e9e50c0fb69e2baefd4273d7",
+      "sha256": "e7f2eb0e42c2558db28be11aea6b61e24f31ba40efabcd4d84b796b7d133abba",
+      "note": "Edited after the independent cross-review to eliminate editorial warning findings while preserving tested constructs and answer positions. The binding was renewed so the artifact stays self-consistent; the original reviewer did not review these replacements."
     }
   ],
   "limitations": [
@@ -334,5 +348,5 @@
     "The actual maximum same-domain prompt-token Jaccard is 0.47368421052631576 against the first 200 released source items. Similarity and warning checks are not comprehensive authorship, plagiarism, fairness, difficulty or learning-effectiveness validation.",
     "Historical July review files and their August remediation notes were preserved byte-for-byte. This October review applies only to the exact artifactBinding above."
   ],
-  "sourceSha256": "03e97ccf97cd4f3be4c40c3ce2bd19e4c173f782e9e50c0fb69e2baefd4273d7"
+  "sourceSha256": "e7f2eb0e42c2558db28be11aea6b61e24f31ba40efabcd4d84b796b7d133abba"
 }

@@ -1620,7 +1620,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 style: { background: P.bg, color: P.text, border: '1px solid ' + P.line, borderRadius: 8, padding: '6px 8px', fontSize: '0.8125rem', maxWidth: current ? 'min(30vw, 250px)' : '46vw' } },
                 h('option', { value: '' }, W('select_placeholder')),
                 IMAGES.map(function (s) { return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + imgText(s, 'name')); }))),
-            h('button', { type: 'button', style: btnBase, onClick: function () { openPopout(current && current.id); }, title: t('stem.zoomGallery.pop_out_title', INL.pop_out_title), 'aria-label': t('stem.zoomGallery.pop_out_title', INL.pop_out_title) }, I('pop_out')),
+            h('button', { type: 'button', style: btnBase, onClick: function () { openPopout(current && current.id); }, title: t('stem.zoomGallery.pop_out_title', INL.pop_out_title) }, I('pop_out')),
             current && typeof window.__alloStemFS === 'function' ? h('button', {
               type: 'button', style: btnBase,
               'data-allo-fs-btn': 'true',

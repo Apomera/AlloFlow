@@ -421,7 +421,7 @@
       // reliably apply automatic shrinking when a deck is opened elsewhere.
       if (readableTextLines(heading, titleBox.w * 72 / 16 / fontWidth).length > 1) { titleBox.y = 0.15; titleBox.h = 0.65; }
       slide.addText(heading, { ...titleBox, fontFace: appearance.fontFace, fontSize: fittedFont(heading, titleBox, 16, 10), color: appearance.muted, align: title.language.dir === 'rtl' ? 'right' : 'left', valign: 'top', ...textLanguage(title.language) });
-      slide.addText(label.map((part, index) => ({ text: (index ? ' · ' : '') + part.text, options: textLanguage(part.language) })), { x: 0.55, y: 6.96, w: 12.2, h: 0.25, fontSize: 12, color: appearance.muted, margin: 0, ...textLanguage(label[0].language) });
+      slide.addText(label.map((part, index) => ({ text: (index ? ' · ' : '') + part.text, options: textLanguage(part.language) })), { x: 0.55, y: 6.96, w: 12.2, h: 0.25, fontSize: 12, color: appearance.muted, margin: 0, align: label[0].language.dir === 'rtl' ? 'right' : 'left', ...textLanguage(label[0].language) });
       return slide;
     }
     function mainWord(slide, word, card, item, fixed = false) {
@@ -800,13 +800,23 @@
       let size = null;
       if (type === 'png' && bytes.length >= 24) size = { w: ((at(16) << 24) | (at(17) << 16) | (at(18) << 8) | at(19)) >>> 0, h: ((at(20) << 24) | (at(21) << 16) | (at(22) << 8) | at(23)) >>> 0 };
       else if (type === 'gif' && bytes.length >= 10) size = { w: at(6) | (at(7) << 8), h: at(8) | (at(9) << 8) };
-      else if (type === 'jpeg') {
-        for (let i = 2; i + 9 < bytes.length;) {
+      else if (type === 'jpeg' && bytes.length >= 4 && at(0) === 0xff && at(1) === 0xd8) {
+        for (let i = 2; i < bytes.length;) {
           if (at(i) !== 0xff) { i++; continue; }
-          const marker = at(i + 1);
-          if (marker === 0xff || marker === 0x01 || (marker >= 0xd0 && marker <= 0xd8)) { i += marker === 0xff ? 1 : 2; continue; }
-          if ([0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7, 0xc9, 0xca, 0xcb, 0xcd, 0xce, 0xcf].includes(marker)) { size = { w: (at(i + 7) << 8) | at(i + 8), h: (at(i + 5) << 8) | at(i + 6) }; break; }
-          i += 2 + ((at(i + 2) << 8) | at(i + 3));
+          while (i < bytes.length && at(i) === 0xff) i++;
+          if (i >= bytes.length) break;
+          const marker = at(i++);
+          if (marker === 0x00) continue;
+          if (marker === 0xda || marker === 0xd9) break;
+          if (marker === 0x01 || (marker >= 0xd0 && marker <= 0xd8)) continue;
+          if (i + 2 > bytes.length) break;
+          const segLen = (at(i) << 8) | at(i + 1);
+          if (segLen < 2) break;
+          if ([0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7, 0xc9, 0xca, 0xcb, 0xcd, 0xce, 0xcf].includes(marker)) {
+            if (segLen >= 7 && i + 7 <= bytes.length) size = { w: (at(i + 5) << 8) | at(i + 6), h: (at(i + 3) << 8) | at(i + 4) };
+            break;
+          }
+          i += segLen;
         }
       }
       return size && size.w > 0 && size.h > 0 ? size : null;
@@ -910,11 +920,40 @@
           } else {
             const slide = slideBase(footer);
             mainWord(slide, item.word, card, item, true);
+            let overflowRest = '';
             if (item.definition) {
-              const defBox = { x: 1.0, y: 5.05, w: 11.3, h: 1.15, margin: 0.05 };
-              slide.addText(item.definition, { ...defBox, fontFace: appearance.fontFace, ...cardType, fontSize: fittedFont(item.definition, defBox, 22 * meaningScale), color: appearance.muted, align: 'center', valign: 'top', ...textLanguage(itemLanguage(item, 'definition')) });
+              const defLang = itemLanguage(item, 'definition');
+              const defBox = pictureAudio
+                ? { x: 1.0, y: 4.75, w: 11.3, h: 1.10, margin: 0.05 }
+                : { x: 1.0, y: 4.85, w: 11.3, h: 1.85, margin: 0.05 };
+              const defSize = fittedFont(item.definition, defBox, 22 * meaningScale, 12);
+              const defWidth = (defBox.w * 72 - defBox.margin * 144) / defSize / fontWidth;
+              const defLines = readableTextLines(item.definition, defWidth);
+              const maxLines = Math.max(1, Math.floor((defBox.h * 72 - defBox.margin * 144) / (defSize * 1.35)));
+              let shownDef = item.definition;
+              if (defLines.length > maxLines) {
+                const kept = defLines.slice(0, maxLines).join('').trimEnd();
+                const segs = sentenceSegments(kept);
+                let fit = kept;
+                while (segs.length > 1 && readableTextLines(fit + '…', defWidth).length > maxLines) {
+                  segs.pop();
+                  fit = segs.map(part => part.text).join('').trimEnd();
+                }
+                shownDef = fit + '…';
+                overflowRest = item.definition.slice(fit.length).trimStart();
+              }
+              slide.addText(shownDef, { ...defBox, fontFace: appearance.fontFace, ...cardType, fontSize: defSize, color: appearance.muted, align: defLang.dir === 'rtl' ? 'right' : 'center', valign: 'top', ...textLanguage(defLang) });
             }
             await addAudio(slide, item, footer);
+            if (overflowRest) {
+              const restPages = sentenceTextPages(overflowRest);
+              for (let page = 0; page < restPages.length; page++) {
+                checkAbort(context);
+                const detail = slideBase([...footer, localized('pptx_part', 'Part {n}/{total}', { n: page + 2, total: restPages.length + 1 })]);
+                addSentenceText(detail, restPages[page], itemLanguage(item, 'definition'), false);
+                await sentencePageYield();
+              }
+            }
           }
         } else if (options.mode === 'sentence') {
           if (!item.sentenceActivity) throw new Error(L('pptx_sentence_missing', 'A prepared sentence activity is missing.'));
@@ -1039,7 +1078,14 @@
     const uses = new Map();
     let total = 0;
     const count = value => { if (typeof value === 'string' && value) { total += value.length; uses.set(value, (uses.get(value) || 0) + 1); } };
-    pack.items.forEach(item => { count(item.wordAudio); (item.phonemes || []).forEach(sound => count(sound.audio)); });
+    const voiceAudioUri = ann => ann && ann.kind === 'voice' && ann.mimeType && ann.audioBase64
+      ? core.safeAudio('data:' + ann.mimeType + ';base64,' + ann.audioBase64)
+      : '';
+    pack.items.forEach(item => {
+      count(item.wordAudio);
+      (item.phonemes || []).forEach(sound => count(sound.audio));
+      (item.annotations || []).forEach(ann => count(voiceAudioUri(ann)));
+    });
     const budget = Math.floor(core.LIMITS.totalAudioChars * 0.95);
     const replaced = new Map();
     let audioContext = null;
@@ -1072,16 +1118,33 @@
       }
     } finally { if (audioContext && typeof audioContext.close === 'function') await audioContext.close().catch(() => {}); }
     const swap = value => replaced.get(value) || value;
-    const items = pack.items.map(item => ({ ...item, wordAudio: swap(item.wordAudio), phonemes: (item.phonemes || []).map(sound => ({ ...sound, audio: swap(sound.audio) })) }));
+    const swapAnnotation = ann => {
+      const uri = voiceAudioUri(ann);
+      const next = uri && replaced.get(uri);
+      if (!next) return ann;
+      const semi = next.indexOf(';'), comma = next.indexOf(',');
+      if (semi <= 5 || comma < 0) return ann;
+      return { ...ann, mimeType: next.slice(5, semi), audioBase64: next.slice(comma + 1) };
+    };
+    const items = pack.items.map(item => ({
+      ...item,
+      wordAudio: swap(item.wordAudio),
+      phonemes: (item.phonemes || []).map(sound => ({ ...sound, audio: swap(sound.audio) })),
+      ...(Array.isArray(item.annotations) ? { annotations: item.annotations.map(swapAnnotation) } : {})
+    }));
     return { pack: { ...pack, items }, ...report };
   }
   // True when a clip would be converted, so a set with only WAV/MP3 (or no
   // sounds) still downloads at once, inside the click.
   function needsEveryDeviceAudio(input) {
     try {
-      const pack = getCore().normalizeInput(input);
+      const core = getCore(), pack = core.normalizeInput(input);
       const convertible = value => typeof value === 'string' && /^data:audio\//i.test(value) && !EVERY_DEVICE_AUDIO.test(value);
-      return pack.items.some(item => convertible(item.wordAudio) || (item.phonemes || []).some(sound => convertible(sound.audio)));
+      return pack.items.some(item =>
+        convertible(item.wordAudio)
+        || (item.phonemes || []).some(sound => convertible(sound.audio))
+        || (item.annotations || []).some(ann => ann && ann.kind === 'voice' && ann.mimeType && ann.audioBase64 && convertible(core.safeAudio('data:' + ann.mimeType + ';base64,' + ann.audioBase64)))
+      );
     } catch (_) { return false; }
   }
   async function buildPictureSlidesPptx(input, rawOptions = {}, context = {}) {
@@ -1152,6 +1215,32 @@
     }
     return isSafeStaticSvg(decoded) ? s : '';
   }
+  const RTL_SCRIPT_RE = /[\p{Script=Arabic}\p{Script=Hebrew}\p{Script=Syriac}\p{Script=Thaana}\p{Script=Nko}\p{Script=Adlam}\p{Script=Hanifi_Rohingya}\p{Script=Samaritan}\p{Script=Mandaic}]/u;
+  function printableLangInfo(core, langName, sampleText) {
+    const info = core && typeof core.languageInfo === 'function' ? core.languageInfo(langName) : { tag: '', dir: 'auto' };
+    let tag = info.tag || '', dir = info.dir || 'auto';
+    if (dir !== 'rtl' && typeof sampleText === 'string' && sampleText) {
+      const firstLetter = sampleText.match(/\p{L}/u)?.[0] || '';
+      if (firstLetter && RTL_SCRIPT_RE.test(firstLetter)) {
+        dir = 'rtl';
+        if (tag && /^en(?:-|$)/i.test(tag)) tag = '';
+      }
+    }
+    return { tag, dir: dir === 'rtl' ? 'rtl' : 'ltr' };
+  }
+  function langDirAttrs(info) {
+    if (!info) return '';
+    const tag = info.tag || '', dir = info.dir === 'rtl' ? 'rtl' : 'ltr';
+    if ((!tag || tag === 'en') && dir === 'ltr') return '';
+    return (tag ? ' lang="' + escHtml(tag) + '"' : '') + ' dir="' + dir + '"';
+  }
+  function wrapLangSpan(escapedHtml, attrs) {
+    return attrs ? '<span' + attrs + '>' + escapedHtml + '</span>' : escapedHtml;
+  }
+  function formatCreditValue(core, value) {
+    if (core && typeof core.formatPictureCredit === 'function') return core.formatPictureCredit(value);
+    return typeof value === 'string' ? value.trim() : '';
+  }
   function rawPictureLookup(input) {
     const core = getCore();
     const list = Array.isArray(input && input.items) ? input.items : (Array.isArray(input && input.words) ? input.words : []);
@@ -1166,24 +1255,43 @@
         if (totalPictureChars + src.length > maxTotalPictureChars) return;
         totalPictureChars += src.length;
       }
-      const alt = (entry.picture && entry.picture.alt) || entry.imageAlt || entry.word || '';
-      const credit = (entry.picture && (entry.picture.credit || entry.picture.attribution)) || entry.imageCredit || entry.credit || entry.attribution || '';
-      const info = { src, alt: String(alt || '').trim(), credit: String(credit || '').trim() };
+      const rawWord = entry.targetWord || entry.word || entry.term || '';
+      const decorative = entry.imageDecorative === true || !!(entry.picture && entry.picture.decorative === true);
+      const alt = decorative ? '' : ((entry.picture && entry.picture.alt) || entry.imageAlt || rawWord || '');
+      const rawCredit = (entry.picture && (entry.picture.credit || entry.picture.attribution))
+        || entry.imageCredit || entry.imageAttribution || entry.credit || entry.attribution || '';
+      const credit = formatCreditValue(core, rawCredit);
+      const info = { src, alt: String(alt || '').trim(), decorative, credit: String(credit || '').trim() };
       if (entry.id) byId.set(String(entry.id), info);
-      const k = core.key(entry.word);
+      if (entry.entryId) byId.set('entry:' + String(entry.entryId), info);
+      const k = core.key(rawWord);
       if (k && !byWord.has(k)) byWord.set(k, info);
     });
     return { byId, byWord };
   }
-  function printableBoxes(item) {
-    const list = Array.isArray(item && item.phonemes) && item.phonemes.length
-      ? item.phonemes
-      : (typeof (item && item.word) === 'string' ? item.word.trim().split('') : []);
-    return list.map(p => {
-      if (typeof p === 'string') return p.trim();
-      if (p && typeof p === 'object') return String(p.label || p.grapheme || p.soundKey || p.phoneme || p.sound || p.text || '').trim();
-      return '';
-    }).filter(Boolean);
+  function printableBoxesInfo(item, locale) {
+    if (Array.isArray(item && item.phonemes) && item.phonemes.length) {
+      const boxes = item.phonemes.map(p => {
+        if (typeof p === 'string') return p.trim();
+        if (p && typeof p === 'object') return String(p.label || p.grapheme || p.soundKey || p.phoneme || p.sound || p.text || '').trim();
+        return '';
+      }).filter(Boolean);
+      if (boxes.length) return { boxes, isPhonemes: true };
+    }
+    const word = typeof (item && item.word) === 'string' ? item.word.trim() : '';
+    if (!word) return { boxes: [], isPhonemes: false };
+    let parts = null;
+    try {
+      if (typeof Intl !== 'undefined' && typeof Intl.Segmenter === 'function') {
+        const seg = new Intl.Segmenter(locale || undefined, { granularity: 'grapheme' });
+        parts = Array.from(seg.segment(word), s => s.segment);
+      }
+    } catch (_) {}
+    if (!parts) parts = Array.from(word);
+    return { boxes: parts.map(ch => ch.trim()).filter(Boolean), isPhonemes: false };
+  }
+  function printableBoxes(item, locale) {
+    return printableBoxesInfo(item, locale).boxes;
   }
   function blankedSentence(example, word) {
     const ex = String(example || '').trim(), w = String(word || '').trim();
@@ -1204,15 +1312,32 @@
       const normalizedSrc = safeHtmlImg(item.picture);
       const rawHit = rawPics.byId.get(String(item.id || '')) || rawPics.byWord.get(core.key(item.word));
       const imgSrc = showPics ? (normalizedSrc || (rawHit ? rawHit.src : '')) : '';
-      const imgAlt = (item.picture && item.picture.alt) || (rawHit && rawHit.alt) || item.word;
-      const imgCredit = (item.picture && (item.picture.credit || item.picture.attribution)) || (rawHit && rawHit.credit) || '';
+      const imgDecorative = !!(item.picture && item.picture.decorative === true) || (!item.picture && !!(rawHit && rawHit.decorative === true));
+      const imgAlt = imgDecorative ? '' : ((item.picture && item.picture.alt) || (rawHit && rawHit.alt) || item.word);
+      const rawCredit = (item.picture && (item.picture.credit || item.picture.attribution)) || (rawHit && rawHit.credit) || '';
+      const imgCredit = formatCreditValue(core, rawCredit);
+      const termLangName = typeof core.wordLanguage === 'function' ? core.wordLanguage(item, pack.language) : core.fieldLanguage(item, 'term', pack.language);
+      const defLangName = core.fieldLanguage(item, 'definition', pack.language);
+      const exLangName = core.fieldLanguage(item, 'example', pack.language);
+      const termLang = printableLangInfo(core, termLangName, item.word);
+      const defLang = printableLangInfo(core, defLangName, item.definition || '');
+      const exLang = printableLangInfo(core, exLangName, item.example || item.contextSentence || '');
+      const boxInfo = printableBoxesInfo(item, termLang.tag);
       return {
         word: item.word,
-        boxes: printableBoxes(item),
+        boxes: boxInfo.boxes,
+        boxesArePhonemes: boxInfo.isPhonemes,
         definition: item.definition || '',
         example: item.example || item.contextSentence || '',
+        termLang,
+        defLang,
+        exLang,
+        termAttrs: langDirAttrs(termLang),
+        defAttrs: langDirAttrs(defLang),
+        exAttrs: langDirAttrs(exLang),
         imgSrc,
-        imgAlt,
+        imgDecorative,
+        imgAlt: String(imgAlt || '').trim(),
         imgCredit: String(imgCredit || '').trim(),
       };
     });
@@ -1233,17 +1358,21 @@
       : 'Built-in picture artwork may use Mulberry Symbols or OpenMoji under CC BY-SA 4.0.';
     return '<footer class="credits">' + text + '</footer>';
   }
+  const PRINT_BAR_CSS = '.print-bar{display:flex;align-items:center;gap:10px;margin:0 0 12px}.print-btn{font:600 14px/1.2 Arial,Helvetica,sans-serif;padding:7px 14px;border:1px solid #334155;border-radius:6px;background:#0f172a;color:#fff;cursor:pointer}.print-btn:hover{background:#1e293b}';
+  const PRINT_BAR_HTML = '<div class="noprint print-bar"><button type="button" class="print-btn" onclick="window.print()">Print</button></div>';
   function buildFlashcardsHtml(input, rawOptions = {}) {
     const data = printableCardsData(input, rawOptions, 'Word Flashcards');
     const creditsHtml = printableCreditsFooter(data.items);
     const rows = data.items.map(it => {
       const boxes = it.boxes.map(b => '<span class="elkonin-box">' + escHtml(b) + '</span>').join('');
-      const picHtml = it.imgSrc ? '<img class="card-pic" src="' + escHtml(it.imgSrc) + '" alt="' + escHtml(it.imgAlt || it.word) + '">' : '';
-      const defHtml = it.definition ? '<p class="def"><strong>Meaning:</strong> ' + escHtml(it.definition) + '</p>' : '';
+      const picHtml = it.imgSrc
+        ? '<img class="card-pic" src="' + escHtml(it.imgSrc) + '" alt="' + (it.imgDecorative ? '' : escHtml(it.imgAlt || it.word)) + '"' + (it.imgDecorative ? ' aria-hidden="true"' : '') + '>'
+        : '';
+      const defHtml = it.definition ? '<p class="def"><strong>Meaning:</strong> ' + wrapLangSpan(escHtml(it.definition), it.defAttrs) + '</p>' : '';
       const blanked = blankedSentence(it.example, it.word);
-      const exHtml = blanked ? '<p class="ex"><strong>Sentence:</strong> ' + escHtml(blanked) + '</p>' : '';
+      const exHtml = blanked ? '<p class="ex"><strong>Sentence:</strong> ' + wrapLangSpan(escHtml(blanked), it.exAttrs) + '</p>' : '';
       return '<article class="fc-row">'
-        + '<div class="fc-side fc-front"><div class="side-tag">Front</div><div class="word">' + escHtml(it.word) + '</div><div class="elkonin">' + boxes + '</div></div>'
+        + '<div class="fc-side fc-front"><div class="side-tag">Front</div><div class="word"' + it.termAttrs + '>' + escHtml(it.word) + '</div><div class="elkonin"' + it.termAttrs + '>' + boxes + '</div></div>'
         + '<div class="fc-side fc-back"><div class="side-tag">Back</div>' + picHtml + '<div class="back-text">' + defHtml + exHtml + '</div></div>'
         + '</article>';
     }).join('\n');
@@ -1256,10 +1385,11 @@
       '<title>' + escHtml(data.title) + ' — 2-Sided Flashcards</title>',
       '<style>',
       'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:20px;max-width:980px}',
+      'h1,h2,h3{break-after:avoid;page-break-after:avoid}',
       'h1{font-size:20px;margin:0 0 6px}',
       '.directions{font-size:13px;color:#334155;margin:0 0 14px}',
-      '.fc-row{display:grid;grid-template-columns:1fr 1fr;gap:0;border:2px solid #0f172a;margin-bottom:14px;page-break-inside:avoid;break-inside:avoid}',
-      '.fc-side{padding:14px;min-height:140px;box-sizing:border-box}',
+      '.fc-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0;border:2px solid #0f172a;margin-bottom:14px;page-break-inside:avoid;break-inside:avoid}',
+      '.fc-side{padding:14px;min-height:140px;box-sizing:border-box;min-width:0;overflow-wrap:anywhere}',
       '.fc-front{border-right:2px dashed #475569;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}',
       '.fc-back{display:flex;gap:12px;align-items:center}',
       '.side-tag{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin-bottom:6px}',
@@ -1267,12 +1397,15 @@
       '.elkonin{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}',
       '.elkonin-box{border:2px solid #334155;min-width:28px;height:30px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;border-radius:4px}',
       '.card-pic{width:76px;height:76px;object-fit:contain;border:1px solid #cbd5e1;border-radius:6px;background:#fff;flex-shrink:0}',
+      '.back-text{min-width:0;flex:1}',
       '.back-text p{margin:0 0 6px;font-size:14px;line-height:1.4}',
       '.credits{margin-top:16px;padding-top:8px;border-top:1px solid #cbd5e1;font-size:11px;color:#475569;line-height:1.4}',
-      '@media print{body{margin:10mm} .noprint{display:none}}',
+      PRINT_BAR_CSS,
+      '@media print{@page{margin:12mm} body{margin:0;max-width:none} .noprint{display:none}}',
       '</style>',
       '</head>',
       '<body>',
+      PRINT_BAR_HTML,
       '<h1>' + escHtml(data.title) + ' — Cut-and-Fold Flashcards</h1>',
       '<p class="directions">Cut across each card row, fold along the dashed line, and tape or glue the front and back together.</p>',
       rows,
@@ -1287,14 +1420,14 @@
     const cards = data.items.map(it => {
       const boxes = it.boxes.map(b => '<span class="elkonin-box">' + escHtml(b) + '</span>').join('');
       const picBlock = it.imgSrc
-        ? '<img class="card-pic" src="' + escHtml(it.imgSrc) + '" alt="' + escHtml(it.imgAlt || it.word) + '">'
+        ? '<img class="card-pic" src="' + escHtml(it.imgSrc) + '" alt="' + (it.imgDecorative ? '' : escHtml(it.imgAlt || it.word)) + '"' + (it.imgDecorative ? ' aria-hidden="true"' : '') + '>'
         : '<div class="sketch-space">Draw a quick sketch here</div>';
       return '<section class="frayer-card">'
-        + '<header class="frayer-head"><h2 class="frayer-word">' + escHtml(it.word) + '</h2><div class="elkonin">' + boxes + '</div></header>'
+        + '<header class="frayer-head"><h2 class="frayer-word"' + it.termAttrs + '>' + escHtml(it.word) + '</h2><div class="elkonin"' + it.termAttrs + '>' + boxes + '</div></header>'
         + '<div class="frayer-grid">'
-        + '<div class="frayer-box"><h3>Meaning</h3><p>' + escHtml(it.definition || 'Write a meaning in your own words.') + '</p></div>'
+        + '<div class="frayer-box"><h3>Meaning</h3><p' + (it.definition ? it.defAttrs : '') + '>' + escHtml(it.definition || 'Write a meaning in your own words.') + '</p></div>'
         + '<div class="frayer-box"><h3>Picture or sketch</h3>' + picBlock + '</div>'
-        + '<div class="frayer-box"><h3>Example sentence</h3><p>' + escHtml(it.example || '') + '</p></div>'
+        + '<div class="frayer-box"><h3>Example sentence</h3><p' + (it.example ? it.exAttrs : '') + '>' + escHtml(it.example || '') + '</p></div>'
         + '<div class="frayer-box"><h3>Write your own sentence</h3><div class="write-lines"><div></div><div></div></div></div>'
         + '</div></section>';
     }).join('\n');
@@ -1307,24 +1440,27 @@
       '<title>' + escHtml(data.title) + ' — Frayer Study Sheets</title>',
       '<style>',
       'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:20px;max-width:960px}',
+      'h1,h2,h3{break-after:avoid;page-break-after:avoid}',
       'h1{font-size:20px;margin:0 0 12px}',
       '.frayer-card{border:2px solid #0f172a;border-radius:8px;padding:12px;margin-bottom:18px;page-break-inside:avoid;break-inside:avoid}',
       '.frayer-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;border-bottom:2px solid #0f172a;padding-bottom:8px;margin-bottom:10px}',
-      '.frayer-word{margin:0;font-size:24px;font-weight:800}',
+      '.frayer-word{margin:0;font-size:24px;font-weight:800;overflow-wrap:anywhere}',
       '.elkonin{display:flex;flex-wrap:wrap;gap:6px}',
       '.elkonin-box{border:2px solid #334155;min-width:26px;height:28px;padding:0 5px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;border-radius:4px}',
-      '.frayer-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}',
-      '.frayer-box{border:1px solid #475569;border-radius:6px;padding:10px;min-height:96px}',
+      '.frayer-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}',
+      '.frayer-box{border:1px solid #475569;border-radius:6px;padding:10px;min-height:96px;min-width:0;overflow-wrap:anywhere}',
       '.frayer-box h3{margin:0 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:#334155}',
       '.frayer-box p{margin:0;font-size:14px;line-height:1.4}',
       '.card-pic{max-width:86px;max-height:86px;object-fit:contain;display:block}',
       '.sketch-space{height:64px;border:1px dashed #94a3b8;border-radius:4px;display:grid;place-items:center;font-size:12px;color:#64748b}',
       '.write-lines div{border-bottom:1px solid #94a3b8;height:26px}',
       '.credits{margin-top:16px;padding-top:8px;border-top:1px solid #cbd5e1;font-size:11px;color:#475569;line-height:1.4}',
-      '@media print{body{margin:10mm} .frayer-card{page-break-inside:avoid;break-inside:avoid}}',
+      PRINT_BAR_CSS,
+      '@media print{@page{margin:12mm} body{margin:0;max-width:none} .noprint{display:none} .frayer-card{page-break-inside:avoid;break-inside:avoid}}',
       '</style>',
       '</head>',
       '<body>',
+      PRINT_BAR_HTML,
       '<h1>' + escHtml(data.title) + ' — Frayer Study Sheets</h1>',
       cards,
       creditsHtml,
@@ -1358,8 +1494,8 @@
       const boxes = it.boxes.map(b => '<span class="elkonin-box">' + escHtml(b) + '</span>').join('');
       return '<article class="sort-tile sort-word">'
         + '<div class="tile-tag">Word</div>'
-        + '<div class="sort-word-text">' + escHtml(it.word) + '</div>'
-        + '<div class="elkonin">' + boxes + '</div>'
+        + '<div class="sort-word-text"' + it.termAttrs + '>' + escHtml(it.word) + '</div>'
+        + '<div class="elkonin"' + it.termAttrs + '>' + boxes + '</div>'
         + '</article>';
     }).join('\n');
     const meaningOrder = sortingOrder(items.length, 37);
@@ -1367,10 +1503,13 @@
       const it = items[idx];
       const defBlank = blankedSentence(it.definition, it.word);
       const exBlank = blankedSentence(it.example, it.word);
+      const countUnit = it.boxesArePhonemes
+        ? (it.boxes.length === 1 ? 'sound' : 'sounds')
+        : (it.boxes.length === 1 ? 'letter' : 'letters');
       const defHtml = defBlank
-        ? '<p class="sort-def"><strong>Meaning:</strong> ' + escHtml(defBlank) + '</p>'
-        : '<p class="sort-def"><strong>Word clue:</strong> ' + escHtml(it.boxes.length + ' sounds') + '</p>';
-      const exHtml = exBlank ? '<p class="sort-ex"><strong>Sentence:</strong> ' + escHtml(exBlank) + '</p>' : '';
+        ? '<p class="sort-def"><strong>Meaning:</strong> ' + wrapLangSpan(escHtml(defBlank), it.defAttrs) + '</p>'
+        : '<p class="sort-def"><strong>Word clue:</strong> ' + escHtml(it.boxes.length + ' ' + countUnit) + '</p>';
+      const exHtml = exBlank ? '<p class="sort-ex"><strong>Sentence:</strong> ' + wrapLangSpan(escHtml(exBlank), it.exAttrs) + '</p>' : '';
       return '<article class="sort-tile sort-meaning">'
         + '<div class="tile-tag">Meaning</div>'
         + defHtml
@@ -1383,7 +1522,7 @@
       if (!it.imgSrc) return;
       picEntries.push('<article class="sort-tile sort-picture">'
         + '<div class="tile-tag">Picture</div>'
-        + '<img class="sort-pic" src="' + escHtml(it.imgSrc) + '" alt="Sorting picture card">'
+        + '<img class="sort-pic" src="' + escHtml(it.imgSrc) + '" alt="' + (it.imgDecorative ? '' : 'Sorting picture card') + '"' + (it.imgDecorative ? ' aria-hidden="true"' : '') + '>'
         + '</article>');
     });
     const pictureSection = picEntries.length
@@ -1395,8 +1534,8 @@
         : 'None attached';
       return '<tr>'
         + '<td>' + (idx + 1) + '</td>'
-        + '<td><strong>' + escHtml(it.word) + '</strong></td>'
-        + '<td>' + escHtml(it.definition || '') + (it.example ? '<br><em>' + escHtml(it.example) + '</em>' : '') + '</td>'
+        + '<td><strong' + it.termAttrs + '>' + escHtml(it.word) + '</strong></td>'
+        + '<td>' + wrapLangSpan(escHtml(it.definition || ''), it.defAttrs) + (it.example ? '<br><em' + it.exAttrs + '>' + escHtml(it.example) + '</em>' : '') + '</td>'
         + '<td>' + picInfo + '</td>'
         + '</tr>';
     }).join('\n');
@@ -1409,11 +1548,12 @@
       '<title>' + escHtml(data.title) + ' — Cut-Out Sorting Cards</title>',
       '<style>',
       'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:20px;max-width:980px}',
+      'h1,h2,h3{break-after:avoid;page-break-after:avoid}',
       'h1{font-size:20px;margin:0 0 6px}',
       'h2{font-size:15px;margin:14px 0 8px;color:#1e293b}',
       '.directions{font-size:13px;color:#334155;margin:0 0 12px}',
       '.sort-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}',
-      '.sort-tile{border:2px dashed #334155;border-radius:8px;padding:12px;min-height:92px;box-sizing:border-box;background:#fff;page-break-inside:avoid;break-inside:avoid}',
+      '.sort-tile{border:2px dashed #334155;border-radius:8px;padding:12px;min-height:92px;box-sizing:border-box;background:#fff;page-break-inside:avoid;break-inside:avoid;overflow-wrap:anywhere}',
       '.tile-tag{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin-bottom:6px}',
       '.sort-word{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}',
       '.sort-word-text{font-size:24px;font-weight:800;margin-bottom:8px}',
@@ -1424,13 +1564,16 @@
       '.sort-pic{width:92px;height:92px;object-fit:contain;display:block}',
       '.teacher-key{margin-top:24px;padding-top:14px;border-top:2px solid #0f172a;page-break-before:always;break-before:page}',
       '.key-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}',
+      '.key-table tr{page-break-inside:avoid;break-inside:avoid}',
       '.key-table th,.key-table td{border:1px solid #cbd5e1;padding:6px 8px;text-align:left;vertical-align:top}',
       '.key-table th{background:#f1f5f9}',
       '.attr-note{font-size:12px;color:#475569;margin-top:10px}',
-      '@media print{body{margin:10mm} .noprint{display:none} .sort-tile{page-break-inside:avoid;break-inside:avoid} .teacher-key{page-break-before:always;break-before:page}}',
+      PRINT_BAR_CSS,
+      '@media print{@page{margin:12mm} body{margin:0;max-width:none} .noprint{display:none} .sort-tile{page-break-inside:avoid;break-inside:avoid} .teacher-key{page-break-before:always;break-before:page}}',
       '</style>',
       '</head>',
       '<body>',
+      PRINT_BAR_HTML,
       '<h1>' + escHtml(data.title) + ' — Cut-Out Sorting Cards</h1>',
       '<p class="directions">Cut along the dashed lines and mix the piles. Match each word card with its meaning card' + (picEntries.length ? ' and picture card' : '') + '.</p>',
       '<section class="sort-group"><h2>Word cards</h2><div class="sort-grid">' + wordTiles + '</div></section>',
@@ -1454,19 +1597,19 @@
     const bankChips = bankOrder.map(idx => {
       const it = items[idx];
       const boxes = it.boxes.map(b => '<span class="elkonin-box">' + escHtml(b) + '</span>').join('');
-      return '<span class="bank-chip"><span class="bank-word">' + escHtml(it.word) + '</span>' + (boxes ? '<span class="elkonin">' + boxes + '</span>' : '') + '</span>';
+      return '<span class="bank-chip"><span class="bank-word"' + it.termAttrs + '>' + escHtml(it.word) + '</span>' + (boxes ? '<span class="elkonin"' + it.termAttrs + '>' + boxes + '</span>' : '') + '</span>';
     }).join('\n');
     const matchOrder = sortingOrder(items.length, 79);
     const matchRows = matchOrder.map((idx, pos) => {
       const it = items[idx];
       const defBlank = blankedSentence(it.definition, it.word);
       const picHtml = it.imgSrc
-        ? '<img class="ws-pic" src="' + escHtml(it.imgSrc) + '" alt="Worksheet clue picture">'
+        ? '<img class="ws-pic" src="' + escHtml(it.imgSrc) + '" alt="' + (it.imgDecorative ? '' : 'Worksheet clue picture') + '"' + (it.imgDecorative ? ' aria-hidden="true"' : '') + '>'
         : '';
       return '<li class="ws-match-item">'
         + '<span class="ws-num">' + (pos + 1) + '.</span>'
         + '<span class="ws-blank">______________</span>'
-        + '<span class="ws-def">' + escHtml(defBlank || ('Matches sound pattern: ' + it.boxes.join(' / '))) + '</span>'
+        + '<span class="ws-def"' + (defBlank ? it.defAttrs : '') + '>' + escHtml(defBlank || ('Matches sound pattern: ' + it.boxes.join(' / '))) + '</span>'
         + picHtml
         + '</li>';
     }).join('\n');
@@ -1477,15 +1620,15 @@
       const lineText = exBlank
         ? escHtml(exBlank)
         : 'Write a sentence using one word from the Word Bank: ______________________________';
-      return '<li class="ws-cloze-item"><span class="ws-num">' + (pos + 1) + '.</span><span>' + lineText + '</span></li>';
+      return '<li class="ws-cloze-item"><span class="ws-num">' + (pos + 1) + '.</span><span' + (exBlank ? it.exAttrs : '') + '>' + lineText + '</span></li>';
     }).join('\n');
     const matchKeyRows = matchOrder.map((idx, pos) => {
       const it = items[idx];
-      return '<tr><td>' + (pos + 1) + '</td><td><strong>' + escHtml(it.word) + '</strong></td><td>' + escHtml(it.definition || '') + '</td><td>' + (it.imgSrc ? (it.imgCredit ? escHtml(it.imgCredit) : 'Included') : 'None') + '</td></tr>';
+      return '<tr><td>' + (pos + 1) + '</td><td><strong' + it.termAttrs + '>' + escHtml(it.word) + '</strong></td><td>' + wrapLangSpan(escHtml(it.definition || ''), it.defAttrs) + '</td><td>' + (it.imgSrc ? (it.imgCredit ? escHtml(it.imgCredit) : 'Included') : 'None') + '</td></tr>';
     }).join('\n');
-    const clozeKeyRows = clozeOrder.map((idx, pos) => {
+    const clozeKeyRows = clozeOrder.map(idx => {
       const it = items[idx];
-      return '<li><strong>' + (pos + 1) + '. ' + escHtml(it.word) + '</strong>' + (it.example ? ' — ' + escHtml(it.example) : ' — (Student sentence)') + '</li>';
+      return '<li><strong' + it.termAttrs + '>' + escHtml(it.word) + '</strong>' + (it.example ? ' — ' + wrapLangSpan(escHtml(it.example), it.exAttrs) : ' — (Student sentence)') + '</li>';
     }).join('\n');
     return [
       '<!doctype html>',
@@ -1496,6 +1639,7 @@
       '<title>' + escHtml(data.title) + ' — Cloze and Matching Worksheet</title>',
       '<style>',
       'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:20px;max-width:960px}',
+      'h1,h2,h3{break-after:avoid;page-break-after:avoid}',
       'h1{font-size:20px;margin:0 0 8px}',
       'h2{font-size:15px;margin:16px 0 8px;color:#1e293b}',
       '.ws-meta{display:flex;flex-wrap:wrap;gap:20px;font-size:14px;border-bottom:2px solid #0f172a;padding-bottom:8px;margin-bottom:12px}',
@@ -1513,14 +1657,17 @@
       '.ws-pic{width:54px;height:54px;object-fit:contain;border:1px solid #cbd5e1;border-radius:4px;background:#fff;flex-shrink:0}',
       '.teacher-key{margin-top:24px;padding-top:14px;border-top:2px solid #0f172a;page-break-before:always;break-before:page}',
       '.key-table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0 12px}',
+      '.key-table tr{page-break-inside:avoid;break-inside:avoid}',
       '.key-table th,.key-table td{border:1px solid #cbd5e1;padding:6px 8px;text-align:left;vertical-align:top}',
       '.key-table th{background:#f1f5f9}',
       '.key-cloze{margin:6px 0 0 18px;font-size:13px;line-height:1.5}',
       '.attr-note{font-size:12px;color:#475569;margin-top:10px}',
-      '@media print{body{margin:10mm} .noprint{display:none} .ws-match-item,.ws-cloze-item{page-break-inside:avoid;break-inside:avoid} .teacher-key{page-break-before:always;break-before:page}}',
+      PRINT_BAR_CSS,
+      '@media print{@page{margin:12mm} body{margin:0;max-width:none} .noprint{display:none} .ws-match-item,.ws-cloze-item{page-break-inside:avoid;break-inside:avoid} .teacher-key{page-break-before:always;break-before:page}}',
       '</style>',
       '</head>',
       '<body>',
+      PRINT_BAR_HTML,
       '<h1>' + escHtml(data.title) + ' — Cloze and Matching Worksheet</h1>',
       '<div class="ws-meta"><span>Name: ______________________________</span><span>Date: ________________</span></div>',
       '<section class="ws-word-bank"><h2>Word Bank</h2><div class="bank-list">' + bankChips + '</div></section>',
@@ -1571,9 +1718,9 @@
             continue;
           }
           const picHtml = it.imgSrc
-            ? '<img class="bingo-pic" src="' + escHtml(it.imgSrc) + '" alt="Bingo picture cue">'
+            ? '<img class="bingo-pic" src="' + escHtml(it.imgSrc) + '" alt="' + (it.imgDecorative ? '' : 'Bingo picture cue') + '"' + (it.imgDecorative ? ' aria-hidden="true"' : '') + '>'
             : '';
-          cells.push('<td class="bingo-cell"><div class="bingo-word">' + escHtml(it.word) + '</div>' + picHtml + '</td>');
+          cells.push('<td class="bingo-cell"><div class="bingo-word"' + it.termAttrs + '>' + escHtml(it.word) + '</div>' + picHtml + '</td>');
         }
         rows.push('<tr>' + cells.join('') + '</tr>');
       }
@@ -1590,13 +1737,13 @@
       const defBlank = blankedSentence(it.definition, it.word);
       const exBlank = blankedSentence(it.example, it.word);
       const parts = [];
-      if (defBlank) parts.push(escHtml(defBlank));
-      if (exBlank) parts.push('<em>' + escHtml(exBlank) + '</em>');
+      if (defBlank) parts.push(wrapLangSpan(escHtml(defBlank), it.defAttrs));
+      if (exBlank) parts.push('<em' + it.exAttrs + '>' + escHtml(exBlank) + '</em>');
       if (!parts.length) parts.push('Sound pattern: ' + escHtml(it.boxes.join(' / ')));
       const picInfo = it.imgSrc
         ? ('Yes' + (it.imgCredit ? ' (' + escHtml(it.imgCredit) + ')' : ''))
         : 'None';
-      return '<tr><td>' + (pos + 1) + '</td><td><strong>' + escHtml(it.word) + '</strong></td><td>' + parts.join('<br>') + '</td><td>' + picInfo + '</td></tr>';
+      return '<tr><td>' + (pos + 1) + '</td><td><strong' + it.termAttrs + '>' + escHtml(it.word) + '</strong></td><td>' + parts.join('<br>') + '</td><td>' + picInfo + '</td></tr>';
     }).join('\n');
     return [
       '<!doctype html>',
@@ -1607,10 +1754,11 @@
       '<title>' + escHtml(data.title) + ' — Classroom Bingo Boards</title>',
       '<style>',
       'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:20px;max-width:1020px}',
+      'h1,h2,h3{break-after:avoid;page-break-after:avoid}',
       'h1{font-size:20px;margin:0 0 6px}',
       'h2{font-size:15px;margin:0 0 8px;color:#1e293b}',
       '.directions{font-size:13px;color:#334155;margin:0 0 14px}',
-      '.bingo-boards{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:14px}',
+      '.bingo-boards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}',
       '.bingo-board{border:2px solid #0f172a;border-radius:8px;padding:10px;background:#fff;page-break-inside:avoid;break-inside:avoid}',
       '.bingo-grid{width:100%;border-collapse:collapse;table-layout:fixed}',
       '.bingo-cell{border:2px solid #334155;height:86px;padding:6px;text-align:center;vertical-align:middle}',
@@ -1620,13 +1768,16 @@
       '.bingo-pic{width:38px;height:38px;object-fit:contain;display:block;margin:4px auto 0}',
       '.teacher-key{margin-top:24px;padding-top:14px;border-top:2px solid #0f172a;page-break-before:always;break-before:page}',
       '.key-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}',
+      '.key-table tr{page-break-inside:avoid;break-inside:avoid}',
       '.key-table th,.key-table td{border:1px solid #cbd5e1;padding:6px 8px;text-align:left;vertical-align:top}',
       '.key-table th{background:#f1f5f9}',
       '.attr-note{font-size:12px;color:#475569;margin-top:10px}',
-      '@media print{body{margin:10mm} .noprint{display:none} .bingo-board{page-break-inside:avoid;break-inside:avoid} .teacher-key{page-break-before:always;break-before:page}}',
+      PRINT_BAR_CSS,
+      '@media print{@page{margin:12mm} body{margin:0;max-width:none} .noprint{display:none} .bingo-boards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px} .bingo-board{page-break-inside:avoid;break-inside:avoid} .teacher-key{page-break-before:always;break-before:page}}',
       '</style>',
       '</head>',
       '<body>',
+      PRINT_BAR_HTML,
       '<h1>' + escHtml(data.title) + ' — Classroom Bingo Boards</h1>',
       '<p class="directions">Print one board per student or pair. Call the meaning or fill-in-the-blank clue from the Teacher Caller Sheet on the last page.</p>',
       '<div class="bingo-boards">' + boardsHtml.join('\n') + '</div>',
@@ -1650,20 +1801,21 @@
           const next = chain[(i + 1) % chain.length];
           const boxes = cur.boxes.map(b => '<span class="elkonin-box">' + escHtml(b) + '</span>').join('');
           const picHtml = cur.imgSrc
-            ? '<img class="loop-pic" src="' + escHtml(cur.imgSrc) + '" alt="I have picture cue">'
+            ? '<img class="loop-pic" src="' + escHtml(cur.imgSrc) + '" alt="' + (cur.imgDecorative ? '' : 'I have picture cue') + '"' + (cur.imgDecorative ? ' aria-hidden="true"' : '') + '>'
             : '';
           const nextDef = blankedSentence(next.definition, next.word);
           const nextEx = blankedSentence(next.example, next.word);
           const whoClue = nextDef || nextEx || ('the word with sound boxes: ' + next.boxes.join(' / '));
+          const whoAttrs = nextDef ? next.defAttrs : nextEx ? next.exAttrs : '';
           const roleTag = i === 0
             ? 'Card 1 — Start Card'
             : (i === chain.length - 1 ? ('Card ' + (i + 1) + ' — Loops to Card 1') : ('Card ' + (i + 1)));
           return '<article class="loop-card" data-step="' + (i + 1) + '">'
             + '<div class="loop-tag">' + escHtml(roleTag) + '</div>'
-            + '<div class="loop-have"><div class="loop-label">I have</div><div class="loop-word">' + escHtml(cur.word) + '</div>'
-            + (boxes ? '<div class="elkonin">' + boxes + '</div>' : '')
+            + '<div class="loop-have"><div class="loop-label">I have</div><div class="loop-word"' + cur.termAttrs + '>' + escHtml(cur.word) + '</div>'
+            + (boxes ? '<div class="elkonin"' + cur.termAttrs + '>' + boxes + '</div>' : '')
             + picHtml + '</div>'
-            + '<div class="loop-who"><div class="loop-label">Who has...</div><p class="loop-clue">' + escHtml(whoClue) + '</p></div>'
+            + '<div class="loop-who"><div class="loop-label">Who has...</div><p class="loop-clue"' + whoAttrs + '>' + escHtml(whoClue) + '</p></div>'
             + '</article>';
         }).join('\n')
       : '<article class="loop-card"><div class="loop-have"><div class="loop-label">Add words</div><p class="loop-clue">Add at least two words before printing loop cards.</p></div></article>';
@@ -1672,11 +1824,19 @@
       const nextDef = blankedSentence(next.definition, next.word);
       const nextEx = blankedSentence(next.example, next.word);
       const whoClue = nextDef || nextEx || ('Sound boxes: ' + next.boxes.join(' / '));
+      const whoAttrs = nextDef ? next.defAttrs : nextEx ? next.exAttrs : '';
       const picInfo = cur.imgSrc
         ? ('Yes' + (cur.imgCredit ? ' (' + escHtml(cur.imgCredit) + ')' : ''))
         : 'None';
-      return '<tr><td>' + (i + 1) + '</td><td><strong>' + escHtml(cur.word) + '</strong></td><td>' + escHtml(whoClue) + '</td><td><strong>' + escHtml(next.word) + '</strong></td><td>' + picInfo + '</td></tr>';
+      return '<tr><td>' + (i + 1) + '</td><td><strong' + cur.termAttrs + '>' + escHtml(cur.word) + '</strong></td><td>' + wrapLangSpan(escHtml(whoClue), whoAttrs) + '</td><td><strong' + next.termAttrs + '>' + escHtml(next.word) + '</strong></td><td>' + picInfo + '</td></tr>';
     }).join('\n') : '';
+    const keySection = keyRows ? [
+      '<section class="teacher-key">',
+      '<h2>Teacher Chain Sequence &amp; Attribution Key</h2>',
+      '<table class="key-table"><thead><tr><th>Step #</th><th>Student Says "I have..."</th><th>Student Reads "Who has..." Clue</th><th>Next Card Answer</th><th>Picture</th></tr></thead><tbody>' + keyRows + '</tbody></table>',
+      '<p class="attr-note">Built-in picture artwork may use Mulberry Symbols or OpenMoji under CC BY-SA 4.0 unless a custom credit is shown above.</p>',
+      '</section>',
+    ].join('\n') : '';
     return [
       '<!doctype html>',
       '<html lang="en">',
@@ -1686,11 +1846,12 @@
       '<title>' + escHtml(data.title) + ' — I Have, Who Has Cards</title>',
       '<style>',
       'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:20px;max-width:980px}',
+      'h1,h2,h3{break-after:avoid;page-break-after:avoid}',
       'h1{font-size:20px;margin:0 0 6px}',
       'h2{font-size:15px;margin:0 0 8px;color:#1e293b}',
       '.directions{font-size:13px;color:#334155;margin:0 0 14px}',
       '.loop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}',
-      '.loop-card{border:2px dashed #334155;border-radius:10px;padding:12px;background:#fff;display:flex;flex-direction:column;justify-content:space-between;min-height:190px;page-break-inside:avoid;break-inside:avoid}',
+      '.loop-card{border:2px dashed #334155;border-radius:10px;padding:12px;background:#fff;display:flex;flex-direction:column;justify-content:space-between;min-height:190px;page-break-inside:avoid;break-inside:avoid;overflow-wrap:anywhere}',
       '.loop-tag{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#475569;margin-bottom:6px}',
       '.loop-have{border-bottom:2px solid #cbd5e1;padding-bottom:10px;margin-bottom:10px;text-align:center}',
       '.loop-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#334155;margin-bottom:4px}',
@@ -1702,21 +1863,20 @@
       '.loop-clue{margin:0;font-size:13px;line-height:1.4}',
       '.teacher-key{margin-top:24px;padding-top:14px;border-top:2px solid #0f172a;page-break-before:always;break-before:page}',
       '.key-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}',
+      '.key-table tr{page-break-inside:avoid;break-inside:avoid}',
       '.key-table th,.key-table td{border:1px solid #cbd5e1;padding:6px 8px;text-align:left;vertical-align:top}',
       '.key-table th{background:#f1f5f9}',
       '.attr-note{font-size:12px;color:#475569;margin-top:10px}',
-      '@media print{body{margin:10mm} .noprint{display:none} .loop-card{page-break-inside:avoid;break-inside:avoid} .teacher-key{page-break-before:always;break-before:page}}',
+      PRINT_BAR_CSS,
+      '@media print{@page{margin:12mm} body{margin:0;max-width:none} .noprint{display:none} .loop-card{page-break-inside:avoid;break-inside:avoid} .teacher-key{page-break-before:always;break-before:page}}',
       '</style>',
       '</head>',
       '<body>',
+      PRINT_BAR_HTML,
       '<h1>' + escHtml(data.title) + ' — I Have, Who Has Cards</h1>',
       '<p class="directions">Cut along the dashed borders and deal one or more cards to each student. Card 1 reads "Who has..." to start the closed chain back to Card 1.</p>',
       '<div class="loop-grid">' + cardsHtml + '</div>',
-      '<section class="teacher-key">',
-      '<h2>Teacher Chain Sequence &amp; Attribution Key</h2>',
-      '<table class="key-table"><thead><tr><th>Step #</th><th>Student Says "I have..."</th><th>Student Reads "Who has..." Clue</th><th>Next Card Answer</th><th>Picture</th></tr></thead><tbody>' + keyRows + '</tbody></table>',
-      '<p class="attr-note">Built-in picture artwork may use Mulberry Symbols or OpenMoji under CC BY-SA 4.0 unless a custom credit is shown above.</p>',
-      '</section>',
+      keySection,
       '</body>',
       '</html>',
     ].join('\n');
@@ -1724,31 +1884,30 @@
   function buildWordWallHtml(input, rawOptions = {}) {
     const data = printableCardsData(input, rawOptions, 'Classroom Word Wall Cards');
     const items = data.items || [];
-    const rawPics = rawPictureLookup(input);
     const cleanBang = s => escHtml(String(s == null ? '' : s).replace(/!/g, '.'));
     const rawDecoMap = new Map();
     const rawList = Array.isArray(input && input.items) ? input.items : (Array.isArray(input && input.words) ? input.words : []);
     rawList.forEach(entry => {
       if (!entry || typeof entry !== 'object') return;
-      const wKey = getCore().key(entry.word);
+      const wKey = getCore().key(entry.targetWord || entry.word || entry.term || '');
       const deco = !!(entry.imageDecorative || (entry.picture && entry.picture.decorative));
       if (wKey && deco) rawDecoMap.set(wKey, true);
     });
     const wallCardsHtml = items.length
       ? items.map((it, idx) => {
           const boxes = it.boxes.map(b => '<span class="elkonin-box">' + cleanBang(b) + '</span>').join('');
-          const isDeco = rawDecoMap.has(getCore().key(it.word));
+          const isDeco = it.imgDecorative || rawDecoMap.has(getCore().key(it.word));
           const picAlt = isDeco ? '' : cleanBang(it.imgAlt || it.word);
           const picHtml = it.imgSrc
-            ? '<img class="wall-pic" src="' + escHtml(it.imgSrc) + '" alt="' + picAlt + '">'
+            ? '<img class="wall-pic" src="' + escHtml(it.imgSrc) + '" alt="' + picAlt + '"' + (isDeco ? ' aria-hidden="true"' : '') + '>'
             : '';
           const defText = it.definition || 'Meaning to discuss in class.';
-          const exHtml = it.example ? '<p class="wall-ex"><em>' + cleanBang(it.example) + '</em></p>' : '';
+          const exHtml = it.example ? '<p class="wall-ex"><em' + it.exAttrs + '>' + cleanBang(it.example) + '</em></p>' : '';
           return '<article class="wall-card" data-card="' + (idx + 1) + '">'
-            + '<div class="wall-top"><div class="wall-word">' + cleanBang(it.word) + '</div>'
-            + (boxes ? '<div class="elkonin">' + boxes + '</div>' : '') + '</div>'
+            + '<div class="wall-top"><div class="wall-word"' + it.termAttrs + '>' + cleanBang(it.word) + '</div>'
+            + (boxes ? '<div class="elkonin"' + it.termAttrs + '>' + boxes + '</div>' : '') + '</div>'
             + '<div class="wall-body">' + picHtml
-            + '<div class="wall-text"><p class="wall-def">' + cleanBang(defText) + '</p>' + exHtml + '</div></div>'
+            + '<div class="wall-text"><p class="wall-def"' + (it.definition ? it.defAttrs : '') + '>' + cleanBang(defText) + '</p>' + exHtml + '</div></div>'
             + '</article>';
         }).join('\n')
       : '<article class="wall-card"><div class="wall-top"><div class="wall-word">Add words</div></div><div class="wall-body"><div class="wall-text"><p class="wall-def">Add words before printing classroom Word Wall cards.</p></div></div></article>';
@@ -1756,7 +1915,7 @@
       const picInfo = it.imgSrc
         ? ('Yes' + (it.imgCredit ? ' (' + cleanBang(it.imgCredit) + ')' : ''))
         : 'None';
-      return '<tr><td>' + (idx + 1) + '</td><td><strong>' + cleanBang(it.word) + '</strong></td><td>' + cleanBang(it.boxes.join(' / ')) + '</td><td>' + cleanBang(it.definition || '') + '</td><td>' + picInfo + '</td></tr>';
+      return '<tr><td>' + (idx + 1) + '</td><td><strong' + it.termAttrs + '>' + cleanBang(it.word) + '</strong></td><td>' + wrapLangSpan(cleanBang(it.boxes.join(' / ')), it.termAttrs) + '</td><td>' + wrapLangSpan(cleanBang(it.definition || ''), it.defAttrs) + '</td><td>' + picInfo + '</td></tr>';
     }).join('\n');
     const titleSafe = cleanBang(data.title);
     return [
@@ -1768,11 +1927,12 @@
       '<title>' + titleSafe + ' — Classroom Word Wall Cards</title>',
       '<style>',
       'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:20px;max-width:980px}',
+      'h1,h2,h3{break-after:avoid;page-break-after:avoid}',
       'h1{font-size:20px;margin:0 0 6px}',
       'h2{font-size:15px;margin:0 0 8px;color:#1e293b}',
       '.directions{font-size:13px;color:#334155;margin:0 0 14px}',
       '.wall-list{display:grid;grid-template-columns:1fr;gap:14px}',
-      '.wall-card{border:2px solid #0f172a;border-radius:10px;padding:14px 16px;background:#fff;page-break-inside:avoid;break-inside:avoid}',
+      '.wall-card{border:2px solid #0f172a;border-radius:10px;padding:14px 16px;background:#fff;page-break-inside:avoid;break-inside:avoid;overflow-wrap:anywhere}',
       '.wall-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;border-bottom:2px solid #cbd5e1;padding-bottom:10px;margin-bottom:10px}',
       '.wall-word{font-size:40px;font-weight:900;letter-spacing:.01em;line-height:1.1}',
       '.elkonin{display:flex;flex-wrap:wrap;gap:5px;align-items:center}',
@@ -1784,13 +1944,16 @@
       '.wall-ex{margin:0;font-size:13px;color:#334155;line-height:1.4}',
       '.teacher-key{margin-top:24px;padding-top:14px;border-top:2px solid #0f172a;page-break-before:always;break-before:page}',
       '.key-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}',
+      '.key-table tr{page-break-inside:avoid;break-inside:avoid}',
       '.key-table th,.key-table td{border:1px solid #cbd5e1;padding:6px 8px;text-align:left;vertical-align:top}',
       '.key-table th{background:#f1f5f9}',
       '.attr-note{font-size:12px;color:#475569;margin-top:10px}',
-      '@media print{body{margin:10mm} .noprint{display:none} .wall-card{page-break-inside:avoid;break-inside:avoid} .teacher-key{page-break-before:always;break-before:page}}',
+      PRINT_BAR_CSS,
+      '@media print{@page{margin:12mm} body{margin:0;max-width:none} .noprint{display:none} .wall-card{page-break-inside:avoid;break-inside:avoid} .teacher-key{page-break-before:always;break-before:page}}',
       '</style>',
       '</head>',
       '<body>',
+      PRINT_BAR_HTML,
       '<h1>' + titleSafe + ' — Classroom Word Wall Cards</h1>',
       '<p class="directions">Display on your classroom Word Wall or anchor chart so students can reference spelling patterns, sound boxes, and kid-friendly meanings during reading and writing.</p>',
       '<div class="wall-list">' + wallCardsHtml + '</div>',
@@ -1849,39 +2012,899 @@
     const useSyl = !!o.syllables, useBold = !!o.bold;
     if ((!useSyl && !useBold) || typeof html !== 'string' || !html) return html;
     const dotHtml = '<span aria-hidden="true" style="user-select:none;opacity:.6">\u00b7</span>';
-    let skipDepth = 0, inBody = !/<body[\s>]/i.test(html);
-    const SKIP_OPEN = /^<(?:script|style|code|pre|svg|math|title|option|textarea)\b/i;
-    const SKIP_CLOSE = /^<\/(?:script|style|code|pre|svg|math|title|option|textarea)\b/i;
-    return html.replace(/(<[^>]+>)|([^<]+)/g, (all, tag, text) => {
+    const VOID_TAGS = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
+    const SKIP_TAGS = new Set(['script', 'style', 'code', 'pre', 'svg', 'math', 'title', 'option', 'textarea']);
+    const SKIP_CLASS_RE = /\bclass\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i;
+    const hasSkipClass = tag => {
+      const m = SKIP_CLASS_RE.exec(tag);
+      if (!m) return false;
+      const cls = m[1] || m[2] || m[3] || '';
+      return /(?:^|\s)(?:noprint|ws-noprint|elkonin-box|bingo-free|ws-blank|ws-tile|ws-trace-letter|ws-box|ws-missing|ws-no-syl)(?:\s|$)/.test(cls);
+    };
+    const stack = [];
+    let skipCount = 0, inBody = !/<body[\s>]/i.test(html);
+    let out = html.replace(/(<[^>]+>)|([^<]+)/g, (all, tag, text) => {
       if (tag) {
-        if (/^<body[\s>]/i.test(tag)) inBody = true;
-        else if (/^<\/body>/i.test(tag)) inBody = false;
-        if (SKIP_OPEN.test(tag) && !/\/>$/.test(tag)) skipDepth++;
-        else if (SKIP_CLOSE.test(tag) && skipDepth > 0) skipDepth--;
+        if (/^<![\s\S]*>$|^<\?[\s\S]*>$/.test(tag)) return tag;
+        const closeMatch = /^<\/([a-z0-9:-]+)/i.exec(tag);
+        if (closeMatch) {
+          const name = closeMatch[1].toLowerCase();
+          if (name === 'body') inBody = false;
+          for (let idx = stack.length - 1; idx >= 0; idx--) {
+            if (stack[idx].name === name) {
+              while (stack.length > idx) {
+                if (stack.pop().skipped) skipCount--;
+              }
+              break;
+            }
+          }
+          return tag;
+        }
+        const openMatch = /^<([a-z0-9:-]+)/i.exec(tag);
+        if (openMatch) {
+          const name = openMatch[1].toLowerCase();
+          if (name === 'body') inBody = true;
+          if (!/\/\s*>$/.test(tag) && !VOID_TAGS.has(name)) {
+            const skipped = SKIP_TAGS.has(name) || hasSkipClass(tag);
+            stack.push({ name, skipped });
+            if (skipped) skipCount++;
+          }
+        }
         return tag;
       }
-      if (!inBody || skipDepth > 0 || !text || !/[A-Za-z\u00C0-\u024F]{2,}/.test(text)) return text;
+      if (!inBody || skipCount > 0 || !text || !/[A-Za-z\u00C0-\u024F]{2,}/.test(text)) return text;
       return text.replace(/(&[a-z#0-9]+;)|([A-Za-z\u00C0-\u024F]{2,})/gi, (tok, ent, w) => {
         if (ent || !w) return tok;
         const syls = useSyl ? _splitSheetSyllables(w) : null;
         if (!useBold) return syls ? syls.join(dotHtml) : w;
         const cut = w.length <= 3 ? Math.max(1, w.length - 1) : Math.ceil(w.length * 0.45);
-        if (!syls) return '<b style="font-weight:700">' + w.slice(0, cut) + '</b>' + w.slice(cut);
+        if (!syls) return '<b data-awp-bionic="1">' + w.slice(0, cut) + '</b>' + w.slice(cut);
         let buf = '', offset = 0;
         for (let j = 0; j < syls.length; j++) {
           if (j > 0) buf += dotHtml;
           const seg = syls[j], end = offset + seg.length;
-          if (end <= cut) buf += '<b style="font-weight:700">' + seg + '</b>';
+          if (end <= cut) buf += '<b data-awp-bionic="1">' + seg + '</b>';
           else if (offset >= cut) buf += seg;
           else {
             const partCut = cut - offset;
-            buf += '<b style="font-weight:700">' + seg.slice(0, partCut) + '</b>' + seg.slice(partCut);
+            buf += '<b data-awp-bionic="1">' + seg.slice(0, partCut) + '</b>' + seg.slice(partCut);
           }
           offset = end;
         }
         return buf;
       });
     });
+    if (useBold) {
+      const bionicCss = '.word,.frayer-word,.sort-word-text,.bank-word,.bingo-word,.loop-word,.wall-word,.ws-word{font-weight:400}b[data-awp-bionic]{font-weight:800}';
+      if (!out.includes('b[data-awp-bionic]')) {
+        if (/<\/style>/i.test(out)) out = out.replace(/<\/style>/i, '\n' + bionicCss + '\n</style>');
+        else if (/<\/head>/i.test(out)) out = out.replace(/<\/head>/i, '<style>' + bionicCss + '</style>\n</head>');
+        else out = '<style>' + bionicCss + '</style>' + out;
+      }
+    }
+    return out;
   }
-  root.AlloWordPracticeMedia = { prepareAudio, buildPptx, buildPictureSlidesPptx, buildFlashcardsHtml, buildFrayerHtml, buildSortingCardsHtml, buildWorksheetHtml, buildBingoHtml, buildLoopGameHtml, buildWordWallHtml, everyDeviceAudio, needsEveryDeviceAudio, ensureSyllableTableLoaded, applySheetReadingSupports };
+
+  // ---------------------------------------------------------------------------
+  // Word Sounds Activity Worksheets (13 Packets + 6 Main-App activities)
+  // Standalone implementation for Main App + Present & Export (no dependency on packets-print-cards.js).
+  // ---------------------------------------------------------------------------
+  const WS_ACT_KEY_NOTICE = 'For the teacher \u2014 keep apart from the student copy';
+  const WS_ACT_CSP = "default-src 'none'; script-src 'none'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'";
+  const WS_ACT_META = {
+    mapping: { label: 'Sound Mapping', directions: 'Say each word and write the letter or letters for each sound in the boxes.' },
+    missing_letter: { label: 'Missing Letter', directions: 'Circle the missing letter and write it in the box.' },
+    word_scramble: { label: 'Word Scramble', directions: 'Unscramble the letter tiles and write the word on the line.' },
+    counting: { label: 'Sound Counting', directions: 'Say each word slowly. Circle the number of sounds you hear.' },
+    isolation: { label: 'Find Sounds', directions: 'Listen for the sound asked in each prompt and circle the matching sound.' },
+    segmentation: { label: 'Break It Down', directions: 'Tap one circle for each sound in the word. Then write the sounds or word on the line.' },
+    blending: { label: 'Blend Sounds', directions: 'Put the separated sounds together. Write the blended word on the line or circle the matching word.' },
+    rhyming: { label: 'Rhyme Time', directions: 'Read or look at the word. Circle the choice that rhymes with it.' },
+    word_families: { label: 'Word Families', directions: 'Circle the words that belong to the word family, then write more words in the same family.' },
+    sound_sort: { label: 'Sound Sort', directions: 'Sort the words from the word bank into the matching sound columns below.' },
+    letter_tracing: { label: 'Letter Trace', directions: 'Trace each guide letter along the lines, then practice writing it beside the guides.' },
+    orthography: { label: 'Sight & Spell', directions: 'Listen as your teacher reads each word aloud. Write each word on its line.' },
+    spelling_bee: { label: 'Spelling Bee', directions: 'Listen carefully as your teacher reads each word aloud. Spell each word on its line.' },
+    syllable_counting: { label: 'Syllable Counting', directions: 'Say each word and scoop or clap the syllables. Circle how many syllables you hear.' },
+    syllable_blending: { label: 'Syllable Blending', directions: 'Blend the word parts together. Write the whole word on the line or circle the match.' },
+    manipulation: { label: 'Sound Switch', directions: 'Follow each sound-change prompt. Write the new word on the line or circle the match.' },
+    decoding: { label: 'Word Reading', directions: 'Read each word aloud. Check the box when you read it and circle its matching picture if shown.' },
+    read_sentence: { label: 'Read a Sentence', directions: 'Read each sentence aloud. Circle the word that fits best and write it in the blank.' },
+    read_passage: { label: 'Read a Story', directions: 'Read the passage aloud and check a box each time you read it. Then answer the question below.' },
+    sentence_match: { label: 'Sentence Match', directions: 'Read the sentence and number the pictures or words in order.' },
+  };
+  const WS_ACT_NO_SYL = { missing_letter: 1, word_scramble: 1, letter_tracing: 1, mapping: 1, syllable_counting: 1 };
+  const WS_ACT_FRIENDLY_SOUND = { oo_short: 'short oo', dh: 'th (this)', zh: 'zh', schwa: 'uh' };
+  const WS_ACT_ORDINALS = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
+  const WS_ACT_DEFAULTS = ['mapping', 'missing_letter', 'word_scramble', 'counting'];
+  const WS_ACT_LICENSE_DEEDS = { 'CC BY-SA 4.0': 'creativecommons.org/licenses/by-sa/4.0' };
+  const WS_ACT_CSS = [
+    '@page{margin:12mm}',
+    '*{box-sizing:border-box}',
+    'body{font-family:Arial,Helvetica,sans-serif;background:#ffffff;color:#000000;margin:16px auto;max-width:190mm;padding:0 12px;line-height:1.35}',
+    '.ws-noprint{margin:0 0 12px;padding:8px 12px;border:1px solid #000000;font-size:13px;background:#ffffff;color:#000000}',
+    '.ws-header{border-bottom:2px solid #000000;padding-bottom:10px;margin-bottom:14px}',
+    '.ws-title{margin:0 0 10px;font-size:22px;font-weight:700;color:#000000}',
+    '.ws-meta{display:flex;flex-wrap:wrap;gap:10px 28px;font-size:14px;font-weight:700}',
+    '.ws-meta-field{display:inline-flex;align-items:baseline;gap:8px;flex:1 1 200px}',
+    '.ws-meta-line{flex:1 1 auto;border-bottom:1.5px solid #000000;min-width:110px;height:16px}',
+    '.ws-section{margin-top:18px}',
+    '.ws-section-head{break-after:avoid;page-break-after:avoid;margin-bottom:8px}',
+    '.ws-section-title{margin:0 0 4px;font-size:17px;font-weight:700;color:#000000}',
+    '.ws-directions{margin:0;font-size:13px;color:#000000}',
+    '.ws-list{list-style:none;margin:6px 0 0;padding:0}',
+    '.ws-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #808080;break-inside:avoid;page-break-inside:avoid}',
+    '.ws-num{min-width:26px;font-size:15px;font-weight:700}',
+    '.ws-body{flex:1 1 auto;min-width:0}',
+    '.ws-prompt{margin:0 0 6px;font-size:14px;font-weight:700}',
+    '.ws-row{display:flex;flex-wrap:wrap;align-items:center;gap:12px}',
+    '.ws-pic{display:block;width:64px;height:64px;object-fit:contain;border:1px solid #808080;padding:3px;background:#ffffff;flex:none}',
+    '.ws-pic-sm{display:block;width:36px;height:36px;object-fit:contain;flex:none}',
+    '.ws-word{font-size:21px;font-weight:700;letter-spacing:.02em;overflow-wrap:anywhere}',
+    '.pc-dot{font-weight:400;color:#808080;margin:0 -0.02em}',
+    '.ws-boxes{display:inline-flex;flex-wrap:wrap;align-items:center}',
+    '.ws-box{display:inline-block;width:42px;height:42px;border:2px solid #000000;background:#ffffff}',
+    '.ws-box+.ws-box{margin-left:-2px}',
+    '.ws-bank{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px;font-size:13px}',
+    '.ws-bank-label{font-weight:700;margin-right:4px}',
+    '.ws-chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border:1.5px solid #000000;border-radius:5px;font-size:14px;font-weight:700;background:#ffffff}',
+    '.ws-missing{display:inline-flex;align-items:center;gap:4px;font-size:26px;font-weight:700;letter-spacing:.04em}',
+    '.ws-blank{display:inline-block;min-width:34px;height:36px;border:2px solid #000000;border-radius:5px;background:#ffffff;vertical-align:middle}',
+    '.ws-tiles{display:inline-flex;flex-wrap:wrap;gap:8px}',
+    '.ws-tile{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:38px;padding:0 8px;border:2px solid #000000;border-radius:6px;font-size:20px;font-weight:700;background:#ffffff}',
+    '.ws-choices{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:8px 0 0;padding:0}',
+    '.ws-choice{display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border:1.5px solid #000000;border-radius:999px;font-size:15px;font-weight:700;background:#ffffff}',
+    '.ws-bubbles{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:8px 0 0;padding:0}',
+    '.ws-bubble{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:34px;padding:0 6px;border:1.5px solid #000000;border-radius:999px;font-size:15px;font-weight:700;background:#ffffff}',
+    '.ws-tap-dots{display:inline-flex;flex-wrap:wrap;gap:10px;align-items:center}',
+    '.ws-tap-dot{display:inline-block;width:32px;height:32px;border:2px solid #000000;border-radius:999px;background:#ffffff}',
+    '.ws-sounds-seq{font-size:20px;font-weight:700;letter-spacing:.04em}',
+    '.ws-line{width:100%;max-width:380px;height:36px;margin-top:8px;border-bottom:2px solid #000000;border-top:1px dashed #808080}',
+    '.ws-build-lines{display:flex;flex-wrap:wrap;gap:12px 26px;margin-top:10px;font-size:18px;font-weight:700}',
+    '.ws-build-slot{display:inline-flex;align-items:baseline}',
+    '.ws-build-blank{display:inline-block;width:52px;border-bottom:2px solid #000000;margin-right:2px}',
+    '.ws-sort-bank{border:1.5px solid #000000;border-radius:6px;padding:8px 10px;margin:8px 0 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#ffffff}',
+    '.ws-sort-cols{display:grid;gap:10px;margin-top:8px}',
+    '.ws-sort-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}',
+    '.ws-sort-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}',
+    '.ws-sort-col{border:1.5px solid #000000;border-radius:6px;padding:8px 10px;min-height:130px;background:#ffffff;break-inside:avoid;page-break-inside:avoid}',
+    '.ws-sort-col-head{margin:0 0 8px;padding-bottom:6px;border-bottom:1.5px solid #000000;font-size:14px;font-weight:700;text-align:center}',
+    '.ws-sort-line{height:28px;border-bottom:1px solid #808080}',
+    '.ws-trace-wrap{display:flex;flex-direction:column;gap:10px;margin-top:8px}',
+    '.ws-trace-row{position:relative;display:flex;align-items:flex-end;gap:22px;height:78px;max-width:560px;border-top:2px solid #000000;border-bottom:2px solid #000000;padding:0 12px;background:#ffffff}',
+    '.ws-trace-row::before{content:"";position:absolute;left:0;right:0;top:50%;border-top:1.5px dashed #808080}',
+    '.ws-trace-letter{position:relative;z-index:1;font-size:66px;line-height:.88;font-weight:400;font-family:Arial,Helvetica,sans-serif;color:#808080}',
+    '@supports (-webkit-text-stroke:1px #000000){.ws-trace-letter{color:#ffffff;-webkit-text-stroke:1.6px #808080}}',
+    '.ws-scoops{display:inline-flex;gap:8px;align-items:center;margin-top:6px}',
+    '.ws-scoop{display:inline-block;width:52px;height:18px;border-bottom:2px solid #000000;border-left:1px solid #808080;border-right:1px solid #808080;border-radius:0 0 18px 18px}',
+    '.ws-fluency{display:flex;flex-wrap:wrap;gap:14px;margin-top:8px;font-size:13px}',
+    '.ws-check-item{display:inline-flex;align-items:center;gap:6px}',
+    '.ws-checkbox{display:inline-block;width:16px;height:16px;border:1.5px solid #000000;background:#ffffff}',
+    '.ws-passage{margin:6px 0 8px;padding:10px 12px;border:1.5px solid #000000;font-size:15px;line-height:1.65}',
+    '.ws-passage p{margin:0 0 6px}.ws-passage p:last-child{margin-bottom:0}',
+    '.ws-credits{margin-top:18px;padding-top:8px;border-top:1px solid #808080;font-size:11px;line-height:1.4;color:#000000}',
+    '.ws-credits p{margin:2px 0;overflow-wrap:anywhere}',
+    '.ws-key{break-before:page;page-break-before:always;margin-top:24px;padding-top:12px;border-top:2px solid #000000}',
+    '.ws-key-banner{margin:0 0 12px;padding:8px 12px;border:2px solid #000000;font-size:14px;font-weight:700;background:#ffffff}',
+    '.ws-key h2{margin:0 0 8px;font-size:18px}.ws-key h3{margin:12px 0 4px;font-size:15px}',
+    '.ws-key-list{margin:4px 0 10px;padding-left:24px;font-size:14px;line-height:1.55}',
+    '.ws-key-list li{margin:4px 0;break-inside:avoid;page-break-inside:avoid}',
+    '@media print{body{margin:0;max-width:none;padding:0}.ws-noprint{display:none}.ws-key{break-before:page;page-break-before:always;margin-top:0;border-top:none}}',
+  ].join('');
+
+  function _wsHash(text) {
+    let h = 2166136261 >>> 0;
+    const s = String(text || '');
+    for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+    return h >>> 0;
+  }
+  function _wsShuffle(list, seedText) {
+    const out = (Array.isArray(list) ? list : []).slice();
+    let h = _wsHash(seedText) || 1;
+    for (let i = out.length - 1; i > 0; i--) {
+      h = (Math.imul(h, 1664525) + 1013904223) >>> 0;
+      const j = h % (i + 1);
+      const tmp = out[i]; out[i] = out[j]; out[j] = tmp;
+    }
+    return out;
+  }
+  function _wsSoundLabel(raw) {
+    const s = String(raw == null ? '' : raw).replace(/^\/|\/$/g, '').trim();
+    if (!s) return '';
+    return Object.prototype.hasOwnProperty.call(WS_ACT_FRIENDLY_SOUND, s) ? '/' + WS_ACT_FRIENDLY_SOUND[s] + '/' : '/' + s + '/';
+  }
+  function _wsIsPic(uri) {
+    return typeof uri === 'string' && /^data:image\/(?:png|jpeg|jpg|webp|gif|svg\+xml)[;,]/i.test(uri);
+  }
+  function _wsSvgUri(svg) {
+    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(String(svg));
+  }
+  function _wsEstimatePhonemes(word) {
+    const w = String(word || '').toLowerCase().replace(/[^a-z]/g, '');
+    if (!w) return [];
+    const trigraphs = ['igh', 'tch', 'dge'];
+    const digraphs = ['sh', 'ch', 'th', 'wh', 'ph', 'ng', 'ck', 'qu', 'wr', 'kn', 'gn', 'mb', 'ar', 'er', 'ir', 'or', 'ur', 'ai', 'ay', 'au', 'aw', 'ea', 'ee', 'ei', 'ey', 'ew', 'ie', 'oa', 'oe', 'oi', 'oo', 'ou', 'ow', 'oy', 'ue'];
+    const res = [];
+    const silentE = w.length >= 4 && w[w.length - 1] === 'e' && /[aeiou]/.test(w.slice(0, -1)) && !/[aeiou]/.test(w[w.length - 2]) && !w.endsWith('le');
+    const end = silentE ? w.length - 1 : w.length;
+    let i = 0;
+    while (i < end) {
+      if (i + 3 <= end && trigraphs.includes(w.slice(i, i + 3))) { res.push(w.slice(i, i + 3)); i += 3; }
+      else if (i + 2 <= end && digraphs.includes(w.slice(i, i + 2))) { res.push(w.slice(i, i + 2)); i += 2; }
+      else if (w[i] === 'c' && i + 1 < end && 'eiy'.includes(w[i + 1])) { res.push('s'); i += 1; }
+      else if (w[i] === 'c') { res.push('k'); i += 1; }
+      else if (w[i] === 'g' && i + 1 < end && 'eiy'.includes(w[i + 1])) { res.push('j'); i += 1; }
+      else { res.push(w[i]); i += 1; }
+    }
+    return res.length ? res : [w];
+  }
+  function _wsResolvePhonemes(word, entry, ctx) {
+    const isAud = v => typeof v === 'string' && /^a\d+$/.test(v);
+    const clean = arr => arr.map(p => {
+      if (typeof p === 'string') return isAud(p) ? '' : p.trim();
+      if (p && typeof p === 'object') return String(p.soundKey || p.phoneme || p.label || p.sound || p.text || '').trim();
+      return '';
+    }).filter(Boolean);
+    if (entry && Array.isArray(entry.phonemes) && entry.phonemes.length) {
+      const p1 = clean(entry.phonemes);
+      if (p1.length) return p1;
+    }
+    if (entry && Array.isArray(entry.sounds) && entry.sounds.length && !entry.sounds.some(isAud)) {
+      const p2 = clean(entry.sounds);
+      if (p2.length) return p2;
+    }
+    const low = String(word || '').trim().toLowerCase();
+    if (low) {
+      if (ctx && ctx.core && typeof ctx.core.dictionarySounds === 'function') {
+        try { const ds = ctx.core.dictionarySounds(low); if (ds && Array.isArray(ds.sounds) && ds.sounds.length) return ds.sounds.slice(); } catch (_) {}
+      }
+      const dictObj = (ctx && ctx.dictionary) || (root && root.AlloModules && root.AlloModules.WordSoundsPhonemes) || null;
+      if (dictObj && typeof dictObj.lookup === 'function') {
+        try { const found = dictObj.lookup(low); if (found && Array.isArray(found[0]) && found[0].length) return Array.from(found[0]); } catch (_) {}
+      }
+    }
+    return _wsEstimatePhonemes(low);
+  }
+  function _wsEstimateSyllables(word) {
+    const w = String(word || '').trim();
+    if (!w) return [];
+    const low = w.toLowerCase().replace(/[^a-z]/g, '');
+    if (low.length <= 3) return [w];
+    const trimmed = low.length > 3 && low.endsWith('e') && !low.endsWith('le') ? low.slice(0, -1) : low;
+    const groups = trimmed.match(/[aeiouy]+/g) || [];
+    const countN = Math.max(1, groups.length);
+    if (countN === 1) return [w];
+    const step = Math.max(1, Math.round(w.length / countN));
+    const out = [];
+    for (let i = 0; i < countN; i++) {
+      const start = i * step;
+      const end = i === countN - 1 ? w.length : Math.min(w.length, (i + 1) * step);
+      if (start < end) out.push(w.slice(start, end));
+    }
+    return out.length ? out : [w];
+  }
+  function _wsFmtSyl(text, useSyl) {
+    const str = String(text == null ? '' : text);
+    if (!useSyl) return escHtml(str);
+    return str.replace(/[A-Za-z]+/g, tok => {
+      const parts = tok.length >= 4 ? _splitSheetSyllables(tok) : null;
+      if (!parts || parts.length < 2) return escHtml(tok);
+      return parts.map(escHtml).join('<span class="pc-dot" aria-hidden="true">\u00b7</span>');
+    });
+  }
+  function _wsRimeOf(word) {
+    const s = String(word || '').toLowerCase();
+    const m = /[aeiouy][a-z]*$/.exec(s);
+    return m ? m[0] : s.slice(-2);
+  }
+  function _wsScramble(word) {
+    const letters = String(word || '').toLowerCase().split('').filter(ch => /[a-z0-9]/i.test(ch));
+    if (letters.length < 2) return letters;
+    const out = _wsShuffle(letters, 'scramble|' + word);
+    if (out.join('') === letters.join('')) {
+      for (let i = 1; i < out.length; i++) {
+        if (out[i] !== out[0]) { const t = out[0]; out[0] = out[i]; out[i] = t; break; }
+      }
+    }
+    return out;
+  }
+  function _wsOwnEntry(own, word) {
+    if (!own || typeof own !== 'object') return null;
+    if (Object.prototype.hasOwnProperty.call(own, word)) return own[word];
+    const low = String(word || '').toLowerCase();
+    if (Object.prototype.hasOwnProperty.call(own, low)) return own[low];
+    for (const k of Object.keys(own)) if (k.toLowerCase() === low) return own[k];
+    return null;
+  }
+  function _wsSafeImg(value, imagesMap) {
+    if (!value) return '';
+    if (typeof value === 'string') {
+      if (imagesMap && Object.prototype.hasOwnProperty.call(imagesMap, value)) {
+        const res = imagesMap[value];
+        return _wsIsPic(res) ? res : '';
+      }
+      return _wsIsPic(value) ? value : '';
+    }
+    if (typeof value === 'object') {
+      if (value.none === true) return '';
+      const cand = value.src || value.dataUri || value.uri || '';
+      return _wsIsPic(cand) ? cand : '';
+    }
+    return '';
+  }
+  function _wsSetCredit(symbols, setName) {
+    const credits = symbols && symbols.credits ? symbols.credits : null;
+    const credit = credits && Object.prototype.hasOwnProperty.call(credits, setName) && credits[setName]
+      ? credits[setName]
+      : (setName === 'mulberry' && symbols && symbols.credit ? symbols.credit : null);
+    if (!credit) {
+      if (setName === 'diagram') return 'AlloFlow Curriculum Diagrams (AGPL-3.0).';
+      if (setName === 'openmoji') return 'OpenMoji by the OpenMoji project. License: CC BY-SA 4.0 (creativecommons.org/licenses/by-sa/4.0). openmoji.org';
+      if (setName === 'mulberry') return 'Mulberry Symbols by Steve Lee. License: CC BY-SA 4.0 (creativecommons.org/licenses/by-sa/4.0). mulberrysymbols.org';
+      return '';
+    }
+    const deed = Object.prototype.hasOwnProperty.call(WS_ACT_LICENSE_DEEDS, credit.license) ? WS_ACT_LICENSE_DEEDS[credit.license] : '';
+    return credit.set + (credit.author ? ' by ' + credit.author : '') + '. License: ' + credit.license + (deed ? ' (' + deed + ')' : '') + (credit.url ? '. ' + credit.url : '');
+  }
+  function _wsSynthesizeItem(activity, rawEntry, allWords, ctx) {
+    const entry = typeof rawEntry === 'string' ? { word: rawEntry } : (rawEntry && typeof rawEntry === 'object' ? rawEntry : {});
+    const word = String(entry.word || entry.targetWord || entry.term || entry.printed || entry.target || '').trim();
+    const board = entry.activityItems && entry.activityItems[activity] && typeof entry.activityItems[activity] === 'object' ? entry.activityItems[activity] : null;
+    const phonemes = _wsResolvePhonemes(word, entry, ctx);
+    const low = word.toLowerCase();
+    const rawG = (entry.graphemes && entry.graphemes.length ? entry.graphemes : null) || (board && Array.isArray(board.graphemes) && board.graphemes.length ? board.graphemes : null);
+    const graphemes = rawG && rawG.join('').toLowerCase() === low ? rawG.map(String) : (low ? low.split('') : []);
+    const base = Object.assign({}, board || {}, entry, { word, phonemes, graphemes });
+
+    if (activity === 'mapping') {
+      const spans = Array.isArray(base.spans) ? base.spans : (Array.isArray(base.chipSpans) ? base.chipSpans : null);
+      const soundCount = spans ? spans.reduce((a, b) => a + (Number(b) || 1), 0) : (phonemes.length || graphemes.length || low.length || 3);
+      const bank = Array.isArray(base.chips) && base.chips.length
+        ? base.chips.map(c => typeof c === 'string' ? c : String((c && (c.text || c.label)) || '')).filter(Boolean)
+        : (Array.isArray(base.chipOrder) && base.chipOrder.length
+            ? base.chipOrder.map(c => String((c && c.text) || '')).filter(Boolean)
+            : _wsShuffle(graphemes.length ? graphemes : low.split(''), 'map|' + low));
+      if (bank.length > 1 && bank.join('').toLowerCase() === low) { const t = bank[0]; bank[0] = bank[bank.length - 1]; bank[bank.length - 1] = t; }
+      return { word, phonemes, graphemes, spans, soundCount: Math.max(1, soundCount), bank, item: base };
+    }
+    if (activity === 'missing_letter') {
+      let lettersArr = Array.isArray(base.letters) && base.letters.length ? base.letters.slice() : null;
+      const hiddenIndex = Number.isInteger(base.hiddenIndex) && base.hiddenIndex >= 0 && base.hiddenIndex < word.length ? base.hiddenIndex : (word.length > 2 ? 1 : 0);
+      const correctLetter = String(base.correctLetter || (lettersArr ? base.target : '') || word.charAt(hiddenIndex) || '').toLowerCase();
+      if (!lettersArr) { lettersArr = word.split(''); if (lettersArr.length) lettersArr[hiddenIndex] = ''; }
+      let opts = Array.isArray(base.options) && base.options.length ? base.options.map(String) : [];
+      if (!opts.length && correctLetter) {
+        const isVowel = 'aeiou'.includes(correctLetter);
+        const pool = (isVowel ? 'aeiou' : 'bcdfghjklmnprstvwz').split('').filter(c => c !== correctLetter);
+        opts = _wsShuffle([correctLetter].concat(_wsShuffle(pool, 'ml|' + low).slice(0, 3)), 'mlo|' + low);
+      }
+      if (base.capital) opts = opts.map(c => c.toUpperCase());
+      return { word, letters: lettersArr, hiddenIndex, correctLetter: base.capital ? correctLetter.toUpperCase() : correctLetter, choices: opts, item: base };
+    }
+    if (activity === 'word_scramble') {
+      let tiles = Array.isArray(base.letters) && base.letters.length ? base.letters.map(String) : _wsScramble(word);
+      if (tiles.length > 1 && tiles.join('').toLowerCase() === low) tiles = _wsScramble(word);
+      return { word, tiles, item: base };
+    }
+    if (activity === 'counting') {
+      const cnt = Number(base.answer) || Number(base.target) || Number(base.phonemeCount) || phonemes.length || 3;
+      const maxBubble = Math.max(6, Math.min(10, cnt >= 6 ? cnt + 1 : 6));
+      const vals = [];
+      for (let i = 1; i <= maxBubble; i++) vals.push(String(i));
+      if (cnt >= 11) vals.push('11+');
+      return { word, phonemes, answer: cnt >= 11 ? '11+' : String(cnt), values: vals, item: base };
+    }
+    if (activity === 'isolation') {
+      const pos = Number.isInteger(base.position) && base.position >= 0 ? base.position : 0;
+      let posName = base.positionName || (pos === 0 ? 'beginning' : (phonemes.length > 1 && pos === phonemes.length - 1 ? 'ending' : (pos === 1 && phonemes.length === 3 ? 'middle' : (WS_ACT_ORDINALS[pos] || (pos + 1) + 'th'))));
+      if (posName === 'first') posName = 'beginning';
+      if (posName === 'last') posName = 'ending';
+      const correct = String(base.correctSound || (typeof base.target === 'string' && base.target !== word ? base.target : '') || phonemes[pos] || phonemes[0] || low.charAt(0));
+      let rawChoices = Array.isArray(base.choices) && base.choices.length
+        ? base.choices.map(c => typeof c === 'string' ? c : String((c && (c.label || c.text)) || '')).filter(Boolean)
+        : (Array.isArray(base.options) && base.options.length ? base.options.map(String) : []);
+      if (!rawChoices.length) {
+        const pool = ['s', 'm', 't', 'p', 'k', 'n', 'b', 'd', 'a', 'e', 'i', 'o', 'u', 'sh', 'ch'].filter(s => s !== correct);
+        rawChoices = _wsShuffle([correct].concat(_wsShuffle(pool, 'iso|' + low).slice(0, 3)), 'isoo|' + low);
+      }
+      return { word, position: pos, positionName: posName, correctSound: correct, choices: rawChoices, item: base };
+    }
+    if (activity === 'segmentation') {
+      const segSounds = phonemes.length ? phonemes : _wsEstimatePhonemes(low);
+      const segChips = Array.isArray(base.chips) && base.chips.length
+        ? base.chips.map(c => typeof c === 'string' ? c : String((c && (c.label || c.phoneme || c.text)) || '')).filter(Boolean)
+        : [];
+      return { word, sounds: segSounds, slotCount: Number(base.slotCount) || segSounds.length || 3, chips: segChips, item: base };
+    }
+    if (activity === 'blending') {
+      const blendSounds = phonemes.length ? phonemes : _wsEstimatePhonemes(low);
+      const blendChoices = Array.isArray(base.choices) && base.choices.length
+        ? base.choices.map(c => typeof c === 'string' ? c : String((c && (c.text || c.label)) || '')).filter(Boolean)
+        : (Array.isArray(base.options) && base.options.length ? base.options.map(String) : []);
+      return { word, sounds: blendSounds, choices: blendChoices, item: base };
+    }
+    if (activity === 'rhyming') {
+      let answer = String(base.answer || (typeof base.target === 'string' && base.target.toLowerCase() !== low ? base.target : '') || base.rhymeWord || (Array.isArray(base.rhymes) && base.rhymes[0]) || '');
+      let rChoices = Array.isArray(base.choices) && base.choices.length
+        ? base.choices.map(c => typeof c === 'string' ? c : String((c && (c.text || c.label)) || '')).filter(Boolean)
+        : (Array.isArray(base.options) && base.options.length ? base.options.map(String) : []);
+      if (!rChoices.length) {
+        const rime = _wsRimeOf(low);
+        if (!answer) answer = (low.charAt(0) === 'b' ? 'm' : 'b') + rime;
+        const others = allWords.filter(w => w.toLowerCase() !== low && w.toLowerCase() !== answer.toLowerCase()).slice(0, 3);
+        const fillers = ['dog', 'sun', 'bed', 'map'].filter(w => w !== low && w !== answer.toLowerCase() && !others.includes(w));
+        rChoices = _wsShuffle([answer].concat(others, fillers).slice(0, 4), 'rhy|' + low);
+      }
+      return { word, answer: answer || rChoices[0] || '', choices: rChoices, item: base };
+    }
+    if (activity === 'word_families') {
+      const rimeVal = String(base.rime || base.familyEnding || _wsRimeOf(low)).replace(/^-/, '');
+      let wfChips = Array.isArray(base.chips) && base.chips.length
+        ? base.chips.map(c => typeof c === 'string' ? { text: c, member: c.toLowerCase().endsWith(rimeVal) } : { text: String(c.text || ''), member: !!c.member }).filter(c => c.text)
+        : [];
+      if (!wfChips.length) {
+        const mem = (Array.isArray(base.options) ? base.options : Array.isArray(base.familyMembers) ? base.familyMembers : []).map(String).filter(Boolean);
+        const dis = (Array.isArray(base.distractors) ? base.distractors : allWords.filter(w => w.toLowerCase() !== low && !w.toLowerCase().endsWith(rimeVal)).slice(0, 2)).map(String).filter(Boolean);
+        wfChips = _wsShuffle(mem.map(t => ({ text: t, member: true })).concat(dis.map(t => ({ text: t, member: false }))), 'wf|' + low);
+      }
+      return { word, rime: rimeVal, chips: wfChips, members: wfChips.filter(c => c.member).map(c => c.text), item: base };
+    }
+    if (activity === 'sound_sort') {
+      const sortMode = base.mode === 'last' ? 'last' : 'first';
+      const sortSound = String(base.sound || base.targetChar || (sortMode === 'last' ? phonemes[phonemes.length - 1] : phonemes[0]) || low.charAt(0));
+      let sortChips = Array.isArray(base.chips) && base.chips.length
+        ? base.chips.map(c => typeof c === 'string' ? { text: c, member: true } : { text: String(c.text || ''), member: !!c.member }).filter(c => c.text)
+        : [];
+      if (!sortChips.length) {
+        const sMem = (Array.isArray(base.options) ? base.options : [word]).map(String).filter(Boolean);
+        const sDis = (Array.isArray(base.distractors) ? base.distractors : allWords.filter(w => w.toLowerCase() !== low).slice(0, 2)).map(String).filter(Boolean);
+        sortChips = _wsShuffle(sMem.map(t => ({ text: t, member: true })).concat(sDis.map(t => ({ text: t, member: false }))), 'ss|' + low);
+      }
+      return { word, mode: sortMode, sound: sortSound, chips: sortChips, item: base };
+    }
+    if (activity === 'letter_tracing') {
+      const firstLetter = String(base.letter || word.charAt(0) || 'a').trim().charAt(0) || 'a';
+      const rawParts = Array.isArray(base.parts) && base.parts.length ? base.parts : null;
+      const traceCase = base.cases || (ctx && ctx.tracing) || 'both';
+      const parts = rawParts
+        ? rawParts.map(p => ({ letter: String(p.letter || firstLetter), kind: String(p.kind || '') }))
+        : (traceCase === 'capital' ? [{ letter: firstLetter.toUpperCase(), kind: 'capital' }]
+          : traceCase === 'lowercase' ? [{ letter: firstLetter.toLowerCase(), kind: 'lowercase' }]
+          : [{ letter: firstLetter.toUpperCase(), kind: 'capital' }, { letter: firstLetter.toLowerCase(), kind: 'lowercase' }]);
+      return { word, letter: firstLetter, parts, item: base };
+    }
+    if (activity === 'orthography' || activity === 'spelling_bee') {
+      const letterBank = Array.isArray(base.letterBank) && base.letterBank.length ? base.letterBank.map(String) : null;
+      return { word, phonemes, soundCount: phonemes.length || low.length || 3, letterBank, lengthHint: !!base.lengthHint, item: base };
+    }
+    if (activity === 'syllable_counting') {
+      const syls = Array.isArray(base.syllables) && base.syllables.length ? base.syllables.map(String) : (_splitSheetSyllables(word) || _wsEstimateSyllables(word));
+      const count = Number(base.count) || Number(base.answer) || Number(base.target) || syls.length || 1;
+      const maxSyl = Math.max(5, Math.min(8, count + 1));
+      const values = [];
+      for (let i = 1; i <= maxSyl; i++) values.push(String(i));
+      return { word, syllables: syls, count, values, item: base };
+    }
+    if (activity === 'syllable_blending') {
+      const syllables = Array.isArray(base.syllables) && base.syllables.length ? base.syllables.map(String)
+        : (Array.isArray(base.units) && base.units.length ? base.units.map(u => String((u && u.text) || u || '')).filter(Boolean)
+          : (_splitSheetSyllables(word) || _wsEstimateSyllables(word)));
+      const choices = Array.isArray(base.choices) && base.choices.length
+        ? base.choices.map(c => typeof c === 'string' ? c : String((c && (c.text || c.label)) || '')).filter(Boolean)
+        : (Array.isArray(base.options) && base.options.length ? base.options.map(String) : []);
+      return { word, syllables, choices, item: base };
+    }
+    if (activity === 'manipulation') {
+      const task = base.task || base.manipulationTask || {};
+      const answer = String(base.answer || task.answer || (typeof base.target === 'string' && base.target.toLowerCase() !== low ? base.target : '') || (low.length > 2 ? low.slice(1) : word));
+      const prompt = String(base.instructionText || task.instruction || ('Say "' + word + '". Now say it without the first sound.'));
+      const choices = Array.isArray(base.choices) && base.choices.length
+        ? base.choices.map(c => typeof c === 'string' ? c : String((c && (c.text || c.label)) || '')).filter(Boolean)
+        : (Array.isArray(base.options) && base.options.length ? base.options.map(String) : []);
+      return { word, prompt, answer, choices, item: base };
+    }
+    if (activity === 'decoding') {
+      const choices = Array.isArray(base.choices) && base.choices.length
+        ? base.choices.map(c => typeof c === 'string' ? { text: c, image: '' } : { text: String(c.text || c.label || ''), image: c.image || '' }).filter(c => c.text)
+        : [];
+      return { word: String(base.printed || word), choices, item: base };
+    }
+    if (activity === 'read_sentence') {
+      const answer = String(base.answer || word);
+      let before = base.before != null ? String(base.before) : '';
+      let after = base.after != null ? String(base.after) : '';
+      if (!before && !after) {
+        const sent = String(base.sentence || base.example || ('I see a ' + word + '.'));
+        const reW = new RegExp('\\b' + answer.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+        const idxM = sent.search(reW);
+        if (idxM >= 0) { before = sent.slice(0, idxM); after = sent.slice(idxM + answer.length); }
+        else { before = sent + ' '; after = '.'; }
+      }
+      const options = Array.isArray(base.options) && base.options.length
+        ? base.options.map(c => typeof c === 'string' ? c : String((c && (c.text || c.label)) || '')).filter(Boolean)
+        : (Array.isArray(base.choices) ? base.choices.map(c => typeof c === 'string' ? c : String((c && (c.text || c.label)) || '')).filter(Boolean) : [answer]);
+      return { word, before, after, answer, options, item: base };
+    }
+    if (activity === 'read_passage') {
+      const rawLines = Array.isArray(base.lines) && base.lines.length ? base.lines
+        : (Array.isArray(base.story) && base.story.length ? base.story
+          : (typeof base.story === 'string' && base.story.trim() ? base.story.trim().split(/\r?\n/) : ['Read a short sentence using the word ' + word + '.']));
+      const lines = rawLines.map(ln => {
+        if (typeof ln === 'string') return { text: ln };
+        if (ln && typeof ln === 'object') {
+          if (ln.before != null || ln.after != null) return { before: String(ln.before || ''), after: String(ln.after || '') };
+          return { text: String(ln.text || '') };
+        }
+        return { text: '' };
+      }).filter(ln => ln.text || ln.before || ln.after);
+      const options = Array.isArray(base.options) && base.options.length
+        ? base.options.map(c => typeof c === 'string' ? c : String((c && (c.text || c.label)) || '')).filter(Boolean)
+        : [];
+      return { word, lines, options, answer: String(base.answer || base.target || word), item: base };
+    }
+    return { word, item: base };
+  }
+  function _wsBuildSortBoards(items) {
+    const byCat = Object.create(null), orderCats = [];
+    items.forEach(it => {
+      const key = it.mode + '|' + it.sound.toLowerCase();
+      if (!byCat[key]) { byCat[key] = { key, mode: it.mode, sound: it.sound, anchor: it.word, members: [], distractors: [] }; orderCats.push(key); }
+      const cat = byCat[key];
+      (it.chips || []).forEach(ch => {
+        const bucket = ch.member ? cat.members : cat.distractors;
+        if (!bucket.includes(ch.text)) bucket.push(ch.text);
+      });
+    });
+    const boards = [];
+    if (orderCats.length === 1) {
+      const sole = byCat[orderCats[0]];
+      const prep = sole.mode === 'last' ? 'Ends with ' : 'Starts with ';
+      const neg = sole.mode === 'last' ? 'Does not end with ' : 'Does not start with ';
+      boards.push({
+        columns: [
+          { heading: prep + _wsSoundLabel(sole.sound) + (sole.anchor ? ' (like ' + sole.anchor + ')' : ''), words: sole.members.slice() },
+          { heading: neg + _wsSoundLabel(sole.sound), words: sole.distractors.slice() },
+        ],
+        bank: _wsShuffle(sole.members.concat(sole.distractors), 'sort1|' + sole.key),
+      });
+    } else {
+      for (let i = 0; i < orderCats.length; ) {
+        const rem = orderCats.length - i;
+        const take = rem === 4 ? 2 : Math.min(3, rem);
+        const slice = orderCats.slice(i, i + take);
+        const cols = [], bankWords = [], seenW = Object.create(null);
+        slice.forEach(k => {
+          const c = byCat[k];
+          const prep2 = c.mode === 'last' ? 'Ends with ' : 'Starts with ';
+          const ws = c.members.length ? c.members.slice() : (c.anchor ? [c.anchor] : []);
+          cols.push({ heading: prep2 + _wsSoundLabel(c.sound) + (c.anchor ? ' (like ' + c.anchor + ')' : ''), words: ws });
+          ws.forEach(w => { if (!seenW[w.toLowerCase()]) { seenW[w.toLowerCase()] = true; bankWords.push(w); } });
+        });
+        boards.push({ columns: cols, bank: _wsShuffle(bankWords, 'sortm|' + slice.join(',')) });
+        i += take;
+      }
+    }
+    return boards;
+  }
+  function _wsKeyLine(activity, it) {
+    if (activity === 'mapping') return it.word + ' \u2014 ' + (it.graphemes.length ? it.graphemes.join(' \u00b7 ') : it.word) + ' (' + it.soundCount + ' ' + (it.soundCount === 1 ? 'sound' : 'sounds') + ')';
+    if (activity === 'missing_letter') return it.word + ' \u2014 missing letter: ' + it.correctLetter;
+    if (activity === 'word_scramble') return it.word + ' (tiles: ' + (it.tiles || []).join(', ') + ')';
+    if (activity === 'counting') return it.word + ' \u2014 ' + it.answer + ' ' + (String(it.answer) === '1' ? 'sound' : 'sounds') + ' (' + (it.phonemes || []).map(_wsSoundLabel).join(' ') + ')';
+    if (activity === 'isolation') return it.word + ' \u2014 ' + it.positionName + ' sound: ' + _wsSoundLabel(it.correctSound);
+    if (activity === 'segmentation') return it.word + ' \u2014 ' + (it.sounds || []).map(_wsSoundLabel).join(' \u00b7 ') + ' (' + it.slotCount + ' ' + (it.slotCount === 1 ? 'sound' : 'sounds') + ')';
+    if (activity === 'blending') return it.word + ' \u2014 Say: ' + (it.sounds || []).map(_wsSoundLabel).join(' \u00b7 ');
+    if (activity === 'rhyming') return it.word + ' \u2014 rhymes with: ' + it.answer;
+    if (activity === 'word_families') return '-' + it.rime + ' family (like ' + it.word + ') \u2014 ' + (it.members && it.members.length ? it.members.join(', ') : 'any real word ending in -' + it.rime);
+    if (activity === 'letter_tracing') return it.parts.map(p => p.letter).join(' / ') + ' (for ' + it.word + ') \u2014 Practice only';
+    if (activity === 'orthography' || activity === 'spelling_bee') return 'Read aloud: "' + it.word + '" \u2014 Spelling: ' + it.word + ' (' + it.soundCount + ' ' + (it.soundCount === 1 ? 'sound' : 'sounds') + ': ' + (it.phonemes || []).map(_wsSoundLabel).join(' ') + ')';
+    if (activity === 'syllable_counting') return it.word + ' \u2014 ' + it.count + ' ' + (it.count === 1 ? 'syllable' : 'syllables') + ' (' + (it.syllables || []).join(' \u00b7 ') + ')';
+    if (activity === 'syllable_blending') return it.word + ' \u2014 Say: ' + (it.syllables || []).join(' \u00b7 ');
+    if (activity === 'manipulation') return it.answer + ' \u2014 Prompt: ' + it.prompt;
+    if (activity === 'decoding') return it.word;
+    if (activity === 'read_sentence') return it.answer + ' \u2014 "' + it.before + it.answer + it.after + '"';
+    if (activity === 'read_passage') return it.answer + ' (Fluency reading check)';
+    return it.word;
+  }
+  function buildWordSoundsWorksheetHtml(input, rawOptions = {}) {
+    const src = input && typeof input === 'object' ? input : {};
+    const opts = rawOptions && typeof rawOptions === 'object' ? rawOptions : {};
+    const lesson = src.lesson && typeof src.lesson === 'object' ? src.lesson : (Array.isArray(src.blocks) ? src : null);
+    const blocks = (Array.isArray(src.blocks) && src.blocks.length ? src.blocks : null)
+      || (lesson && Array.isArray(lesson.blocks) && lesson.blocks.length ? lesson.blocks : null);
+    const imagesMap = src.images || (lesson && lesson.images) || {};
+    const title = String(opts.title || src.title || (lesson && lesson.title) || 'Word Sounds Activity Worksheet').trim() || 'Word Sounds Activity Worksheet';
+    const picturesOn = opts.pictures !== undefined ? !!opts.pictures : (src.pictures !== undefined ? !!src.pictures : (opts.includePictures !== undefined ? !!opts.includePictures : true));
+    const answerKeyOn = opts.answerKey !== undefined ? !!opts.answerKey : true;
+    const hintsOn = opts.hints !== undefined ? !!opts.hints : true;
+    const syllablesOn = opts.syllables !== undefined ? !!opts.syllables : !!src.syllables;
+    const tracingCase = opts.tracing || src.tracing || (src.sessionConfig && src.sessionConfig.tracingCases) || 'both';
+    const defaultMatcher = root && (root.AlloWordPictureMatcher || (root.AlloModules && root.AlloModules.WordPictureMatcher)) || null;
+    const symbols = opts.symbols !== undefined ? opts.symbols : (src.symbols || (root && root.AlloModules && root.AlloModules.WordSoundsSymbols) || null);
+    const matcher = opts.matcher !== undefined ? opts.matcher : (src.matcher !== undefined ? src.matcher : defaultMatcher);
+    const ownMap = (opts.own && typeof opts.own === 'object' && typeof opts.own !== 'function') ? opts.own
+      : (src.own && typeof src.own === 'object' && typeof src.own !== 'function' ? src.own : null);
+    const creditLine = typeof opts.creditLine === 'function' ? opts.creditLine : (root && root.AlloPacketMyWords && root.AlloPacketMyWords.creditLine);
+    const ctx = { core: opts.core || src.core || null, dictionary: opts.dictionary || src.dictionary || null, tracing: tracingCase };
+
+    const rawWordList = Array.isArray(src.wsPreloadedWords) && src.wsPreloadedWords.length ? src.wsPreloadedWords
+      : (Array.isArray(src.data) && src.data.length ? src.data
+        : (Array.isArray(src.items) && src.items.length ? src.items
+          : (Array.isArray(src.words) ? src.words : [])));
+    const allWordStrings = rawWordList.map(e => typeof e === 'string' ? e.trim() : String((e && (e.word || e.targetWord || e.term)) || '').trim()).filter(Boolean);
+
+    const sections = [];
+    if (blocks && blocks.length) {
+      blocks.forEach(block => {
+        if (!block || !Array.isArray(block.items) || !block.items.length) return;
+        const act = String(block.activity || 'mapping');
+        const meta = WS_ACT_META[act] || { label: act.replace(/_/g, ' '), directions: 'Complete each item below.' };
+        const bWords = block.items.map(it => String((it && (it.word || it.target)) || '').trim()).filter(Boolean);
+        let items = block.items.map(it => _wsSynthesizeItem(act, it, bWords.length ? bWords : allWordStrings, ctx));
+        if (act === 'letter_tracing') {
+          const seenLt = Object.create(null);
+          items = items.filter(it => { const k = it.parts.map(p => p.letter).join(''); if (seenLt[k]) return false; seenLt[k] = true; return true; });
+        }
+        sections.push({ activity: act, label: meta.label, directions: meta.directions, items });
+      });
+    } else if (rawWordList.length) {
+      const actList = (Array.isArray(opts.activities) && opts.activities.length ? opts.activities : null)
+        || (Array.isArray(src.activities) && src.activities.length ? src.activities : null)
+        || (Array.isArray(src.lessonPlanSequence) && src.lessonPlanSequence.length ? src.lessonPlanSequence : null)
+        || WS_ACT_DEFAULTS;
+      actList.forEach(actId => {
+        const act = String(actId || '').trim();
+        if (!act) return;
+        const meta = WS_ACT_META[act] || { label: act.replace(/_/g, ' '), directions: 'Complete each item below.' };
+        let items = rawWordList.map(entry => _wsSynthesizeItem(act, entry, allWordStrings, ctx)).filter(it => it.word);
+        if (act === 'letter_tracing') {
+          const seenLt = Object.create(null);
+          items = items.filter(it => { const k = it.parts.map(p => p.letter).join(''); if (seenLt[k]) return false; seenLt[k] = true; return true; });
+        }
+        if (items.length) sections.push({ activity: act, label: meta.label, directions: meta.directions, items });
+      });
+    }
+
+    const picMap = Object.create(null);
+    const symReady = !!(symbols && typeof symbols.get === 'function' && (typeof symbols.ready !== 'function' || symbols.ready()));
+    const resolveWordPic = (word, rawEntry) => {
+      if (!picturesOn) return null;
+      const clean = String(word || '').trim();
+      const low = clean.toLowerCase();
+      if (!low) return null;
+      if (Object.prototype.hasOwnProperty.call(picMap, low)) return picMap[low];
+      const ownE = _wsOwnEntry(ownMap, clean);
+      if ((rawEntry && rawEntry.pictureNone) || (ownE && ownE.picture && ownE.picture.none)) { picMap[low] = null; return null; }
+      if (ownE && ownE.picture && _wsIsPic(ownE.picture.dataUri)) {
+        picMap[low] = { uri: ownE.picture.dataUri, set: 'own', credit: ownE.picture.credit || null };
+        return picMap[low];
+      }
+      const emb = rawEntry && (_wsSafeImg(rawEntry.wordPicture, imagesMap) || _wsSafeImg(rawEntry.image, imagesMap) || _wsSafeImg(rawEntry.picture, imagesMap));
+      if (emb) {
+        const cred = rawEntry.imageCredit || (rawEntry.picture && rawEntry.picture.credit) || rawEntry.imageAttribution || null;
+        picMap[low] = { uri: emb, set: cred ? 'own' : 'mulberry', credit: typeof cred === 'object' ? cred : null, creditText: typeof cred === 'string' ? cred : '' };
+        return picMap[low];
+      }
+      const symHit = symbols && typeof symbols.get === 'function'
+        ? (symbols.has && symbols.has(clean) ? symbols.get(clean) : (symbols.has && symbols.has(low) ? symbols.get(low) : symbols.get(low)))
+        : null;
+      if (symHit && symHit.svg) {
+        picMap[low] = { uri: _wsSvgUri(symHit.svg), set: symHit.set || 'mulberry', credit: null };
+        return picMap[low];
+      }
+      if (matcher && typeof matcher.matchWord === 'function') {
+        let matched = null;
+        try { matched = matcher.matchWord({ word: clean, definition: (rawEntry && rawEntry.definition) || '' }, { symbols: symReady ? symbols : null, preferDiagrams: true }); } catch (_) { matched = null; }
+        if (matched && matched.svg) {
+          picMap[low] = { uri: _wsSvgUri(matched.svg), set: matched.set || (matched.matchTier === 'diagram' || matched.matchType === 'diagram' ? 'diagram' : 'mulberry'), credit: null };
+          return picMap[low];
+        }
+      }
+      picMap[low] = null;
+      return null;
+    };
+
+    const usedWords = [], usedPics = Object.create(null);
+    const picTag = (word, rawEntry, neutralAlt, small) => {
+      const p = resolveWordPic(word, rawEntry);
+      if (!p || !p.uri) return '';
+      const k = String(word || '').trim().toLowerCase();
+      if (!usedPics[k]) { usedPics[k] = p; usedWords.push(k); }
+      return '<img class="' + (small ? 'ws-pic-sm' : 'ws-pic') + '" src="' + escHtml(p.uri) + '" alt="' + escHtml(neutralAlt || word) + '">';
+    };
+
+    const keyBlocks = [];
+    const sectionsHtml = sections.map(sec => {
+      const act = sec.activity;
+      const allowSyl = !WS_ACT_NO_SYL[act];
+      const fmt = (txt, okSyl = allowSyl) => _wsFmtSyl(txt, syllablesOn && okSyl);
+
+      if (act === 'sound_sort') {
+        const boards = _wsBuildSortBoards(sec.items);
+        const sortKeyLines = [];
+        const boardsHtml = boards.map((b, bIdx) => {
+          const bankHtml = '<div class="ws-sort-bank"><span class="ws-bank-label">Word bank:</span>' + b.bank.map(w => '<span class="ws-chip">' + picTag(w, null, '', true) + '<span>' + fmt(w, true) + '</span></span>').join('') + '</div>';
+          const colClass = b.columns.length >= 3 ? 'ws-sort-cols ws-sort-cols-3' : 'ws-sort-cols ws-sort-cols-2';
+          const colsHtml = '<div class="' + colClass + '">' + b.columns.map(col => {
+            const lineN = Math.max(4, col.words.length + 1);
+            let linesHtml = '';
+            for (let li = 0; li < lineN; li++) linesHtml += '<div class="ws-sort-line"></div>';
+            sortKeyLines.push(col.heading + ': ' + (col.words.length ? col.words.join(', ') : '(none)'));
+            return '<div class="ws-sort-col"><h4 class="ws-sort-col-head">' + escHtml(col.heading) + '</h4>' + linesHtml + '</div>';
+          }).join('') + '</div>';
+          return '<div class="ws-sort-board" data-sort-board="' + (bIdx + 1) + '">' + bankHtml + colsHtml + '</div>';
+        }).join('');
+        keyBlocks.push({ heading: sec.label, lines: sortKeyLines });
+        return '<section class="ws-section" data-activity="sound_sort"><div class="ws-section-head"><h2 class="ws-section-title">' + escHtml(sec.label) + '</h2><p class="ws-directions">' + escHtml(sec.directions) + '</p></div>' + boardsHtml + '</section>';
+      }
+
+      const secKeyLines = [];
+      const itemsHtml = sec.items.map((it, idx) => {
+        const n = idx + 1;
+        const neutralAlt = 'Picture clue ' + n;
+        let inner = '';
+        if (act === 'mapping') {
+          const pic = picTag(it.word, it.item, neutralAlt, false);
+          let boxes = '';
+          for (let bi = 0; bi < it.soundCount; bi++) boxes += '<span class="ws-box"></span>';
+          const bank = hintsOn && it.bank && it.bank.length
+            ? '<div class="ws-bank"><span class="ws-bank-label">Letter bank:</span>' + it.bank.map(g => '<span class="ws-chip">' + escHtml(g) + '</span>').join('') + '</div>'
+            : '';
+          inner = '<div class="ws-row">' + pic + '<div class="ws-boxes" data-sound-boxes="' + it.soundCount + '">' + boxes + '</div></div>' + bank;
+        } else if (act === 'missing_letter') {
+          const pic = picTag(it.word, it.item, neutralAlt, false);
+          const mlWord = '<div class="ws-missing">' + it.letters.map((ch, ci) => ci === it.hiddenIndex ? '<span class="ws-blank" aria-label="missing letter"></span>' : '<span>' + escHtml(ch) + '</span>').join('') + '</div>';
+          const choices = '<ul class="ws-choices">' + (it.choices || []).map(c => '<li class="ws-choice">' + escHtml(c) + '</li>').join('') + '</ul>';
+          inner = '<div class="ws-row">' + pic + mlWord + '</div>' + choices;
+        } else if (act === 'word_scramble') {
+          const pic = picTag(it.word, it.item, neutralAlt, false);
+          const tiles = '<div class="ws-tiles">' + (it.tiles || []).map(t => '<span class="ws-tile">' + escHtml(t) + '</span>').join('') + '</div>';
+          inner = '<div class="ws-row">' + pic + tiles + '</div><div class="ws-line"></div>';
+        } else if (act === 'counting') {
+          const pic = picTag(it.word, it.item, '', false);
+          const bubbles = '<ul class="ws-bubbles">' + (it.values || ['1', '2', '3', '4', '5', '6']).map(v => '<li class="ws-bubble">' + escHtml(v) + '</li>').join('') + '</ul>';
+          inner = '<div class="ws-row">' + pic + '<span class="ws-word">' + fmt(it.word) + '</span></div>' + bubbles;
+        } else if (act === 'isolation') {
+          const pic = picTag(it.word, it.item, '', false);
+          const choices = '<ul class="ws-choices">' + (it.choices || []).map(c => '<li class="ws-choice">' + escHtml(_wsSoundLabel(c)) + '</li>').join('') + '</ul>';
+          inner = '<p class="ws-prompt">What is the ' + escHtml(it.positionName) + ' sound in ' + fmt(it.word) + '?</p><div class="ws-row">' + pic + '<span class="ws-word">' + fmt(it.word) + '</span></div>' + choices;
+        } else if (act === 'segmentation') {
+          const pic = picTag(it.word, it.item, '', false);
+          let dots = '';
+          for (let di = 0; di < it.slotCount; di++) dots += '<span class="ws-tap-dot"></span>';
+          const bank = hintsOn && it.chips && it.chips.length
+            ? '<div class="ws-bank"><span class="ws-bank-label">Sound bank:</span>' + it.chips.map(s => '<span class="ws-chip">' + escHtml(_wsSoundLabel(s)) + '</span>').join('') + '</div>'
+            : '';
+          inner = '<div class="ws-row">' + pic + '<span class="ws-word">' + fmt(it.word) + '</span><div class="ws-tap-dots" data-tap-dots="' + it.slotCount + '">' + dots + '</div></div><div class="ws-line"></div>' + bank;
+        } else if (act === 'blending') {
+          const seq = '<div class="ws-sounds-seq">' + (it.sounds || []).map(_wsSoundLabel).map(escHtml).join(' \u00b7 ') + '</div>';
+          const choices = it.choices && it.choices.length ? '<ul class="ws-choices">' + it.choices.map(c => '<li class="ws-choice">' + fmt(c) + '</li>').join('') + '</ul>' : '';
+          inner = seq + '<div class="ws-line"></div>' + choices;
+        } else if (act === 'rhyming') {
+          const pic = picTag(it.word, it.item, '', false);
+          const choices = '<ul class="ws-choices">' + (it.choices || []).map(c => '<li class="ws-choice">' + picTag(c, null, '', true) + '<span>' + fmt(c) + '</span></li>').join('') + '</ul>';
+          inner = '<p class="ws-prompt">Circle the word that rhymes with ' + fmt(it.word) + ':</p><div class="ws-row">' + pic + '<span class="ws-word">' + fmt(it.word) + '</span></div>' + choices;
+        } else if (act === 'word_families') {
+          const pic = picTag(it.word, it.item, '', false);
+          const choices = it.chips && it.chips.length ? '<ul class="ws-choices">' + it.chips.map(c => '<li class="ws-choice">' + fmt(c.text) + '</li>').join('') + '</ul>' : '';
+          const builds = '<div class="ws-build-lines">'
+            + '<span class="ws-build-slot"><span class="ws-build-blank"></span><span>' + escHtml(it.rime) + '</span></span>'
+            + '<span class="ws-build-slot"><span class="ws-build-blank"></span><span>' + escHtml(it.rime) + '</span></span>'
+            + '<span class="ws-build-slot"><span class="ws-build-blank"></span><span>' + escHtml(it.rime) + '</span></span></div>';
+          inner = '<p class="ws-prompt">Word family: -' + escHtml(it.rime) + ' (like ' + fmt(it.word) + ')</p><div class="ws-row">' + pic + '<span class="ws-word">-' + escHtml(it.rime) + '</span></div>' + choices + builds;
+        } else if (act === 'letter_tracing') {
+          const pic = picTag(it.word, it.item, '', false);
+          const rows = (it.parts || []).map(part => {
+            let guides = '';
+            for (let gi = 0; gi < 3; gi++) guides += '<span class="ws-trace-letter">' + escHtml(part.letter) + '</span>';
+            return '<div class="ws-trace-row" data-trace-case="' + escHtml(part.kind || 'letter') + '">' + guides + '</div>';
+          }).join('');
+          inner = '<div class="ws-row">' + pic + '<p class="ws-prompt">Trace ' + escHtml(it.parts.map(p => p.letter).join(' and ')) + ' (for ' + escHtml(it.word) + ')</p></div><div class="ws-trace-wrap">' + rows + '</div>';
+        } else if (act === 'orthography' || act === 'spelling_bee') {
+          const pic = picTag(it.word, it.item, neutralAlt, false);
+          let scaffold = '';
+          if (hintsOn) {
+            const sCnt = it.lengthHint ? it.word.length : it.soundCount;
+            let boxes = '';
+            for (let sbi = 0; sbi < sCnt; sbi++) boxes += '<span class="ws-box"></span>';
+            scaffold += '<div class="ws-boxes" data-sound-boxes="' + sCnt + '">' + boxes + '</div>';
+            if (it.letterBank && it.letterBank.length) {
+              scaffold += '<div class="ws-bank"><span class="ws-bank-label">Letters:</span>' + it.letterBank.map(l => '<span class="ws-chip">' + escHtml(l) + '</span>').join('') + '</div>';
+            }
+          }
+          inner = '<p class="ws-prompt">Listen to your teacher and write word #' + n + ':</p><div class="ws-row">' + pic + scaffold + '</div><div class="ws-line"></div>';
+        } else if (act === 'syllable_counting') {
+          const pic = picTag(it.word, it.item, '', false);
+          const bubbles = '<ul class="ws-bubbles">' + (it.values || ['1', '2', '3', '4', '5']).map(v => '<li class="ws-bubble">' + escHtml(v) + '</li>').join('') + '</ul>';
+          inner = '<div class="ws-row">' + pic + '<span class="ws-word ws-no-syl">' + escHtml(it.word) + '</span></div><div class="ws-scoops" aria-hidden="true"><span class="ws-scoop"></span><span class="ws-scoop"></span><span class="ws-scoop"></span></div>' + bubbles;
+        } else if (act === 'syllable_blending') {
+          const seq = '<div class="ws-sounds-seq">' + (it.syllables || []).map(escHtml).join(' \u00b7 ') + '</div>';
+          const choices = it.choices && it.choices.length ? '<ul class="ws-choices">' + it.choices.map(c => '<li class="ws-choice">' + fmt(c) + '</li>').join('') + '</ul>' : '';
+          inner = seq + '<div class="ws-line"></div>' + choices;
+        } else if (act === 'manipulation') {
+          const choices = it.choices && it.choices.length ? '<ul class="ws-choices">' + it.choices.map(c => '<li class="ws-choice">' + fmt(c) + '</li>').join('') + '</ul>' : '';
+          inner = '<p class="ws-prompt">' + escHtml(it.prompt) + '</p><div class="ws-line"></div>' + choices;
+        } else if (act === 'decoding') {
+          const checks = '<div class="ws-fluency"><span class="ws-check-item"><span class="ws-checkbox"></span> Read aloud</span><span class="ws-check-item"><span class="ws-checkbox"></span> Read smoothly</span></div>';
+          const pics = it.choices && it.choices.length
+            ? '<ul class="ws-choices">' + it.choices.map(c => {
+                const img = picTag(c.text, c.image ? { image: c.image } : null, 'Picture choice', true);
+                return '<li class="ws-choice">' + (img || escHtml(c.text)) + '</li>';
+              }).join('') + '</ul>'
+            : '';
+          inner = '<div class="ws-row"><span class="ws-word">' + fmt(it.word) + '</span></div>' + checks + pics;
+        } else if (act === 'read_sentence') {
+          const pic = picTag(it.word, it.item, neutralAlt, false);
+          const sent = '<p class="ws-prompt">' + fmt(it.before) + '<span class="ws-blank" aria-label="blank"></span>' + fmt(it.after) + '</p>';
+          const choices = '<ul class="ws-choices">' + (it.options || []).map(c => '<li class="ws-choice">' + fmt(c) + '</li>').join('') + '</ul>';
+          const flu = '<div class="ws-fluency"><span class="ws-check-item"><span class="ws-checkbox"></span> Read the completed sentence aloud</span></div>';
+          inner = '<div class="ws-row">' + pic + '<div>' + sent + choices + flu + '</div></div>';
+        } else if (act === 'read_passage') {
+          const pass = '<div class="ws-passage">' + (it.lines || []).map(ln => (ln.before != null || ln.after != null) ? '<p>' + fmt(ln.before) + '<span class="ws-blank" aria-label="blank"></span>' + fmt(ln.after) + '</p>' : '<p>' + fmt(ln.text) + '</p>').join('') + '</div>';
+          const flu = '<div class="ws-fluency"><span class="ws-check-item"><span class="ws-checkbox"></span> 1st read</span><span class="ws-check-item"><span class="ws-checkbox"></span> 2nd read</span><span class="ws-check-item"><span class="ws-checkbox"></span> 3rd read</span></div>';
+          const choices = it.options && it.options.length ? '<ul class="ws-choices">' + it.options.map(c => '<li class="ws-choice">' + fmt(c) + '</li>').join('') + '</ul>' : '<div class="ws-line"></div>';
+          inner = pass + flu + choices;
+        } else {
+          const pic = picTag(it.word, it.item, '', false);
+          inner = '<div class="ws-row">' + pic + '<span class="ws-word">' + fmt(it.word) + '</span></div><div class="ws-line"></div>';
+        }
+        secKeyLines.push(_wsKeyLine(act, it));
+        return '<li class="ws-item"><span class="ws-num">' + n + '.</span><div class="ws-body">' + inner + '</div></li>';
+      }).join('');
+      keyBlocks.push({ heading: sec.label, lines: secKeyLines });
+      return '<section class="ws-section" data-activity="' + escHtml(act) + '"><div class="ws-section-head"><h2 class="ws-section-title">' + escHtml(sec.label) + '</h2><p class="ws-directions">' + escHtml(sec.directions) + '</p></div><ol class="ws-list">' + itemsHtml + '</ol></section>';
+    }).join('\n');
+
+    const setsUsed = [];
+    const creditLines = [];
+    usedWords.forEach(w => {
+      const p = usedPics[w];
+      if (p && p.set !== 'own' && !setsUsed.includes(p.set)) setsUsed.push(p.set);
+    });
+    const setOrder = ['mulberry', 'openmoji', 'diagram'];
+    setsUsed.sort((a, b) => (setOrder.indexOf(a) < 0 ? 99 : setOrder.indexOf(a)) - (setOrder.indexOf(b) < 0 ? 99 : setOrder.indexOf(b)));
+    setsUsed.forEach(set => { const line = _wsSetCredit(symbols, set); if (line) creditLines.push('Pictures: ' + line); });
+    usedWords.forEach(w => {
+      const p = usedPics[w];
+      if (!p || p.set !== 'own') return;
+      if (p.creditText) { creditLines.push('Picture for "' + w + '": ' + p.creditText); return; }
+      if (p.credit && p.credit.own !== true) {
+        const line = typeof creditLine === 'function' ? creditLine(p.credit) : formatCreditValue(getCore(), p.credit);
+        if (line) creditLines.push('Picture for "' + w + '": ' + line);
+      }
+    });
+    const creditsHtml = creditLines.length
+      ? '<footer class="ws-credits">' + creditLines.map(l => '<p>' + escHtml(String(l).replace(/\b[a-z][a-z0-9+.-]{1,12}:\/\/+/gi, '')) + '</p>').join('') + '</footer>'
+      : '';
+
+    const keyHtml = answerKeyOn && keyBlocks.length
+      ? '<section class="ws-key" aria-label="Teacher answer key"><p class="ws-key-banner">' + escHtml(WS_ACT_KEY_NOTICE) + '</p><h2>Teacher Answer Key &amp; Read-Aloud List</h2>'
+        + keyBlocks.map(kb => '<h3>' + escHtml(kb.heading) + '</h3><ol class="ws-key-list">' + kb.lines.map(l => '<li>' + escHtml(l) + '</li>').join('') + '</ol>').join('') + '</section>'
+      : '';
+
+    return [
+      '<!doctype html>',
+      '<html lang="en">',
+      '<head>',
+      '<meta charset="utf-8">',
+      '<meta name="viewport" content="width=device-width,initial-scale=1">',
+      '<meta http-equiv="Content-Security-Policy" content="' + WS_ACT_CSP + '">',
+      '<meta name="referrer" content="no-referrer">',
+      '<title>' + escHtml(title) + ' \u2014 Activity Worksheet</title>',
+      '<style>' + WS_ACT_CSS + '</style>',
+      '</head>',
+      '<body>',
+      '<p class="ws-noprint">Print from your browser menu (Ctrl+P or Cmd+P). Keep the scale at 100%.</p>',
+      '<header class="ws-header">',
+      '<h1 class="ws-title">' + escHtml(title) + '</h1>',
+      '<div class="ws-meta"><span class="ws-meta-field"><span>Name:</span><span class="ws-meta-line"></span></span><span class="ws-meta-field"><span>Date:</span><span class="ws-meta-line"></span></span></div>',
+      '</header>',
+      sectionsHtml || '<p>No worksheet items are available yet.</p>',
+      creditsHtml,
+      keyHtml,
+      '</body>',
+      '</html>',
+    ].join('\n');
+  }
+  root.AlloWordPracticeMedia = { prepareAudio, buildPptx, buildPictureSlidesPptx, buildFlashcardsHtml, buildFrayerHtml, buildSortingCardsHtml, buildWorksheetHtml, buildWordSoundsWorksheetHtml, buildBingoHtml, buildLoopGameHtml, buildWordWallHtml, everyDeviceAudio, needsEveryDeviceAudio, ensureSyllableTableLoaded, applySheetReadingSupports };
 })(typeof window !== 'undefined' ? window : globalThis);

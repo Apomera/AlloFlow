@@ -22134,17 +22134,17 @@ if (typeof window !== 'undefined' && !(window.StemLab && window.StemLab.isRegist
           { id: 'path', icon: '🛤️', label: __alloT('stem.learning_lab.quick_path', '4-Week Path') }
         ];
         var pillarSpecs = [
-          { x: 14, w: 116, title: __alloT('stem.learning_lab.pillar_retrieval', 'Retrieval & Spacing'), sub: 'Dunlosky · Roediger', color: '#c084fc' },
-          { x: 140, w: 116, title: __alloT('stem.learning_lab.pillar_cogload', 'Cognitive Load'), sub: 'Sweller (1988)', color: '#38bdf8' },
-          { x: 266, w: 116, title: __alloT('stem.learning_lab.pillar_metacog', 'Metacognition'), sub: 'Plan · Monitor · Eval', color: '#34d399' },
-          { x: 392, w: 116, title: __alloT('stem.learning_lab.pillar_udl', 'UDL 3.0 Access'), sub: 'CAST Guidelines', color: '#fbbf24' }
+          { x: 12,  w: 136, title: __alloT('stem.learning_lab.pillar_retrieval', 'Retrieval & Spacing'), sub: 'Dunlosky · Roediger', color: '#c084fc' },
+          { x: 158, w: 136, title: __alloT('stem.learning_lab.pillar_cogload', 'Cognitive Load'), sub: 'Sweller (1988)', color: '#38bdf8' },
+          { x: 304, w: 136, title: __alloT('stem.learning_lab.pillar_metacog', 'Metacognition'), sub: 'Plan · Monitor · Eval', color: '#34d399' },
+          { x: 450, w: 136, title: __alloT('stem.learning_lab.pillar_udl', 'UDL 3.0 Access'), sub: 'CAST Guidelines', color: '#fbbf24' }
         ];
 
         return h('div', { role: 'main', 'aria-label': __alloT('stem.learning_lab.learning_lab_main_menu', 'Learning Lab main menu'), className: 'll-workbench', style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
           h('a', { href: '#ll-menu-categories', 'data-ll-focusable': true,
-            style: { position: 'absolute', left: '-9999px', top: 'auto', width: 1, height: 1, overflow: 'hidden' },
-            onFocus: function(e) { Object.assign(e.target.style, { position: 'static', left: 'auto', width: 'auto', height: 'auto', display: 'inline-block', padding: '6px 12px', background: T.accent, color: '#fff', textDecoration: 'none', fontWeight: 700, borderRadius: 6, marginBottom: 10 }); },
-            onBlur: function(e) { Object.assign(e.target.style, { position: 'absolute', left: '-9999px', top: 'auto', width: '1px', height: '1px', overflow: 'hidden' }); }
+            style: { position: 'absolute', insetInlineStart: '8px', top: '8px', width: 1, height: 1, overflow: 'hidden', clipPath: 'inset(50%)', whiteSpace: 'nowrap' },
+            onFocus: function(e) { Object.assign(e.target.style, { position: 'static', insetInlineStart: 'auto', width: 'auto', height: 'auto', overflow: 'visible', clipPath: 'none', whiteSpace: 'normal', display: 'inline-block', padding: '6px 12px', background: T.accent, color: '#fff', textDecoration: 'none', fontWeight: 700, borderRadius: 6, marginBottom: 10 }); },
+            onBlur: function(e) { Object.assign(e.target.style, { position: 'absolute', insetInlineStart: '8px', top: '8px', width: '1px', height: '1px', overflow: 'hidden', clipPath: 'inset(50%)', whiteSpace: 'nowrap' }); }
           }, __alloT('stem.learning_lab.skip_to_module_categories', 'Skip to module categories')),
           h('header', { className: 'll-hero-deck' },
             h('div', { className: 'll-hero-top' },
@@ -22213,7 +22213,7 @@ if (typeof window !== 'undefined' && !(window.StemLab && window.StemLab.isRegist
             (function() {
               var hc = _llIsHC();
               return h('svg', {
-                viewBox: '0 0 522 92',
+                viewBox: '0 0 598 92',
                 width: '100%',
                 height: 92,
                 role: 'img',
@@ -22237,12 +22237,12 @@ if (typeof window !== 'undefined' && !(window.StemLab && window.StemLab.isRegist
                   )
                 ),
                 // Recessed studio stage well
-                h('rect', { x: 0, y: 0, width: 522, height: 92, rx: 10, fill: hc ? '#000000' : 'url(#ll-arch-well)' }),
+                h('rect', { x: 0, y: 0, width: 598, height: 92, rx: 10, fill: hc ? '#000000' : 'url(#ll-arch-well)' }),
                 // Dual-pass luminous neural bus rail connecting all 4 frameworks
-                !hc && h('line', { className: 'll-svg-fx ll-anim-phosphor', x1: 72, y1: 46, x2: 450, y2: 46, stroke: 'url(#ll-arch-bus)', strokeWidth: 6, strokeOpacity: 0.22 }),
-                h('line', { x1: 72, y1: 46, x2: 450, y2: 46, stroke: hc ? '#facc15' : 'url(#ll-arch-bus)', strokeWidth: 2, strokeDasharray: '4 3', className: !hc ? 'll-anim-flow' : undefined }),
+                !hc && h('line', { className: 'll-svg-fx ll-anim-phosphor', x1: 80, y1: 46, x2: 518, y2: 46, stroke: 'url(#ll-arch-bus)', strokeWidth: 6, strokeOpacity: 0.22 }),
+                h('line', { x1: 80, y1: 46, x2: 518, y2: 46, stroke: hc ? '#facc15' : 'url(#ll-arch-bus)', strokeWidth: 2, strokeDasharray: '4 3', className: !hc ? 'll-anim-flow' : undefined }),
                 // Inter-pillar directional flow chevrons
-                [135, 261, 387].map(function(cx, ci) {
+                [153, 299, 445].map(function(cx, ci) {
                   return h('polygon', { key: 'll-arr-' + cx, points: (cx - 3) + ',42 ' + (cx + 4) + ',46 ' + (cx - 3) + ',50', fill: hc ? '#facc15' : '#e2e8f0', opacity: 0.85, className: !hc ? 'll-anim-shimmer' : undefined, style: !hc ? { animationDelay: (ci * 0.35) + 's' } : undefined });
                 }),
                 pillarSpecs.map(function(p, pi) {
@@ -22254,7 +22254,7 @@ if (typeof window !== 'undefined' && !(window.StemLab && window.StemLab.isRegist
                     // Glowing node beacon
                     !hc && h('circle', { className: 'll-svg-fx ll-anim-halo', cx: p.x + 14, cy: 31, r: 7.5, fill: p.color, opacity: 0.24, style: { animationDelay: (pi * 0.4) + 's' } }),
                     h('circle', { cx: p.x + 14, cy: 31, r: 4, fill: hc ? '#facc15' : p.color, stroke: '#0f172a', strokeWidth: 0.8 }),
-                    h('text', { x: p.x + 23, y: 34.5, fill: '#f8fafc', fontSize: 10, fontWeight: 800 }, p.title.slice(0, 14)),
+                    h('text', { x: p.x + 23, y: 34.5, fill: '#f8fafc', fontSize: 10, fontWeight: 800 }, p.title),
                     h('line', { x1: p.x + 10, y1: 44, x2: p.x + p.w - 10, y2: 44, stroke: hc ? 'rgba(255,255,255,0.28)' : 'rgba(148,163,184,0.20)', strokeWidth: 0.8 }),
                     h('text', { x: p.x + p.w / 2, y: 61, fill: hc ? '#facc15' : '#cbd5e1', fontSize: 10, fontWeight: 600, textAnchor: 'middle' }, p.sub)
                   );

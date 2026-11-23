@@ -13,8 +13,9 @@ function createTestPrepGuidedExpansion() {
     if (normalized.length <= max) return normalized;
     const clipped = normalized.slice(0, max);
     const sentence = clipped.lastIndexOf('.');
+    const fallback = clipped.replace(/[,;:]?\s+\S*$/, '').trim();
     return (sentence > 80 ? clipped.slice(0, sentence + 1)
-      : clipped.replace(/[,;:]?\s+\S*$/, '') + '.').trim();
+      : (/[.?!]$/.test(fallback) ? fallback : fallback + '.')).trim();
   };
   // Only strip marks that would break the surrounding double quotes. An
   // apostrophe between two letters (child's, don't) or closing a plural

@@ -191,7 +191,7 @@ describe('wave 3: remaining teacher surfaces', () => {
   it('analysis: refine, grammar fix (unless built-in AI) and factual fix disable', () => {
     const view = src('view_analysis_source.jsx');
     expect(view).toContain('disabled={isProcessing || openSelectedCount === 0 || analysisAiOff}');
-    expect(view).toContain('disabled={isProcessing || selectedGrammarErrors.size === 0 || (analysisAiOff && !window.ai?.languageModel)}');
+    expect(view).toContain('disabled={isProcessing || openSelectedGrammarCount === 0 || (analysisAiOff && !window.ai?.languageModel)}');
     expect(view).toContain('disabled={!sourceRefineInstruction.trim() || isProcessing || analysisAiOff}');
   });
   it('connected escape room: Generate, repair and playability check are off for everyone without AI', () => {
@@ -212,10 +212,10 @@ describe('wave 3: remaining teacher surfaces', () => {
   it('Story Forge asks the host whether text AI is usable (keyless teacher included)', () => {
     const sf = src('story_forge_source.jsx');
     expect(sf).toContain('window.__alloAiUsable(kind, fn)');
-    expect(sf).toContain("const sfTextAi = _sfAiCheck('text', onCallGemini);");
+    expect(sf).toContain("const sfTextAi = _sfAiCheck('text', _rawOnCallGemini);");
     const sfm = src('story_forge_module.js');
     expect(sfm).toContain('window.__alloAiUsable(kind, fn)');
-    expect(sfm).toContain('const sfTextAi = _sfAiCheck("text", onCallGemini);');
+    expect(sfm).toContain('const sfTextAi = _sfAiCheck("text", _rawOnCallGemini);');
   });
   it('UDL chat error reply carries the doorway and its retry is disabled without AI', () => {
     const modals = src('view_misc_modals_source.jsx');

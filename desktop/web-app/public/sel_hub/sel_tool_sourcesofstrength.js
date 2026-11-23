@@ -42,6 +42,23 @@
     document.body.appendChild(liveRegion);
   })();
 
+  (function() {
+    if (typeof document === 'undefined' || !document.head) return;
+    if (document.getElementById('allo-sos-a11y-css')) return;
+    var s = document.createElement('style');
+    s.id = 'allo-sos-a11y-css';
+    s.textContent =
+      '.selh-sos button:focus-visible,.selh-sos a:focus-visible,.selh-sos input:focus-visible,.selh-sos textarea:focus-visible,.selh-sos summary:focus-visible,.selh-sos [tabindex]:focus-visible{outline:3px solid #f59e0b;outline-offset:2px;}' +
+      '.selh-sos button{transition:background-color 140ms ease,border-color 140ms ease,color 140ms ease;}' +
+      '@media (prefers-reduced-motion: reduce){.selh-sos,.selh-sos *{transition:none !important;animation:none !important;}}' +
+      '@media (forced-colors: active){.selh-sos button:focus-visible,.selh-sos a:focus-visible,.selh-sos input:focus-visible,.selh-sos textarea:focus-visible,.selh-sos summary:focus-visible{outline:2px solid Highlight !important;}.selh-sos button,.selh-sos [role="tab"],.selh-sos [role="radio"]{forced-color-adjust:auto;}}';
+    document.head.appendChild(s);
+  })();
+
+  function isImeComposing(e) {
+    return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+  }
+
   // The 8 Sources of Strength (Wyman framework)
   var SOURCES = [
     { id: 'family',  label: 'Family support', icon: '🏠', color: '#ec4899',
@@ -128,8 +145,20 @@
       var labToolData = (ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
       var setLabToolData = ctx.setToolData;
       var setSelHubTool = ctx.setSelHubTool;
+      var announceToSR = ctx.announceToSR;
       var onSafetyFlag = ctx.onSafetyFlag || null;
       var _souBand = (ctx && ctx.gradeBand) || 'high';
+      function announceSOS(msg) {
+        if (!msg) return;
+        if (typeof announceToSR === 'function') { try { announceToSR(msg); return; } catch (_) {} }
+        if (typeof document !== 'undefined') {
+          var live = document.getElementById('allo-live-sos');
+          if (live) {
+            live.textContent = '';
+            setTimeout(function() { live.textContent = msg; }, 20);
+          }
+        }
+      }
 
       function safeObj(v) { return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {}; }
       function safeStr(v) { return typeof v === 'string' ? v : ''; }
@@ -185,7 +214,7 @@
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { type: 'button', onClick: function() { if (typeof setSelHubTool === 'function') setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: _souSoftBg('rgba(255,255,255,0.05)', '#f1f5f9'), border: '1px solid ' + _souBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _souFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+            style: { background: _souSoftBg('rgba(255,255,255,0.05)', '#f1f5f9'), border: '1px solid ' + _souBd('#334155'), borderRadius: 8, padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', color: _souFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _souFg('#fcd34d'), fontSize: 22, fontWeight: 900 } }, '🌟 Sources of Strength'),
             h('div', { style: { fontSize: 12, color: _souFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'The protective factors that hold you up.')
@@ -201,11 +230,12 @@
           { id: 'print', label: 'Print', icon: '🖨' },
           { id: 'about', label: 'About', icon: 'ℹ' }
         ];
-        function selectTab(nextId) {
-          goto(nextId);
+        function selectTab(nextTab) {
+          goto(nextTab.id);
+          announceSOS('Switched to ' + nextTab.label + '.');
           if (typeof document !== 'undefined') {
             setTimeout(function() {
-              var el = document.getElementById('sos-tab-' + nextId);
+              var el = document.getElementById('sos-tab-' + nextTab.id);
               if (el && typeof el.focus === 'function') el.focus();
             }, 0);
           }
@@ -214,15 +244,16 @@
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
           tabs.map(function(t, ti) {
             var active = view === t.id;
-            return h('button', { key: t.id, id: 'sos-tab-' + t.id, type: 'button', onClick: function() { goto(t.id); },
+            return h('button', { key: t.id, id: 'sos-tab-' + t.id, type: 'button', onClick: function() { goto(t.id); announceSOS('Switched to ' + t.label + '.'); },
               role: 'tab', 'aria-selected': active, 'aria-controls': 'sos-panel-' + t.id, tabIndex: active ? 0 : -1,
               onKeyDown: function(e) {
-                if (e.key === 'ArrowRight') { e.preventDefault(); selectTab(tabs[(ti + 1) % tabs.length].id); }
-                else if (e.key === 'ArrowLeft') { e.preventDefault(); selectTab(tabs[(ti - 1 + tabs.length) % tabs.length].id); }
-                else if (e.key === 'Home') { e.preventDefault(); selectTab(tabs[0].id); }
-                else if (e.key === 'End') { e.preventDefault(); selectTab(tabs[tabs.length - 1].id); }
+                if (isImeComposing(e)) return;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); selectTab(tabs[(ti + 1) % tabs.length]); }
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); selectTab(tabs[(ti - 1 + tabs.length) % tabs.length]); }
+                else if (e.key === 'Home') { e.preventDefault(); selectTab(tabs[0]); }
+                else if (e.key === 'End') { e.preventDefault(); selectTab(tabs[tabs.length - 1]); }
               },
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + _souBd(active ? '#f59e0b' : '#334155'),
+              style: { padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + _souBd(active ? '#f59e0b' : '#334155'),
                 background: active ? _souSoftBg('rgba(245,158,11,0.18)', '#fef3c7') : _souBg('#1e293b'),
                 color: active ? _souFg('#fde68a') : _souFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
@@ -269,10 +300,10 @@
 
           h('div', { style: { display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' } },
             h('button', { type: 'button', onClick: function() { goto('map'); }, 'aria-label': 'Map my sources',
-              style: { padding: '10px 22px', borderRadius: 10, border: _souBtnBd(), cursor: 'pointer', background: _souGradBtn('linear-gradient(135deg, #92400e 0%, #b45309 100%)'), color: _souFg('#fff'), fontWeight: 800, fontSize: 14 } },
+              style: { padding: '10px 22px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 10, border: _souBtnBd(), cursor: 'pointer', background: _souGradBtn('linear-gradient(135deg, #92400e 0%, #b45309 100%)'), color: _souFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '🗺️ Map my sources'),
             h('button', { type: 'button', onClick: function() { goto('build'); }, 'aria-label': 'Build a source',
-              style: { padding: '10px 22px', borderRadius: 10, border: '1px solid ' + _souBd('#475569'), background: _souBg('#1e293b'), color: _souFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🌱 Build a source')
+              style: { padding: '10px 22px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 10, border: '1px solid ' + _souBd('#475569'), background: _souBg('#1e293b'), color: _souFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🌱 Build a source')
           ),
 
           softPointer()
@@ -283,12 +314,13 @@
       // MAP — rate each source 1-5
       // ═══════════════════════════════════════════════════════════
       function renderMap() {
-        function setRating(id, value) {
+        function setRating(id, value, label) {
           setSOS(function(prior) {
             var r = Object.assign({}, safeObj(prior.ratings));
             r[id] = value;
             return { ratings: r };
           });
+          announceSOS((label || id) + ' rated ' + value + ' out of 5.');
         }
         function setDetails(id, field, value) {
           setSOS(function(prior) {
@@ -319,12 +351,13 @@
                 h('span', { style: { fontSize: 20 }, 'aria-hidden': true }, s.icon),
                 h('span', { style: { fontSize: 14, fontWeight: 800, color: _souInk(s.color), flex: 1, minWidth: 140 } }, s.label),
                 // 1-5 rating
-                h('div', { style: { display: 'flex', gap: 4 }, role: 'radiogroup', 'aria-label': 'Rate ' + s.label },
+                h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' }, role: 'radiogroup', 'aria-label': 'Rate ' + s.label },
                   [1, 2, 3, 4, 5].map(function(n) {
                     var active = v === n;
                     var isFocusable = v ? active : (n === 1);
-                    return h('button', { key: n, id: 'sos-rate-' + s.id + '-' + n, type: 'button', onClick: function() { setRating(s.id, n); }, role: 'radio', 'aria-checked': active, tabIndex: isFocusable ? 0 : -1, 'aria-label': 'Rate ' + s.label + ' ' + n + ' out of 5',
+                    return h('button', { key: n, id: 'sos-rate-' + s.id + '-' + n, type: 'button', onClick: function() { setRating(s.id, n, s.label); }, role: 'radio', 'aria-checked': active, tabIndex: isFocusable ? 0 : -1, 'aria-label': 'Rate ' + s.label + ' ' + n + ' out of 5',
                       onKeyDown: function(e) {
+                        if (isImeComposing(e)) return;
                         var next = null;
                         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (n % 5) + 1;
                         else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = ((n + 3) % 5) + 1;
@@ -332,7 +365,7 @@
                         else if (e.key === 'End') next = 5;
                         if (next != null) {
                           e.preventDefault();
-                          setRating(s.id, next);
+                          setRating(s.id, next, s.label);
                           if (typeof document !== 'undefined') {
                             setTimeout(function() {
                               var btn = document.getElementById('sos-rate-' + s.id + '-' + next);
@@ -341,14 +374,14 @@
                           }
                         }
                       },
-                      style: { padding: '4px 10px', borderRadius: 4, border: '1px solid ' + (active ? (_souHC ? '#ffff00' : _souSolid(s.color)) : _souBd('#475569')), background: active ? _souSolid(s.color) : 'transparent', color: active ? _souFg('#fff') : _souInk(s.color), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, n);
+                      style: { minWidth: 44, minHeight: 44, padding: '6px 10px', boxSizing: 'border-box', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, border: '1px solid ' + (active ? (_souHC ? '#ffff00' : _souSolid(s.color)) : _souBd('#475569')), background: active ? _souSolid(s.color) : 'transparent', color: active ? _souFg('#fff') : _souInk(s.color), cursor: 'pointer', fontSize: 13, fontWeight: 700 } }, n);
                   })
                 )
               ),
 
               // Examples
               h('details', { style: { marginBottom: 8 } },
-                h('summary', { style: { cursor: 'pointer', fontSize: 12, color: _souFg('#94a3b8'), fontStyle: 'italic' } }, 'Examples of this source'),
+                h('summary', { style: { cursor: 'pointer', minHeight: 44, display: 'flex', alignItems: 'center', fontSize: 12, color: _souFg('#94a3b8'), fontStyle: 'italic' } }, 'Examples of this source'),
                 h('ul', { style: { margin: '6px 0 0', padding: '0 0 0 20px', color: _souFg('#cbd5e1'), fontSize: 12, lineHeight: 1.7 } },
                   s.examples.map(function(ex, i) { return h('li', { key: i }, ex); })
                 )
@@ -361,8 +394,16 @@
                   h('input', { id: 'sos-who-' + s.id, type: 'text', value: whoVal,
                     placeholder: v >= 3 ? 'Name names' : 'Or leave blank',
                     onChange: function(e) { setDetails(s.id, 'who', e.target.value); },
+                    onKeyDown: function(e) {
+                      if (isImeComposing(e)) return;
+                      if (e.key === 'Escape' && whoVal) {
+                        e.preventDefault();
+                        setDetails(s.id, 'who', '');
+                        announceSOS('Cleared details for ' + s.label + '.');
+                      }
+                    },
                     onBlur: function(e) { scanSosText(e.target.value); },
-                    style: { width: '100%', padding: 6, borderRadius: 4, border: '1px solid ' + _souBd('#334155'), background: _souBg('#1e293b'), color: _souFg('#e2e8f0'), fontSize: 12 } })
+                    style: { width: '100%', minHeight: 44, padding: '8px 10px', boxSizing: 'border-box', borderRadius: 4, border: '1px solid ' + _souBd('#334155'), background: _souBg('#1e293b'), color: _souFg('#e2e8f0'), fontSize: 12 } })
                 )
               ) : null,
 
@@ -381,7 +422,7 @@
               h('strong', null, lowSources.length + ' source' + (lowSources.length === 1 ? '' : 's') + ' rated 1-2 (thin): '),
               lowSources.map(function(s) { return s.label; }).join(', '),
               '. These are the work. ',
-              h('button', { type: 'button', onClick: function() { goto('build'); }, style: { background: 'transparent', border: 'none', color: _souFg('#fcd34d'), textDecoration: 'underline', cursor: 'pointer', fontSize: 12, fontWeight: 700, padding: 0 } }, 'Pick one to build →')
+              h('button', { type: 'button', onClick: function() { goto('build'); }, style: { background: 'transparent', border: 'none', color: _souFg('#fcd34d'), textDecoration: 'underline', cursor: 'pointer', fontSize: 12, fontWeight: 700, padding: '8px 10px', minHeight: 44, display: 'inline-flex', alignItems: 'center' } }, 'Pick one to build →')
             ) : h('div', { style: { fontSize: 12, color: _souFg('#bbf7d0') } }, 'No sources rated 1-2. That is a strong protective profile.')
           ) : null,
 
@@ -423,7 +464,7 @@
                 placeholder: 'e.g. "I will ask Coach if I can talk for 15 minutes after practice on Friday." Not vague; specific.',
                 onChange: function(e) { setPlan(s.id, e.target.value); },
                 onBlur: function(e) { scanSosText(e.target.value); },
-                style: { width: '100%', minHeight: 60, padding: 8, borderRadius: 6, border: '1px solid ' + _souBd('#334155'), background: _souBg('#1e293b'), color: _souFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.65, resize: 'vertical' } })
+                style: { width: '100%', minHeight: 60, padding: 8, boxSizing: 'border-box', borderRadius: 6, border: '1px solid ' + _souBd('#334155'), background: _souBg('#1e293b'), color: _souFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.65, resize: 'vertical' } })
             );
           }),
 
@@ -448,9 +489,9 @@
           h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: _souSoftBg('rgba(245,158,11,0.10)', '#fffbeb'), borderRadius: 8, border: '1px solid ' + _souBd('#f59e0b') } },
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _souFg('#fde68a'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print my Sources map. ')),
-            h('button', { type: 'button', onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _souBtnBd(), cursor: 'pointer', background: _souGradBtn('linear-gradient(135deg, #92400e 0%, #b45309 100%)'), color: _souFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { type: 'button', onClick: printNow, style: { padding: '10px 18px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: _souBtnBd(), cursor: 'pointer', background: _souGradBtn('linear-gradient(135deg, #92400e 0%, #b45309 100%)'), color: _souFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { type: 'button', onClick: function() { goto('map'); }, 'aria-label': 'Back to map',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _souBd('#475569'), background: _souBg('#1e293b'), color: _souFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+              style: { padding: '10px 18px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + _souBd('#475569'), background: _souBg('#1e293b'), color: _souFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
@@ -466,7 +507,7 @@
             ),
 
             h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid ' + _souBd('#d97706') } },
-              h('div', { style: { fontSize: 12, color: _souFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'Sources of Strength'),
+              h('div', { style: { fontSize: 12, color: _souHC ? '#ffff00' : '#475569', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'Sources of Strength'),
               h('h1', { style: { margin: 0, fontSize: 22, fontWeight: 900 } }, 'My 8 sources of strength'),
               updatedStr ? h('div', { style: { fontSize: 12, color: _souFg('#475569'), marginTop: 4 } }, 'Updated ' + updatedStr) : null
             ),
@@ -556,7 +597,7 @@
           h('div', { style: { fontSize: 12, color: _souFg('#fcd34d'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: _souFg('#fde68a'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+                style: { fontSize: 13, color: _souFg('#fde68a'), fontWeight: 700, textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', minHeight: 44, marginBottom: 4 } }, title + ' ↗')
             : h('div', { style: { fontSize: 13, color: _souFg('#fde68a'), fontWeight: 700, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _souFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );
@@ -569,7 +610,7 @@
       else if (view === 'about') body = renderAbout();
       else body = renderHome();
 
-      return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Sources of Strength' },
+      return h('div', { className: 'selh-sos', style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Sources of Strength' },
         header(),
         navTabs(),
         (d._crisisTier >= 3 && typeof window !== 'undefined' && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')

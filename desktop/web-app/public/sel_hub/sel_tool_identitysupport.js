@@ -33,16 +33,34 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
   'use strict';
 
   (function() {
-    if (document.getElementById('allo-live-identity')) return;
-    var liveRegion = document.createElement('div');
-    liveRegion.id = 'allo-live-identity';
-    liveRegion.setAttribute('aria-live', 'polite');
-    liveRegion.setAttribute('aria-atomic', 'true');
-    liveRegion.setAttribute('role', 'status');
-    liveRegion.className = 'sr-only';
-    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
-    document.body.appendChild(liveRegion);
+    if (typeof document === 'undefined' || !document.body) return;
+    if (!document.getElementById('allo-live-identity')) {
+      var liveRegion = document.createElement('div');
+      liveRegion.id = 'allo-live-identity';
+      liveRegion.setAttribute('aria-live', 'polite');
+      liveRegion.setAttribute('aria-atomic', 'true');
+      liveRegion.setAttribute('role', 'status');
+      liveRegion.className = 'sr-only';
+      liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+      document.body.appendChild(liveRegion);
+    }
+    if (document.head && !document.getElementById('allo-identity-a11y-css')) {
+      var st = document.createElement('style');
+      st.id = 'allo-identity-a11y-css';
+      st.textContent =
+        '.selh-identity button:focus-visible, .selh-identity a:focus-visible, .selh-identity input:focus-visible, .selh-identity textarea:focus-visible, .selh-identity [tabindex]:focus-visible { outline: 3px solid #ec4899; outline-offset: 2px; }' +
+        '.selh-identity button, .selh-identity a { touch-action: manipulation; }' +
+        '.selh-identity button:not(:disabled) { transition: transform 140ms ease, filter 140ms ease, background 140ms ease, border-color 140ms ease; }' +
+        '.selh-identity button:not(:disabled):hover { filter: brightness(1.06); }' +
+        '@media (prefers-reduced-motion: reduce) { .selh-identity * { transition: none !important; animation: none !important; } }' +
+        '@media (forced-colors: active) { .selh-identity button, .selh-identity a { border: 1px solid ButtonText !important; } .selh-identity :focus-visible { outline: 3px solid Highlight !important; } }';
+      document.head.appendChild(st);
+    }
   })();
+
+  function isImeComposing(e) {
+    return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+  }
 
   // Vocabulary items
   var GENDER_TERMS = [

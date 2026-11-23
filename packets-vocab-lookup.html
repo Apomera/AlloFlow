@@ -24,6 +24,19 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 3 7.5l9 4.5 9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
       <span id="product-name">AlloFlow Packets</span>
     </a>
+    <details class="top-menu">
+      <summary>Switch maker</summary>
+      <nav aria-label="Other Packets tools">
+        <a href="packets-make.html">Word Sounds</a>
+        <a href="packets-vocab.html">Vocabulary</a>
+        <a href="packets-math-practice.html">Math Fact Practice</a>
+        <a href="packets-check.html">Math Check</a>
+        <a href="packets-read-along.html">Read-Along</a>
+        <a href="packets-symbol-runner.html">Symbol Runner</a>
+        <a href="packets-present-export.html">Present &amp; print</a>
+        <a href="packets-results.html">Add up results</a>
+      </nav>
+    </details>
     <a class="top-link" href="packets-vocab.html">Make vocabulary practice</a>
   </div>
 <details class="proof">
@@ -62,6 +75,7 @@
         <label for="word">Word</label>
         <span class="hint" id="word-hint">One word or a short phrase, as it is in your list.</span>
         <input type="text" id="word" maxlength="40" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="word-hint">
+        <p id="queue-line" class="hint" hidden></p>
       </div>
       <div class="block">
         <label class="radio"><input type="checkbox" id="online-on" role="switch" aria-describedby="online-about"> <span>Allow this page to look up words online</span></label>
@@ -69,6 +83,7 @@
       </div>
       <div class="actions">
         <button type="button" class="btn btn-primary" id="look" aria-describedby="look-line">Look it up</button>
+        <button type="button" class="btn btn-text btn-small" id="skip-word" hidden>Skip to next word</button>
         <p id="look-line" class="actions-note" role="status"></p>
       </div>
     </section>
@@ -87,7 +102,7 @@
       <p id="credit" class="hint"></p>
     </section>
 
-    <p class="actions"><a class="btn" id="back" href="packets-vocab.html">Back to the vocabulary maker</a></p>
+    <p class="actions"><a class="btn" id="back" href="packets-vocab.html#step=2">Back to the vocabulary maker</a></p>
   </div>
 </main>
 

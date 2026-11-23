@@ -1147,6 +1147,8 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     var matcher = (typeof window !== 'undefined' && (window.AlloWordPictureMatcher || (window.AlloModules && window.AlloModules.WordPictureMatcher))) || null;
     var symbols = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.WordSoundsSymbols) || null;
     var symReady = !!(symbols && typeof symbols.get === 'function' && (typeof symbols.ready !== 'function' || symbols.ready()));
+    var extSymbols = (typeof window !== 'undefined' && (window.AlloReadingSymbolsExt || (window.AlloModules && window.AlloModules.ReadingSymbolsExt))) || null;
+    var extReady = !!(extSymbols && typeof extSymbols.get === 'function' && (typeof extSymbols.ready !== 'function' || extSymbols.ready()));
     var hit = null;
     if (symReady && typeof symbols.has === 'function' && symbols.has(clean)) {
       try {
@@ -1156,9 +1158,17 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
         }
       } catch (_) {}
     }
+    if (!hit && extReady && typeof extSymbols.has === 'function' && extSymbols.has(clean)) {
+      try {
+        var gotExt = extSymbols.get(clean);
+        if (gotExt && _safePictureSvg(gotExt.svg)) {
+          hit = { svg: gotExt.svg, set: gotExt.set || 'mulberry' };
+        }
+      } catch (_) {}
+    }
     if (!hit && matcher && typeof matcher.matchWord === 'function') {
       try {
-        var m = matcher.matchWord({ word: clean }, { symbols: symReady ? symbols : null, preferDiagrams: true });
+        var m = matcher.matchWord({ word: clean }, { symbols: symReady ? symbols : null, readingSymbolsExt: extReady ? extSymbols : null, preferDiagrams: true });
         if (m && _safePictureSvg(m.svg)) {
           hit = { svg: m.svg, set: m.set || (m.matchTier === 'diagram' || m.matchType === 'diagram' ? 'diagram' : 'mulberry') };
         }
@@ -1196,9 +1206,18 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     };
     _wordPicturesPromise = Promise.all([
       loadScript('word_sounds_symbols_en.js', 'data-allo-word-symbols'),
+      loadScript('reading_symbols_ext_en.js', 'data-allo-reading-symbols-ext'),
+      loadScript('word_picture_semantic_en.js', 'data-allo-word-semantic'),
       loadScript('word_picture_matcher.js', 'data-allo-word-matcher')
     ]).then(function () {
-      return !!(window.AlloWordPictureMatcher || (window.AlloModules && window.AlloModules.WordPictureMatcher));
+      var tasks = [];
+      var ext = window.AlloReadingSymbolsExt || (window.AlloModules && window.AlloModules.ReadingSymbolsExt);
+      if (ext && typeof ext.load === 'function' && !(typeof ext.ready === 'function' && ext.ready())) {
+        tasks.push(ext.load().catch(function () {}));
+      }
+      return Promise.all(tasks).then(function () {
+        return !!(window.AlloWordPictureMatcher || (window.AlloModules && window.AlloModules.WordPictureMatcher));
+      });
     }, function () {
       _wordPicturesPromise = null;
       return false;

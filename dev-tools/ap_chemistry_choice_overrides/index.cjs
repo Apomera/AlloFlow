@@ -6,6 +6,10 @@ const part3 = require('./part3.cjs');
 const leakageFixes = require('./leakage_fixes.cjs');
 const feedbackEnrichment = require('./feedback_enrichment.cjs');
 const libraryChecks = require('./library_checks.cjs');
+const shortRationales = {
+  ...require('../ap_stem_short_rationales/ap_stats_phys_chem.cjs').ap_chemistry_foundation_pilot,
+  ...require('../ap_stem_short_rationales/wave2_bio_calc_chem.cjs').ap_chemistry_foundation_pilot,
+};
 
 const AP_CHEMISTRY_CHOICE_OVERRIDES = {
   ...part1,
@@ -28,8 +32,10 @@ function normalizeLookup(value) {
 function applyApChemChoiceOverride(itemId, spec) {
   const override = AP_CHEMISTRY_CHOICE_OVERRIDES[itemId];
   const fbOverrides = feedbackEnrichment[itemId];
-  if (!override && !fbOverrides) return spec;
+  const enrichedRationale = shortRationales[itemId];
+  if (!override && !fbOverrides && !enrichedRationale) return spec;
   const next = { ...spec };
+  if (enrichedRationale) next.rationale = enrichedRationale;
   if (override && override.prompt) next.prompt = override.prompt;
   if (override && override.answer) next.answer = override.answer;
   if (override && override.wrongReasons) next.wrongReasons = override.wrongReasons.slice();

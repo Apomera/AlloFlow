@@ -10,17 +10,17 @@
   body.paper-on #paper { display: block !important; color: var(--ink); font-size: 13pt; line-height: 1.75; }
 
   .paper-sheet { max-width: 100%; }
-  .paper-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12pt; border-bottom: 1.5pt solid var(--ink); padding-bottom: 6pt; margin-bottom: 12pt; }
+  .paper-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6pt 12pt; border-bottom: 1.5pt solid var(--ink); padding-bottom: 6pt; margin-bottom: 12pt; }
   .paper-head h1 { margin: 0; font-size: 17pt; line-height: 1.2; color: var(--ink); }
-  .paper-meta { display: flex; gap: 16pt; font-size: 10.5pt; color: var(--muted); white-space: nowrap; }
+  .paper-meta { display: flex; flex-wrap: wrap; gap: 16pt; font-size: 10.5pt; color: var(--muted); white-space: nowrap; }
   .paper-sub { margin: 0 0 10pt; font-size: 10pt; color: var(--muted); }
   .paper-body { margin: 0; }
-  .paper-h { margin: 14pt 0 6pt; font-size: 14.5pt; line-height: 1.25; color: var(--ink); break-after: avoid; }
-  .paper-para { margin: 0 0 11pt; break-inside: avoid; }
+  .paper-h { margin: 14pt 0 6pt; font-size: 14.5pt; line-height: 1.25; color: var(--ink); break-after: avoid; page-break-after: avoid; }
+  .paper-para { margin: 0 0 11pt; orphans: 3; widows: 3; }
   .paper-line { display: block; margin: 0 0 4pt; }
   .paper-gloss { margin-top: 16pt; padding-top: 10pt; border-top: 1pt solid var(--line); }
-  .paper-gloss h2 { margin: 0 0 8pt; font-size: 13pt; color: var(--ink); }
-  .paper-gloss-list { margin: 0; padding-inline-start: 16pt; }
+  .paper-gloss h2 { margin: 0 0 8pt; font-size: 13pt; color: var(--ink); break-after: avoid; page-break-after: avoid; }
+  .paper-gloss-list { margin: 0; padding-inline-start: 0; list-style: none; }
   .paper-gloss-item { margin: 0 0 6pt; font-size: 10.5pt; line-height: 1.45; break-inside: avoid; display: flex; align-items: center; gap: 6pt; }
   .paper-gloss-img { width: 24pt; height: 24pt; object-fit: contain; flex-shrink: 0; border: 0.5pt solid var(--line); border-radius: 3pt; padding: 1pt; }
   .paper-gloss-word { font-weight: 700; color: var(--ink); }

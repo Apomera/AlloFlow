@@ -968,14 +968,15 @@ var ALLO_INTERACTIVE_OBJECT_PROFILES = {
   'fluency-record': { label: 'Fluency Record', status: 'ready', html: 'interactive', canExportHtml: true, canExportIms: true, interactiveHtml: true, tracking: 'none', fallback: 'metrics-report', notes: 'Exports fluency metrics and optional offline audio playback when the recording is present.' },
   adventure: { label: 'Adventure', status: 'adapter-needed', html: 'none', canExportHtml: false, canExportIms: false, interactiveHtml: false, tracking: 'none', fallback: 'storybook-export', notes: 'Use the dedicated storybook export until adventure scenes can be packaged as a resource object.' },
   persona: { label: 'Persona Chat', status: 'unsupported', html: 'none', canExportHtml: false, canExportIms: false, interactiveHtml: false, tracking: 'live-runtime', fallback: 'transcript-snapshot-needed', notes: 'Live chat needs a model/session runtime; export should use a transcript snapshot once implemented.' },
-  'word-sounds': { label: 'Word Sounds Studio', status: 'adapter-needed', html: 'none', canExportHtml: false, canExportIms: false, interactiveHtml: false, tracking: 'none', fallback: 'studio-adapter-needed', notes: 'Studio tools need their own package adapter.' },
+  'word-sounds': { label: 'Word Sounds Studio', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'activity-worksheet', notes: 'Exports as a printable Word Sounds activity worksheet with student workspace and a teacher-only answer key.' },
   'storyforge-config': { label: 'StoryForge Assignment', status: 'adapter-needed', html: 'none', canExportHtml: false, canExportIms: false, interactiveHtml: false, tracking: 'none', fallback: 'studio-adapter-needed', notes: 'StoryForge packages need a separate object adapter.' },
   'storyforge-submission': { label: 'Story Submission', status: 'adapter-needed', html: 'none', canExportHtml: false, canExportIms: false, interactiveHtml: false, tracking: 'none', fallback: 'submission-export', notes: 'Student submissions are not standard resource objects yet.' },
   'stem-assessment': { label: 'STEM Assessment', status: 'adapter-needed', html: 'none', canExportHtml: false, canExportIms: false, interactiveHtml: false, tracking: 'assessment-runtime', fallback: 'assessment-adapter-needed', notes: 'Needs assessment-specific packaging/tracking.' },
 };
 function _alloInteractiveObjectProfileFor(typeOrItem) {
   var type = typeof typeOrItem === 'string' ? typeOrItem : ((typeOrItem && typeOrItem.type) || '');
-  var base = ALLO_INTERACTIVE_OBJECT_PROFILES[type] || {
+  var lookupType = type === 'word_sounds' ? 'word-sounds' : type;
+  var base = ALLO_INTERACTIVE_OBJECT_PROFILES[lookupType] || {
     label: type || 'Unknown resource',
     status: 'unsupported',
     html: 'none',
@@ -50822,7 +50823,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         'glossary': 'includeGlossary', 'quiz': 'includeQuiz', 'faq': 'includeFaq',
           'memory-aid': 'includeMemoryAid', 'applied-challenge': 'includeAppliedChallenge',
         'sentence-frames': 'includeSentenceFrames', 'image': 'includeImage', 'math': 'includeMath', 'dbq': 'includeDbq', 'concept-sort': 'includeConceptSort',
-        'timeline': 'includeTimeline', 'note-taking': 'includeNoteTaking', 'anchor-chart': 'includeAnchorChart', 'directions': 'includeDirections', 'gemini-bridge': 'includeGeminiBridge', 'fluency-record': 'includeFluencyRecord', 'alignment-report': 'includeAlignmentReport'
+        'timeline': 'includeTimeline', 'note-taking': 'includeNoteTaking', 'anchor-chart': 'includeAnchorChart', 'directions': 'includeDirections', 'gemini-bridge': 'includeGeminiBridge', 'fluency-record': 'includeFluencyRecord', 'alignment-report': 'includeAlignmentReport', 'word-sounds': 'includeWordSounds', 'word_sounds': 'includeWordSounds'
       };
       const toggleKey = originalReading ? 'includeOriginalReading' : typeToggleMap[item.type];
       if (toggleKey && cfg[toggleKey] === false) return '';
@@ -56268,6 +56269,218 @@ function projectStudentGuideData(data, mode) {
           `;
       }
 
+      if (item.type === 'word-sounds' || item.type === 'word_sounds') {
+          const _wsRawData = item.data;
+          const _wsDataObj = _wsRawData && typeof _wsRawData === 'object' && !Array.isArray(_wsRawData) ? _wsRawData : null;
+          const _wsBlocks = (Array.isArray(item.blocks) && item.blocks.length ? item.blocks : null)
+              || (item.lesson && Array.isArray(item.lesson.blocks) && item.lesson.blocks.length ? item.lesson.blocks : null)
+              || (_wsDataObj && Array.isArray(_wsDataObj.blocks) && _wsDataObj.blocks.length ? _wsDataObj.blocks : null);
+          const _wsParseTextWords = (rawText) => {
+              const s = String(rawText || '').trim();
+              if (!s) return [];
+              if (s.startsWith('[') || s.startsWith('{')) {
+                  try {
+                      const parsed = JSON.parse(s);
+                      if (Array.isArray(parsed)) return parsed;
+                      if (parsed && Array.isArray(parsed.words)) return parsed.words;
+                      if (parsed && Array.isArray(parsed.data)) return parsed.data;
+                  } catch (_) {}
+              }
+              return s.split(/[\r\n,;]+/)
+                  .map(tok => tok.replace(/^\s*(?:[-*\u2022]|\d+[.)])\s*/, '').trim())
+                  .filter(Boolean);
+          };
+          const _wsRawWords = (Array.isArray(item.wsPreloadedWords) && item.wsPreloadedWords.length ? item.wsPreloadedWords : null)
+              || (Array.isArray(_wsRawData) && _wsRawData.length ? _wsRawData : null)
+              || (_wsDataObj && Array.isArray(_wsDataObj.words) && _wsDataObj.words.length ? _wsDataObj.words : null)
+              || (_wsDataObj && Array.isArray(_wsDataObj.items) && _wsDataObj.items.length ? _wsDataObj.items : null)
+              || (_wsDataObj && Array.isArray(_wsDataObj.data) && _wsDataObj.data.length ? _wsDataObj.data : null)
+              || (Array.isArray(item.words) && item.words.length ? item.words : null)
+              || (Array.isArray(item.items) && item.items.length ? item.items : null)
+              || (typeof _wsRawData === 'string' ? _wsParseTextWords(_wsRawData) : null)
+              || (typeof item.content === 'string' ? _wsParseTextWords(item.content) : null)
+              || (Array.isArray(item.content) ? item.content : null)
+              || (item.content && typeof item.content === 'object' && Array.isArray(item.content.words) ? item.content.words : [])
+              || [];
+          const _wsActivities = (Array.isArray(item.activities) && item.activities.length ? item.activities : null)
+              || (Array.isArray(item.lessonPlanSequence) && item.lessonPlanSequence.length ? item.lessonPlanSequence : null)
+              || (_wsDataObj && Array.isArray(_wsDataObj.activities) && _wsDataObj.activities.length ? _wsDataObj.activities : null)
+              || (item.sessionConfig && Array.isArray(item.sessionConfig.activities) && item.sessionConfig.activities.length ? item.sessionConfig.activities : null)
+              || (cfg && Array.isArray(cfg.wordSoundsActivities) && cfg.wordSoundsActivities.length ? cfg.wordSoundsActivities : null);
+          if ((!_wsBlocks || !_wsBlocks.length) && !_wsRawWords.length) return '';
+
+          const _wsScopedCss = [
+              '.alloflow-word-sounds-ws{color:#0f172a;line-height:1.45;}',
+              '.alloflow-word-sounds-ws .ws-header{border-bottom:2px solid #0f172a;padding-bottom:8px;margin-bottom:14px;}',
+              '.alloflow-word-sounds-ws .ws-title{margin:0 0 8px;font-size:1.15em;font-weight:700;color:#0f172a;}',
+              '.alloflow-word-sounds-ws .ws-meta{display:flex;flex-wrap:wrap;gap:8px 24px;font-size:0.9em;font-weight:600;}',
+              '.alloflow-word-sounds-ws .ws-meta-field{display:inline-flex;align-items:baseline;gap:6px;flex:1 1 180px;}',
+              '.alloflow-word-sounds-ws .ws-meta-line{flex:1 1 auto;border-bottom:1.5px solid #0f172a;min-width:90px;height:14px;}',
+              '.alloflow-word-sounds-ws .ws-section{margin-top:16px;}',
+              '.alloflow-word-sounds-ws .ws-section-head{break-after:avoid;page-break-after:avoid;margin-bottom:8px;}',
+              '.alloflow-word-sounds-ws .ws-section-title{margin:0 0 4px;font-size:1.08em;font-weight:700;color:#0f172a;}',
+              '.alloflow-word-sounds-ws .ws-directions{margin:0;font-size:0.92em;color:#334155;}',
+              '.alloflow-word-sounds-ws .ws-list{list-style:none;margin:6px 0 0;padding:0;}',
+              '.alloflow-word-sounds-ws .ws-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #cbd5e1;break-inside:avoid;page-break-inside:avoid;}',
+              '.alloflow-word-sounds-ws .ws-num{min-width:24px;font-weight:700;}',
+              '.alloflow-word-sounds-ws .ws-body{flex:1 1 auto;min-width:0;}',
+              '.alloflow-word-sounds-ws .ws-prompt{margin:0 0 6px;font-weight:600;}',
+              '.alloflow-word-sounds-ws .ws-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;}',
+              '.alloflow-word-sounds-ws .ws-pic{display:block;width:56px;height:56px;object-fit:contain;border:1px solid #94a3b8;padding:3px;background:#ffffff;flex:none;}',
+              '.alloflow-word-sounds-ws .ws-pic-sm{display:block;width:32px;height:32px;object-fit:contain;flex:none;}',
+              '.alloflow-word-sounds-ws .ws-word{font-size:1.25em;font-weight:700;letter-spacing:0.02em;}',
+              '.alloflow-word-sounds-ws .ws-boxes{display:inline-flex;flex-wrap:wrap;align-items:center;}',
+              '.alloflow-word-sounds-ws .ws-box{display:inline-block;width:38px;height:38px;border:2px solid #0f172a;background:#ffffff;box-sizing:border-box;}',
+              '.alloflow-word-sounds-ws .ws-box+.ws-box{margin-left:-2px;}',
+              '.alloflow-word-sounds-ws .ws-bank{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px;font-size:0.9em;}',
+              '.alloflow-word-sounds-ws .ws-bank-label{font-weight:700;margin-right:4px;}',
+              '.alloflow-word-sounds-ws .ws-chip,.alloflow-word-sounds-ws .ws-tile{display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:3px 10px;border:1.5px solid #0f172a;border-radius:5px;font-weight:700;background:#ffffff;}',
+              '.alloflow-word-sounds-ws .ws-missing{display:inline-flex;align-items:center;gap:4px;font-size:1.45em;font-weight:700;}',
+              '.alloflow-word-sounds-ws .ws-blank{display:inline-block;min-width:30px;height:32px;border:2px solid #0f172a;border-radius:4px;background:#ffffff;vertical-align:middle;}',
+              '.alloflow-word-sounds-ws .ws-choices,.alloflow-word-sounds-ws .ws-bubbles{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:8px 0 0;padding:0;}',
+              '.alloflow-word-sounds-ws .ws-choice,.alloflow-word-sounds-ws .ws-bubble{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:4px 12px;border:1.5px solid #0f172a;border-radius:999px;font-weight:700;background:#ffffff;}',
+              '.alloflow-word-sounds-ws .ws-tap-dots{display:inline-flex;flex-wrap:wrap;gap:8px;align-items:center;}',
+              '.alloflow-word-sounds-ws .ws-tap-dot{display:inline-block;width:28px;height:28px;border:2px solid #0f172a;border-radius:999px;background:#ffffff;}',
+              '.alloflow-word-sounds-ws .ws-sounds-seq{font-size:1.2em;font-weight:700;letter-spacing:0.04em;}',
+              '.alloflow-word-sounds-ws .ws-line{width:100%;max-width:360px;height:32px;margin-top:8px;border-bottom:2px solid #0f172a;border-top:1px dashed #94a3b8;}',
+              '.alloflow-word-sounds-ws .ws-build-lines{display:flex;flex-wrap:wrap;gap:10px 22px;margin-top:8px;font-weight:700;}',
+              '.alloflow-word-sounds-ws .ws-build-blank{display:inline-block;width:48px;border-bottom:2px solid #0f172a;margin-right:2px;}',
+              '.alloflow-word-sounds-ws .ws-sort-bank{border:1.5px solid #0f172a;border-radius:6px;padding:8px 10px;margin:8px 0 10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;}',
+              '.alloflow-word-sounds-ws .ws-sort-cols{display:grid;gap:10px;margin-top:8px;}',
+              '.alloflow-word-sounds-ws .ws-sort-cols-2{grid-template-columns:repeat(2,minmax(0,1fr));}',
+              '.alloflow-word-sounds-ws .ws-sort-cols-3{grid-template-columns:repeat(3,minmax(0,1fr));}',
+              '.alloflow-word-sounds-ws .ws-sort-col{border:1.5px solid #0f172a;border-radius:6px;padding:8px 10px;min-height:110px;break-inside:avoid;}',
+              '.alloflow-word-sounds-ws .ws-sort-col-head{margin:0 0 6px;padding-bottom:4px;border-bottom:1.5px solid #0f172a;font-size:0.95em;font-weight:700;text-align:center;}',
+              '.alloflow-word-sounds-ws .ws-sort-line{height:24px;border-bottom:1px solid #94a3b8;}',
+              '.alloflow-word-sounds-ws .ws-trace-wrap{display:flex;flex-direction:column;gap:8px;margin-top:8px;}',
+              '.alloflow-word-sounds-ws .ws-trace-row{position:relative;display:flex;align-items:flex-end;gap:18px;height:68px;max-width:520px;border-top:2px solid #0f172a;border-bottom:2px solid #0f172a;padding:0 10px;}',
+              '.alloflow-word-sounds-ws .ws-trace-row::before{content:"";position:absolute;left:0;right:0;top:50%;border-top:1.5px dashed #94a3b8;}',
+              '.alloflow-word-sounds-ws .ws-trace-letter{position:relative;z-index:1;font-size:56px;line-height:0.88;color:#94a3b8;}',
+              '.alloflow-word-sounds-ws .ws-scoops{display:inline-flex;gap:8px;align-items:center;margin-top:6px;}',
+              '.alloflow-word-sounds-ws .ws-scoop{display:inline-block;width:46px;height:16px;border-bottom:2px solid #0f172a;border-left:1px solid #94a3b8;border-right:1px solid #94a3b8;border-radius:0 0 16px 16px;}',
+              '.alloflow-word-sounds-ws .ws-fluency{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px;font-size:0.9em;}',
+              '.alloflow-word-sounds-ws .ws-check-item{display:inline-flex;align-items:center;gap:6px;}',
+              '.alloflow-word-sounds-ws .ws-checkbox{display:inline-block;width:15px;height:15px;border:1.5px solid #0f172a;background:#ffffff;}',
+              '.alloflow-word-sounds-ws .ws-passage{margin:6px 0 8px;padding:8px 12px;border:1.5px solid #0f172a;line-height:1.6;}',
+              '.alloflow-word-sounds-ws .ws-credits{margin-top:14px;padding-top:8px;border-top:1px solid #cbd5e1;font-size:0.8em;color:#475569;}',
+              '.alloflow-word-sounds-ws .ws-key{break-before:page;page-break-before:always;margin-top:20px;padding:12px 14px;border:2px solid #0f172a;border-radius:8px;background:#f8fafc;}',
+              '.alloflow-word-sounds-ws .ws-key-banner{margin:0 0 10px;padding:6px 10px;border:1.5px solid #0f172a;font-size:0.92em;font-weight:700;background:#ffffff;}',
+              '.alloflow-word-sounds-ws .ws-key-list{margin:4px 0 10px;padding-left:22px;line-height:1.5;}',
+              '.alloflow-word-sounds-ws .ws-key-list li{margin:4px 0;break-inside:avoid;}'
+          ].join('');
+
+          const _wpBuilder = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.WordPractice && typeof window.AlloModules.WordPractice.buildWordSoundsWorksheetHtml === 'function'
+              ? window.AlloModules.WordPractice.buildWordSoundsWorksheetHtml
+              : null;
+
+          let _wsBodyHtml = '';
+          if (_wpBuilder) {
+              try {
+                  const _wsPayload = {
+                      title,
+                      data: _wsRawWords,
+                      words: _wsRawWords,
+                      blocks: _wsBlocks || undefined,
+                      images: item.images || (_wsDataObj && _wsDataObj.images) || (item.lesson && item.lesson.images) || undefined,
+                      lesson: item.lesson || undefined,
+                      activities: _wsActivities || undefined,
+                      sessionConfig: item.sessionConfig || undefined,
+                  };
+                  const _rawWsHtml = String(_wpBuilder(_wsPayload, {
+                      title,
+                      answerKey: !!isTeacher,
+                      includeAnswerKey: !!isTeacher,
+                      pictures: cfg.includePictures !== false,
+                      hints: cfg.wordSoundsHints !== false,
+                      syllables: !!cfg.wordSoundsSyllables,
+                      activities: _wsActivities || undefined,
+                  }) || '');
+                  if (_rawWsHtml.trim()) {
+                      const _bodyMatch = _rawWsHtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+                      let _frag = _bodyMatch ? _bodyMatch[1] : _rawWsHtml
+                          .replace(/<!doctype[^>]*>/gi, '')
+                          .replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '')
+                          .replace(/<\/?(?:html|body)[^>]*>/gi, '');
+                      _frag = _frag.replace(/<p\b[^>]*class="[^"]*\bws-noprint\b[^"]*"[^>]*>[\s\S]*?<\/p>/gi, '');
+                      // Demote headings so the pack maintains a single <h1> and clean <h2> -> <h3> hierarchy
+                      _frag = _frag
+                          .replace(/<(\/?)h4(\b[^>]*)>/gi, '<$1h5$2>')
+                          .replace(/<(\/?)h3(\b[^>]*)>/gi, '<$1h4$2>')
+                          .replace(/<(\/?)h2(\b[^>]*)>/gi, '<$1h3$2>')
+                          .replace(/<h1(\b[^>]*)>([\s\S]*?)<\/h1>/gi, '<p$1>$2</p>');
+                      const _keyPattern = /<section\b[^>]*class="[^"]*\bws-key\b[^"]*"[^>]*>[\s\S]*?<\/section>/gi;
+                      if (!isTeacher) {
+                          _frag = _frag.replace(_keyPattern, '');
+                      } else if (_keyPattern.test(_frag)) {
+                          _frag = _frag.replace(/<section\b[^>]*class="[^"]*\bws-key\b[^"]*"[^>]*>[\s\S]*?<\/section>/gi, (m) =>
+                              '<div class="answer-key teacher-only" data-answer-key="true" data-allo-teacher-only="word-sounds">' + m + '</div>'
+                          );
+                      }
+                      _wsBodyHtml = _frag.trim();
+                  }
+              } catch (_) {
+                  _wsBodyHtml = '';
+              }
+          }
+
+          if (!_wsBodyHtml) {
+              const _fallbackEntries = (_wsBlocks && _wsBlocks.length
+                  ? _wsBlocks.flatMap(b => Array.isArray(b && b.items) ? b.items : [])
+                  : _wsRawWords
+              ).map((entry) => {
+                  if (typeof entry === 'string') {
+                      const w = entry.trim();
+                      return w ? { word: w, phonemes: w.split(''), graphemes: w.split('') } : null;
+                  }
+                  if (!entry || typeof entry !== 'object') return null;
+                  const w = String(entry.word || entry.targetWord || entry.term || entry.target || '').trim();
+                  if (!w) return null;
+                  const ph = Array.isArray(entry.phonemes) && entry.phonemes.length ? entry.phonemes.map(String) : w.split('');
+                  const gr = Array.isArray(entry.graphemes) && entry.graphemes.length ? entry.graphemes.map(String) : ph;
+                  return { word: w, phonemes: ph, graphemes: gr };
+              }).filter(Boolean);
+              if (!_fallbackEntries.length) return '';
+
+              const _showHints = cfg.wordSoundsHints !== false;
+              const _itemsHtml = _fallbackEntries.map((ent, idx) => {
+                  const boxCount = Math.max(1, ent.phonemes.length || ent.word.length);
+                  const boxes = Array.from({ length: boxCount }, () => '<span class="ws-box"></span>').join('');
+                  const bankParts = ent.graphemes.slice().reverse();
+                  const bankHtml = _showHints && bankParts.length
+                      ? '<div class="ws-bank"><span class="ws-bank-label">Letter bank:</span>' + bankParts.map(g => '<span class="ws-chip">' + _escTxt(g) + '</span>').join('') + '</div>'
+                      : '';
+                  return '<li class="ws-item"><span class="ws-num">' + (idx + 1) + '.</span><div class="ws-body">'
+                      + '<div class="ws-row"><div class="ws-boxes" data-sound-boxes="' + boxCount + '">' + boxes + '</div></div>'
+                      + bankHtml
+                      + '<div class="ws-line"></div>'
+                      + '</div></li>';
+              }).join('');
+              const _studentFrag = '<section class="ws-section" data-activity="mapping">'
+                  + '<div class="ws-section-head"><h3 class="ws-section-title">Sound Mapping</h3><p class="ws-directions">Say each word and write the letters for each sound in the boxes, then write the whole word on the line.</p></div>'
+                  + '<ol class="ws-list">' + _itemsHtml + '</ol></section>';
+              const _keyFrag = isTeacher
+                  ? '<div class="answer-key teacher-only" data-answer-key="true" data-allo-teacher-only="word-sounds">'
+                    + '<section class="ws-key" aria-label="Teacher answer key">'
+                    + '<p class="ws-key-banner">For the teacher \u2014 keep apart from the student copy</p>'
+                    + '<h3>Teacher Answer Key &amp; Read-Aloud List</h3>'
+                    + '<ol class="ws-key-list">'
+                    + _fallbackEntries.map(ent => '<li>' + _escTxt(ent.word) + ' \u2014 ' + _escTxt(ent.graphemes.join(' \u00b7 ')) + ' (' + ent.phonemes.length + ' ' + (ent.phonemes.length === 1 ? 'sound' : 'sounds') + ')</li>').join('')
+                    + '</ol></section></div>'
+                  : '';
+              _wsBodyHtml = _studentFrag + _keyFrag;
+          }
+
+          return `
+              <style>${_wsScopedCss}</style>
+              <div class="section alloflow-word-sounds-section" id="${_escTxt(item.id)}${isTeacher ? '-teacher' : ''}">
+                  <h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid #0284c7;background:#f0f9ff;color:#0c4a6e;">
+                      <span aria-hidden="true">&#128292;</span> ${_escTxt(title)}${isTeacher ? ' &#8212; ' + _uiL('export.teacher_key_suffix', 'Teacher Reference') : ''}
+                  </h2>
+                  <div class="alloflow-word-sounds-ws">${_wsBodyHtml}</div>
+              </div>
+          `;
+      }
+
       return '';
   };
   // ── Unified Style Seeds: merge pre-remediation preferences + post-remediation themes ──
@@ -56393,7 +56606,7 @@ function projectStudentGuideData(data, mode) {
         'directions': 'includeDirections', 'word-wall': 'includeWordWall',
         'fluency-record': 'includeFluencyRecord', 'alignment-report': 'includeAlignmentReport',
         'faq': 'includeFaq', 'analysis': 'includeAnalysis', 'udl-advice': 'includeUdlAdvice',
-        'brainstorm': 'includeBrainstorm'
+        'brainstorm': 'includeBrainstorm', 'word-sounds': 'includeWordSounds', 'word_sounds': 'includeWordSounds'
       };
       if (Array.isArray(cfg.resourceOrder) && cfg.resourceOrder.length > 0) {
         const _orderRank = new Map();
@@ -56456,6 +56669,8 @@ function projectStudentGuideData(data, mode) {
         'applied-challenge': { icon: '🛠️', color: '#0f766e', bg: '#f0fdfa', label: 'Applied Challenge' },
         'directions': { icon: '🧭', color: '#0369a1', bg: '#f0f9ff', label: 'Directions' },
         'alignment-report': { icon: '🧭', color: '#0f766e', bg: '#f0fdfa', label: 'Alignment Report' },
+        'word-sounds': { icon: '🔤', color: '#0284c7', bg: '#f0f9ff', label: 'Word Sounds' },
+        'word_sounds': { icon: '🔤', color: '#0284c7', bg: '#f0f9ff', label: 'Word Sounds' },
       };
       const _typeLabelKeys = { 'simplified': 'roster.type_adapted_text', 'analysis': 'meta.analysis_standard', 'glossary': 'roster.type_glossary', 'quiz': 'roster.type_quiz', 'outline': 'export.type_outline', 'faq': 'roster.type_faq', 'sentence-frames': 'roster.type_frames', 'image': 'export.type_image', 'math': 'stem.tools_menu.math', 'dbq': 'dbq.default_title', 'lesson-plan': 'tour.lesson_plan_title', 'udl-advice': 'export.type_udl_advice', 'brainstorm': 'roster.type_brainstorm', 'fluency-record': 'export.type_fluency_record', 'timeline': 'export.type_timeline', 'concept-sort': 'roster.type_concept_sort', 'note-taking': 'note_taking.notes_column', 'anchor-chart': 'sidebar.tool_anchor_chart', 'memory-aid': 'export.type_memory_aid', 'applied-challenge': 'export.type_applied_challenge', 'directions': 'export.type_directions', 'alignment-report': 'export.type_alignment_report' };
       const _willRenderForCtx = (item, isTeacher) => {
@@ -56464,7 +56679,7 @@ function projectStudentGuideData(data, mode) {
           'glossary': 'includeGlossary', 'quiz': 'includeQuiz', 'faq': 'includeFaq',
           'memory-aid': 'includeMemoryAid', 'applied-challenge': 'includeAppliedChallenge',
           'sentence-frames': 'includeSentenceFrames', 'image': 'includeImage', 'math': 'includeMath', 'dbq': 'includeDbq', 'concept-sort': 'includeConceptSort',
-          'timeline': 'includeTimeline', 'note-taking': 'includeNoteTaking', 'anchor-chart': 'includeAnchorChart', 'directions': 'includeDirections', 'gemini-bridge': 'includeGeminiBridge', 'fluency-record': 'includeFluencyRecord', 'alignment-report': 'includeAlignmentReport'
+          'timeline': 'includeTimeline', 'note-taking': 'includeNoteTaking', 'anchor-chart': 'includeAnchorChart', 'directions': 'includeDirections', 'gemini-bridge': 'includeGeminiBridge', 'fluency-record': 'includeFluencyRecord', 'alignment-report': 'includeAlignmentReport', 'word-sounds': 'includeWordSounds', 'word_sounds': 'includeWordSounds'
         };
         const originalReading = !!readingContract?.isSupportedOriginal?.(item);
         const key = originalReading ? 'includeOriginalReading' : toggleMap[item.type];

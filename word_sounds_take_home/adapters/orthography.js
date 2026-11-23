@@ -22,6 +22,7 @@ module.exports = {
     orthography_add: 'Add {letter}',
     orthography_backspace: 'Remove last letter',
     orthography_clear: 'Clear',
+    orthography_slow: 'Hear it slowly',
     orthography_check: 'Check spelling',
     orthography_empty: 'Type or tap letters to spell the word first.',
     orthography_same: 'Change your spelling, then check it again.',
@@ -88,17 +89,21 @@ module.exports = {
     var input = ctx.el('input', { id: inputId, type: 'text', dir: 'ltr', autocomplete: 'off', autocorrect: 'off', autocapitalize: 'none', spellcheck: 'false',
       inputmode: /[^a-z]/.test(own(target)) ? 'text' : 'none', placeholder: placeholder,
       maxlength: '40', style: 'font-size:1.6rem;font-weight:700;letter-spacing:.1em;text-transform:lowercase;text-align:center', on: {
-        input: function () { lastSubmitted = null; },
+        input: function () { lastSubmitted = null; syncCheck(); },
         keydown: function (e) {
           if (e.key !== 'Enter' || e.repeat || e.isComposing || e.keyCode === 229) return;
           e.preventDefault();
           submit();
         },
       } });
+    var syncCheck = function () {
+      if (check) check.setAttribute('aria-disabled', ctx.isDone() || !String(input.value || '').trim() ? 'true' : 'false');
+    };
     var edit = function (value) {
       if (ctx.isDone()) return;
       input.value = value;
       lastSubmitted = null;
+      syncCheck();
     };
     var submit = function () {
       if (ctx.isDone()) return;
@@ -120,23 +125,25 @@ module.exports = {
       : 'abcdefghijklmnopqrstuvwxyz'.split('').concat(item.extraTiles || []);
     var tiles = letters.map(function (letter) {
       return ctx.el('button', { type: 'button', 'aria-label': ctx.fmt(ctx.L.orthography_add, { letter: letter }),
-        style: 'min-width:52px;font-size:1.3rem;font-weight:700;padding:6px 10px',
+        style: 'min-width:44px;min-height:44px;font-size:1.15rem;font-weight:700;padding:4px 8px',
         on: { click: function () { edit(String(input.value || '') + letter); } } }, [letter]);
     });
-    var back = ctx.el('button', { type: 'button', on: { click: function () { edit(String(input.value || '').slice(0, -1)); } }, text: ctx.L.orthography_backspace });
-    var clear = ctx.el('button', { type: 'button', on: { click: function () { edit(''); } }, text: ctx.L.orthography_clear });
-    var check = ctx.el('button', { type: 'button', class: 'primary', on: { click: submit }, text: ctx.L.orthography_check });
+    var back = ctx.el('button', { type: 'button', 'aria-label': ctx.L.orthography_backspace, style: 'min-width:44px;min-height:44px', on: { click: function () { edit(String(input.value || '').slice(0, -1)); } } }, ['⌫']);
+    var clear = ctx.el('button', { type: 'button', style: 'min-height:44px', on: { click: function () { edit(''); } }, text: ctx.L.orthography_clear });
+    var check = ctx.el('button', { type: 'button', class: 'primary', 'aria-disabled': 'true', on: { click: submit }, text: ctx.L.orthography_check });
     var answerLine = ctx.el('p', { class: 'letters', hidden: true, text: ctx.fmt(ctx.L.orthography_answer, { word: written }) });
     ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.orthography_question }));
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
       ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); ctx.play(item.promptAudio); } }, text: ctx.L.hear_question }),
       ctx.el('button', { type: 'button', on: { click: function () { ctx.support('wordReplays'); ctx.play(item.wordAudio); } }, text: ctx.L.hear_word }),
+      ctx.el('button', { type: 'button', on: { click: function () { ctx.support('slowReplays'); ctx.play(item.wordAudio, 0.5); } }, text: ctx.L.orthography_slow || 'Hear it slowly' }),
     ]));
     ctx.root.appendChild(ctx.el('label', { for: inputId, text: ctx.L.orthography_input }));
     ctx.root.appendChild(input);
-    ctx.root.appendChild(ctx.el('div', { class: 'row', role: 'group', 'aria-label': ctx.L.orthography_tiles, style: 'margin:16px 0;gap:8px' }, tiles));
-    ctx.root.appendChild(ctx.el('div', { class: 'row' }, [back, clear, check]));
+    ctx.root.appendChild(ctx.el('div', { class: 'row', role: 'group', 'aria-label': ctx.L.orthography_tiles, style: 'flex-wrap:wrap;margin:8px 0;gap:4px' }, tiles));
+    ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'margin-top:8px;gap:6px' }, [back, clear, check]));
     ctx.root.appendChild(answerLine);
+    syncCheck();
     return {
       reveal: function () {
         input.setAttribute('readonly', '');

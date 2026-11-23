@@ -232,7 +232,7 @@
   .hud-eyebrow { display: block; color: #bccaf2; font-size: 9px; font-weight: 800; letter-spacing: .16em; margin-bottom: 3px; }
   #hud .hud-header h1 { font-size: 20px; letter-spacing: -.035em; }
   #hud #uiHudToggle { flex: 0 0 auto; min-height: 34px; padding: 6px 9px; font-size: 11px; background: transparent; }
-  #hudBody { padding: 0 15px 15px; max-height: calc(100dvh - 116px); scrollbar-width: thin; scrollbar-color: #62759a transparent; }
+  #hudBody { padding: 0 15px 15px; max-height: calc(100dvh - 116px); scroll-padding-top: 120px; scrollbar-width: thin; scrollbar-color: #62759a transparent; }
   .workspace-navigation { position: sticky; top: 0; z-index: 2; padding: 12px 0 8px; background: var(--panel); }
   .workspace-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 12px; background: #0c1425; }
   .workspace-modes button, .workspace-tabs button { appearance: none; font: inherit; color: var(--dim); font-weight: 750; cursor: pointer; border: 1px solid transparent; background: transparent; border-radius: 8px; padding: 8px 5px; }
@@ -359,8 +359,8 @@
   .find-result { display:grid; gap:4px; padding:11px 12px; border:1px solid transparent; border-radius:9px; text-align:left; color:#eef3ff; background:#1a2941; font:13px system-ui; cursor:pointer; }.find-result span { color:#bdcee8; font-size:11px; }.find-result:hover { background:#2d365e; border-color:#9e9be2; }
   .find-footer,#quickFindEmpty { margin:12px 0 0; color:#bdcee8; font-size:11px; line-height:1.5; }
   @media(max-width:400px) { #sceneToolbar button { padding:7px 8px; } #hud #uiBuildStep { flex-basis:76px; width:76px; font-size:10px; } }
-  .skip-link { position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden; z-index:10000; }
-  .skip-link:focus { position:fixed; left:8px; top:8px; width:auto; height:auto; padding:10px 18px; background:#0f172a; color:#f8fafc; font:700 14px system-ui,sans-serif; border-radius:8px; outline:3px solid #facc15; text-decoration:none; }
+  .skip-link { position:absolute; inset-inline-start:8px;top:8px;width:1px; height:1px; overflow:hidden;clip-path:inset(50%);white-space:nowrap; z-index:10000; }
+  .skip-link:focus { position:fixed; inset-inline-start:8px; top:8px; width:auto; height:auto;overflow:visible;clip-path:none;white-space:normal; padding:10px 18px; background:#0f172a; color:#f8fafc; font:700 14px system-ui,sans-serif; border-radius:8px; outline:3px solid #facc15; text-decoration:none; }
   @media (forced-colors: active) {
     :root { --bg: Canvas; --panel: Canvas; --line: CanvasText; --text: CanvasText; --dim: CanvasText; --muted: CanvasText; --accent: Highlight; --accent-hover: Highlight; --accent2: LinkText; --focus: Highlight; --control: Canvas; --p0: CanvasText; --p1: LinkText; --p2: CanvasText; --p3: CanvasText; }
     html, body, #immersiveBootStatus, #hud, .hud-header, .hud-eyebrow, .workspace-navigation, .workspace-modes, .workspace-tabs, .workspace-section-label, .hud-primary, .hud-section, .mission, .guidebox, .showcasebox, .sliceexplainer, .sliceformula, .dimchips span, .kbd kbd, #sceneToolbar, .scene-toolbar-label, #quickFindDialog, .find-heading p, .find-result, .find-result span, .find-footer, #quickFindEmpty, .sandbox-return, .exact-dimensions summary, .exact-dimensions summary span, .exact-grid label, .exact-grid input, .lesson-picker select, .exact-edit-status, .skip-link:focus { background: Canvas !important; color: CanvasText !important; border-color: CanvasText !important; box-shadow: none !important; }
@@ -650,7 +650,7 @@
 <div id="live" class="sr-only" role="status" aria-live="polite"></div>
 <div id="sceneDescription" class="sr-only">Interactive 3D stretch lab. Use the desktop controls or enter immersive mode to pull labeled X, Z, and Y handles. The formula card explains how length, area, and volume change. Click the highlighted plan or cross-section to hear its slice formula. Press T or Play story for a non-destructive dimension tour.</div>
 
-<a-scene aria-label="Interactive 3D stretch lab" aria-describedby="sceneDescription"
+<a-scene role="region" aria-label="Interactive 3D stretch lab" aria-describedby="sceneDescription"
   inspector="url: ''"
   background="color: #0b1020"
   fog="type: linear; color: #0b1020; near: 8; far: 34"

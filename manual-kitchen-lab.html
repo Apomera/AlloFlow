@@ -18,6 +18,7 @@
 <meta name="twitter:description" content="Teach cooking life skills and culinary science with no kitchen required.">
 <link rel="stylesheet" href="shared.css">
 <link rel="stylesheet" href="tool-manual.css">
+<script src="tool-manual.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#manual-main">Skip to content</a>
@@ -33,7 +34,7 @@
     </div>
 </nav>
 
-<main id="manual-main" class="manual-page">
+<main id="manual-main" tabindex="-1" class="manual-page">
     <nav class="manual-crumbs" aria-label="Breadcrumb">
         <ol>
             <li><a href="./">AlloFlow</a></li>
@@ -98,7 +99,8 @@
     <section class="manual-block" id="path" aria-labelledby="path-heading">
         <h2 id="path-heading">2. The three-part learning path</h2>
         <p>The Start here screen names three routes, in a deliberate order:</p>
-        <table class="manual-table" tabindex="0">
+        <div class="manual-table-scroll" role="region" aria-label="The routes as the tool frames them" tabindex="0">
+        <table class="manual-table">
             <caption>The routes as the tool frames them</caption>
             <thead><tr><th scope="col">Route</th><th scope="col">What it says</th><th scope="col">In practice</th></tr></thead>
             <tbody>
@@ -107,6 +109,7 @@
                 <tr><th scope="row">APPLY + REFLECT<br>Put skills together</th><td>Manage a recipe with adjustable heat and pause controls. Try competition when you are ready.</td><td>The synthesis route. Recipe Sim, once the foundations are in place.</td></tr>
             </tbody>
         </table>
+        </div>
         <p>Note the phrase <em>six untimed stations</em>. Nothing in the practice route runs a clock
             against the student, which matters for anyone who finds timed tasks stressful.
             Competition in the third route is explicitly opt-in: "try competition when you are
@@ -115,7 +118,8 @@
 
     <section class="manual-block" id="sections" aria-labelledby="sections-heading">
         <h2 id="sections-heading">3. The nine sections</h2>
-        <table class="manual-table" tabindex="0">
+        <div class="manual-table-scroll" role="region" aria-label="Every section and what it covers" tabindex="0">
+        <table class="manual-table">
             <caption>Every section and what it covers</caption>
             <thead><tr><th scope="col">Section</th><th scope="col">Content</th></tr></thead>
             <tbody>
@@ -130,6 +134,7 @@
                 <tr><th scope="row">📚 Resources</th><td>Glossary and reference material.</td></tr>
             </tbody>
         </table>
+        </div>
         <p class="manual-callout"><strong>Maillard and Browning Lab are the cross-curricular
             opening.</strong> Browning is a genuine chemistry topic — amino acids and reducing
             sugars reacting under heat — and it is the section that lets a family and consumer
@@ -141,7 +146,8 @@
         <h2 id="safety-heading">4. Food safety: the numbers students must own</h2>
         <p>These are the values the tool teaches, and they follow USDA guidance. They are worth
             memorising, and worth putting on your wall.</p>
-        <table class="manual-table" tabindex="0">
+        <div class="manual-table-scroll" role="region" aria-label="Temperatures as Kitchen Lab states them" tabindex="0">
+        <table class="manual-table">
             <caption>Temperatures as Kitchen Lab states them</caption>
             <thead><tr><th scope="col">Value</th><th scope="col">Why it matters</th></tr></thead>
             <tbody>
@@ -151,6 +157,7 @@
                 <tr><th scope="row">Above 140°F</th><td>Hold hot food above this for safe service.</td></tr>
             </tbody>
         </table>
+        </div>
         <p>Two teaching points that this content makes available and most food-safety lessons
             miss:</p>
         <ul class="manual-list">

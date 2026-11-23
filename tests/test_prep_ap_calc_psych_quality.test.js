@@ -48,6 +48,17 @@ describe('AP Calculus AB and AP Psychology quality overhaul', () => {
 
     const warnings = collectWarnings(pack.items);
     expect(warnings).toEqual({});
+
+    // Every item must have 4 distinct choiceRationales (no copy-pasted or
+    // substring-mismatched distractor feedback within an item).
+    const dupChoiceRationales = [];
+    for (const item of pack.items) {
+      const normalized = (item.choiceRationales || []).map((c) =>
+        String(c || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+      );
+      if (new Set(normalized).size !== 4) dupChoiceRationales.push(item.id);
+    }
+    expect(dupChoiceRationales).toEqual([]);
   });
 
   it('keeps AP Psychology items and library checks free of restatement, key-echo, detail, and extreme-qualifier tells', () => {
@@ -68,6 +79,37 @@ describe('AP Calculus AB and AP Psychology quality overhaul', () => {
 
     const warnings = collectWarnings(pack.items);
     expect(warnings).toEqual({});
+
+    // Every item must have 4 distinct choiceRationales (no copy-pasted or
+    // substring-mismatched distractor feedback within an item).
+    const dupChoiceRationales = [];
+    for (const item of pack.items) {
+      const normalized = (item.choiceRationales || []).map((c) =>
+        String(c || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+      );
+      if (new Set(normalized).size !== 4) dupChoiceRationales.push(item.id);
+    }
+    expect(dupChoiceRationales).toEqual([]);
+    const p2p3UniqueDistractors = new Set(
+      pack.items
+        .filter((item) => item.practiceId === 'P2' || item.practiceId === 'P3')
+        .flatMap((item) => item.choiceRationales.filter((_, idx) => idx !== item.answerIndex))
+    );
+    expect(p2p3UniqueDistractors.size).toBeGreaterThanOrEqual(450);
+
+    const p1UniqueDistractors = new Set(
+      pack.items
+        .filter((item) => item.practiceId === 'P1')
+        .flatMap((item) => item.choiceRationales.filter((_, idx) => idx !== item.answerIndex))
+    );
+    expect(p1UniqueDistractors.size).toBeGreaterThanOrEqual(950);
+    expect(
+      pack.items.some((item) =>
+        /defining pattern is the defining pattern|which differs from the scenario's defining pattern/i.test(
+          `${item.rationale} ${(item.choiceRationales || []).join(' ')}`
+        )
+      )
+    ).toBe(false);
 
     const checks = lib.chapters.flatMap((ch) => ch.knowledgeChecks || []);
     expect(checks).toHaveLength(25);

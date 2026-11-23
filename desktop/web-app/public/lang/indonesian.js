@@ -155,7 +155,12 @@
     "refine_go": "Sarankan tulisan ulang",
     "refining": "Menulis saran…",
     "made_from_version": "Dibuat dari versi {version} sumber Anda",
-    "remake": "Buat ulang dari versi saat ini"
+    "remake": "Buat ulang dari versi saat ini",
+    "dictate": "Dikte",
+    "close_dictate": "Tutup dikte",
+    "send_read_along": "Kirim ke Paket Baca Bersama",
+    "upload_verify_banner": "Audio/video ditranskripsikan secara lokal dengan Whisper ({count} segmen disimpan di memori)",
+    "clear_audio": "Hapus audio"
   },
   "sel": {
     "peersupport": {
@@ -5995,7 +6000,10 @@
     "source_choice_ambiguous": "Pilih bacaan di Berdasarkan sebelum membuat. Tersedia lebih dari satu bacaan.",
     "source_choices_load_failed": "Pilihan bacaan tidak dapat dimuat. Silakan coba lagi.",
     "submission_tools_still_loading": "Alat pengiriman masih dimuat. Coba Kirim lagi.",
-    "blank_created": "{title} kosong telah dibuat. Isi sebelum dibagikan."
+    "blank_created": "{title} kosong telah dibuat. Isi sebelum dibagikan.",
+    "sent_to_read_along": "Teks telah dikirim ke Paket Baca Bersama di tab baru.",
+    "read_along_handoff_failed": "Tidak dapat meneruskan draf ke Paket Baca Bersama.",
+    "read_along_no_text": "Tambahkan atau diktekan teks sumber sebelum mengirim ke Paket Baca Bersama."
   },
   "large_file": {
     "modal_title": "Impor Large audio berkas",
@@ -6012,7 +6020,8 @@
     "chunk_info": "Audio dibagi menjadi potongan 5 menit untuk diproses",
     "chunk_progress": "Chunk {current} {total}",
     "audio_only_error": "Saat ini hanya berkas audio (MP3, WAV, dll.) yang didukung untuk transkripsi per potongan.",
-    "starting": "Memulai..."
+    "starting": "Memulai...",
+    "engine_legend": "Mesin Transkripsi"
   },
   "formatting": {
     "bold": "Bold (**teks**)",
@@ -6416,7 +6425,8 @@
       "analyzing_short": "Menganalisis...",
       "generate_short": "Hasilkan",
       "books_short": "Buku",
-      "books_hint": "Buka buku bergambar: buku apa pun bisa menjadi teks sumber Anda"
+      "books_hint": "Buka buku bergambar: buku apa pun bisa menjadi teks sumber Anda",
+      "dictate_hint": "Diktekan teks sumber Anda dengan Whisper di perangkat dan pemeriksaan opsional Gemini"
     },
     "status_generating": "Generating sumber teks...",
     "success_long_form": "panjang-form teks dihasilkan successfully!",
@@ -6466,7 +6476,8 @@
     "empty_desc_teacher": "Tambahkan bacaan, lalu pilih alat yang menyesuaikannya untuk siswa Anda.",
     "empty_desc_family": "Tambahkan sesuatu yang sedang dibaca anak Anda, lalu pilih cara Anda ingin membantu.",
     "reading_catalog": "Katalog bacaan",
-    "find_online": "Cari daring"
+    "find_online": "Cari daring",
+    "dictate_or_record": "Dikte atau rekam"
   },
   "wizard": {
     "title": "cepat Mulai",
@@ -6600,7 +6611,12 @@
     "paste_word_count": "{count} kata",
     "length_custom": "Sesuaikan…",
     "length_custom_label": "Jumlah kata",
-    "length_custom_hint": "50 sampai 5.000 kata"
+    "length_custom_hint": "50 sampai 5.000 kata",
+    "dictate_desc": "Dikte suara lokal Whisper & pemeriksaan opsional",
+    "dictate_title": "Diktekan atau rekam teks sumber Anda",
+    "dictate_helper": "Secara bawaan menggunakan dikte pribadi Whisper di perangkat. Sunting secara bebas, rapikan teks secara opsional, atau periksa silang dengan rekaman Anda menggunakan Gemini.",
+    "dictate_loading": "Memuat Studio Dikte (Local Whisper)… Anda juga dapat mengetik atau menyunting di bawah sambil menunggu.",
+    "words_dictated_unit": "kata didiktekan"
   },
   "settings": {
     "immersive_options": "Immersive opsi",
@@ -108967,5 +108983,68 @@
     "sc_findText": "Cari teks dalam desain",
     "sc_commandPalette": "Buka tindakan cepat",
     "sc_help": "Tampilkan daftar pintasan ini"
+  },
+  "dictation": {
+    "badge_desktop": "Desktop Whisper Siap",
+    "badge_download_needed": "Local Whisper · Perlu Unduhan Pertama",
+    "badge_local_ready": "Local Whisper Siap · {name}",
+    "cleanup_apply": "Terapkan perapian",
+    "cleanup_failed": "Tidak dapat merapikan teks saat ini.",
+    "cleanup_fillers": "Kurangi kata pengisi",
+    "cleanup_heading": "Perapian teks AI opsional",
+    "cleanup_keep": "Pertahankan asli",
+    "cleanup_no_changes": "Tidak ada perubahan yang disarankan untuk draf ini.",
+    "cleanup_notes": "Format sebagai catatan kelas",
+    "cleanup_punctuation": "Rapikan tanda baca & pemformatan",
+    "cleanup_review_title": "Saran perapian siap — draf Anda belum berubah",
+    "cleanup_text_only": "hanya teks — tidak ada audio yang dikirim",
+    "cleanup_unavailable": "Perapian teks AI tidak tersedia saat ini.",
+    "cleanup_undo": "Urungkan perapian",
+    "cleanup_working": "Merapikan…",
+    "clear_audio": "Hapus audio rekaman ({mb} MB)",
+    "crosscheck_all_resolved": "Semua titik yang ditandai telah ditinjau.",
+    "crosscheck_btn": "Verifikasi terhadap audio dengan Gemini",
+    "crosscheck_count": "{count} titik yang ditandai untuk ditinjau:",
+    "crosscheck_disabled_note": "Tidak tersedia saat ini (dinonaktifkan dalam mode luring / mode siswa tanpa AI atau tanpa kunci Gemini). Dikte Local Whisper Anda tetap bekerja sepenuhnya luring.",
+    "crosscheck_disclosure": "Hanya berjalan jika Anda mengklik di bawah: mengirimkan segmen audio rekaman di memori dan draf teks Anda ke Gemini untuk menandai kemungkinan kesalahan kata.",
+    "crosscheck_failed": "Pemeriksaan audio Gemini tidak selesai. Transkrip lokal Anda tetap utuh.",
+    "crosscheck_heading": "Verifikasi silang terhadap audio dengan Gemini (Opsional)",
+    "crosscheck_none": "Tidak ditemukan perbedaan berarti antara Local Whisper dan Gemini Audio.",
+    "crosscheck_running": "Memeriksa terhadap audio…",
+    "crosscheck_unavailable": "Verifikasi silang audio Gemini tidak tersedia saat ini.",
+    "download_now": "Unduh Local Whisper ({size} MB)",
+    "download_warning": "Pemberitahuan unduhan: Local Whisper secara bawaan menggunakan pengenalan suara pribadi di perangkat. Mengunduh model {name} memerlukan ~{size} MB sekali saja (~1–2 menit tergantung koneksi), tersimpan luring di peramban Anda, dan menjaga rekaman suara tetap di perangkat ini.",
+    "draft_label": "Draf transkrip (dapat disunting)",
+    "draft_placeholder": "Tekan «Mulai dikte» di atas, atau ketik/sunting transkrip Anda langsung di sini…",
+    "guide_both_body": "Mulailah secara pribadi dengan Local Whisper agar dikte Anda tetap cepat dan luring terlebih dahulu. Jika Anda ingin pendapat kedua untuk istilah sulit atau nama khusus, aktifkan verifikasi silang Gemini untuk membandingkan dua model independen dengan audio Anda dan memutar ulang klip 5 detik di setiap titik yang ditandai.",
+    "guide_both_label": "Mengapa menggunakan keduanya (Verifikasi Silang):",
+    "guide_gemini_body": "Tidak perlu mengunduh model. Lebih kuat untuk kosakata khusus, nama diri, beragam aksen, ruang kelas yang ramai, dan tanda baca — hanya mengirimkan potongan audio rekaman ke Gemini jika Anda menyetujuinya.",
+    "guide_gemini_title": "Gemini Audio (Pemeriksaan opsional)",
+    "guide_summary": "Local Whisper vs. Gemini Audio — keunggulan & alasan menggunakan keduanya",
+    "guide_whisper_body": "Pribadi dan luring setelah satu kali unduhan (~39–73 MB). Tidak ada audio yang keluar dari perangkat Anda, tidak perlu kunci API atau kuota, dan dikte panjang berkelanjutan berjalan andal.",
+    "guide_whisper_title": "Local Whisper (Bawaan)",
+    "ios_canvas_blocked": "Local Whisper dijeda di iPhone/iPad dalam Gemini Canvas. Ketik langsung di bawah atau buka AlloFlow di peramban desktop.",
+    "ios_canvas_hint": "Anda dapat mengetik langsung di bawah, membuka AlloFlow di peramban desktop untuk Local Whisper, atau menggunakan Gemini Audio jika telah dikonfigurasi.",
+    "ios_canvas_title": "Whisper di perangkat dijeda di iPhone/iPad dalam Gemini Canvas",
+    "listening_local": "Mendengarkan secara lokal dengan Whisper… jeda sebentar atau terus berbicara untuk menambahkan teks.",
+    "mic_start_failed": "Tidak dapat memulai mikrofon. Periksa izin peramban.",
+    "model_size_label": "Ukuran model Local Whisper",
+    "pause_recording": "Jeda",
+    "paused_note": "Dijeda. Anda dapat menyunting transkrip di bawah atau menekan «Lanjutkan» untuk meneruskan dikte.",
+    "privacy_tag": "Pribadi · Luring setelah unduh · Tanpa kunci API",
+    "resume_recording": "Lanjutkan",
+    "send_read_along": "Kirim ke Paket Baca Bersama",
+    "speech_settings": "Pengaturan suara",
+    "speed_badge_lesson": "Teruji: {speed}x lebih cepat dari bicara · Baik untuk dikte panjang",
+    "speed_badge_short": "Teruji: {speed}x lebih cepat dari bicara · Terbaik untuk klip pendek",
+    "speed_badge_slow": "Teruji: {speed}x · Lebih lambat dari waktu nyata (mungkin ada jeda)",
+    "speed_badge_upgrade": "Teruji: {speed}x lebih cepat dari bicara · Baik untuk dikte panjang (dapat juga mencoba {name})",
+    "start_recording": "Mulai dikte (Local Whisper)",
+    "stop_recording": "Berhenti",
+    "studio_title": "Studio Dikte",
+    "test_mic": "Uji mikrofon (4 dtk)",
+    "upload_media": "Transkripsikan file audio/video",
+    "use_text": "Gunakan teks hasil dikte",
+    "voice_unavailable": "Perekam suara masih dimuat. Silakan coba lagi sebentar lagi."
   }
 }

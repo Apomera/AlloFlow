@@ -24,6 +24,7 @@
  */
 (function () {
     'use strict';
+    if (typeof window === 'undefined') return;
 
     // Loading the 82M model and ONNX/WASM runtime beside a live microphone can
     // exhaust or destabilize an iOS WebKit Canvas process. The shell normally
@@ -462,15 +463,16 @@
             const p = _cachePending.get(d.id);
             if (!p) return;
             _cachePending.delete(d.id);
-            p(d);
+            if (p.timer) clearTimeout(p.timer);
+            p.resolve(d);
         });
         function _askMain(payload, transfer) {
             return new Promise((resolve) => {
                 const id = 'mc' + (++_cacheSeq);
-                _cachePending.set(id, resolve);
                 // Never hang the model load on the cache: give up and fall
                 // through to the network.
-                setTimeout(() => { if (_cachePending.has(id)) { _cachePending.delete(id); resolve({ ok: false }); } }, 20000);
+                const timer = setTimeout(() => { if (_cachePending.has(id)) { _cachePending.delete(id); resolve({ ok: false }); } }, 20000);
+                _cachePending.set(id, { resolve, timer });
                 self.postMessage(Object.assign({ type: 'allo-model-cache', id }, payload), transfer || []);
             });
         }
@@ -550,7 +552,8 @@
             // initials (U.S.A., a.m.) and decimals (3.5) never end a sentence.
             const sentences = text.match(/(?:\\b(?:Dr|Mr|Mrs|Ms|St|Jr|Sr|Prof|vs|Inc|Ltd|Co|etc)\\.(?!$)|\\b(?:[a-z]\\.){2,}(?!$)|\\.(?=\\d)|[^.!?])+(?:[.!?]+|$)\\s*/gi);
             if (!sentences) return [text];
-            return sentences.map(s => s.trim()).filter(s => s.length > 1);
+            const cleaned = sentences.map(s => s.trim()).filter(s => s.length > 1);
+            return cleaned.length > 0 ? cleaned : [String(text || '').trim()].filter(Boolean);
         }
 
         // ── Float32 PCM → WAV (runs in worker) ──
@@ -610,11 +613,12 @@
 
         // ── Concatenate multiple WAV buffers (runs in worker) ──
         function concatWavBuffers(buffers) {
-            if (buffers.length === 0) return null;
-            if (buffers.length === 1) return buffers[0];
+            const valid = Array.isArray(buffers) ? buffers.filter(buf => buf && buf.byteLength >= 44) : [];
+            if (valid.length === 0) return null;
+            if (valid.length === 1) return valid[0];
             let totalDataSize = 0;
             const parts = [];
-            for (const buf of buffers) {
+            for (const buf of valid) {
                 const sz = buf.byteLength - 44;
                 parts.push(new Uint8Array(buf, 44, sz));
                 totalDataSize += sz;
@@ -622,7 +626,7 @@
             const combined = new ArrayBuffer(44 + totalDataSize);
             const out = new Uint8Array(combined);
             const view = new DataView(combined);
-            out.set(new Uint8Array(buffers[0], 0, 44), 0);
+            out.set(new Uint8Array(valid[0], 0, 44), 0);
             view.setUint32(4, 36 + totalDataSize, true);
             view.setUint32(40, totalDataSize, true);
             let off = 44;
@@ -1204,14 +1208,16 @@
                 return;
             }
             switch (data.type) {
-                case 'progress':
-                    _loadProgress = data.pct;
+                case 'progress': {
+                    const pct = Number.isFinite(Number(data.pct)) ? Number(data.pct) : 0;
+                    _loadProgress = pct;
                     if (_stallTimer) { const p = _pendingMessages.get('__init__'); if (p) _armStallWatchdog(p.reject); }
-                    if (_onProgress) _onProgress({ stage: data.stage, pct: data.pct });
+                    if (_onProgress) _onProgress({ stage: data.stage, pct });
                     // Only log at 25% milestones to reduce console noise
-                    var pctRound = Math.round(data.pct * 100);
+                    var pctRound = Math.round(pct * 100);
                     if (pctRound % 25 === 0 || pctRound >= 95) console.log('[Kokoro TTS] ' + data.stage + ': ' + pctRound + '%');
                     break;
+                }
 
                 case 'ready': {
                     _ready = true;
@@ -1269,6 +1275,10 @@
                     stream.expectedTotal = total;
                     stream.nextIndex++;
 
+                    if (!data.buffer || (typeof data.buffer.byteLength === 'number' && data.buffer.byteLength === 0)) {
+                        _cancelStream(stream, new Error('Incomplete stream: empty audio chunk'), true);
+                        break;
+                    }
                     const chunkBlob = new Blob([data.buffer], { type: 'audio/wav' });
                     const chunkUrl = URL.createObjectURL(chunkBlob);
                     _registerStreamUrl(stream, chunkUrl);
@@ -1447,17 +1457,28 @@
 
                 // ── Warm-up inference ──
                 console.log('[Kokoro TTS] 🔥 Running warm-up inference...');
+                let warmupTimer = null;
                 try {
-                    await _sendToWorker('generate', {
-                        text: '.',
-                        voice: 'af_heart',
-                        speed: 1.0,
-                        id: '__warmup__',
-                    });
+                    await Promise.race([
+                        _sendToWorker('generate', {
+                            text: '.',
+                            voice: 'af_heart',
+                            speed: 1.0,
+                            id: '__warmup__',
+                        }),
+                        new Promise((_, reject) => {
+                            warmupTimer = setTimeout(() => {
+                                _takePending('__warmup__');
+                                reject(new Error('Warm-up inference timed out'));
+                            }, 20000);
+                        }),
+                    ]);
                     console.log('[Kokoro TTS] 🔥 Warm-up complete');
                 } catch (warmupErr) {
                     if (!_worker || !_ready) throw warmupErr;
                     console.warn('[Kokoro TTS] Warm-up failed (non-fatal):', warmupErr.message);
+                } finally {
+                    if (warmupTimer) clearTimeout(warmupTimer);
                 }
 
                 return true;
@@ -1743,6 +1764,7 @@
     // ─── Language Support Check ─────────────────────────────────────────
     function supportsLanguage(langCode) {
         if (!langCode) return true;
+        if (typeof langCode !== 'string') return false;
         const baseLang = langCode.split('-')[0].toLowerCase();
         return KOKORO_LANGS.has(baseLang);
     }
@@ -1758,10 +1780,24 @@
             (typeof audio.getAttribute === 'function' ? audio.getAttribute('src') : '') || '';
     }
 
+    function _isGlobalMuted() {
+        try {
+            if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+            if (typeof window.isAlloMuted === 'function' && window.isAlloMuted()) return true;
+            if (window._alloGlobalMute === true) return true;
+            if (window.localStorage && (window.localStorage.getItem('alloflow-global-muted') === '1' || window.localStorage.getItem('alloflow_muted') === '1' || window.localStorage.getItem('alloflow_muted') === 'true')) return true;
+        } catch (_) {}
+        return false;
+    }
+
     function _finishChain(chain, notifyDone, stopAudio) {
         if (!chain || chain.finished) return;
         chain.finished = true;
         if (chain.timer) clearTimeout(chain.timer);
+        if (chain.onMuteChanged && typeof window.removeEventListener === 'function') {
+            try { window.removeEventListener('alloflow-mute-changed', chain.onMuteChanged); } catch (_) {}
+            chain.onMuteChanged = null;
+        }
 
         if (stopAudio && chain.audio && typeof chain.audio.pause === 'function') {
             try { chain.audio.pause(); } catch (_) {}
@@ -1795,6 +1831,15 @@
     }
 
     function chainPlay(audio, speed, volume, onDone) {
+        if (!audio) {
+            if (typeof onDone === 'function') onDone();
+            return { stop: () => false };
+        }
+        if (_isGlobalMuted()) {
+            try { if (typeof audio.pause === 'function') audio.pause(); } catch (_) {}
+            if (typeof onDone === 'function') onDone();
+            return { stop: () => false };
+        }
         const initialUrl = _audioUrl(audio);
         const ownership = _ownedUrls.get(initialUrl);
         const stream = ownership && ownership.kind === 'stream' ? ownership.stream : null;
@@ -1818,9 +1863,19 @@
             currentUrl: initialUrl,
             timer: null,
             onDone,
+            onMuteChanged: null,
             doneNotified: false,
             finished: false,
         };
+        const onMuteChanged = () => {
+            if (_isGlobalMuted() && !chain.finished) {
+                _cancelStream(stream, _abortError('Kokoro stream muted'), true);
+            }
+        };
+        chain.onMuteChanged = onMuteChanged;
+        if (typeof window.addEventListener === 'function') {
+            try { window.addEventListener('alloflow-mute-changed', onMuteChanged); } catch (_) {}
+        }
         _activeChain = chain;
         audio.playbackRate = playbackRate;
         audio.volume = Number.isFinite(playbackVolume) ? playbackVolume : 1;
@@ -1838,7 +1893,7 @@
             if (chain.currentUrl && ownsUrl(chain.currentUrl)) invalidateUrl(chain.currentUrl);
             chain.currentUrl = null;
 
-            if (!window._kokoroTTS || stream.cancelled || stream !== _activeStream) {
+            if (!window._kokoroTTS || stream.cancelled || stream !== _activeStream || _isGlobalMuted()) {
                 _finishChain(chain, false, false);
                 return;
             }
@@ -1852,7 +1907,7 @@
                 next.volume = Number.isFinite(playbackVolume) ? playbackVolume : 1;
                 next.onended = playNext;
                 next.onerror = () => failChain(new Error('Kokoro stream audio failed to play'));
-                next.play().catch((error) => failChain(error));
+                try { Promise.resolve(next.play()).catch((error) => failChain(error)); } catch (error) { failChain(error); }
                 return;
             }
 

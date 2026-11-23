@@ -1008,7 +1008,7 @@ function TimelineView(props) {
         const spoken = [item.date, item.event].filter(Boolean).join('. ').replace(/\s+/g, ' ').trim();
         speakTimelineText(spoken, false);
       },
-      "aria-label": (t('a11y.read_aloud') || 'Listen') + (item.date ? ': ' + item.date : ''),
+      "aria-label": (t('common.listen') || 'Listen') + (item.date ? ': ' + item.date : ''),
       title: t('a11y.read_aloud') || 'Listen',
       className: "shrink-0 min-h-8 inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
     }, /*#__PURE__*/React.createElement("span", {

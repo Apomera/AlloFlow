@@ -2579,9 +2579,9 @@ window.StemLab = window.StemLab || {
               dispObject.id !== 'clay' && h('ellipse', { cx: 110, cy: objectY, rx: 24, ry: 16, fill: '#475569', stroke: '#0f172a', strokeWidth: 2 }),
               dispObject.id !== 'clay' && h('text', { x: 110, y: objectY + 5, textAnchor: 'middle', fontSize: 20 }, dispObject.icon)
             ),
-            !waiting && !overflowing && h('line', { x1: 174, y1: waterY, x2: 204, y2: waterY, stroke: '#0369a1', strokeWidth: 2 }),
+            !waiting && !overflowing && h('line', { x1: 174, y1: waterY, x2: 180, y2: waterY, stroke: '#0369a1', strokeWidth: 2 }),
             !waiting && !overflowing && h('circle', { cx: 174, cy: waterY, r: 2.8, fill: '#0284c7' }),
-            !waiting && !overflowing && h('text', { x: 207, y: waterY + 4, textAnchor: 'end', fontSize: 12, fontWeight: 900, fill: '#075985' }, safeReading + ' mL'),
+            !waiting && !overflowing && h('text', { x: 182, y: waterY + 3.5, textAnchor: 'start', fontSize: 10.5, fontWeight: 900, fill: '#075985' }, safeReading + ' mL'),
             overflowing && h('g', { 'aria-hidden': 'true', 'data-cylinder-overflow': 'true' },
               h('path', { d: 'M38 48 Q54 34 70 48 T102 48 T134 48 T182 48', fill: 'none', stroke: '#dc2626', strokeWidth: 5, strokeLinecap: 'round' }),
               h('text', { x: 110, y: 82, textAnchor: 'middle', fontSize: 16, fontWeight: 900, fill: '#991b1b' }, 'OVERFLOW')
@@ -3302,7 +3302,7 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'flex-1' }),
           // Mode toggle: dimensions, freeform, word problems, and displacement.
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }, className: 'w-full min-w-0 max-w-full gap-1 bg-emerald-50 rounded-lg p-1 border border-emerald-200 sm:w-auto', role: 'tablist', 'aria-label': __alloT('stem.volume.volume_modes', 'Volume modes') },
+          h('div', { className: 'grid grid-cols-2 sm:flex sm:flex-wrap w-full min-w-0 max-w-full gap-1 bg-emerald-50 rounded-lg p-1 border border-emerald-200 sm:w-auto', role: 'tablist', 'aria-label': __alloT('stem.volume.volume_modes', 'Volume modes') },
             h('button', { 'aria-label': __alloT('stem.volume.tab_set_dimensions', 'Set dimensions'),
               id: 'stem-volume-tab-slider',
               onClick: function() { upd({ mode: 'slider', builderChallenge: null, builderFeedback: null }); },
@@ -4086,7 +4086,7 @@ window.StemLab = window.StemLab || {
               isSlider && !challenge && solid === 'prism' ? h('div', { className: 'flex flex-col items-center gap-1' },
                 h('div', { className: 'text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200' },
                   'Area of Base ('+dims.l+'\u00d7'+dims.w+') = ' + (dims.l * dims.w)),
-                h('div', { className: 'whitespace-nowrap' },
+                h('div', { className: 'flex flex-wrap items-baseline justify-center gap-x-1' },
                   (dims.l * dims.w) + ' \u00d7 Height ('+dims.h+') = ',
                   h('span', { className: 'text-2xl text-emerald-600' }, volume))
               ) : h('span', null,

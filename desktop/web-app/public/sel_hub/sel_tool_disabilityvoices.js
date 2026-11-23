@@ -33,16 +33,34 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
   'use strict';
 
   (function() {
-    if (document.getElementById('allo-live-disvoices')) return;
-    var liveRegion = document.createElement('div');
-    liveRegion.id = 'allo-live-disvoices';
-    liveRegion.setAttribute('aria-live', 'polite');
-    liveRegion.setAttribute('aria-atomic', 'true');
-    liveRegion.setAttribute('role', 'status');
-    liveRegion.className = 'sr-only';
-    liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
-    document.body.appendChild(liveRegion);
+    if (typeof document === 'undefined' || !document.body) return;
+    if (!document.getElementById('allo-live-disvoices')) {
+      var liveRegion = document.createElement('div');
+      liveRegion.id = 'allo-live-disvoices';
+      liveRegion.setAttribute('aria-live', 'polite');
+      liveRegion.setAttribute('aria-atomic', 'true');
+      liveRegion.setAttribute('role', 'status');
+      liveRegion.className = 'sr-only';
+      liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+      document.body.appendChild(liveRegion);
+    }
+    if (document.head && !document.getElementById('allo-disvoices-a11y-css')) {
+      var st = document.createElement('style');
+      st.id = 'allo-disvoices-a11y-css';
+      st.textContent =
+        '.selh-disvoices button:focus-visible, .selh-disvoices a:focus-visible, .selh-disvoices [tabindex]:focus-visible { outline: 3px solid #f472b6; outline-offset: 2px; }' +
+        '.selh-disvoices button, .selh-disvoices a { touch-action: manipulation; }' +
+        '.selh-disvoices button:not(:disabled) { transition: transform 140ms ease, filter 140ms ease, background 140ms ease, border-color 140ms ease; }' +
+        '.selh-disvoices button:not(:disabled):hover { filter: brightness(1.06); }' +
+        '@media (prefers-reduced-motion: reduce) { .selh-disvoices * { transition: none !important; animation: none !important; } }' +
+        '@media (forced-colors: active) { .selh-disvoices button, .selh-disvoices a { border: 1px solid ButtonText !important; } .selh-disvoices :focus-visible { outline: 3px solid Highlight !important; } }';
+      document.head.appendChild(st);
+    }
   })();
+
+  function isImeComposing(e) {
+    return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+  }
 
   // Real autistic and disabled advocates whose work shaped — and
   // critiqued — applied behavior analysis and disability practice

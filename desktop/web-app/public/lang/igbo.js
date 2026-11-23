@@ -155,7 +155,12 @@
     "refine_go": "Tụọ aro ndegharị",
     "refining": "Na-ede aro…",
     "made_from_version": "E mepụtara ya site na ụdị {version} nke isi mmalite gị",
-    "remake": "Mepụta ọzọ site na ụdị nke ugbu a"
+    "remake": "Mepụta ọzọ site na ụdị nke ugbu a",
+    "dictate": "Kwuọ ka e dee",
+    "close_dictate": "Mechie ikwu okwu ka e dee",
+    "send_read_along": "Ziga na Ngwugwu Ịgụkọ Ọnụ",
+    "upload_verify_banner": "E dere olu/vidiyo n'ime ngwaọrụ site na Whisper (e chekwara akụkụ {count} na nchekwa)",
+    "clear_audio": "Hichapụ olu"
   },
   "sel": {
     "peersupport": {
@@ -5996,7 +6001,10 @@
     "source_choice_ambiguous": "Họrọ otu ọgụgụ na Dabere na tupu imepụta. Enwere ọgụgụ karịrị otu.",
     "source_choices_load_failed": "Enweghị ike ibu nhọrọ ọgụgụ. Biko nwaa ọzọ.",
     "submission_tools_still_loading": "Ngwa nyefe ọrụ ka na-ebu. Nwaa Nyefee ọzọ.",
-    "blank_created": "E mepụtala {title} efu. Dejupụta ya tupu i kesaa ya."
+    "blank_created": "E mepụtala {title} efu. Dejupụta ya tupu i kesaa ya.",
+    "sent_to_read_along": "E zigara akụkụ ederede na Ngwugwu Ịgụkọ Ọnụ na taabụ ọhụrụ.",
+    "read_along_handoff_failed": "Enweghị ike ibufe ederede mbụ ahụ na Ngwugwu Ịgụkọ Ọnụ.",
+    "read_along_no_text": "Tinye ma ọ bụ kwuo ederede mbụ tupu iziga na Ngwugwu Ịgụkọ Ọnụ."
   },
   "large_file": {
     "modal_title": "Bubata Large olu faịlụ",
@@ -6013,7 +6021,8 @@
     "chunk_info": "A na-ekewa olu n'akụkụ nkeji 5 iji hazie ya",
     "chunk_progress": "Chunk {current} nke {total}",
     "audio_only_error": "Ugbu a, naanị faịlụ olu (MP3, WAV, wdg) ka a na-akwado maka ide ederede n'akụkụ n'akụkụ.",
-    "starting": "Na-amalite..."
+    "starting": "Na-amalite...",
+    "engine_legend": "Igwe Mbufe Olu gaa n'Ederede"
   },
   "formatting": {
     "bold": "Bold (**ederede**)",
@@ -6417,7 +6426,8 @@
       "analyzing_short": "Na-enyocha...",
       "generate_short": "Mepụta",
       "books_short": "Akwụkwọ",
-      "books_hint": "Mepee akwụkwọ foto: akwụkwọ ọ bụla nwere ike ịbụ ederede isi gị"
+      "books_hint": "Mepee akwụkwọ foto: akwụkwọ ọ bụla nwere ike ịbụ ederede isi gị",
+      "dictate_hint": "Kwuọ ederede mbụ gị site na Whisper dị n'ime ngwaọrụ yana nyocha Gemini ma ọ bụrụ na ị chọrọ"
     },
     "status_generating": "Generating ebe sitere ederede...",
     "success_long_form": "ogologo-form ederede mepụtara successfully!",
@@ -6467,7 +6477,8 @@
     "empty_desc_teacher": "Tinye akụkụ ederede, ma họrọ ngwa ọrụ ga-ahazi ya maka ụmụ akwụkwọ gị.",
     "empty_desc_family": "Tinye ihe nwa gị na-agụ, ma họrọ ụzọ ị chọrọ inyere ya aka.",
     "reading_catalog": "Ndepụta ọgụgụ",
-    "find_online": "Chọọ n'ịntanetị"
+    "find_online": "Chọọ n'ịntanetị",
+    "dictate_or_record": "Kwuọ ka e dee ma ọ bụ dekọọ olu"
   },
   "wizard": {
     "title": "ngwa ngwa Bido",
@@ -6601,7 +6612,12 @@
     "paste_word_count": "Okwu {count}",
     "length_custom": "Nhọrọ nke gị…",
     "length_custom_label": "Ọnụọgụ okwu",
-    "length_custom_hint": "Okwu 50 ruo 5,000"
+    "length_custom_hint": "Okwu 50 ruo 5,000",
+    "dictate_desc": "Ikwu okwu ka e dee n'ime ngwaọrụ na Whisper yana nyocha nhọrọ",
+    "dictate_title": "Kwuọ ka e dee ma ọ bụ dekọọ ederede mbụ gị",
+    "dictate_helper": "Na-eji Whisper nke onwe n'ime ngwaọrụ na ndabara. Dezie n'efu, mee ka ederede dị ọcha ma ị chọọ, ma ọ bụ jiri Gemini tụnyere ya na ndekọ olu gị.",
+    "dictate_loading": "Na-ebubata Ụlọ Ọrụ Ikwu Okwu (Whisper Dị n'Ime Ngwaọrụ)… Ị nwekwara ike ịpị ma ọ bụ dezie n'okpuru ka ọ na-ebubata.",
+    "words_dictated_unit": "okwu e kwuru ka e dee"
   },
   "settings": {
     "immersive_options": "Immersive nhọrọ",
@@ -108944,5 +108960,68 @@
     "sc_findText": "Chọta ederede n'imewe",
     "sc_commandPalette": "Meghee ọrụ ngwa ngwa",
     "sc_help": "Gosi ndepụta ụzọ mkpirisi a"
+  },
+  "dictation": {
+    "badge_desktop": "Desktop Whisper Dị Njikere",
+    "badge_download_needed": "Whisper Dị n'Ime Ngwaọrụ · Nbudata Mbụ",
+    "badge_local_ready": "Whisper Dị n'Ime Ngwaọrụ Dị Njikere · {name}",
+    "cleanup_apply": "Tinye nhicha",
+    "cleanup_failed": "Enweghị ike ihicha ederede ugbu a.",
+    "cleanup_fillers": "Wepụ okwu mgbakwunye na-adịghị mkpa",
+    "cleanup_heading": "Nhicha ederede AI (nhọrọ)",
+    "cleanup_keep": "Debe nke mbụ",
+    "cleanup_no_changes": "Enweghị mgbanwe a tụrụ aro maka ederede mbụ a.",
+    "cleanup_notes": "Hazie dị ka ndetu klaasị",
+    "cleanup_punctuation": "Mezie akara edemede na nhazi",
+    "cleanup_review_title": "Nhicha a tụrụ aro dị njikere — ederede mbụ gị agbanwebeghị",
+    "cleanup_text_only": "naanị ederede — anaghị eziga olu ọ bụla",
+    "cleanup_unavailable": "Nhicha ederede AI adịghị ugbu a.",
+    "cleanup_undo": "Kagbuo nhicha",
+    "cleanup_working": "Na-ehicha…",
+    "clear_audio": "Hichapụ olu e dekọrọ ({mb} MB)",
+    "crosscheck_all_resolved": "E nyochala ebe niile e mere akara.",
+    "crosscheck_btn": "Jiri Gemini chọpụta ya na olu",
+    "crosscheck_count": "Ebe {count} e mere akara maka nyocha:",
+    "crosscheck_disabled_note": "Adịghị ugbu a (agbanyụrụ na ọnọdụ na-enweghị ịntanetị / ọnọdụ nwa akwụkwọ na-enweghị AI ma ọ bụ enweghị igodo Gemini). Whisper gị dị n'ime ngwaọrụ ka na-arụ ọrụ kpamkpam n'enweghị ịntanetị.",
+    "crosscheck_disclosure": "Ọ na-arụ ọrụ naanị ma ị pịa n'okpuru: ọ na-eziga akụkụ olu e chekwara na nchekwa na ederede mbụ gaa na Gemini iji gosi mmejọ okwu nwere ike ịdị.",
+    "crosscheck_failed": "Nyocha olu Gemini emechaghị. Ederede gị dị n'ime ngwaọrụ ka dị ka ọ dị.",
+    "crosscheck_heading": "Tụnyere ederede na olu site na Gemini (Nhọrọ)",
+    "crosscheck_none": "Ahụghị nnukwu ọdịiche dị n'etiti Whisper Dị n'Ime Ngwaọrụ na Gemini Audio.",
+    "crosscheck_running": "Na-enyocha ya na olu…",
+    "crosscheck_unavailable": "Ntụnyere olu Gemini adịghị ugbu a.",
+    "download_now": "Budata Whisper Dị n'Ime Ngwaọrụ ({size} MB)",
+    "download_warning": "Ọkwa nbudata: Whisper Dị n'Ime Ngwaọrụ na-eji nnabata olu nke onwe n'ime ngwaọrụ na ndabara. Ibudata ụdị {name} na-ewe ~{size} MB otu ugboro (ihe dị ka nkeji 1–2 dabere na njikọ), a na-echekwa ya n'enweghị ịntanetị na ihe nchọgharị gị, ma na-edebe ndekọ olu gị na ngwaọrụ a.",
+    "draft_label": "Ederede mbụ (nwere ike idezi)",
+    "draft_placeholder": "Pịa Malite ikwu okwu n'elu, ma ọ bụ pịnye/dezie ederede gị ozugbo ebe a…",
+    "guide_both_body": "Jiri Whisper Dị n'Ime Ngwaọrụ malite na nzuzo ka ikwu okwu gị na-adị ngwa ma rụọ ọrụ n'enweghị ịntanetị. Ọ bụrụ na ịchọrọ echiche nke abụọ maka okwu siri ike ma ọ bụ aha, họrọ ntụnyere Gemini iji tụnyere ụdị abụọ kwụụrụ onwe ha na olu gị ma gee ntị n'akụkụ sekọnd 5 n'ebe ọ bụla e mere akara.",
+    "guide_both_label": "Ihe mere i ji eji ha abụọ (Ntụnyere):",
+    "guide_gemini_body": "Ọ dịghị mkpa ibudata ụdị ọ bụla. Ọ na-aka ike n'okwu pụrụ iche, aha mmadụ/ebe, ụda olu dị iche iche, klaasị nwere mkpọtụ, na akara edemede — na-eziga akụkụ olu na Gemini naanị ma ị họrọ ya.",
+    "guide_gemini_title": "Gemini Audio (Nyocha nhọrọ)",
+    "guide_summary": "Whisper Dị n'Ime Ngwaọrụ vs. Gemini Audio — ike ha na ihe mere i ji eji ha abụọ",
+    "guide_whisper_body": "Nke onwe ma na-arụ ọrụ n'enweghị ịntanetị mgbe ebudatara ya otu ugboro (~39–73 MB). Ọ dịghị olu na-ahapụ ngwaọrụ gị, ọ dịghị igodo API ma ọ bụ oke achọrọ, na ikwu okwu ogologo oge na-arụ ọrụ nke ọma.",
+    "guide_whisper_title": "Whisper Dị n'Ime Ngwaọrụ (Ndabara)",
+    "ios_canvas_blocked": "A kwụsịtụrụ Whisper Dị n'Ime Ngwaọrụ na iPhone/iPad n'ime Gemini Canvas. Pịnye ozugbo n'okpuru ma ọ bụ mepee AlloFlow na ihe nchọgharị kọmputa.",
+    "ios_canvas_hint": "Ị nwere ike ịpịnye ozugbo n'okpuru, mepee AlloFlow na ihe nchọgharị kọmputa maka Whisper Dị n'Ime Ngwaọrụ, ma ọ bụ jiri Gemini Audio ma ọ bụrụ na ahaziri ya.",
+    "ios_canvas_title": "A kwụsịtụrụ Whisper dị n'ime ngwaọrụ na iPhone/iPad n'ime Gemini Canvas",
+    "listening_local": "Na-ege ntị n'ime ngwaọrụ na Whisper… kwụsị nwa oge ma ọ bụ gaa n'ihu na-ekwu okwu iji tinye ederede.",
+    "mic_start_failed": "Enweghị ike ịmalite igwe okwu. Lelee ikike ihe nchọgharị.",
+    "model_size_label": "Ogo ụdị Whisper Dị n'Ime Ngwaọrụ",
+    "pause_recording": "Kwụsịtụ",
+    "paused_note": "A kwụsịtụrụ. Ị nwere ike idezi ederede n'okpuru ma ọ bụ pịa Gaa n'ihu iji gaa n'ihu na-ekwu okwu.",
+    "privacy_tag": "Nke onwe · Enweghị ịntanetị mgbe ebudatara · Enweghị igodo API achọrọ",
+    "resume_recording": "Gaa n'ihu",
+    "send_read_along": "Ziga na Ngwugwu Ịgụkọ Ọnụ",
+    "speech_settings": "Ntọala okwu",
+    "speed_badge_lesson": "A nwalere: ọ dị ngwa karịa okwu ugboro {speed}x · Dị mma maka ikwu okwu ogologo",
+    "speed_badge_short": "A nwalere: ọ dị ngwa karịa okwu ugboro {speed}x · Kachasị mma maka obere akụkụ",
+    "speed_badge_slow": "A nwalere: {speed}x · Na-adị nwayọọ karịa oge n'ezie (tụọ anya nkwụsịtụ)",
+    "speed_badge_upgrade": "A nwalere: ọ dị ngwa karịa okwu ugboro {speed}x · Dị mma maka ikwu okwu ogologo (ị nwekwara ike ịnwale {name})",
+    "start_recording": "Malite ikwu okwu (Whisper Dị n'Ime Ngwaọrụ)",
+    "stop_recording": "Kwụsị",
+    "studio_title": "Ụlọ Ọrụ Ikwu Okwu",
+    "test_mic": "Nwalee igwe okwu (4s)",
+    "upload_media": "Bugharịa faịlụ olu/vidiyo gaa n'ederede",
+    "use_text": "Jiri ederede e kwuru",
+    "voice_unavailable": "Igwe ndekọ olu ka na-ebubata. Biko nwaa ọzọ n'oge na-adịghị anya."
   }
 }

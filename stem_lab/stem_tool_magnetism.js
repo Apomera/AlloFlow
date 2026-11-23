@@ -3765,8 +3765,8 @@
     var st = document.createElement('style');
     st.id = 'allo-magnetism-studio-css';
     st.textContent = [
-      '.mag-root .mag-studio-badge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 999px; background: rgba(14,165,233,0.16); border: 1px solid rgba(56,189,248,0.45); color: #075985; font-size: 10px; font-weight: 850; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px; }',
-      '.theme-dark .mag-root .mag-studio-badge { background: rgba(14,165,233,0.22); border-color: rgba(125,211,252,0.48); color: #e0f2fe; }',
+      '.mag-root .mag-subject-badge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 999px; background: rgba(14,165,233,0.16); border: 1px solid rgba(56,189,248,0.45); color: #075985; font-size: 10px; font-weight: 850; letter-spacing: 0.06em; text-transform: uppercase; margin: 0 8px 4px 0; width: fit-content; }',
+      '.theme-dark .mag-root .mag-subject-badge { background: rgba(14,165,233,0.22); border-color: rgba(125,211,252,0.48); color: #e0f2fe; }',
       '.mag-root .mag-studio-telemetry { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 15px 6px; border-top: 1px solid rgba(148,163,184,0.22); }',
       '.mag-root .mag-studio-pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; background: rgba(15,23,42,0.06); border: 1px solid rgba(100,116,139,0.3); color: #0f172a; font-size: 11px; font-weight: 700; white-space: nowrap; }',
       '.theme-dark .mag-root .mag-studio-pill { background: rgba(15,23,42,0.68); border-color: rgba(125,211,252,0.3); color: #e2e8f0; }',
@@ -3780,8 +3780,8 @@
       '.mag-root .mag-starter-chip[data-active="true"] { background: #0369a1; border-color: #0284c7; color: #ffffff; }',
       '.theme-dark .mag-root .mag-starter-chip { background: rgba(15,23,42,0.78); border-color: rgba(125,211,252,0.34); color: #f0f9ff; }',
       '.theme-dark .mag-root .mag-starter-chip:hover:not(:disabled) { background: rgba(14,165,233,0.28); border-color: #38bdf8; color: #ffffff; }',
-      '.theme-dark .mag-root .mag-starter-chip[data-active="true"] { background: #0284c7; border-color: #7dd3fc; color: #ffffff; }',
-      '.theme-contrast [data-stem-tool-shell="magnetism"] .mag-studio-badge, .theme-contrast [data-stem-tool-shell="magnetism"] .mag-studio-pill, .theme-contrast [data-stem-tool-shell="magnetism"] .mag-studio-schematic, .theme-contrast [data-stem-tool-shell="magnetism"] .mag-starter-bar { background: #000000 !important; border-color: #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-dark .mag-root .mag-starter-chip[data-active="true"] { background: #0369a1; border-color: #7dd3fc; color: #ffffff; }',
+      '.theme-contrast [data-stem-tool-shell="magnetism"] .mag-subject-badge, .theme-contrast [data-stem-tool-shell="magnetism"] .mag-studio-badge, .theme-contrast [data-stem-tool-shell="magnetism"] .mag-studio-pill, .theme-contrast [data-stem-tool-shell="magnetism"] .mag-studio-schematic, .theme-contrast [data-stem-tool-shell="magnetism"] .mag-starter-bar { background: #000000 !important; border-color: #ffff00 !important; color: #ffff00 !important; }',
       '.theme-contrast [data-stem-tool-shell="magnetism"] .mag-starter-label { color: #ffff00 !important; }',
       '.theme-contrast [data-stem-tool-shell="magnetism"] .mag-starter-chip { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }',
       '.theme-contrast [data-stem-tool-shell="magnetism"] .mag-starter-chip[data-active="true"] { background: #ffff00 !important; color: #000000 !important; border-color: #ffff00 !important; }'
@@ -12709,7 +12709,7 @@
                 h('rect', { className: 'mag-shell-pole s', x: 32, y: 24, width: 12, height: 16, rx: 3 }),
                 h('circle', { className: 'mag-shell-spark', cx: 51, cy: 32, r: 2.2 }))),
             h('div', { className: 'mag-shell-copy' },
-              h('span', { className: 'mag-studio-badge' }, __alloT('stem.magnetism.badge_subject', 'Physics · Electromagnetism & Fields')),
+              h('span', { className: 'mag-subject-badge' }, __alloT('stem.magnetism.badge_subject', 'Physics · Electromagnetism & Fields')),
               h('small', null, 'Magnetism & Electromagnetism Lab · Chapter ' + story.chapterNumber + '/' + story.chapterCount),
               h('h2', { id: 'mag-shell-title' }, station.icon + ' ' + station.label),
               h('p', null, h('b', null, guide.phase + '. '), guide.goal)),

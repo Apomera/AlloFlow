@@ -33,6 +33,29 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
     liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(liveRegion);
   })();
+  // WCAG 2.3.3 / 2.4.7 / forced-colors scoped styles for Ecomap
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-ecomap-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-ecomap-a11y-css';
+    st.textContent = [
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .selh-ecomap *, .selh-ecomap *::before, .selh-ecomap *::after {',
+      '    animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;',
+      '    transition-duration: 0.01ms !important; scroll-behavior: auto !important;',
+      '  }',
+      '}',
+      '.selh-ecomap button:focus-visible, .selh-ecomap input:focus-visible, .selh-ecomap select:focus-visible, .selh-ecomap textarea:focus-visible, .selh-ecomap summary:focus-visible, .selh-ecomap a:focus-visible, .selh-ecomap [tabindex]:focus-visible {',
+      '  outline: 3px solid #fb7185 !important; outline-offset: 2px !important;',
+      '}',
+      '@media (forced-colors: active) {',
+      '  .selh-ecomap button:focus-visible, .selh-ecomap input:focus-visible, .selh-ecomap select:focus-visible, .selh-ecomap textarea:focus-visible, .selh-ecomap summary:focus-visible, .selh-ecomap a:focus-visible, .selh-ecomap [tabindex]:focus-visible {',
+      '    outline: 2px solid Highlight !important; outline-offset: 2px !important;',
+      '  }',
+      '}'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
 
   // The 12 standard life-system categories from Hartman's ecomap.
   var SYSTEMS = [
@@ -98,7 +121,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
       var _ecoT = (ctx && ctx.theme) || {};
       var _ecoHC = !!_ecoT.isContrast, _ecoL = !_ecoHC && !_ecoT.isDark;
       var _eco_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff','#0b1220':'#f1f5f9'}, _eco_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#0b1220':'#000000','#fff':'#000000'};
-      var _eco_FGL = {'#cbd5e1':'#334155','#fda4af':'#9f1239','#fecdd3':'#9f1239','#fb7185':'#be123c','#f59e0b':'#b45309','#ef4444':'#b91c1c','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#fcd34d':'#78350f','#fde68a':'#92400e'}, _eco_FGH = {'#cbd5e1':'#ffff00','#fda4af':'#ffff00','#94a3b8':'#ffff00','#fecdd3':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#f59e0b':'#ffff00','#ef4444':'#ffff00','#64748b':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
+      var _eco_FGL = {'#cbd5e1':'#334155','#fda4af':'#9f1239','#fecdd3':'#9f1239','#fb7185':'#be123c','#f59e0b':'#b45309','#ef4444':'#b91c1c','#94a3b8':'#475569','#64748b':'#475569','#e2e8f0':'#1e293b','#fcd34d':'#78350f','#fde68a':'#92400e'}, _eco_FGH = {'#cbd5e1':'#ffff00','#fda4af':'#ffff00','#94a3b8':'#ffff00','#fecdd3':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#f59e0b':'#ffff00','#ef4444':'#ffff00','#64748b':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
       var _eco_BDL = {'#334155':'#cbd5e1','#1e293b':'#e2e8f0','#475569':'#cbd5e1'}, _eco_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#fb7185':'#ffff00','#cbd5e1':'#ffff00','#be123c':'#ffff00','#f59e0b':'#ffff00'};
       var _ecoBg = function(h){ return _ecoHC ? (_eco_BGH[h]||h) : (_ecoL ? (_eco_BGL[h]||h) : h); };
       var _ecoFg = function(h){ return _ecoHC ? (_eco_FGH[h]||h) : (_ecoL ? (_eco_FGL[h]||h) : h); };
@@ -119,6 +142,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
       var announceToSR = ctx.announceToSR;
       var onSafetyFlag = ctx.onSafetyFlag || null;
       var _ecoBand = (ctx && ctx.gradeBand) || 'high';
+      function isImeComposing(e) {
+        return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+      }
+      function announceEM(msg) {
+        if (!msg) return;
+        if (typeof announceToSR === 'function') { try { announceToSR(msg); } catch (_) {} }
+        if (typeof document !== 'undefined') {
+          var lr = document.getElementById('allo-live-ecomap');
+          if (lr) { lr.textContent = ''; setTimeout(function() { lr.textContent = msg; }, 20); }
+        }
+      }
 
       var d = labToolData.ecomap || defaultState();
       function setEM(patch) {
@@ -161,8 +195,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
-          h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: _ecoHC ? '#000000' : (_ecoL ? '#f1f5f9' : 'rgba(255,255,255,0.05)'), border: '1px solid ' + _ecoBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _ecoFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+          h('button', { type: 'button', onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
+            style: { background: _ecoHC ? '#000000' : (_ecoL ? '#f1f5f9' : 'rgba(255,255,255,0.05)'), border: '1px solid ' + _ecoBd('#334155'), borderRadius: 8, padding: '10px 14px', minHeight: 44, cursor: 'pointer', color: _ecoFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _ecoFg('#fda4af'), fontSize: 22, fontWeight: 900 } }, '🕸️ Ecomap'),
             h('div', { style: { fontSize: 12, color: _ecoFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A relationship map of you and the systems in your life.')
@@ -178,13 +212,30 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
           { id: 'print', label: 'Print view', icon: '🖨' },
           { id: 'about', label: 'About', icon: 'ℹ' }
         ];
+        function onTabKeyDown(e, idx) {
+          if (isImeComposing(e) || e.ctrlKey || e.metaKey || e.altKey) return;
+          var next = null;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (idx + 1) % tabs.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (idx - 1 + tabs.length) % tabs.length;
+          else if (e.key === 'Home') next = 0;
+          else if (e.key === 'End') next = tabs.length - 1;
+          if (next === null) return;
+          e.preventDefault();
+          var targetId = tabs[next].id;
+          goto(targetId);
+          setTimeout(function() {
+            var el = typeof document !== 'undefined' && document.getElementById('eco-tab-' + targetId);
+            if (el && el.focus) el.focus();
+          }, 0);
+        }
         return h('div', { className: 'no-print', role: 'tablist', 'aria-label': 'Ecomap sections',
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
-          tabs.map(function(t) {
+          tabs.map(function(t, idx) {
             var active = view === t.id;
-            return h('button', { key: t.id, id: 'eco-tab-' + t.id, onClick: function() { goto(t.id); },
+            return h('button', { key: t.id, type: 'button', id: 'eco-tab-' + t.id, onClick: function() { goto(t.id); },
+              onKeyDown: function(e) { onTabKeyDown(e, idx); },
               role: 'tab', 'aria-selected': active, 'aria-controls': 'eco-panel-' + t.id, tabIndex: active ? 0 : -1,
-              style: { padding: '6px 12px', borderRadius: 8, border: (_ecoHC ? '2px' : '1px') + ' solid ' + _ecoBd(active ? '#fb7185' : '#334155'),
+              style: { padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: (_ecoHC ? '2px' : '1px') + ' solid ' + _ecoBd(active ? '#fb7185' : '#334155'),
                 background: active ? (_ecoHC ? '#000000' : (_ecoL ? '#ffe4e6' : 'rgba(251,113,133,0.18)')) : _ecoBg('#1e293b'),
                 color: active ? _ecoFg('#fecdd3') : _ecoFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
@@ -217,11 +268,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
         if (nodes.length === 0) {
           return h('div', null,
             h('div', { style: { padding: 28, borderRadius: 14, background: _ecoHC ? '#000000' : (_ecoL ? '#fff1f2' : 'linear-gradient(135deg, rgba(251,113,133,0.18) 0%, rgba(15,23,42,0.4) 60%)'), border: '1px solid ' + (_ecoHC ? '#ffff00' : 'rgba(251,113,133,0.4)'), textAlign: 'center', marginBottom: 14 } },
-              h('div', { style: { fontSize: 56, marginBottom: 8 } }, '🕸️'),
+              h('div', { style: { fontSize: 56, marginBottom: 8 }, 'aria-hidden': 'true' }, '🕸️'),
               h('h3', { style: { margin: '0 0 8px', color: _ecoFg('#fecdd3'), fontSize: 18 } }, 'Your ecomap is empty'),
               h('p', { style: { margin: '0 0 14px', color: _ecoFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
                 'An ecomap is a picture of you in the middle, surrounded by the systems in your life. Start by adding some of the people, places, or services that take up real space in your week. You decide how many; you decide which ones.'),
-              h('button', { onClick: function() { goto('list'); }, style: { padding: '10px 22px', borderRadius: 10, border: _ecoHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _ecoHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _ecoHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 14 } },
+              h('button', { type: 'button', onClick: function() { goto('list'); }, style: { padding: '10px 22px', minHeight: 44, borderRadius: 10, border: _ecoHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _ecoHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _ecoHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 14 } },
                 '+ Add my first connection')
             ),
             softPointer()
@@ -277,8 +328,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
             h('label', { htmlFor: 'em-person', style: { fontSize: 11, color: _ecoFg('#94a3b8'), fontWeight: 700 } }, 'Center label:'),
             h('input', { id: 'em-person', type: 'text', value: d.personLabel != null ? d.personLabel : 'Me',
               onChange: function(e) { setEM({ personLabel: e.target.value }); },
+              onKeyDown: function(e) { if (!isImeComposing(e) && e.key === 'Escape' && d.personLabel) { e.preventDefault(); setEM({ personLabel: '' }); } },
               onBlur: function(e) { scanEcomapText(e.target.value); },
-              style: { padding: 6, borderRadius: 6, border: '1px solid ' + _ecoBd('#334155'), background: _ecoBg('#1e293b'), color: _ecoFg('#e2e8f0'), fontSize: 13, width: 160 } }),
+              style: { padding: '10px 12px', minHeight: 44, boxSizing: 'border-box', borderRadius: 6, border: '1px solid ' + _ecoBd('#334155'), background: _ecoBg('#1e293b'), color: _ecoFg('#e2e8f0'), fontSize: 13, width: 180 } }),
             h('div', { style: { marginLeft: 'auto', fontSize: 11, color: _ecoFg('#94a3b8') } }, nodes.length + ' connection' + (nodes.length === 1 ? '' : 's'))
           ),
 
@@ -322,7 +374,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
 
           // Text-equivalent (accessible to all users; required for WCAG 1.1.1)
           h('details', { style: { marginBottom: 12 } },
-            h('summary', { style: { cursor: 'pointer', fontSize: 12, color: _ecoFg('#fda4af'), fontWeight: 700, padding: '6px 10px', borderRadius: 6, background: _ecoBg('#0f172a'), border: '1px solid #1e293b' } }, '🔤 Read this ecomap as text'),
+            h('summary', { style: { cursor: 'pointer', fontSize: 12, color: _ecoFg('#fda4af'), fontWeight: 700, padding: '10px 12px', minHeight: 44, boxSizing: 'border-box', borderRadius: 6, background: _ecoBg('#0f172a'), border: '1px solid #1e293b' } }, '🔤 Read this ecomap as text'),
             h('div', { style: { marginTop: 6, padding: 12, borderRadius: 8, background: _ecoBg('#0f172a'), border: '1px solid #1e293b' } },
               h('p', { style: { margin: '0 0 8px', color: _ecoFg('#cbd5e1'), fontSize: 13, lineHeight: 1.65 } }, svgDesc),
               SYSTEMS.map(function(sys) {
@@ -372,13 +424,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
           ),
 
           h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
-            h('button', { onClick: function() { goto('list'); }, 'aria-label': 'Add or edit connections',
-              style: { padding: '10px 20px', borderRadius: 10, border: _ecoHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _ecoHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _ecoHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 14 } },
+            h('button', { type: 'button', onClick: function() { goto('list'); }, 'aria-label': 'Add or edit connections',
+              style: { padding: '10px 20px', minHeight: 44, borderRadius: 10, border: _ecoHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _ecoHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _ecoHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 14 } },
               '✏️ Add or edit connections'),
-            h('button', { onClick: function() { goto('reflect'); }, 'aria-label': 'Reflect on patterns',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _ecoBd('#475569'), background: _ecoBg('#1e293b'), color: _ecoFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '💭 Reflect'),
-            h('button', { onClick: function() { goto('print'); }, 'aria-label': 'Print ecomap',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _ecoBd('#475569'), background: _ecoBg('#1e293b'), color: _ecoFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
+            h('button', { type: 'button', onClick: function() { goto('reflect'); }, 'aria-label': 'Reflect on patterns',
+              style: { padding: '10px 20px', minHeight: 44, borderRadius: 10, border: '1px solid ' + _ecoBd('#475569'), background: _ecoBg('#1e293b'), color: _ecoFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '💭 Reflect'),
+            h('button', { type: 'button', onClick: function() { goto('print'); }, 'aria-label': 'Print ecomap',
+              style: { padding: '10px 20px', minHeight: 44, borderRadius: 10, border: '1px solid ' + _ecoBd('#475569'), background: _ecoBg('#1e293b'), color: _ecoFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
           ),
 
           softPointer()
@@ -407,7 +459,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
               })
             });
           });
-          if (announceToSR) announceToSR('Connection removed.');
+          announceEM('Connection removed.');
         }
 
         function saveForm() {
@@ -437,6 +489,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
             return Object.assign({}, prev, { ecomap: Object.assign({}, prior, { nodes: prevNodes.concat([created]), addingForSystem: null, lastUpdated: todayISO() }) });
           });
           if (addToast) addToast(wasEditing ? 'Updated.' : 'Added.', 'success');
+          announceEM(wasEditing ? ('Updated ' + entry.label + '.') : ('Added ' + entry.label + ' to ecomap.'));
         }
 
         function renderForm() {
@@ -446,9 +499,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
           if (!sys) return null;
           var formKey = d.editingNodeId ? ('edit-' + d.editingNodeId) : ('add-' + d.addingForSystem);
 
-          return h('div', { key: formKey, style: { padding: 16, borderRadius: 12, background: _ecoBg('#0f172a'), border: '2px solid ' + _ecoBd(sys.color), marginBottom: 14 } },
+          return h('div', { key: formKey,
+            onKeyDown: function(e) { if (!isImeComposing(e) && e.key === 'Escape') { e.preventDefault(); cancelForm(); } },
+            style: { padding: 16, borderRadius: 12, background: _ecoBg('#0f172a'), border: '2px solid ' + _ecoBd(sys.color), marginBottom: 14 } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
-              h('span', { style: { fontSize: 28 } }, sys.icon),
+              h('span', { style: { fontSize: 28 }, 'aria-hidden': 'true' }, sys.icon),
               h('h3', { style: { margin: 0, color: _ecoInk(sys.color), fontSize: 18, fontWeight: 800 } }, (editing ? 'Edit' : 'Add to ') + ' ' + sys.label)
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10, marginBottom: 10 } },
@@ -457,24 +512,24 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
                 h('input', { id: 'em-form-label', type: 'text', defaultValue: editing ? editing.label : '',
                   placeholder: 'e.g. Mom, soccer team, Dr. Singh',
                   onBlur: function(e) { scanEcomapText(e.target.value); },
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _ecoBd('#334155'), background: _ecoBg('#1e293b'), color: _ecoFg('#e2e8f0'), fontSize: 13 } })
+                  style: { width: '100%', boxSizing: 'border-box', minHeight: 44, padding: '10px 12px', borderRadius: 6, border: '1px solid ' + _ecoBd('#334155'), background: _ecoBg('#1e293b'), color: _ecoFg('#e2e8f0'), fontSize: 13 } })
               ),
               h('div', null,
                 h('label', { htmlFor: 'em-form-strength', style: { display: 'block', fontSize: 11, color: _ecoFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Strength'),
                 h('select', { id: 'em-form-strength', defaultValue: editing ? editing.strength : 'medium',
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _ecoBd('#334155'), background: _ecoBg('#1e293b'), color: _ecoFg('#e2e8f0'), fontSize: 13 } },
+                  style: { width: '100%', boxSizing: 'border-box', minHeight: 44, padding: '10px 12px', borderRadius: 6, border: '1px solid ' + _ecoBd('#334155'), background: _ecoBg('#1e293b'), color: _ecoFg('#e2e8f0'), fontSize: 13 } },
                   STRENGTHS.map(function(s) { return h('option', { key: s.id, value: s.id }, s.label); }))
               ),
               h('div', null,
                 h('label', { htmlFor: 'em-form-stress', style: { display: 'block', fontSize: 11, color: _ecoFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Stress level'),
                 h('select', { id: 'em-form-stress', defaultValue: editing ? editing.stress : 'calm',
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _ecoBd('#334155'), background: _ecoBg('#1e293b'), color: _ecoFg('#e2e8f0'), fontSize: 13 } },
+                  style: { width: '100%', boxSizing: 'border-box', minHeight: 44, padding: '10px 12px', borderRadius: 6, border: '1px solid ' + _ecoBd('#334155'), background: _ecoBg('#1e293b'), color: _ecoFg('#e2e8f0'), fontSize: 13 } },
                   STRESSES.map(function(s) { return h('option', { key: s.id, value: s.id }, s.label); }))
               ),
               h('div', null,
                 h('label', { htmlFor: 'em-form-direction', style: { display: 'block', fontSize: 11, color: _ecoFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Energy direction'),
                 h('select', { id: 'em-form-direction', defaultValue: editing ? editing.direction : 'mutual',
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _ecoBd('#334155'), background: _ecoBg('#1e293b'), color: _ecoFg('#e2e8f0'), fontSize: 13 } },
+                  style: { width: '100%', boxSizing: 'border-box', minHeight: 44, padding: '10px 12px', borderRadius: 6, border: '1px solid ' + _ecoBd('#334155'), background: _ecoBg('#1e293b'), color: _ecoFg('#e2e8f0'), fontSize: 13 } },
                   DIRECTIONS.map(function(s) { return h('option', { key: s.id, value: s.id }, s.label); }))
               )
             ),
@@ -483,13 +538,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
               h('textarea', { id: 'em-form-notes', defaultValue: editing ? editing.notes : '',
                 placeholder: 'Anything you want to remember about this connection.',
                 onBlur: function(e) { scanEcomapText(e.target.value); },
-                style: { width: '100%', minHeight: 60, padding: 8, borderRadius: 6, border: '1px solid ' + _ecoBd('#334155'), background: _ecoBg('#1e293b'), color: _ecoFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', resize: 'vertical' } })
+                style: { width: '100%', boxSizing: 'border-box', minHeight: 60, padding: 10, borderRadius: 6, border: '1px solid ' + _ecoBd('#334155'), background: _ecoBg('#1e293b'), color: _ecoFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', resize: 'vertical' } })
             ),
             h('div', { style: { display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' } },
-              h('button', { onClick: saveForm, 'aria-label': editing ? 'Save changes' : 'Add connection',
-                style: { padding: '8px 18px', borderRadius: 8, border: _ecoHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _ecoHC ? '#000000' : '#be123c', color: _ecoHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 13 } }, editing ? '✓ Save' : '+ Add'),
-              h('button', { onClick: cancelForm, 'aria-label': 'Cancel',
-                style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _ecoBd('#475569'), background: _ecoBg('#1e293b'), color: _ecoFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, 'Cancel')
+              h('button', { type: 'button', onClick: saveForm, 'aria-label': editing ? 'Save changes' : 'Add connection',
+                style: { padding: '10px 18px', minHeight: 44, borderRadius: 8, border: _ecoHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _ecoHC ? '#000000' : '#be123c', color: _ecoHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 13 } }, editing ? '✓ Save' : '+ Add'),
+              h('button', { type: 'button', onClick: cancelForm, 'aria-label': 'Cancel',
+                style: { padding: '10px 18px', minHeight: 44, borderRadius: 8, border: '1px solid ' + _ecoBd('#475569'), background: _ecoBg('#1e293b'), color: _ecoFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, 'Cancel')
             )
           );
         }
@@ -502,10 +557,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
             var sysNodes = nodes.filter(function(n) { return n.systemId === sys.id; });
             return h('div', { key: sys.id, style: { padding: 12, borderRadius: 10, background: _ecoBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + sys.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
-                h('span', { style: { fontSize: 22 } }, sys.icon),
+                h('span', { style: { fontSize: 22 }, 'aria-hidden': 'true' }, sys.icon),
                 h('div', { style: { fontSize: 13, fontWeight: 800, color: _ecoInk(sys.color), flex: 1 } }, sys.label),
-                h('button', { onClick: function() { startAdd(sys.id); }, 'aria-label': 'Add a connection in ' + sys.label,
-                  style: { padding: '4px 10px', borderRadius: 6, border: '1px solid ' + sys.color, background: 'transparent', color: _ecoInk(sys.color), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '+ Add')
+                h('button', { type: 'button', onClick: function() { startAdd(sys.id); }, 'aria-label': 'Add a connection in ' + sys.label,
+                  style: { padding: '8px 14px', minHeight: 44, minWidth: 44, borderRadius: 6, border: '1px solid ' + sys.color, background: 'transparent', color: _ecoInk(sys.color), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '+ Add')
               ),
               sysNodes.length === 0
                 ? h('div', { style: { fontSize: 11, color: _ecoFg('#94a3b8'), fontStyle: 'italic', paddingLeft: 30 } }, '(nothing in this system yet)')
@@ -518,11 +573,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
                         h('div', { style: { fontSize: 12, fontWeight: 700, color: _ecoFg('#e2e8f0') } }, n.label),
                         h('div', { style: { fontSize: 10, color: _ecoFg('#94a3b8'), lineHeight: 1.5 } },
                           strengthLbl + ' · ' + stressLbl + ' · ' + directionLbl),
-                        h('div', { style: { display: 'flex', gap: 4 } },
-                          h('button', { onClick: function() { startEdit(n.id); }, 'aria-label': 'Edit ' + n.label,
-                            style: { padding: '2px 8px', borderRadius: 4, border: '1px solid #475569', background: 'transparent', color: _ecoFg('#cbd5e1'), cursor: 'pointer', fontSize: 10 } }, '✏️ Edit'),
-                          h('button', { onClick: function() { deleteNode(n.id); }, 'aria-label': 'Remove ' + n.label,
-                            style: { padding: '2px 8px', borderRadius: 4, border: '1px solid #475569', background: 'transparent', color: _ecoFg('#94a3b8'), cursor: 'pointer', fontSize: 10 } }, '✕'))
+                        h('div', { style: { display: 'flex', gap: 6, marginTop: 4 } },
+                          h('button', { type: 'button', onClick: function() { startEdit(n.id); }, 'aria-label': 'Edit ' + n.label,
+                            style: { padding: '8px 12px', minHeight: 44, minWidth: 44, borderRadius: 6, border: '1px solid #475569', background: 'transparent', color: _ecoFg('#cbd5e1'), cursor: 'pointer', fontSize: 12 } }, '✏️ Edit'),
+                          h('button', { type: 'button', onClick: function() { deleteNode(n.id); }, 'aria-label': 'Remove ' + n.label,
+                            style: { padding: '8px 12px', minHeight: 44, minWidth: 44, borderRadius: 6, border: '1px solid #475569', background: 'transparent', color: _ecoFg('#94a3b8'), cursor: 'pointer', fontSize: 12 } }, '✕'))
                       );
                     })
                   )
@@ -605,9 +660,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
               h('strong', null, '🖨 Print preview. '),
               'Includes the visual map and a summary list. Use your browser\'s print dialog.'
             ),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _ecoHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _ecoHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _ecoHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
-            h('button', { onClick: function() { goto('map'); }, 'aria-label': 'Back to map',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _ecoBd('#475569'), background: _ecoBg('#1e293b'), color: _ecoFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+            h('button', { type: 'button', onClick: printNow, style: { padding: '10px 18px', minHeight: 44, borderRadius: 8, border: _ecoHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _ecoHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _ecoHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { type: 'button', onClick: function() { goto('map'); }, 'aria-label': 'Back to map',
+              style: { padding: '10px 18px', minHeight: 44, borderRadius: 8, border: '1px solid ' + _ecoBd('#475569'), background: _ecoBg('#1e293b'), color: _ecoFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
@@ -632,8 +687,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
             SYSTEMS.map(function(sys) {
               var sysNodes = nodes.filter(function(n) { return n.systemId === sys.id; });
               if (sysNodes.length === 0) return null;
+              var hdrEdge = _ecoHC ? '1px solid #ffff00' : '1px solid #e2e8f0';
               return h('div', { key: sys.id, style: { marginBottom: 14, pageBreakInside: 'avoid' } },
-                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 4, marginBottom: 6, background: _ecoHC ? '#000000' : '#f1f5f9', border: _ecoHC ? '1px solid #ffff00' : '1px solid #e2e8f0', borderLeft: '4px solid ' + _ecoBd(sys.color), color: _ecoHC ? '#ffff00' : '#0f172a' } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 4, marginBottom: 6, background: _ecoHC ? '#000000' : '#f1f5f9', borderTop: hdrEdge, borderRight: hdrEdge, borderBottom: hdrEdge, borderLeft: '4px solid ' + _ecoBd(sys.color), color: _ecoHC ? '#ffff00' : '#0f172a' } },
                   h('span', { style: { fontSize: 16 } }, sys.icon),
                   h('span', { style: { fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, sys.label)
                 ),
@@ -718,7 +774,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
           h('div', { style: { fontSize: 11, color: _ecoFg('#fda4af'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: _ecoFg('#fecdd3'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+                style: { fontSize: 13, color: _ecoFg('#fecdd3'), fontWeight: 700, textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', minHeight: 44, marginBottom: 4 } }, title + ' ↗')
             : h('div', { style: { fontSize: 13, color: _ecoFg('#fecdd3'), fontWeight: 700, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _ecoFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );
@@ -731,7 +787,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
       else if (view === 'about') body = renderAbout();
       else body = renderMap();
 
-      return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Ecomap' },
+      return h('div', { className: 'selh-ecomap', style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Ecomap' },
         header(),
         navTabs(),
         (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')

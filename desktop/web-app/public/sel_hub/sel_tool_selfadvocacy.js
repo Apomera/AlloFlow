@@ -64,8 +64,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
       // Reduced motion (WCAG 2.3.3)
       '@media (prefers-reduced-motion: reduce) { .selfadv-tool *, .selfadv-tool *::before, .selfadv-tool *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }',
       // Skip link (WCAG 2.4.1)
-      '.selfadv-skip-link { position: absolute; left: -9999px; top: 0; z-index: 999; padding: 0.5rem 1rem; background: #1e293b; color: white; font-weight: 700; text-decoration: none; border: 2px solid #6366f1; border-radius: 0 0 0.5rem 0; }',
-      '.selfadv-skip-link:focus { left: 0; outline: 3px solid #facc15; outline-offset: 2px; }',
+      '.selfadv-skip-link { position: absolute; inset-inline-start: 0; top: 0; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; pointer-events: none; z-index: 999; padding: 0.5rem 1rem; background: #1e293b; color: white; font-weight: 700; text-decoration: none; border: 2px solid #6366f1; border-radius: 0 0 0.5rem 0; }',
+      '.selfadv-skip-link:focus { inset-inline-start: 0; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; pointer-events: auto; outline: 3px solid #facc15; outline-offset: 2px; }',
       // Visible focus styles (WCAG 2.4.7) — supplement Tailwind focus rings on browsers that strip them
       '.selfadv-tool button:focus-visible, .selfadv-tool a:focus-visible, .selfadv-tool input:focus-visible, .selfadv-tool textarea:focus-visible, .selfadv-tool select:focus-visible { outline: 2px solid #fbbf24 !important; outline-offset: 2px !important; }',
       // sr-only fallback

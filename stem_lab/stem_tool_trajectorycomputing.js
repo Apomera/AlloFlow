@@ -1484,7 +1484,7 @@
       '[data-trajectory-lab]{--tc-ink:#15241f;--tc-paper:#f5efd9;--tc-paper2:#e8dfbe;--tc-green:#173c32;--tc-mint:#9ad7c0;--tc-orange:#a64220;--tc-line:#b9ad82;color:var(--tc-ink);background:#d8d0b3;font-family:Inter,system-ui,sans-serif}',
       '[data-trajectory-lab] *{box-sizing:border-box}',
       '[data-trajectory-lab] .tc-shell{min-height:100%;background:linear-gradient(135deg,#173c32 0,#173c32 29%,#d8d0b3 29%,#f5efd9 100%);padding:clamp(12px,2.4vw,28px)}',
-      '[data-trajectory-lab] .tc-skip-link{position:absolute;left:-10000px;top:8px;z-index:1000;background:#fffdf4;color:#173c32;border:3px solid #173c32;border-radius:7px;padding:9px 12px;font-weight:800;transform:translateY(-200%)}[data-trajectory-lab] .tc-skip-link:focus{left:8px;transform:translateY(0)}',
+      '[data-trajectory-lab] .tc-skip-link{position:absolute;inset-inline-start:8px;top:8px;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;pointer-events:none;z-index:1000;background:#fffdf4;color:#173c32;border:3px solid #173c32;border-radius:7px;padding:9px 12px;font-weight:800}[data-trajectory-lab] .tc-skip-link:focus{inset-inline-start:8px;width:auto;height:auto;overflow:visible;clip-path:none;white-space:normal;pointer-events:auto}',
       '[data-trajectory-lab] .tc-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}',
       '[data-trajectory-lab] .tc-top{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;color:#fff;margin-bottom:18px}',
       // Header text keeps its own green backing wherever the diagonal crosses it.

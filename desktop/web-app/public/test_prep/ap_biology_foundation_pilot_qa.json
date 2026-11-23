@@ -125,18 +125,16 @@
       "memoryAids": 8,
       "diagrams": 8,
       "diagramPlacements": 8,
-      "glossaryTerms": 0,
+      "glossaryTerms": 24,
       "constructedResponseWorkshops": 8,
       "topicDiagnosticRoutes": 0,
-      "remediationPlaybooks": 0,
+      "remediationPlaybooks": 6,
       "studySessionPlans": 0,
       "spacedReviewPlans": 0,
       "sourceCatalog": 4
     },
     "emptyLibraryLayers": [
-      "glossaryTerms",
       "topicDiagnosticRoutes",
-      "remediationPlaybooks",
       "studySessionPlans",
       "spacedReviewPlans"
     ],
@@ -294,8 +292,8 @@
     "nearDuplicatePairCount": 0
   },
   "inputs": {
-    "packSha256": "b21a87c1473056a34e5dcba5d093c87d3a1b3846449bb444e8eaf96fb3d94921",
-    "learningLibrarySha256": "2fd2bd056cb65aebea133f227b0b47ef6157b95af9f9ca6110bede6cf80ed34b",
+    "packSha256": "cbcaf7b0c69e8fe08e549e2e14248853f273a77818cad62d6c6923f3dc3ea90f",
+    "learningLibrarySha256": "112d9f3032312f78b9b472a25bddeb34b5f8fe1f2c1c1194a4ad36d469caad39",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
     "officialCourseUrl": "https://apstudents.collegeboard.org/courses/ap-biology",
     "factualCrossCheckUrl": "https://openstax.org/details/books/biology-2e"
@@ -305,15 +303,15 @@
       "asset": "pack",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "b21a87c1473056a34e5dcba5d093c87d3a1b3846449bb444e8eaf96fb3d94921",
-      "deploySha256": "b21a87c1473056a34e5dcba5d093c87d3a1b3846449bb444e8eaf96fb3d94921"
+      "sourceSha256": "cbcaf7b0c69e8fe08e549e2e14248853f273a77818cad62d6c6923f3dc3ea90f",
+      "deploySha256": "cbcaf7b0c69e8fe08e549e2e14248853f273a77818cad62d6c6923f3dc3ea90f"
     },
     {
       "asset": "learning-library",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "2fd2bd056cb65aebea133f227b0b47ef6157b95af9f9ca6110bede6cf80ed34b",
-      "deploySha256": "2fd2bd056cb65aebea133f227b0b47ef6157b95af9f9ca6110bede6cf80ed34b"
+      "sourceSha256": "112d9f3032312f78b9b472a25bddeb34b5f8fe1f2c1c1194a4ad36d469caad39",
+      "deploySha256": "112d9f3032312f78b9b472a25bddeb34b5f8fe1f2c1c1194a4ad36d469caad39"
     }
   ],
   "releaseBlockers": [

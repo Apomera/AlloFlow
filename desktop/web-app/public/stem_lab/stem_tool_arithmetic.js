@@ -1,6 +1,34 @@
 // Arithmetic Strategy Studio - whole-number and decimal operations with visual reasoning.
 (function () {
   'use strict';
+  if (typeof window === 'undefined') return;
+
+  function _arithGlobalMuted() {
+    try {
+      if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+      if (window._alloGlobalMute === true || window._alloGlobalMuted === true || window.__alloFlowMuted === true || window.__alloSoundMuted === true) return true;
+      if (typeof window.isAlloMuted === 'function' && window.isAlloMuted()) return true;
+      if (window.localStorage && (window.localStorage.getItem('alloflow-global-muted') === 'true' || window.localStorage.getItem('alloflow_muted') === '1')) return true;
+    } catch (_) {}
+    return false;
+  }
+
+  function _arithAiAllowed(fn) {
+    if (typeof fn !== 'function' || fn._alloQrBlocked === true) return false;
+    var qrMode = window.__alloQrStudentMode;
+    var qrBlocked = qrMode === true || (qrMode && typeof qrMode === 'object' && (qrMode.aiDisabled === true || qrMode.aiPolicy === 'off' || qrMode.aiEnabled === false || qrMode.allowAi === false || qrMode.active === true));
+    if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true || qrBlocked) return false;
+    var mp = window.ALLOFLOW_MANAGED_AI_POLICY;
+    if (mp && typeof mp === 'object' && (mp.disabled === true || mp.aiDisabled === true || mp.allowAi === false || mp.aiPolicy === 'off')) return false;
+    var sp = window.StudentPolicy || (window.AlloModules && window.AlloModules.StudentPolicy);
+    if (sp && typeof sp.isAiAllowed === 'function') {
+      try { if (sp.isAiAllowed('text') === false) return false; } catch (_) { return false; }
+    }
+    if (typeof window.__alloAiUsable === 'function') {
+      try { return !!window.__alloAiUsable('text', fn); } catch (_) { return false; }
+    }
+    return true;
+  }
 
   window.StemLab = window.StemLab || {
     _registry: {},
@@ -221,8 +249,8 @@
     if (!(x >= 1)) return 1;
     return Math.pow(10, String(Math.floor(x)).length - 1);
   }
-  function roundNearest(x, p) { return roundTo(Math.round(x / p) * p, 6); }
-  function truncTo(x, p) { return roundTo(Math.floor(x / p + 1e-9) * p, 6); }
+  function roundNearest(x, p) { return (!isFinite(p) || p <= 0) ? roundTo(x, 6) : roundTo(Math.round(x / p) * p, 6); }
+  function truncTo(x, p) { return (!isFinite(p) || p <= 0) ? roundTo(x, 6) : roundTo(Math.floor(x / p + 1e-9) * p, 6); }
   function digitsOf(n) { return String(Math.abs(Math.round(n))).split('').reverse().map(Number); }
   function fromDigits(list) { return list.reduce(function (sum, digit, i) { return sum + digit * Math.pow(10, i); }, 0); }
 
@@ -1751,7 +1779,12 @@
     if (typeof document !== 'undefined' && document && typeof document.addEventListener === 'function') {
       document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') cancelOwnSpeech(); });
     }
-    if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') window.addEventListener('pagehide', function () { cancelOwnSpeech(); });
+    if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+      window.addEventListener('pagehide', function () { cancelOwnSpeech(); });
+      window.addEventListener('alloflow-mute-changed', function (e) {
+        if ((e && e.detail && e.detail.muted) || _arithGlobalMuted()) cancelOwnSpeech();
+      });
+    }
   } catch (e) { /* no page events here */ }
 
   // Quest labels are read outside render, so they use the last render's translator.
@@ -2059,7 +2092,7 @@
 
       // ---- Read-aloud and AI hints (both optional; offline paths always work).
       var hasSpeech = typeof window !== 'undefined' && !!window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function';
-      var aiCanAsk = typeof ctx.getHint === 'function' && ctx.aiHintsEnabled !== false;
+      var aiCanAsk = ctx.aiAvailable !== false && ctx.aiHintsEnabled !== false && _arithAiAllowed(ctx.getHint);
       function mapOf(key) { var m = d[key]; return m && typeof m === 'object' && !Array.isArray(m) ? m : {}; }
       // The same problem solved (or shown) under another id earns nothing: say
       // so on the item (noCreditFor 'scope:id') and in the one announcement.
@@ -2703,8 +2736,9 @@
       function speak(text, id) {
         text = String(text || '');
         if (!text) return;
+        if (_arithGlobalMuted()) { cancelOwnSpeech(); return; }
         function viaBrowser() {
-          if (!hasSpeech) return false;
+          if (!hasSpeech || _arithGlobalMuted()) return false;
           try {
             var u = new window.SpeechSynthesisUtterance(text);
             u.rate = 0.95;
@@ -2716,14 +2750,15 @@
           } catch (e) { return false; }
         }
         function unavailable() {
+          if (_arithGlobalMuted()) return;
           var msg = t('stem.arithmetic.tts_unavailable', 'Read-aloud is not available here. The same words are written on the page.');
           update({ ttsNote: msg, ttsNoteFor: id || null });
           announce(msg);
         }
         if (typeof ctx.callTTS === 'function') {
           var req, gen = SPEECH.gen;
-          try { req = ctx.callTTS(text, null, null, { force: true }); } catch (e) { if (!viaBrowser()) unavailable(); return; }
-          Promise.resolve(req).then(function (url) { if (SPEECH.gen === gen && !url && !viaBrowser()) unavailable(); }, function () { if (SPEECH.gen === gen && !viaBrowser()) unavailable(); });
+          try { req = ctx.callTTS(text, null, null, { force: true }); } catch (e) { if (!_arithGlobalMuted() && !viaBrowser()) unavailable(); return; }
+          Promise.resolve(req).then(function (url) { if (SPEECH.gen === gen && !url && !_arithGlobalMuted() && !viaBrowser()) unavailable(); }, function () { if (SPEECH.gen === gen && !_arithGlobalMuted() && !viaBrowser()) unavailable(); });
           return;
         }
         if (!viaBrowser()) unavailable();
@@ -2762,6 +2797,7 @@
       }
 
       function moveTab(event, index) {
+        if (!event || event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
         var nextIndex = null;
         if (event.key === 'ArrowRight') nextIndex = (index + 1) % tabOrder.length;
         else if (event.key === 'ArrowLeft') nextIndex = (index - 1 + tabOrder.length) % tabOrder.length;
@@ -3657,7 +3693,7 @@
           h('div', { className: 'grid sm:grid-cols-3 gap-2 items-end' },
             needsEstimate && h('div', { className: 'space-y-1' },
               h('label', { className: 'text-xs font-bold block' }, t('stem.arithmetic.step1_estimate', 'Step 1. Estimate'),
-                h('input', Object.assign({ type: 'number', required: true, 'aria-required': 'true', value: displayedEstimate, disabled: solved || estimateLocked, onChange: function (e) { updatePracticeInput('estimateInput', e.target.value); }, onKeyDown: function (e) { if (e.key === 'Enter') lockEstimate(); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: inputStyle }, numberProps))),
+                h('input', Object.assign({ type: 'number', required: true, 'aria-required': 'true', value: displayedEstimate, disabled: solved || estimateLocked, onChange: function (e) { updatePracticeInput('estimateInput', e.target.value); }, onKeyDown: function (e) { if (!e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && e.key === 'Enter') lockEstimate(); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: inputStyle }, numberProps))),
               !solved && (estimateLocked
                 ? (practiceTry === 0 && !practiceFeedback && h('button', { type: 'button', onClick: function () { update({ estimateLocked: false, estimateStatus: null }); }, className: 'rounded-lg px-3 py-2 text-xs font-bold w-full', style: ghostStyle }, t('stem.arithmetic.change_estimate', 'Change my estimate')))
                 : h('button', { type: 'button', 'data-lock-estimate': true, onClick: lockEstimate, disabled: practiceEstimateInput === '', className: 'rounded-lg px-3 py-2 text-xs font-black w-full disabled:opacity-40', style: solidAccent(opMeta) }, t('stem.arithmetic.lock_estimate', 'Lock in my estimate')))),
@@ -4389,7 +4425,7 @@
             h('textarea', { rows: 2, value: ntOn && d.ntExplain ? String(d.ntExplain) : '', onChange: function (e) { update({ ntFor: item.id, ntExplain: e.target.value }); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 text-sm', style: inputStyle })));
         var answerRow = h('div', { className: 'flex flex-wrap items-end gap-2' },
           h('label', { className: 'text-xs font-bold' }, ntPickOptional ? t('stem.arithmetic.nt_answer_plain', 'Your answer') : t('stem.arithmetic.nt_step2', 'Step 2. Your answer'),
-            h('input', { type: 'number', inputMode: 'numeric', 'data-nt-answer': true, value: shownAnswer, disabled: !answerOpen || done, 'aria-describedby': !answerOpen ? 'arithmetic-nt-pick-first' : undefined, onChange: function (e) { update({ ntFor: item.id, ntAnswer: e.target.value, ntFeedback: ntFeedback === 'try' ? 'try' : null }); }, onKeyDown: function (e) { if (e.key === 'Enter' && !e.repeat && answerOpen && ntAnswer !== '' && !done) checkNumberTalk(); }, className: 'mt-1 block w-32 rounded-lg px-3 py-2 font-mono', style: inputStyle })),
+            h('input', { type: 'number', inputMode: 'numeric', 'data-nt-answer': true, value: shownAnswer, disabled: !answerOpen || done, 'aria-describedby': !answerOpen ? 'arithmetic-nt-pick-first' : undefined, onChange: function (e) { update({ ntFor: item.id, ntAnswer: e.target.value, ntFeedback: ntFeedback === 'try' ? 'try' : null }); }, onKeyDown: function (e) { if (!e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && e.key === 'Enter' && !e.repeat && answerOpen && ntAnswer !== '' && !done) checkNumberTalk(); }, className: 'mt-1 block w-32 rounded-lg px-3 py-2 font-mono', style: inputStyle })),
           h('button', { type: 'button', onClick: checkNumberTalk, disabled: !answerOpen || ntAnswer === '' || done, className: 'rounded-lg px-4 py-2 text-sm font-black disabled:opacity-40', style: solidAccent(opMeta) }, done && ntSolvedNow ? t('stem.arithmetic.solved', 'Solved') : t('stem.arithmetic.check_answer', 'Check answer')));
         return h('div', { className: 'space-y-3', 'data-number-talk': item.id },
           h('p', { className: 'text-xs', style: { color: muted } }, ntTenFrame

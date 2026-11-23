@@ -56,7 +56,7 @@
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
     "sourceItemsSha256": "0b3b2e28778bf269915e8a4db1c96c963d9f1d7438848d9a931eb055d0f31ac2",
-    "learningLibrarySha256": "8a9934e377cd8c04f141acaa182126478defead384f233f3061c8897cc8ea612",
+    "learningLibrarySha256": "e713c39800aead86632c74774ada00436afe1c5758224a8b1a72689ce0fa3821",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

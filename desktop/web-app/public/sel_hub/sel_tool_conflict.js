@@ -40,6 +40,30 @@ window.SelHub = window.SelHub || {
     document.body.appendChild(liveRegion);
   })();
 
+  // WCAG 2.3.3 & 2.4.7: Reduced-motion & focus-visible guards scoped to Conflict Resolution
+  (function() {
+    if (document.getElementById('allo-conflict-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-conflict-a11y-css';
+    st.textContent = [
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .selh-conflict *, .selh-conflict *::before, .selh-conflict *::after {',
+      '    animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;',
+      '    transition-duration: 0.01ms !important; scroll-behavior: auto !important;',
+      '  }',
+      '}',
+      '.selh-conflict button:focus-visible, .selh-conflict input:focus-visible, .selh-conflict textarea:focus-visible, .selh-conflict select:focus-visible, .selh-conflict summary:focus-visible {',
+      '  outline: 3px solid #6ee7b7 !important; outline-offset: 2px !important;',
+      '}',
+      '@media (forced-colors: active) {',
+      '  .selh-conflict button:focus-visible, .selh-conflict input:focus-visible, .selh-conflict textarea:focus-visible, .selh-conflict select:focus-visible, .selh-conflict summary:focus-visible {',
+      '    outline: 3px solid Highlight !important; outline-offset: 2px !important;',
+      '  }',
+      '}'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
 
   // ══════════════════════════════════════════════════════════════
   // ── Sound Effects Engine (Web Audio API) ──
@@ -1184,7 +1208,7 @@ window.SelHub = window.SelHub || {
       var _cflT = (ctx && ctx.theme) || {};
       var _cflHC = !!_cflT.isContrast, _cflL = !_cflHC && !_cflT.isDark;
       var _cfl_BGL = {'#1e293b':'#ffffff','#334155':'#e2e8f0','#0f172a':'#f8fafc'}, _cfl_BGH = {'#1e293b':'#000000','#334155':'#000000','#0f172a':'#000000','#8b5cf6':'#000000'};
-      var _cfl_FGL = {'#94a3b8':'#64748b','#cbd5e1':'#334155','#f1f5f9':'#0f172a','#e2e8f0':'#1e293b','#fca5a5':'#991b1b'}, _cfl_FGH = {'#94a3b8':'#ffff00','#fff':'#ffff00','#cbd5e1':'#ffff00','#f1f5f9':'#ffff00','#e2e8f0':'#ffff00','#ef4444':'#ffff00','#fca5a5':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00','#ec4899':'#ffff00','#3b82f6':'#ffff00','#10b981':'#ffff00','#8b5cf6':'#ffff00','#6366f1':'#ffff00'};
+      var _cfl_FGL = {'#94a3b8':'#475569','#64748b':'#475569','#cbd5e1':'#334155','#f1f5f9':'#0f172a','#e2e8f0':'#1e293b','#fca5a5':'#991b1b'}, _cfl_FGH = {'#94a3b8':'#ffff00','#fff':'#ffff00','#cbd5e1':'#ffff00','#f1f5f9':'#ffff00','#e2e8f0':'#ffff00','#ef4444':'#ffff00','#fca5a5':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00','#ec4899':'#ffff00','#3b82f6':'#ffff00','#10b981':'#ffff00','#8b5cf6':'#ffff00','#6366f1':'#ffff00'};
       var _cfl_BDL = {'#334155':'#e2e8f0'}, _cfl_BDH = {'#334155':'#ffff00'};
       var _cflBg = function(h){ return _cflHC ? (_cfl_BGH[h]||h) : (_cflL ? (_cfl_BGL[h]||h) : h); };
       // Dark-mode foreground remap. The tool shell is always dark, so these
@@ -1201,6 +1225,9 @@ window.SelHub = window.SelHub || {
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
       var announceToSR = ctx.announceToSR;
+      function isImeComposing(e) {
+        return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+      }
       var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
@@ -1327,6 +1354,7 @@ window.SelHub = window.SelHub || {
         }
 
         function handleBadgeDialogKeyDown(event) {
+          if (isImeComposing(event)) return;
           if (event.key === 'Escape') {
             event.preventDefault();
             event.stopPropagation();
@@ -1440,26 +1468,45 @@ window.SelHub = window.SelHub || {
       };
 
       var tabBar = h('div', {
-        style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
+        style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch', alignItems: 'center' }
       },
-        h('div', { role: 'tablist', 'aria-label': 'Conflict Resolution tabs', style: { display: 'flex', gap: 2 } },
-          tabs.map(function(t) {
+        h('div', { role: 'tablist', 'aria-label': 'Conflict Resolution tabs', style: { display: 'flex', gap: 4 } },
+          tabs.map(function(t, idx) {
           var isActive = activeTab === t.id;
-          return h('button', { 'aria-label': t.label,
+          return h('button', { type: 'button', 'aria-label': t.label,
             key: t.id,
+            id: 'cfl-tab-' + t.id,
+            'aria-controls': 'cfl-panel-' + t.id,
+            tabIndex: isActive ? 0 : -1,
             onClick: function() { upd('activeTab', t.id); if (soundEnabled) sfxClick(); },
+            onKeyDown: function(ev) {
+              if (isImeComposing(ev)) return;
+              var nextIdx = idx;
+              if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') nextIdx = (idx + 1) % tabs.length;
+              else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') nextIdx = (idx - 1 + tabs.length) % tabs.length;
+              else if (ev.key === 'Home') nextIdx = 0;
+              else if (ev.key === 'End') nextIdx = tabs.length - 1;
+              else return;
+              ev.preventDefault();
+              upd('activeTab', tabs[nextIdx].id);
+              if (soundEnabled) sfxClick();
+              setTimeout(function() {
+                var el = document.getElementById('cfl-tab-' + tabs[nextIdx].id);
+                if (el) el.focus();
+              }, 0);
+            },
             'aria-selected': isActive, role: 'tab',
             style: {
-              padding: '6px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: isActive ? 700 : 500, whiteSpace: 'nowrap',
+              minHeight: 44, padding: '10px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: isActive ? 700 : 500, whiteSpace: 'nowrap',
               background: isActive ? ACCENT_DIM : 'transparent', color: isActive ? _cflFg(ACCENT) : _cflFg('#94a3b8'), transition: 'all 0.15s'
             }
           }, t.label);
           })
         ),
-        h('button', { 'aria-label': 'Sound effects', 'aria-pressed': !!soundEnabled, onClick: function() { upd('soundEnabled', !soundEnabled); }, style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _cflFg('#94a3b8') }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
-        h('button', { 'aria-label': Object.keys(earnedBadges).length + '/' + shownBadges.length + ' badges earned', 'aria-expanded': !!showBadgesPanel, onClick: function() { upd('showBadgesPanel', !showBadgesPanel); }, style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _cflFg('#94a3b8'), position: 'relative' } },
+        h('button', { type: 'button', 'aria-label': 'Sound effects', 'aria-pressed': !!soundEnabled, onClick: function() { upd('soundEnabled', !soundEnabled); }, style: { marginLeft: 'auto', minWidth: 44, minHeight: 44, background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, padding: '8px', color: _cflFg('#94a3b8'), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
+        h('button', { type: 'button', 'aria-label': Object.keys(earnedBadges).length + '/' + shownBadges.length + ' badges earned', 'aria-expanded': !!showBadgesPanel, onClick: function() { upd('showBadgesPanel', !showBadgesPanel); }, style: { minWidth: 44, minHeight: 44, background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, padding: '8px', color: _cflFg('#94a3b8'), position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } },
           '\uD83C\uDFC5',
-          Object.keys(earnedBadges).length > 0 && h('span', { style: { position: 'absolute', top: 0, right: 0, background: _cflSolid(ACCENT), color: _cflFg('#fff'), borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, Object.keys(earnedBadges).length)
+          Object.keys(earnedBadges).length > 0 && h('span', { style: { position: 'absolute', top: 4, right: 4, background: _cflSolid(ACCENT), color: _cflFg('#fff'), borderRadius: '50%', width: 16, height: 16, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, Object.keys(earnedBadges).length)
         )
       );
 
@@ -1503,6 +1550,7 @@ window.SelHub = window.SelHub || {
         var isHere = activeTab === target;
         return h('button', {
           key: target,
+          type: 'button',
           onClick: function() { upd('activeTab', target); if (soundEnabled) sfxClick(); },
           'aria-label': label + ': ' + detail,
           style: {
@@ -1583,7 +1631,7 @@ window.SelHub = window.SelHub || {
         if (popBadge) {
           badgePopup = h('div', { ref: badgeDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'conflict-badge-earned-title', tabIndex: -1, style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, background: 'rgba(0,0,0,0.6)' }, onClick: function(e) { if (e.target === e.currentTarget) closeBadgeDialogs(); } },
             h('div', { style: { position: 'relative', background: _cflBg('#1e293b'), border: '2px solid ' + ACCENT, borderRadius: 20, padding: '32px 40px', textAlign: 'center', maxWidth: 300 } },
-              h('button', { 'aria-label': 'Close badge announcement', onClick: closeBadgeDialogs, style: { position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: 14, background: _cflBg('#334155'), color: _cflFg('#cbd5e1'), border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
+              h('button', { type: 'button', 'aria-label': 'Close badge announcement', onClick: closeBadgeDialogs, style: { position: 'absolute', top: 8, right: 8, width: 44, height: 44, borderRadius: 22, background: _cflBg('#334155'), color: _cflFg('#cbd5e1'), border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
               h('div', { style: { fontSize: 56, marginBottom: 10 }, 'aria-hidden': 'true' }, popBadge.icon),
               h('h3', { id: 'conflict-badge-earned-title', style: { fontSize: 18, fontWeight: 700, color: _cflFg('#f1f5f9'), margin: '0 0 6px' } }, 'Badge earned: ' + popBadge.name),
               h('div', { style: { fontSize: 12, color: _cflFg('#94a3b8') } }, popBadge.desc)
@@ -1594,13 +1642,13 @@ window.SelHub = window.SelHub || {
       if (showBadgesPanel) {
         badgePopup = h('div', { ref: badgeDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'conflict-badges-panel-title', tabIndex: -1, style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9998, background: 'rgba(0,0,0,0.5)' }, onClick: function(e) { if (e.target === e.currentTarget) closeBadgeDialogs(); } },
           h('div', { style: { position: 'relative', background: _cflBg('#1e293b'), border: '1px solid #334155', borderRadius: 16, padding: 24, width: '90%', maxWidth: 400, maxHeight: '70vh', overflow: 'auto' } },
-            h('button', { 'aria-label': 'Close badges panel', onClick: closeBadgeDialogs, style: { position: 'absolute', top: 8, right: 8, width: 44, height: 44, borderRadius: 22, background: _cflBg('#334155'), color: _cflFg('#cbd5e1'), border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
+            h('button', { type: 'button', 'aria-label': 'Close badges panel', onClick: closeBadgeDialogs, style: { position: 'absolute', top: 8, right: 8, width: 44, height: 44, borderRadius: 22, background: _cflBg('#334155'), color: _cflFg('#cbd5e1'), border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
             h('h3', { id: 'conflict-badges-panel-title', style: { textAlign: 'center', color: _cflFg('#f1f5f9'), marginBottom: 16, fontSize: 16 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + shownBadges.length + ')'),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
               shownBadges.map(function(b) {
                 var earned = !!earnedBadges[b.id];
                 return h('div', { key: b.id, style: { padding: 12, borderRadius: 10, background: earned ? _cflBg('#0f172a') : '#0f172a88', border: '1px solid ' + (earned ? ACCENT_MED : _cflBg('#334155')), textAlign: 'center', opacity: earned ? 1 : 0.5 } },
-                  h('div', { style: { fontSize: 28 } }, earned ? b.icon : '\uD83D\uDD12'),
+                  h('div', { 'aria-hidden': 'true', style: { fontSize: 28 } }, earned ? b.icon : '\uD83D\uDD12'),
                   h('div', { style: { fontSize: 11, fontWeight: 600, color: earned ? _cflFg('#f1f5f9') : _cflFg('#94a3b8'), marginTop: 4 } }, b.name),
                   h('div', { style: { fontSize: 10, color: _cflFg('#94a3b8'), marginTop: 2 } }, b.desc)
                 );
@@ -3159,10 +3207,10 @@ window.SelHub = window.SelHub || {
               h('h3', { style: { margin: '0 0 10px', fontSize: 16, fontWeight: 800, color: _cflFg('#f1f5f9') } }, scn.ending ? 'The end' : 'Step ' + path.length),
               h('div', { style: { whiteSpace: 'pre-wrap', fontSize: 14, lineHeight: 1.6, color: _cflFg('#e2e8f0') } }, scn.text),
               !scn.ending && h('div', { role: 'group', 'aria-label': 'Choices', style: { display: 'grid', gap: 8, marginTop: 14 } },
-                scn.choices.map(function(c, i) { return h('button', { key: i, 'data-cfl-choice': c.to, onClick: function() { go(c.to); }, style: Object.assign({}, btnBase, { textAlign: 'left', fontWeight: 600 }) }, c.label); })),
+                scn.choices.map(function(c, i) { return h('button', { type: 'button', key: i, 'data-cfl-choice': c.to, onClick: function() { go(c.to); }, style: Object.assign({}, btnBase, { textAlign: 'left', fontWeight: 600 }) }, c.label); })),
               h('div', { style: { display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' } },
-                h('button', { disabled: path.length < 2, onClick: function() { upd({ rpScriptPath: path.slice(0, -1), rpScriptEnding: null }); }, style: btnBase }, '← Back'),
-                h('button', { disabled: path.length < 2, onClick: function() { upd({ rpScriptPath: [cur.story.start], rpScriptEnding: null }); }, style: scn.ending ? btnMain : btnBase }, scn.ending ? '↺ Play again' : '↺ Start over'))
+                h('button', { type: 'button', disabled: path.length < 2, onClick: function() { upd({ rpScriptPath: path.slice(0, -1), rpScriptEnding: null }); }, style: btnBase }, '← Back'),
+                h('button', { type: 'button', disabled: path.length < 2, onClick: function() { upd({ rpScriptPath: [cur.story.start], rpScriptEnding: null }); }, style: scn.ending ? btnMain : btnBase }, scn.ending ? '↺ Play again' : '↺ Start over'))
             );
           };
           var player = (AO && typeof AO.Player === 'function')
@@ -3173,14 +3221,14 @@ window.SelHub = window.SelHub || {
           return h('div', { style: { padding: 20, maxWidth: 620, margin: '0 auto' } },
             crisis,
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
-              h('button', { onClick: function() { upd({ rpScriptKey: null, rpScriptEnding: null }); }, style: Object.assign({}, btnBase, { minHeight: 32, padding: '4px 12px', fontSize: 11, color: _cflFg('#94a3b8') }) }, '← All scenes'),
+              h('button', { type: 'button', onClick: function() { upd({ rpScriptKey: null, rpScriptEnding: null }); }, style: Object.assign({}, btnBase, { minHeight: 44, padding: '10px 14px', fontSize: 12, color: _cflFg('#94a3b8') }) }, '← All scenes'),
               h('div', null,
                 h('h3', { style: { margin: 0, fontSize: 17, color: _cflFg('#f1f5f9') } }, cur.sc.title),
                 h('div', { style: { fontSize: 12, color: _cflFg('#94a3b8') } }, who2)
               )
             ),
             cur.ts ? cflTs.renderIntro(cur.ts) : null,
-            h('div', { 'data-cfl-script-player': cur.key, onClick: onPlayerClick }, player),
+            h('section', { 'data-cfl-script-player': cur.key, 'aria-label': 'Scripted scene player', onClick: onPlayerClick }, player),
             h('p', { style: { fontSize: 11, color: _cflFg('#94a3b8'), textAlign: 'center', margin: '10px 0' } }, 'Endings found: ' + foundFor(cur.key) + ' of ' + endCount(cur.story)),
             d.rpScriptEnding ? h('div', { 'data-cfl-reflect': 'true', style: { background: _cflBg('#1e293b'), border: '1px solid #334155', borderRadius: 12, padding: 14 } },
               h('label', { htmlFor: 'cfl-reflect-script', style: { display: 'block', fontSize: 13, fontWeight: 800, color: _cflFg('#f1f5f9'), marginBottom: 6 } }, '✍️ Reflect'),
@@ -3191,7 +3239,7 @@ window.SelHub = window.SelHub || {
                 onChange: function(e) { upd('rpScriptReflectDraft', e.target.value); },
                 style: { width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 10, border: '1px solid #475569', background: _cflBg('#0f172a'), color: _cflFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', resize: 'vertical' } }),
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginTop: 8, flexWrap: 'wrap' } },
-                h('button', { 'data-cfl-reflect-save': 'true', disabled: !draft.trim(), style: btnMain, onClick: function() {
+                h('button', { type: 'button', 'data-cfl-reflect-save': 'true', disabled: !draft.trim(), style: btnMain, onClick: function() {
                   var txt = draft.trim();
                   if (!txt) return;
                   if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
@@ -3265,13 +3313,13 @@ window.SelHub = window.SelHub || {
       if (activeTab === 'roleplay' && cflTs && cflTs.editing) roleplayContent = cflTs.renderEditor();
       var content = cfContent || isContent || deContent || rpContent || stylesContent || apologyContent || cooldownContent || medContent || roleplayContent || progressContent;
 
-      return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
+      return h('div', { className: 'selh-conflict', style: { display: 'flex', flexDirection: 'column', height: '100%' } },
         (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('conflict', h, ctx) : null),
         tabBar,
         (cflTs && activeTab !== 'roleplay') ? cflTs.renderJump({ onOpen: function() { upd({ activeTab: 'roleplay', rpModeRP: 'scripted', rpScriptKey: null }); } }) : null,
         heroBand,
         badgePopup,
-        h('div', { style: { flex: 1, overflow: 'auto' } }, content),
+        h('div', { id: 'cfl-panel-' + activeTab, role: 'tabpanel', 'aria-labelledby': 'cfl-tab-' + activeTab, style: { flex: 1, overflow: 'auto' } }, content),
         window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
       );
     }

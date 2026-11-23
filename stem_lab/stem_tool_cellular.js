@@ -35,8 +35,8 @@
 //     prefers-reduced-motion reset (we also default Play to OFF).
 (function () {
   'use strict';
-  if (!window.StemLab || !window.StemLab.registerTool) {
-    console.warn('[StemLab] stem_tool_cellular.js loaded before StemLab registry — bailing');
+  if (typeof window === 'undefined' || !window.StemLab || !window.StemLab.registerTool) {
+    if (typeof window !== 'undefined') console.warn('[StemLab] stem_tool_cellular.js loaded before StemLab registry — bailing');
     return;
   }
 
@@ -1313,12 +1313,19 @@
       var cx = ctxRef.current;
       if (!cx || typeof cx.setToolData !== 'function') return;
       cx.setToolData(function (prev) {
-        var cur = Object.assign({}, (prev && prev._cellularLab) || {});
+        var basePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+        var prevSlice = (basePrev._cellularLab && typeof basePrev._cellularLab === 'object' && !Array.isArray(basePrev._cellularLab)) ? basePrev._cellularLab : {};
+        var cur = Object.assign({}, prevSlice);
         var changed = false;
         if (flag && !cur[flag]) { cur[flag] = true; changed = true; }
-        if (extra) { for (var k in extra) { if (extra[k] > (cur[k] || 0)) { cur[k] = extra[k]; changed = true; } } }
+        if (extra && typeof extra === 'object') {
+          for (var k in extra) {
+            if (!Object.prototype.hasOwnProperty.call(extra, k) || k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
+            if (extra[k] > (cur[k] || 0)) { cur[k] = extra[k]; changed = true; }
+          }
+        }
         if (!changed) return prev;
-        var n = Object.assign({}, prev); n._cellularLab = cur; return n;
+        var n = Object.assign({}, basePrev); n._cellularLab = cur; return n;
       });
     }, []);
     // General write into the saved slice: fn(current) returns a patch object,
@@ -1327,10 +1334,11 @@
       var cx = ctxRef.current;
       if (!cx || typeof cx.setToolData !== 'function') return;
       cx.setToolData(function (prev) {
-        var cur = (prev && prev._cellularLab && typeof prev._cellularLab === 'object') ? prev._cellularLab : {};
+        var basePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+        var cur = (basePrev._cellularLab && typeof basePrev._cellularLab === 'object' && !Array.isArray(basePrev._cellularLab)) ? basePrev._cellularLab : {};
         var patch = fn(cur);
-        if (!patch) return prev;
-        var n = Object.assign({}, prev); n._cellularLab = Object.assign({}, cur, patch); return n;
+        if (!patch || typeof patch !== 'object' || Array.isArray(patch)) return prev;
+        var n = Object.assign({}, basePrev); n._cellularLab = Object.assign({}, cur, patch); return n;
       });
     }, []);
     // XP once per distinct item: the ledger lives in the saved slice, and the
@@ -1356,7 +1364,7 @@
       var id = null, alive = true;
       function tick() {
         if (!alive) return;
-        advanceOne(false);
+        if (!(typeof document !== 'undefined' && document.hidden)) advanceOne(false);
         id = setTimeout(tick, tickDelay(speed));
       }
       id = setTimeout(tick, tickDelay(speed));
@@ -1381,7 +1389,25 @@
       announce(describeLifeShort());
     }, [gen]);
     useEffect(function () {
+      function silenceScheduled() {
+        notesRef.current.forEach(function (nt) { try { nt.gain.disconnect(); } catch (_) {} try { nt.osc.disconnect(); } catch (_) {} });
+        notesRef.current = [];
+        var curAudio = audioRef.current;
+        if (curAudio && curAudio.own && curAudio.ctx && curAudio.ctx.state === 'running' && typeof curAudio.ctx.suspend === 'function') {
+          try { curAudio.ctx.suspend().catch(function () {}); } catch (_) {}
+        }
+      }
+      function onMuteChanged() {
+        var muted = false;
+        if (typeof window !== 'undefined') {
+          if (window.__alloGlobalMuted === true || window._alloGlobalMute === true) muted = true;
+          try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) muted = true; } catch (_) {}
+        }
+        if (muted) silenceScheduled();
+      }
+      if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') window.addEventListener('alloflow-mute-changed', onMuteChanged);
       return function () {
+        if (typeof window !== 'undefined' && typeof window.removeEventListener === 'function') window.removeEventListener('alloflow-mute-changed', onMuteChanged);
         if (soundTimerRef.current) { clearTimeout(soundTimerRef.current); soundTimerRef.current = null; }
         notesRef.current.forEach(function (nt) { try { nt.gain.disconnect(); } catch (_) {} try { nt.osc.disconnect(); } catch (_) {} });
         notesRef.current = [];
@@ -1463,10 +1489,11 @@
     function cellFromEvent(e) {
       var svg = gridSvgRef.current; if (!svg || !svg.getBoundingClientRect) return null;
       var rect = svg.getBoundingClientRect();
+      if (!rect || !rect.width || !rect.height) return null;
       var pt = (e.touches && e.touches[0]) ? e.touches[0] : e;
       var c = Math.floor((pt.clientX - rect.left) / rect.width * COLS);
       var r = Math.floor((pt.clientY - rect.top) / rect.height * ROWS);
-      if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return null;
+      if (!isFinite(r) || !isFinite(c) || r < 0 || r >= ROWS || c < 0 || c >= COLS) return null;
       return [r, c];
     }
     function onGridPointerDown(e) {
@@ -1497,6 +1524,8 @@
     // corners; Space or Enter toggles, Delete or Backspace clears. Plain letter
     // keys do nothing, so nothing fires by accident.
     function onGridKeyDown(e) {
+      if (e.isComposing || e.keyCode === 229 || e.altKey || e.metaKey) return;
+      if (e.ctrlKey && e.key !== 'Home' && e.key !== 'End') return;
       var r = cursor[0], c = cursor[1], handled = true, moved = true;
       if (e.key === 'ArrowUp') r = Math.max(0, r - 1);
       else if (e.key === 'ArrowDown') r = Math.min(ROWS - 1, r + 1);
@@ -1863,12 +1892,12 @@
     // ── population sonification (Web Audio; host context when it exists) ──
     function getAudio() {
       try {
-        if (typeof window === 'undefined' || window._alloGlobalMute) return null;
+        if (typeof window === 'undefined' || window.__alloGlobalMuted === true || window._alloGlobalMute === true) return null;
         try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return null; } catch (e1) {}
         if (window.StemLab && typeof window.StemLab.audioContext === 'function') { var hc = window.StemLab.audioContext(); if (hc) return hc; }
         var Ctor = window.AudioContext || window.webkitAudioContext; if (!Ctor) return null;
         if (!audioRef.current || audioRef.current.ctx.state === 'closed') audioRef.current = { ctx: new Ctor(), own: true };
-        var ac = audioRef.current.ctx; if (ac.state === 'suspended' && ac.resume) { try { ac.resume(); } catch (_) {} }
+        var ac = audioRef.current.ctx; if (ac.state === 'suspended' && ac.resume) { try { Promise.resolve(ac.resume()).catch(function () {}); } catch (_) {} }
         return ac;
       } catch (e) { return null; }
     }
@@ -1876,15 +1905,18 @@
     function popPitch(p, cells) { var frac = cells ? Math.min(1, p / (cells * 0.5)) : 0; return 220 * Math.pow(2, 2 * Math.sqrt(frac)); }
     function playPopTone(p, cells, dur, when) { return playFreq(p ? popPitch(p, cells) : 110, dur, when, p ? 'triangle' : 'sine'); }
     function playFreq(freq, dur, when, type) {
+      if (typeof freq !== 'number' || !isFinite(freq) || freq <= 0) return false;
+      var safeDur = (typeof dur === 'number' && isFinite(dur) && dur > 0.015) ? dur : 0.08;
+      var safeWhen = (typeof when === 'number' && isFinite(when) && when >= 0) ? when : 0;
       var ac = getAudio(); if (!ac) return false;
       try {
-        var t0 = ac.currentTime + (when || 0), osc = ac.createOscillator(), gainNode = ac.createGain();
+        var t0 = ac.currentTime + safeWhen, osc = ac.createOscillator(), gainNode = ac.createGain();
         osc.type = type || 'triangle'; osc.frequency.setValueAtTime(freq, t0);
-        gainNode.gain.setValueAtTime(0.0001, t0); gainNode.gain.exponentialRampToValueAtTime(0.12, t0 + 0.01); gainNode.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-        osc.connect(gainNode); gainNode.connect(ac.destination); osc.start(t0); osc.stop(t0 + dur + 0.02);
+        gainNode.gain.setValueAtTime(0.0001, t0); gainNode.gain.exponentialRampToValueAtTime(0.12, t0 + 0.01); gainNode.gain.exponentialRampToValueAtTime(0.0001, t0 + safeDur);
+        osc.connect(gainNode); gainNode.connect(ac.destination); osc.start(t0); osc.stop(t0 + safeDur + 0.02);
         // Keep notes still to come, so unmount can silence them on a shared (host) context.
         var now = ac.currentTime;
-        notesRef.current = notesRef.current.filter(function (nt) { return nt.ac !== ac || nt.end > now; }).concat([{ ac: ac, osc: osc, gain: gainNode, end: t0 + dur + 0.02 }]);
+        notesRef.current = notesRef.current.filter(function (nt) { return nt.ac !== ac || nt.end > now; }).concat([{ ac: ac, osc: osc, gain: gainNode, end: t0 + safeDur + 0.02 }]);
         return true;
       } catch (e) { return false; }
     }
@@ -1938,6 +1970,7 @@
     }
     function onSeedPointer(e) { var index = seedCellFromEvent(e); if (index == null) return; setSeedCursor(index); toggleCustomSeedCell(index); }
     function onSeedKeyDown(e) {
+      if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       var next = seedCursor, handled = true;
       if (e.key === 'ArrowLeft') next--;
       else if (e.key === 'ArrowRight') next++;
@@ -1956,6 +1989,7 @@
       setCaInspectCol(Math.max(0, Math.min(CA_COLS - 1, Math.floor((e.clientX - rect.left) / rect.width * CA_COLS))));
     }
     function onCaDiagramKeyDown(e) {
+      if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       var nextRow = caInspectRow, nextCol = caInspectCol, handled = true;
       if (e.key === 'ArrowUp') nextRow--;
       else if (e.key === 'ArrowDown') nextRow++;
@@ -2296,7 +2330,7 @@
       if (!w || !w.document) { announce(t('stem.cellular.sr_png_blocked', 'The new window was blocked. Save the picture shown under the buttons instead (right-click or long-press it).')); return; }
       var pageLang = escHtml(((typeof document !== 'undefined' && document.documentElement && document.documentElement.lang) || 'en').trim() || 'en');
       var pageDir = (typeof document !== 'undefined' && document.documentElement && document.documentElement.dir === 'rtl') ? ' dir="rtl"' : '';
-      try { w.document.open(); w.document.write('<!doctype html><html lang="' + pageLang + '"' + pageDir + '><head><meta charset="utf-8"><title>' + escHtml(t('stem.cellular.png_window_title', 'Cellular Automaton Lab picture')) + '</title></head><body style="margin:0;background:#020617;display:flex;justify-content:center"><img alt="' + escHtml(pngAlt(pngShot)) + '" src="' + pngShot.url + '" style="max-width:100%;height:auto"></body></html>'); w.document.close(); } catch (e2) {}
+      try { w.document.open(); w.document.write('<!doctype html><html lang="' + pageLang + '"' + pageDir + '><head><meta charset="utf-8"><title>' + escHtml(t('stem.cellular.png_window_title', 'Cellular Automaton Lab picture')) + '</title></head><body style="margin:0;background:#020617;display:flex;justify-content:center"><img alt="' + escHtml(pngAlt(pngShot)) + '" src="' + escHtml(pngShot.url) + '" style="max-width:100%;height:auto"></body></html>'); w.document.close(); } catch (e2) {}
       announce(t('stem.cellular.sr_png_window', 'The picture opened in a new window.'));
     }
     function renderPngShot() {
@@ -2374,6 +2408,7 @@
         else announce(fmt(t('stem.cellular.sr_phase_current', 'Generation {gen} is the current state.'), { gen: points[nearest].gen }));
       }
       function onPhaseKeyDown(e) {
+        if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
         var next = selectedIndex, handled = true;
         if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') next--;
         else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') next++;
@@ -2673,7 +2708,7 @@
           'aria-current': activeCause ? 'true' : undefined,
           'aria-label': fmt(t('stem.cellular.rt_entry', 'Neighbourhood {pattern} gives {out}. Seen {n} times, {pct} percent of steps. Press to flip.'), { pattern: '' + l + m + rt, out: out, n: usage, pct: (share * 100).toFixed(1) }) + (activeCause ? ' ' + fmt(t('stem.cellular.rt_entry_cause', 'This entry made the selected cell; {k} of its 3 parents are decisive.'), { k: caInfluence.decisiveCount }) : ''),
           onClick: (function (idx) { return function () { toggleRuleBit(idx); }; })(i),
-          onKeyDown: (function (idx) { return function (e) { if (e.key === ' ' || e.key === 'Enter') { if (e.preventDefault) e.preventDefault(); toggleRuleBit(idx); } }; })(i),
+          onKeyDown: (function (idx) { return function (e) { if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === ' ' || e.key === 'Enter') { if (e.preventDefault) e.preventDefault(); toggleRuleBit(idx); } }; })(i),
           style: { cursor: 'pointer' }
         }, col));
       }
@@ -3559,6 +3594,7 @@
       var id = null, alive = true;
       function frame() {
         if (!alive) return;
+        if (typeof document !== 'undefined' && document.hidden) { id = setTimeout(frame, 250); return; }
         var st = modelStateRef.current;
         if (!st) { setModelPlaying(false); return; }
         var done = st.model === 'forest' ? st.burning === 0 : st.infected === 0;
@@ -3872,6 +3908,7 @@
       var id = null, alive = true;
       function tick() {
         if (!alive) return;
+        if (typeof document !== 'undefined' && document.hidden) { id = setTimeout(tick, 250); return; }
         var prev = famCellsRef.current;
         var next = famStep(prev, FAM_SIZE, FAM_SIZE, famRef.current, true), ct = famCounts(next);
         updateFamGhost(prev, next);
@@ -4222,6 +4259,7 @@
       var id = null, alive = true;
       function tick() {
         if (!alive) return;
+        if (typeof document !== 'undefined' && document.hidden) { id = setTimeout(tick, 250); return; }
         var slow = prefersReducedMotion();
         if (!antGo(slow ? 200 : 25)) return;
         id = setTimeout(tick, slow ? 1000 : 50);
@@ -4568,6 +4606,7 @@
       var id = null, alive = true;
       function frame() {
         if (!alive) return;
+        if (typeof document !== 'undefined' && document.hidden) { id = setTimeout(frame, 280); return; }
         var b = glBoardRef.current;
         if (b.gen >= glPlay.until || prefersReducedMotion()) {
           var g = b.grid, gen = b.gen;
@@ -4924,6 +4963,7 @@
     if (!TABS.some(function (tb) { return tb.id === tab; })) tab = TABS[0].id;
     var CELLULAR_TAB_IDS = TABS.map(function (tb) { return tb.id; });
     var cellularTabKeyDown = function (e, index) {
+      if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       var nextIndex = -1;
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % CELLULAR_TAB_IDS.length;
       else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + CELLULAR_TAB_IDS.length - 1) % CELLULAR_TAB_IDS.length;

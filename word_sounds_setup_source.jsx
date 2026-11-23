@@ -1134,6 +1134,115 @@ function createWordSoundsCore(options = {}) {
     });
     return next;
   };
+  // Stratified random sample across one or more ready-made lists: balanced quota per list via
+  // round-robin over shuffled per-list buckets, case-insensitive dedup, optional eligible/syllable
+  // filter, and avoids repeating `previous` when the eligible pool exceeds `count`.
+  const sampleReadyListWords = (lists, count = READY_LIST_FIRST, rng = Math.random, options = {}) => {
+    const targetCount = count == null ? READY_LIST_FIRST : Math.max(0, Math.floor(Number(count) || 0));
+    if (!targetCount || !Array.isArray(lists) || !lists.length) return [];
+    const opts = (rng && typeof rng === 'object') ? { ...rng, ...(options || {}) } : (options || {});
+    const rawRng = (rng && typeof rng === 'object') ? opts.rng : rng;
+    const makeSeeded = (seed) => {
+      let a = (Number(seed) || 0) >>> 0;
+      return () => {
+        a = (a + 0x6D2B79F5) >>> 0;
+        let t = Math.imul(a ^ (a >>> 15), a | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    };
+    const nextRand = typeof rawRng === 'function' ? rawRng : typeof rawRng === 'number' ? makeSeeded(rawRng) : Math.random;
+    const drawUnit = () => {
+      const v = Number(nextRand());
+      return Number.isFinite(v) ? Math.min(0.999999999999, Math.max(0, v)) : 0;
+    };
+    const shuffleWith = (items) => {
+      const out = items.slice();
+      for (let i = out.length - 1; i > 0; i--) {
+        const j = Math.floor(drawUnit() * (i + 1));
+        const tmp = out[i]; out[i] = out[j]; out[j] = tmp;
+      }
+      return out;
+    };
+    const explicitFilter = typeof opts.filter === 'function' ? opts.filter : null;
+    const syllableFilter = typeof opts.withinSyllableRange === 'function' ? opts.withinSyllableRange : null;
+    const poolByKey = new Map();
+    const buckets = [];
+    lists.forEach(entry => {
+      const rawWords = Array.isArray(entry) ? entry : (Array.isArray(entry?.words) ? entry.words : []);
+      const filterBySyllables = Array.isArray(entry) ? true : entry?.filterBySyllables !== false;
+      const seenLocal = new Set(), bucket = [];
+      rawWords.forEach(raw => {
+        const word = String(raw || '').trim();
+        const key = foldWord(word);
+        if (!key || seenLocal.has(key)) return;
+        if (explicitFilter && !explicitFilter(word, entry)) return;
+        if (syllableFilter && filterBySyllables && !syllableFilter(word)) return;
+        seenLocal.add(key);
+        const canonical = poolByKey.has(key) ? poolByKey.get(key) : (poolByKey.set(key, word), word);
+        bucket.push(canonical);
+      });
+      if (bucket.length) buckets.push(bucket);
+    });
+    const pool = [...poolByKey.values()];
+    if (!pool.length) return [];
+    if (pool.length <= targetCount) return pool;
+    const drawOnce = () => {
+      const shuffledBuckets = shuffleWith(buckets.map(b => ({ words: shuffleWith(b), at: 0 })));
+      const picked = [], pickedKeys = new Set();
+      let progressed = true;
+      while (picked.length < targetCount && progressed) {
+        progressed = false;
+        for (let i = 0; i < shuffledBuckets.length && picked.length < targetCount; i++) {
+          const b = shuffledBuckets[i];
+          while (b.at < b.words.length) {
+            const candidate = b.words[b.at++];
+            const key = foldWord(candidate);
+            if (!pickedKeys.has(key)) {
+              pickedKeys.add(key);
+              picked.push(candidate);
+              progressed = true;
+              break;
+            }
+          }
+        }
+      }
+      return picked;
+    };
+    const prevRaw = opts.previous ? [...opts.previous] : [];
+    const prevKeys = new Set(prevRaw.map(foldWord).filter(key => poolByKey.has(key)));
+    const sameAsPrevious = (candidate) => prevKeys.size > 0 && candidate.length === prevKeys.size
+      && candidate.every(word => prevKeys.has(foldWord(word)));
+    let picked = drawOnce();
+    if (sameAsPrevious(picked)) {
+      for (let attempt = 0; attempt < 8 && sameAsPrevious(picked); attempt++) {
+        picked = drawOnce();
+      }
+      if (sameAsPrevious(picked)) {
+        const pickedKeys = new Set(picked.map(foldWord));
+        let swapped = false;
+        for (let bIdx = 0; bIdx < buckets.length && !swapped; bIdx++) {
+          const replacement = buckets[bIdx].find(word => !pickedKeys.has(foldWord(word)));
+          if (!replacement) continue;
+          const bucketKeys = new Set(buckets[bIdx].map(foldWord));
+          const replaceAt = picked.findIndex(word => bucketKeys.has(foldWord(word)));
+          if (replaceAt >= 0) {
+            picked = picked.slice();
+            picked[replaceAt] = replacement;
+            swapped = true;
+          }
+        }
+        if (!swapped) {
+          const replacement = pool.find(word => !pickedKeys.has(foldWord(word)));
+          if (replacement) {
+            picked = picked.slice();
+            picked[picked.length - 1] = replacement;
+          }
+        }
+      }
+    }
+    return picked;
+  };
   const isSyllableLanguageSupported = language => !String(language || '').trim() || /^(?:en(?:[-_][a-z0-9]+)*|english(?:\s*\([^)]*\))?)$/i.test(String(language).trim());
   const syllableLanguageKey = language => isSyllableLanguageSupported(language) ? 'en' : normalize(language).replace(/_/g, '-');
   const validSyllableCount = count => Number.isInteger(count) && count >= 1 && count <= 12;
@@ -2511,7 +2620,7 @@ function createWordSoundsCore(options = {}) {
       orthographyDistractors: misspellings(target, { sounds, isRealWord: real }) };
   };
   // END WORD SOUNDS SOUND DICTIONARY
-  return {OG_CONVENTIONS,SOUND_SOURCES,arpabetToSounds,arpabetEntry,loadPhonemeDictionary,dictionarySounds,alignGraphemes,soundAnalysis,mappingChipSpans,soundsNeedGlance,misspellings,derivedAnswerSets,LESSON_STARTING_POINTS,LESSON_LENGTHS,LESSON_LENGTH_DEFAULT,startingPoints,startingPointLabel,startingPointPlan,startingPointStatus,matchStartingPoint,suggestStartingPoint,scaleLessonCounts,lessonLengthOf,lessonPlanItems,lessonPlanMinutes,activityRunsInLanguage,activityBlockedBy,ACTIVITY_NEEDS,SYLLABLE_ACTIVITY_IDS,SYLLABLE_PLAN_DEFAULT_COUNT,isTopUpItem,lessonOwnItems,topUpItems,packItemPlaysIn,wordsForActivity,syllableActivityHasWords,syllableActivityPlan,compoundPartWords,ACTIVITY_SKILLS,SKILL_STRANDS,BIG5_NAMES,activityIds,activityEnglishName,activityLabel,activitySkillLabel,activityStrand,activityBig5,strandOrder,strandLabel,strandBig5,big5Label,strandBig5Label,groupActivitiesByStrand,soundAnswerMatches,phonemeBankCandidates,PHONEME_BANK_SPECIAL,PHONEME_BANK_MATCHES,lessonItemCeiling,PLAN_EXTENSION,planExtensionDecision,preparedSentenceParts,loadSyllablePronunciations,resolveSyllableCount,isTeacherSpokenSyllableCount,createReviewedSyllableCount,createSyllableCountAudioContext,selectSyllableCountAudio,recoverSyllableRecordingDraft,syllableCountWords,syllableRecordingTemplate,normalizeRecordedSyllableDependencies,packAudioLanguageKey,packAudioKey,packAudioAssets,portablePackAsset,packAudioProvenance,packAudioProfileStatus,packAudioInventory,planPackRepair,replacePackAssets,createReviewedSyllableTask,reviewedSyllableReady,syllableAssetSource,resolveSyllableTask,syllableReady,validSyllableBoard,syllableWords,isSyllableLanguageSupported,SYLLABLE_COMPOUNDS_VETTED,compoundWords,longerSyllableWords,READY_LIST_FIRST,readyMadeListGroups,readyListIdsFromDraft,defaultTickOffers,defaultTickedWords,mergeTickedWords,reviewedRhymeEdit,rhymePairStatus,createRhymeSession,buildSessionRhymeBoard,buildRhymeBoard,resolveManipulationTask,manipulationReady,VERSION,phonemeToken,phonemeLabel,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,choiceLimit,soundCloseness,wordCloseness,trimChoices,countingChoices,isolationPositions,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES).filter(w=>!NOT_OFFERED.has(w)),edgeWords:Object.keys(EDGES)};
+  return {OG_CONVENTIONS,SOUND_SOURCES,arpabetToSounds,arpabetEntry,loadPhonemeDictionary,dictionarySounds,alignGraphemes,soundAnalysis,mappingChipSpans,soundsNeedGlance,misspellings,derivedAnswerSets,LESSON_STARTING_POINTS,LESSON_LENGTHS,LESSON_LENGTH_DEFAULT,startingPoints,startingPointLabel,startingPointPlan,startingPointStatus,matchStartingPoint,suggestStartingPoint,scaleLessonCounts,lessonLengthOf,lessonPlanItems,lessonPlanMinutes,activityRunsInLanguage,activityBlockedBy,ACTIVITY_NEEDS,SYLLABLE_ACTIVITY_IDS,SYLLABLE_PLAN_DEFAULT_COUNT,isTopUpItem,lessonOwnItems,topUpItems,packItemPlaysIn,wordsForActivity,syllableActivityHasWords,syllableActivityPlan,compoundPartWords,ACTIVITY_SKILLS,SKILL_STRANDS,BIG5_NAMES,activityIds,activityEnglishName,activityLabel,activitySkillLabel,activityStrand,activityBig5,strandOrder,strandLabel,strandBig5,big5Label,strandBig5Label,groupActivitiesByStrand,soundAnswerMatches,phonemeBankCandidates,PHONEME_BANK_SPECIAL,PHONEME_BANK_MATCHES,lessonItemCeiling,PLAN_EXTENSION,planExtensionDecision,preparedSentenceParts,loadSyllablePronunciations,resolveSyllableCount,isTeacherSpokenSyllableCount,createReviewedSyllableCount,createSyllableCountAudioContext,selectSyllableCountAudio,recoverSyllableRecordingDraft,syllableCountWords,syllableRecordingTemplate,normalizeRecordedSyllableDependencies,packAudioLanguageKey,packAudioKey,packAudioAssets,portablePackAsset,packAudioProvenance,packAudioProfileStatus,packAudioInventory,planPackRepair,replacePackAssets,createReviewedSyllableTask,reviewedSyllableReady,syllableAssetSource,resolveSyllableTask,syllableReady,validSyllableBoard,syllableWords,isSyllableLanguageSupported,SYLLABLE_COMPOUNDS_VETTED,compoundWords,longerSyllableWords,READY_LIST_FIRST,readyMadeListGroups,readyListIdsFromDraft,defaultTickOffers,defaultTickedWords,mergeTickedWords,sampleReadyListWords,reviewedRhymeEdit,rhymePairStatus,createRhymeSession,buildSessionRhymeBoard,buildRhymeBoard,resolveManipulationTask,manipulationReady,VERSION,phonemeToken,phonemeLabel,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,choiceLimit,soundCloseness,wordCloseness,trimChoices,countingChoices,isolationPositions,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES).filter(w=>!NOT_OFFERED.has(w)),edgeWords:Object.keys(EDGES)};
 }
 const WS_CORE = createWordSoundsCore();
 // END GENERATED WORD SOUNDS CORE
@@ -6421,6 +6530,39 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
             setReadyListNotice(tf('word_sounds.ready_list_removed', 'Removed: {name}', { name: readyListLabel(list) }));
             focusReadyListPicker();
         };
+        const readyListSources = addedReadyLists.map(list => ({
+            id: list.id,
+            words: sourceTickState(list.id).words,
+        }));
+        const readyListEligibleKeys = new Set(readyListSources.flatMap(source => source.words.map(word => word.toLocaleLowerCase())));
+        const canPickRandomReadyWords = readyListEligibleKeys.size > WS_CORE.READY_LIST_FIRST;
+        const pickRandomReadyListWords = () => {
+            if (!canPickRandomReadyWords) return;
+            const currentReadySelected = [...selectedWords].filter(word => readyListEligibleKeys.has(word.toLocaleLowerCase()));
+            const sampled = WS_CORE.sampleReadyListWords(readyListSources, WS_CORE.READY_LIST_FIRST, Math.random, { previous: currentReadySelected });
+            if (!sampled.length) return;
+            const readyIdSet = new Set(addedReadyLists.map(list => list.id));
+            const otherSourceKeys = new Set(
+                previewSources
+                    .filter(source => !readyIdSet.has(source.id))
+                    .flatMap(source => (source.words || []).map(word => String(word || '').trim().toLocaleLowerCase()).filter(Boolean))
+            );
+            selectionControl.current.manual = true;
+            setSelectedWords(previous => {
+                const next = new Set();
+                previous.forEach(word => {
+                    const key = word.toLocaleLowerCase();
+                    if (!readyListEligibleKeys.has(key) || otherSourceKeys.has(key)) next.add(word);
+                });
+                sampled.forEach(word => next.add(word));
+                return next;
+            });
+            setReadyListNotice(
+                addedReadyLists.length > 1
+                    ? tf('word_sounds.ready_list_picked_random_multi', 'Picked {count} random words from your {lists} lists.', { count: sampled.length, lists: addedReadyLists.length })
+                    : tf('word_sounds.ready_list_picked_random', 'Picked {count} random words from {name}.', { count: sampled.length, name: readyListLabel(addedReadyLists[0]) })
+            );
+        };
         const toggleSelection = (index) => {
             selectionControl.current.manual = true;
             const next = new Set(selectedWords), word = previewList[index];
@@ -8033,8 +8175,8 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                     <nav aria-label={tf('word_sounds.setup_steps_nav', 'Setup sections')} data-ws-setup-steps="true" className="bg-slate-100 border-b border-slate-200 px-4 sm:px-6 py-2 flex flex-wrap items-center gap-2 shrink-0">
                         <span className="text-xs font-bold text-slate-700 uppercase tracking-wider mr-1">{tf('word_sounds.jump_to_step', 'Quick jump:')}</span>
                         {[
-                            { id: 'ws-step-goals-words', label: tf('word_sounds.step_goals_words', '1. Goal & Words') },
-                            { id: 'ws-step-lesson', label: tf('word_sounds.step_lesson', '2. Lesson & Activities') },
+                            { id: 'ws-step-lesson', label: tf('word_sounds.step_lesson', '1. Lesson & Activities') },
+                            { id: 'ws-step-goals-words', label: tf('word_sounds.step_goals_words', '2. Words & Goals') },
                             { id: 'ws-step-media', label: tf('word_sounds.step_media', '3. Audio, Images & AAC') },
                         ].map((step) => (
                             <button
@@ -8300,6 +8442,229 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                     )}
                                 </div>
                             </div>}
+                            <div id="ws-step-goals-words" tabIndex={-1} className="space-y-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 rounded">
+                                <div className="space-y-3" role="group" aria-labelledby="word-sounds-active-sources-label">
+                                    <div id="word-sounds-active-sources-label" className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{tf('word_sounds.sources', 'Word sources')}</div>
+                                    <div className={`p-3 rounded-xl border-2 transition-all motion-reduce:transition-none ${includeCustom ? 'bg-emerald-50 border-emerald-500' : 'bg-white border-slate-200'}`}>
+                                        <label className="min-h-11 flex items-center gap-3 cursor-pointer rounded-lg focus-within:ring-2 focus-within:ring-emerald-600 focus-within:ring-offset-2" data-help-key="ws_gen_src_custom"><input type="checkbox" checked={includeCustom} onChange={(e) => setIncludeCustom(e.target.checked)} className="sr-only" />
+                                            <span aria-hidden="true" className={`w-5 h-5 rounded border flex items-center justify-center ${includeCustom ? 'bg-emerald-600 border-emerald-600' : 'border-slate-300'}`}>
+                                                {includeCustom && <Check size={14} className="text-white" aria-hidden="true" />}
+                                            </span>
+                                            <Edit2 size={18} className="text-emerald-600" aria-hidden="true" />
+                                            <span className="font-bold text-slate-700">{tf('word_sounds.source_custom', 'My words')}</span>
+                                        </label>
+                                        {includeCustom && (<>
+                                            <div className="mt-3 flex gap-2">
+                                                <input aria-label={tf('common.quick_add_word', 'Quick add a word')}
+                                                    id="word-sounds-quick-add" data-help-key="ws_gen_quick_add_input"
+                                                    type="text"
+                                                    placeholder={tf('word_sounds.add_word', 'Add a word...')}
+                                                    className="flex-1 min-h-11 p-2 rounded-lg border border-emerald-200 text-sm focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:outline-none"
+                                                    onKeyDown={(e) => {
+                                                        if ((e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229) return;
+                                                        if (e.key === 'Enter') {
+                                                            e.preventDefault();
+                                                            const input = e.target;
+                                                            const word = input.value.trim();
+                                                            if (word) {
+                                                                setCustomText(prev => prev ? `${prev} ${word}` : word);
+                                                                input.value = '';
+                                                            }
+                                                        }
+                                                    }}
+                                                />
+                                                <button data-help-key="ws_gen_quick_add_btn"
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const input = document.getElementById('word-sounds-quick-add');
+                                                        const word = input?.value.trim();
+                                                        if (word) {
+                                                            setCustomText(prev => prev ? `${prev} ${word}` : word);
+                                                            input.value = '';
+                                                        }
+                                                    }}
+                                                    className="min-h-11 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold rounded-lg transition-colors motion-reduce:transition-none"
+                                                >
+                                                    + Add
+                                                </button>
+                                            </div>
+                                            <textarea data-ws-my-words="true"
+                                                aria-label={tf('word_sounds.type_words', 'Type words here')}
+                                                value={customText} onChange={(e) => setCustomText(e.target.value)}
+                                                placeholder={tf('word_sounds.type_words', 'Type words here (space or comma separated)...')}
+                                                className="mt-2 w-full h-20 p-2 rounded-lg border border-emerald-200 text-sm focus:ring-2 focus:ring-emerald-400 focus:outline-none resize-none"
+                                            />
+                                        </>)}
+                                    </div>
+                                    {(glossaryTerms || []).length > 0 && <label className={`block min-h-11 p-3 rounded-xl border-2 transition-all cursor-pointer focus-within:ring-2 focus-within:ring-violet-600 focus-within:ring-offset-2 motion-reduce:transition-none ${includeGlossary ? 'bg-violet-50 border-violet-500' : 'bg-white border-slate-200'}`} data-help-key="ws_gen_src_glossary"><input type="checkbox" checked={includeGlossary} onChange={(e) => setIncludeGlossary(e.target.checked)} className="sr-only" />
+                                        <span className="flex items-center gap-3">
+                                            <span aria-hidden="true" className={`w-5 h-5 rounded border flex items-center justify-center ${includeGlossary ? 'bg-violet-600 border-violet-600' : 'border-slate-300'}`}>
+                                                {includeGlossary && <Check size={14} className="text-white" aria-hidden="true" />}
+                                            </span>
+                                            <BookOpen size={18} className="text-violet-600" />
+                                            <span className="font-bold text-slate-700">{tf('word_sounds.source_glossary', 'Glossary')} ({glossaryTerms?.length || 0})</span>
+                                        </span>
+                                    </label>}
+                                    {(glossaryTerms || []).length > 0 && includeGlossary && (() => {
+                                        const state = sourceTickState('glossary');
+                                        return state.total > 0 && <p className="-mt-1 px-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-700" data-ws-glossary-progress="true">
+                                            <span>{tf('word_sounds.ready_list_progress', '{selected} of {total} in the lesson', { selected: state.selected, total: state.total })}</span>
+                                            {state.selected < state.total && <button type="button" onClick={() => tickAllFrom(state.words)} data-ws-glossary-add-all="true"
+                                                aria-label={tf('word_sounds.ready_list_add_all_named', 'Add all {total} words: {name}', { total: state.total, name: sourceLabel('word_sounds.source_glossary', 'Glossary') })}
+                                                className="min-h-11 px-2 font-bold text-violet-800 underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600">{tf('word_sounds.ready_list_add_all', 'Add all {total}', { total: state.total })}</button>}
+                                        </p>;
+                                    })()}
+                                    <div className={`p-3 rounded-xl border-2 transition-all motion-reduce:transition-none ${addedReadyLists.length ? 'bg-pink-50 border-pink-500' : 'bg-white border-slate-200'}`} data-ws-ready-lists="true" data-help-key="ws_gen_src_family">
+                                        <label htmlFor="ws-ready-list-select" className="flex items-center gap-3 font-bold text-slate-700"><Layers size={18} className="text-pink-600" aria-hidden="true" />{tf('word_sounds.ready_list_heading', 'Add a ready-made list')}</label>
+                                        <p id="ws-ready-list-help" className="mt-1 text-xs text-slate-700">{tf('word_sounds.ready_list_help', 'Each list you add puts its first {count} words in the lesson. You can add more than one list.', { count: WS_CORE.READY_LIST_FIRST })}</p>
+                                        <div className="mt-2 flex gap-2">
+                                            <select id="ws-ready-list-select" aria-describedby="ws-ready-list-help" data-help-key="ws_gen_family_select"
+                                                value={readyListPick} onChange={(e) => setReadyListPick(e.target.value)}
+                                                className="min-h-11 min-w-0 flex-1 p-2 rounded-lg border border-pink-300 bg-white text-sm focus:ring-2 focus:ring-pink-600 focus:outline-none">
+                                                <option value="">{tf('word_sounds.ready_list_choose', 'Choose a list...')}</option>
+                                                {readyListGroups.map(group => <optgroup key={group.id} label={tf(group.labelKey, group.label)}>
+                                                    {group.lists.map(list => <option key={list.id} value={list.id} disabled={readyLists.includes(list.id)}>{readyListLabel(list)} ({list.words.length})</option>)}
+                                                </optgroup>)}
+                                            </select>
+                                            <button type="button" onClick={addReadyList} disabled={!readyListPick} data-ws-ready-list-add="true"
+                                                className="min-h-11 px-4 py-2 bg-pink-700 hover:bg-pink-800 text-white text-sm font-bold rounded-lg disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-600 focus-visible:ring-offset-2">{tf('word_sounds.ready_list_add', 'Add')}</button>
+                                        </div>
+                                        <p role="status" className="sr-only" data-ws-ready-list-status="true">{readyListNotice}</p>
+                                        {addedReadyLists.length > 0 && <ul className="mt-3 space-y-2" aria-label={tf('word_sounds.ready_list_added_label', 'Lists you added')}>
+                                            {addedReadyLists.map(list => {
+                                                const state = sourceTickState(list.id), name = readyListLabel(list);
+                                                return <li key={list.id} data-ws-ready-list={list.id} className="rounded-lg border border-pink-200 bg-white p-2">
+                                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                                        <span className="font-bold text-slate-800">{name}</span>
+                                                        <span className="text-sm text-slate-700" data-ws-ready-list-progress="true">{tf('word_sounds.ready_list_progress', '{selected} of {total} in the lesson', { selected: state.selected, total: state.total })}</span>
+                                                        <span className="ms-auto flex gap-1">
+                                                            {state.selected < state.total && <button type="button" onClick={() => tickAllFrom(state.words)} data-ws-ready-list-add-all="true"
+                                                                aria-label={tf('word_sounds.ready_list_add_all_named', 'Add all {total} words: {name}', { total: state.total, name })}
+                                                                className="min-h-11 px-2 text-sm font-bold text-pink-800 underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-600">{tf('word_sounds.ready_list_add_all', 'Add all {total}', { total: state.total })}</button>}
+                                                            <button type="button" onClick={() => removeReadyList(list)} data-ws-ready-list-remove="true"
+                                                                aria-label={tf('word_sounds.ready_list_remove_named', 'Remove list: {name}', { name })}
+                                                                className="min-h-11 px-2 text-sm font-bold text-slate-700 underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-600">{tf('word_sounds.ready_list_remove', 'Remove')}</button>
+                                                        </span>
+                                                    </div>
+                                                    {state.total === 0 && <p className="text-red-700 text-xs mt-2 font-bold bg-red-50 p-2 rounded border border-red-100" data-ws-ready-list-empty="true">
+                                                        {tf('word_sounds.ready_list_range_empty', 'No words in this list have {min} to {max} syllables. Change the syllable range or remove the list.', { min: syllableRange.min, max: syllableRange.max })}
+                                                    </p>}
+                                                </li>;
+                                            })}
+                                        </ul>}
+                                        {canPickRandomReadyWords && <div className="mt-2">
+                                            <button type="button" onClick={pickRandomReadyListWords} data-ws-ready-list-random="true"
+                                                className="min-h-11 inline-flex items-center gap-2 rounded-lg border border-pink-300 bg-white px-3 py-1.5 text-sm font-bold text-pink-800 hover:bg-pink-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-600 focus-visible:ring-offset-2">
+                                                <Shuffle size={16} aria-hidden="true" />
+                                                {tf('word_sounds.ready_list_pick_random', 'Pick random {count}', { count: WS_CORE.READY_LIST_FIRST })}
+                                            </button>
+                                        </div>}
+                                    </div>
+                                    <div className={`p-3 rounded-xl border-2 transition-all ${includeAI ? 'bg-violet-50 border-violet-500' : 'bg-white border-slate-200'}`}>
+                                        <label className="min-h-11 flex items-center gap-3 cursor-pointer rounded-lg focus-within:ring-2 focus-within:ring-violet-600 focus-within:ring-offset-2"><input type="checkbox" checked={includeAI} disabled={typeof textAiHere !== 'undefined' && !textAiHere && !includeAI} aria-describedby={typeof textAiHere !== 'undefined' && !textAiHere ? 'ws-source-ai-off' : undefined} onChange={(e) => { aiSuggestions.cancel(); setIncludeAI(e.target.checked); }} className="sr-only" />
+                                            <span aria-hidden="true" className={`w-5 h-5 rounded border flex items-center justify-center ${includeAI ? 'bg-violet-600 border-violet-600' : 'border-slate-300'}`}>
+                                                {includeAI && <Check size={14} className="text-white" aria-hidden="true" />}
+                                            </span>
+                                            <Sparkles size={18} className="text-violet-600" aria-hidden="true" />
+                                            <span className="font-bold text-slate-700">{tf('word_sounds.source_ai', 'Words about a topic (AI)')}</span>
+                                        </label>
+                                        {typeof textAiHere !== 'undefined' && !textAiHere && <p id="ws-source-ai-off" className="mt-1 text-xs font-semibold text-amber-900" data-ws-source-ai-off="true">{tf('word_sounds.source_ai_off_note', 'AI is off here, so this cannot make new words.')}</p>}
+                                        {typeof textAiHere !== 'undefined' && !textAiHere && typeof window !== 'undefined' && typeof window.AlloAiSetupNotice === 'function' && <window.AlloAiSetupNotice t={t} className="mt-2" kind="text" />}
+                                        {includeAI && (typeof textAiHere === 'undefined' || textAiHere) && (
+                                            <div className="mt-3 flex gap-2">
+                                                <input aria-label={tf('common.e_g_space_ocean', 'Topic for AI word suggestions')}
+                                                    value={aiTopic} onChange={(e) => { aiSuggestions.cancel(); setAiTopic(e.target.value); }}
+                                                    placeholder={t('word_sounds.ai_topic_placeholder') || 'e.g. Space, Ocean...'}
+                                                    className="flex-1 min-h-11 p-2 rounded-lg border border-violet-200 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600"
+                                                />
+                                                <button type="button"
+                                                    onClick={handleAiGenerate} disabled={isAiGenerating}
+                                                    className="bg-violet-700 text-white px-4 py-2 min-h-11 rounded-lg text-sm font-bold hover:bg-violet-800 transition-colors motion-reduce:transition-none disabled:opacity-50"
+                                                >
+                                                    {isAiGenerating ? '...' : tf('word_sounds.ai_go', 'Go')}
+                                                </button>
+                                                {isAiGenerating && <button type="button" onClick={aiSuggestions.cancel} className="min-h-11 px-3 py-1 border border-violet-400 rounded-lg text-sm">
+                                                    {tf('word_sounds.ai_cancel', 'Cancel generation')}
+                                                </button>}
+                                            </div>
+                                        )}
+                                        {includeAI && aiSuggestions.failed && <p role="status" className="mt-2 text-sm text-amber-800">{tf('word_sounds.ai_failed', 'Could not generate words. Your previous list was kept. Try again.')}</p>}
+                                    </div>
+                                </div>
+                                {goalAiUsable && <div className="space-y-3 pt-4 border-t border-slate-200">
+                                    <h3 className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">📋 {tf('word_sounds.lesson_plan_heading', 'Lesson plan')}</h3>
+                                    <div className="p-3 rounded-xl border-2 border-indigo-300 bg-indigo-50" data-ws-goal-plan="true">
+                                        <label htmlFor="ws-goal-text" className="flex items-center gap-2 font-bold text-slate-800"><Sparkles size={18} className="text-indigo-700" aria-hidden="true" />{tf('word_sounds.goal_heading', 'Describe your goals')}</label>
+                                        <p id="ws-goal-help" className="mt-1 text-sm text-slate-700">{tf('word_sounds.planner_help_plan', 'Ask AlloBot about this lesson, or ask for changes. It starts from your words and plan. Nothing changes until you press Use this.')}</p>
+                                        {planner.thread.length > 0 && <ol className="mt-3 space-y-2" role="log" aria-live="polite" aria-label={tf('word_sounds.planner_log', 'Planning conversation')} data-ws-planner-log="true">
+                                            {planner.thread.map((turn) => turn.role === 'note'
+                                                ? <li key={turn.id} className="text-sm font-semibold text-emerald-800" data-ws-planner-note={turn.state}>{turn.state === 'applied'
+                                                    ? tf('word_sounds.planner_applied_note', 'Proposal {version} applied.', { version: turn.version })
+                                                    : tf('word_sounds.planner_set_aside_note', 'Proposal {version} set aside. Nothing changed.', { version: turn.version })}</li>
+                                                : <li key={turn.id} data-ws-planner-turn={turn.role} className={`rounded-lg p-2 text-sm ${turn.role === 'teacher' ? 'ms-8 border border-indigo-200 bg-white text-slate-800' : 'me-8 bg-indigo-100 text-slate-900'}`}>
+                                                    <span className="font-bold">{turn.role === 'teacher' ? tf('word_sounds.planner_you', 'You') : 'AlloBot'}: </span>{turn.text}
+                                                    {turn.version && <span className="ms-2 inline-block rounded-full bg-white px-2 text-xs font-bold text-indigo-900 ring-1 ring-indigo-300">{tf('word_sounds.planner_proposal', 'Proposal {version}', { version: turn.version })}</span>}
+                                                </li>)}
+                                            {planner.busy && <li className="text-sm text-slate-700" data-ws-planner-busy="true">{tf('word_sounds.goal_working', 'Planning…')}</li>}
+                                        </ol>}
+                                        <textarea id="ws-goal-text" aria-describedby="ws-goal-help" rows={3} value={goalText}
+                                            onChange={(e) => { setGoalApplied(''); setGoalText(e.target.value); }}
+                                            placeholder={planner.thread.length
+                                                ? tf('word_sounds.planner_placeholder', 'e.g. Why blending first? Add Rhyme Time. Use fewer words.')
+                                                : tf('word_sounds.goal_placeholder', 'e.g. Short a CVC words for my first graders. We have learned m, s, t, a, p. I want blending and sound boxes.')}
+                                            className="mt-2 w-full p-2 rounded-lg border border-indigo-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                        <div className="mt-2 flex flex-wrap gap-2">
+                                            <button type="button" onClick={() => sendToPlanner('change')} disabled={!goalText.trim()} data-ws-planner-change="true"
+                                                className="min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-800 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">
+                                                {tf('word_sounds.planner_suggest', 'Suggest changes')}
+                                            </button>
+                                            <button type="button" onClick={() => sendToPlanner('ask')} disabled={!goalText.trim()} data-ws-planner-ask="true"
+                                                className="min-h-11 rounded-lg border border-indigo-400 bg-white px-4 py-2 text-sm font-bold text-indigo-900 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">
+                                                {tf('word_sounds.planner_ask', 'Ask a question')}
+                                            </button>
+                                            {planner.busy && <button type="button" onClick={planner.cancel} className="min-h-11 rounded-lg border border-indigo-400 bg-white px-3 py-2 text-sm">{tf('word_sounds.ai_cancel', 'Cancel generation')}</button>}
+                                            {planner.thread.length > 0 && !planner.busy && <button type="button" onClick={() => { planner.reset(); setGoalApplied(''); }} data-ws-planner-reset="true"
+                                                className="min-h-11 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 underline">{tf('word_sounds.planner_reset', 'Start over')}</button>}
+                                        </div>
+                                        {planner.failed && <p role="status" className="mt-2 text-sm text-amber-800">{tf('word_sounds.goal_failed', 'Could not plan this lesson. Nothing was changed. Try again.')}</p>}
+                                        {goalApplied && <p role="status" className="mt-2 text-sm font-semibold text-emerald-800">{goalApplied}</p>}
+                                        {goalEffect && <div className="mt-3 rounded-lg border border-indigo-200 bg-white p-3" data-ws-goal-proposal={planner.draft.version} role="region" aria-label={tf('word_sounds.planner_proposal', 'Proposal {version}', { version: planner.draft.version })}>
+                                            <p className="font-bold text-slate-900">{tf('word_sounds.planner_proposal', 'Proposal {version}', { version: planner.draft.version })}</p>
+                                            {planner.draft.reply && <p className="mt-1 text-sm text-slate-800">{planner.draft.reply}</p>}
+                                            {goalSetupChanged && <p className="mt-3 text-sm font-semibold text-amber-800" data-ws-goal-stale="setup">{tf('word_sounds.goal_stale_setup', 'Your setup changed after this suggestion. The preview below shows what Use this does now.')}</p>}
+                                            <div className="mt-3 rounded-lg border border-emerald-300 bg-emerald-50 p-3 text-sm text-slate-800" data-ws-goal-effect="true">
+                                                <p className="font-bold text-slate-900">{tf('word_sounds.goal_effect_heading', 'If you use this')}</p>
+                                                {goalEffect.wordsChange ? <>
+                                                    <p className="mt-2 text-xs font-bold uppercase tracking-wide text-slate-700">{tf('word_sounds.goal_effect_words', 'Words in the lesson ({count})', { count: goalEffect.words.length })}</p>
+                                                    <p data-ws-goal-effect-words="true">{goalEffect.words.join(', ')}</p>
+                                                    {goalEffect.added.length > 0 && <p className="mt-1" data-ws-goal-effect-added="true">{tf('word_sounds.goal_effect_new', 'New to your word list: {words}', { words: goalEffect.added.join(', ') })}</p>}
+                                                    {goalEffect.listed.length > 0 && <p className="mt-1">{tf('word_sounds.goal_effect_listed', 'Already in your word list: {words}', { words: goalEffect.listed.join(', ') })}</p>}
+                                                    {goalEffect.kept.length > 0 && <p className="mt-1" data-ws-goal-effect-kept="true">{tf('word_sounds.goal_effect_kept', 'Words you chose stay in the lesson: {words}', { words: goalEffect.kept.join(', ') })}</p>}
+                                                    {goalEffect.leaving.length > 0 && <p className="mt-1" data-ws-goal-effect-leaving="true">{tf('word_sounds.goal_effect_leaving', 'Leave the lesson but stay in the word grid: {words}', { words: goalEffect.leaving.join(', ') })}</p>}
+                                                </> : <p className="mt-2" data-ws-goal-effect-words-same="true">{tf('word_sounds.goal_effect_words_same', 'Words: no change ({count} in the lesson)', { count: goalEffect.words.length })}</p>}
+                                                {goalEffect.activitiesChange ? <>
+                                                    <p className="mt-2 text-xs font-bold uppercase tracking-wide text-slate-700">{tf('word_sounds.goal_effect_activities', 'Activities, in your order')}</p>
+                                                    {goalEffect.planOn
+                                                        ? <ol className="list-decimal ps-5" data-ws-goal-effect-activities="true">{goalEffect.activities.map((activity) => <li key={activity.id}>{activityName(activity.id)}: {tf('word_sounds.lesson_plan_item_range', '{min}–{max} items', { min: activity.count, max: WS_CORE.lessonItemCeiling(activity.count, masteryThreshold) })}</li>)}</ol>
+                                                        : <p data-ws-goal-effect-activities="true">{tf('word_sounds.goal_effect_quick', 'No lesson plan: Quick Practice, as now.')}</p>}
+                                                    {goalEffect.planOn && goalEffect.items > 0 && <p className="mt-1">{tf('word_sounds.goal_effect_minutes', 'Shortest run: about {minutes} min', { minutes: goalEffect.minutes })}</p>}
+                                                    {goalEffect.turnedOff.length > 0 && <p className="mt-1" data-ws-goal-effect-off="true">{tf('word_sounds.goal_effect_off', 'Turned off: {activities}', { activities: goalEffect.turnedOff.map(activityName).join(', ') })}</p>}
+                                                    {goalEffect.unavailable.length > 0 && <p className="mt-1">{tf('word_sounds.goal_effect_unavailable', 'Not available with these words: {activities}', { activities: goalEffect.unavailable.map(activityName).join(', ') })}</p>}
+                                                </> : <p className="mt-2" data-ws-goal-effect-activities-same="true">{tf('word_sounds.goal_effect_activities_same', 'Activities: no change')}</p>}
+                                                {goalEffect.rangeChanges && <p className="mt-2">{tf('word_sounds.goal_effect_syllables', 'Syllables per word: {from} becomes {to}', { from: syllableRange.min + '–' + syllableRange.max, to: goalEffect.nextRange.min + '–' + goalEffect.nextRange.max })}</p>}
+                                                {goalEffect.taught && <p className="mt-1" data-ws-goal-effect-taught="true">{tf('word_sounds.goal_effect_taught', 'Taught letters: {letters}', { letters: goalEffect.taught })}</p>}
+                                                {goalEffect.delivery && <p className="mt-1" data-ws-goal-effect-delivery="true">{tf('word_sounds.goal_effect_delivery', 'Lesson script: {mode}', { mode: tf('word_sounds.di_delivery_' + goalEffect.delivery, { app: 'In the app', present: 'With Present to class', paper: 'On paper', oral: 'Out loud only', mixed: 'Mixed' }[goalEffect.delivery]) })}</p>}
+                                                {goalEffect.wordsChange && goalEffect.sources.length > 0 && <p className="mt-2" data-ws-goal-effect-sources="true">{tf('word_sounds.goal_effect_sources', 'Other word sources stay on: {sources}', { sources: goalEffect.sources.join(', ') })}</p>}
+                                            </div>
+                                            {planner.busy && <p className="mt-2 text-sm text-slate-700" data-ws-planner-hold="true">{tf('word_sounds.planner_waiting', 'AlloBot is answering your newest message. Use this is available again when it finishes.')}</p>}
+                                            <div className="mt-3 flex flex-wrap gap-2">
+                                                <button type="button" onClick={() => applyGoalPlan(planner.draft.version)} disabled={planner.busy} data-ws-goal-apply="true" className="min-h-11 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-800 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2">{tf('word_sounds.goal_apply', 'Use this')}</button>
+                                                <button type="button" onClick={() => planner.setAside(planner.draft.version)} data-ws-planner-set-aside="true" className="min-h-11 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-800">{tf('word_sounds.planner_set_aside', 'Set aside')}</button>
+                                            </div>
+                                        </div>}
+                                    </div>
+                                </div>}
+                            </div>
                             <div className="space-y-3">
                                 <h3 id="ws-step-media" tabIndex={-1} className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 rounded">{tf('word_sounds.settings', 'Settings')}</h3>
                                 {isAssessmentSetup && <p className="text-xs text-slate-600 mt-2" data-ws-assessment-settings-note="true">{tf('word_sounds.assessment_settings_note', 'An assessment gives each selected word once, without pictures, so the session length and picture timing settings are hidden.')}</p>}
@@ -8426,220 +8791,6 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                 </button>
                             </div>
                             {showVoicePack ? <PhonemeVoicePackEditor onClose={() => setShowVoicePack(false)} t={t} /> : null}
-                            <div className="space-y-3" role="group" aria-labelledby="word-sounds-active-sources-label">
-                                <div id="word-sounds-active-sources-label" className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{tf('word_sounds.sources', 'Word sources')}</div>
-                                <div className={`p-3 rounded-xl border-2 transition-all motion-reduce:transition-none ${includeCustom ? 'bg-emerald-50 border-emerald-500' : 'bg-white border-slate-200'}`}>
-                                    <label className="min-h-11 flex items-center gap-3 cursor-pointer rounded-lg focus-within:ring-2 focus-within:ring-emerald-600 focus-within:ring-offset-2" data-help-key="ws_gen_src_custom"><input type="checkbox" checked={includeCustom} onChange={(e) => setIncludeCustom(e.target.checked)} className="sr-only" />
-                                        <span aria-hidden="true" className={`w-5 h-5 rounded border flex items-center justify-center ${includeCustom ? 'bg-emerald-600 border-emerald-600' : 'border-slate-300'}`}>
-                                            {includeCustom && <Check size={14} className="text-white" aria-hidden="true" />}
-                                        </span>
-                                        <Edit2 size={18} className="text-emerald-600" aria-hidden="true" />
-                                        <span className="font-bold text-slate-700">{tf('word_sounds.source_custom', 'My words')}</span>
-                                    </label>
-                                    {includeCustom && (<>
-                                        <div className="mt-3 flex gap-2">
-                                            <input aria-label={tf('common.quick_add_word', 'Quick add a word')}
-                                                id="word-sounds-quick-add" data-help-key="ws_gen_quick_add_input"
-                                                type="text"
-                                                placeholder={tf('word_sounds.add_word', 'Add a word...')}
-                                                className="flex-1 min-h-11 p-2 rounded-lg border border-emerald-200 text-sm focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:outline-none"
-                                                onKeyDown={(e) => {
-                                                    if ((e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229) return;
-                                                    if (e.key === 'Enter') {
-                                                        e.preventDefault();
-                                                        const input = e.target;
-                                                        const word = input.value.trim();
-                                                        if (word) {
-                                                            setCustomText(prev => prev ? `${prev} ${word}` : word);
-                                                            input.value = '';
-                                                        }
-                                                    }
-                                                }}
-                                            />
-                                            <button data-help-key="ws_gen_quick_add_btn"
-                                                type="button"
-                                                onClick={() => {
-                                                    const input = document.getElementById('word-sounds-quick-add');
-                                                    const word = input?.value.trim();
-                                                    if (word) {
-                                                        setCustomText(prev => prev ? `${prev} ${word}` : word);
-                                                        input.value = '';
-                                                    }
-                                                }}
-                                                className="min-h-11 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold rounded-lg transition-colors motion-reduce:transition-none"
-                                            >
-                                                + Add
-                                            </button>
-                                        </div>
-                                        <textarea data-ws-my-words="true"
-                                            aria-label={tf('word_sounds.type_words', 'Type words here')}
-                                            value={customText} onChange={(e) => setCustomText(e.target.value)}
-                                            placeholder={tf('word_sounds.type_words', 'Type words here (space or comma separated)...')}
-                                            className="mt-2 w-full h-20 p-2 rounded-lg border border-emerald-200 text-sm focus:ring-2 focus:ring-emerald-400 focus:outline-none resize-none"
-                                        />
-                                    </>)}
-                                </div>
-                                {(glossaryTerms || []).length > 0 && <label className={`block min-h-11 p-3 rounded-xl border-2 transition-all cursor-pointer focus-within:ring-2 focus-within:ring-violet-600 focus-within:ring-offset-2 motion-reduce:transition-none ${includeGlossary ? 'bg-violet-50 border-violet-500' : 'bg-white border-slate-200'}`} data-help-key="ws_gen_src_glossary"><input type="checkbox" checked={includeGlossary} onChange={(e) => setIncludeGlossary(e.target.checked)} className="sr-only" />
-                                    <span className="flex items-center gap-3">
-                                        <span aria-hidden="true" className={`w-5 h-5 rounded border flex items-center justify-center ${includeGlossary ? 'bg-violet-600 border-violet-600' : 'border-slate-300'}`}>
-                                            {includeGlossary && <Check size={14} className="text-white" aria-hidden="true" />}
-                                        </span>
-                                        <BookOpen size={18} className="text-violet-600" />
-                                        <span className="font-bold text-slate-700">{tf('word_sounds.source_glossary', 'Glossary')} ({glossaryTerms?.length || 0})</span>
-                                    </span>
-                                </label>}
-                                {(glossaryTerms || []).length > 0 && includeGlossary && (() => {
-                                    const state = sourceTickState('glossary');
-                                    return state.total > 0 && <p className="-mt-1 px-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-700" data-ws-glossary-progress="true">
-                                        <span>{tf('word_sounds.ready_list_progress', '{selected} of {total} in the lesson', { selected: state.selected, total: state.total })}</span>
-                                        {state.selected < state.total && <button type="button" onClick={() => tickAllFrom(state.words)} data-ws-glossary-add-all="true"
-                                            aria-label={tf('word_sounds.ready_list_add_all_named', 'Add all {total} words: {name}', { total: state.total, name: sourceLabel('word_sounds.source_glossary', 'Glossary') })}
-                                            className="min-h-11 px-2 font-bold text-violet-800 underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600">{tf('word_sounds.ready_list_add_all', 'Add all {total}', { total: state.total })}</button>}
-                                    </p>;
-                                })()}
-                                <div className={`p-3 rounded-xl border-2 transition-all motion-reduce:transition-none ${addedReadyLists.length ? 'bg-pink-50 border-pink-500' : 'bg-white border-slate-200'}`} data-ws-ready-lists="true" data-help-key="ws_gen_src_family">
-                                    <label htmlFor="ws-ready-list-select" className="flex items-center gap-3 font-bold text-slate-700"><Layers size={18} className="text-pink-600" aria-hidden="true" />{tf('word_sounds.ready_list_heading', 'Add a ready-made list')}</label>
-                                    <p id="ws-ready-list-help" className="mt-1 text-xs text-slate-700">{tf('word_sounds.ready_list_help', 'Each list you add puts its first {count} words in the lesson. You can add more than one list.', { count: WS_CORE.READY_LIST_FIRST })}</p>
-                                    <div className="mt-2 flex gap-2">
-                                        <select id="ws-ready-list-select" aria-describedby="ws-ready-list-help" data-help-key="ws_gen_family_select"
-                                            value={readyListPick} onChange={(e) => setReadyListPick(e.target.value)}
-                                            className="min-h-11 min-w-0 flex-1 p-2 rounded-lg border border-pink-300 bg-white text-sm focus:ring-2 focus:ring-pink-600 focus:outline-none">
-                                            <option value="">{tf('word_sounds.ready_list_choose', 'Choose a list...')}</option>
-                                            {readyListGroups.map(group => <optgroup key={group.id} label={tf(group.labelKey, group.label)}>
-                                                {group.lists.map(list => <option key={list.id} value={list.id} disabled={readyLists.includes(list.id)}>{readyListLabel(list)} ({list.words.length})</option>)}
-                                            </optgroup>)}
-                                        </select>
-                                        <button type="button" onClick={addReadyList} disabled={!readyListPick} data-ws-ready-list-add="true"
-                                            className="min-h-11 px-4 py-2 bg-pink-700 hover:bg-pink-800 text-white text-sm font-bold rounded-lg disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-600 focus-visible:ring-offset-2">{tf('word_sounds.ready_list_add', 'Add')}</button>
-                                    </div>
-                                    <p role="status" className="sr-only" data-ws-ready-list-status="true">{readyListNotice}</p>
-                                    {addedReadyLists.length > 0 && <ul className="mt-3 space-y-2" aria-label={tf('word_sounds.ready_list_added_label', 'Lists you added')}>
-                                        {addedReadyLists.map(list => {
-                                            const state = sourceTickState(list.id), name = readyListLabel(list);
-                                            return <li key={list.id} data-ws-ready-list={list.id} className="rounded-lg border border-pink-200 bg-white p-2">
-                                                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                                                    <span className="font-bold text-slate-800">{name}</span>
-                                                    <span className="text-sm text-slate-700" data-ws-ready-list-progress="true">{tf('word_sounds.ready_list_progress', '{selected} of {total} in the lesson', { selected: state.selected, total: state.total })}</span>
-                                                    <span className="ms-auto flex gap-1">
-                                                        {state.selected < state.total && <button type="button" onClick={() => tickAllFrom(state.words)} data-ws-ready-list-add-all="true"
-                                                            aria-label={tf('word_sounds.ready_list_add_all_named', 'Add all {total} words: {name}', { total: state.total, name })}
-                                                            className="min-h-11 px-2 text-sm font-bold text-pink-800 underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-600">{tf('word_sounds.ready_list_add_all', 'Add all {total}', { total: state.total })}</button>}
-                                                        <button type="button" onClick={() => removeReadyList(list)} data-ws-ready-list-remove="true"
-                                                            aria-label={tf('word_sounds.ready_list_remove_named', 'Remove list: {name}', { name })}
-                                                            className="min-h-11 px-2 text-sm font-bold text-slate-700 underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-600">{tf('word_sounds.ready_list_remove', 'Remove')}</button>
-                                                    </span>
-                                                </div>
-                                                {state.total === 0 && <p className="text-red-700 text-xs mt-2 font-bold bg-red-50 p-2 rounded border border-red-100" data-ws-ready-list-empty="true">
-                                                    {tf('word_sounds.ready_list_range_empty', 'No words in this list have {min} to {max} syllables. Change the syllable range or remove the list.', { min: syllableRange.min, max: syllableRange.max })}
-                                                </p>}
-                                            </li>;
-                                        })}
-                                    </ul>}
-                                </div>
-                                <div className={`p-3 rounded-xl border-2 transition-all ${includeAI ? 'bg-violet-50 border-violet-500' : 'bg-white border-slate-200'}`}>
-                                    <label className="min-h-11 flex items-center gap-3 cursor-pointer rounded-lg focus-within:ring-2 focus-within:ring-violet-600 focus-within:ring-offset-2"><input type="checkbox" checked={includeAI} disabled={typeof textAiHere !== 'undefined' && !textAiHere && !includeAI} aria-describedby={typeof textAiHere !== 'undefined' && !textAiHere ? 'ws-source-ai-off' : undefined} onChange={(e) => { aiSuggestions.cancel(); setIncludeAI(e.target.checked); }} className="sr-only" />
-                                        <span aria-hidden="true" className={`w-5 h-5 rounded border flex items-center justify-center ${includeAI ? 'bg-violet-600 border-violet-600' : 'border-slate-300'}`}>
-                                            {includeAI && <Check size={14} className="text-white" aria-hidden="true" />}
-                                        </span>
-                                        <Sparkles size={18} className="text-violet-600" aria-hidden="true" />
-                                        <span className="font-bold text-slate-700">{tf('word_sounds.source_ai', 'Words about a topic (AI)')}</span>
-                                    </label>
-                                    {typeof textAiHere !== 'undefined' && !textAiHere && <p id="ws-source-ai-off" className="mt-1 text-xs font-semibold text-amber-900" data-ws-source-ai-off="true">{tf('word_sounds.source_ai_off_note', 'AI is off here, so this cannot make new words.')}</p>}
-                                    {typeof textAiHere !== 'undefined' && !textAiHere && typeof window !== 'undefined' && typeof window.AlloAiSetupNotice === 'function' && <window.AlloAiSetupNotice t={t} className="mt-2" kind="text" />}
-                                    {includeAI && (typeof textAiHere === 'undefined' || textAiHere) && (
-                                        <div className="mt-3 flex gap-2">
-                                            <input aria-label={tf('common.e_g_space_ocean', 'Topic for AI word suggestions')}
-                                                value={aiTopic} onChange={(e) => { aiSuggestions.cancel(); setAiTopic(e.target.value); }}
-                                                placeholder={t('word_sounds.ai_topic_placeholder') || 'e.g. Space, Ocean...'}
-                                                className="flex-1 min-h-11 p-2 rounded-lg border border-violet-200 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600"
-                                            />
-                                            <button type="button"
-                                                onClick={handleAiGenerate} disabled={isAiGenerating}
-                                                className="bg-violet-700 text-white px-4 py-2 min-h-11 rounded-lg text-sm font-bold hover:bg-violet-800 transition-colors motion-reduce:transition-none disabled:opacity-50"
-                                            >
-                                                {isAiGenerating ? '...' : tf('word_sounds.ai_go', 'Go')}
-                                            </button>
-                                            {isAiGenerating && <button type="button" onClick={aiSuggestions.cancel} className="min-h-11 px-3 py-1 border border-violet-400 rounded-lg text-sm">
-                                                {tf('word_sounds.ai_cancel', 'Cancel generation')}
-                                            </button>}
-                                        </div>
-                                    )}
-                                    {includeAI && aiSuggestions.failed && <p role="status" className="mt-2 text-sm text-amber-800">{tf('word_sounds.ai_failed', 'Could not generate words. Your previous list was kept. Try again.')}</p>}
-                                </div>
-                            </div>
-                            {goalAiUsable && <div className="space-y-3 pt-4 mt-4 border-t border-slate-200">
-                                <h3 id="ws-step-goals-words" tabIndex={-1} className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 rounded">📋 {tf('word_sounds.lesson_plan_heading', 'Lesson plan')}</h3>
-                                <div className="p-3 rounded-xl border-2 border-indigo-300 bg-indigo-50" data-ws-goal-plan="true">
-                                    <label htmlFor="ws-goal-text" className="flex items-center gap-2 font-bold text-slate-800"><Sparkles size={18} className="text-indigo-700" aria-hidden="true" />{tf('word_sounds.goal_heading', 'Describe your goals')}</label>
-                                    <p id="ws-goal-help" className="mt-1 text-sm text-slate-700">{tf('word_sounds.planner_help_plan', 'Ask AlloBot about this lesson, or ask for changes. It starts from your words and plan. Nothing changes until you press Use this.')}</p>
-                                    {planner.thread.length > 0 && <ol className="mt-3 space-y-2" role="log" aria-live="polite" aria-label={tf('word_sounds.planner_log', 'Planning conversation')} data-ws-planner-log="true">
-                                        {planner.thread.map((turn) => turn.role === 'note'
-                                            ? <li key={turn.id} className="text-sm font-semibold text-emerald-800" data-ws-planner-note={turn.state}>{turn.state === 'applied'
-                                                ? tf('word_sounds.planner_applied_note', 'Proposal {version} applied.', { version: turn.version })
-                                                : tf('word_sounds.planner_set_aside_note', 'Proposal {version} set aside. Nothing changed.', { version: turn.version })}</li>
-                                            : <li key={turn.id} data-ws-planner-turn={turn.role} className={`rounded-lg p-2 text-sm ${turn.role === 'teacher' ? 'ms-8 border border-indigo-200 bg-white text-slate-800' : 'me-8 bg-indigo-100 text-slate-900'}`}>
-                                                <span className="font-bold">{turn.role === 'teacher' ? tf('word_sounds.planner_you', 'You') : 'AlloBot'}: </span>{turn.text}
-                                                {turn.version && <span className="ms-2 inline-block rounded-full bg-white px-2 text-xs font-bold text-indigo-900 ring-1 ring-indigo-300">{tf('word_sounds.planner_proposal', 'Proposal {version}', { version: turn.version })}</span>}
-                                            </li>)}
-                                        {planner.busy && <li className="text-sm text-slate-700" data-ws-planner-busy="true">{tf('word_sounds.goal_working', 'Planning…')}</li>}
-                                    </ol>}
-                                    <textarea id="ws-goal-text" aria-describedby="ws-goal-help" rows={3} value={goalText}
-                                        onChange={(e) => { setGoalApplied(''); setGoalText(e.target.value); }}
-                                        placeholder={planner.thread.length
-                                            ? tf('word_sounds.planner_placeholder', 'e.g. Why blending first? Add Rhyme Time. Use fewer words.')
-                                            : tf('word_sounds.goal_placeholder', 'e.g. Short a CVC words for my first graders. We have learned m, s, t, a, p. I want blending and sound boxes.')}
-                                        className="mt-2 w-full p-2 rounded-lg border border-indigo-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                                    <div className="mt-2 flex flex-wrap gap-2">
-                                        <button type="button" onClick={() => sendToPlanner('change')} disabled={!goalText.trim()} data-ws-planner-change="true"
-                                            className="min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-800 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">
-                                            {tf('word_sounds.planner_suggest', 'Suggest changes')}
-                                        </button>
-                                        <button type="button" onClick={() => sendToPlanner('ask')} disabled={!goalText.trim()} data-ws-planner-ask="true"
-                                            className="min-h-11 rounded-lg border border-indigo-400 bg-white px-4 py-2 text-sm font-bold text-indigo-900 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">
-                                            {tf('word_sounds.planner_ask', 'Ask a question')}
-                                        </button>
-                                        {planner.busy && <button type="button" onClick={planner.cancel} className="min-h-11 rounded-lg border border-indigo-400 bg-white px-3 py-2 text-sm">{tf('word_sounds.ai_cancel', 'Cancel generation')}</button>}
-                                        {planner.thread.length > 0 && !planner.busy && <button type="button" onClick={() => { planner.reset(); setGoalApplied(''); }} data-ws-planner-reset="true"
-                                            className="min-h-11 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 underline">{tf('word_sounds.planner_reset', 'Start over')}</button>}
-                                    </div>
-                                    {planner.failed && <p role="status" className="mt-2 text-sm text-amber-800">{tf('word_sounds.goal_failed', 'Could not plan this lesson. Nothing was changed. Try again.')}</p>}
-                                    {goalApplied && <p role="status" className="mt-2 text-sm font-semibold text-emerald-800">{goalApplied}</p>}
-                                    {goalEffect && <div className="mt-3 rounded-lg border border-indigo-200 bg-white p-3" data-ws-goal-proposal={planner.draft.version} role="region" aria-label={tf('word_sounds.planner_proposal', 'Proposal {version}', { version: planner.draft.version })}>
-                                        <p className="font-bold text-slate-900">{tf('word_sounds.planner_proposal', 'Proposal {version}', { version: planner.draft.version })}</p>
-                                        {planner.draft.reply && <p className="mt-1 text-sm text-slate-800">{planner.draft.reply}</p>}
-                                        {goalSetupChanged && <p className="mt-3 text-sm font-semibold text-amber-800" data-ws-goal-stale="setup">{tf('word_sounds.goal_stale_setup', 'Your setup changed after this suggestion. The preview below shows what Use this does now.')}</p>}
-                                        <div className="mt-3 rounded-lg border border-emerald-300 bg-emerald-50 p-3 text-sm text-slate-800" data-ws-goal-effect="true">
-                                            <p className="font-bold text-slate-900">{tf('word_sounds.goal_effect_heading', 'If you use this')}</p>
-                                            {goalEffect.wordsChange ? <>
-                                                <p className="mt-2 text-xs font-bold uppercase tracking-wide text-slate-700">{tf('word_sounds.goal_effect_words', 'Words in the lesson ({count})', { count: goalEffect.words.length })}</p>
-                                                <p data-ws-goal-effect-words="true">{goalEffect.words.join(', ')}</p>
-                                                {goalEffect.added.length > 0 && <p className="mt-1" data-ws-goal-effect-added="true">{tf('word_sounds.goal_effect_new', 'New to your word list: {words}', { words: goalEffect.added.join(', ') })}</p>}
-                                                {goalEffect.listed.length > 0 && <p className="mt-1">{tf('word_sounds.goal_effect_listed', 'Already in your word list: {words}', { words: goalEffect.listed.join(', ') })}</p>}
-                                                {goalEffect.kept.length > 0 && <p className="mt-1" data-ws-goal-effect-kept="true">{tf('word_sounds.goal_effect_kept', 'Words you chose stay in the lesson: {words}', { words: goalEffect.kept.join(', ') })}</p>}
-                                                {goalEffect.leaving.length > 0 && <p className="mt-1" data-ws-goal-effect-leaving="true">{tf('word_sounds.goal_effect_leaving', 'Leave the lesson but stay in the word grid: {words}', { words: goalEffect.leaving.join(', ') })}</p>}
-                                            </> : <p className="mt-2" data-ws-goal-effect-words-same="true">{tf('word_sounds.goal_effect_words_same', 'Words: no change ({count} in the lesson)', { count: goalEffect.words.length })}</p>}
-                                            {goalEffect.activitiesChange ? <>
-                                                <p className="mt-2 text-xs font-bold uppercase tracking-wide text-slate-700">{tf('word_sounds.goal_effect_activities', 'Activities, in your order')}</p>
-                                                {goalEffect.planOn
-                                                    ? <ol className="list-decimal ps-5" data-ws-goal-effect-activities="true">{goalEffect.activities.map((activity) => <li key={activity.id}>{activityName(activity.id)}: {tf('word_sounds.lesson_plan_item_range', '{min}–{max} items', { min: activity.count, max: WS_CORE.lessonItemCeiling(activity.count, masteryThreshold) })}</li>)}</ol>
-                                                    : <p data-ws-goal-effect-activities="true">{tf('word_sounds.goal_effect_quick', 'No lesson plan: Quick Practice, as now.')}</p>}
-                                                {goalEffect.planOn && goalEffect.items > 0 && <p className="mt-1">{tf('word_sounds.goal_effect_minutes', 'Shortest run: about {minutes} min', { minutes: goalEffect.minutes })}</p>}
-                                                {goalEffect.turnedOff.length > 0 && <p className="mt-1" data-ws-goal-effect-off="true">{tf('word_sounds.goal_effect_off', 'Turned off: {activities}', { activities: goalEffect.turnedOff.map(activityName).join(', ') })}</p>}
-                                                {goalEffect.unavailable.length > 0 && <p className="mt-1">{tf('word_sounds.goal_effect_unavailable', 'Not available with these words: {activities}', { activities: goalEffect.unavailable.map(activityName).join(', ') })}</p>}
-                                            </> : <p className="mt-2" data-ws-goal-effect-activities-same="true">{tf('word_sounds.goal_effect_activities_same', 'Activities: no change')}</p>}
-                                            {goalEffect.rangeChanges && <p className="mt-2">{tf('word_sounds.goal_effect_syllables', 'Syllables per word: {from} becomes {to}', { from: syllableRange.min + '–' + syllableRange.max, to: goalEffect.nextRange.min + '–' + goalEffect.nextRange.max })}</p>}
-                                            {goalEffect.taught && <p className="mt-1" data-ws-goal-effect-taught="true">{tf('word_sounds.goal_effect_taught', 'Taught letters: {letters}', { letters: goalEffect.taught })}</p>}
-                                            {goalEffect.delivery && <p className="mt-1" data-ws-goal-effect-delivery="true">{tf('word_sounds.goal_effect_delivery', 'Lesson script: {mode}', { mode: tf('word_sounds.di_delivery_' + goalEffect.delivery, { app: 'In the app', present: 'With Present to class', paper: 'On paper', oral: 'Out loud only', mixed: 'Mixed' }[goalEffect.delivery]) })}</p>}
-                                            {goalEffect.wordsChange && goalEffect.sources.length > 0 && <p className="mt-2" data-ws-goal-effect-sources="true">{tf('word_sounds.goal_effect_sources', 'Other word sources stay on: {sources}', { sources: goalEffect.sources.join(', ') })}</p>}
-                                        </div>
-                                        {planner.busy && <p className="mt-2 text-sm text-slate-700" data-ws-planner-hold="true">{tf('word_sounds.planner_waiting', 'AlloBot is answering your newest message. Use this is available again when it finishes.')}</p>}
-                                        <div className="mt-3 flex flex-wrap gap-2">
-                                            <button type="button" onClick={() => applyGoalPlan(planner.draft.version)} disabled={planner.busy} data-ws-goal-apply="true" className="min-h-11 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-800 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2">{tf('word_sounds.goal_apply', 'Use this')}</button>
-                                            <button type="button" onClick={() => planner.setAside(planner.draft.version)} data-ws-planner-set-aside="true" className="min-h-11 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-800">{tf('word_sounds.planner_set_aside', 'Set aside')}</button>
-                                        </div>
-                                    </div>}
-                                </div>
-                            </div>}
                         </div>
                         <div className="flex-1 bg-white p-4 sm:p-6 lg:p-8 lg:overflow-y-auto flex flex-col">
                              <div className="flex justify-between items-end mb-6">

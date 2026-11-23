@@ -19589,11 +19589,13 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             'aria-atomic': 'true',
             style: {
               position: 'absolute',
-              left: '-10000px',
-              top: 'auto',
+              insetInlineStart: 0,
+              top: 0,
               width: '1px',
               height: '1px',
-              overflow: 'hidden'
+              overflow: 'hidden',
+              clipPath: 'inset(50%)',
+              whiteSpace: 'nowrap'
             }
           }, announceText),
           // key={state.view} forces React to remount this wrapper on every

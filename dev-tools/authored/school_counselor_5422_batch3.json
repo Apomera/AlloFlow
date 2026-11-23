@@ -1873,7 +1873,7 @@
     "prompt": "A high school coping-skills group includes a student whose current needs require more intensive support than the brief group can provide. Which plan best protects the student and the group?",
     "choices": [
       "Keep the student in every session because changing placement would prove that the group screening process failed.",
-      "Meet privately with the student, assess safety and care priorities, arrange an appropriate referral or service transition, and explain any group change respectfully.",
+      "Meet privately, assess safety and care priorities, arrange a supported transition, and explain the group change respectfully.",
       "Announce to the group that the student requires a higher level of care so members understand the removal.",
       "End the student's group participation by email and leave the family to locate another resource independently."
     ],
@@ -2007,7 +2007,7 @@
     "cognitiveLevel": "evaluate",
     "prompt": "Following a frightening incident near a school, an administrator proposes that every student attend a mandatory large-group emotional debriefing the next morning. Which counselor response is best?",
     "choices": [
-      "Recommend flexible, developmentally appropriate supports, accurate information, practical stabilization, monitoring, and individual follow-up rather than compulsory detailed recounting.",
+      "Recommend flexible, age-appropriate supports, accurate facts, practical stabilization, and individual follow-up instead of forced recounting.",
       "Support the plan because immediate public retelling prevents later distress for every student who was present.",
       "Cancel all follow-up because discussing any aspect of the incident will necessarily make student reactions worse.",
       "Invite students to post anonymous incident details online so staff can identify which accounts receive the strongest reactions."
@@ -2099,7 +2099,7 @@
     "choices": [
       "Ask students to write a multi-page explanation of confidentiality law using formal professional terminology.",
       "Count how many students smiled during the lesson and infer that those students can seek help independently.",
-      "Give brief illustrated situations and ask each student to point to or state a safe help-seeking choice, allowing accessible response modes.",
+      "Use brief illustrated scenarios where students point to or name a safe help-seeking choice via accessible response modes.",
       "Require students to reveal a private problem to demonstrate that they understand when and how to ask for help."
     ],
     "answerIndex": 2,
@@ -2145,7 +2145,7 @@
       "Provide all teachers with the student’s counseling history so they can independently decide what accommodations seem useful.",
       "Promise that no information will be shared even if a new immediate safety concern requires action under current procedure.",
       "Let the student return without any coordinated contact because a check-in plan would necessarily reveal private health information.",
-      "Collaborate with the student, family, and authorized staff on supports and a check-in plan while sharing only information needed to implement the agreed return steps."
+      "Collaborate with the student, family, and authorized staff on a check-in and support plan, sharing only details needed to implement it."
     ],
     "answerIndex": 3,
     "rationale": "Reentry planning should be individualized, collaborative, and privacy protective. The counselor can coordinate functional supports, student voice, and follow-up without disclosing unnecessary health or counseling details or making promises beyond confidentiality limits.",
@@ -2187,7 +2187,7 @@
     "cognitiveLevel": "evaluate",
     "prompt": "During a small group, a student describes a current intention to seriously harm themself but asks the counselor not to interrupt the session. What is the best immediate response?",
     "choices": [
-      "Stop the routine group activity, keep the student with supervised support, initiate the school’s active safety process, and protect privacy as much as the action permits.",
+      "Pause the group, keep the student supervised, activate the school’s safety protocol, and limit disclosure as much as possible.",
       "Honor the request until the session ends because preserving group trust takes priority over changing the agenda.",
       "Ask group members to monitor the student for the rest of the day while the counselor completes scheduled classroom lessons.",
       "Request a detailed public account from the student so the other members understand why confidentiality has changed."
@@ -2233,7 +2233,7 @@
     "prompt": "Several students in a middle school prevention group say a social-media challenge is spreading, but their accounts conflict and no one reports an immediate threat. What should the counselor do next?",
     "choices": [
       "Repeat the most alarming account in a schoolwide announcement so families understand the maximum possible danger.",
-      "Document what is known, consult the designated campus team, verify information through authorized channels, and plan proportionate outreach and monitoring without amplifying the rumor.",
+      "Document facts, consult the campus team, verify via approved channels, and plan measured monitoring and outreach without fueling the rumor.",
       "Assume the reports are harmless because students gave different versions and take no further steps unless an injury occurs.",
       "Search students’ private accounts using another student’s password to determine exactly who participated."
     ],
@@ -2367,7 +2367,7 @@
     "cognitiveLevel": "apply",
     "prompt": "A teacher asks the counselor to explain why a student has been attending individual counseling so the teacher can be more supportive. What is the best response?",
     "choices": [
-      "Clarify the teacher’s functional concern and share only authorized, need-to-know strategies or information while preserving the student’s private counseling content.",
+      "Clarify the teacher’s functional concern and share only authorized, need-to-know strategies while keeping counseling details private.",
       "Provide a summary of every counseling conversation because the teacher works with the student each day.",
       "Refuse to discuss any classroom support because confidentiality prevents all collaboration with school staff.",
       "Ask the teacher to question the student directly about the counseling concern before the counselor offers assistance."
@@ -2417,7 +2417,7 @@
     "prompt": "A universal social-emotional screener identifies many fourth graders for follow-up. How should the school counseling team use the results?",
     "choices": [
       "Assign a mental-health diagnosis to every student above the cutoff so services can begin without additional information.",
-      "Check data quality and context, conduct secondary review, combine the screener with other evidence, and match supports without treating a screening result as a diagnosis.",
+      "Verify data quality and context, integrate multiple evidence sources through secondary review, and match supports without diagnosing students.",
       "Discard the results because a universal screener cannot contribute any useful information about prevention or support needs.",
       "Place all flagged students in the identical intensive intervention before reviewing existing supports or family and teacher input."
     ],
@@ -2467,7 +2467,7 @@
     "choices": [
       "Encourage the family to remain on the original waitlist and revisit school follow-up after that provider obtains interpreter services.",
       "Give the family a list of alternative providers and ask them to make contact independently while closing the school's follow-up process.",
-      "Discuss the barriers with the family, identify accessible alternatives, support a warm connection, and maintain appropriate school supports and safety pathways while access is pending.",
+      "Explore barriers with the family, identify accessible options, assist a warm handoff, and maintain school supports and safety plans while care is pending.",
       "Suggest that a bilingual relative interpret sensitive provider conversations so an appointment can occur sooner without changing the referral."
     ],
     "answerIndex": 2,
@@ -2517,7 +2517,7 @@
       "Move the student immediately to the most intensive tier because low outcome data always show that a stronger service is required.",
       "Keep the plan unchanged for the rest of the year because implementation differences are normal and should not affect interpretation.",
       "Remove the teacher from the problem-solving team and have the counselor deliver the classroom routine without consultation.",
-      "Clarify implementation barriers, coach and assist feasible consistent delivery, then collect enough fidelity and outcome data before judging or intensifying the intervention."
+      "Address implementation barriers, coach consistent delivery, and gather fidelity and outcome data before judging or intensifying the plan."
     ],
     "answerIndex": 3,
     "rationale": "MTSS decisions require both outcome and implementation evidence. When dosage is well below plan, the team should understand the barrier, strengthen feasible implementation, and obtain interpretable response data before concluding that the student needs greater intensity.",
@@ -2563,7 +2563,7 @@
     "cognitiveLevel": "evaluate",
     "prompt": "A caregiver declines a suggested community counseling referral because of prior negative experiences with providers. There is no current emergency. What is the counselor’s best response?",
     "choices": [
-      "Listen to the concern, clarify goals and options, explore culturally responsive alternatives and access preferences, and continue appropriate school support without coercion.",
+      "Listen to the concern, clarify goals, explore culturally responsive options and access preferences, and continue school support without pressure.",
       "Warn that school support will end unless the caregiver accepts the counselor’s original provider recommendation.",
       "Document the refusal as evidence that the family is not concerned about the student and close the case.",
       "Contact the provider and begin exchanging the student’s information before consent so the family can see that the service is safe."
@@ -2613,7 +2613,7 @@
     "prompt": "A community provider asks the school counselor to email a student’s complete educational and counseling record “to save time.” What should the counselor do?",
     "choices": [
       "Send the complete record because a helping professional automatically has the same access as school employees.",
-      "Verify identity, authority and consent, clarify the purpose, and disclose only the information authorized and necessary through an approved secure process.",
+      "Verify identity, authority, and consent, clarify the purpose, and send only necessary authorized data via an approved secure process.",
       "Refuse all coordination permanently because school information can never be shared with an outside provider.",
       "Forward screenshots from the student information system using the counselor’s personal messaging account for convenience."
     ],
@@ -2663,7 +2663,7 @@
     "choices": [
       "Choose the teacher’s explanation because classroom staff have the most direct authority over assignment completion.",
       "Let every participant pursue a separate solution without identifying a common target or follow-up measure.",
-      "Summarize each perspective, define the observable assignment pattern, identify shared goals, select a feasible plan with clear roles, and schedule a data review.",
+      "Summarize perspectives, define the observable pattern, align shared goals, adopt a role-clear plan, and schedule a data review.",
       "Delay action until all participants agree on a single cause with complete certainty."
     ],
     "answerIndex": 2,
@@ -2713,7 +2713,7 @@
       "Send all counseling notes to every staff member at the receiving school so someone will notice the routine.",
       "Tell the student that support must start from the beginning because routines cannot continue across schools.",
       "Promise that the receiving school will provide an identical service before contacting authorized personnel there.",
-      "Include the student and family in deciding what functional information may be shared, confirm applicable procedures, and coordinate a limited handoff and receiving-school contact."
+      "Engage the student and family in selecting functional details, follow policy, and arrange a limited receiving-school handoff."
     ],
     "answerIndex": 3,
     "rationale": "A student-centered transition balances continuity with privacy and local procedures. Sharing limited functional information through authorized channels, with meaningful student and family participation, supports connection without promising another team’s decision.",
@@ -2759,7 +2759,7 @@
     "cognitiveLevel": "evaluate",
     "prompt": "A school team is split between continuing a mentoring intervention and replacing it after six weeks of mixed results. What should the counselor facilitate?",
     "choices": [
-      "Return to the shared outcome, examine subgroup trends, fidelity, dosage and student experience, then document a time-limited decision with responsibilities and review criteria.",
+      "Anchor to the shared goal, review subgroup data, fidelity, dosage, and student voice, then document a bounded plan with review criteria.",
       "Continue the intervention because changing any established plan would make the first six weeks of work meaningless.",
       "Replace the intervention based on the strongest team member’s preference and evaluate the new plan only at year end.",
       "Average all student outcomes into one score and ignore participation and subgroup differences to simplify the discussion."
@@ -2909,7 +2909,7 @@
       "Promise that the referral and all related communication will remain secret from every adult under every circumstance.",
       "Contact the family immediately before discussing the student’s concern because family involvement is always the first referral step.",
       "Decline to discuss referral options until the student independently resolves the family conflict outside school.",
-      "Explain privacy and its limits, clarify applicable consent and school procedures, explore the student’s concerns and safe options, and plan a supported referral within those boundaries."
+      "Explain privacy limits, clarify consent and school rules, explore the student’s concerns and safe options, and plan a referral within those bounds."
     ],
     "answerIndex": 3,
     "rationale": "The counselor should avoid both secrecy promises and automatic disclosure. Developmentally appropriate informed participation includes explaining current rules, understanding the student’s concern, considering safe access pathways, and supporting connection within lawful and ethical limits.",
@@ -2955,7 +2955,7 @@
     "cognitiveLevel": "evaluate",
     "prompt": "A community agency offers free student workshops but wants identifiable attendance and survey data for marketing reports. What should the counselor recommend before partnering?",
     "choices": [
-      "Clarify the educational purpose and data need, involve authorized privacy review, minimize or de-identify information, and establish written roles, consent, security, and reporting limits.",
+      "Clarify educational purpose, obtain privacy review, minimize or de-identify data, and set written roles, consent, security, and reporting limits.",
       "Accept the request because a no-cost service provides enough benefit to justify any student-data exchange.",
       "Send names only after the first workshop because participation itself implies consent to all later agency reporting uses.",
       "Reject every community partnership involving evaluation because schools cannot examine whether outside services benefit students."

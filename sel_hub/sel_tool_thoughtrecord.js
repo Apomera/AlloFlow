@@ -271,7 +271,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
               h('div', { style: { fontSize: 12, color: _thFg('#c4b5fd'), fontWeight: 900, textTransform: 'uppercase', marginBottom: 2 } }, 'Thought lab'),
               h('div', { style: { fontSize: 13, color: _thFg('#e2e8f0'), lineHeight: 1.55 } }, 'Start with facts, test the thought, then check whether the feeling shifted.')
             ),
-            h('button', { onClick: function() { goto('past'); }, 'aria-label': 'View past thought records',
+            h('button', { onClick: function() { goto('past'); }, 'aria-label': 'Past records — view saved thought records',
               style: { padding: '8px 12px', borderRadius: 8, border: '1px solid ' + _thBd('#a78bfa'), background: _thHC ? '#000000' : 'rgba(167,139,250,0.14)', color: _thFg('#e9d5ff'), cursor: 'pointer', fontWeight: 800, fontSize: 12 } },
               'Past records')
           ),

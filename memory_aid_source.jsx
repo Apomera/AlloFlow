@@ -114,7 +114,32 @@ const _maList = (value, max = 12, itemMax = 800) => (Array.isArray(value) ? valu
   .map(item => _maString(item, itemMax).trim())
   .filter(Boolean);
 const _maId = (prefix, index) => prefix + '-' + Date.now().toString(36) + '-' + String(index || 0) + '-' + Math.random().toString(36).slice(2, 6);
-const _maModeForIndex = (index) => ['generated', 'scaffolded', 'student-authored'][Math.max(0, index) % 3];
+const _maModeForIndex = (index) => ['generated', 'scaffolded', 'student-authored'][Math.max(0, Math.trunc(Number(index) || 0)) % 3];
+const _maBlockedKey = (key) => key === '__proto__' || key === 'constructor' || key === 'prototype';
+const _maSafeJsonParse = (raw) => JSON.parse(raw, (key, value) => (_maBlockedKey(key) ? undefined : value));
+const _maIsGlobalMuted = () => {
+  if (typeof window === 'undefined') return false;
+  try {
+    if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+  } catch (_) {}
+  return !!(window.__alloGlobalMuted || window._alloGlobalMute || window.__alloMuted);
+};
+const _maHardAiPolicyBlocked = () => {
+  if (typeof window === 'undefined') return false;
+  try {
+    if (window.__alloStudentAiDisabled === true || window.__alloOfflineOnly === true || window.__alloAiSecretsLocked === true) return true;
+    const qr = window.__alloQrStudentMode;
+    if (qr === true || (qr && typeof qr === 'object' && (qr.aiDisabled === true || qr.aiPolicy === 'off'))) return true;
+    const managed = window.ALLOFLOW_MANAGED_AI_POLICY;
+    if (managed && typeof managed === 'object' && (managed.aiEnabled === false || managed.aiDisabled === true || managed.mode === 'off' || managed.locked === true)) return true;
+    const sp = window.AlloModules && window.AlloModules.StudentPolicy;
+    if (sp && typeof sp.isAiDisabled === 'function' && sp.isAiDisabled() === true) return true;
+    return false;
+  } catch (_) {
+    return true;
+  }
+};
+const _MA_CRISIS_RE = /\b(kill\s+my\s*self|suicid(?:e|al)|end\s+my\s+life|want\s+to\s+die|don['’]?t\s+want\s+to\s+live|hurt\s+my\s*self|cut(?:ting)?\s+my\s*self|self[- ]?harm|overdose|jump\s+off\s+a\s+bridge)\b/i;
 const _MA_MAX_PRACTICE_ATTEMPTS = 6;
 const _MA_MAX_PRACTICE_TOMBSTONES = 256;
 const _MA_PRACTICE_RETIREMENT_BYTES = 8192;
@@ -158,8 +183,11 @@ function _maTranslate(t, key, fallback, params) {
 const _maMakeTr = (t) => (key, fallback, params) => _maTranslate(t, key, fallback, params);
 const _MA_META_FIELD_KEYS = Object.freeze({ label: 'label', shortLabel: 'short', compactLabel: 'compact', description: 'desc' });
 function _maTrMeta(tr, prefix, id, field, table) {
-  const meta = (table && table[id]) || {};
-  return tr(prefix + '_' + String(id == null ? '' : id).replace(/-/g, '_') + '_' + (_MA_META_FIELD_KEYS[field] || field), meta[field] || '');
+  const keyId = String(id == null ? '' : id);
+  const meta = (table && typeof table === 'object' && Object.prototype.hasOwnProperty.call(table, keyId) && table[keyId]) || {};
+  const fieldKey = Object.prototype.hasOwnProperty.call(_MA_META_FIELD_KEYS, field) ? _MA_META_FIELD_KEYS[field] : field;
+  const val = Object.prototype.hasOwnProperty.call(meta, field) ? meta[field] : '';
+  return tr(prefix + '_' + keyId.replace(/-/g, '_') + '_' + fieldKey, val || '');
 }
 // Messages produced by pure helpers (readiness reasons, storage warnings, parser
 // fallbacks) are keyed by their English text so the helpers stay pure and the
@@ -191,7 +219,7 @@ const MEMORY_AID_MESSAGE_KEYS = Object.freeze({
 });
 function _maTrMsg(tr, message) {
   const text = String(message == null ? '' : message);
-  const key = MEMORY_AID_MESSAGE_KEYS[text];
+  const key = Object.prototype.hasOwnProperty.call(MEMORY_AID_MESSAGE_KEYS, text) ? MEMORY_AID_MESSAGE_KEYS[text] : '';
   return key ? tr(key, text) : text;
 }
 
@@ -225,12 +253,17 @@ function normalizeMemoryAidVisualSource(value, hasImage) {
 }
 
 function _maPromptData(value, max = 1600) {
-  return _maString(value, max)
+  let clean = _maString(value, max)
     .replace(/[\u0000-\u001f\u007f]/g, ' ')
-    .replace(new RegExp(String.fromCharCode(96) + '{3,}', 'g'), "'''")
-    .replace(/(?:BEGIN|END)\s+UNTRUSTED\s+SOURCE\s+MATERIAL/gi, '[source boundary]')
-    .replace(/\s+/g, ' ')
-    .trim();
+    .replace(new RegExp(String.fromCharCode(96) + '{3,}', 'g'), "'''");
+  for (let pass = 0; pass < 5; pass++) {
+    const next = clean
+      .replace(/(?:BEGIN|END)\s+UNTRUSTED\s+SOURCE\s+MATERIAL/gi, '[source boundary]')
+      .replace(/<\s*\/?\s*UNTRUSTED_[A-Z0-9_]*\b[^>]*>/gi, '[tag]');
+    if (next === clean) break;
+    clean = next;
+  }
+  return clean.replace(/\s+/g, ' ').trim();
 }
 
 function buildMemoryAidVisualPrompt(card, style, direction) {
@@ -279,7 +312,8 @@ function buildMemoryAidVisualEditPrompt(card, direction, style) {
 function buildMemoryAidVisualCheckPrompt(card, options) {
   const normalized = normalizeMemoryAidCard(card, 0, { authorshipMode: 'student-authored' });
   // Alt text is content: write it in the lesson language, not the UI language.
-  const language = _maPromptData(options && options.language, 80);
+  const rawLang = _maPromptData(options && options.language, 60);
+  const language = rawLang.replace(/[^A-Za-z0-9\s()'-]/g, '').trim().slice(0, 40);
   const cue = normalized.studentDraft || normalized.aiExample || normalized.scaffoldStarter || normalized.mapping;
   const facts = normalized.essentialFacts
     .map((fact, index) => String(index + 1) + '. ' + _maPromptData(fact, 500))
@@ -320,7 +354,7 @@ function parseMemoryAidVisualCheck(value) {
   else if (text.startsWith(fence)) text = text.slice(3).trim();
   if (text.endsWith(fence)) text = text.slice(0, -3).trim();
   try {
-    return normalizeMemoryAidVisualCheck(JSON.parse(text));
+    return normalizeMemoryAidVisualCheck(_maSafeJsonParse(text));
   } catch (_) {
     return {
       alignment: 'unclear',
@@ -828,7 +862,7 @@ function _maActivePracticeProfileId() {
     const stored = window.localStorage.getItem('alloActiveProfileId');
     if (!stored) return '';
     let parsed = stored;
-    try { parsed = JSON.parse(stored); } catch (_) {}
+    try { parsed = _maSafeJsonParse(stored); } catch (_) {}
     if (parsed && typeof parsed === 'object' && parsed.id != null) parsed = parsed.id;
     return ['string', 'number'].includes(typeof parsed) ? _maString(parsed, 300).trim() : '';
   } catch (_) {
@@ -1028,7 +1062,8 @@ function _maNormalizePrivatePracticePayload(candidate, cards, schemaVersion) {
   const rawCards = raw.cards && typeof raw.cards === 'object' ? raw.cards : {};
   const safeCards = {};
   (Array.isArray(cards) ? cards : []).forEach(card => {
-    const attempts = normalizeMemoryAidPracticeAttempts(rawCards[card.id], card)
+    const rawList = Object.prototype.hasOwnProperty.call(rawCards, card.id) ? rawCards[card.id] : [];
+    const attempts = normalizeMemoryAidPracticeAttempts(rawList, card)
       .filter(attempt => memoryAidPracticeSummary(attempt, card).complete)
       .filter(attempt => !removed.has(_maPracticeTombstoneIdentity(card.id, attempt.id)));
     if (attempts.length) safeCards[card.id] = attempts;
@@ -1057,7 +1092,7 @@ function _maReadPrivatePracticeState(resourceKey, cards, profileId) {
       try {
         const stored = descriptor.storage.getItem(descriptor.key);
         if (descriptor.scope === 'profile' && stored != null) profileCopyPresent = true;
-        const parsed = JSON.parse(stored || 'null');
+        const parsed = _maSafeJsonParse(stored || 'null');
         const candidate = _maNormalizePrivatePracticePayload(parsed, cards, schemaVersion);
         if (candidate && (!selected || candidate.updatedAt > selected.updatedAt)) {
           selected = candidate;
@@ -1462,10 +1497,11 @@ function buildMemoryAidPracticeCueText(card, tr, options) {
 
 function _maSafeHttpUrl(value) {
   const candidate = _maString(value, 2000).trim();
-  if (!/^https?:\/\//i.test(candidate)) return '';
+  if (!candidate || /[\u0000-\u001f\u007f]/.test(candidate) || !/^https?:\/\//i.test(candidate)) return '';
   try {
     const parsed = new URL(candidate);
-    return /^https?:$/i.test(parsed.protocol) ? parsed.toString() : '';
+    if (!/^https?:$/i.test(parsed.protocol) || parsed.username || parsed.password) return '';
+    return parsed.toString();
   } catch (_) {
     return '';
   }
@@ -1969,7 +2005,7 @@ function parseMemoryAidFeedback(value) {
   else if (text.startsWith(fence)) text = text.slice(3).trim();
   if (text.endsWith(fence)) text = text.slice(0, -3).trim();
   try {
-    return parseMemoryAidFeedback(JSON.parse(text));
+    return parseMemoryAidFeedback(_maSafeJsonParse(text));
   } catch (_) {
     return {
       strength: text || 'You created a cue connected to the learning target.',
@@ -2251,8 +2287,15 @@ const MEMORY_AID_EXPORT_RULES = Object.freeze({
   // so the three cannot drift apart again.
   isDeliverableVisual: (value) => {
     const source = typeof value === 'string' ? value.trim() : '';
-    if (!source || source.length > 6 * 1024 * 1024) return false;
-    if (source.length <= 4096 && /^https:\/\/[^\s]+$/i.test(source)) return true;
+    if (!source || source.length > 6 * 1024 * 1024 || /[\u0000-\u001f\u007f]/.test(source)) return false;
+    if (source.length <= 4096 && /^https:\/\//i.test(source)) {
+      try {
+        const parsed = new URL(source);
+        return parsed.protocol === 'https:' && !parsed.username && !parsed.password;
+      } catch (_) {
+        return false;
+      }
+    }
     return /^data:image\/(?:png|jpe?g|webp|gif|avif);base64,[a-z0-9+/=\r\n]+$/i.test(source);
   },
   visualCheckPrompt: (card, options) => buildMemoryAidVisualCheckPrompt(card, options),
@@ -2361,7 +2404,7 @@ function MemoryAidPanel(props) {
   const textAiDoor = (typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function')
     ? window.__alloAiSetupDoorway('text', props.t)
     : null;
-  const aiDoorDisabled = !!(textAiDoor && textAiDoor.disabled);
+  const aiDoorDisabled = !!(textAiDoor && textAiDoor.disabled) || _maHardAiPolicyBlocked();
   const control = 'mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600';
   return <div className="m-3 space-y-4 rounded-2xl border border-teal-200 bg-teal-50/50 p-3">
     <label className="block text-sm font-bold text-slate-800">{tr('panel_purpose', 'What will learners do?')}
@@ -2661,12 +2704,10 @@ function MemoryAidPracticePanel(props) {
 }
 
 function _maAiUsable(kind, fn) {
+  if (_maHardAiPolicyBlocked()) return false;
   if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
-  if (typeof window !== 'undefined') {
-    if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true) return false;
-    if (typeof window.__alloAiUsable === 'function') {
-      try { return !!window.__alloAiUsable(kind, fn); } catch (_) { return false; }
-    }
+  if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') {
+    try { return !!window.__alloAiUsable(kind, fn); } catch (_) { return false; }
   }
   return true;
 }
@@ -2847,9 +2888,12 @@ function MemoryAidView(props) {
     if (studyNavigation.context === currentPracticeOwnerIdentity) {
       try { window.sessionStorage.setItem('alloflow-memory-target:' + _maStableHash(currentPracticeOwnerIdentity), selectedCardId); } catch (_) {}
     }
-    if (studyFocusRef.current) {
+    if (studyFocusRef.current && typeof document !== 'undefined') {
       const target = document.getElementById(studyFocusRef.current);
-      if (target && !target.closest('[hidden]')) { target.focus(); studyFocusRef.current = ''; }
+      if (target && target.isConnected && !target.closest('[hidden]')) {
+        try { target.focus(); } catch (_) {}
+        studyFocusRef.current = '';
+      }
     }
   }, [currentPracticeOwnerIdentity, selectedCardId, activity, studyNavigation]);
   const privatePracticeByCard = privatePracticeState.ownerIdentity === currentPracticeOwnerIdentity
@@ -2879,6 +2923,11 @@ function MemoryAidView(props) {
   const callGeminiImageEdit = _maAiUsable('imageEdit', _rawCallGeminiImageEdit) ? _rawCallGeminiImageEdit : null;
   const _rawCallGeminiVision = allowRuntimeAi && !learnerReadOnly ? (callGeminiVisionProp === undefined ? (typeof window !== 'undefined' ? window.callGeminiVision : null) : callGeminiVisionProp) : null;
   const callGeminiVision = _maAiUsable('vision', _rawCallGeminiVision) ? _rawCallGeminiVision : null;
+  const hasGeminiText = !!callGemini;
+  const hasImagen = !!callImagen;
+  const hasImageEdit = !!callGeminiImageEdit;
+  const hasVision = !!callGeminiVision;
+  const removeCardTimerRef = React.useRef(null);
   const handleSpeak = typeof handleSpeakProp === 'function' ? handleSpeakProp : null;
   const handleDownloadAudio = typeof handleDownloadAudioProp === 'function' ? handleDownloadAudioProp : null;
   const imageAssetTools = typeof window !== 'undefined' && window.AlloModules
@@ -2908,8 +2957,20 @@ function MemoryAidView(props) {
 
   React.useEffect(() => {
     asyncOperationRef.current.mounted = true;
+    const onMuteChange = () => {
+      if (_maIsGlobalMuted()) {
+        try {
+          const speaker = handleSpeakRef.current;
+          if (typeof speaker === 'function') Promise.resolve(speaker('', 'memory-aid-mute', 0, true)).catch(function () {});
+          if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel();
+        } catch (_) {}
+      }
+    };
+    if (typeof window !== 'undefined') window.addEventListener('alloflow-mute-changed', onMuteChange);
     return () => {
       asyncOperationRef.current.mounted = false;
+      if (typeof window !== 'undefined') window.removeEventListener('alloflow-mute-changed', onMuteChange);
+      if (removeCardTimerRef.current) { clearTimeout(removeCardTimerRef.current); removeCardTimerRef.current = null; }
       _maAbortMemoryAidTokens(asyncOperationRef.current);
       try {
         const speaker = handleSpeakRef.current;
@@ -3065,7 +3126,9 @@ function MemoryAidView(props) {
     if (!targetId || typeof document === 'undefined') return;
     pendingPracticeFocusRef.current = '';
     const target = document.getElementById(targetId);
-    if (target && typeof target.focus === 'function') target.focus();
+    if (target && target.isConnected && typeof target.focus === 'function') {
+      try { target.focus(); } catch (_) {}
+    }
   }, [practiceByCard, privatePracticeState]);
 
   const rawMemoryAidData = resourceActive && generatedContent && generatedContent.data
@@ -3206,30 +3269,75 @@ function MemoryAidView(props) {
     else addToast(tr('toast_fact_corrected_open', 'Fact updated. Other disputed facts are still open, so the card stays unverified.'), 'info');
   };
 
-  // Safety gate: check student-written cue/mnemonic text for self-harm
-  // disclosures before sending to AI coaching or fact checking.
-  const checkMemoryAidSelfHarm = (card, surface) => {
-    if (!card || typeof window === 'undefined') return false;
-    const parts = [card.target, card.cue, card.personalLink, card.studentMnemonic, card.selfExplain, card.notes, card.prompt, card.explanation]
-      .filter(v => typeof v === 'string' && v.trim());
+  // Safety gate: check student-written cue/mnemonic/practice text for self-harm
+  // disclosures before sending to AI coaching, visuals, fact checking, or practice review.
+  const checkMemoryAidSelfHarm = (card, surface, extraTexts) => {
+    const parts = [];
+    if (card && typeof card === 'object') {
+      [
+        card.target, card.studentDraft, card.studentReasoning, card.visualPrompt, card.visualAlt,
+        card.mapping, card.recallQuestion, card.applicationQuestion, card.coachHint,
+        card.cue, card.personalLink, card.studentMnemonic, card.selfExplain, card.notes, card.prompt, card.explanation,
+      ].forEach(v => { if (typeof v === 'string' && v.trim()) parts.push(v); });
+      if (Array.isArray(card.essentialFacts)) {
+        card.essentialFacts.forEach(f => { if (typeof f === 'string' && f.trim()) parts.push(f); });
+      }
+      if (Array.isArray(card.studentConnections)) {
+        card.studentConnections.forEach(conn => {
+          if (conn && typeof conn === 'object') {
+            if (typeof conn.cue === 'string' && conn.cue.trim()) parts.push(conn.cue);
+            if (typeof conn.explanation === 'string' && conn.explanation.trim()) parts.push(conn.explanation);
+          }
+        });
+      }
+    }
+    if (Array.isArray(extraTexts)) {
+      extraTexts.forEach(v => { if (typeof v === 'string' && v.trim()) parts.push(v); });
+    } else if (typeof extraTexts === 'string' && extraTexts.trim()) {
+      parts.push(extraTexts);
+    }
     const msg = parts.join(' ').trim();
     if (!msg) return false;
-    const checker = (window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker || null;
-    let flags = null;
-    try { flags = (checker && typeof checker.check === 'function') ? checker.check(msg) : null; } catch (_) { flags = null; }
-    const hit = Array.isArray(flags) && flags.find(f => f && f.category === 'self_harm' && f.severity === 'critical');
+    let hit = null;
+    if (typeof window !== 'undefined') {
+      const checker = (window.__alloShared && window.__alloShared.SafetyContentChecker)
+        || window.SafetyContentChecker
+        || (window.AlloModules && window.AlloModules.SafetyContentChecker)
+        || null;
+      if (checker) {
+        try {
+          if (typeof checker.check === 'function') {
+            const flags = checker.check(msg);
+            hit = Array.isArray(flags) && flags.find(f => f && f.category === 'self_harm' && f.severity === 'critical');
+          } else {
+            const fn = typeof checker.checkContent === 'function' ? checker.checkContent
+              : typeof checker.checkText === 'function' ? checker.checkText
+              : typeof checker.screenText === 'function' ? checker.screenText : null;
+            if (fn) {
+              const res = fn(msg);
+              if (res && (res.isCrisis || res.blocked || res.flagged || res.level === 'critical' || res.severity === 'critical' || res.category === 'self_harm')) {
+                hit = { category: 'self_harm', severity: 'critical' };
+              }
+            }
+          }
+        } catch (_) {}
+      }
+    }
+    if (!hit && _MA_CRISIS_RE.test(msg)) {
+      hit = { category: 'self_harm', severity: 'critical', matchedFallback: true };
+    }
     if (!hit) return false;
     const onFlag = typeof props.onSafetyFlag === 'function' ? props.onSafetyFlag : null;
     if (onFlag) { try { onFlag(Object.assign({}, hit, { source: 'memory_aid_' + surface, context: msg.slice(0, 100), aiGenerated: false })); } catch (_) {} }
-    addToast(tr('toast_self_harm_pause', 'We paused AI coaching for a moment because what you wrote sounds heavy. Please talk to a trusted adult, call or text 988 (Suicide & Crisis Lifeline), or text HOME to 741741 (Crisis Text Line). You are not alone.'), 'warn');
-    if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+    addToast(tr('toast_self_harm_pause', 'We paused AI coaching for a moment because what you wrote sounds heavy. Please talk to a trusted adult, call or text 988 (Suicide & Crisis Lifeline), text HOME to 741741 (Crisis Text Line), or call 911 in an emergency. You are not alone.'), 'warn');
+    if (typeof window !== 'undefined' && window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
       try { window.SelHub.showCrisisModal({ toolName: 'Memory Aid Studio', contentSnippet: msg.slice(0, 200) }); } catch (_) {}
     }
     return true;
   };
 
   const requestFactCheck = async (card) => {
-    if (typeof callGemini !== 'function') {
+    if (!hasGeminiText) {
       addToast(tr('toast_fact_check_unavailable', 'AI fact checking is not available with the current setup.'), 'info');
       return;
     }
@@ -3346,6 +3454,9 @@ function MemoryAidView(props) {
   const saveFollowUp = async (card, patch) => {
     const session = latestPracticeSessionRef.current[card.id];
     if (!session?.attempt || isTeacherMode || previewMode || learnerReadOnly) return;
+    if (patch) {
+      checkMemoryAidSelfHarm(card, 'followup', [patch.applicationResponse, patch.revisionDraft]);
+    }
     const attemptId = session.attempt.id, owner = currentPracticeOwnerIdentity, key = owner + '|' + attemptId;
     const controller = followUpWriteRef.current[key] || (followUpWriteRef.current[key] = {
       baseline: session.attempt, pending: {}, persisted: !!session.resumeFollowUp || !!privatePracticeByCard[card.id]?.some(item => item.id === attemptId), running: null, conflict: null,
@@ -3547,6 +3658,7 @@ function MemoryAidView(props) {
 
   const revealPracticeFacts = (card) => {
     const session = visiblePracticeByCard[card.id];
+    if (session && session.response) checkMemoryAidSelfHarm(card, 'practice-recall', session.response);
     const attempt = createMemoryAidPracticeAttempt(card, session);
     if (!attempt) {
       addToast(tr('toast_finish_response_first', 'Finish your chosen response before revealing the facts.'), 'info');
@@ -3583,6 +3695,7 @@ function MemoryAidView(props) {
       addToast(tr('toast_complete_self_check_first', 'Complete the self-check and describe one revision before saving a goal.'), 'info');
       return;
     }
+    checkMemoryAidSelfHarm(card, 'practice-revision', revisionStrategy);
     const targetFactIndexes = currentAttempt.factChecks
       .map((check, index) => check === 'practice' ? index : -1)
       .filter(index => index >= 0);
@@ -3634,7 +3747,7 @@ function MemoryAidView(props) {
   };
 
   const speakPracticeCue = async (card) => {
-    if (typeof handleSpeak !== 'function' || visiblePracticeByCard[card.id]?.supportMode === 'none') return;
+    if (_maIsGlobalMuted() || typeof handleSpeak !== 'function' || visiblePracticeByCard[card.id]?.supportMode === 'none') return;
     try {
       await Promise.resolve(handleSpeak(
         buildMemoryAidPracticeCueText(card, tr),
@@ -3696,7 +3809,7 @@ function MemoryAidView(props) {
   };
 
   const requestHint = async (card) => {
-    if (typeof callGemini !== 'function') {
+    if (!hasGeminiText) {
       addToast(tr('toast_coaching_unavailable', 'AI coaching is not available yet.'), 'info');
       return;
     }
@@ -3719,7 +3832,8 @@ function MemoryAidView(props) {
       addToast(trMsg(ready.reason), 'info');
       return;
     }
-    if (typeof callGemini !== 'function') {
+    if (checkMemoryAidSelfHarm(card, 'feedback')) return;
+    if (!hasGeminiText) {
       addToast(tr('toast_feedback_unavailable', 'AI feedback is not available yet.'), 'info');
       return;
     }
@@ -3738,7 +3852,8 @@ function MemoryAidView(props) {
   };
 
   const requestVisual = async (card) => {
-    if (typeof callImagen !== 'function') {
+    if (checkMemoryAidSelfHarm(card, 'visual')) return;
+    if (!hasImagen) {
       addToast(tr('toast_visual_gen_unavailable', 'Visual generation is not available with the current AI setup.'), 'info');
       return;
     }
@@ -3769,7 +3884,8 @@ function MemoryAidView(props) {
   const refineVisual = async (card) => {
     const direction = _maString(card.visualPrompt, 1200).trim();
     const rawBase64 = memoryAidImageBase64(card.visualImage);
-    if (typeof callGeminiImageEdit !== 'function') {
+    if (checkMemoryAidSelfHarm(card, 'visual-edit', direction)) return;
+    if (!hasImageEdit) {
       addToast(tr('toast_refine_unavailable', 'Image refinement is not available with the current AI setup.'), 'info');
       return;
     }
@@ -3806,7 +3922,8 @@ function MemoryAidView(props) {
   const requestVisualCheck = async (card) => {
     const rawBase64 = memoryAidImageBase64(card.visualImage);
     const mimeType = memoryAidImageMime(card.visualImage);
-    if (typeof callGeminiVision !== 'function') {
+    if (checkMemoryAidSelfHarm(card, 'visual-check')) return;
+    if (!hasVision) {
       addToast(tr('toast_visual_check_unavailable', 'AI visual checking is not available with the current setup.'), 'info');
       return;
     }
@@ -3926,6 +4043,7 @@ function MemoryAidView(props) {
   };
 
   const speakCard = async (card) => {
+    if (_maIsGlobalMuted()) return;
     if (typeof handleSpeak !== 'function') {
       addToast(tr('toast_read_aloud_unavailable', 'Read-aloud is not available right now.'), 'info');
       return;
@@ -3980,11 +4098,31 @@ function MemoryAidView(props) {
     if (typeof onPrintProp === 'function') {
       try { if (onPrintProp(printable, { worksheet: preset === 'recall' || preset === 'no-hints', teacherKey: false }) !== false) return; } catch (_) {}
     }
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
     const popup = window.open('', '_blank');
     if (!popup) { addToast(tr('export_popup_blocked', 'Allow the preview window to open, then try again.'), 'info'); return; }
     try { popup.opener = null; } catch (_) {}
-    popup.document.open(); popup.document.write('<!doctype html><html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; img-src data: blob:;"><title>Memory Aid</title></head><body>' + renderMemoryAidPreset(printable.data, preset, tr) + '</body></html>'); popup.document.close();
-    try { popup.focus(); popup.print(); } catch (_) {}
+    try {
+      const escapeHtml = (v) => String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      const sanitizeHtml = (html) => {
+        const s = String(html || '');
+        if (typeof window !== 'undefined' && typeof window.sanitizeHtml === 'function') {
+          try { return String(window.sanitizeHtml(s) || ''); } catch (_) {}
+        }
+        return s.replace(/<script\b[\s\S]*?<\/script>/gi, '').replace(/\son[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '');
+      };
+      const lang = String(document.documentElement?.lang || 'en').replace(/[^\w-]/g, '') || 'en';
+      popup.document.open();
+      popup.document.write(
+        '<!doctype html><html lang="' + escapeHtml(lang) + '"' + (document.documentElement?.dir === 'rtl' ? ' dir="rtl"' : '') +
+        '><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; img-src data: blob:; base-uri \'none\'; form-action \'none\';"><title>Memory Aid</title></head><body>' +
+        sanitizeHtml(renderMemoryAidPreset(printable.data, preset, tr)) +
+        '</body></html>'
+      );
+      popup.document.close();
+      popup.focus();
+      popup.print();
+    } catch (_) {}
   };
 
   const addCard = () => {
@@ -4011,7 +4149,12 @@ function MemoryAidView(props) {
     } catch (_) { confirmed = false; }
     if (!confirmed) return;
     commitField('cards', current => normalizeMemoryAidCards(Array.isArray(current) ? current : cards, data.authorshipMode).filter(card => card.id !== cardId));
-    setTimeout(() => { const next = typeof document !== 'undefined' && document.getElementById('memory-aid-add-target'); if (next) next.focus(); }, 0);
+    if (removeCardTimerRef.current) clearTimeout(removeCardTimerRef.current);
+    removeCardTimerRef.current = setTimeout(() => {
+      removeCardTimerRef.current = null;
+      const next = typeof document !== 'undefined' && document.getElementById('memory-aid-add-target');
+      if (next && next.isConnected && typeof next.focus === 'function') { try { next.focus(); } catch (_) {} }
+    }, 0);
   };
 
   const moveCard = (cardId, direction) => {
@@ -4109,10 +4252,13 @@ function MemoryAidView(props) {
 
       {practiceStorageWarning && <p role="alert" className="memory-aid-no-print mb-5 rounded-xl border border-red-300 bg-red-50 p-3 text-sm font-bold leading-relaxed text-red-900">{trMsg(practiceStorageWarning)}</p>}
 
-      {!isEditing && !practiceIsolationActive && (!queue || queue.done) && cards.length > 0 && <nav className="memory-aid-no-print mb-4 flex flex-wrap items-center gap-2" aria-label={tr('target_navigation', 'Memory targets')}>
+      {!isEditing && !practiceIsolationActive && (!queue || queue.done) && cards.length > 0 && (() => {
+        const selectedIdx = cards.findIndex(card => card.id === selectedCardId);
+        return (
+        <nav className="memory-aid-no-print mb-4 flex flex-wrap items-center gap-2" aria-label={tr('target_navigation', 'Memory targets')}>
         <label className="min-w-0 flex-1 text-sm font-bold text-slate-700">{tr('target_navigation', 'Memory targets')}<select aria-label={tr('target_choose', 'Choose a memory target')} value={selectedCardId} onChange={e => navigateStudy(e.target.value)} className="mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900">{cards.map((card, i) => <option key={card.id} value={card.id}>{i+1}. {card.target}</option>)}</select></label>
-        <button type="button" disabled={cards.findIndex(card => card.id === selectedCardId) === 0} onClick={() => navigateStudy(cards[cards.findIndex(card => card.id === selectedCardId)-1].id)} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 disabled:opacity-40">{tr('target_previous', 'Previous')}</button>
-        <button type="button" disabled={cards.findIndex(card => card.id === selectedCardId) === cards.length-1} onClick={() => navigateStudy(cards[cards.findIndex(card => card.id === selectedCardId)+1].id)} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 disabled:opacity-40">{tr('target_next', 'Next')}</button>
+        <button type="button" disabled={selectedIdx <= 0} onClick={() => { if (selectedIdx > 0 && cards[selectedIdx - 1]) navigateStudy(cards[selectedIdx - 1].id); }} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 disabled:opacity-40">{tr('target_previous', 'Previous')}</button>
+        <button type="button" disabled={selectedIdx < 0 || selectedIdx >= cards.length - 1} onClick={() => { if (selectedIdx >= 0 && selectedIdx < cards.length - 1 && cards[selectedIdx + 1]) navigateStudy(cards[selectedIdx + 1].id); }} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 disabled:opacity-40">{tr('target_next', 'Next')}</button>
         {cards.length >= 2 && (() => {
           const query = targetFilter.trim().toLowerCase();
           const indexedCards = cards.map((card, i) => ({ card, i }));
@@ -4191,7 +4337,9 @@ function MemoryAidView(props) {
             </div>
           );
         })()}
-      </nav>}
+      </nav>
+        );
+      })()}
       <div className="space-y-5">
         {cards.map((card, index) => {
           if (practiceIsolationActive && card.id !== activePracticeCardId) return null;
@@ -4212,7 +4360,7 @@ function MemoryAidView(props) {
           const draftLabel = card.mode === 'generated' ? tr('draft_label_generated', 'Make your own or remix the example') : card.mode === 'scaffolded' ? tr('draft_label_scaffolded', 'Finish and personalize the scaffold') : tr('draft_label_student', 'Create your memory aid');
           const feedbackReady = memoryAidFeedbackReady(card, data.reasoningRequired);
           const feedbackHelpId = domIdBase + '-feedback-help';
-          const aiFeedbackAvailable = typeof callGemini === 'function';
+          const aiFeedbackAvailable = hasGeminiText;
           const visualBusy = busy === 'visual' || busy === 'visual-edit' || busy === 'visual-check';
           const visualReviewLabel = trMeta('visual_review', Object.prototype.hasOwnProperty.call(MEMORY_AID_VISUAL_REVIEW_STATUSES, card.visualReview.status) ? card.visualReview.status : 'unreviewed', 'label', MEMORY_AID_VISUAL_REVIEW_STATUSES);
           const visualSourceLabel = trMeta('visual_source', Object.prototype.hasOwnProperty.call(MEMORY_AID_VISUAL_SOURCES, card.visualSource) ? card.visualSource : 'legacy', 'label', MEMORY_AID_VISUAL_SOURCES);
@@ -4320,9 +4468,9 @@ function MemoryAidView(props) {
                 {!isEditing && !practiceIsolationActive && <nav className="memory-aid-no-print grid grid-cols-3 gap-1 border-b border-slate-200 pb-3 sm:flex sm:gap-2" aria-label={tr('activity_navigation', 'Memory aid activity')}>
                   {['study', 'personalize', 'recall'].map(value => <button key={value} type="button" aria-pressed={activity === value} onClick={() => navigateStudy(card.id, value, value === 'personalize')} className={'min-h-11 min-w-0 rounded-xl px-2 sm:px-4 py-2 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 ' + (activity === value ? 'bg-teal-50 text-teal-900' : 'bg-white text-slate-600')}>{value === 'study' ? tr('activity_study', 'Study') : value === 'personalize' ? tr('activity_personalize', 'Make it mine') : tr('activity_recall', 'Try recall')}</button>)}
                 </nav>}
-                <div hidden={isEditing || activity !== 'study'}><MemoryAidStudyCard card={!hostIsProcessing && ['queued', 'generating'].includes(card.visualStatus) ? { ...card, visualStatus: 'failed' } : card} attempts={practiceAttempts} busy={busy} isProcessing={isProcessing} isTeacherMode={isTeacherMode} canGenerate={canManageVisual && !!callImagen} onGenerate={() => requestVisual(card)} onPersonalize={() => navigateStudy(card.id, 'personalize')} onRecall={() => navigateStudy(card.id, 'recall', false)} onResume={!isTeacherMode && !previewMode && !learnerReadOnly ? () => resumeFollowUp(card) : null} tr={tr} /></div>
+                <div hidden={isEditing || activity !== 'study'}><MemoryAidStudyCard card={!hostIsProcessing && ['queued', 'generating'].includes(card.visualStatus) ? { ...card, visualStatus: 'failed' } : card} attempts={practiceAttempts} busy={busy} isProcessing={isProcessing} isTeacherMode={isTeacherMode} canGenerate={canManageVisual && hasImagen} onGenerate={() => requestVisual(card)} onPersonalize={() => navigateStudy(card.id, 'personalize')} onRecall={() => navigateStudy(card.id, 'recall', false)} onResume={!isTeacherMode && !previewMode && !learnerReadOnly ? () => resumeFollowUp(card) : null} tr={tr} /></div>
                 <div hidden={!isEditing && activity !== 'personalize'} className="memory-aid-personalize space-y-4">
-                {!isEditing && !card.cueNeedsReview && memoryAidPracticeCue(card) && <section className="rounded-xl border border-teal-200 bg-teal-50 p-4"><h3 className="text-sm font-bold text-teal-900">{tr('personalize_current', 'Current memory cue')}</h3><p className="mt-2 whitespace-pre-wrap text-lg font-bold text-slate-900">{memoryAidPracticeCue(card)}</p><div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={() => navigateStudy(card.id)} className="min-h-11 rounded-xl bg-teal-700 px-4 py-2 text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2">{tr('personalize_keep', 'Use this cue')}</button>{!learnerReadOnly && !card.studentDraft.trim() && <button type="button" onClick={() => { updateCard(card.id, { studentDraft: memoryAidPracticeCue(card), visualNeedsReview: card.visualNeedsReview }); const draft = document.getElementById(domIdBase + '-draft'); if (draft) draft.focus(); }} className="min-h-11 rounded-xl border border-teal-300 bg-white px-4 py-2 text-sm font-bold text-teal-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">{tr('personalize_copy', 'Edit a copy')}</button>}</div><p className="mt-2 text-xs text-slate-600">{tr('personalize_choice', 'Keep this cue, edit a copy, or write your own below. Explaining your connection is optional unless your teacher requires it.')}</p></section>}
+                {!isEditing && !card.cueNeedsReview && memoryAidPracticeCue(card) && <section className="rounded-xl border border-teal-200 bg-teal-50 p-4"><h3 className="text-sm font-bold text-teal-900">{tr('personalize_current', 'Current memory cue')}</h3><p className="mt-2 whitespace-pre-wrap text-lg font-bold text-slate-900">{memoryAidPracticeCue(card)}</p><div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={() => navigateStudy(card.id)} className="min-h-11 rounded-xl bg-teal-700 px-4 py-2 text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2">{tr('personalize_keep', 'Use this cue')}</button>{!learnerReadOnly && !card.studentDraft.trim() && <button type="button" onClick={() => { updateCard(card.id, { studentDraft: memoryAidPracticeCue(card), visualNeedsReview: card.visualNeedsReview }); const draft = typeof document !== 'undefined' && document.getElementById(domIdBase + '-draft'); if (draft && draft.isConnected) { try { draft.focus(); } catch (_) {} } }} className="min-h-11 rounded-xl border border-teal-300 bg-white px-4 py-2 text-sm font-bold text-teal-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">{tr('personalize_copy', 'Edit a copy')}</button>}</div><p className="mt-2 text-xs text-slate-600">{tr('personalize_choice', 'Keep this cue, edit a copy, or write your own below. Explaining your connection is optional unless your teacher requires it.')}</p></section>}
                 {card.cueNeedsReview && <section data-memory-cue-review className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950"><p>{card.studentCueNeedsReview ? tr('cue_review_own', 'The facts changed or this saved cue has no recorded fact version. Check your earlier cue against the current facts before using it again.') : isTeacherMode ? tr('cue_review_teacher', 'The target or facts changed. Review the earlier cue, scaffold, and explanation below. They stay out of study and recall until you confirm that they match the current facts.') : tr('cue_review_student', 'The facts changed. The earlier memory cue is waiting for teacher review.')}</p>{isTeacherMode && isEditing && <button type="button" disabled={!card.factVerified || !card.factLocked} onClick={() => updateCard(card.id, { cueNeedsReview: false })} className="mt-2 min-h-11 rounded-xl border border-amber-500 bg-white px-3 py-2 font-bold disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">{tr('cue_review_confirm', 'I reviewed the cue against these facts')}</button>}{card.studentCueNeedsReview && !isTeacherMode && !previewMode && !learnerReadOnly && <button type="button" disabled={card.teacherCueNeedsReview || !card.factVerified || !card.factLocked} onClick={() => updateCard(card.id, { cueFactBasis: memoryAidCueFactBasis(card) })} className="mt-2 min-h-11 rounded-xl border border-amber-500 bg-white px-3 py-2 font-bold disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">{tr('cue_review_own_confirm', 'My cue matches the current facts')}</button>}</section>}
                 {isEditing && derivedSnapshots[card.id] && <div role="status" className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950"><p>{tr('derived_cleared_note', 'Changing the target or facts cleared this card\'s recall question, application question, cue connections, or fun fact, because they may no longer match. Restore them to review and edit, or keep them cleared.')}</p><div className="mt-2 flex flex-wrap gap-2"><button type="button" onClick={() => restoreDerived(card.id)} className="min-h-11 rounded-xl border border-amber-400 bg-white px-3 py-2 text-sm font-bold text-amber-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">{tr('derived_restore', 'Restore for review')}</button><button type="button" onClick={() => setDerivedSnapshot(card.id, null)} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500">{tr('derived_keep_cleared', 'Keep them cleared')}</button></div></div>}
                 {isEditing && <section className="rounded-xl border border-teal-200 p-3"><label className="block text-sm font-bold">{tr('recall_question_editor', 'Question for recall without hints')}<textarea aria-label={tr('recall_question_aria', 'Recall question for {target}', { target: card.target })} value={card.recallQuestion} rows={2} maxLength={1600} onChange={e => updateCard(card.id, { recallQuestion: e.target.value })} className="mt-2 w-full rounded-xl border border-slate-300 p-2 font-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" /></label><p className="mt-2 text-sm text-slate-600">{tr('recall_question_help', 'Identify the topic or situation without including the facts, mnemonic, or answer. This question also appears on the worksheet without hints.')}</p>{card.recallQuestion.trim() && !memoryAidRecallQuestion(card) && <p role="status" className="mt-2 text-sm text-amber-950">{tr('recall_question_copy', 'This question appears to copy an answer or cue. Rewrite it before using it in recall without hints.')}</p>}</section>}
@@ -4344,7 +4492,7 @@ function MemoryAidView(props) {
                         {card.factVerified && !card.factReviewedAt && <button type="button" onClick={() => updateCard(card.id, { factReviewedAt: new Date().toISOString() })} className="min-h-11 rounded-xl border border-teal-300 bg-white px-3 py-2 text-sm font-bold text-teal-900">{tr('facts_record_review', 'Mark as reviewed by me')}</button>}
                       </div>
                       <div className="mt-3 flex flex-wrap items-center gap-2">
-                        <button type="button" onClick={() => { if (busy || isProcessing) return; requestFactCheck(card); }} aria-disabled={!!busy || isProcessing || typeof callGemini !== 'function' || card.essentialFacts.length === 0} disabled={typeof callGemini !== 'function' || card.essentialFacts.length === 0} aria-busy={busy === 'fact-check'} className="min-h-11 rounded-xl border border-sky-500 bg-sky-50 px-3 py-2 text-xs font-black text-sky-950 hover:bg-sky-100 disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600">{busy === 'fact-check' ? tr('fact_check_running', 'Checking facts with web search\u2026') : card.factCheck ? tr('fact_check_rerun', 'Recheck facts with web search') : tr('fact_check', 'Check facts with web search')}</button>
+                        <button type="button" onClick={() => { if (busy || isProcessing) return; requestFactCheck(card); }} aria-disabled={!!busy || isProcessing || !hasGeminiText || card.essentialFacts.length === 0} disabled={!hasGeminiText || card.essentialFacts.length === 0} aria-busy={busy === 'fact-check'} className="min-h-11 rounded-xl border border-sky-500 bg-sky-50 px-3 py-2 text-xs font-black text-sky-950 hover:bg-sky-100 disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600">{busy === 'fact-check' ? tr('fact_check_running', 'Checking facts with web search\u2026') : card.factCheck ? tr('fact_check_rerun', 'Recheck facts with web search') : tr('fact_check', 'Check facts with web search')}</button>
                         <span className="text-xs font-medium leading-snug text-slate-600">{tr('fact_check_help', 'Advisory only. Read the verdicts and sources, fix any fact that needs it, then mark the facts teacher verified yourself.')}</span>
                       </div>
                       <p role="status" aria-live="polite" className="sr-only">{card.factCheck ? tr('fact_check_announce', 'Fact check ready for {target}. {summary}', { target: card.target, summary: card.factCheck.summary || '' }) : ''}</p>

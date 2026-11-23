@@ -614,7 +614,9 @@ const QuickStartWizard = React.memo(({
   isHelpMode,
   setIsHelpMode,
   initialSourceMode,
-  onInitialModeConsumed
+  onInitialModeConsumed,
+  onCleanupDictation,
+  onCrossCheckDictation
 }) => {
   const [step, setStep] = useState(1);
   const {
@@ -635,7 +637,7 @@ const QuickStartWizard = React.memo(({
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return undefined;
     const refresh = () => setAiConfigTick(n => n + 1);
-    const events = ['alloflow:ai-config-changed', 'alloflow:student-ai-config-changed', 'alloflow:ai-key-lock-changed'];
+    const events = ['alloflow:ai-config-changed', 'alloflow:student-ai-config-changed', 'alloflow:ai-key-lock-changed', 'alloflow:module-registry-changed'];
     events.forEach(ev => window.addEventListener(ev, refresh));
     return () => {
       events.forEach(ev => window.removeEventListener(ev, refresh));
@@ -944,6 +946,14 @@ const QuickStartWizard = React.memo(({
       setStep(1);
     }
   }, [isOpen]);
+  useEffect(() => {
+    if (!isOpen || localData.sourceMode !== 'dictate') return;
+    if (typeof window !== 'undefined' && !(window.AlloModules && window.AlloModules.SpeechSetup && window.AlloModules.SpeechSetup.DictationStudio)) {
+      try {
+        if (typeof window.__alloLazySpeechSetup === 'function') window.__alloLazySpeechSetup();
+      } catch (_) {}
+    }
+  }, [isOpen, localData.sourceMode]);
   if (!isOpen) return null;
   const handleSkip = event => {
     safeSetItem('allo_wizard_completed', 'true');
@@ -1649,7 +1659,31 @@ const QuickStartWizard = React.memo(({
     className: "font-bold text-slate-700 group-hover:text-purple-700 text-lg"
   }, wt('input.actions.write_with_ai', 'Write with AI')), /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-slate-600 mt-1"
-  }, t('wizard.generate_desc')))))), step === 3 && /*#__PURE__*/React.createElement("div", {
+  }, t('wizard.generate_desc'))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-help-key": "wizard_dictate_source",
+    onClick: () => {
+      setLocalData(prev => ({
+        ...prev,
+        sourceMode: 'dictate',
+        fetchedContent: '',
+        resourceMeta: null,
+        storybookRef: null,
+        searchOptions: []
+      }));
+      setStep(3);
+    },
+    className: "flex flex-col items-center justify-center p-6 rounded-xl border-2 border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 transition-all motion-reduce:transition-none group bg-white h-40"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-emerald-50 p-4 rounded-full shadow-sm mb-3 group-hover:bg-white"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-[32px] leading-none",
+    "aria-hidden": "true"
+  }, "🎙️")), /*#__PURE__*/React.createElement("span", {
+    className: "font-bold text-slate-700 group-hover:text-emerald-800 text-lg"
+  }, wt('input.dictate_or_record', 'Dictate or record')), /*#__PURE__*/React.createElement("span", {
+    className: "text-xs text-slate-600 mt-1"
+  }, wt('wizard.dictate_desc', 'Local Whisper voice dictation & optional check')))))), step === 3 && /*#__PURE__*/React.createElement("div", {
     className: "space-y-6 animate-in motion-reduce:animate-none slide-in-from-right-4 duration-300"
   }, localData.sourceMode === 'url' && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
     className: "block text-lg font-bold text-slate-700 mb-2"
@@ -2464,6 +2498,57 @@ const QuickStartWizard = React.memo(({
     }, t('common.next'), " ", /*#__PURE__*/React.createElement(ArrowRight, {
       size: 18
     })));
+  })(), localData.sourceMode === 'dictate' && (() => {
+    const DictationStudio = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SpeechSetup && window.AlloModules.SpeechSetup.DictationStudio;
+    return /*#__PURE__*/React.createElement("div", {
+      "data-wizard-dictate": "",
+      className: "space-y-4"
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+      className: "text-lg font-bold text-slate-800"
+    }, wt('wizard.dictate_title', 'Dictate or record your source text')), /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-slate-600"
+    }, wt('wizard.dictate_helper', 'Defaults to private on-device Whisper dictation. Edit freely, optionally clean up text, or cross-check against your recording with Gemini.'))), DictationStudio ? /*#__PURE__*/React.createElement(DictationStudio, {
+      t: t,
+      value: localData.pastedText,
+      onChange: nextText => setLocalData(prev => ({
+        ...prev,
+        pastedText: nextText
+      })),
+      onUploadMedia: () => onComplete({
+        ...localData,
+        sourceMode: 'file',
+        materialType: 'file'
+      }),
+      onCleanupText: onCleanupDictation,
+      onCrossCheckAudio: onCrossCheckDictation,
+      aiTextAvailable: !aiOff
+    }) : /*#__PURE__*/React.createElement("div", {
+      className: "space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-xs font-semibold text-slate-700",
+      role: "status"
+    }, wt('wizard.dictate_loading', 'Loading Dictation Studio (Local Whisper)… You can also type or edit below while it loads.')), /*#__PURE__*/React.createElement("textarea", {
+      id: "wizard-dictate-fallback",
+      dir: "auto",
+      rows: 8,
+      value: localData.pastedText,
+      onChange: e => setLocalData(prev => ({
+        ...prev,
+        pastedText: e.target.value
+      })),
+      "aria-label": wt('dictation.draft_label', 'Transcript draft (editable)'),
+      placeholder: wt('dictation.draft_placeholder', 'Type or edit your transcript here…'),
+      className: "w-full rounded-xl border-2 border-slate-200 bg-white p-3 text-sm text-slate-900"
+    })), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "aria-label": t('common.next'),
+      "data-help-key": "wizard_dictate_next",
+      onClick: () => setStep(4),
+      disabled: !localData.pastedText.trim(),
+      className: "w-full min-h-11 bg-emerald-700 text-white font-bold py-3 rounded-xl hover:bg-emerald-800 disabled:opacity-50 flex items-center justify-center gap-2"
+    }, t('common.next'), " ", /*#__PURE__*/React.createElement(ArrowRight, {
+      size: 18
+    })));
   })(), localData.sourceMode === 'file' && /*#__PURE__*/React.createElement("div", {
     className: "text-center py-8"
   }, /*#__PURE__*/React.createElement("div", {
@@ -2488,7 +2573,7 @@ const QuickStartWizard = React.memo(({
   }), " ", t('wizard.select_file')), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 mt-4"
   }, t('wizard.file_process_msg')))), step === 4 && (() => {
-    const sourceSummaryLabel = localData.resourceMeta && localData.resourceMeta.title ? localData.resourceMeta.title : localData.sourceMode === 'paste' ? `${(localData.pastedText.trim().match(/\S+/g) || []).length} ${wt('wizard.words_unit', 'words pasted')}` : localData.sourceMode === 'generate' ? localData.topic ? `${wt('input.actions.write_with_ai', 'Write with AI')}: ${localData.topic}` : wt('input.actions.write_with_ai', 'Write with AI') : localData.sourceMode === 'storybook' ? wt('input.reading_catalog', 'Reading catalog') : localData.sourceMode === 'file' ? wt('wizard.upload_file', 'Upload file') : wt('input.find_online', 'Find online');
+    const sourceSummaryLabel = localData.resourceMeta && localData.resourceMeta.title ? localData.resourceMeta.title : localData.sourceMode === 'paste' ? `${(localData.pastedText.trim().match(/\S+/g) || []).length} ${wt('wizard.words_unit', 'words pasted')}` : localData.sourceMode === 'dictate' ? `${(localData.pastedText.trim().match(/\S+/g) || []).length} ${wt('wizard.words_dictated_unit', 'words dictated')}` : localData.sourceMode === 'generate' ? localData.topic ? `${wt('input.actions.write_with_ai', 'Write with AI')}: ${localData.topic}` : wt('input.actions.write_with_ai', 'Write with AI') : localData.sourceMode === 'storybook' ? wt('input.reading_catalog', 'Reading catalog') : localData.sourceMode === 'file' ? wt('wizard.upload_file', 'Upload file') : wt('input.find_online', 'Find online');
     return /*#__PURE__*/React.createElement("div", {
       className: "space-y-6 animate-in motion-reduce:animate-none slide-in-from-right-4 duration-300"
     }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {

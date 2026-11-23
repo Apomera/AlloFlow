@@ -328,13 +328,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
   // outranks the w-full class: on a phone in the STEAM Lab shell the tool scrolled 255 px sideways (measured
   // 2026-09-15). Fit the logical width to the parent's content box; the draw code already lays out against
   // canvas._logicalW, so a narrower graph simply redraws narrower. Height is kept so labels stay readable.
-  function fitCanvasWidth(canvas) {
+  function fitCanvasWidth(canvas, fillContainer) {
+    if (canvas && canvas.style) canvas.style.maxWidth = '100%';
     var base = canvas._baseW || (canvas._baseW = canvas._logicalW || canvas.width);
     var parent = canvas.parentElement;
     if (!parent) return base;
     var cs = window.getComputedStyle(parent);
     var avail = parent.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
-    return avail > 40 ? Math.min(base, Math.floor(avail)) : base;
+    if (avail <= 40) return base;
+    return fillContainer ? Math.min(Math.max(base, 960), Math.floor(avail)) : Math.min(base, Math.floor(avail));
   }
   // Canvas rendering functions (module-scoped)
   // ═══════════════════════════════════════════
@@ -383,7 +385,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
   function drawProsodyCurve(canvas, pitchHistory, isDark, modelCurve) {
     if (!canvas) return;
     if (window.StemLab && window.StemLab.setupHiDPI) {
-      window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas), canvas._logicalH || canvas.height);
+      window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas, true), canvas._logicalH || canvas.height);
     }
     var ctx2d = canvas.getContext('2d');
     if (!ctx2d) return;
@@ -671,7 +673,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
   function drawPacingGauge(canvas, wpm, gradeLevel, isDark) {
     if (!canvas) return;
     if (window.StemLab && window.StemLab.setupHiDPI) {
-      window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas), canvas._logicalH || canvas.height);
+      window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas, true), canvas._logicalH || canvas.height);
     }
     var ctx2d = canvas.getContext('2d');
     if (!ctx2d) return;
@@ -817,19 +819,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     ctx2d.fillStyle = hc ? '#000000' : zone.color;
     ctx2d.fill();
 
-    // WPM text
-    ctx2d.font = 'bold 22px sans-serif';
+    // WPM text — positioned cleanly above the r=7 needle hub cap
+    ctx2d.font = 'bold 21px sans-serif';
     ctx2d.fillStyle = hc ? '#ffff00' : zone.color;
     ctx2d.textAlign = 'center';
-    ctx2d.fillText(Math.round(clampedWpm), cx, cy - 15);
+    ctx2d.fillText(Math.round(clampedWpm), cx, cy - 28);
     ctx2d.font = '11px sans-serif';
     ctx2d.fillStyle = hc ? '#ffffff' : (isDark ? '#cbd5e1' : '#475569');
-    ctx2d.fillText('words per minute', cx, cy - 2);
+    ctx2d.fillText('words per minute', cx, cy - 14);
 
     // Zone label
     ctx2d.font = 'bold 12px sans-serif';
     ctx2d.fillStyle = hc ? '#00ff00' : zone.color;
-    ctx2d.fillText(zone.label, cx, cy + 16);
+    ctx2d.fillText(zone.label, cx, cy + 18);
   }
 
   /**
@@ -838,7 +840,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
   function drawVolumeMeter(canvas, currentDb, volumeHistory, isDark) {
     if (!canvas) return;
     if (window.StemLab && window.StemLab.setupHiDPI) {
-      window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas), canvas._logicalH || canvas.height);
+      window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas, true), canvas._logicalH || canvas.height);
     }
     var ctx2d = canvas.getContext('2d');
     if (!ctx2d) return;
@@ -869,11 +871,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     var normalizedDb = Math.min(Math.max(currentDb || -60, minDb), maxDb);
     var pct = (normalizedDb - minDb) / (maxDb - minDb);
 
-    // Volume bar zones
+    // Volume bar zones — reserve clean right column for dB readout
     var barY = 10;
     var barH = 24;
-    var barW = W - 40;
-    var barX = 20;
+    var barX = 14;
+    var barW = Math.max(80, W - 76);
 
     // Background track + crisp frame
     ctx2d.fillStyle = hc ? '#000000' : (isDark ? '#1e293b' : '#e2e8f0');
@@ -962,11 +964,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     ctx2d.fillText('Good Projection', barX + barW * quietEnd + (barW * (goodEnd - quietEnd)) / 2, barY + barH + 12);
     ctx2d.fillText('Too Loud', barX + barW * goodEnd + (barW * (1 - goodEnd)) / 2, barY + barH + 12);
 
-    // dB readout
+    // dB readout — dedicated right column with high-contrast Light/Dark ink
+    var dbTextColor = pct < quietEnd
+      ? (isDark ? '#fbbf24' : '#92400e')
+      : (pct <= goodEnd ? (isDark ? '#4ade80' : '#15803d') : (isDark ? '#f87171' : '#b91c1c'));
     ctx2d.font = 'bold 12px sans-serif';
-    ctx2d.fillStyle = hc ? '#ffff00' : fillColor;
+    ctx2d.fillStyle = hc ? '#ffff00' : dbTextColor;
     ctx2d.textAlign = 'right';
-    ctx2d.fillText(Math.round(normalizedDb) + ' dB', W - 4, barY + barH / 2 + 4);
+    ctx2d.fillText(Math.round(normalizedDb) + ' dB', W - 8, barY + barH / 2 + 4);
 
     // Zero-GC steadiness score over last ~90 frames (no .slice() allocation)
     if (volumeHistory && volumeHistory.length > 10) {
@@ -1008,7 +1013,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
   function drawPauseIndicator(canvas, isPaused, pauseDuration, pauseRatio, isDark) {
     if (!canvas) return;
     if (window.StemLab && window.StemLab.setupHiDPI) {
-      window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas), canvas._logicalH || canvas.height);
+      window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas, true), canvas._logicalH || canvas.height);
     }
     var ctx2d = canvas.getContext('2d');
     if (!ctx2d) return;
@@ -1197,7 +1202,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
   function drawVowelSpace(canvas, vowelMap, currentF1, currentF2, vowelTrail, isDark) {
     if (!canvas) return;
     if (window.StemLab && window.StemLab.setupHiDPI) {
-      window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas), canvas._logicalH || canvas.height);
+      window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas, true), canvas._logicalH || canvas.height);
     }
     var ctx2d = canvas.getContext('2d');
     if (!ctx2d) return;
@@ -1385,7 +1390,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
   function drawIntonationPattern(canvas, patternPoints, studentCurve, isDark) {
     if (!canvas) return;
     if (window.StemLab && window.StemLab.setupHiDPI) {
-      window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas), canvas._logicalH || canvas.height);
+      window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas, true), canvas._logicalH || canvas.height);
     }
     var ctx2d = canvas.getContext('2d');
     if (!ctx2d) return;
@@ -1501,7 +1506,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
   function drawPlaybackProsody(canvas, pitchData, volumeData, playbackProgress, isDark) {
     if (!canvas) return;
     if (window.StemLab && window.StemLab.setupHiDPI) {
-      window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas), canvas._logicalH || canvas.height);
+      window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas, true), canvas._logicalH || canvas.height);
     }
     var ctx2d = canvas.getContext('2d');
     if (!ctx2d) return;
@@ -1628,7 +1633,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
   function drawProsodyComparison(canvas, pitchData1, pitchData2, isDark) {
     if (!canvas) return;
     if (window.StemLab && window.StemLab.setupHiDPI) {
-      window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas), canvas._logicalH || canvas.height);
+      window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas, true), canvas._logicalH || canvas.height);
     }
     var ctx2d = canvas.getContext('2d');
     if (!ctx2d) return;
@@ -1705,7 +1710,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
   function drawFluencyBarChart(canvas, sessions, isDark) {
     if (!canvas) return;
     if (window.StemLab && window.StemLab.setupHiDPI) {
-      window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas), canvas._logicalH || canvas.height);
+      window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas, true), canvas._logicalH || canvas.height);
     }
     var ctx2d = canvas.getContext('2d');
     if (!ctx2d) return;
@@ -3631,7 +3636,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                       ? 'px-6 py-3 rounded-full font-bold text-base transition-all focus:outline-none focus:ring-4 bg-red-600 hover:bg-red-700 text-white focus:ring-red-300 active:scale-[0.97]' + (reducedMotion ? '' : ' animate-pulse')
                       : 'px-6 py-3 rounded-full font-bold text-base transition-all focus:outline-none focus:ring-4 ' + (isDark ? 'transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:ring-violet-400 active:scale-[0.97]' : 'transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:ring-violet-500 active:scale-[0.97]'),
                     onClick: isRecording ? stopRecording : startRecording,
-                    'aria-label': isRecording ? 'Stop recording. Click to stop microphone.' : 'Start recording. Click to activate microphone and begin speech visualization.',
+                    'aria-label': isRecording ? 'Stop recording microphone' : 'Start Microphone — begin speech visualization',
                     'aria-pressed': isRecording ? 'true' : 'false'
                   },
                     isRecording ? '\uD83D\uDD34 Stop' : '\uD83C\uDFA4 Start Microphone'),
@@ -3712,7 +3717,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 h('canvas', { tabIndex: 0, ref: pacingCanvasRef,
                   width: 280,
                   height: 160,
-                  className: 'w-full rounded-lg',
+                  className: 'block mx-auto max-w-full rounded-lg',
                   role: 'img',
                   'aria-label': 'Pacing speedometer. Current pace: ' + currentWpm + ' words per minute. ' + pacingZone(currentWpm, gradeLevel).label
                 })),

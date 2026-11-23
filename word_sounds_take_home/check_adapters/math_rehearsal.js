@@ -137,7 +137,7 @@ module.exports = {
     ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'justify-content:center' }, [coverButton]));
     ctx.root.appendChild(pad.node);
     // A card that starts covered (a known fact) is timed from being shown.
-    if (phase === 'look') { try { coverButton.focus(); } catch (_) {} } else { if (ctx.lap && !ctx.isDone()) ctx.lap('recall', true); focusPad(); }
+    if (phase === 'look') { if (!ctx.noFocus) { try { coverButton.focus(); } catch (_) {} } } else { if (ctx.lap && !ctx.isDone()) ctx.lap('recall', true); if (!ctx.noFocus) focusPad(); }
     return {
       // The card is over (right, or every try used, or reopened when done): the answer shows, uncovered.
       reveal: function (correct) {

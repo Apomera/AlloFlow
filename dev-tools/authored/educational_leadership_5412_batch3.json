@@ -3641,7 +3641,7 @@
     "choices": [
       "Move students only when a teacher reports visible illness because subjective discomfort is not sufficient for operational action.",
       "Purchase portable units for the most vocal classrooms while the remaining rooms continue under the regular schedule.",
-      "Implement verified interim safety and access measures, prioritize repairs using risk and student-impact evidence, communicate responsibilities and timelines, and monitor conditions until a durable solution is complete.",
+      "Use interim safety controls, prioritize repairs by risk and student impact, communicate timelines, and monitor conditions until durable repair.",
       "Close the entire school indefinitely until every component of the permanent cooling replacement is installed."
     ],
     "answerIndex": 2,
@@ -3691,7 +3691,7 @@
       "Ask each employee to change a password independently and avoid reporting the incident until the school confirms that data were removed.",
       "Email screenshots of the suspicious activity and affected student records to all staff so employees can help identify the attacker.",
       "Turn off every school device for the remainder of the semester because complete disconnection is the safest cybersecurity strategy.",
-      "Activate the authorized cyber incident process, contact designated technical and leadership roles, protect affected systems and records, preserve evidence, communicate verified instructions, and support continuity."
+      "Activate the cyber incident protocol, escalate to IT and district leaders, secure affected systems, preserve evidence, and share verified guidance."
     ],
     "answerIndex": 3,
     "rationale": "A suspected compromise requires coordinated incident response rather than personal troubleshooting. Prompt escalation, containment, evidence preservation, accurate communication, privacy review, and continuity protect students and operations while specialists determine scope.",
@@ -3737,7 +3737,7 @@
     "cognitiveLevel": "synthesis",
     "prompt": "A proposed master schedule increases teacher planning efficiency but prevents many students from taking both advanced science and required language-support courses. What should leaders do?",
     "choices": [
-      "Analyze conflict patterns and demand by student group, protect required services, redesign course blocks and staffing options, and monitor whether access improves without creating new barriers.",
+      "Analyze conflicts by student group, protect required services, redesign course blocks and staffing, and monitor equitable access.",
       "Keep the schedule because common planning time produces instructional benefits that outweigh individual course conflicts.",
       "Advise affected students to postpone advanced science until language support is no longer required.",
       "Add an online science option without reviewing quality, accessibility, supervision, or whether students can use it."
@@ -3837,7 +3837,7 @@
     "choices": [
       "Skip both reference checks because equal omission is fairer than collecting different amounts of information.",
       "Accept the panel member’s informal endorsement as the second reference because firsthand knowledge is especially credible.",
-      "Apply the authorized reference process consistently, use the same job-related questions and documentation, obtain required permissions, and evaluate comparable evidence before deciding.",
+      "Apply the authorized reference process uniformly with job-related questions, required permissions, and comparable documentation.",
       "Contact the second applicant’s current supervisor secretly so the panel receives independent information without delay."
     ],
     "answerIndex": 2,
@@ -3887,7 +3887,7 @@
       "Issue the highest available sanction because repeated deadlines establish unwillingness to perform regardless of prior feedback.",
       "Remove every deadline from the role until the employee reports confidence that the workload is manageable.",
       "Discuss the concern informally but avoid written documentation so the conversation remains developmental rather than disciplinary.",
-      "Verify the facts and governing process, communicate specific standards and evidence, hear the employee’s response, address relevant obstacles, define support and timelines, and document follow-up."
+      "Verify facts and policy, share clear standards and evidence, hear the employee, address obstacles, set support timelines, and document follow-up."
     ],
     "answerIndex": 3,
     "rationale": "Performance accountability is strongest when expectations, evidence, response opportunity, support, and consequences are clear. This process distinguishes skill, resource, communication, and conduct issues while preserving fairness and timely service.",
@@ -3933,7 +3933,7 @@
     "cognitiveLevel": "analysis",
     "prompt": "A reunification drill leaves some families unable to receive updates and creates long lines that expose confidential student information. What should leaders revise?",
     "choices": [
-      "Use after-action evidence to strengthen redundant accessible communication, identity verification, privacy-protective records, traffic flow, staffing, accommodations, and coordination with response partners.",
+      "Use after-action evidence to improve redundant accessible communication, identity checks, privacy safeguards, queue flow, staffing, and partner coordination.",
       "Shorten the next drill so families spend less time in line, while leaving verification and communication procedures unchanged.",
       "Publish the complete reunification roster online before the next drill so families can verify that school records are accurate.",
       "Limit future participation to families who use the primary messaging application because alternate communication channels slow operations."
@@ -3983,7 +3983,7 @@
     "prompt": "During a chemical odor incident, different administrators issue conflicting shelter, evacuation, and parent-pickup instructions. What planning weakness should be corrected?",
     "choices": [
       "Authorize every administrator to issue protective instructions independently so the first person with information can act quickly.",
-      "Clarify incident command, decision authority, hazard-informed protective actions, redundant communication, accountability, and coordination with qualified emergency partners, then exercise the revised plan.",
+      "Define incident command, decision authority, hazard-based protocols, redundant communication, and responder coordination, then test the plan.",
       "Write one fixed response for every odor incident so staff do not need to interpret changing conditions.",
       "Delay all school communication until emergency responders complete the full investigation and publish a final cause."
     ],
@@ -4033,7 +4033,7 @@
     "choices": [
       "Keep a complete unencrypted copy of every student record on each administrator’s personal device for emergency convenience.",
       "Suspend medication and transportation decisions until the main system returns so staff do not act from incomplete information.",
-      "Maintain secured current offline procedures and essential records, defined manual roles and communication channels, accessibility and medication safeguards, recovery priorities, and regular exercises.",
+      "Maintain secured offline records, defined manual roles, redundant communication, medication safeguards, recovery priorities, and regular drills.",
       "Rely on employees’ memory of student needs because written offline records become outdated too quickly to be dependable."
     ],
     "answerIndex": 2,
@@ -4083,7 +4083,7 @@
       "Advertise the same evening forum more frequently because low participation mainly reflects insufficient awareness of the invitation.",
       "Require each classroom to send one parent delegate so attendance becomes evenly distributed across grade levels.",
       "Replace dialogue with an online survey because one digital format is available at any time and is easier to summarize.",
-      "Ask families about barriers and preferred channels, offer varied times and formats with language and access supports, compensate burdens where appropriate, and show how views shape decisions."
+      "Identify family barriers, offer varied times and formats with language and access supports, reduce burdens, and show how views shape decisions."
     ],
     "answerIndex": 3,
     "rationale": "Representative engagement requires designing around actual participation conditions, not repeatedly inviting people into one adult-convenient format. Multiple supported routes and a visible influence loop build access, reciprocity, and trust.",
@@ -4127,7 +4127,7 @@
     "cognitiveLevel": "analysis",
     "prompt": "Staff describe families with low event attendance as uninvolved, but interviews show many support learning at home and face unpredictable work schedules. What should the principal do?",
     "choices": [
-      "Challenge the deficit inference, broaden evidence of engagement, redesign partnership opportunities around family knowledge and constraints, and monitor whose participation the school recognizes.",
+      "Challenge deficit framing, broaden engagement evidence, design partnerships around family knowledge and constraints, and track recognition.",
       "Create an attendance award for families so the school communicates that visible participation is a shared responsibility.",
       "Stop collecting all engagement data because any measurement of participation risks deficit-based interpretation.",
       "Ask teachers to explain to families why attending school events is more valuable than supporting learning at home."
@@ -4175,7 +4175,7 @@
     "prompt": "A school wants families to support a new attendance strategy, but the draft was completed before families affected by transportation barriers were consulted. What should leaders do?",
     "choices": [
       "Present the completed strategy and ask families to choose which communication slogan will accompany implementation.",
-      "Reopen relevant design decisions, engage those families as partners in diagnosing obstacles and testing solutions, provide participation supports, and explain resulting changes and constraints.",
+      "Reopen design decisions, partner with those families to diagnose obstacles and test options, enable participation, and explain revisions.",
       "Begin implementation and gather family suggestions after the first semester so the school can respond to actual results.",
       "Invite transportation staff instead of families because employees can represent the operational causes more efficiently."
     ],
@@ -4223,7 +4223,7 @@
     "choices": [
       "Wait until every route is confirmed so the school sends one complete message and avoids correcting preliminary information.",
       "State that all students are safe and dismissal will proceed normally so families do not overwhelm school phone lines.",
-      "Provide verified known facts, current protective and dismissal instructions, accessible multilingual channels, what remains unknown, where authoritative updates will appear, and the next update time.",
+      "Share verified facts, current dismissal steps in multilingual formats, what remains unknown, where updates appear, and the next update time.",
       "Send detailed technical reports from the utility without summarizing what families should do or when information will change."
     ],
     "answerIndex": 2,
@@ -4271,7 +4271,7 @@
       "End public comment after the first interruption because orderly governance requires participants to demonstrate civility before being heard.",
       "Allow unlimited speaking time to people most affected by the proposal and exclude comments from residents outside the attendance area.",
       "Move directly to a binding audience vote so the district does not need to defend disputed projections.",
-      "Reestablish viewpoint-neutral participation rules, share the evidence and its limits, provide multiple ways to comment, document unanswered questions, and explain the authorized decision process."
+      "Restore viewpoint-neutral norms, share the data and its limits, offer varied comment routes, log open questions, and explain the decision process."
     ],
     "answerIndex": 3,
     "rationale": "Contentious engagement needs fair structure and substantive transparency. The leader should protect voice without permitting domination, make assumptions and uncertainty visible, and close the loop on questions rather than using order as a substitute for participation.",
@@ -4315,7 +4315,7 @@
     "cognitiveLevel": "application",
     "prompt": "Families complete a school survey about homework burden, but six months pass without any public response. What should the principal do now and in future cycles?",
     "choices": [
-      "Publish accessible findings and limitations, explain decisions and constraints, identify responsible actions and timelines, invite correction, and schedule progress updates before the next survey.",
+      "Publish accessible findings and limits, explain decisions and constraints, set action timelines, invite feedback, and schedule updates.",
       "Wait until every recommended change is complete so the school can communicate results rather than intentions.",
       "Release only recommendations the school accepted because rejected suggestions could create unnecessary disappointment.",
       "Administer a new survey to see whether concerns persist before discussing the earlier findings."
@@ -4363,7 +4363,7 @@
     "prompt": "A community mentoring organization asks teachers to send detailed grade, discipline, and family-contact records for participating students. What should the principal require?",
     "choices": [
       "Send the records because an organization serving students becomes a school official as soon as teachers refer participants.",
-      "Define the educational purpose and minimum necessary information, verify authority and consent as applicable, establish access and security controls, and disclose only through approved procedures.",
+      "Define the educational purpose and minimum data, verify authority and consent, set security controls, and disclose via approved procedures.",
       "Give mentors portal credentials but ask them to open records only when information appears useful for a session.",
       "Refuse to share any student information under any condition because community organizations are external to the district."
     ],
@@ -4411,7 +4411,7 @@
     "choices": [
       "Replace the needs profile entirely with a list of community strengths so public communication remains positive and motivating.",
       "Ask administrators to inventory organizations from internet searches because outside descriptions are more objective than resident perspectives.",
-      "Conduct a participatory asset map that identifies people, relationships, institutions, spaces, knowledge, access conditions, and ways community partners want to contribute to shared goals.",
+      "Conduct a participatory asset map identifying people, relationships, institutions, spaces, resident knowledge, and ways partners want to contribute.",
       "Count the number of nearby businesses and rank neighborhoods by the total without examining relevance or community relationships."
     ],
     "answerIndex": 2,
@@ -4461,7 +4461,7 @@
       "Begin services under a verbal understanding because formal agreements can delay access to urgently needed support.",
       "Allow the organization to use its standard procedures because specialized providers are responsible for every aspect of their own program.",
       "Define only the number of students served because quantitative reach is the most objective basis for partnership accountability.",
-      "Create an authorized agreement defining purpose, roles, safeguards, resources, equitable access, communication, measures, oversight, dispute handling, renewal, and responsible exit."
+      "Create an authorized agreement specifying purpose, roles, safeguards, equitable access, resources, performance oversight, dispute resolution, and exit."
     ],
     "answerIndex": 3,
     "rationale": "A partnership needs operational and ethical clarity before service begins. A comprehensive agreement aligns the work with student needs, protects rights and records, establishes accountability, and prepares for adaptation or closure.",
@@ -4507,7 +4507,7 @@
     "cognitiveLevel": "evaluation",
     "prompt": "A superintendent is advocating for expanded school mental-health funding after urgent referrals increase. Which public case is most credible?",
     "choices": [
-      "Present disaggregated need, access gaps, service capacity, stakeholder experience, evidence-supported options, costs, intended outcomes, safeguards, and a plan for transparent evaluation.",
+      "Present disaggregated need, access gaps, service capacity, community experience, evidence-based options, costs, safeguards, and an evaluation plan.",
       "Lead with the most alarming individual story and omit aggregate evidence so decision makers focus on the human urgency.",
       "Promise that additional clinicians will eliminate every school safety incident because a strong claim is necessary to secure funding.",
       "Request the same staffing ratio used by a neighboring district without comparing local need, scope, costs, or service design."
@@ -4557,7 +4557,7 @@
     "prompt": "A board adopts a grading policy that school leaders believe will create implementation and equity problems. What should the principal do?",
     "choices": [
       "Tell teachers to continue the former practice until the board demonstrates that the new policy improves student outcomes.",
-      "Implement lawful board direction while documenting anticipated effects, preparing staff and families, monitoring disaggregated evidence, and using authorized channels to recommend clarification or revision.",
+      "Implement lawful board policy, prepare staff and families, track disaggregated effects, and recommend revisions through formal channels.",
       "Implement the policy without tracking problems because monitoring could be interpreted as opposition to board authority.",
       "Publicly criticize individual board members so community pressure forces reconsideration before implementation begins."
     ],
@@ -4607,7 +4607,7 @@
     "choices": [
       "Keep the report positive and provide shortfalls only to internal teams because public confidence is necessary for improvement work.",
       "Publish every raw record so community members can conduct their own analysis without administrative interpretation.",
-      "Report gains and shortfalls with subgroup, access, implementation, and trend context; explain limitations, corrective actions, responsible owners, timelines, and future public updates.",
+      "Present gains and shortfalls with subgroup and trend context, note limitations, and specify corrective actions, owners, timelines, and public updates.",
       "Remove graduation gains so the report focuses exclusively on problems requiring future action."
     ],
     "answerIndex": 2,
@@ -4657,7 +4657,7 @@
       "Keep open membership unchanged because adding targeted outreach would give selected groups preferential access to governance.",
       "Reserve one seat for a family representative and allow current council members to select the person they find easiest to work with.",
       "Replace the council with public surveys because anonymous responses eliminate interpersonal power differences.",
-      "Audit representation and influence, remove participation barriers, use transparent outreach and selection, support varied ways to contribute, share decision authority appropriately, and monitor whose input changes outcomes."
+      "Audit representation and influence, remove barriers, use transparent outreach and selection, share authority, and track whose voice shapes outcomes."
     ],
     "answerIndex": 3,
     "rationale": "Formal openness does not ensure representative power. Leaders should examine entry, participation, and influence across the full process so affected communities can contribute meaningfully rather than merely being invited into an inaccessible structure.",

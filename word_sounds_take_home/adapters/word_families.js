@@ -128,27 +128,54 @@ module.exports = {
   render: function (item, ctx) {
     var P = String(item.id || '').replace(/-\d+(?:-again)?$/, '') + '_';
     var T = function (key, params) { return ctx.fmt(ctx.L[P + key] || '', params); };
-    var win = ctx.root.ownerDocument.defaultView;
+    var doc = ctx.root.ownerDocument;
+    var win = doc.defaultView;
     var cards = [];
     var found = [];
     var total = item.chips.filter(function (c) { return c.member; }).length;
     var token = 0;
+    var timer = null;
+    var watchingStop = false;
+    var clearTimer = function () {
+      if (timer != null) { try { win.clearTimeout(timer); } catch (_) {} timer = null; }
+    };
     var mark = function (index) {
       cards.forEach(function (c, i) { c.box.style.outline = i === index ? '4px solid var(--accent)' : ''; c.box.style.outlineOffset = i === index ? '2px' : ''; });
     };
+    var onDocStop = function (e) {
+      if (!ctx.root.isConnected || (e && e.target && e.target.closest && e.target.closest('[data-player-stop-audio]'))) halt();
+    };
+    var onDocKey = function (e) {
+      var k = String((e && e.key) || '');
+      if (!ctx.root.isConnected || k === 'Escape' || k === 'Esc') halt();
+    };
+    var watchStop = function (on) {
+      if (!doc || !doc.addEventListener || watchingStop === on) return;
+      watchingStop = on;
+      if (on) { doc.addEventListener('click', onDocStop, true); doc.addEventListener('keydown', onDocKey, true); }
+      else { doc.removeEventListener('click', onDocStop, true); doc.removeEventListener('keydown', onDocKey, true); }
+    };
+    var halt = function () { token++; clearTimer(); watchStop(false); mark(-1); };
     var run = function (steps) {
+      clearTimer();
       var mine = ++token;
       var i = 0;
+      watchStop(true);
       var step = function () {
-        if (mine !== token || !ctx.root.isConnected) return;
-        if (i >= steps.length) { mark(-1); return; }
+        timer = null;
+        if (mine !== token) return;
+        if (!ctx.root.isConnected) { watchStop(false); mark(-1); return; }
+        if (i >= steps.length) { watchStop(false); mark(-1); return; }
         var s = steps[i++];
         mark(s.hi == null ? -1 : s.hi);
-        ctx.play(s.id).then(function (ok) { if (mine !== token) return; if (ok === false) { mark(-1); return; } win.setTimeout(step, s.gap || 0); });
+        ctx.play(s.id).then(function (ok) {
+          if (mine !== token) return;
+          if (ok === false) { watchStop(false); mark(-1); return; }
+          timer = win.setTimeout(step, s.gap || 0);
+        });
       };
       step();
     };
-    var halt = function () { token++; mark(-1); };
     var heading = item.mode === 'rime'
       ? (ctx.showLetters ? T('heading_rime', { rime: '-' + item.rime }) : T('heading_rime_hidden'))
       : (ctx.showLetters ? T('heading_' + item.mode, { sound: typeof ctx.sound === 'function' ? ctx.sound(item.sound) : '/' + item.sound + '/' }) : T('heading_' + item.mode + '_hidden'));
@@ -190,7 +217,7 @@ module.exports = {
             retryText: ctx.showLetters ? T('no_match_word', { word: chip.text }) : T('no_match'),
             missedText: ctx.showLetters ? T('missed', { words: memberText }) : T('missed_no_letters'),
           });
-        } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', text: chip.text }) : T('option_n', { n: n })]);
+        } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', lang: 'en', text: chip.text }) : T('option_n', { n: n })]);
       var box = ctx.el('li', { class: 'choice' }, [listen, choose]);
       card.box = box; card.choose = choose;
       cards.push(card);
@@ -207,19 +234,34 @@ module.exports = {
     var hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ label: T('hear_all'), support: 'allWordListens', before: halt, auto: false,
       ready: function () { return !ctx.isDone(); },
       list: function () { return cards.map(function (c, i) { return c.found ? null : { box: c.box, n: i + 1, total: cards.length, say: function () { return ctx.play(c.chip.audio); } }; }); } }) : null;
+    var hearBtn = hear ? hear.button : ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; ctx.support('allWordListens'); run(chipSteps(true)); } }, text: T('hear_all') });
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
       ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); run(instructionSteps()); } }, text: ctx.L.hear_question }),
-      hear ? hear.button : ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; ctx.support('allWordListens'); run(chipSteps(true)); } }, text: T('hear_all') }),
+      hearBtn,
       hear ? hear.note : null,
     ]));
     ctx.root.appendChild(counter);
     ctx.root.appendChild(list);
+    if (typeof ctx.keys === 'function') {
+      ctx.keys(function (key) {
+        var k = String(key == null ? '' : key);
+        if (k === 'Escape' || k === 'Esc') {
+          var active = watchingStop || timer != null;
+          halt();
+          if (typeof ctx.stop === 'function') ctx.stop();
+          return active;
+        }
+        return false;
+      });
+    }
     if (!ctx.isDone()) run(instructionSteps().concat(chipSteps(false)));
     return {
+      stop: halt,
       // The R key: the instruction again.
       replay: function () { run(instructionSteps()); },
       reveal: function () {
         halt();
+        hearBtn.setAttribute('aria-disabled', 'true');
         cards.forEach(function (c) {
           c.choose.setAttribute('aria-disabled', 'true');
           if (c.chip.member && !c.found && !c.box.classList.contains('right')) {

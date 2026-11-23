@@ -19,7 +19,7 @@ describe('shared modal focus trap accessibility contract', () => {
     expect(hook).toContain('button:not([disabled])');
     expect(hook).toContain('input:not([disabled])');
     expect(hook).toContain("element.closest('[hidden], [inert], [aria-hidden=\"true\"]')");
-    expect(hook).toContain("style.visibility !== 'hidden'");
+    expect(hook).toContain("style.visibility === 'hidden'");
   });
 
   it('recovers escaped focus and contains empty dialogs', () => {

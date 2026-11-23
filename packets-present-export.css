@@ -1,36 +1,56 @@
 /* Present & Export word cards (packets-present-export.html). Colors come from packets.css. */
 
 .pe-starters {
-  margin: 0 0 1.25rem;
-  padding: 1rem 1.2rem;
+  margin: 0.9rem 0 1rem;
+  padding: 0.75rem 1rem;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
 }
 
-.pe-starters h2 {
-  font-size: 1.125rem;
-  margin-bottom: 0.35rem;
+.pe-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.65rem 1rem;
 }
 
-.pe-starters-note {
-  margin: 0 0 0.75rem;
-  color: var(--muted);
-  font-size: 0.95rem;
+.pe-source-control {
+  flex: 1 1 15rem;
 }
 
-.pe-starter-row {
+.pe-more {
+  flex: 1 1 16rem;
+  min-width: 0;
+  max-width: 100%;
+  margin-top: 0;
+}
+
+.pe-more[open] {
+  flex-basis: 100%;
+}
+
+.pe-more > summary {
+  min-height: 2.75rem;
+  padding: 0.45rem 0.85rem;
+}
+
+.pe-more-body {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
   gap: 0.75rem 1rem;
+  min-width: 0;
+  max-width: 100%;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--line);
 }
 
 .pe-control {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  min-width: min(14rem, 100%);
+  min-width: 0;
   max-width: 100%;
 }
 
@@ -41,7 +61,7 @@
 }
 
 .pe-control select {
-  min-height: 2.5rem;
+  min-height: 2.75rem;
   min-width: 0;
   max-width: 100%;
   padding: 0.35rem 0.65rem;
@@ -56,6 +76,12 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.pe-sheet-row select {
+  flex: 1 1 10rem;
 }
 
 .pe-links {
@@ -67,10 +93,13 @@
 }
 
 .pe-status {
-  margin: 0.65rem 0 0;
-  min-height: 1.3em;
+  margin: 0.5rem 0 0;
   color: var(--ink);
-  font-size: 0.95rem;
+  font-size: 0.9375rem;
+}
+
+.pe-status:empty {
+  display: none;
 }
 
 #present-export-host {
@@ -91,10 +120,23 @@
 
 @media (max-width: 44rem) {
   .pe-starters {
-    padding: 0.85rem 0.9rem;
+    margin: 0.65rem 0 0.75rem;
+    padding: 0.65rem 0.8rem;
   }
   .pe-links {
     margin-left: 0;
+  }
+}
+
+@media (max-width: 29.99rem) {
+  .maker {
+    padding-top: 1rem;
+  }
+  .pe-bar {
+    gap: 0.5rem;
+  }
+  .pe-more > summary {
+    padding: 0.4rem 0.7rem;
   }
 }
 

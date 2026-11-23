@@ -30,6 +30,21 @@ window.SelHub = window.SelHub || {
     document.body.appendChild(liveRegion);
   })();
 
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-transitions-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-transitions-a11y-css';
+    st.textContent =
+      '.selh-transitions button:focus-visible, .selh-transitions input:focus-visible, .selh-transitions textarea:focus-visible, .selh-transitions a:focus-visible, .selh-transitions [tabindex]:focus-visible { outline: 3px solid #0284c7 !important; outline-offset: 2px !important; }\n' +
+      '@media (prefers-reduced-motion: reduce) { .selh-transitions *, .selh-transitions *::before, .selh-transitions *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }\n' +
+      '@media (forced-colors: active) { .selh-transitions button, .selh-transitions input, .selh-transitions textarea { forced-color-adjust: auto; } .selh-transitions button:focus-visible, .selh-transitions input:focus-visible, .selh-transitions textarea:focus-visible { outline: 2px solid Highlight !important; outline-offset: 2px !important; } }\n';
+    document.head.appendChild(st);
+  })();
+
+  function isImeComposing(e) {
+    return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+  }
+
   // ── Sound Effects ──
   var _audioCtx = null;
   function getAudioCtx() {
@@ -136,7 +151,7 @@ window.SelHub = window.SelHub || {
       var _trCHC = !!_trCTheme.isContrast, _trCDark = !_trCHC && !!_trCTheme.isDark;
       var _TRC_DARK = {'#fff':'#1e293b','#ffffff':'#1e293b','#fef9c3':'#3a3410','#fef2f2':'#2e1414','#fee2e2':'#3a1a1a','#f0fdf4':'#0b2e22','#eff6ff':'#0e1f3a','#e0f2fe':'#0c2840','#f0f9ff':'#0c2840','#0f172a':'#f1f5f9','#1f2937':'#e2e8f0','#374151':'#cbd5e1','#475569':'#cbd5e1','#94a3b8':'#94a3b8','#9ca3af':'#cbd5e1','#e5e7eb':'#334155','#e2e8f0':'#334155','#d1d5db':'#475569','#92400e':'#fde68a','#991b1b':'#fca5a5','#7f1d1d':'#fca5a5','#ecfeff':'#0c2e30','#0c4a6e':'#7dd3fc'};
       var _TRC_HC = {'#fff':'#000000','#ffffff':'#000000','#fef9c3':'#000000','#fef2f2':'#000000','#fee2e2':'#000000','#f0fdf4':'#000000','#eff6ff':'#000000','#e0f2fe':'#000000','#f0f9ff':'#000000','#0f172a':'#ffff00','#1f2937':'#ffff00','#374151':'#ffff00','#475569':'#ffff00','#94a3b8':'#ffff00','#9ca3af':'#ffff00','#e5e7eb':'#ffff00','#e2e8f0':'#ffff00','#d1d5db':'#ffff00','#92400e':'#ffff00','#991b1b':'#ffff00','#7f1d1d':'#ffff00','#ecfeff':'#000000','#0c4a6e':'#ffff00'};
-      var _trC = function(hex){ return _trCHC ? (_TRC_HC[hex]||hex) : (_trCDark ? (_TRC_DARK[hex]||hex) : hex); };
+      var _trC = function(hex){ if (!_trCHC && !_trCDark && hex === '#94a3b8') return '#475569'; return _trCHC ? (_TRC_HC[hex]||hex) : (_trCDark ? (_TRC_DARK[hex]||hex) : hex); };
       var React = ctx.React;
       var h = React.createElement;
       var addToast = ctx.addToast;
@@ -240,42 +255,78 @@ window.SelHub = window.SelHub || {
       effExplored[activeTab] = true;
       var exploredCount = TABS.filter(function(t) { return !!effExplored[t.id]; }).length;
 
+      function announceTR(msg) {
+        if (!msg) return;
+        if (typeof announceToSR === 'function') { try { announceToSR(msg); } catch (_) {} }
+        if (typeof document !== 'undefined') {
+          var lr = document.getElementById('allo-live-transitions');
+          if (lr) lr.textContent = msg;
+        }
+      }
+
+      function onTabKeyDown(ev, idx) {
+        if (isImeComposing(ev)) return;
+        var nextIdx = null;
+        if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') nextIdx = (idx + 1) % TABS.length;
+        else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') nextIdx = (idx - 1 + TABS.length) % TABS.length;
+        else if (ev.key === 'Home') nextIdx = 0;
+        else if (ev.key === 'End') nextIdx = TABS.length - 1;
+        if (nextIdx === null) return;
+        ev.preventDefault();
+        var target = TABS[nextIdx];
+        var ne = Object.assign({}, effExplored);
+        ne[target.id] = true;
+        upd({ activeTab: target.id, exploredTabs: ne });
+        if (soundEnabled) sfxClick();
+        setTimeout(function() {
+          var el = typeof document !== 'undefined' ? document.getElementById('trans-tab-' + target.id) : null;
+          if (el && typeof el.focus === 'function') el.focus();
+        }, 0);
+      }
+
       var tabBar = h('div', {
         style: { display: 'flex', flexDirection: 'column', borderBottom: '2px solid ' + (_trCHC ? '#ffff00' : '#bae6fd'), background: _trCHC ? '#000000' : (_trCDark ? '#0c2840' : 'linear-gradient(180deg, #f0f9ff, #e0f2fe)'), flexShrink: 0 }
       },
-        h('div', { style: { height: '3px', background: _trC('#e2e8f0'), position: 'relative', overflow: 'hidden' } },
+        h('div', {
+          role: 'progressbar', 'aria-label': 'Transitions sections explored',
+          'aria-valuemin': 0, 'aria-valuemax': TABS.length, 'aria-valuenow': exploredCount,
+          'aria-valuetext': exploredCount + ' of ' + TABS.length + ' sections explored',
+          style: { height: '3px', background: _trC('#e2e8f0'), position: 'relative', overflow: 'hidden' }
+        },
           h('div', { style: { height: '100%', width: Math.round((exploredCount / TABS.length) * 100) + '%', background: _trCHC ? '#ffff00' : 'linear-gradient(90deg, ' + SKY + ', #38bdf8)', transition: 'width 0.5s ease', borderRadius: '0 2px 2px 0' } })
         ),
         h('div', {
           style: { display: 'flex', gap: '3px', padding: '8px 12px 6px', overflowX: 'auto', alignItems: 'center' }
         },
-          h('div', { role: 'tablist', 'aria-label': 'Transitions sections', style: { display: 'flex', gap: '3px' } },
-            TABS.map(function(t) {
+          h('div', { role: 'tablist', 'aria-label': 'Transitions sections', style: { display: 'flex', gap: '4px' } },
+            TABS.map(function(t, idx) {
             var active = activeTab === t.id;
             var explored = !!effExplored[t.id];
             return h('button', {
-              key: t.id, id: 'trans-tab-' + t.id, 'aria-controls': 'trans-panel-' + t.id, tabIndex: active ? 0 : -1,
+              key: t.id, type: 'button', id: 'trans-tab-' + t.id, 'aria-controls': 'trans-panel-' + t.id, tabIndex: active ? 0 : -1,
               role: 'tab', className: 'sel-tab' + (active ? ' sel-tab-active' : ''), 'aria-selected': active ? 'true' : 'false',
               onClick: function() { var ne = Object.assign({}, effExplored); ne[t.id] = true; upd({ activeTab: t.id, exploredTabs: ne }); if (soundEnabled) sfxClick(); },
+              onKeyDown: function(ev) { onTabKeyDown(ev, idx); },
               onFocus: function(ev) { if (ev.currentTarget && ev.currentTarget.scrollIntoView) ev.currentTarget.scrollIntoView({ block: 'nearest', inline: 'nearest' }); },
               style: {
-                padding: '6px 14px', borderRadius: '10px', border: active ? BTN_BD : '1px solid ' + (_trCHC ? '#ffff00' : (explored ? '#bae6fd' : 'transparent')),
+                padding: '10px 14px', minHeight: '44px', borderRadius: '10px', border: active ? BTN_BD : '1px solid ' + (_trCHC ? '#ffff00' : (explored ? '#bae6fd' : 'transparent')),
                 background: active ? (_trCHC ? '#000000' : 'linear-gradient(135deg, #0369a1, #075985)') : explored ? (_trCHC ? '#000000' : 'rgba(2,132,199,0.06)') : 'transparent',
                 color: active ? BTN_FG : explored ? _trC('#0c4a6e') : _trC('#475569'),
                 fontWeight: active ? 700 : 500, fontSize: '12px', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap',
+                display: 'inline-flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap',
                 boxShadow: active && !_trCHC ? '0 3px 12px rgba(2,132,199,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none'
               }
             }, h('span', { className: active ? 'sel-hero-icon' : '', 'aria-hidden': 'true' }, t.icon), t.label,
-              explored && !active ? h('span', { style: { width: '5px', height: '5px', borderRadius: '50%', background: _trCHC ? '#ffff00' : '#38bdf8', marginLeft: '2px' } }) : null
+              explored && !active ? h('span', { 'aria-hidden': 'true', style: { width: '5px', height: '5px', borderRadius: '50%', background: _trCHC ? '#ffff00' : '#38bdf8', marginLeft: '2px' } }) : null
             );
             })
           ),
           h('span', { className: 'sel-badge', style: { marginLeft: '8px', fontSize: '10px', color: SKY_DARK, fontWeight: 700, whiteSpace: 'nowrap', background: _trC('#e0f2fe'), padding: '2px 8px', borderRadius: '10px', flexShrink: 0 } }, exploredCount + '/' + TABS.length),
           h('button', {
-            onClick: function() { upd('soundEnabled', !soundEnabled); },
+            type: 'button',
+            onClick: function() { upd('soundEnabled', !soundEnabled); announceTR(soundEnabled ? 'Sounds muted.' : 'Sounds enabled.'); },
             className: 'sel-btn', 'aria-label': soundEnabled ? 'Mute sounds' : 'Enable sounds',
-            style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: 0.8, flexShrink: 0 }
+            style: { marginLeft: 'auto', minWidth: '44px', minHeight: '44px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: 0.85, flexShrink: 0 }
           }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07')
         )
       );
@@ -295,25 +346,45 @@ window.SelHub = window.SelHub || {
           ),
           // Change type selection
           h('div', { role: 'radiogroup', 'aria-label': 'What is changing', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '10px', marginBottom: '16px' } },
-            CHANGE_TYPES.map(function(ct) {
+            CHANGE_TYPES.map(function(ct, ctIdx) {
               var isSelected = selectedChange === ct.id;
+              var isTabStop = isSelected || (!selectedChange && ctIdx === 0);
               return h('button', {
-                key: ct.id, role: 'radio', 'aria-checked': isSelected ? 'true' : 'false',
+                key: ct.id, type: 'button', id: 'trans-change-' + ct.id, role: 'radio', 'aria-checked': isSelected ? 'true' : 'false',
+                tabIndex: isTabStop ? 0 : -1,
                 'aria-label': ct.label + ': ' + ct.desc,
                 onClick: function() {
                   upd('selectedChange', ct.id);
                   if (soundEnabled) sfxWarm();
-                  if (announceToSR) announceToSR('Selected: ' + ct.label);
+                  announceTR('Selected: ' + ct.label);
+                },
+                onKeyDown: function(ev) {
+                  if (isImeComposing(ev)) return;
+                  var nextIdx = null;
+                  if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') nextIdx = (ctIdx + 1) % CHANGE_TYPES.length;
+                  else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') nextIdx = (ctIdx - 1 + CHANGE_TYPES.length) % CHANGE_TYPES.length;
+                  else if (ev.key === 'Home') nextIdx = 0;
+                  else if (ev.key === 'End') nextIdx = CHANGE_TYPES.length - 1;
+                  if (nextIdx === null) return;
+                  ev.preventDefault();
+                  var target = CHANGE_TYPES[nextIdx];
+                  upd('selectedChange', target.id);
+                  if (soundEnabled) sfxWarm();
+                  announceTR('Selected: ' + target.label);
+                  setTimeout(function() {
+                    var el = typeof document !== 'undefined' ? document.getElementById('trans-change-' + target.id) : null;
+                    if (el && typeof el.focus === 'function') el.focus();
+                  }, 0);
                 },
                 style: {
-                  padding: '14px 10px', borderRadius: '12px', cursor: 'pointer',
+                  padding: '14px 10px', minHeight: '44px', borderRadius: '12px', cursor: 'pointer',
                   border: isSelected ? '2px solid ' + (_trCHC ? '#ffff00' : SKY) : '2px solid ' + _trC('#e5e7eb'),
                   background: isSelected ? SKY_LIGHT : _trC('#fff'),
                   textAlign: 'center', transition: 'all 0.15s',
                   boxShadow: isSelected && !_trCHC ? '0 2px 10px rgba(2,132,199,0.15)' : 'none'
                 }
               },
-                h('div', { style: { fontSize: '24px', marginBottom: '4px' } }, ct.icon),
+                h('div', { 'aria-hidden': 'true', style: { fontSize: '24px', marginBottom: '4px' } }, ct.icon),
                 h('div', { style: { fontSize: '12px', fontWeight: 700, color: isSelected ? SKY_INK : _trC('#374151') } }, ct.label),
                 h('div', { style: { fontSize: '10px', color: _trC('#475569'), marginTop: '2px' } }, ct.desc)
               );
@@ -349,7 +420,7 @@ window.SelHub = window.SelHub || {
 
         curveContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
           h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(2,132,199,0.3))' } }, '\uD83D\uDCC8'),
+            h('div', { className: 'sel-hero-icon', 'aria-hidden': 'true', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(2,132,199,0.3))' } }, '\uD83D\uDCC8'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: SKY_DARK, margin: '0 0 4px' } }, 'The Change Curve'),
             h('p', { style: { fontSize: '13px', color: _trC('#94a3b8'), margin: 0 } },
               band === 'elementary' ? 'Everyone goes through these feelings when things change. You\u2019re not alone.'
@@ -361,19 +432,20 @@ window.SelHub = window.SelHub || {
               var isCurrent = i === curvePhaseIdx % phases.length;
               var isMyPhase = myPhase === i;
               return h('button', {
-                key: i,
+                key: i, type: 'button',
+                'aria-pressed': isCurrent ? 'true' : 'false',
                 'aria-label': p.phase + (isMyPhase ? ' (where I am)' : ''),
                 onClick: function() { upd('curvePhaseIdx', i); if (soundEnabled) sfxClick(); },
                 style: {
-                  flex: 1, padding: '12px 8px', borderRadius: '12px', cursor: 'pointer',
+                  flex: 1, padding: '12px 8px', minHeight: '44px', borderRadius: '12px', cursor: 'pointer',
                   border: isCurrent ? '3px solid ' + p.color : '2px solid #e5e7eb',
                   background: isCurrent ? p.color + '22' : _trC('#fff'),
                   textAlign: 'center', transition: 'all 0.15s', position: 'relative',
                   maxWidth: '140px'
                 }
               },
-                isMyPhase && h('div', { style: { position: 'absolute', top: '-8px', right: '-4px', fontSize: '14px' } }, '\uD83D\uDCCD'),
-                h('div', { style: { fontSize: '24px', marginBottom: '4px' } }, p.emoji),
+                isMyPhase && h('div', { 'aria-hidden': 'true', style: { position: 'absolute', top: '-8px', right: '-4px', fontSize: '14px' } }, '\uD83D\uDCCD'),
+                h('div', { 'aria-hidden': 'true', style: { fontSize: '24px', marginBottom: '4px' } }, p.emoji),
                 h('div', { style: { fontSize: '11px', fontWeight: 700, color: _trC('#374151') } }, p.phase)
               );
             })
@@ -381,7 +453,7 @@ window.SelHub = window.SelHub || {
           // Phase detail card
           h('div', { style: { background: currentPhase.color + '15', borderRadius: '16px', padding: '20px', border: '2px solid ' + currentPhase.color + '44', marginBottom: '12px' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' } },
-              h('span', { style: { fontSize: '32px' } }, currentPhase.emoji),
+              h('span', { 'aria-hidden': 'true', style: { fontSize: '32px' } }, currentPhase.emoji),
               h('h4', { style: { fontSize: '16px', fontWeight: 800, color: SKY_DARK, margin: 0 } }, currentPhase.phase)
             ),
             h('p', { style: { fontSize: '14px', lineHeight: 1.7, color: _trC('#374151'), margin: '0 0 12px' } }, currentPhase.desc),
@@ -392,15 +464,16 @@ window.SelHub = window.SelHub || {
           // "I'm here" button
           h('div', { style: { textAlign: 'center' } },
             h('button', {
+              type: 'button',
               onClick: function() {
                 upd('myPhase', curvePhaseIdx % phases.length);
                 if (soundEnabled) sfxWarm();
                 if (awardXP) awardXP(10, 'Identified your place on the Change Curve');
-                if (announceToSR) announceToSR('Marked: I am in the ' + currentPhase.phase + ' phase');
+                announceTR('Marked: I am in the ' + currentPhase.phase + ' phase');
               },
               'aria-label': 'Mark this as where I am on the Change Curve',
               style: {
-                padding: '10px 24px', borderRadius: '20px', cursor: 'pointer', fontWeight: 700, fontSize: '13px',
+                padding: '10px 24px', minHeight: '44px', display: 'inline-flex', alignItems: 'center', borderRadius: '20px', cursor: 'pointer', fontWeight: 700, fontSize: '13px',
                 background: myPhase === curvePhaseIdx % phases.length ? SKY_FILL : _trC('#fff'),
                 color: myPhase === curvePhaseIdx % phases.length ? BTN_FG : SKY_INK,
                 border: '2px solid ' + (_trCHC ? '#ffff00' : (myPhase === curvePhaseIdx % phases.length ? SKY_FILL : SKY)),
@@ -422,7 +495,7 @@ window.SelHub = window.SelHub || {
 
         storiesContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
           h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(2,132,199,0.3))' } }, '\uD83D\uDCD6'),
+            h('div', { className: 'sel-hero-icon', 'aria-hidden': 'true', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(2,132,199,0.3))' } }, '\uD83D\uDCD6'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: SKY_DARK, margin: '0 0 4px' } }, 'Stories of Change'),
             h('p', { style: { fontSize: '13px', color: _trC('#94a3b8'), margin: 0 } }, 'Real stories about navigating transitions. You\u2019re not the first to walk this path.')
           ),
@@ -438,26 +511,30 @@ window.SelHub = window.SelHub || {
           ),
           h('div', { style: { display: 'flex', justifyContent: 'center', gap: '8px' } },
             h('button', {
+              type: 'button',
               onClick: function() {
                 var prev = (storyIdx - 1 + stories.length) % stories.length;
                 upd({ storyIdx: prev, storiesRead: Object.assign({}, storiesRead, (function() { var o = {}; o[prev] = true; return o; })()) });
+                announceTR('Story ' + (prev + 1) + ' of ' + stories.length + ': ' + stories[prev].name);
               },
               'aria-label': 'Previous story',
-              style: { padding: '8px 16px', background: _trC('#fff'), border: '2px solid #e5e7eb', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: _trC('#374151') }
+              style: { padding: '10px 16px', minHeight: '44px', display: 'inline-flex', alignItems: 'center', background: _trC('#fff'), border: '2px solid #e5e7eb', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: _trC('#374151') }
             }, '\u2190 Previous'), // a11y: label set via visible text
             h('span', { style: { display: 'flex', alignItems: 'center', fontSize: '12px', color: _trC('#94a3b8') } },
               (storyIdx % stories.length + 1) + ' / ' + stories.length
             ),
             h('button', {
+              type: 'button',
               onClick: function() {
                 var next = (storyIdx + 1) % stories.length;
                 var newRead = Object.assign({}, storiesRead, (function() { var o = {}; o[next] = true; return o; })());
                 upd({ storyIdx: next, storiesRead: newRead });
                 if (soundEnabled) sfxWarm();
+                announceTR('Story ' + (next + 1) + ' of ' + stories.length + ': ' + stories[next].name);
                 if (Object.keys(newRead).length >= stories.length && awardXP) awardXP(15, 'Read all Change Stories!');
               },
               'aria-label': 'Next story',
-              style: { padding: '8px 16px', background: SKY_FILL, border: BTN_BD, borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: BTN_FG }
+              style: { padding: '10px 16px', minHeight: '44px', display: 'inline-flex', alignItems: 'center', background: SKY_FILL, border: BTN_BD, borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: BTN_FG }
             }, 'Next \u2192')
           )
         );
@@ -484,10 +561,10 @@ window.SelHub = window.SelHub || {
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' } },
             ANCHOR_PROMPTS.map(function(prompt) {
               return h('button', {
-                key: prompt,
+                key: prompt, type: 'button',
                 'aria-label': 'Use prompt: ' + prompt,
                 onClick: function() { upd('newAnchor', prompt); },
-                style: { padding: '4px 10px', background: SKY_LIGHT, border: '1px solid #bae6fd', borderRadius: '20px', fontSize: '11px', cursor: 'pointer', color: SKY_DARK }
+                style: { padding: '8px 12px', minHeight: '44px', display: 'inline-flex', alignItems: 'center', background: SKY_LIGHT, border: '1px solid #bae6fd', borderRadius: '20px', fontSize: '11.5px', cursor: 'pointer', color: SKY_DARK }
               }, prompt);
             })
           ),
@@ -497,26 +574,33 @@ window.SelHub = window.SelHub || {
               type: 'text', value: newAnchor,
               onChange: function(ev) { upd('newAnchor', ev.target.value); },
               onKeyDown: function(ev) {
+                if (isImeComposing(ev)) return;
+                if (ev.key === 'Escape' && newAnchor) { ev.preventDefault(); upd('newAnchor', ''); announceTR('Cleared anchor input.'); return; }
                 if (ev.key === 'Enter' && newAnchor.trim()) {
+                  var addedAnchor = newAnchor.trim();
                   scanTransitionsText(newAnchor);
-                  upd({ anchors: anchors.concat([{ id: Date.now().toString(), text: newAnchor.trim() }]), newAnchor: '' });
+                  upd({ anchors: anchors.concat([{ id: Date.now().toString(), text: addedAnchor }]), newAnchor: '' });
                   if (soundEnabled) sfxAnchor();
+                  announceTR('Added anchor: ' + addedAnchor);
                   if (awardXP) awardXP(5, 'Identified an anchor!');
                 }
               },
               placeholder: band === 'elementary' ? 'Something that stays the same for me...' : 'What stays constant when everything changes...',
-              style: { background: _trC('#fff'), color: _trC('#0f172a'), flex: 1, border: '2px solid ' + (_trCHC ? '#ffff00' : '#bae6fd'), borderRadius: '10px', padding: '10px 12px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
+              style: { background: _trC('#fff'), color: _trC('#0f172a'), flex: 1, minHeight: '44px', border: '2px solid ' + (_trCHC ? '#ffff00' : '#bae6fd'), borderRadius: '10px', padding: '10px 12px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
             }),
             h('button', {
+              type: 'button',
               onClick: function() {
                 if (!newAnchor.trim()) return;
+                var addedAnchor = newAnchor.trim();
                 scanTransitionsText(newAnchor);
-                upd({ anchors: anchors.concat([{ id: Date.now().toString(), text: newAnchor.trim() }]), newAnchor: '' });
+                upd({ anchors: anchors.concat([{ id: Date.now().toString(), text: addedAnchor }]), newAnchor: '' });
                 if (soundEnabled) sfxAnchor();
+                announceTR('Added anchor: ' + addedAnchor);
                 if (awardXP) awardXP(5, 'Identified an anchor!');
               },
               disabled: !newAnchor.trim(),
-              style: { padding: '10px 16px', background: newAnchor.trim() ? SKY_FILL : DIS_BG, color: newAnchor.trim() ? BTN_FG : DIS_FG, border: BTN_BD, borderRadius: '10px', fontWeight: 700, cursor: newAnchor.trim() ? 'pointer' : 'not-allowed', fontSize: '13px' }
+              style: { padding: '10px 16px', minHeight: '44px', display: 'inline-flex', alignItems: 'center', background: newAnchor.trim() ? SKY_FILL : DIS_BG, color: newAnchor.trim() ? BTN_FG : DIS_FG, border: BTN_BD, borderRadius: '10px', fontWeight: 700, cursor: newAnchor.trim() ? 'pointer' : 'not-allowed', fontSize: '13px' }
             }, '\u2693 Drop Anchor')
           ),
           // Anchors list
@@ -524,10 +608,11 @@ window.SelHub = window.SelHub || {
             ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
                 anchors.map(function(anchor) {
                   return h('div', { key: anchor.id, style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', background: _trC('#fff'), border: '2px solid #bae6fd', borderRadius: '12px' } },
-                    h('span', { style: { fontSize: '20px', flexShrink: 0 } }, '\u2693'),
+                    h('span', { 'aria-hidden': 'true', style: { fontSize: '20px', flexShrink: 0 } }, '\u2693'),
                     h('span', { style: { flex: 1, fontSize: '14px', color: _trC('#1f2937'), fontWeight: 500 } }, anchor.text),
                     h('button', {
-                      onClick: function() { upd('anchors', anchors.filter(function(a) { return a.id !== anchor.id; })); },
+                      type: 'button',
+                      onClick: function() { upd('anchors', anchors.filter(function(a) { return a.id !== anchor.id; })); announceTR('Removed anchor.'); },
                       'aria-label': 'Remove anchor',
                       style: { minWidth: 24, minHeight: 24, background: _trC('#fee2e2'), border: '1px solid #fca5a5', borderRadius: '4px', cursor: 'pointer', color: _trC('#991b1b'), fontSize: '10px', padding: '2px 6px' }
                     }, '\u2715')
@@ -547,7 +632,7 @@ window.SelHub = window.SelHub || {
       if (activeTab === 'plan') {
         planContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
           h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(2,132,199,0.3))' } }, '\uD83D\uDDFA\uFE0F'),
+            h('div', { className: 'sel-hero-icon', 'aria-hidden': 'true', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(2,132,199,0.3))' } }, '\uD83D\uDDFA\uFE0F'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: SKY_DARK, margin: '0 0 4px' } }, 'My Change Plan'),
             h('p', { style: { fontSize: '13px', color: _trC('#94a3b8'), margin: 0 } },
               band === 'elementary' ? 'Small steps make big changes feel smaller. What\u2019s one thing you can do?'
@@ -558,26 +643,33 @@ window.SelHub = window.SelHub || {
               type: 'text', value: newStep,
               onChange: function(ev) { upd('newStep', ev.target.value); },
               onKeyDown: function(ev) {
+                if (isImeComposing(ev)) return;
+                if (ev.key === 'Escape' && newStep) { ev.preventDefault(); upd('newStep', ''); announceTR('Cleared step input.'); return; }
                 if (ev.key === 'Enter' && newStep.trim()) {
+                  var addedStep = newStep.trim();
                   scanTransitionsText(newStep);
-                  upd({ planSteps: planSteps.concat([{ id: Date.now().toString(), text: newStep.trim(), done: false }]), newStep: '' });
+                  upd({ planSteps: planSteps.concat([{ id: Date.now().toString(), text: addedStep, done: false }]), newStep: '' });
                   if (soundEnabled) sfxClick();
+                  announceTR('Added plan step: ' + addedStep);
                   if (awardXP) awardXP(5, 'Added a step to your Change Plan!');
                 }
               },
               placeholder: band === 'elementary' ? 'One small thing I can try...' : 'A concrete step I can take...',
-              style: { background: _trC('#fff'), color: _trC('#0f172a'), flex: 1, border: '2px solid ' + (_trCHC ? '#ffff00' : '#bae6fd'), borderRadius: '10px', padding: '10px 12px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
+              style: { background: _trC('#fff'), color: _trC('#0f172a'), flex: 1, minHeight: '44px', border: '2px solid ' + (_trCHC ? '#ffff00' : '#bae6fd'), borderRadius: '10px', padding: '10px 12px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
             }),
             h('button', {
+              type: 'button',
               onClick: function() {
                 if (!newStep.trim()) return;
+                var addedStep = newStep.trim();
                 scanTransitionsText(newStep);
-                upd({ planSteps: planSteps.concat([{ id: Date.now().toString(), text: newStep.trim(), done: false }]), newStep: '' });
+                upd({ planSteps: planSteps.concat([{ id: Date.now().toString(), text: addedStep, done: false }]), newStep: '' });
                 if (soundEnabled) sfxClick();
+                announceTR('Added plan step: ' + addedStep);
                 if (awardXP) awardXP(5, 'Added a step to your Change Plan!');
               },
               disabled: !newStep.trim(),
-              style: { padding: '10px 16px', background: newStep.trim() ? SKY_FILL : DIS_BG, color: newStep.trim() ? BTN_FG : DIS_FG, border: BTN_BD, borderRadius: '10px', fontWeight: 700, cursor: newStep.trim() ? 'pointer' : 'not-allowed', fontSize: '13px' }
+              style: { padding: '10px 16px', minHeight: '44px', display: 'inline-flex', alignItems: 'center', background: newStep.trim() ? SKY_FILL : DIS_BG, color: newStep.trim() ? BTN_FG : DIS_FG, border: BTN_BD, borderRadius: '10px', fontWeight: 700, cursor: newStep.trim() ? 'pointer' : 'not-allowed', fontSize: '13px' }
             }, '+ Add Step')
           ),
           planSteps.length > 0
@@ -595,8 +687,9 @@ window.SelHub = window.SelHub || {
                         upd('planSteps', planSteps.map(function(s) { return s.id === step.id ? Object.assign({}, s, { done: !s.done }) : s; }));
                         if (!step.done && soundEnabled) sfxComplete();
                         if (!step.done && awardXP) awardXP(10, 'Completed a step!');
+                        announceTR((step.done ? 'Marked incomplete: ' : 'Completed: ') + step.text);
                       },
-                      style: { flex: 1, display: 'flex', alignItems: 'center', gap: '10px', padding: '4px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }
+                      style: { flex: 1, minHeight: '44px', display: 'flex', alignItems: 'center', gap: '10px', padding: '4px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }
                     },
                       h('span', { 'aria-hidden': 'true', style: { width: '22px', height: '22px', borderRadius: '6px', border: '2px solid ' + (_trCHC ? '#ffff00' : (step.done ? '#15803d' : _trC('#d1d5db'))), background: step.done ? (_trCHC ? '#000000' : '#15803d') : _trC('#fff'), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' } },
                         step.done && h('span', { style: { color: BTN_FG, fontSize: '14px', fontWeight: 800 } }, '\u2713')
@@ -605,7 +698,7 @@ window.SelHub = window.SelHub || {
                     ),
                     h('button', {
                       type: 'button',
-                      onClick: function() { upd('planSteps', planSteps.filter(function(s) { return s.id !== step.id; })); },
+                      onClick: function() { upd('planSteps', planSteps.filter(function(s) { return s.id !== step.id; })); announceTR('Removed step.'); },
                       'aria-label': 'Remove step: ' + step.text,
                       style: { minWidth: 24, minHeight: 24, background: 'none', border: 'none', cursor: 'pointer', color: _trC('#475569'), fontSize: '14px', padding: '2px' }
                     }, '\u2715')
@@ -716,17 +809,20 @@ window.SelHub = window.SelHub || {
               type: 'text', value: coachInput,
               onChange: function(ev) { upd('coachInput', ev.target.value); },
               onKeyDown: function(ev) {
+                if (isImeComposing(ev)) return;
+                if (ev.key === 'Escape' && coachInput) { ev.preventDefault(); upd('coachInput', ''); announceTR('Cleared message.'); return; }
                 if (ev.key === 'Enter') sendCoachMessage();
               },
               disabled: coachLoading || !_trAiOn,
               placeholder: coachLoading ? 'Listening...' : 'How are you feeling about the change?',
-              style: { flex: 1, background: _trC('#fff'), color: _trC('#0f172a'), border: '2px solid ' + (_trCHC ? '#ffff00' : '#bae6fd'), borderRadius: '10px', padding: '10px 14px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
+              style: { flex: 1, minHeight: '44px', background: _trC('#fff'), color: _trC('#0f172a'), border: '2px solid ' + (_trCHC ? '#ffff00' : '#bae6fd'), borderRadius: '10px', padding: '10px 14px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
             }),
             h('button', {
+              type: 'button',
               'aria-label': coachLoading ? 'Transition coach is responding' : 'Send message to transition coach',
               onClick: sendCoachMessage,
               disabled: coachLoading || !coachInput.trim() || !_trAiOn,
-              style: { padding: '10px 16px', background: coachInput.trim() && !coachLoading ? SKY_FILL : DIS_BG, color: coachInput.trim() && !coachLoading ? BTN_FG : DIS_FG, border: BTN_BD, borderRadius: '10px', fontWeight: 700, cursor: coachInput.trim() && !coachLoading ? 'pointer' : 'not-allowed', fontSize: '13px' }
+              style: { padding: '10px 16px', minHeight: '44px', display: 'inline-flex', alignItems: 'center', background: coachInput.trim() && !coachLoading ? SKY_FILL : DIS_BG, color: coachInput.trim() && !coachLoading ? BTN_FG : DIS_FG, border: BTN_BD, borderRadius: '10px', fontWeight: 700, cursor: coachInput.trim() && !coachLoading ? 'pointer' : 'not-allowed', fontSize: '13px' }
             }, coachLoading ? '\u23F3' : '\u2728 Send')
           ),
           coachHistory.length === 0 && h('div', { style: { marginTop: '16px' } },
@@ -738,8 +834,8 @@ window.SelHub = window.SelHub || {
                 'I don\u2019t know anyone at my new school',
                 'Everything feels different and I don\u2019t like it'
               ].map(function(p) {
-                return h('button', { key: p, 'aria-label': 'Use starter: ' + p, onClick: function() { upd('coachInput', p); },
-                  style: { padding: '5px 10px', background: SKY_LIGHT, border: '1px solid #bae6fd', borderRadius: '20px', fontSize: '11px', cursor: 'pointer', color: SKY_DARK, fontWeight: 500 }
+                return h('button', { key: p, type: 'button', 'aria-label': 'Use starter: ' + p, onClick: function() { upd('coachInput', p); },
+                  style: { padding: '8px 12px', minHeight: '44px', display: 'inline-flex', alignItems: 'center', background: SKY_LIGHT, border: '1px solid #bae6fd', borderRadius: '20px', fontSize: '11.5px', cursor: 'pointer', color: SKY_DARK, fontWeight: 500 }
                 }, p);
               })
             )
@@ -760,7 +856,7 @@ window.SelHub = window.SelHub || {
             'A one-page artifact you can bring to a counselor, school psychologist, case manager, family member, or new teacher. Names what is changing, where you are in the change curve, what is holding you steady, and your next steps.'
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
-            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, style: { padding: '8px 18px', borderRadius: 8, border: BTN_BD, cursor: 'pointer', background: _trCHC ? '#000000' : 'linear-gradient(135deg, #0369a1, #075985)', color: BTN_FG, fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+            h('button', { type: 'button', onClick: function() { try { window.print(); } catch (e) {} }, style: { padding: '10px 18px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: BTN_BD, cursor: 'pointer', background: _trCHC ? '#000000' : 'linear-gradient(135deg, #0369a1, #075985)', color: BTN_FG, fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
           ),
           h('style', null,
             '@media print { body * { visibility: hidden !important; } ' +
@@ -830,7 +926,7 @@ window.SelHub = window.SelHub || {
 
       // ── Final render ──
       var content = identifyContent || curveContent || storiesContent || anchorsContent || planContent || coachContent || printContent;
-      return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
+      return h('div', { className: 'selh-transitions', style: { display: 'flex', flexDirection: 'column', height: '100%' } },
         (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('transitions', h, ctx) : null),
         tabBar,
         (d._lastTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')

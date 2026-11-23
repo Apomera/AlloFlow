@@ -26488,8 +26488,8 @@ if (typeof window !== 'undefined' && !(window.StemLab && window.StemLab.isRegist
         '.aq-lab-shell button:focus-visible,.aq-lab-shell input:focus-visible,.aq-lab-shell select:focus-visible,.aq-lab-shell textarea:focus-visible,.aq-lab-shell summary:focus-visible{outline:3px solid #fbbf24!important;outline-offset:2px!important;}' +
         '.aq-lab-shell input::placeholder,.aq-lab-shell textarea::placeholder{color:#aebdca;opacity:1;}' +
         '.aq-lab-shell a{color:#7dd3fc;}' +
-        '.aq-skip-link{position:absolute;left:12px;top:8px;z-index:20;padding:9px 12px;border-radius:8px;background:#fbbf24;color:#2a1900!important;font-weight:900;transform:translateY(-180%);transition:transform .15s ease;}' +
-        '.aq-skip-link:focus{transform:translateY(0);}' +
+        '.aq-skip-link{position:absolute;inset-inline-start:12px;top:8px;z-index:20;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border-radius:8px;background:#fbbf24;color:#2a1900!important;font-weight:900;text-decoration:none;}' +
+        '.aq-skip-link:focus{width:auto;height:auto;overflow:visible;clip-path:none;padding:9px 12px;min-height:44px;display:inline-flex;align-items:center;outline:3px solid #fef08a!important;outline-offset:2px!important;}' +
         '.theme-contrast [data-stem-tool-shell="aquacultureLab"] .aq-skip-link{background:#000!important;border:2px solid #ffff00;}' +
         '.aq-topic-content{scroll-margin-top:12px;}' +
         '.aq-topic-content:focus{outline:3px solid #fbbf24;outline-offset:4px;}' +

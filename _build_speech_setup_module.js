@@ -23,6 +23,7 @@ const moduleSrc = `/**
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.SpeechSetup) {
     console.log('[CDN] SpeechSetup already loaded, skipping'); return;
   }
@@ -34,7 +35,9 @@ const moduleSrc = `/**
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.SpeechSetup = {
     SpeechSetupPanel: SpeechSetupPanel,
-    _pure: { downloadSummary: downloadSummary, classifyDownloadError: classifyDownloadError, classifyMicError: classifyMicError, summaryKind: summaryKind, fillText: fillText, say: say }
+    ReadinessCard: SpeechReadinessCard,
+    DictationStudio: DictationSourceStudio,
+    _pure: { downloadSummary: downloadSummary, classifyDownloadError: classifyDownloadError, classifyMicError: classifyMicError, summaryKind: summaryKind, fillText: fillText, say: say, applyDiscrepancyEdit: applyDiscrepancyEdit, formatClockSec: formatClockSec, alignSegmentsToSentences: alignSegmentsToSentences }
   };
 })();
 `;

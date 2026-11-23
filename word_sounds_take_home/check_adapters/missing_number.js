@@ -52,7 +52,7 @@ module.exports = {
     ctx.root.appendChild(ctx.el('p', { class: 'letters', style: 'text-align:center', text: L.missing_number_question }));
     ctx.root.appendChild(ctx.el('p', { class: 'prompt', 'aria-hidden': 'true', style: 'white-space:nowrap;font-size:min(2.6rem,' + (137 / n | 0) + 'vw,' + (1130 / n | 0) + 'px)' }, pieces));
     ctx.root.appendChild(pad.node);
-    pad.focus();
+    if (!ctx.noFocus) pad.focus();
     return {
       // Practice items only: lock the keys and show the number in the blank.
       reveal: function (answer) { pad.lock(); if (answer != null) blank.textContent = String(answer); },

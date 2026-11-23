@@ -44,7 +44,7 @@ module.exports = {
           "url": "https://pubmed.ncbi.nlm.nih.gov/16737372/",
           "title": "A Meta-Analytic Test of Intergroup Contact Theory",
           "organization": "Journal of Personality and Social Psychology and U.S. National Library of Medicine",
-          "summary": "The PubMed record summarizes Pettigrew and Tropp?s synthesis of 713 independent samples from 515 studies, finding that intergroup contact generally reduces prejudice and that Allport-favorable conditions strengthen the effect.",
+          "summary": "The PubMed record summarizes Pettigrew and Tropp’s synthesis of 713 independent samples from 515 studies, finding that intergroup contact generally reduces prejudice and that Allport-favorable conditions strengthen the effect.",
           "credibility": "PubMed provides the U.S. National Library of Medicine record for this peer-reviewed Journal of Personality and Social Psychology meta-analysis, including its DOI, sample base, methods, and central findings."
         }
       ],
@@ -164,7 +164,7 @@ module.exports = {
           "url": "https://pubmed.ncbi.nlm.nih.gov/16737372/",
           "title": "A Meta-Analytic Test of Intergroup Contact Theory",
           "organization": "Journal of Personality and Social Psychology and U.S. National Library of Medicine",
-          "summary": "The PubMed record summarizes Pettigrew and Tropp?s synthesis of 713 independent samples from 515 studies, finding that intergroup contact generally reduces prejudice and that Allport-favorable conditions strengthen the effect.",
+          "summary": "The PubMed record summarizes Pettigrew and Tropp’s synthesis of 713 independent samples from 515 studies, finding that intergroup contact generally reduces prejudice and that Allport-favorable conditions strengthen the effect.",
           "credibility": "PubMed provides the U.S. National Library of Medicine record for this peer-reviewed Journal of Personality and Social Psychology meta-analysis, including its DOI, sample base, methods, and central findings."
         }
       ],

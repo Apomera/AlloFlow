@@ -662,7 +662,7 @@ window.StemLab = window.StemLab || {
                   React.createElement('span', { style: { color: metaBill.accent, fontSize: compact ? 5 : 6.5, lineHeight: 1, fontWeight: 900, whiteSpace: 'nowrap', letterSpacing: '.03em' } }, metaBill.portrait)
                 ),
                 React.createElement('div', { style: { position: 'absolute', right: compact ? 14 : 21, top: compact ? 6 : 8, width: compact ? 7 : 11, height: compact ? 7 : 11, borderRadius: '50%', border: '1px dashed ' + metaBill.accent, background: 'radial-gradient(circle, ' + metaBill.accent + '28, transparent 70%)', opacity: .85, pointerEvents: 'none' } }),
-                bill.value === 100 && React.createElement('div', { style: { position: 'absolute', left: '57%', top: 1, bottom: 1, width: compact ? 2 : 3.5, background: 'linear-gradient(180deg, #38bdf8bb, #0284c7cc, #38bdf8bb)', transform: 'rotate(-2deg)', pointerEvents: 'none' } })
+                bill.value === 100 && React.createElement('div', { style: { position: 'absolute', left: '64%', top: 1, bottom: 1, width: compact ? 2 : 3, background: 'linear-gradient(180deg, #38bdf888, #0284c799, #38bdf888)', transform: 'rotate(-2deg)', pointerEvents: 'none' } })
               );
             };
 
@@ -699,8 +699,8 @@ window.StemLab = window.StemLab || {
                   color: metaCoin && coin.value === .01 ? '#140a05' : '#111b21', textShadow: '0 1px 0 rgba(255,255,255,.62)'
                 } },
                   React.createElement('div', { style: { position: 'absolute', inset: compact ? 2.5 : 3.5, borderRadius: '50%', border: '1px solid rgba(30,41,59,.30)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,.48)', pointerEvents: 'none' } }),
-                  React.createElement('span', { style: { fontSize: compact ? Math.max(8, size * .27) : Math.max(10, size * .25), lineHeight: 1, fontWeight: 900, zIndex: 1 } }, metaCoin ? metaCoin.face : coin.label),
-                  !compact && React.createElement('span', { style: { position: 'absolute', left: '50%', bottom: Math.max(3, size * .10), transform: 'translateX(-50%)', fontSize: Math.max(7, size * .12), fontWeight: 900, letterSpacing: '.05em', whiteSpace: 'nowrap' } }, metaCoin ? (metaCoin.edgeType === 'reeded' ? 'REEDS' : metaCoin.edgeType === 'lettered' ? 'EDGE' : 'PLAIN') : '')
+                  React.createElement('span', { style: { fontSize: compact ? Math.max(8, size * .27) : Math.max(10, size * .25), lineHeight: 1, fontWeight: 900, zIndex: 1, transform: (!compact && metaCoin && size >= 42) ? 'translateY(-3.5px)' : 'none' } }, metaCoin ? metaCoin.face : coin.label),
+                  !compact && metaCoin && size >= 42 && React.createElement('span', { style: { position: 'absolute', left: '50%', bottom: Math.max(4, size * .11), transform: 'translateX(-50%)', fontSize: Math.max(6.5, size * .115), fontWeight: 900, letterSpacing: '.04em', whiteSpace: 'nowrap' } }, metaCoin.edgeType === 'reeded' ? 'REEDS' : metaCoin.edgeType === 'lettered' ? 'EDGE' : 'PLAIN')
                 )
               );
             };
@@ -3386,9 +3386,9 @@ window.StemLab = window.StemLab || {
                         React.createElement("span", {
                           className: "px-2 py-0.5 rounded-full text-[0.625rem] font-black uppercase tracking-wider",
                           style: {
-                            background: ctx.isContrast ? '#fde047' : 'rgba(255,255,255,0.16)',
-                            color: ctx.isContrast ? '#000000' : '#ecfdf5',
-                            border: '1px solid ' + (ctx.isContrast ? '#fde047' : 'rgba(255,255,255,0.28)')
+                            background: ctx.isContrast ? '#000000' : 'rgba(255,255,255,0.16)',
+                            color: ctx.isContrast ? '#ffff00' : '#ecfdf5',
+                            border: '1px solid ' + (ctx.isContrast ? '#ffff00' : 'rgba(255,255,255,0.28)')
                           }
                         }, __alloT('stem.money.subject_badge', 'Math · Financial Literacy'))
                       ),

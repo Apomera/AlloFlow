@@ -19,4 +19,5 @@
 .turn-reading-panel button{min-height:44px;white-space:normal;line-height:1.4;font-size:.8rem}
 .turn-reading-panel button:focus-visible{outline:3px solid #31563b;outline-offset:3px}
 @media(max-width:420px){.turn-reading-panel{padding:.8rem}.turn-reading-panel .turn-faces{gap:.4rem}.turn-face-card dt{font-size:.7rem}.turn-reading-panel button{width:100%;margin:.25rem 0}}
+@media(prefers-reduced-motion:reduce){.turn-reading-panel,.turn-reading-panel *{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 @media(forced-colors:active){.turn-reading-panel,.turn-reading-panel .turn-face-card,.turn-reading-panel .turn-phase,.turn-reading-panel .turn-forecast{background:Canvas;color:CanvasText;border-color:CanvasText}.turn-face-card dt{color:CanvasText}.turn-face-art{forced-color-adjust:none}.turn-reading-panel button:focus-visible{outline-color:Highlight}}

@@ -21,8 +21,10 @@
   var wpMedia = root.AlloWordPracticeMedia;
   var wpUi = root.AlloModules && root.AlloModules.WordPractice;
   var PICTURES_PAGE = 'packets-pictures.html';
+  var VOICE_PAGE = 'packets-voice.html';
   var MAX_REOPEN_BYTES = 60 * 1024 * 1024;
   var MAX_ROSTER_BYTES = 256 * 1024;
+  var MAX_CLIP_CHARS = 2 * 1024 * 1024;
 
   function $(id) { return doc.getElementById(id); }
 
@@ -316,7 +318,8 @@
   var portableClipCache = Object.create(null);
   function getAudioKitReady() {
     var kit = root.AlloPacketAudioKit || null;
-    if (!kit || typeof kit.getMp3 !== 'function') return Promise.resolve(null);
+    if (!kit || typeof kit.wavUriToMp3Uri !== 'function') return Promise.resolve(null);
+    if (typeof kit.getMp3 !== 'function') return Promise.resolve(kit);
     var timer = null;
     var cap = new Promise(function (resolve) {
       timer = (typeof root.setTimeout === 'function' ? root.setTimeout : setTimeout)(function () { resolve(false); }, 1500);
@@ -338,13 +341,15 @@
       var uri = clipMap[k];
       if (typeof uri !== 'string' || !/^data:audio\//i.test(uri)) return;
       if (portableClipCache[uri]) {
-        out[k] = portableClipCache[uri];
+        if (portableClipCache[uri].length <= MAX_CLIP_CHARS) out[k] = portableClipCache[uri];
         return;
       }
-      out[k] = uri;
       if (/^data:audio\/(?:webm|wav|x-wav|wave)[;,]/i.test(uri)) {
+        if (uri.length <= MAX_CLIP_CHARS) out[k] = uri;
         todoAudio[k] = uri;
         todoKeys.push(k);
+      } else if (uri.length <= MAX_CLIP_CHARS) {
+        out[k] = uri;
       }
     });
     if (!todoKeys.length) return Promise.resolve(out);
@@ -366,12 +371,18 @@
           var mp3 = kit.wavUriToMp3Uri(cur, 48);
           if (mp3) cur = mp3;
         }
-        // Only cache/replace when actually portable (not raw WebM); keep out[k] synced.
+        // Only cache/replace when actually portable (not raw WebM) and within size cap; keep out[k] synced.
         if (!/^data:audio\/webm/i.test(cur)) {
-          portableClipCache[orig] = cur;
-          out[k] = cur;
+          if (cur.length <= MAX_CLIP_CHARS) {
+            portableClipCache[orig] = cur;
+            out[k] = cur;
+          } else {
+            delete out[k];
+          }
         } else if (OfflineCtx && loader && typeof loader.portableAudio === 'function') {
           // Decoding failed on a WebM clip: drop non-portable WebM so Safari does not receive broken audio.
+          delete out[k];
+        } else if (cur.length > MAX_CLIP_CHARS) {
           delete out[k];
         }
       });
@@ -411,7 +422,10 @@
 
   function setReopenStatus(msg, linkInfo) {
     if (!reopenStatusEl) return;
-    reopenStatusEl.textContent = String(msg || '');
+    var text = String(msg || '');
+    reopenStatusEl.textContent = text;
+    var noteBox = $('reopen-note');
+    if (noteBox) noteBox.hidden = !text.trim();
     if (linkInfo && linkInfo.href) {
       reopenStatusEl.appendChild(doc.createTextNode(' '));
       var goBtn = doc.createElement('button');
@@ -475,7 +489,10 @@
     if (audioWrap) audioWrap.hidden = isCheck;
     var practiceBox = $('sr-practice-options');
     if (practiceBox) practiceBox.hidden = isCheck;
+    var picsPanel = doc.querySelector('.sr-pics-panel');
+    if (picsPanel) picsPanel.hidden = isCheck;
     markChoices();
+    syncMissingAudioLink();
   }
 
   // The chosen card or chip is outlined, as on the other makers (packets.css .choice.is-on, .radio.is-on).
@@ -507,9 +524,15 @@
         var label = doc.createElement('label'); label.className = 'choice';
         var radio = doc.createElement('input'); radio.type = 'radio'; radio.name = 'sr-set'; radio.value = opt.value;
         radio.addEventListener('change', function () {
-          if (!radio.checked || modeSelect.value === opt.value) return;
-          modeSelect.value = opt.value;
-          modeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+          if (!radio.checked) return;
+          if (opt.value !== 'custom' && customInput && customInput.value) customInput.value = '';
+          if (modeSelect.value !== opt.value) {
+            modeSelect.value = opt.value;
+            modeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+          } else {
+            drawModeLine();
+          }
+          if (opt.value === 'custom' && customInput && typeof customInput.focus === 'function') customInput.focus();
         });
         var name = doc.createElement('span'); name.className = 'choice-name'; name.textContent = String(opt.textContent || '').trim();
         var line = doc.createElement('span'); line.className = 'choice-line'; line.textContent = String(opt.getAttribute('data-line') || '');
@@ -537,8 +560,35 @@
       if (on) box.open = true;
     });
   }
+  var titleEdited = false;
+  function autoTitle() {
+    var pMode = packetModeValue();
+    var suffix = pMode === 'check' ? ' check' : ' practice';
+    var customVal = customInput ? customInput.value.trim() : '';
+    if (customVal || (modeSelect && modeSelect.value === 'custom')) {
+      return pMode === 'check' ? 'My symbols check' : 'My symbols practice';
+    }
+    var modeId = modeSelect ? modeSelect.value : 'confusable_letters';
+    var label = modeName(modeId) || 'Symbol Runner';
+    return (label + suffix).slice(0, 120);
+  }
+  function syncAutoTitle(force) {
+    if (!titleInput) return;
+    var cur = titleInput.value.trim();
+    if (force || !titleEdited || !cur || cur === 'Symbol Runner Practice') {
+      titleInput.value = autoTitle();
+      if (force) titleEdited = false;
+    }
+  }
+  function syncCustomField() {
+    var field = $('sr-custom-field');
+    if (!field) return;
+    var isCustom = (modeSelect && modeSelect.value === 'custom') || !!(customInput && customInput.value.trim());
+    field.hidden = !isCustom;
+  }
   function drawModeLine() {
     syncSetChooser();
+    syncCustomField();
     if (!modeLineEl || !modeSelect) return;
     var opt = modeSelect.options && modeSelect.selectedIndex >= 0 ? modeSelect.options[modeSelect.selectedIndex] : null;
     modeLineEl.textContent = opt ? String(opt.getAttribute('data-line') || '') : '';
@@ -807,13 +857,35 @@
     });
   }
 
+  function readMyMedia(keys) {
+    if (!myWords || !Array.isArray(keys) || !keys.length) return Promise.resolve({});
+    var fn = typeof myWords.getManyMedia === 'function' ? myWords.getManyMedia
+      : (typeof myWords.getMany === 'function' ? myWords.getMany : null);
+    if (!fn) return Promise.resolve({});
+    try {
+      return Promise.resolve(fn.call(myWords, keys)).then(function (found) {
+        return found && typeof found === 'object' ? found : {};
+      }, function () { return {}; });
+    } catch (_) { return Promise.resolve({}); }
+  }
+
+  function clipUriFromEntry(entry) {
+    if (!entry || typeof entry !== 'object') return '';
+    var src = (entry.clip && typeof entry.clip === 'object' && typeof entry.clip.dataUri === 'string' && entry.clip.dataUri)
+      ? entry.clip
+      : (entry.recording && typeof entry.recording === 'object' && typeof entry.recording.dataUri === 'string' && entry.recording.dataUri ? entry.recording : null);
+    if (!src || src.none) return '';
+    var uri = String(src.dataUri || '').trim();
+    return /^data:audio\//i.test(uri) ? uri : '';
+  }
+
   function loadMyWordsPictures() {
-    if (!myWords || typeof myWords.getManyMedia !== 'function') return Promise.resolve(0);
+    if (!myWords || (typeof myWords.getManyMedia !== 'function' && typeof myWords.getMany !== 'function')) return Promise.resolve(0);
     var pool = currentPool();
     var keys = pool.map(function (s) { return s && s.answer ? String(s.answer) : ''; }).filter(Boolean);
     var sig = keys.join('|');
     if (!keys.length) { lastMyMediaSig = ''; return Promise.resolve(0); }
-    return myWords.getManyMedia(keys).then(function (found) {
+    return readMyMedia(keys).then(function (found) {
       lastMyMediaSig = sig;
       if (!found || typeof found !== 'object') return 0;
       var loaded = 0;
@@ -837,8 +909,7 @@
         } else if (pictures[sym.answer] && pictures[sym.answer].fromMyWords) {
           delete pictures[sym.answer];
         }
-        var recUri = entry && entry.recording && typeof entry.recording.dataUri === 'string' && /^data:audio\//i.test(entry.recording.dataUri)
-          ? entry.recording.dataUri : '';
+        var recUri = clipUriFromEntry(entry);
         if (recUri) {
           if (myWordAudio[ansLower] !== recUri) audioChanged = true;
           myWordAudio[ansLower] = recUri;
@@ -852,6 +923,7 @@
       if (audioChanged && activeRunner && typeof activeRunner.setWordAudio === 'function') {
         activeRunner.setWordAudio(mergedWordAudio(wordAudio));
       }
+      syncMissingAudioLink();
       return loaded;
     }).catch(function () { return 0; });
   }
@@ -1023,6 +1095,55 @@
     return clipMap;
   }
 
+  function syncMissingAudioLink(resolvedClips) {
+    if (!audioWrap) return;
+    var note = $('sr-clip-missing-note');
+    var pMode = packetModeValue();
+    var wantAudio = pMode !== 'check' && (!includeAudioCheck || includeAudioCheck.checked);
+    if (!wantAudio) {
+      if (note) { note.hidden = true; note.textContent = ''; }
+      return;
+    }
+    var modeId = modeSelect ? modeSelect.value : 'confusable_letters';
+    var customVal = customInput ? customInput.value.trim() : '';
+    var resolvedMode = customVal ? 'custom' : modeId;
+    var pool = currentPool();
+    var wordTargets = poolWordTargets(pool, resolvedMode);
+    if (!wordTargets.length) {
+      if (note) { note.hidden = true; note.textContent = ''; }
+      return;
+    }
+    var clips = resolvedClips || resolvePoolClips(pool, resolvedMode, phonemeAudio, letterAudio, wordAudio);
+    var missing = [];
+    wordTargets.forEach(function (w) {
+      if (clips && clips[w]) return;
+      if (missing.indexOf(w) < 0 && missing.length < 24) missing.push(w);
+    });
+    if (!missing.length) {
+      if (note) { note.hidden = true; note.textContent = ''; }
+      return;
+    }
+    if (!note) {
+      note = doc.createElement('p');
+      note.className = 'hint';
+      note.id = 'sr-clip-missing-note';
+      audioWrap.appendChild(note);
+    }
+    note.textContent = (missing.length === 1 ? '1 word has no recording yet. ' : missing.length + ' words have no recording yet. ');
+    var link = doc.createElement('a');
+    link.id = 'sr-clip-missing-link';
+    link.href = VOICE_PAGE + '#words=' + encodeURIComponent(missing.join(','));
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.textContent = 'Record or make a voice clip';
+    var sr = doc.createElement('span');
+    sr.className = 'sr-only';
+    sr.textContent = ' (opens in a new tab)';
+    link.appendChild(sr);
+    note.appendChild(link);
+    note.hidden = false;
+  }
+
   function withAudioBanks(wantAudio, done) {
     var modeId = modeSelect ? modeSelect.value : 'confusable_letters';
     var customVal = customInput ? customInput.value.trim() : '';
@@ -1033,18 +1154,22 @@
     var needP = wantAudio && !Object.keys(phonemeAudio).length && typeof root.fetch === 'function';
     var needL = wantAudio && !Object.keys(letterAudio).length && typeof root.fetch === 'function';
     var needW = wantAudio && wTargets.length > 0 && typeof root.fetch === 'function';
-    var needMy = wantAudio && (resolvedMode === 'custom' || resolvedMode === 'sight_words') && !!poolSig && lastMyMediaSig !== poolSig && !!(myWords && typeof myWords.getManyMedia === 'function');
+    var hasMyReader = !!(myWords && (typeof myWords.getManyMedia === 'function' || typeof myWords.getMany === 'function'));
+    var needMy = wantAudio && !!poolSig && lastMyMediaSig !== poolSig && hasMyReader;
     var finish = function () {
       if (!wantAudio) {
+        syncMissingAudioLink(null);
         done(phonemeAudio, letterAudio, wordAudio, null);
         return;
       }
       var rawClips = resolvePoolClips(pool, resolvedMode, phonemeAudio, letterAudio, wordAudio);
       if (!Object.keys(rawClips).length) {
+        syncMissingAudioLink(rawClips);
         done(phonemeAudio, letterAudio, wordAudio, rawClips);
         return;
       }
       makeClipsPortable(rawClips).then(function (portable) {
+        syncMissingAudioLink(portable);
         done(phonemeAudio, letterAudio, wordAudio, portable);
       });
     };
@@ -1071,10 +1196,12 @@
     var resolvedMode = customVal ? 'custom' : modeId;
     var knownList = pMode === 'check' ? undefined : (knownInput && knownInput.value.trim() ? knownInput.value.trim() : undefined);
     var picMap = Object.create(null);
-    Object.keys(pictures).forEach(function (k) {
-      if (k === '__proto__' || k === 'constructor' || k === 'prototype') return;
-      if (pictures[k] && isAllowedPictureUri(pictures[k].src)) picMap[k] = pictures[k];
-    });
+    if (pMode !== 'check') {
+      Object.keys(pictures).forEach(function (k) {
+        if (k === '__proto__' || k === 'constructor' || k === 'prototype') return;
+        if (pictures[k] && isAllowedPictureUri(pictures[k].src)) picMap[k] = pictures[k];
+      });
+    }
     var clipMap = Object.create(null);
     if (wantAudio) {
       clipMap = portableClips || resolvePoolClips(currentPool(), resolvedMode, pBank, lBank, wBank);
@@ -1090,7 +1217,7 @@
       viewMode: viewValue(),
       rehearsal: pMode === 'check' ? false : !!(rehearsalCheck && rehearsalCheck.checked),
       known: knownList,
-      pictures: picMap,
+      pictures: pMode === 'check' ? undefined : picMap,
       clips: wantAudio && Object.keys(clipMap).length ? clipMap : undefined,
       audioMode: aMode,
       title: titleInput && titleInput.value.trim() ? titleInput.value.trim() : undefined,
@@ -1347,6 +1474,29 @@
     if (step === 3) drawSummary();
   }
 
+  function describePreview(lesson) {
+    var out = [], blocks = lesson && Array.isArray(lesson.blocks) ? lesson.blocks : [];
+    var customVal = customInput ? customInput.value.trim() : '';
+    var modeLabel = customVal || (modeSelect && modeSelect.value === 'custom')
+      ? 'My own list'
+      : modeName(modeSelect ? modeSelect.value : 'confusable_letters');
+    blocks.forEach(function (block) {
+      (Array.isArray(block.items) ? block.items : []).forEach(function (item) {
+        var shown = String((item && (item.display || item.word || item.answer || item.target)) || '').trim();
+        out.push({
+          itemId: String((item && item.id) || ''),
+          activity: String(block.activity || 'symbol_runner'),
+          word: shown,
+          sample: !!(item && item.practice),
+          label: modeLabel + (shown ? ' \u2014 ' + shown : ''),
+          canSwap: false,
+          canTogglePicture: false,
+        });
+      });
+    });
+    return out;
+  }
+
   function publishPreviewHtml(html) {
     if (!root.URL || typeof root.URL.createObjectURL !== 'function') return '';
     if (previewBlobUrl && typeof root.URL.revokeObjectURL === 'function') {
@@ -1359,7 +1509,7 @@
       if (previewSession && typeof previewSession.update === 'function') {
         previewSession.update({ url: previewBlobUrl, html: html });
       } else {
-        previewSession = handoff.hostPreview({ url: previewBlobUrl, html: html });
+        previewSession = handoff.hostPreview({ url: previewBlobUrl, html: html, describe: describePreview });
       }
     }
     previewDirty = false;
@@ -1617,6 +1767,7 @@
     }
     if (titleInput && typeof back.title === 'string') {
       titleInput.value = back.title;
+      titleEdited = !!back.title.trim();
     }
     if (learnersInput && typeof back.learner === 'string') {
       learnersInput.value = back.learner;
@@ -1647,6 +1798,7 @@
     }
     syncPacketModeUi();
     drawModeLine();
+    if (!titleEdited) syncAutoTitle(true);
     savePreferences();
     renderPictureList();
     goTo(1, true);
@@ -1729,7 +1881,9 @@
   function bindEvents() {
     if (modeSelect) {
       modeSelect.addEventListener('change', function () {
+        if (modeSelect.value !== 'custom' && customInput && customInput.value) customInput.value = '';
         drawModeLine();
+        syncAutoTitle(false);
         savePreferences();
         renderPictureList();
         autoFillPictures(true);
@@ -1737,10 +1891,33 @@
       });
     }
     if (customInput) {
+      customInput.addEventListener('input', function () {
+        if (customInput.value.trim() && modeSelect && modeSelect.value !== 'custom') {
+          modeSelect.value = 'custom';
+          drawModeLine();
+        }
+        syncAutoTitle(false);
+      });
       customInput.addEventListener('change', function () {
+        if (customInput.value.trim() && modeSelect && modeSelect.value !== 'custom') {
+          modeSelect.value = 'custom';
+          drawModeLine();
+        }
+        syncAutoTitle(false);
         savePreferences();
-        renderPictureList();
-        startLive();
+        loadMyWordsPictures().then(function () {
+          renderPictureList();
+          startLive();
+          syncMissingAudioLink();
+        });
+      });
+    }
+    if (titleInput) {
+      titleInput.addEventListener('input', function () {
+        titleEdited = !!titleInput.value.trim();
+      });
+      titleInput.addEventListener('blur', function () {
+        if (!titleInput.value.trim()) syncAutoTitle(true);
       });
     }
     doc.querySelectorAll('input[name="sr-control"], input[name="sr-view"]').forEach(function (radio) {
@@ -1752,11 +1929,12 @@
     doc.querySelectorAll('input[name="sr-packet-mode"]').forEach(function (radio) {
       radio.addEventListener('change', function () {
         syncPacketModeUi();
+        syncAutoTitle(false);
         savePreferences();
       });
     });
     if (untimedCheck) untimedCheck.addEventListener('change', savePreferences);
-    if (includeAudioCheck) includeAudioCheck.addEventListener('change', savePreferences);
+    if (includeAudioCheck) includeAudioCheck.addEventListener('change', function () { savePreferences(); syncMissingAudioLink(); });
     if (audioModeSelect) {
       audioModeSelect.addEventListener('change', function () {
         if (activeRunner && typeof activeRunner.setAudioMode === 'function') {
@@ -1849,6 +2027,28 @@
     if (saveFlashcardsBtn) saveFlashcardsBtn.addEventListener('click', exportSymbolFlashcards);
     if (saveCccBtn) saveCccBtn.addEventListener('click', exportCccSheet);
     if (openPeBtn) openPeBtn.addEventListener('click', openInPresentExport);
+    function readReopenFile(file) {
+      if (!file) return;
+      if (file.size > MAX_REOPEN_BYTES) {
+        setReopenStatus('This file is too large to be a file made here.');
+        return;
+      }
+      if (typeof file.arrayBuffer === 'function') {
+        file.arrayBuffer().then(function (buf) {
+          var text = typeof root.TextDecoder === 'function' ? new root.TextDecoder('utf-8').decode(buf) : '';
+          applyReopenHtml(text, file.name);
+        }, function () { setReopenStatus('This browser could not read that file.'); });
+        return;
+      }
+      if (typeof root.FileReader !== 'function') {
+        setReopenStatus('This browser cannot read local files here.');
+        return;
+      }
+      var reader = new root.FileReader();
+      reader.onload = function () { applyReopenHtml(String(reader.result || ''), file.name); };
+      reader.onerror = function () { setReopenStatus('This browser could not read that file.'); };
+      reader.readAsText(file);
+    }
     if (reopenBtn && reopenFile) {
       reopenBtn.addEventListener('click', function () {
         reopenFile.value = '';
@@ -1856,19 +2056,32 @@
       });
       reopenFile.addEventListener('change', function () {
         var file = reopenFile.files && reopenFile.files[0];
+        readReopenFile(file);
+      });
+    }
+    if ($('reopen-close')) {
+      $('reopen-close').addEventListener('click', function () {
+        setReopenStatus('');
+        if (reopenBtn && typeof reopenBtn.focus === 'function') reopenBtn.focus();
+      });
+    }
+    var dropHost = doc.querySelector('main') || doc.body;
+    var reopenWrap = $('reopen');
+    if (dropHost && reopenWrap) {
+      var hasFiles = function (e) {
+        if (!e || !e.dataTransfer) return false;
+        if (e.dataTransfer.files && e.dataTransfer.files.length) return true;
+        return !!(e.dataTransfer.types && Array.prototype.indexOf.call(e.dataTransfer.types, 'Files') >= 0);
+      };
+      dropHost.addEventListener('dragover', function (e) { if (!hasFiles(e)) return; e.preventDefault(); reopenWrap.classList.add('is-dropping'); });
+      dropHost.addEventListener('dragleave', function (e) { if (!e.relatedTarget || !dropHost.contains(e.relatedTarget)) reopenWrap.classList.remove('is-dropping'); });
+      dropHost.addEventListener('drop', function (e) {
+        reopenWrap.classList.remove('is-dropping');
+        if (!hasFiles(e)) return;
+        var file = e.dataTransfer.files && e.dataTransfer.files[0];
         if (!file) return;
-        if (file.size > MAX_REOPEN_BYTES) {
-          setReopenStatus('This file is too large to be a file made here.');
-          return;
-        }
-        if (typeof root.FileReader !== 'function') {
-          setReopenStatus('This browser cannot read local files here.');
-          return;
-        }
-        var reader = new root.FileReader();
-        reader.onload = function () { applyReopenHtml(String(reader.result || ''), file.name); };
-        reader.onerror = function () { setReopenStatus('This browser could not read that file.'); };
-        reader.readAsText(file);
+        e.preventDefault();
+        readReopenFile(file);
       });
     }
     if (clearBtn) {
@@ -1880,7 +2093,6 @@
           if (knownInput) knownInput.value = '';
           if (teacherCodeInput) teacherCodeInput.value = '';
           if (learnersInput) learnersInput.value = '';
-          if (titleInput) titleInput.value = 'Symbol Runner Practice';
           var defCtrl = doc.querySelector('input[name="sr-control"][value="direct"]');
           if (defCtrl) defCtrl.checked = true;
           var defView = doc.querySelector('input[name="sr-view"][value="3d"]');
@@ -1893,8 +2105,11 @@
           if (audioModeSelect) audioModeSelect.value = 'auto';
           if (hcCheck) hcCheck.checked = false;
           pictures = Object.create(null);
+          titleEdited = false;
           syncPacketModeUi();
           drawModeLine();
+          syncAutoTitle(true);
+          setReopenStatus('');
           markChoices();
           renderPictureList();
           drawBatch();
@@ -1943,7 +2158,10 @@
         audioModeSelect.value = saved.audioMode;
       }
       if (hcCheck) hcCheck.checked = !!saved.highContrast;
-      if (saved && saved.title && titleInput) titleInput.value = saved.title;
+      if (saved && saved.title && titleInput) {
+        titleInput.value = saved.title;
+        titleEdited = String(saved.title).trim() !== '' && String(saved.title).trim() !== 'Symbol Runner Practice';
+      }
     } catch (_) {}
   }
 
@@ -1969,12 +2187,15 @@
     var anchorCandidates = allNums ? ['1', '2', '5', '10', '3', '4', '6', '7'] : ['s', 'm', 't', 'a', 'p', 'n', 'r', 'l'];
     var needAnchors = Math.max(3, 6 - missed.length);
     var anchors = anchorCandidates.filter(function (c) { return !seen[c.toLowerCase()]; }).slice(0, needAnchors);
+    if (modeSelect) modeSelect.value = 'custom';
     if (customInput) customInput.value = missed.concat(anchors).join(', ');
     if (knownInput) knownInput.value = anchors.join(', ');
     var pmPractice = doc.querySelector('input[name="sr-packet-mode"][value="practice"]');
     if (pmPractice) pmPractice.checked = true;
     if (rehearsalCheck) rehearsalCheck.checked = true;
     syncPacketModeUi();
+    drawModeLine();
+    syncAutoTitle(false);
     savePreferences();
     renderPictureList();
     try {
@@ -2009,6 +2230,7 @@
     syncPacketModeUi();
     savePreferences();
     drawModeLine();
+    syncAutoTitle(false);
     renderPictureList();
     goTo(1, true);
     if (targetMode === 'sight_words') loadWordAudio();
@@ -2046,6 +2268,7 @@
     if (pmPractice) pmPractice.checked = true;
     syncPacketModeUi();
     drawModeLine();
+    syncAutoTitle(false);
     savePreferences();
     renderPictureList();
     goTo(1, true);
@@ -2082,8 +2305,10 @@
       if (rehearse && rehearse.checked) parts.push('rehearsal with known symbols');
       parts.push(audio && !audio.checked ? 'no sounds in the file' : 'sounds in the file');
     }
-    var pics = doc.querySelectorAll('#sr-pic-list img').length;
-    if (pics) parts.push(pics === 1 ? '1 picture' : pics + ' pictures');
+    if (!(check && check.checked)) {
+      var pics = doc.querySelectorAll('#sr-pic-list img').length;
+      if (pics) parts.push(pics === 1 ? '1 picture' : pics + ' pictures');
+    }
     nowEl.textContent = parts.join(' · ');
   }
   doc.addEventListener('change', drawSettingsNow);
@@ -2099,10 +2324,12 @@
     try { if (root.history && typeof root.history.replaceState === 'function') root.history.replaceState(null, '', (root.location.pathname || '') + (root.location.search || '')); } catch (_) {}
     radio.checked = true;
     syncPacketModeUi();
+    syncAutoTitle(false);
     savePreferences();
     drawSettingsNow();
   })();
   var initializedFromHash = applyRehearseHash() || applyModeHash() || applySymbolsHash();
+  syncAutoTitle(false);
   if (!initializedFromHash) {
     renderPictureList();
     goTo(1, true);
@@ -2127,8 +2354,8 @@
         try { root.URL.revokeObjectURL(previewBlobUrl); } catch (_) {}
         previewBlobUrl = '';
       }
-      if (previewSession && typeof previewSession.close === 'function') {
-        try { previewSession.close(); } catch (_) {}
+      if (previewSession && typeof previewSession.stop === 'function') {
+        try { previewSession.stop(); } catch (_) {}
       }
       previewSession = null;
     });

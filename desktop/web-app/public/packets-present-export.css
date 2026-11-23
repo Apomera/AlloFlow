@@ -1,0 +1,171 @@
+/* Present & Export word cards (packets-present-export.html). Colors come from packets.css. */
+
+.pe-starters {
+  margin: 0.9rem 0 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.pe-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.65rem 1rem;
+}
+
+.pe-source-control {
+  flex: 1 1 15rem;
+}
+
+.pe-more {
+  flex: 1 1 16rem;
+  min-width: 0;
+  max-width: 100%;
+  margin-top: 0;
+}
+
+.pe-more[open] {
+  flex-basis: 100%;
+}
+
+.pe-more > summary {
+  min-height: 2.75rem;
+  padding: 0.45rem 0.85rem;
+}
+
+.pe-more-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1rem;
+  min-width: 0;
+  max-width: 100%;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.pe-control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.pe-control label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.pe-control select {
+  min-height: 2.75rem;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.pe-sheet-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.pe-sheet-row select {
+  flex: 1 1 10rem;
+}
+
+.pe-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.75rem;
+  margin-left: auto;
+}
+
+.pe-status {
+  margin: 0.5rem 0 0;
+  color: var(--ink);
+  font-size: 0.9375rem;
+}
+
+.pe-status:empty {
+  display: none;
+}
+
+#present-export-host {
+  min-width: 0;
+}
+
+#present-export-host .awp-inline {
+  padding: 0;
+}
+
+#present-export-host .awp-inline-dialog {
+  width: 100%;
+  max-width: none;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  box-shadow: none;
+}
+
+@media (max-width: 44rem) {
+  .pe-starters {
+    margin: 0.65rem 0 0.75rem;
+    padding: 0.65rem 0.8rem;
+  }
+  .pe-links {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 29.99rem) {
+  .maker {
+    padding-top: 1rem;
+  }
+  .pe-bar {
+    gap: 0.5rem;
+  }
+  .pe-more > summary {
+    padding: 0.4rem 0.7rem;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  /* WordPractice mounts an intentionally light slide/card editor (.awp, color-scheme: light).
+     Reset inherited packets.css dark custom properties inside the host so headings, legends,
+     and links keep full contrast against the light .awp canvas. */
+  #present-export-host {
+    color-scheme: light;
+    --ink: #0f172a;
+    --text: #1e293b;
+    --muted: #475569;
+    --line: #d7dee8;
+    --line-strong: #64748b;
+    --bg: #f7faf9;
+    --surface: #ffffff;
+    --accent: #3730a3;
+    --accent-dark: #2a2580;
+    --accent-soft: #eef0fb;
+    --on-accent: #ffffff;
+    --note: #f1f5f9;
+    color: var(--text);
+  }
+}
+
+@media (forced-colors: active) {
+  .pe-starters,
+  .pe-control select,
+  #present-export-host .awp-inline-dialog {
+    border-color: CanvasText;
+  }
+}

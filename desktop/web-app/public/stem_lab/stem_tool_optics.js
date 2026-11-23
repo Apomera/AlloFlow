@@ -429,11 +429,11 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         ['#06b6d4', '#155e75'], ['#ef4444', '#b91c1c'], ['#fca5a5', '#b91c1c']].map(function(pair) {
         return ':is(.theme-default,.theme-light) .opticslab-svg-themed-ground text[fill="' + pair[0] + '"]{fill:' + pair[1] + '!important;}';
       }).join(''),
-      ':is(.theme-default,.theme-light) .opticslab-tool-shell .opticslab-next-action-copy strong,:is(.theme-default,.theme-light) .opticslab-tool-shell .opticslab-mission-copy strong{color:var(--op-topic-ink,#334155)!important;}',
-      ':is(.theme-default,.theme-light) .opticslab-tool-shell .opticslab-mission[data-complete="true"] .opticslab-mission-copy strong{color:#166534!important;}',
-      ':is(.theme-default,.theme-light) .opticslab-tool-shell .opticslab-variable-hint{color:#334155!important;}',
-      ':is(.theme-default,.theme-light) .opticslab-tool-shell [data-op-fresnel-value="reflected"]{color:#b91c1c!important;}',
-      ':is(.theme-default,.theme-light) .opticslab-tool-shell [data-op-fresnel-value="transmitted"]{color:#0e7490!important;}',
+      ':is(.theme-default,.theme-light,:root:not(.theme-dark):not(.theme-contrast)) .opticslab-tool-shell .opticslab-next-action-copy strong,:is(.theme-default,.theme-light,:root:not(.theme-dark):not(.theme-contrast)) .opticslab-tool-shell .opticslab-mission-copy strong{color:var(--op-topic-ink,#334155)!important;}',
+      ':is(.theme-default,.theme-light,:root:not(.theme-dark):not(.theme-contrast)) .opticslab-tool-shell .opticslab-mission[data-complete="true"] .opticslab-mission-copy strong{color:#166534!important;}',
+      ':is(.theme-default,.theme-light,:root:not(.theme-dark):not(.theme-contrast)) .opticslab-tool-shell .opticslab-variable-hint{color:#334155!important;}',
+      ':is(.theme-default,.theme-light,:root:not(.theme-dark):not(.theme-contrast)) .opticslab-tool-shell [data-op-fresnel-value="reflected"]{color:#b91c1c!important;}',
+      ':is(.theme-default,.theme-light,:root:not(.theme-dark):not(.theme-contrast)) .opticslab-tool-shell [data-op-fresnel-value="transmitted"]{color:#0e7490!important;}',
       ':is(.theme-default,.theme-light) .opticslab-tool-shell .opticslab-dark-inquiry .opticslab-dark-control{color:#cbd5e1!important;border-color:#64748b!important;}',
       ':is(.theme-default,.theme-light) .opticslab-tool-shell .opticslab-dark-inquiry button[style*="background:#0a0a1a"]{border-color:#64748b!important;}',
       // The 3D readouts and cue chips sit on the dark 3D canvas in every theme,
@@ -444,7 +444,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       ['#5eead4', '#7dd3fc', '#86efac', '#94a3b8', '#a5b4fc', '#c4b5fd', '#c7d2fe', '#cbd5e1', '#d8b4fe',
         '#e2e8f0', '#f8fafc', '#fbbf24', '#fca5a5', '#fdba74', '#fef3c7', '#0f172a', '#ffffff'].map(function(hex) {
         var rgb = 'rgb(' + [1, 3, 5].map(function(i) { return parseInt(hex.slice(i, i + 2), 16); }).join(', ') + ')';
-        return ':is(.theme-default,.theme-light) .opticslab-tool-shell :is(.opticslab-gl-island,.opticslab-gl-island *,.opticslab-dark-panel,.opticslab-dark-panel *)'
+        return ':is(.theme-default,.theme-light) .opticslab-tool-shell :is(.opticslab-gl-island,.opticslab-gl-island *,.opticslab-dark-panel,.opticslab-dark-panel *,.op-hero-deck,.op-hero-deck *)'
           + ':is([style^="color: ' + rgb + '"],[style*="; color: ' + rgb + '"],[style^="color:' + hex + '"],[style*=";color:' + hex + '"]){color:' + hex + '!important;}';
       }).join(''),
       // The calculators hub and the visual lab are built on dark cards (translucent
@@ -459,7 +459,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       // Topic titles use the bright accent, 2.0-3.6:1 on the light card; the topic's
       // darker ink reads 4.8:1 or better. Two more accents drawn as text on light
       // cards get their own inks, matched on the colour property only.
-      ':is(.theme-default,.theme-light) .opticslab-tool-shell .opticslab-topic-title{color:var(--op-topic-ink,#0369a1)!important;}',
+      ':is(.theme-default,.theme-light,:root:not(.theme-dark):not(.theme-contrast)) .opticslab-tool-shell .opticslab-topic-title{color:var(--op-topic-ink,#0369a1)!important;}',
       // Dark theme: the lens and diffraction accents read 3.9-4.1:1 on the navy
       // card; a lighter tint of each accent keeps the hue and clears 4.5:1.
       '.theme-dark .opticslab-tool-shell :is(.opticslab-topic-title,.opticslab-next-action-copy strong,.opticslab-mission:not([data-complete="true"]) .opticslab-mission-copy strong){color:color-mix(in srgb,var(--op-topic-accent,#38bdf8) 70%,#fff)!important;}',

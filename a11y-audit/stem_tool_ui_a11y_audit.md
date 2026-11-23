@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-11-21T21:57:39.448Z
+Generated: 2026-11-23T02:49:27.180Z
 
 ## Scope
 
@@ -171,7 +171,7 @@ Generated: 2026-11-21T21:57:39.448Z
 | `simShelf` Sim Shelf | science | standard | 2 | 0 | 0 | 0 | 0 | 0 |  |
 | `singing` Singing Lab | art | standard | 33 | 3 | 2 | 0 | 0 | 0 |  |
 | `skatelab` Skate Lab | science | standard | 53 | 33 | 1 | 0 | 0 | 0 |  |
-| `solarSystem` Solar System Explorer | science | standard | 49 | 1 | 1 | 0 | 0 | 0 |  |
+| `solarSystem` Solar System Explorer | science | standard | 58 | 1 | 1 | 0 | 0 | 0 |  |
 | `sourcebook` Sourcebook | creative | standard | 119 | 14 | 0 | 0 | 0 | 0 |  |
 | `spaceColony` Kepler Colony | strategy | standard | 32 | 8 | 1 | 0 | 0 | 1 | horizontal-overflow-risk x1 |
 | `spaceExplorer` Space Explorer | Simulations | standard | 10 | 0 | 0 | 0 | 0 | 0 |  |

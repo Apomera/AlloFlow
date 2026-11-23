@@ -1517,7 +1517,8 @@
       // side by side and the board STICKS while you scroll the controls — so
       // "change a number" and "see the curve move" are never separated by a scroll.
       // Below 900px it collapses to the original single column (unchanged order).
-      '#allo-arccity-root .arc-play-grid{display:grid;gap:16px;align-items:start;}' +
+      '#allo-arccity-root .arc-play-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start;}' +
+      '#allo-arccity-root .arc-board-col,#allo-arccity-root .arc-ctl-col{min-width:0;}' +
       '@media (min-width:900px){' +
       '#allo-arccity-root .arc-play-grid{grid-template-columns:minmax(0,1.35fr) minmax(300px,1fr);}' +
       '#allo-arccity-root .arc-board-col{position:sticky;top:8px;}' +

@@ -3628,7 +3628,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                       var maintBuild = buildings[Math.floor(Math.random() * buildings.length)];
                       var maintDef = buildingDefs.find(function (bd3) { return bd3.id === maintBuild; });
                       // No AI: skip the generated check (no penalty, no stuck loader).
-                      if (maintDef && typeof callGemini === 'function') {
+                      if (maintDef && _aiUsable('text', callGemini)) {
                         upd('maintChallengeLoading', true);
                         var modeStr = (d.colonyMode || 'mcq') === 'mcq' ? 'Return ONLY valid JSON: {"question":"<science question about ' + maintDef.gate + '>","options":["<correct>","<wrong1>","<wrong2>","<wrong3>","<wrong4>","<wrong5>"],"correctIndex":0,"explanation":"<why correct, 2-3 sentences with real science>"}. Generate exactly 6 options. Shuffle correct answer randomly (position 0-5). correctIndex must match.' : 'Return ONLY valid JSON: {"question":"<science question about ' + maintDef.gate + '>","answer":"<correct answer, 1-3 words>","explanation":"<why correct, 2-3 sentences with real science>"}';
                         callGemini('Generate a ' + maintDef.gate + ' science question for maintaining the ' + maintDef.name + ' in a space colony on an alien planet. The question should test understanding of the science behind this building. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. ' + modeStr, true).then(function (result) {
@@ -4506,7 +4506,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                         onClick: function () {
                           // In-flight guard: scienceGate shared with research / wonders.
                           if (d.scienceGateLoading || d.scienceGate) return;
-                          if ((d.colonyMode || 'mcq') === 'mcq' && typeof callGemini === 'function') {
+                          if ((d.colonyMode || 'mcq') === 'mcq' && _aiUsable('text', callGemini)) {
                             // Generate AI MCQ for the gate
                             upd('scienceGateLoading', true);
                             callGemini('Generate a ' + bd.gate + ' science question for building a ' + bd.name + ' in a space colony. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. Return ONLY valid JSON: {"question":"<question>","options":["<correct>","<wrong1>","<wrong2>","<wrong3>","<wrong4>","<wrong5>"],"correctIndex":0,"explanation":"<real science explanation 2-3 sentences>"}. Generate exactly 6 answer options. Shuffle the correct answer randomly (position 0-5). Make sure correctIndex matches the position of the correct answer.', true).then(function (gateResult) {
@@ -4570,7 +4570,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                           var nl8 = gameLog.slice(); nl8.push('Built ' + bdef3.icon + ' ' + bdef3.name + '!'); upd('colonyLog', nl8);
                           ns3.buildingsConstructed++; upd('colonyStats', ns3); upd('builtThisTurn', true);
                           if (addToast) addToast('\u2705 ' + bdef3.name + ' built! Science verified!', 'success');
-                          if (typeof callGemini !== 'function') { if (d.colonyTTS) colonySpeak('Construction complete. ' + bdef3.name + ' is now operational.', 'narrator'); }
+                          if (!_aiUsable('text', callGemini)) { if (d.colonyTTS) colonySpeak('Construction complete. ' + bdef3.name + ' is now operational.', 'narrator'); }
                           else callGemini('You are narrating a space colony game. The colony just built a ' + bdef3.name + ' (' + bdef3.desc + '). Narrate the construction completion in 2 dramatic sentences. Include a real science fact. Target: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '.', true).then(function (buildNarr) {
                             upd('buildNarration', buildNarr);
                             if (d.colonyTTS) colonySpeak(buildNarr, 'narrator');
@@ -4680,7 +4680,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                     React.createElement('div', { className: 'mt-1 grid grid-cols-2 gap-1 text-[0.6875rem]' },
                       React.createElement('div', null, React.createElement('span', { style: { color: st.morale > 60 ? '#4ade80' : '#fbbf24' } }, '\u2764 ' + st.morale), React.createElement('div', { className: 'w-full rounded-full h-1.5 mt-0.5', style: { background: '#1e293b' } }, React.createElement('div', { className: 'h-1.5 rounded-full transition-all', style: { width: st.morale + '%', background: st.morale > 60 ? 'linear-gradient(90deg, #22c55e, #4ade80)' : 'linear-gradient(90deg, #f59e0b, #fbbf24)', animation: 'kp-barFill 1s ease-out' } }))),
                       React.createElement('div', null, React.createElement('span', { style: { color: st.health > 50 ? '#22d3ee' : '#ef4444' } }, '\u2695 ' + st.health), React.createElement('div', { className: 'w-full rounded-full h-1.5 mt-0.5', style: { background: '#1e293b' } }, React.createElement('div', { className: 'h-1.5 rounded-full transition-all', style: { width: st.health + '%', background: st.health > 50 ? 'linear-gradient(90deg, #06b6d4, #22d3ee)' : 'linear-gradient(90deg, #ef4444, #f87171)', animation: 'kp-barFill 1s ease-out' } }))),
-                      typeof callGemini === 'function' && React.createElement('button', {
+                      _aiUsable('text', callGemini) && React.createElement('button', {
                         onClick: function () {
                           // In-flight guard: prevents double-click from issuing a second
                           // callGemini before the first resolves (would orphan tokens and
@@ -4973,7 +4973,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                             nj7.push({ turn: turn, source: 'Tradition: ' + td3.name + ' (' + td3.origin + ')', fact: td3.fact });
                             upd('scienceJournal', nj7);
                             if (addToast) addToast(td3.icon + ' ' + td3.name + ' adopted!', 'success');
-                            if (typeof callGemini !== 'function') { if (d.colonyTTS) colonySpeak('Cultural tradition adopted. ' + td3.name + '. ' + td3.fact, 'narrator'); }
+                            if (!_aiUsable('text', callGemini)) { if (d.colonyTTS) colonySpeak('Cultural tradition adopted. ' + td3.name + '. ' + td3.fact, 'narrator'); }
                             else callGemini('The space colony on ' + colonyWorldName + ' has adopted the ' + td3.name + ' cultural tradition from ' + td3.origin + ' heritage. Fact: ' + td3.fact + '. Narrate how the colony integrates this wisdom into daily life in 2-3 thoughtful sentences. Be respectful and authentic. Target: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '.', true).then(function (tradNarr) {
                               upd('tradNarration', tradNarr);
                               if (d.colonyTTS) colonySpeak(tradNarr, 'narrator');
@@ -5075,11 +5075,11 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                           eraReady && !prereqReady && React.createElement('div', { className: 'text-[0.6875rem] text-amber-300' }, '\u2192 First research: ' + (rd2.requires || []).join(' + '))
                         )
                       ),
-                      !isResearched && eraReady && typeof callGemini === 'function' && React.createElement('button', {
+                      !isResearched && eraReady && _aiUsable('text', callGemini) && React.createElement('button', {
                         onClick: function () {
                           // In-flight guard: scienceGate is shared with wonders / building MCQ.
                           // A second click while one is loading would clobber scienceGate.
-                          if (d.scienceGateLoading || d.scienceGate || typeof callGemini !== 'function') return;
+                          if (d.scienceGateLoading || d.scienceGate || !_aiUsable('text', callGemini)) return;
                           if (resources.science >= rd2.cost) {
                             // Science challenge gate for research
                             upd('scienceGateLoading', true);
@@ -5119,7 +5119,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                       React.createElement('div', { className: 'text-[0.6875rem] text-cyan-400' }, t('stem.spacecolony.ai_simulation', '\uD83E\uDD16 AI Simulation')),
                       React.createElement('div', { className: 'text-[0.6875rem] text-yellow-400' }, '+' + gs4.amount + ' ' + gs4.bonus + '/turn'),
                       React.createElement('div', { className: 'text-[0.6875rem] text-slate-200 mt-1 italic' }, gs4.fact),
-                      typeof callGemini === 'function' && React.createElement('button', {
+                      _aiUsable('text', callGemini) && React.createElement('button', {
                         onClick: function () {
                           // In-flight guard: avoid stacking mentor calls.
                           if (d.mentorChatLoading) return;
@@ -5534,10 +5534,10 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                           )
                         ),
                         isComplete ? React.createElement('span', { className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full', style: { background: '#f59e0b30', color: '#fbbf24', border: '1px solid #f59e0b' } }, t('stem.spacecolony.complete', '\u2728 COMPLETE')) :
-                        (canAfford && typeof callGemini === 'function') ? React.createElement('button', {
+                        (canAfford && _aiUsable('text', callGemini)) ? React.createElement('button', {
                           onClick: function() {
                             // In-flight guard: scienceGate shared with research / building MCQ.
-                            if (d.scienceGateLoading || d.scienceGate || typeof callGemini !== 'function') return;
+                            if (d.scienceGateLoading || d.scienceGate || !_aiUsable('text', callGemini)) return;
                             upd('scienceGateLoading', true);
                             var modeW = (d.colonyMode || 'mcq') === 'mcq' ? 'Return ONLY valid JSON: {"question":"<question>","options":["<correct>","<wrong1>","<wrong2>","<wrong3>","<wrong4>","<wrong5>"],"correctIndex":0,"explanation":"<2-3 sentences>"}. 6 options, shuffle correct (0-5).' : 'Return ONLY valid JSON: {"question":"<question>","answer":"<1-3 words>","explanation":"<2-3 sentences>"}';
                             callGemini('Generate a challenging ' + wd.domain + ' science question about building a ' + wd.name + ' (' + wd.desc + ') in a space colony. Challenge ' + (progress + 1) + ' of ' + wd.challenges + '. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. ' + modeW, true).then(function(result) {

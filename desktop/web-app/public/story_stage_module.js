@@ -9,6 +9,7 @@
 (function () {
   'use strict';
 
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.LitLab) {
     console.log('[CDN] LitLab already loaded, skipping');
     return;
@@ -16,7 +17,7 @@
 
   // ── Live region (WCAG 4.1.3) ──
   (function() {
-    if (document.getElementById('allo-live-litlab')) return;
+    if (typeof document === 'undefined' || !document.body || document.getElementById('allo-live-litlab')) return;
     var lr = document.createElement('div');
     lr.id = 'allo-live-litlab';
     lr.setAttribute('aria-live', 'polite');
@@ -27,7 +28,7 @@
     document.body.appendChild(lr);
   })();
   (function() {
-    if (document.getElementById('litlab-a11y-styles')) return;
+    if (typeof document === 'undefined' || !document.head || document.getElementById('litlab-a11y-styles')) return;
     var style = document.createElement('style');
     style.id = 'litlab-a11y-styles';
     style.textContent = [
@@ -79,14 +80,20 @@
         return Array.prototype.slice.call(dialog.querySelectorAll(
           'button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),summary,[tabindex]:not([tabindex="-1"])'
         )).filter(function (node) {
-          return !node.hidden && node.getAttribute('aria-hidden') !== 'true';
+          if (node.hidden || node.getAttribute('aria-hidden') === 'true') return false;
+          try {
+            var cs = typeof window !== 'undefined' && typeof window.getComputedStyle === 'function' ? window.getComputedStyle(node) : null;
+            if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) return false;
+          } catch (_) {}
+          return true;
         });
       }
       var initial = initialFocusRef.current || focusable()[0] || dialog;
       if (initial && typeof initial.focus === 'function') initial.focus();
       function onKeyDown(event) {
+        if (!event || event.isComposing || event.keyCode === 229) return;
         if (stack[stack.length - 1] !== trap) return;
-        if (event.key === 'Escape') {
+        if (event.key === 'Escape' && !event.ctrlKey && !event.metaKey && !event.altKey) {
           event.preventDefault();
           if (onEscapeRef.current) onEscapeRef.current();
           return;
@@ -226,6 +233,7 @@
     if (!s || s.length > 8 * 1024 * 1024) return '';
     return /^(?:data:image\/(?:png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=_\s-]+|https:\/\/[^\s"'<>]+|blob:[^\s"'<>]+)$/i.test(s) ? s : '';
   }
+  var _safeStoryImgUrl = safeStoryImgUrl;
   function _llFence(text, tag, maxLen) {
     var clean = String(text == null ? '' : text)
       .replace(/<\s*\/?\s*UNTRUSTED_[A-Z0-9_]*[^>]*>/gi, '')
@@ -277,8 +285,12 @@
   function _aiUsable(kind, fn) {
     if (typeof fn !== 'function' || fn._alloQrBlocked === true) return false;
     if (typeof window !== 'undefined') {
+      var mp = window.ALLOFLOW_MANAGED_AI_POLICY;
+      if (mp && (mp.enabled === false || mp.allowAi === false || mp.aiEnabled === false || mp.disabled === true || mp.mode === 'disabled' || mp.mode === 'off')) return false;
+      var sp = window.StudentPolicy;
+      if (sp && (sp.allowAi === false || sp.aiEnabled === false || sp.aiDisabled === true || (typeof sp.isAiAllowed === 'function' && !sp.isAiAllowed(kind || 'text')))) return false;
       var qrMode = window.__alloQrStudentMode;
-      var qrBlocked = qrMode === true || (qrMode && typeof qrMode === 'object' && (qrMode.aiDisabled === true || qrMode.aiPolicy === 'off'));
+      var qrBlocked = qrMode === true || (qrMode && typeof qrMode === 'object' && (qrMode.active === true || qrMode.aiEnabled === false || qrMode.allowAi === false || qrMode.aiDisabled === true || qrMode.aiPolicy === 'off'));
       if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || qrBlocked) return false;
       if (typeof window.__alloAiUsable === 'function') {
         try { return !!window.__alloAiUsable(kind, fn); } catch (_) { return false; }
@@ -336,7 +348,7 @@
   // them and batch-translates the ones missing from the per-device cache. Falls
   // back to English, and touches no lang/*.js. Emoji/{tokens} preserved.
   var LL_I18N_KEY = 'allo_litlab_ui_i18n_v1';
-  var LANG_CTX = (typeof window !== 'undefined' && window.AlloLanguageContext) || React.createContext(null);
+  var LANG_CTX = (typeof window !== 'undefined' && window.AlloLanguageContext) || (typeof React !== 'undefined' && React.createContext ? React.createContext(null) : null);
   var STR_REG = {}; // English strings seen via tr(), used as the translate work-list
   var LL_CUR = { lang: 'English', cache: {} }; // per-render snapshot so tr() works in module + handler scope
   function llInterp(s, params) {
@@ -376,6 +388,8 @@
   }
 
   // ── Main Component ────────────────────────────────────────────────────
+  var _LL_CRISIS_RE = /\b(?:kill\s+my\s*self|suicid(?:e|al)|end\s+my\s+life|want\s+to\s+die|hurt\s+my\s*self|self[-\s]?harm|cut\s+my\s*self|overdose|shoot\s+up\s+(?:the\s+)?school|bomb\s+(?:the\s+)?school)\b/i;
+  if (typeof React === 'undefined') return;
   var LitLab = React.memo(function LitLab(props) {
     var onClose = props.onClose;
     var _rawOnCallGemini = props.onCallGemini;
@@ -396,26 +410,46 @@
     var canTextAi = _aiUsable('text', _rawOnCallGemini);
     // Central self-harm safety gate for LitLab / StoryStage AI script surfaces.
     // Scoped to self_harm so dramatic scripts never false-positive.
-    var onCallGemini = typeof _rawOnCallGemini === 'function' ? function(prompt) {
-      var msg = String(prompt || '');
-      if (msg && typeof window !== 'undefined') {
+    var _llPauseForCrisis = function(msg) {
+      var text = String(msg || '');
+      if (!text) return false;
+      var hit = null;
+      if (typeof window !== 'undefined') {
         var checker = (window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker || null;
         var flags = null;
-        try { flags = (checker && typeof checker.check === 'function') ? checker.check(msg) : null; } catch (_) { flags = null; }
-        var hit = Array.isArray(flags) && flags.find(function(f) { return f && f.category === 'self_harm' && f.severity === 'critical'; });
-        if (hit) {
-          if (typeof onSafetyFlag === 'function') {
-            try { onSafetyFlag(Object.assign({}, hit, { source: 'story_stage_ai', context: msg.slice(0, 100), aiGenerated: false })); } catch (_) {}
-          }
-          if (addToast) addToast('We paused LitLab AI for a moment because what was written sounds heavy. Please talk to a trusted adult, call or text 988 (Suicide & Crisis Lifeline), or text HOME to 741741 (Crisis Text Line). You are not alone.', 'warn');
-          if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
-            try { window.SelHub.showCrisisModal({ toolName: 'LitLab / StoryStage', contentSnippet: msg.slice(0, 200) }); } catch (_) {}
-          }
-          return Promise.reject(Object.assign(new Error('Paused for safety'), { code: 'safety-paused' }));
+        try { flags = (checker && typeof checker.check === 'function') ? checker.check(text) : null; } catch (_) { flags = null; }
+        hit = Array.isArray(flags) && flags.find(function(f) { return f && f.category === 'self_harm' && f.severity === 'critical'; });
+        if (!hit && _LL_CRISIS_RE.test(text)) {
+          hit = { category: 'self_harm', severity: 'critical', matched: 'crisis_fallback' };
         }
+      } else if (_LL_CRISIS_RE.test(text)) {
+        hit = { category: 'self_harm', severity: 'critical', matched: 'crisis_fallback' };
+      }
+      if (hit) {
+        if (typeof onSafetyFlag === 'function') {
+          try { onSafetyFlag(Object.assign({}, hit, { source: 'story_stage_ai', context: text.slice(0, 100), aiGenerated: false })); } catch (_) {}
+        }
+        if (addToast) addToast('We paused LitLab AI for a moment because what was written sounds heavy. Please talk to a trusted adult, call or text 988 (Suicide & Crisis Lifeline), text HOME to 741741 (Crisis Text Line), or call 911 for immediate danger. You are not alone.', 'warn');
+        if (typeof window !== 'undefined' && window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+          try { window.SelHub.showCrisisModal({ toolName: 'LitLab / StoryStage', contentSnippet: text.slice(0, 200) }); } catch (_) {}
+        }
+        return true;
+      }
+      return false;
+    };
+    var onCallGemini = typeof _rawOnCallGemini === 'function' ? function(prompt) {
+      if (!_aiUsable('text', _rawOnCallGemini)) {
+        return Promise.reject(Object.assign(new Error('AI unavailable'), { code: 'ai-disabled' }));
+      }
+      var msg = String(prompt || '');
+      if (_llPauseForCrisis(msg)) {
+        return Promise.reject(Object.assign(new Error('Paused for safety'), { code: 'safety-paused' }));
       }
       return _rawOnCallGemini.apply(null, arguments);
     } : _rawOnCallGemini;
+    if (typeof onCallGemini === 'function' && _rawOnCallGemini && _rawOnCallGemini._alloQrBlocked === true) {
+      onCallGemini._alloQrBlocked = true;
+    }
     var canImgAi = _aiUsable('image', onCallImagen);
     var canImgEditAi = _aiUsable('image', onCallGeminiImageEdit);
     var canVisionAi = _aiUsable('vision', props.onCallGeminiVision);
@@ -863,7 +897,17 @@
     // Each story owns a private V4 lane. Never borrow the adapted-text current lane.
     narrationLiveRef.current = { script: script, language: storyLanguage.trim() || 'English', callTTS: onCallTTS };
     function isNarrationMuted() {
-      return typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted();
+      try {
+        if (typeof window !== 'undefined') {
+          if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+          if (typeof window.isAlloMuted === 'function' && window.isAlloMuted()) return true;
+          if (window._alloGlobalMute || window._alloGlobalMuted || window.__alloFlowMuted || window.__alloSoundMuted) return true;
+        }
+        if (typeof localStorage !== 'undefined') {
+          if (localStorage.getItem('alloflow-global-muted') === 'true' || localStorage.getItem('alloflow_muted') === '1') return true;
+        }
+      } catch (_) {}
+      return false;
     }
     function cancelPreparation() {
       if (preparationRef.current) preparationRef.current.abort();
@@ -1050,6 +1094,16 @@
       setIsPaused(false);
       announceLitLab(tr('Playback stopped.'));
     }, [cancelSpeech]);
+
+    React.useEffect(function () {
+      if (typeof window === 'undefined') return undefined;
+      function onMuteChanged(ev) {
+        var muted = (ev && ev.detail && typeof ev.detail.muted === 'boolean') ? ev.detail.muted : isNarrationMuted();
+        if (muted) stopPlayback();
+      }
+      window.addEventListener('alloflow-mute-changed', onMuteChanged);
+      return function () { window.removeEventListener('alloflow-mute-changed', onMuteChanged); };
+    }, [stopPlayback]);
 
     var playFromLine = useCallback(async function (startIdx) {
       if (isNarrationMuted()) { setNarrationNotice(tr('Unmute audio before playing narration.')); return; }
@@ -1393,6 +1447,7 @@
       try {
         var prompt = 'Character portrait illustration: ' + ch.name + ' — ' + ch.description + '. '
           + 'Style: warm, expressive, children\'s book illustration. Circular frame. White background. STRICTLY NO TEXT.';
+        if (_llPauseForCrisis(prompt)) return;
         var url = await onCallImagen(prompt, 256, 0.85);
         if (storyEpoch !== storyEpochRef.current) return;
         var safeUrl = safeStoryImgUrl(url);
@@ -1559,6 +1614,7 @@
       try {
         var prompt = 'Illustration for a story scene: ' + (script.setting || storyTitle || 'a fictional setting') + '. '
           + 'Style: warm, colorful, children\'s book illustration. Wide landscape composition. Rich detail. STRICTLY NO TEXT.';
+        if (_llPauseForCrisis(prompt)) { setSceneImageLoading(false); return; }
         var url = await onCallImagen(prompt, 600, 0.85);
         if (storyEpoch !== storyEpochRef.current) return;
         var safeUrl = safeStoryImgUrl(url);
@@ -1582,6 +1638,7 @@
     // ── Refine an existing image with a user-provided instruction (uses Gemini image-edit) ──
     var refineImage = useCallback(async function (currentSrc, instruction, sizePx) {
       if (!_aiUsable('image', onCallGeminiImageEdit) || !currentSrc || !instruction) return null;
+      if (_llPauseForCrisis(instruction)) return null;
       try {
         // Strip data: prefix if present (matches the pattern used across other modules).
         var base64 = String(currentSrc).indexOf(',') !== -1 ? currentSrc.split(',')[1] : currentSrc;
@@ -1713,6 +1770,7 @@
         var sceneDesc = pageLines.map(function (l) { return l.text; }).join(' ').substring(0, 300);
         var prompt = 'Illustration for a children\'s storybook page: ' + sceneDesc + '. '
           + 'Style: warm, colorful, detailed storybook illustration. Landscape format. STRICTLY NO TEXT or words in the image.';
+        if (_llPauseForCrisis(prompt)) { setPageImgLoading(function (prev) { var n = Object.assign({}, prev); delete n[pageIdx]; return n; }); return; }
         var url = await onCallImagen(prompt, 512, 0.85);
         if (storyEpoch !== storyEpochRef.current) return;
         var safeUrl = safeStoryImgUrl(url);
@@ -1757,8 +1815,8 @@
         + (safeAuthor ? '<meta name="author" content="' + safeAuthor + '">' : '')
         + '<meta name="description" content="A storybook' + (safeAuthor ? ' performed by ' + safeAuthor : '') + '. Generated with LitLab.">'
         + '<style>'
-        + '.skip-link{position:absolute;left:-9999px;top:0;padding:8px 14px;background:#0f172a;color:#fff;text-decoration:none;font-weight:700}'
-        + '.skip-link:focus{left:0;top:0;z-index:1000}'
+        + '.skip-link{position:absolute;inset-inline-start:0;top:0;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;pointer-events:none;padding:8px 14px;background:#0f172a;color:#fff;text-decoration:none;font-weight:700}'
+        + '.skip-link:focus{inset-inline-start:0;top:0;width:auto;height:auto;overflow:visible;clip-path:none;white-space:normal;pointer-events:auto;z-index:1000}'
         + 'html,body{margin:0;padding:0}'
         + 'body{font-family:Georgia,serif;color:#1e293b;background:#fff}'
         + 'main{display:block}'
@@ -1816,7 +1874,7 @@
       // ── Story pages (one section per page; numbered headings for navigation) ──
       pages.forEach(function (pageLines, pi) {
         html += '<section class="page" aria-labelledby="page-' + (pi + 1) + '-heading">';
-        html += '<h2 id="page-' + (pi + 1) + '-heading" class="visually-hidden" style="position:absolute;left:-9999px">Page ' + (pi + 1) + '</h2>';
+        html += '<h2 id="page-' + (pi + 1) + '-heading" class="visually-hidden" style="position:absolute;inset-inline-start:0;top:0;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap">Page ' + (pi + 1) + '</h2>';
         var _safePageImg = safeStoryImgUrl(pageImages[pi]);
         if (_safePageImg) {
           // Build descriptive alt from the first non-empty line on the page.

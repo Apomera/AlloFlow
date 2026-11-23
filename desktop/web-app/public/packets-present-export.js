@@ -18,9 +18,12 @@
   var myWordsOpt = $('pe-load-my-words');
   var vocabWordsOpt = $('pe-load-vocab-words');
   var wsWordsOpt = $('pe-load-ws-words');
+  var customWordOpt = $('pe-custom-opt');
   var sheetTypeSelect = $('pe-sheet-type');
   var sheetDownloadBtn = $('pe-sheet-download');
   var openSrBtn = $('pe-open-symbol-runner');
+  var findOnlineLink = $('pe-find-online');
+  var moreNowEl = $('pe-more-now');
 
   function syncSavedGroup() {
     if (!savedGroupEl) return;
@@ -28,100 +31,86 @@
     savedGroupEl.hidden = !any;
   }
 
+  function syncWordSource(value, customLabel) {
+    if (!wordSourceSelect) return;
+    if (value === 'custom') {
+      if (customWordOpt) {
+        customWordOpt.textContent = customLabel || 'Custom word list';
+        customWordOpt.hidden = false;
+      }
+      wordSourceSelect.value = 'custom';
+      return;
+    }
+    if (customWordOpt) customWordOpt.hidden = true;
+    if (value) wordSourceSelect.value = value;
+  }
+
+  function unpicturedWordsOf(packArg) {
+    var pack = activePack(packArg);
+    var items = (pack && (Array.isArray(pack.items) ? pack.items : pack.words)) || [];
+    var seen = Object.create(null);
+    var missing = [];
+    items.forEach(function (it) {
+      if (!it || typeof it !== 'object') return;
+      if (it.pictureNone || it.image || (it.picture && it.picture.src) || (typeof it.picture === 'string' && it.picture)) return;
+      var w = String(it.word || '').trim().toLowerCase();
+      if (!/^[a-z]{2,24}$/.test(w) || seen[w] || missing.length >= 50) return;
+      seen[w] = true;
+      missing.push(w);
+    });
+    return missing;
+  }
+
+  function syncFindOnlineAndMore(packArg) {
+    var missing = unpicturedWordsOf(packArg);
+    if (findOnlineLink) {
+      if (missing.length) {
+        var hash = '#from=present&word=' + encodeURIComponent(missing[0]) + (missing.length > 1 ? '&more=' + encodeURIComponent(missing.slice(1).join(',')) : '');
+        findOnlineLink.setAttribute('href', 'packets-pictures.html' + hash);
+        findOnlineLink.textContent = 'Find pictures online (' + missing.length + ' missing)';
+      } else {
+        findOnlineLink.setAttribute('href', 'packets-pictures.html#from=present');
+        findOnlineLink.textContent = 'Find more pictures online';
+      }
+    }
+    if (moreNowEl) {
+      var sheetLabel = sheetTypeSelect && sheetTypeSelect.selectedIndex >= 0 && sheetTypeSelect.options[sheetTypeSelect.selectedIndex]
+        ? sheetTypeSelect.options[sheetTypeSelect.selectedIndex].textContent
+        : 'Classroom sheets';
+      moreNowEl.textContent = missing.length
+        ? sheetLabel + ' \u00b7 ' + missing.length + (missing.length === 1 ? ' word needs a picture' : ' words need pictures')
+        : sheetLabel;
+    }
+  }
+
   function say(text) {
     if (statusEl) statusEl.textContent = text || '';
   }
 
-  // Built-in starter sets so meaning, example sentences, and sound boxes are ready immediately.
-  var STARTERS = {
-    'short-vowels': {
-      title: 'Short vowels with pictures',
-      words: [
-        { word: 'cat', definition: 'a small furry animal with whiskers that purrs', example: 'The cat slept on the warm rug.', phonemes: ['k', 'a', 't'] },
-        { word: 'dog', definition: 'a friendly four-legged pet that barks', example: 'Our dog ran to catch the red ball.', phonemes: ['d', 'o', 'g'] },
-        { word: 'sun', definition: 'the bright star in the sky that gives light and warmth', example: 'The sun shines bright at noon.', phonemes: ['s', 'u', 'n'] },
-        { word: 'bed', definition: 'a piece of furniture for sleeping on', example: 'He put the blanket on the bed.', phonemes: ['b', 'e', 'd'] },
-        { word: 'fish', definition: 'an animal with fins and scales that lives in water', example: 'A gold fish swam across the pond.', phonemes: ['f', 'i', 'sh'] },
-        { word: 'frog', definition: 'a small jumping animal that lives near water', example: 'The green frog hopped onto a leaf.', phonemes: ['f', 'r', 'o', 'g'] },
-        { word: 'ship', definition: 'a large boat that sails across deep water', example: 'The ship sailed out of the harbor.', phonemes: ['sh', 'i', 'p'] },
-        { word: 'cup', definition: 'a small round container for drinking', example: 'Fill the cup with cold water.', phonemes: ['k', 'u', 'p'] },
-      ],
-    },
-    'blends-digraphs': {
-      title: 'Blends and digraphs',
-      words: [
-        { word: 'train', definition: 'a line of rail cars pulled along a track', example: 'The train stopped at the station.', phonemes: ['t', 'r', 'ay', 'n'] },
-        { word: 'cloud', definition: 'a white or gray mass of water drops high in the sky', example: 'A soft cloud floated past the hill.', phonemes: ['k', 'l', 'ow', 'd'] },
-        { word: 'plant', definition: 'a living thing that grows in soil and makes leaves', example: 'Water the plant by the sunny window.', phonemes: ['p', 'l', 'a', 'n', 't'] },
-        { word: 'brush', definition: 'a tool with bristles used for painting or cleaning', example: 'Dip the brush in blue paint.', phonemes: ['b', 'r', 'u', 'sh'] },
-        { word: 'shell', definition: 'the hard outer cover of a sea animal or egg', example: 'She found a pink shell on the sand.', phonemes: ['sh', 'e', 'l'] },
-        { word: 'whale', definition: 'a huge ocean mammal that breathes air through a blowhole', example: 'The gray whale splashed near the boat.', phonemes: ['w', 'ay', 'l'] },
-        { word: 'clock', definition: 'a tool that shows what time it is', example: 'Look at the clock before recess starts.', phonemes: ['k', 'l', 'o', 'k'] },
-        { word: 'star', definition: 'a bright point of light far out in space', example: 'The brightest star came out at dusk.', phonemes: ['s', 't', 'ar'] },
-      ],
-    },
-    'science-math': {
-      title: 'Science and math vocabulary',
-      words: [
-        { word: 'habitat', definition: 'the natural home where a plant or animal lives', example: 'A pond is a good habitat for turtles.' },
-        { word: 'evaporate', definition: 'to change from liquid water into invisible water vapor', example: 'Puddles evaporate in the warm sun.' },
-        { word: 'magnet', definition: 'an object that pulls iron and steel toward itself', example: 'The magnet picked up ten paper clips.' },
-        { word: 'fraction', definition: 'a number showing equal parts of one whole', example: 'One half is a simple fraction.' },
-        { word: 'perimeter', definition: 'the total distance all the way around a flat shape', example: 'Add every side length to find the perimeter.' },
-        { word: 'symmetry', definition: 'an exact match between two halves across a line', example: 'A butterfly wing shows symmetry.' },
-      ],
-    },
-    academic: {
-      title: 'Academic study words',
-      words: [
-        { word: 'observe', definition: 'to watch and notice details carefully', example: 'Use a hand lens to observe the crystal.' },
-        { word: 'predict', definition: 'to tell what you think will happen next using clues', example: 'Predict which seed will sprout first.' },
-        { word: 'compare', definition: 'to check how two things are alike and how they differ', example: 'Compare the two graphs side by side.' },
-        { word: 'pattern', definition: 'things arranged following a steady rule that repeats', example: 'Skip counting makes a number pattern.' },
-        { word: 'evidence', definition: 'facts or clues that help prove an answer is true', example: 'Point to evidence from the passage.' },
-        { word: 'solution', definition: 'the answer to a problem, or a liquid mixture', example: 'Explain how you checked your solution.' },
-      ],
-    },
-    'earth-space': {
-      title: 'Earth and space',
-      words: [
-        { word: 'volcano', definition: 'an opening in Earth crust where magma, ash, and gases erupt', example: 'Hot lava flowed down the side of the volcano.' },
-        { word: 'glacier', definition: 'a huge slow-moving river of compacted ice and snow on land', example: 'The glacier carved a wide U-shaped valley over thousands of years.' },
-        { word: 'orbit', definition: 'the curved path an object follows around a star or planet in space', example: 'Earth completes one orbit around the sun every year.' },
-        { word: 'eclipse', definition: 'an event in which one body in space moves into the shadow of another', example: 'During a solar eclipse, the moon briefly blocks the sun.' },
-        { word: 'fossil', definition: 'the preserved remains or imprint of an ancient plant or animal in rock', example: 'The museum displayed a fern fossil pressed inside dark shale.' },
-        { word: 'atmosphere', definition: 'the envelope of air and gases surrounding a planet', example: 'Earth atmosphere protects living things from harsh rays.' },
-        { word: 'erosion', definition: 'the wearing away and carrying of soil and rock by wind, water, or ice', example: 'Planting grass helps slow soil erosion on steep hillsides.' },
-        { word: 'weathering', definition: 'the breaking down of rocks into smaller pieces at Earth surface', example: 'Freezing water inside cracks causes rock weathering in winter.' },
-      ],
-    },
-    'civics-geography': {
-      title: 'Civics and geography',
-      words: [
-        { word: 'democracy', definition: 'a system of government in which citizens choose leaders and vote on laws', example: 'Voting in local elections is a key part of democracy.' },
-        { word: 'constitution', definition: 'a written plan that sets the basic rules and powers of a government', example: 'The Constitution explains the three branches of national government.' },
-        { word: 'citizen', definition: 'a legal member of a town, state, or country with shared rights and duties', example: 'Every citizen can stay informed about community issues.' },
-        { word: 'peninsula', definition: 'a piece of land surrounded by water on three sides', example: 'Florida is a well-known peninsula on the Atlantic coast.' },
-        { word: 'equator', definition: 'an imaginary line around the middle of Earth halfway between the poles', example: 'Places near the equator stay warm throughout the year.' },
-        { word: 'hemisphere', definition: 'one half of Earth north, south, east, or west of a dividing line', example: 'North America lies in the Northern Hemisphere.' },
-        { word: 'continent', definition: 'one of the seven very large landmasses on Earth', example: 'Asia is the largest continent in land area and population.' },
-        { word: 'climate', definition: 'the usual pattern of weather in a place over many years', example: 'A desert climate receives very little rainfall each year.' },
-      ],
-    },
-    'literary-craft': {
-      title: 'Story and poetry craft',
-      words: [
-        { word: 'metaphor', definition: 'a figure of speech that calls one thing another to highlight a shared trait', example: 'Saying time is a thief uses a vivid metaphor.' },
-        { word: 'simile', definition: 'a comparison of two unlike things using the words like or as', example: 'Her laugh sparkled like bells is a bright simile.' },
-        { word: 'personification', definition: 'giving human feelings, traits, or actions to a nonliving object or animal', example: 'Saying the wind whispered secrets uses personification.' },
-        { word: 'hyperbole', definition: 'an intentional big exaggeration used for emphasis or humor', example: 'My backpack weighs a ton today is a playful hyperbole.' },
-        { word: 'alliteration', definition: 'repeating the same beginning consonant sound in nearby words', example: 'Busy bees buzzed brilliantly uses cheerful alliteration.' },
-        { word: 'foreshadowing', definition: 'a subtle clue in a story hinting at what will happen later', example: 'Dark storm clouds at the start acted as foreshadowing.' },
-        { word: 'stanza', definition: 'a grouped set of lines forming one section inside a poem', example: 'Read the second stanza aloud to hear the rhythm.' },
-        { word: 'theme', definition: 'the central message or big life lesson a reader learns from a story', example: 'Courage and friendship formed the main theme of the novel.' },
-      ],
-    },
-  };
+  // Built-in starter sets come from packets_word_starters.js (shared with Vocabulary maker).
+  // Compact word-only fallback keeps isolated unit tests that omit packets_word_starters.js working.
+  var STARTERS = (function () {
+    var mod = root.AlloPacketWordStarters;
+    if (mod && mod.BY_ID && typeof mod.BY_ID === 'object') return mod.BY_ID;
+    var map = Object.create(null);
+    if (mod && Array.isArray(mod.LIST)) {
+      mod.LIST.forEach(function (set) { if (set && set.id) map[set.id] = set; });
+      return map;
+    }
+    var raw = {
+      'short-vowels': ['Short vowels with pictures', 'cat dog sun bed fish frog ship cup'],
+      'blends-digraphs': ['Blends and digraphs', 'train cloud plant brush shell whale clock star'],
+      'science-math': ['Science and math vocabulary', 'habitat evaporate magnet fraction perimeter symmetry'],
+      academic: ['Academic study words', 'observe predict compare pattern evidence solution'],
+      'earth-space': ['Earth and space', 'volcano glacier orbit eclipse fossil atmosphere erosion weathering'],
+      'civics-geography': ['Civics and geography', 'democracy constitution citizen peninsula equator hemisphere continent climate'],
+      'literary-craft': ['Story and poetry craft', 'metaphor simile personification hyperbole alliteration foreshadowing stanza theme'],
+    };
+    Object.keys(raw).forEach(function (k) {
+      map[k] = { id: k, title: raw[k][0], words: raw[k][1].split(' ').map(function (w) { return { word: w }; }) };
+    });
+    return map;
+  })();
 
   var dictionary = typeof root.createWordSoundsPhonemeData === 'function' ? root.createWordSoundsPhonemeData() : null;
   var wsCore = typeof root.createWordSoundsCore === 'function' ? root.createWordSoundsCore({ phonemes: dictionary }) : null;
@@ -150,6 +139,7 @@
     if (controller && typeof controller.setPack === 'function') {
       controller.setPack(packConfig);
     }
+    syncFindOnlineAndMore(packConfig);
   }
 
   function safeJsonParse(raw) {
@@ -414,6 +404,7 @@
       words: words,
       options: { mode: 'vocabulary', includePictures: true },
     });
+    syncWordSource('starter:' + id);
     say('Loaded "' + starter.title + '" (' + words.length + ' words).');
     matchBuiltInPictures({ quiet: true });
   }
@@ -598,7 +589,7 @@
     var edits = null;
     try {
       var raw = storage.getItem('alloflow-packets-vocab/1');
-      if (raw) saved = safeJsonParse(raw);
+      if (raw) saved = JSON.parse(raw, function (k, v) { return k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v; });
     } catch (_) { saved = null; }
     if (!saved || typeof saved !== 'object') return null;
     try {
@@ -671,6 +662,7 @@
         words: enriched,
         options: { mode: 'vocabulary', includePictures: true },
       });
+      syncWordSource('saved:vocab');
       say('Loaded ' + enriched.length + ' words from Vocabulary maker.');
       return matchBuiltInPictures({ quiet: true }).then(function () { return true; });
     });
@@ -683,7 +675,7 @@
     var saved = null;
     try {
       var raw = storage.getItem('alloflow-packets-maker/1');
-      if (raw) saved = safeJsonParse(raw);
+      if (raw) saved = JSON.parse(raw, function (k, v) { return k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v; });
     } catch (_) { saved = null; }
     if (!saved || typeof saved !== 'object') return null;
     var rawWords = Array.isArray(saved.words) && saved.words.length
@@ -702,7 +694,8 @@
     if (!items.length) return null;
     // The title the teacher gave the file (the maker saves it with the words); until 2026-11-16 it was dropped here.
     var makerTitle = typeof saved.title === 'string' ? saved.title.trim().slice(0, 80) : '';
-    return { title: makerTitle || 'Word Sounds packet words', words: items };
+    var makerActivities = Array.isArray(saved.activities) && saved.activities.length ? saved.activities.slice() : null;
+    return { title: makerTitle || 'Word Sounds packet words', words: items, activities: makerActivities, tracing: saved.tracing || 'both' };
   }
 
   function applyWordSoundsMakerWords(opts) {
@@ -732,8 +725,9 @@
           title: data.title,
           language: 'en',
           words: enriched,
-          options: { mode: 'vocabulary', includePictures: true },
+          options: { mode: 'vocabulary', includePictures: true, wsActivities: data.activities || null, wsTracing: data.tracing || 'both' },
         });
+        syncWordSource('saved:word-sounds');
         say('Loaded ' + enriched.length + ' words from Word Sounds maker.');
         return matchBuiltInPictures({ quiet: true }).then(function () { return true; });
       });
@@ -775,6 +769,23 @@
   function buildWorksheetHtml(packArg) {
     var a = sheetInput(packArg, 'Vocabulary Study Worksheet');
     return root.AlloWordPracticeMedia.buildWorksheetHtml(a[0], a[1]);
+  }
+  function buildWordSoundsWorksheetHtml(packArg, extraOpts) {
+    var a = sheetInput(packArg, 'Word Sounds Activity Worksheet');
+    var pack = activePack(packArg);
+    var opts = Object.assign({
+      pictures: true,
+      answerKey: true,
+      hints: true,
+      syllables: sheetReadingOpts().syllables,
+      symbols: symbols,
+      matcher: root.AlloWordPictureMatcher || (root.AlloModules && root.AlloModules.WordPictureMatcher) || null,
+      core: wsCore,
+      dictionary: dictionary,
+      activities: (pack && pack.options && Array.isArray(pack.options.wsActivities) && pack.options.wsActivities.length) ? pack.options.wsActivities : undefined,
+      tracing: (pack && pack.options && pack.options.wsTracing) || 'both',
+    }, extraOpts || {});
+    return root.AlloWordPracticeMedia.buildWordSoundsWorksheetHtml(a[0], opts);
   }
   function buildBingoHtml(packArg) {
     var a = sheetInput(packArg, 'Vocabulary Classroom Bingo');
@@ -835,9 +846,9 @@
       say('Could not start Present and Export.');
       return;
     }
-    var initial = STARTERS['short-vowels'];
-    var initialWords = initial.words;
-    var initialTitle = initial.title;
+    var initial = hasOwn(STARTERS, 'short-vowels') ? STARTERS['short-vowels'] : { title: 'Word cards', words: [] };
+    var initialWords = Array.isArray(initial.words) ? initial.words : [];
+    var initialTitle = initial.title || 'Word cards';
 
     var startWords = enrichItems(initialTitle, initialWords);
     // The annotation tools are the app's own suite, bundled once in word_practice_annotation_assets.js. The app has
@@ -856,6 +867,7 @@
       resolveEntry: resolveEntry,
       searchSymbols: searchSymbols,
       ensurePptx: ensurePptx,
+      hideInlineSheetButtons: true,
       onToast: function (msg) { say(msg); },
     });
     lastPack = {
@@ -867,6 +879,19 @@
     startWords.forEach(function (it) {
       if (it && it.word) lastPackItemsByWord[String(it.word).toLowerCase()] = it;
     });
+    syncFindOnlineAndMore(lastPack);
+
+    if (host) {
+      var hostEditTimer = 0;
+      host.addEventListener('input', function (ev) {
+        var t = ev && ev.target;
+        if (t && t.tagName === 'TEXTAREA' && t.closest && t.closest('.awp-fields')) {
+          syncWordSource('custom', 'Custom word list');
+          if (typeof root.clearTimeout === 'function') root.clearTimeout(hostEditTimer);
+          hostEditTimer = typeof root.setTimeout === 'function' ? root.setTimeout(function () { syncFindOnlineAndMore(); }, 180) : 0;
+        }
+      });
+    }
 
     function applyMyWords() {
       if (!myWords || typeof myWords.list !== 'function') {
@@ -901,6 +926,7 @@
             words: enrichItems('My saved words', list),
             options: { mode: 'vocabulary', includePictures: true },
           });
+          syncWordSource('saved:my-words');
           say('Loaded ' + list.length + ' words from My words.');
           return matchBuiltInPictures({ quiet: true }).then(function () { return true; });
         });
@@ -954,13 +980,21 @@
       frayer: { suffix: '-frayer.html', label: 'Frayer study sheets', build: buildFrayerHtml },
       'sorting-cards': { suffix: '-sorting-cards.html', label: 'cut-out sorting cards', build: buildSortingCardsHtml },
       worksheet: { suffix: '-worksheet.html', label: 'cloze and matching worksheet', build: buildWorksheetHtml },
+      'word-sounds-worksheet': { suffix: '-word-sounds-worksheet.html', label: 'Word Sounds activity worksheet', build: buildWordSoundsWorksheetHtml },
       bingo: { suffix: '-bingo.html', label: 'classroom Bingo boards', build: buildBingoHtml },
       'loop-cards': { suffix: '-loop-cards.html', label: 'I Have, Who Has cards', build: buildLoopGameHtml },
       'word-wall': { suffix: '-word-wall.html', label: 'classroom Word Wall cards', build: buildWordWallHtml },
     };
 
     var mSup = root.AlloWordPracticeMedia;
-    if ($('pe-opt-syllables')) $('pe-opt-syllables').addEventListener('change', function () { if (this.checked && mSup && mSup.ensureSyllableTableLoaded) mSup.ensureSyllableTableLoaded(doc); });
+    if ($('pe-opt-syllables')) $('pe-opt-syllables').addEventListener('change', function () {
+      if (this.parentNode && this.parentNode.classList) this.parentNode.classList.toggle('is-on', !!this.checked);
+      if (this.checked && mSup && mSup.ensureSyllableTableLoaded) mSup.ensureSyllableTableLoaded(doc);
+    });
+    if ($('pe-opt-bold')) $('pe-opt-bold').addEventListener('change', function () {
+      if (this.parentNode && this.parentNode.classList) this.parentNode.classList.toggle('is-on', !!this.checked);
+    });
+    if (sheetTypeSelect) sheetTypeSelect.addEventListener('change', function () { syncFindOnlineAndMore(); });
 
     if (sheetDownloadBtn && sheetTypeSelect) {
       sheetDownloadBtn.addEventListener('click', function () {
@@ -980,7 +1014,8 @@
         var go = function () {
           var fname = slugTitle(pack.title) + spec.suffix;
           var rawHtml = spec.build(pack);
-          downloadHtmlFile(mSup && mSup.applySheetReadingSupports ? mSup.applySheetReadingSupports(rawHtml, opts) : rawHtml, fname);
+          var supOpts = key === 'word-sounds-worksheet' ? { syllables: false, bold: opts.bold } : opts;
+          downloadHtmlFile(mSup && mSup.applySheetReadingSupports ? mSup.applySheetReadingSupports(rawHtml, supOpts) : rawHtml, fname);
           say(key === 'bingo' && items.length < 8
             ? 'Saved ' + spec.label + ' (' + fname + '). Fewer than 8 words, so words repeat on each 3x3 board — add 8 or more words for unique squares.'
             : 'Saved ' + spec.label + ' (' + fname + ').');
@@ -1000,6 +1035,7 @@
     if (clearBtn) {
       clearBtn.addEventListener('click', function () {
         try {
+          root.localStorage.removeItem('alloflow_word_practice_setup');
           root.localStorage.removeItem('alloflow-word-practice-setup-v1');
           if (clearStatusEl) clearStatusEl.textContent = 'Cleared saved choices on this browser.';
         } catch (_) {
@@ -1066,6 +1102,7 @@
           words: enrichedHash,
           options: { mode: 'vocabulary', includePictures: true },
         });
+        syncWordSource('custom', 'Words from link (' + enrichedHash.length + ')');
         say('Loaded ' + enrichedHash.length + ' words to practice.');
         return matchBuiltInPictures({ quiet: true });
       }
@@ -1093,6 +1130,7 @@
     buildFrayerHtml: buildFrayerHtml,
     buildSortingCardsHtml: buildSortingCardsHtml,
     buildWorksheetHtml: buildWorksheetHtml,
+    buildWordSoundsWorksheetHtml: buildWordSoundsWorksheetHtml,
     buildBingoHtml: buildBingoHtml,
     buildLoopGameHtml: buildLoopGameHtml,
     buildWordWallHtml: buildWordWallHtml,

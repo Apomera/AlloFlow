@@ -869,10 +869,10 @@ describe('the page as files: the one page that may reach other websites', () => 
     expect(doc.getElementById('said').getAttribute('role')).toBe('status');
     expect(doc.getElementById('said').className).toBe('sr-only');
     expect(doc.getElementById('saved-line').getAttribute('role')).toBe('status');
-    // A heading the page moves focus to is not a control.
+    // A heading or main landmark the page moves focus to is not a control.
     for (const node of doc.querySelectorAll('[tabindex]')) {
       expect(node.getAttribute('tabindex')).toBe('-1');
-      expect(node.matches('h2')).toBe(true);
+      expect(node.matches('h2, main')).toBe(true);
     }
     // The product name is written once; the header's top row is the results page's, word for word. (Since 2026-11-12 each page's
     // own "See the details" strip sits inside its header too, so that it is in a landmark; that part differs from page to page.)

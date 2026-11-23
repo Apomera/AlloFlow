@@ -5429,10 +5429,10 @@
         "A population with no births or deaths"
       ],
       "answerIndex": 1,
-      "rationale": "Logistic growth slows as limiting factors intensify near carrying capacity.",
+      "rationale": "In logistic growth (dN/dt = rN(1 - N/K)), abundant resources support rapid early expansion, then density-dependent limiting factors slow growth until population size stabilizes near carrying capacity K.",
       "choiceRationales": [
         "This option is not the best answer because Exponential growth assumes unlimited resources and does not level off.",
-        "Logistic growth slows as limiting factors intensify near carrying capacity.",
+        "In logistic growth (dN/dt = rN(1 - N/K)), abundant resources support rapid early expansion, then density-dependent limiting factors slow growth until population size stabilizes near carrying capacity K.",
         "This option is not the best answer because a constant additive increase produces a straight-line trajectory without an early accelerating phase or a density-dependent plateau near an upper limit.",
         "This option is not the best answer because a stable population near carrying capacity still experiences ongoing births and deaths that balance one another, resulting in a net growth rate near zero."
       ],

@@ -6,5 +6,6 @@
 #sceneTargetHint small{display:block;font-size:.75rem;line-height:1.5;margin-top:.5rem;color:#49604c}
 #sceneTargetHint[data-ready=false]{background:#fff7e7}
 #sceneTargetHint[data-layout=below]{position:static;width:100%;max-width:none;max-height:none;margin:.75rem 0;overflow:visible;box-shadow:none}
+@media(prefers-reduced-motion:reduce){#sceneTargetHint,#sceneTargetHint *{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 @media(forced-colors:active){#sceneTargetHint,#sceneTargetHint[data-ready=false]{background:Canvas;color:CanvasText;border:1px solid CanvasText}#sceneTargetHint small{color:CanvasText}}
 @media print{#sceneTargetHint{display:none}}

@@ -37,6 +37,19 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 3 7.5l9 4.5 9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
       <span id="product-name">AlloFlow Packets</span>
     </a>
+    <details class="top-menu">
+      <summary>Switch maker</summary>
+      <nav aria-label="Other Packets tools">
+        <a href="packets-make.html">Word Sounds</a>
+        <a href="packets-vocab.html">Vocabulary</a>
+        <a href="packets-math-practice.html">Math Fact Practice</a>
+        <a href="packets-check.html">Math Check</a>
+        <a href="packets-read-along.html" aria-current="page">Read-Along</a>
+        <a href="packets-symbol-runner.html">Symbol Runner</a>
+        <a href="packets-present-export.html">Present &amp; print</a>
+        <a href="packets-results.html">Add up results</a>
+      </nav>
+    </details>
     <a class="top-link" href="packets.html">All Packets pages</a>
   </div>
 <details class="proof">
@@ -89,20 +102,24 @@
       <p>A part of this page did not arrive, so it cannot make a file. Load the page again.</p>
     </div>
 
+    <div id="reopen" class="reopen" hidden>
+      <div class="reopen-row">
+        <button type="button" class="btn btn-text btn-small" id="reopen-choose" aria-describedby="reopen-hint">Open a file I made</button>
+        <span class="hint" id="reopen-hint">Bring back a read-along file to fix a typo or change code names.<span class="reopen-more"> Unchanged sentences keep their recordings. You can also drop the file here.</span></span>
+        <input type="file" id="reopen-file" accept=".html,.htm,text/html" aria-label="A read-along file made on this page" hidden>
+      </div>
+      <div id="reopen-note" class="note reopen-note" tabindex="-1" hidden>
+        <p id="reopen-line" class="reopen-line" role="status"></p>
+        <p class="row reopen-actions">
+          <a id="reopen-page" class="btn btn-small" href="packets.html" hidden>Open that page</a>
+          <button type="button" class="btn btn-text btn-small" id="reopen-close">Close this note</button>
+        </p>
+      </div>
+    </div>
+
     <section class="sheet" aria-labelledby="text-title">
       <p class="kicker">Step 1</p>
       <h2 id="text-title">Your passage</h2>
-      <div id="reopen" class="reopen" hidden>
-        <div class="reopen-row">
-          <button type="button" class="btn btn-text" id="reopen-choose">Open a file I made</button>
-          <span class="hint">Bring back a read-along file to fix a typo or change code names. Unchanged sentences keep their recordings.</span>
-          <input type="file" id="reopen-file" accept=".html,.htm,text/html" aria-label="A read-along file made on this page" hidden>
-        </div>
-        <div id="reopen-note" class="note reopen-note" tabindex="-1" hidden>
-          <p id="reopen-line" class="reopen-line" role="status"></p>
-          <p class="row"><a id="reopen-page" class="btn btn-small" href="packets.html" hidden>Open that page</a></p>
-        </div>
-      </div>
       <div class="field block">
         <label for="f-title">Title</label>
         <span class="hint" id="title-hint">The student sees it at the top of the file. Left empty, it is "Read along".</span>
@@ -154,38 +171,44 @@
       <p class="sheet-intro">Use a computer voice here, record your own voice in step 3 with this device's microphone, or skip recordings to make a reading file with Reading tools and Syllables.</p>
       <div class="field">
         <label for="f-voice">Which voice</label>
-        <select id="f-voice" aria-describedby="voice-hint">
-          <optgroup label="US English">
-            <option value="af_heart">Heart, a warm woman's voice (US English)</option>
-            <option value="af_bella">Bella, a woman's voice (US English)</option>
-            <option value="af_nova">Nova, a clear woman's voice (US English)</option>
-            <option value="af_sky">Sky, a bright woman's voice (US English)</option>
-            <option value="af_sarah">Sarah, a gentle woman's voice (US English)</option>
-            <option value="af_nicole">Nicole, a soft woman's voice (US English)</option>
-            <option value="af_alloy">Alloy, a balanced woman's voice (US English)</option>
-            <option value="af_aoede">Aoede, a melodic woman's voice (US English)</option>
-            <option value="af_jessica">Jessica, a friendly woman's voice (US English)</option>
-            <option value="af_kore">Kore, a calm woman's voice (US English)</option>
-            <option value="af_river">River, a smooth woman's voice (US English)</option>
-            <option value="am_adam">Adam, a man's voice (US English)</option>
-            <option value="am_michael">Michael, a deep man's voice (US English)</option>
-            <option value="am_echo">Echo, a resonant man's voice (US English)</option>
-            <option value="am_eric">Eric, a steady man's voice (US English)</option>
-            <option value="am_fenrir">Fenrir, a bold man's voice (US English)</option>
-            <option value="am_liam">Liam, a calm man's voice (US English)</option>
-            <option value="am_onyx">Onyx, a rich man's voice (US English)</option>
-            <option value="am_puck">Puck, a lively man's voice (US English)</option>
-          </optgroup>
-          <optgroup label="British English">
-            <option value="bf_emma">Emma, a woman's voice (British English)</option>
-            <option value="bf_isabella">Isabella, a woman's voice (British English)</option>
-            <option value="bf_alice">Alice, a woman's voice (British English)</option>
-            <option value="bf_lily">Lily, a woman's voice (British English)</option>
-            <option value="bm_george">George, a man's voice (British English)</option>
-            <option value="bm_lewis">Lewis, a man's voice (British English)</option>
-          </optgroup>
-        </select>
+        <div class="ra-voice-row">
+          <select id="f-voice" aria-describedby="voice-hint">
+            <optgroup label="Recommended">
+              <option value="af_heart">Heart, a warm woman's voice (US English)</option>
+              <option value="af_bella">Bella, a woman's voice (US English)</option>
+              <option value="am_adam">Adam, a man's voice (US English)</option>
+              <option value="bf_emma">Emma, a woman's voice (British English)</option>
+            </optgroup>
+            <optgroup label="More US voices">
+              <option value="af_nova">Nova, a clear woman's voice (US English)</option>
+              <option value="af_sky">Sky, a bright woman's voice (US English)</option>
+              <option value="af_sarah">Sarah, a gentle woman's voice (US English)</option>
+              <option value="af_nicole">Nicole, a soft woman's voice (US English)</option>
+              <option value="af_alloy">Alloy, a balanced woman's voice (US English)</option>
+              <option value="af_aoede">Aoede, a melodic woman's voice (US English)</option>
+              <option value="af_jessica">Jessica, a friendly woman's voice (US English)</option>
+              <option value="af_kore">Kore, a calm woman's voice (US English)</option>
+              <option value="af_river">River, a smooth woman's voice (US English)</option>
+              <option value="am_michael">Michael, a deep man's voice (US English)</option>
+              <option value="am_echo">Echo, a resonant man's voice (US English)</option>
+              <option value="am_eric">Eric, a steady man's voice (US English)</option>
+              <option value="am_fenrir">Fenrir, a bold man's voice (US English)</option>
+              <option value="am_liam">Liam, a calm man's voice (US English)</option>
+              <option value="am_onyx">Onyx, a rich man's voice (US English)</option>
+              <option value="am_puck">Puck, a lively man's voice (US English)</option>
+            </optgroup>
+            <optgroup label="More British voices">
+              <option value="bf_isabella">Isabella, a woman's voice (British English)</option>
+              <option value="bf_alice">Alice, a woman's voice (British English)</option>
+              <option value="bf_lily">Lily, a woman's voice (British English)</option>
+              <option value="bm_george">George, a man's voice (British English)</option>
+              <option value="bm_lewis">Lewis, a man's voice (British English)</option>
+            </optgroup>
+          </select>
+          <button type="button" class="btn btn-small" id="hear-sample" disabled>Hear sample</button>
+        </div>
         <span class="hint" id="voice-hint">The voice reads English. A recording keeps the voice it was made with.</span>
+        <span class="hint" id="sample-said" role="status"></span>
       </div>
       <p class="row voice-get">
         <button type="button" class="btn" id="get-voice" aria-describedby="get-voice-hint">Get the voice (about 88 MB)</button>
@@ -213,6 +236,94 @@
       <p id="make-said" class="result-sub" role="status">Type a passage in step 1 first.</p>
       <p id="make-problem" class="actions-note" role="alert"></p>
       <ol id="line-rows" class="voice-rows ra-rows" aria-label="The sentences and their recordings"></ol>
+      <details class="more ra-custom-supports" id="custom-supports-panel">
+        <summary><span class="more-name">Custom notes &amp; supports (optional)</span><span class="more-now" id="custom-supports-now">None added</span></summary>
+        <div class="more-body">
+          <p class="hint">Add your own word meanings, hints, background notes, or pictures anchored to any sentence. The computer voice or your microphone can read them aloud inside the saved file.</p>
+          <div class="ra-sup-form">
+            <div class="field">
+              <label for="sup-line">Attach to sentence</label>
+              <select id="sup-line" aria-describedby="sup-line-hint"></select>
+              <span class="hint" id="sup-line-hint">Choose which sentence this note goes with.</span>
+            </div>
+            <div class="field">
+              <label for="sup-quote">Word or phrase (optional)</label>
+              <input type="text" id="sup-quote" maxlength="80" autocomplete="off" placeholder="e.g. photosynthesis or tall grass" aria-describedby="sup-quote-hint">
+              <span class="hint" id="sup-quote-hint">Leave blank for a note about the whole sentence.</span>
+            </div>
+            <div class="field block">
+              <label for="sup-text">Support explanation or note</label>
+              <textarea id="sup-text" rows="3" maxlength="360" placeholder="Write a student-friendly explanation, hint, or background note..." aria-describedby="sup-text-hint"></textarea>
+              <span class="hint" id="sup-text-hint">Up to 360 characters. Read aloud by the computer voice or your voice when recorded.</span>
+            </div>
+            <div class="row ra-sup-pic-row">
+              <button type="button" class="btn btn-small" id="sup-pic-choose">Add picture (optional)</button>
+              <button type="button" class="btn btn-small" id="sup-pic-offline" aria-expanded="false" aria-controls="sup-pic-picker">Pick offline symbol / diagram</button>
+              <input type="file" id="sup-pic-file" accept="image/png,image/jpeg,image/webp,image/svg+xml" aria-label="Optional picture for this custom support" hidden>
+              <img id="sup-pic-preview" class="ra-sup-thumb" alt="" hidden>
+              <span id="sup-pic-credit" class="hint ra-sup-pic-credit" hidden></span>
+              <button type="button" class="btn btn-text btn-small" id="sup-pic-clear" hidden>Remove picture</button>
+            </div>
+            <div id="sup-pic-picker" class="ra-sup-picker" hidden>
+              <div class="ra-sup-picker-head">
+                <label for="sup-pic-search" class="sr-only">Search offline symbols and curriculum diagrams</label>
+                <input type="search" id="sup-pic-search" maxlength="60" autocomplete="off" placeholder="Search symbols or diagrams (e.g. volcano, fraction, leaf)">
+                <button type="button" class="btn btn-text btn-small" id="sup-pic-picker-close">Close</button>
+              </div>
+              <p id="sup-pic-status" class="hint" role="status"></p>
+              <div id="sup-pic-results" class="ra-sup-picker-grid" role="list" aria-label="Offline symbol and diagram results"></div>
+            </div>
+            <p class="row">
+              <button type="button" class="btn btn-primary btn-small" id="sup-add">Add support</button>
+            </p>
+            <p id="sup-said" class="hint" role="status"></p>
+            <p id="sup-problem" class="actions-note" role="alert"></p>
+          </div>
+          <ol id="support-rows" class="voice-rows ra-support-rows" aria-label="Custom notes and supports"></ol>
+        </div>
+      </details>
+      <details class="more ra-check-questions" id="check-questions-panel">
+        <summary><span class="more-name">Comprehension check-in questions (optional)</span><span class="more-now" id="check-questions-now">None added</span></summary>
+        <div class="more-body">
+          <p class="hint">Add up to 6 gentle check-in questions for the end of the passage and the printable worksheet. Nothing is graded or sent anywhere.</p>
+          <div class="ra-sup-form">
+            <div class="field block">
+              <label for="chk-prompt">Question prompt</label>
+              <textarea id="chk-prompt" rows="2" maxlength="240" placeholder="e.g. Why did the fox hide in the tall grass?" aria-describedby="chk-prompt-hint"></textarea>
+              <span class="hint" id="chk-prompt-hint">Up to 240 characters.</span>
+            </div>
+            <div class="field">
+              <label for="chk-kind">Question type</label>
+              <select id="chk-kind">
+                <option value="mc">Multiple choice</option>
+                <option value="open">Open response</option>
+              </select>
+            </div>
+            <div id="chk-mc-fields" class="ra-chk-mc">
+              <div class="field block">
+                <label for="chk-choices">Choices (2 to 4)</label>
+                <textarea id="chk-choices" rows="3" maxlength="400" placeholder="Put one choice per line, or separate choices with commas" aria-describedby="chk-choices-hint"></textarea>
+                <span class="hint" id="chk-choices-hint">One choice per line or comma-separated (2 to 4 choices).</span>
+              </div>
+              <div class="field">
+                <label for="chk-answer">Correct choice</label>
+                <select id="chk-answer">
+                  <option value="0">Choice 1 (A)</option>
+                  <option value="1">Choice 2 (B)</option>
+                  <option value="2">Choice 3 (C)</option>
+                  <option value="3">Choice 4 (D)</option>
+                </select>
+              </div>
+            </div>
+            <p class="row">
+              <button type="button" class="btn btn-primary btn-small" id="chk-add">Add question</button>
+            </p>
+            <p id="chk-said" class="hint" role="status"></p>
+            <p id="chk-problem" class="actions-note" role="alert"></p>
+          </div>
+          <ol id="chk-list" class="voice-rows ra-support-rows" aria-label="Comprehension check-in questions"></ol>
+        </div>
+      </details>
     </section>
 
     <section class="sheet" aria-labelledby="file-title">
@@ -221,52 +332,11 @@
       <p id="file-said" class="result-line" role="status">Type a passage in step 1 to build the file.</p>
       <p id="file-sub" class="result-sub"></p>
       <p id="file-problem" class="actions-note" role="alert"></p>
-      <div class="ra-file-opts">
-        <div class="ra-support-grid">
-          <p class="ra-print-opt ra-support-card">
-            <label class="radio"><input type="checkbox" id="f-pos"> <span><strong>Parts of speech</strong><small class="hint">Highlight nouns, verbs, adjectives, and adverbs with offline dictionaries and grammar rules. No AI.</small></span></label>
-          </p>
-          <p class="ra-print-opt ra-support-card">
-            <label class="radio"><input type="checkbox" id="f-dict"> <span><strong>Word meanings</strong><small class="hint">Tap any word for an offline definition from Simple English Wiktionary and WordNet. No AI.</small></span></label>
-            <span class="hint" id="dict-said" role="status"></span>
-          </p>
-          <p class="ra-print-opt ra-support-card">
-            <label class="radio"><input type="checkbox" id="f-dict-pics"> <span><strong>Offline word pictures</strong><small class="hint">Pair Mulberry Symbols, OpenMoji, 696 K-12 curriculum diagrams, and your saved pictures from <a href="packets-pictures.html" target="_blank" rel="noopener">Find a picture</a>. No AI.</small></span></label>
-            <span class="hint" id="pics-said" role="status"></span>
-          </p>
-          <p class="ra-print-opt ra-support-card">
-            <label class="radio"><input type="checkbox" id="f-simple-bar"> <span><strong>Simple toolbar for early readers</strong><small class="hint">Keep only Read to me, Syllables, and Word meanings in front; tuck extra views under More tools.</small></span></label>
-          </p>
-          <p class="ra-print-opt ra-support-card">
-            <label class="radio"><input type="checkbox" id="f-device-voice"> <span><strong>Tap a word to hear it (local device voice)</strong><small class="hint">Uses only a voice already installed on the student's device (never an internet voice) for single words or unrecorded lines.</small></span></label>
-          </p>
-          <p class="ra-print-opt ra-support-card">
-            <label class="radio"><input type="checkbox" id="f-student-mic"> <span><strong>Student voice practice</strong><small class="hint">Let students record and listen back to their own voice. Stays in their tab only and is never saved or sent.</small></span></label>
-          </p>
-        </div>
-        <p class="ra-print-opt" id="print-syl-wrap" hidden>
-          <label class="radio"><input type="checkbox" id="print-syl"> <span>Show syllable dots on paper</span></label>
-        </p>
-        <p class="ra-print-opt" id="print-bold-wrap" hidden>
-          <label class="radio"><input type="checkbox" id="print-bold"> <span>Bold word starts on paper</span></label>
-        </p>
-        <p class="ra-print-opt" id="print-dict-wrap" hidden>
-          <label class="radio"><input type="checkbox" id="print-dict"> <span>Include word meanings on paper</span></label>
-        </p>
-      </div>
-      <details class="ra-preview" id="live-preview" hidden>
-        <summary>Preview how students will see page 1</summary>
-        <div class="ra-preview-body">
-          <div class="ra-preview-bar">
-            <span class="hint" id="preview-meta"></span>
-            <label class="radio ra-preview-toggle" id="preview-syl-wrap" hidden><input type="checkbox" id="preview-syl"> <span>Show syllable dots</span></label>
-          </div>
-          <div class="ra-preview-card" id="preview-card" aria-live="polite"></div>
-        </div>
-      </details>
       <div class="actions actions-file">
         <a class="btn" id="try" href="packets-try.html" target="_blank" rel="noopener" hidden>Try it <span class="sr-only">(opens in a new tab)</span></a>
         <button type="button" class="btn" id="print" hidden>Print on paper</button>
+        <button type="button" class="btn" id="download-worksheet" hidden>Download worksheet</button>
+        <button type="button" class="btn" id="download-bundle" hidden>Download classroom bundle (.zip)</button>
         <button type="button" class="btn btn-primary" id="save" hidden>Save the file</button>
       </div>
       <div id="after-save" class="next" tabindex="-1" hidden>
@@ -278,6 +348,144 @@
         </ol>
         <p class="after-phone">If the file does not open on a device (a phone, a tablet, or a school computer that will not open downloaded files), a student opens it on <a href="packets-open.html">Open a practice file or check</a>: <span data-open-address>apomera.github.io/AlloFlow/packets-open.html</span>.</p>
       </div>
+      <details class="more" id="more-supports">
+        <summary><span class="more-name">Reading supports and print options</span><span class="more-now" id="more-supports-now"></span></summary>
+        <div class="more-body">
+          <div class="ra-file-opts">
+            <div class="ra-support-grid">
+              <p class="ra-print-opt ra-support-card">
+                <label class="radio"><input type="checkbox" id="f-pos"> <span><strong>Parts of speech</strong><small class="hint">Highlight nouns, verbs, adjectives, and adverbs with offline dictionaries and grammar rules. No AI.</small></span></label>
+              </p>
+              <p class="ra-print-opt ra-support-card">
+                <label class="radio"><input type="checkbox" id="f-dict"> <span><strong>Word meanings</strong><small class="hint">Tap any word for an offline definition from Simple English Wiktionary and WordNet. No AI.</small></span></label>
+                <label class="radio ra-sub-opt" id="f-narrate-glossary-wrap" hidden><input type="checkbox" id="f-narrate-glossary" disabled> <span>Also record Word meanings with this voice</span></label>
+                <span class="hint" id="dict-said" role="status"></span>
+              </p>
+              <p class="ra-print-opt ra-support-card">
+                <label class="radio"><input type="checkbox" id="f-dict-pics"> <span><strong>Offline word pictures</strong><small class="hint">Pair Mulberry Symbols, OpenMoji, 696 K-12 curriculum diagrams, and your saved pictures from <a href="packets-pictures.html#from=read-along" target="_blank" rel="noopener">Find a picture</a>. No AI.</small></span></label>
+                <span class="hint" id="pics-said" role="status"></span>
+              </p>
+              <p class="ra-print-opt ra-support-card">
+                <label class="radio"><input type="checkbox" id="f-simple-bar"> <span><strong>Simple toolbar for early readers</strong><small class="hint">Keep only Read to me, Syllables, and Word meanings in front; tuck extra views under More tools.</small></span></label>
+              </p>
+              <p class="ra-print-opt ra-support-card">
+                <label class="radio"><input type="checkbox" id="f-device-voice"> <span><strong>Tap a word to hear it (local device voice)</strong><small class="hint">Uses only a voice already installed on the student's device (never an internet voice) for single words or unrecorded lines.</small></span></label>
+              </p>
+              <p class="ra-print-opt ra-support-card">
+                <label class="radio"><input type="checkbox" id="f-student-mic"> <span><strong>Student voice practice</strong><small class="hint">Let students record and listen back to their own voice. Stays in their tab only and is never saved or sent.</small></span></label>
+              </p>
+            </div>
+            <div id="pos-customizer" class="ra-subpanel" hidden>
+              <p class="ra-subpanel-title">Parts of speech appearance</p>
+              <div class="ra-subpanel-grid">
+                <div class="field">
+                  <label for="f-pos-scheme">Color scheme</label>
+                  <select id="f-pos-scheme">
+                    <option value="default">Default</option>
+                    <option value="fitzgerald">Fitzgerald Key (AAC/SLP)</option>
+                    <option value="montessori">Montessori Grammar</option>
+                    <option value="okabe">Okabe-Ito Colorblind-Safe</option>
+                    <option value="mono">Monochrome Underlines + Tags</option>
+                    <option value="custom">Custom colors</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="f-pos-style">Highlight style</label>
+                  <select id="f-pos-style">
+                    <option value="underline">Underline</option>
+                    <option value="pill">Soft highlight pill</option>
+                    <option value="tags">Underline + tags</option>
+                  </select>
+                </div>
+              </div>
+              <p class="ra-print-opt">
+                <label class="radio"><input type="checkbox" id="f-pos-extended"> <span>Include pronouns, prepositions &amp; conjunctions</span></label>
+              </p>
+              <div id="pos-custom-colors" class="ra-pos-colors" hidden>
+                <label class="ra-color-pick"><span>Noun</span><input type="color" id="f-pos-c-n" value="#7c3aed"></label>
+                <label class="ra-color-pick"><span>Verb</span><input type="color" id="f-pos-c-v" value="#0f766e"></label>
+                <label class="ra-color-pick"><span>Adjective</span><input type="color" id="f-pos-c-j" value="#1d4ed8"></label>
+                <label class="ra-color-pick"><span>Adverb</span><input type="color" id="f-pos-c-a" value="#b45309"></label>
+              </div>
+            </div>
+            <fieldset class="ra-subpanel ra-default-tools">
+              <legend class="ra-subpanel-title">Suggested starting tools — students can change anytime</legend>
+              <div class="ra-subpanel-grid">
+                <div class="field">
+                  <label for="f-def-focus">Reading focus</label>
+                  <select id="f-def-focus">
+                    <option value="">Off</option>
+                    <option value="1">1 line</option>
+                    <option value="2">3 lines</option>
+                    <option value="3">Reading ruler</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="f-def-font">Letters</label>
+                  <select id="f-def-font">
+                    <option value="">Usual</option>
+                    <option value="1">Lexend</option>
+                    <option value="2">Atkinson</option>
+                    <option value="6">OpenDyslexic</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="f-def-spacing">Spacing</label>
+                  <select id="f-def-spacing">
+                    <option value="">Normal</option>
+                    <option value="1">Wider</option>
+                    <option value="2">Extra wide</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="f-def-colors">Colors</label>
+                  <select id="f-def-colors">
+                    <option value="">Usual</option>
+                    <option value="2">Soft</option>
+                    <option value="1">High contrast</option>
+                    <option value="3">Dark</option>
+                  </select>
+                </div>
+              </div>
+            </fieldset>
+            <div class="ra-subpanel ra-presets">
+              <p class="ra-subpanel-title">Saved teacher presets (this browser only)</p>
+              <div class="ra-preset-row">
+                <select id="ra-preset-select" aria-label="Saved teacher presets">
+                  <option value="">Saved presets...</option>
+                </select>
+                <input type="text" id="ra-preset-name" maxlength="60" autocomplete="off" placeholder="Preset name (e.g. Grade 3 ELA)" aria-label="Preset name">
+                <button type="button" class="btn btn-small" id="ra-preset-save">Save preset</button>
+                <button type="button" class="btn btn-small" id="ra-preset-delete" disabled>Delete</button>
+              </div>
+              <span class="hint" id="ra-preset-said" role="status"></span>
+            </div>
+            <p class="ra-print-opt" id="print-syl-wrap" hidden>
+              <label class="radio"><input type="checkbox" id="print-syl"> <span>Show syllable dots on paper</span></label>
+            </p>
+            <p class="ra-print-opt" id="print-bold-wrap" hidden>
+              <label class="radio"><input type="checkbox" id="print-bold"> <span>Bold word starts on paper</span></label>
+            </p>
+            <p class="ra-print-opt" id="print-dict-wrap" hidden>
+              <label class="radio"><input type="checkbox" id="print-dict"> <span>Include word meanings on paper</span></label>
+            </p>
+            <p class="ra-print-opt" id="print-supports-wrap" hidden>
+              <label class="radio"><input type="checkbox" id="print-supports" checked> <span>Include custom notes on paper</span></label>
+            </p>
+          </div>
+        </div>
+      </details>
+      <details class="ra-preview" id="live-preview" hidden>
+        <summary id="preview-summary">Preview how students will see page 1</summary>
+        <div class="ra-preview-body">
+          <div class="ra-preview-bar">
+            <span class="hint" id="preview-meta"></span>
+            <label class="ra-preview-page-wrap" id="preview-page-wrap" hidden><span>Page</span><select id="preview-page" aria-label="Preview page"></select></label>
+            <label class="radio ra-preview-toggle" id="preview-syl-wrap" hidden><input type="checkbox" id="preview-syl"> <span>Show syllable dots</span></label>
+          </div>
+          <div class="ra-preview-card" id="preview-card" aria-live="polite"></div>
+        </div>
+      </details>
 
       <details class="batch" id="batch">
         <summary>Put student code names in the file</summary>
@@ -286,7 +494,7 @@
           <div class="field">
             <label for="f-batch-names">Code names, one on each line</label>
             <span class="hint" id="batch-names-hint">Use code names or first names only, never full names. At most 40 at a time.</span>
-            <textarea id="f-batch-names" rows="5" maxlength="2400" spellcheck="false" autocapitalize="none" autocomplete="off" aria-describedby="batch-names-hint batch-said"></textarea>
+            <textarea id="f-batch-names" aria-label="Code names, one on each line" rows="5" maxlength="2400" spellcheck="false" autocapitalize="none" autocomplete="off" aria-describedby="batch-names-hint batch-said"></textarea>
           </div>
           <p class="row">
             <button type="button" class="btn btn-small" id="batch-load">Load list from a .txt file</button>

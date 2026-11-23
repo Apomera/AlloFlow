@@ -350,6 +350,9 @@ if (manifestOnly) {
   execFileSync(process.execPath, [apUsHistoryBuildPath], { cwd: root, stdio: 'inherit' });
   execFileSync(process.execPath, [apUsGovernmentBuildPath], { cwd: root, stdio: 'inherit' });
   execFileSync(process.execPath, [apStatisticsBuildPath], { cwd: root, stdio: 'inherit' });
+  execFileSync(process.execPath, [path.join(root, 'dev-tools', 'apply_learning_library_check_remediation.cjs'), '--write'], { cwd: root, stdio: 'inherit' });
+  execFileSync(process.execPath, [path.join(root, 'dev-tools', 'apply_learning_library_study_tools_polish.cjs'), '--write'], { cwd: root, stdio: 'inherit' });
+  execFileSync(process.execPath, [path.join(root, 'dev-tools', 'stamp_learning_library_identity.cjs')], { cwd: root, stdio: 'inherit' });
   manifest = buildManifest({ allowMissingNativeQa: true });
   if (manifest.entries.some((entry) => entry.id === 'ap-psychology-pilot')) {
     if (!fs.existsSync(apPsychologyQaScriptPath)) fail('AP Psychology QA generator is missing.');

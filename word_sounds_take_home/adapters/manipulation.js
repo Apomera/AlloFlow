@@ -84,25 +84,52 @@ module.exports = {
       instruction: instruction, wordAudio: wordAudio, choices: choices, answerAudio: [answerAudio] } };
   },
   render: function (item, ctx) {
-    var win = ctx.root.ownerDocument.defaultView;
+    var doc = ctx.root.ownerDocument;
+    var win = doc.defaultView;
     var cards = [];
     var token = 0;
+    var timer = null;
+    var watchingStop = false;
+    var clearTimer = function () {
+      if (timer != null) { try { win.clearTimeout(timer); } catch (_) {} timer = null; }
+    };
     var mark = function (index) {
       cards.forEach(function (c, i) { c.box.style.outline = i === index ? '4px solid var(--accent)' : ''; c.box.style.outlineOffset = i === index ? '2px' : ''; });
     };
+    var onDocStop = function (e) {
+      if (!ctx.root.isConnected || (e && e.target && e.target.closest && e.target.closest('[data-player-stop-audio]'))) halt();
+    };
+    var onDocKey = function (e) {
+      var k = String((e && e.key) || '');
+      if (!ctx.root.isConnected || k === 'Escape' || k === 'Esc') halt();
+    };
+    var watchStop = function (on) {
+      if (!doc || !doc.addEventListener || watchingStop === on) return;
+      watchingStop = on;
+      if (on) { doc.addEventListener('click', onDocStop, true); doc.addEventListener('keydown', onDocKey, true); }
+      else { doc.removeEventListener('click', onDocStop, true); doc.removeEventListener('keydown', onDocKey, true); }
+    };
+    var halt = function () { token++; clearTimer(); watchStop(false); mark(-1); };
     var run = function (steps) {
+      clearTimer();
       var mine = ++token;
       var i = 0;
+      watchStop(true);
       var step = function () {
-        if (mine !== token || !ctx.root.isConnected) return;
-        if (i >= steps.length) { mark(-1); return; }
+        timer = null;
+        if (mine !== token) return;
+        if (!ctx.root.isConnected) { watchStop(false); mark(-1); return; }
+        if (i >= steps.length) { watchStop(false); mark(-1); return; }
         var s = steps[i++];
         mark(s.hi == null ? -1 : s.hi);
-        ctx.play(s.id).then(function (ok) { if (mine !== token) return; if (ok === false) { mark(-1); return; } win.setTimeout(step, s.gap || 0); });
+        ctx.play(s.id).then(function (ok) {
+          if (mine !== token) return;
+          if (ok === false) { watchStop(false); mark(-1); return; }
+          timer = win.setTimeout(step, s.gap || 0);
+        });
       };
       step();
     };
-    var halt = function () { token++; mark(-1); };
     // 120 ms between instruction parts (word_sounds_module.js:9762).
     var instructionSteps = function (lastGap) {
       return item.instruction.map(function (id, i) { return { id: id, gap: i === item.instruction.length - 1 ? lastGap : 120 }; });
@@ -124,7 +151,7 @@ module.exports = {
             missedText: ctx.showLetters ? ctx.fmt(ctx.L.manipulation_missed, { word: item.target }) : ctx.L.manipulation_missed_no_letters,
           });
           if (outcome !== 'correct') { box.classList.add('tried'); choose.setAttribute('aria-disabled', 'true'); }
-        } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', text: choice.text }) : ctx.fmt(ctx.L.manipulation_option_n, { n: n })]);
+        } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', lang: 'en', text: choice.text }) : ctx.fmt(ctx.L.manipulation_option_n, { n: n })]);
       var box = ctx.el('li', { class: 'choice' }, [listen, choose]);
       cards.push({ box: box, choose: choose, right: right });
       list.appendChild(box);
@@ -132,22 +159,36 @@ module.exports = {
     ctx.root.appendChild(ctx.el('p', { text: ctx.L.manipulation_prompt }));
     // The app prints the task card (type + instruction) for every learner.
     ctx.root.appendChild(ctx.el('p', { class: 'muted', text: item.type === 'deletion' ? ctx.L.manipulation_type_deletion : ctx.L.manipulation_type_substitution }));
-    ctx.root.appendChild(ctx.el('p', { class: 'letters', text: item.instructionText }));
-    ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
-      ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); run(instructionSteps(0)); } }, text: ctx.L.manipulation_hear_instruction }),
-      ctx.el('button', { type: 'button', on: { click: function () { halt(); ctx.support('wordReplays'); ctx.play(item.wordAudio); } }, text: ctx.L.hear_word }),
-    ]));
+    ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', text: item.instructionText }));
     // Hear all (the player's ctx.hearAll): each choice in turn, marked with its number. The opening already plays them.
     var hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ before: halt, auto: false,
       list: function () { return cards.map(function (c, i) { return { box: c.box, say: function () { return ctx.play(item.choices[i].audio); } }; }); } }) : null;
-    if (hear) ctx.root.appendChild(hear.node);
+    ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
+      ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); run(instructionSteps(0)); } }, text: ctx.L.manipulation_hear_instruction }),
+      ctx.el('button', { type: 'button', on: { click: function () { halt(); ctx.support('wordReplays'); ctx.play(item.wordAudio); } }, text: ctx.L.hear_word }),
+      hear ? hear.button : null,
+      hear ? hear.note : null,
+    ]));
     ctx.root.appendChild(list);
+    if (typeof ctx.keys === 'function') {
+      ctx.keys(function (key) {
+        var k = String(key == null ? '' : key);
+        if (k === 'Escape' || k === 'Esc') {
+          var active = watchingStop || timer != null;
+          halt();
+          if (typeof ctx.stop === 'function') ctx.stop();
+          return active;
+        }
+        return false;
+      });
+    }
     // Opening sequence (word_sounds_module.js:16890-16937): the instruction,
     // 400 ms, then every choice in turn with 350 ms between.
     if (!ctx.isDone()) {
       run(instructionSteps(400).concat(item.choices.map(function (c, i) { return { id: c.audio, gap: 350, hi: i }; })));
     }
     return {
+      stop: halt,
       // The R key: the instruction again.
       replay: function () { run(instructionSteps(0)); },
       reveal: function () {

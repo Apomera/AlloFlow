@@ -145,13 +145,13 @@ const outputCode = `/**
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
 
   // ── Duplicate-load guard ──
   if (window.__gamesModuleLoaded) {
     console.warn('[GamesBundle] Already loaded — skipping');
     return;
   }
-  window.__gamesModuleLoaded = true;
 
   // ── React dependencies ──
   var React = window.React;
@@ -190,6 +190,7 @@ ${compiled}
   window.AlloModules = window.AlloModules || {};
 ${moduleRegistration}
   window.AlloModules.GamesBundle = true;
+  window.__gamesModuleLoaded = true;
   console.log('[GamesBundle] ${GAMES.length} game components registered');
 })();
 `;

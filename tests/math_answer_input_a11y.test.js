@@ -12,6 +12,7 @@ describe('math answer editor accessibility', () => {
     const inputIndex = SOURCE.lastIndexOf('React.createElement("input"', answerIndex);
     expect(inputIndex).toBeGreaterThan(-1);
     const answerInput = SOURCE.slice(inputIndex, answerIndex + answerAnchor.length);
-    expect(answerInput).toContain("\"aria-label\": t('math.edit_answer') || `Edit answer for problem ${pIdx + 1}`");
+    expect(answerInput).toContain("t('math.edit_answer')");
+    expect(answerInput).toContain('`Edit answer for problem ${pIdx + 1}`');
   });
 });

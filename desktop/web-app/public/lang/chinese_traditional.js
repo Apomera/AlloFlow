@@ -155,7 +155,12 @@
     "refine_go": "建議改寫",
     "refining": "正在撰寫建議…",
     "made_from_version": "根據您的原始材料第 {version} 版製作",
-    "remake": "根據目前版本重新製作"
+    "remake": "根據目前版本重新製作",
+    "dictate": "聽寫",
+    "close_dictate": "關閉聽寫",
+    "send_read_along": "傳送至隨讀學習包",
+    "upload_verify_banner": "已透過本機 Whisper 完成音訊/視訊轉錄（記憶體中保留了 {count} 個片段）",
+    "clear_audio": "清除音訊"
   },
   "sel": {
     "peersupport": {
@@ -4038,7 +4043,8 @@
     "chunk_info": "音頻拆分成 5 分鐘的片段進行處理",
     "chunk_progress": "第 {current} 段 / 共 {total} 段",
     "audio_only_error": "目前僅支持音頻文件(MP3、WAV 等)進行分段轉錄。",
-    "starting": "正在開始…"
+    "starting": "正在開始…",
+    "engine_legend": "轉錄引擎"
   },
   "formatting": {
     "bold": "粗體 (**文本**)",
@@ -5896,7 +5902,8 @@
       "analyzing_short": "正在分析...",
       "generate_short": "生成",
       "books_short": "書籍",
-      "books_hint": "開啟繪本：任何一本書都可以成為你的原始文本"
+      "books_hint": "開啟繪本：任何一本書都可以成為你的原始文本",
+      "dictate_hint": "使用裝置端 Whisper 聽寫您的原始文本，並可選用 Gemini 查核"
     },
     "status_generating": "正在生成原文...",
     "success_long_form": "長文本成功生成！",
@@ -5946,7 +5953,8 @@
     "empty_desc_teacher": "新增一段閱讀文字，然後選擇能為學生調整它的工具。",
     "empty_desc_family": "新增孩子正在閱讀的內容，然後選擇您想如何協助。",
     "reading_catalog": "閱讀書目",
-    "find_online": "線上尋找"
+    "find_online": "線上尋找",
+    "dictate_or_record": "聽寫或錄音"
   },
   "prompts": {
     "verified_correct": "**已核實的正確答案：**",
@@ -6961,7 +6969,10 @@
     "source_choice_ambiguous": "產生之前，請先在「基於」中選擇一種解讀。目前有不只一種解讀可選。",
     "source_choices_load_failed": "無法載入解讀選項。請再試一次。",
     "submission_tools_still_loading": "提交工具仍在載入。請再按一次「提交」。",
-    "blank_created": "已建立空白的{title}。分享前請先填寫內容。"
+    "blank_created": "已建立空白的{title}。分享前請先填寫內容。",
+    "sent_to_read_along": "已在新分頁中將段落傳送至隨讀學習包。",
+    "read_along_handoff_failed": "無法將草稿移交至隨讀學習包。",
+    "read_along_no_text": "傳送至隨讀學習包前，請先新增或聽寫原始文本。"
   },
   "wizard": {
     "title": "快速開始",
@@ -7095,7 +7106,12 @@
     "paste_word_count": "{count} 字",
     "length_custom": "自訂…",
     "length_custom_label": "字數",
-    "length_custom_hint": "50 至 5,000 字"
+    "length_custom_hint": "50 至 5,000 字",
+    "dictate_desc": "本機 Whisper 語音聽寫與選用查核",
+    "dictate_title": "聽寫或錄製您的原始文本",
+    "dictate_helper": "預設使用裝置端私密 Whisper 聽寫。您可自由編輯、選用文字整理，或透過 Gemini 對照錄音交叉查核。",
+    "dictate_loading": "正在載入聽寫工作室（本機 Whisper）… 載入期間您也可直接在下方輸入或編輯。",
+    "words_dictated_unit": "個已聽寫詞"
   },
   "process": {
     "source_missing": "請先提供原文。",
@@ -109929,5 +109945,68 @@
     "sc_findText": "在設計中尋找文字",
     "sc_commandPalette": "開啟快速操作",
     "sc_help": "顯示此快速鍵清單"
+  },
+  "dictation": {
+    "badge_desktop": "桌面版 Whisper 已就緒",
+    "badge_download_needed": "本機 Whisper · 首次下載",
+    "badge_local_ready": "本機 Whisper 已就緒 · {name}",
+    "cleanup_apply": "套用整理結果",
+    "cleanup_failed": "目前無法整理文字。",
+    "cleanup_fillers": "精簡口語贅詞",
+    "cleanup_heading": "選用 AI 文字整理",
+    "cleanup_keep": "保留原文",
+    "cleanup_no_changes": "此草稿沒有建議的變更。",
+    "cleanup_notes": "整理為課堂筆記格式",
+    "cleanup_punctuation": "整理標點與格式",
+    "cleanup_review_title": "建議的整理結果已就緒——您的草稿尚未變更",
+    "cleanup_text_only": "僅處理文字——不會傳送任何音訊",
+    "cleanup_unavailable": "AI 文字整理目前無法使用。",
+    "cleanup_undo": "復原整理",
+    "cleanup_working": "正在整理…",
+    "clear_audio": "清除錄製的音訊（{mb} MB）",
+    "crosscheck_all_resolved": "所有標記處皆已檢視完成。",
+    "crosscheck_btn": "使用 Gemini 對照音訊查核",
+    "crosscheck_count": "共有 {count} 處標記待檢視：",
+    "crosscheck_disabled_note": "目前無法使用（在離線模式、學生停用 AI 模式或未設定 Gemini 金鑰時會停用）。您的本機 Whisper 聽寫仍可完全離線運作。",
+    "crosscheck_disclosure": "僅在您點擊下方按鈕時執行：會將記憶體中錄製的音訊片段與文字草稿傳送至 Gemini，以標記可能的詞彙錯誤。",
+    "crosscheck_failed": "Gemini 音訊查核未完成。您的本機轉錄內容維持不變。",
+    "crosscheck_heading": "使用 Gemini 對照音訊交叉比對（自選啟用）",
+    "crosscheck_none": "本機 Whisper 與 Gemini Audio 之間未發現實質差異。",
+    "crosscheck_running": "正在對照音訊查核…",
+    "crosscheck_unavailable": "Gemini 音訊交叉比對目前無法使用。",
+    "download_now": "下載本機 Whisper（{size} MB）",
+    "download_warning": "下載提醒：本機 Whisper 預設採用裝置端私密語音辨識。下載 {name} 模型只需一次約 {size} MB（視連線速度約 1–2 分鐘），之後會離線快取於瀏覽器中，並將您的語音錄音保留在此裝置上。",
+    "draft_label": "轉錄草稿（可編輯）",
+    "draft_placeholder": "按下上方的「開始聽寫」，或直接在此輸入與編輯您的轉錄內容…",
+    "guide_both_body": "先以本機 Whisper 私密開始，讓聽寫維持快速且以離線優先。若想針對困難術語或專有名詞取得第二意見，可自選啟用 Gemini 交叉比對，將兩個獨立模型對照您的音訊，並在任一標記處重播 5 秒片段。",
+    "guide_both_label": "為何同時使用兩者（交叉比對）：",
+    "guide_gemini_body": "無須下載模型。對專業詞彙、專有名詞、不同口音、嘈雜教室環境及標點符號表現更強——僅在您主動啟用時，才會將錄製的音訊片段傳送給 Gemini。",
+    "guide_gemini_title": "Gemini Audio（選用查核）",
+    "guide_summary": "本機 Whisper 與 Gemini Audio——各自優勢與為何搭配使用",
+    "guide_whisper_body": "完成一次下載後（約 39–73 MB）即可私密離線使用。音訊不會離開您的裝置，無須 API 金鑰或額度，且能穩定支援長時間連續聽寫。",
+    "guide_whisper_title": "本機 Whisper（預設）",
+    "ios_canvas_blocked": "在 Gemini Canvas 內的 iPhone/iPad 上，本機 Whisper 已暫停。請直接在下方輸入，或在電腦版瀏覽器開啟 AlloFlow。",
+    "ios_canvas_hint": "您可以直接在下方輸入、在電腦版瀏覽器中開啟 AlloFlow 以使用本機 Whisper，或在已設定時使用 Gemini Audio。",
+    "ios_canvas_title": "在 Gemini Canvas 內的 iPhone/iPad 上，裝置端 Whisper 已暫停",
+    "listening_local": "正在透過本機 Whisper 聆聽… 稍微停頓或繼續說話即可接續新增文字。",
+    "mic_start_failed": "無法啟動麥克風。請檢查瀏覽器權限。",
+    "model_size_label": "本機 Whisper 模型大小",
+    "pause_recording": "暫停",
+    "paused_note": "已暫停。您可以編輯下方的轉錄內容，或按下「繼續」以接續聽寫。",
+    "privacy_tag": "私密 · 下載後可離線使用 · 無須 API 金鑰",
+    "resume_recording": "繼續",
+    "send_read_along": "傳送至隨讀學習包",
+    "speech_settings": "語音設定",
+    "speed_badge_lesson": "實測：比說話快 {speed}x · 適合長篇聽寫",
+    "speed_badge_short": "實測：比說話快 {speed}x · 最適合短片段",
+    "speed_badge_slow": "實測：{speed}x · 慢於即時速度（可能會有停頓）",
+    "speed_badge_upgrade": "實測：比說話快 {speed}x · 適合長篇聽寫（亦可試試 {name}）",
+    "start_recording": "開始聽寫（本機 Whisper）",
+    "stop_recording": "停止",
+    "studio_title": "聽寫工作室",
+    "test_mic": "測試麥克風（4 秒）",
+    "upload_media": "轉錄音訊/視訊檔案",
+    "use_text": "使用聽寫文字",
+    "voice_unavailable": "語音錄製工具仍在載入中，請稍候再試。"
   }
 }

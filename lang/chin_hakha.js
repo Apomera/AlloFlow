@@ -3293,7 +3293,10 @@
     "adventure_resumed_level": "Resumed Adventure (Level {level})",
     "source_choice_ambiguous": "Choose a reading in Based on before generating. More than one reading is available.",
     "source_choices_load_failed": "Reading choices could not load. Please try again.",
-    "submission_tools_still_loading": "Submission tools are still loading. Try Submit again."
+    "submission_tools_still_loading": "Submission tools are still loading. Try Submit again.",
+    "sent_to_read_along": "Cahmai cheu cu tab thar in Relṭinak Paket ah kuat cang.",
+    "read_along_handoff_failed": "Ca ṭial ciami cu Relṭinak Paket ah pek khawh a si lo.",
+    "read_along_no_text": "Relṭinak Paket ah kuat hlan ah ca hram telh asilole chim in ṭial hmasa."
   },
   "large_file": {
     "modal_title": "Import Large Audio file",
@@ -3310,7 +3313,8 @@
     "chunk_info": "Audio si split into 5-minute chunks caah processing",
     "chunk_progress": "Chunk {current} i {total}",
     "audio_only_error": "Currently only audio file (MP3, WAV, etc.) si supported caah chunked transcription.",
-    "starting": "Thawk lio..."
+    "starting": "Thawk lio...",
+    "engine_legend": "Aw ca ṭialnak seh"
   },
   "formatting": {
     "bold": "Bold (**text**)",
@@ -3622,7 +3626,8 @@
       "analyzing_short": "A Zoh hngalh lio...",
       "generate_short": "Ser",
       "books_short": "Cauk",
-      "books_hint": "Hmanthlak cauk ong: cauk zeidah nangmah ca hrampi a si khawh"
+      "books_hint": "Hmanthlak cauk ong: cauk zeidah nangmah ca hrampi a si khawh",
+      "dictate_hint": "Na ca hram cu seh chung Whisper le duh ahcun Gemini cheknak he chim in ṭial"
     },
     "status_generating": "Generating source text...",
     "success_long_form": "Long-form text tuah successfully!",
@@ -3665,7 +3670,8 @@
     "qs_find": "Internet ah hmuahnak zoh",
     "qs_find_sub": "Link hlan asiloah AI in kawl seh",
     "qs_generate": "Kong pakhat in ser",
-    "qs_generate_sub": "AI nih nangmah caah a ṭial lai"
+    "qs_generate_sub": "AI nih nangmah caah a ṭial lai",
+    "dictate_or_record": "Chim in ṭial asilole aw khumh"
   },
   "wizard": {
     "title": "Quick Thawk",
@@ -3790,7 +3796,12 @@
     "step_of": "i",
     "progress": "A rannak in thawknak tthanchonak",
     "progress_value": "{total} i {current} step",
-    "help_click_element": "A tanglei thilri pakhatkhat kha a tlingmi fianternak caah hmet"
+    "help_click_element": "A tanglei thilri pakhatkhat kha a tlingmi fianternak caah hmet",
+    "dictate_desc": "Seh chung Whisper aw ṭialnak le duh ahcun cheknak",
+    "dictate_title": "Na ca hram cu chim in ṭial asilole aw khumh",
+    "dictate_helper": "A hramthawk ah seh chungah thli tein Whisper ṭialnak a hman. Zalawng tein remh, duh ahcun ca thianh, asilole na aw khumhmi he Gemini in chekṭi.",
+    "dictate_loading": "Chim in Ṭialnak Studio (Seh Chung Whisper) a on lio… A on lio zongah a tang ah na ṭial asilole na remh khawh.",
+    "words_dictated_unit": "chim in ṭialmi biafang"
   },
   "settings": {
     "immersive_options": "Immersive Options",
@@ -101952,5 +101963,75 @@
     "a11y_unverified_clinical_deletion": "Unverified clinical deletion",
     "a11y_review_protected_clinical_record_deletion": "Review protected clinical record deletion",
     "a11y_protected_record_security": "Protected record security"
+  },
+  "source_view": {
+    "dictate": "Chim in ṭial",
+    "close_dictate": "Chim in ṭialnak khar",
+    "send_read_along": "Relṭinak Paket ah kuat",
+    "upload_verify_banner": "Aw/video cu seh chungah Whisper in ṭial cang ({count} ṭhen memory ah chiah)",
+    "clear_audio": "Aw hlonh"
+  },
+  "dictation": {
+    "badge_desktop": "Desktop Whisper Timhtuah Cang",
+    "badge_download_needed": "Seh Chung Whisper · A Voi Khatnak Download",
+    "badge_local_ready": "Seh Chung Whisper Timhtuah Cang · {name}",
+    "cleanup_apply": "Thianhnak hman",
+    "cleanup_failed": "Atu ah ca thianh khawh a si lo.",
+    "cleanup_fillers": "A herh lo biafang hlonh",
+    "cleanup_heading": "Duh ahcun AI ca thianhnak",
+    "cleanup_keep": "A hram kel chiah",
+    "cleanup_no_changes": "Hi ca ṭial ciami caah thlen ding ruahnak cheuhmi a um lo.",
+    "cleanup_notes": "Sianginn cazin bantukin remh",
+    "cleanup_punctuation": "Cahram hmelchunhnak le sining thianh",
+    "cleanup_review_title": "Ruahnak cheuhmi thianhnak a tling cang — na ca ṭialmi a thleng rih lo",
+    "cleanup_text_only": "ca lawng — aw zeihmanh kuat a si lo",
+    "cleanup_unavailable": "AI ca thianhnak atu ah a um lo.",
+    "cleanup_undo": "Thianhnak kirṭhan",
+    "cleanup_working": "Thianh lio…",
+    "clear_audio": "Khumh ciami aw hlonh ({mb} MB)",
+    "crosscheck_all_resolved": "Hmelchunhmi hmun vialte zohfel cang.",
+    "crosscheck_btn": "Gemini he aw ah fianter",
+    "crosscheck_count": "Zohfel ding hmelchunhmi hmun {count}:",
+    "crosscheck_disabled_note": "Atu ah a um lo (offline / siangngakchia AI-off mode ah asilole Gemini key um lo caah khar a si). Na Seh Chung Whisper chim in ṭialnak cu offline in a rian a ṭuan peng ko.",
+    "crosscheck_disclosure": "A tang na hmeh lawngah a rian a ṭuan lai: biafang palh khawhmi hmuh dingin memory chung na aw khumhmi ṭhen pawl le ca ṭialmi cu Gemini ah a kuat lai.",
+    "crosscheck_failed": "Gemini aw cheknak a lim lo. Na seh chung ca ṭialmi cu a thleng lo.",
+    "crosscheck_heading": "Gemini he aw ah tahchunh cheknak (Duh ahcun)",
+    "crosscheck_none": "Seh Chung Whisper le Gemini Audio karlak ah i dannak nganpi hmuh a si lo.",
+    "crosscheck_running": "Aw he chek lio…",
+    "crosscheck_unavailable": "Gemini aw tahchunh cheknak atu ah a um lo.",
+    "download_now": "Seh Chung Whisper Download ({size} MB)",
+    "download_warning": "Download theihternak: Seh Chung Whisper cu a hramthawk ah seh chung thli tein aw hngalhnak a hman. {name} model download caah voi khat ~{size} MB a lak (internet sining cungah ~1–2 minute), na browser chungah offline in a khon, i na aw khumhmi pawl hi seh chungah a chiah peng.",
+    "draft_label": "Ca ṭial ciami (remh khawh)",
+    "draft_placeholder": "A cung i Chim in ṭial thawk hmet, asilole hi ka ah na ca ṭialmi ṭial/remh colh…",
+    "guide_both_body": "Na chim in ṭialnak a ran le offline a si peng nakhnga Seh Chung Whisper he thli tein thawk. Biafang har asilole min pawl caah ruahnak dang na duh ahcun, model pahnih na aw he tahchunh dingin le hmelchunhmi hmun kip ah second 5 aw ngaih ṭhan dingin Gemini tahchunh cheknak thim.",
+    "guide_both_label": "Zeicah pahnih ningin hman ding (Tahchunh Cheknak):",
+    "guide_gemini_body": "Model download a herh lo. Biafang tling, minung min, aw phunphun, sianginn thawngpang tam, le cahram hmelchunhnak ah a ṭhawng deuh — na thim lawngah aw khumhmi ṭhen pawl Gemini ah a kuat.",
+    "guide_gemini_title": "Gemini Audio (Duh ahcun cheknak)",
+    "guide_summary": "Seh Chung Whisper le Gemini Audio — an ṭhawnnak le zeicah pahnih ningin hman ding",
+    "guide_whisper_body": "Voi khat download hnu ah (~39–73 MB) thli tein le offline in a rian a ṭuan. Na seh in aw zeihmanh a chuak lo, API key asilole quota a herh lo, i caan saupi chim in ṭialnak a ṭha tein a kal.",
+    "guide_whisper_title": "Seh Chung Whisper (A hramthawk)",
+    "ios_canvas_blocked": "Gemini Canvas chung iPhone/iPad ah Seh Chung Whisper dinh ter a si. A tang ah ṭial colh asilole computer browser ah AlloFlow ong.",
+    "ios_canvas_hint": "A tang ah na ṭial colh khawh, Seh Chung Whisper caah computer browser ah AlloFlow na on khawh, asilole timhtuah ciami a um ahcun Gemini Audio na hman khawh.",
+    "ios_canvas_title": "Gemini Canvas chung iPhone/iPad ah seh chung Whisper dinh ter a si",
+    "listening_local": "Seh chungah Whisper he ngaih lio… ca chap dingin chikkhat i din asilole chim peh.",
+    "mic_start_failed": "Microphone thawk khawh a si lo. Browser nawlpeknak chek.",
+    "model_size_label": "Seh Chung Whisper model nganzat",
+    "pause_recording": "Chikkhat dinh",
+    "paused_note": "Chikkhat dinh a si. A tang ah ca ṭialmi na remh khawh asilole chim in ṭial peh dingin Peh hmet.",
+    "privacy_tag": "Thli tein · Download hnu offline · API key herh lo",
+    "resume_recording": "Peh",
+    "send_read_along": "Relṭinak Paket ah kuat",
+    "speech_settings": "Chimnak setting pawl",
+    "speed_badge_lesson": "Hneksak cang: chimnak nakin {speed}x a rang deuh · Caan saupi ṭialnak caah a ṭha",
+    "speed_badge_short": "Hneksak cang: chimnak nakin {speed}x a rang deuh · Aw tawi caah a ṭha bik",
+    "speed_badge_slow": "Hneksak cang: {speed}x · Caan taktak nakin a nuar deuh (dinh caan a um kho)",
+    "speed_badge_upgrade": "Hneksak cang: chimnak nakin {speed}x a rang deuh · Caan saupi ṭialnak caah a ṭha ({name} zong hneksak khawh)",
+    "start_recording": "Chim in ṭial thawk (Seh Chung Whisper)",
+    "stop_recording": "Dinh",
+    "studio_title": "Chim in Ṭialnak Studio",
+    "test_mic": "Mic hneksak (4s)",
+    "upload_media": "Aw/video file ca ah ṭial",
+    "use_text": "Chim in ṭialmi ca hman",
+    "voice_unavailable": "Aw khumhnak a on lio. Zaangfah tein chikkhat hnu ah hneksak ṭhan."
   }
 }

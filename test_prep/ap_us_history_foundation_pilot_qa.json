@@ -174,14 +174,13 @@
       "glossaryTerms": 27,
       "constructedResponseWorkshops": 3,
       "topicDiagnosticRoutes": 0,
-      "remediationPlaybooks": 0,
+      "remediationPlaybooks": 6,
       "studySessionPlans": 0,
       "spacedReviewPlans": 0,
       "sourceCatalog": 5
     },
     "emptyLibraryLayers": [
       "topicDiagnosticRoutes",
-      "remediationPlaybooks",
       "studySessionPlans",
       "spacedReviewPlans"
     ],
@@ -213,8 +212,8 @@
     },
     "learningLibrary": {
       "path": "test_prep/ap_us_history_foundation_pilot_learning_library.json",
-      "byteLength": 535372,
-      "sha256": "c488dbb8e642493969a7755d03dfd2f272820c4bf165eee79d43396a8fe36199"
+      "byteLength": 642357,
+      "sha256": "b0d8fa16c2abb01b5166e7c0d6e6aeb989d138c26db18a17ae39fe62698bad25"
     }
   },
   "standard": {
@@ -493,8 +492,8 @@
       "asset": "learning-library",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "c488dbb8e642493969a7755d03dfd2f272820c4bf165eee79d43396a8fe36199",
-      "deploySha256": "c488dbb8e642493969a7755d03dfd2f272820c4bf165eee79d43396a8fe36199",
+      "sourceSha256": "b0d8fa16c2abb01b5166e7c0d6e6aeb989d138c26db18a17ae39fe62698bad25",
+      "deploySha256": "b0d8fa16c2abb01b5166e7c0d6e6aeb989d138c26db18a17ae39fe62698bad25",
       "note": "Source and deployment bytes are identical."
     }
   ],

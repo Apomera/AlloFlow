@@ -1290,7 +1290,9 @@ describe('source check: a check file cannot send anything either', () => {
     // Re-pinned 2026-11-19 (Wave 2A) from 208000: unified Voice speed + noVoice notice in Reading tools + shared takeHomeKeypad (~209.3 KB).
     // Re-pinned 2026-11-19 (Wave 5A+6A+7A) from 210500: HC/dark CSS, keypad/shell repeat/IME/250ms guards, QD arrow nav, MC spoken operators (~211.9 KB).
     // Re-pinned 2026-11-19 (Wave 8A) from 212500: Dark/HC @media print reset, Reading Focus Dark/HC curtain + resize sync, Magnifier null-guard & touch edge clamp (~213.8 KB).
-    expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(214500);
+    // Re-pinned 2026-11-22 (Waves 1-6) from 214500: preview-only nav capability, Reading Tools More-fold, 390px #lt-stop fix, Enter-to-start, parenthesized math operators (~217.2-221.3 KB).
+    // Re-pinned 2026-11-22 (Show my teacher) from 225000: deskside conferencing fold on practice end screen + "To go over together" focus box on code-unlocked check reviews (~227.3-229.9 KB).
+    expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(235000);
     expect(sealedOf(html)).toMatchObject({ audio: {}, images: {}, submit: null });
   });
 
@@ -1417,6 +1419,15 @@ describe('practice files are as they were', () => {
   // opening, soundGap/choices tools, and trusted 250ms mount-key/IME guards in takeHomeShell.
   // Renewed 2026-11-19 (Wave 8A), deliberately, by the recipe above: Dark/HC @media print reset, Reading Focus Dark/HC
   // curtain + resize sync, Magnifier .lt-grip null-guard & touch bounds clamp, and Escape stop-audio state sync.
+  // Renewed 2026-11-22 (Waves 1-6), deliberately, by the recipe above: preview-only nav capability in linked(),
+  // 390px #lt-stop docking, secondary Reading Tools fold, Enter-to-start + resume progress, and immediate [data-last-step] hide on save.
+  // Renewed 2026-11-22 (Show my teacher), deliberately, by the recipe above: collapsed "Show my teacher" deskside
+  // conferencing fold ([data-teacher-confer]) on practice end screens, confer_* labels, and .confer/.confer-box CSS.
+  // Renewed 2026-11-22 (Offline Sealed QR hook), deliberately, by the recipe above: 3-line opt-in hook in takeHomeShell
+  // (kit.qr && kit.qrLib && lesson.qr; 1 line out, 4 lines in, +323 bytes); zero QR code/CSS/labels travel when lesson.qr is unset.
+  // Renewed 2026-11-22 (Wave 9 Read-Along Multi-Page & takeHomeTools), deliberately, by the recipe above: Motion: Usual / Less
+  // toggle + dark custom-color companion tokens in takeHomeTools, read-only ctx.pages/ctx.goto/ctx.sessionCache/ctx.bookmark +
+  // (Page N of M) resume copy for read_along in takeHomeShell, and RA_CSS split keeping non-Read-Along packets lean.
   const REMOVED = [];
   const ADDED = [];
   it('byte for byte, but for the listed lines', () => {

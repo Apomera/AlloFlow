@@ -33,21 +33,29 @@
   body { margin: 0; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; background: #0b1220; color: #e2e8f0; display: flex; flex-direction: column; min-height: 100vh; }
   header { padding: 14px 18px 10px; }
   h1 { margin: 0; font-size: 18px; }
-  .sub { margin: 4px 0 0; font-size: 12px; color: #94a3b8; line-height: 1.5; }
+  .sub { margin: 4px 0 0; font-size: 12px; color: #cbd5e1; line-height: 1.5; }
   main { flex: 1; padding: 0 18px 18px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
   video, img.preview { width: 100%; max-width: 720px; border-radius: 12px; border: 1px solid #1e293b; background: #000; display: block; }
   .row { display: flex; gap: 10px; flex-wrap: wrap; }
-  button { padding: 10px 18px; border-radius: 10px; border: 1px solid #64748b; background: #0f172a; color: #e2e8f0; font-size: 14px; font-weight: 700; cursor: pointer; }
+  button { min-height: 44px; padding: 10px 18px; border-radius: 10px; border: 1px solid #64748b; background: #0f172a; color: #e2e8f0; font-size: 14px; font-weight: 700; cursor: pointer; }
   button.primary { background: #0369a1; border-color: #0369a1; color: #fff; }
   :focus-visible { outline: 3px solid #38bdf8; outline-offset: 2px; }
-  .note { font-size: 12px; color: #94a3b8; line-height: 1.55; max-width: 720px; }
+  .note { font-size: 12px; color: #cbd5e1; line-height: 1.55; max-width: 720px; }
   .privacy { font-size: 12px; color: #e0f2fe; background: #082f49; border: 1px solid #0284c7; border-radius: 10px; padding: 8px 12px; line-height: 1.55; max-width: 720px; }
   .error { font-size: 13px; color: #fde68a; background: #422006; border: 1px solid #a16207; border-radius: 10px; padding: 10px 12px; line-height: 1.55; max-width: 720px; }
   .ok { font-size: 13px; color: #bbf7d0; background: #052e16; border: 1px solid #16a34a; border-radius: 10px; padding: 10px 12px; max-width: 720px; }
   .hidden { display: none !important; }
   [aria-live] { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); }
-  .skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 10000; }
-  .skip-link:focus { position: fixed; left: 8px; top: 8px; width: auto; height: auto; padding: 10px 18px; background: #0f172a; color: #f8fafc; font: 700 14px system-ui, sans-serif; border-radius: 8px; outline: 3px solid #facc15; text-decoration: none; }
+  .skip-link { position: absolute; inset-inline-start: 8px; top: 8px; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; z-index: 10000; }
+  .skip-link:focus { position: fixed; inset-inline-start: 8px; top: 8px; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; min-height: 44px; display: inline-flex; align-items: center; padding: 10px 18px; background: #0f172a; color: #f8fafc; font: 700 14px system-ui, sans-serif; border-radius: 8px; outline: 3px solid #facc15; text-decoration: none; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
+  @media (forced-colors: active) {
+    body, .privacy, .error, .ok, .skip-link:focus { background: Canvas !important; color: CanvasText !important; border: 1px solid CanvasText !important; }
+    .sub, .note { color: CanvasText !important; }
+    button { background: ButtonFace !important; color: ButtonText !important; border: 1px solid ButtonText !important; }
+    button.primary { background: Highlight !important; color: HighlightText !important; border-color: Highlight !important; }
+    :focus-visible, .skip-link:focus { outline: 3px solid Highlight !important; outline-offset: 2px !important; }
+  }
 </style>
 </head>
 <body>
@@ -63,7 +71,7 @@
   <div id="err" class="error hidden" role="alert"></div>
   <div id="done" class="ok hidden" role="status"></div>
 
-  <video id="cam" role="button" autoplay playsinline muted tabindex="0" aria-label="Live camera preview. Press Space or Enter to snap a photo." aria-describedby="keysNote"></video>
+  <video id="cam" autoplay playsinline muted role="application" tabindex="0" aria-label="Live camera preview. Press Space or Enter to snap a photo." aria-describedby="keysNote"></video>
   <img id="shot" class="preview hidden" alt="The photo you just took">
 
   <div class="row" id="liveRow">
@@ -214,6 +222,7 @@
     var maxDim = 1024;
     var scale = Math.min(1, maxDim / Math.max(cam.videoWidth, cam.videoHeight));
     var c = document.createElement('canvas');
+    c.setAttribute('aria-hidden', 'true');
     c.width = Math.max(1, Math.round(cam.videoWidth * scale));
     c.height = Math.max(1, Math.round(cam.videoHeight * scale));
     c.getContext('2d').drawImage(cam, 0, 0, c.width, c.height);
@@ -288,7 +297,17 @@
   useBtn.addEventListener('click', usePhoto);
   // A keyboard shutter: Space or Enter on the focused camera view.
   cam.addEventListener('keydown', function (e) {
+    if (e.isComposing || e.keyCode === 229) return;
     if (e.key === ' ' || e.key === 'Spacebar' || e.key === 'Enter') { e.preventDefault(); snap(); }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.isComposing || e.keyCode === 229) return;
+    if (e.key === 'Escape' && !reviewRow.classList.contains('hidden')) {
+      e.preventDefault();
+      cancelPendingSend();
+      lastDataUrl = null;
+      startCamera();
+    }
   });
   document.getElementById('retakeBtn').addEventListener('click', function () { cancelPendingSend(); lastDataUrl = null; startCamera(); });
   document.getElementById('flipBtn').addEventListener('click', function () {

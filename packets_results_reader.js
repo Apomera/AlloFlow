@@ -537,8 +537,14 @@
     var seconds = number(data.durationMs);
     var active = number(data.activeMs);
     // The recall times of the facts right at the first try from memory, counted from the answers (item.recallMs).
-    var recalls = data.items.slice(0, MAX_ITEMS).filter(function (it) { return it && typeof it === 'object' && it.firstTry === true && !it.practice && whole(it.recallMs, 86400000) !== null; })
-      .map(function (it) { return whole(it.recallMs, 86400000); });
+    var recalls = [];
+    data.items.slice(0, MAX_ITEMS).forEach(function (it) {
+      if (!it || typeof it !== 'object' || it.firstTry !== true || it.practice || it.scored === false) return;
+      var flag = idOf(it.flag, 40);
+      if (flag === 'paused' || flag === 'time_up') return;
+      var ms = number(it.recallMs);
+      if (ms !== null && ms >= 0) recalls.push(Math.min(86400000, Math.round(ms)));
+    });
     return { ok: true, sessions: [{ source: 'json', sid: text(data.sessionId, 80), learner: text(learner, 60), packetId: text(packet.id, 80) || text(data.lessonId, 80),
       packetVersion: text(packet.version, 40) || text(data.revision, 40), form: text(packet.form, 40), mode: probe ? 'probe' : 'practice',
       title: text(data.lessonTitle, 80) || text(packet.title, 80), activeS: active === null ? null : whole(active / 1000, 864000),
@@ -638,6 +644,7 @@
     s.unitName = !probe ? FIRST_TRY_UNIT : own(UNITS, s.unit) ? UNITS[s.unit] : s.unit.replace(/_/g, ' ');
     // Notes, as short codes. The page says each one in plain words.
     var flags = [];
+    var pushFlag = function (flag) { if (flag && flags.indexOf(flag) < 0) flags.push(flag); };
     s.score = null;
     if (probe) {
       // The score of a check. The answers are covered by the file's check value and the score
@@ -670,21 +677,21 @@
       if (st && Array.isArray(st.tools) && st.tools.length) s.score.tools = st.tools.slice();
       if (st && st.pauses) { s.score.pausedS = st.pausedS; s.score.pauses = st.pauses; }
       if (st && st.directionsHeard) s.score.directionsHeard = st.directionsHeard;
-      s.score.flags.forEach(function (flag) { if (flags.indexOf(flag) < 0) flags.push(flag); });
+      s.score.flags.forEach(pushFlag);
       // Untimed (an accommodation): a fixed form with no time limit, said by the file or not. It is never put with
       // timed results: it has its own series (seriesKey), so its own middle and goal.
       s.untimed = !!st && (st.untimed || (own(MEASURES, s.measure) && s.form !== 'custom' && !/^math-custom-/.test(s.packetId) && limit === null));
-      if (s.untimed) { s.score.untimed = true; s.score.usualTimeLimitS = st.usualTimeLimitS; flags.push('untimed'); if (noScore === 'no_time_limit') noScore = 'untimed_no_rate'; s.score.noScore = noScore; }
-      if (noScore && flags.indexOf(noScore) < 0) flags.push(noScore);
-      if (prorated) flags.push('finished_early');
-      if (recounted) flags.push('score_differs');
+      if (s.untimed) { s.score.untimed = true; s.score.usualTimeLimitS = st.usualTimeLimitS; pushFlag('untimed'); if (noScore === 'no_time_limit') noScore = 'untimed_no_rate'; s.score.noScore = noScore; }
+      if (noScore) pushFlag(noScore);
+      if (prorated) pushFlag('finished_early');
+      if (recounted) pushFlag('score_differs');
     }
     s.value = probe ? s.score.score : s.summary.firstTryPct;
     s.attempt = probe ? s.score.attempt : null;
-    if (s.integrity === 'changed') flags.push('file_changed');
-    if (s.integrity === 'absent') flags.push('no_check_value');
-    if (s.integrity === 'unchecked') flags.push('not_checked');
-    if (s.dateFromFile) flags.push(s.date ? 'date_from_file' : 'no_date');
+    if (s.integrity === 'changed') pushFlag('file_changed');
+    if (s.integrity === 'absent') pushFlag('no_check_value');
+    if (s.integrity === 'unchecked') pushFlag('not_checked');
+    if (s.dateFromFile) pushFlag(s.date ? 'date_from_file' : 'no_date');
     s.flags = flags;
     return s;
   }
@@ -1031,6 +1038,28 @@
     });
     return list.sort(function (a, b) { return b.times - a.times || (a.word < b.word ? -1 : a.word > b.word ? 1 : 0); }).slice(0, limit || 8);
   }
+  // Items missed across a learner's checks (probe sessions), grouped by check and item.
+  function checkMissedItems(sessions, limit) {
+    var map = Object.create(null), list = [];
+    (sessions || []).forEach(function (s) {
+      if (s.mode !== 'probe') return;
+      var checkName = String(s.measureName || s.title || 'Check');
+      (s.items || []).forEach(function (it) {
+        if (it.practice || !it.attempted || it.correct) return;
+        var label = String(it.word || it.target || '').trim();
+        if (!label) return;
+        var ans = Array.isArray(it.responses) && it.responses.length ? String(it.responses[it.responses.length - 1] || '').trim().slice(0, 24) : '';
+        var key = checkName + '\t' + label.toLowerCase();
+        if (map[key]) {
+          map[key].times++;
+          if (ans && map[key].answers.indexOf(ans) < 0 && map[key].answers.length < 4) map[key].answers.push(ans);
+        } else {
+          list.push(map[key] = { check: checkName, item: label, answers: ans ? [ans] : [], times: 1 });
+        }
+      });
+    });
+    return list.sort(function (a, b) { return b.times - a.times || (a.item < b.item ? -1 : a.item > b.item ? 1 : 0); }).slice(0, limit || 20);
+  }
 
   // ---------------------------------------------------------------------------
   // "Save a summary (CSV)": one row for each result
@@ -1040,7 +1069,7 @@
     var lines = [SUMMARY_COLUMNS].concat((rows || []).map(function (row) {
       var s = row.session, probe = s.mode === 'probe';
       var blank = function (value) { return value === null || value === undefined ? '' : value; };
-      return [String(row.learner), s.date, s.measure, s.form, probe ? blank(s.value) : '', probe ? s.unit : '', blank(s.summary.accuracyPct), blank(s.summary.firstTryPct),
+      return [text(row.learner, 80), s.date, s.measure, s.form, probe ? blank(s.value) : '', probe ? s.unit : '', blank(s.summary.accuracyPct), blank(s.summary.firstTryPct),
         s.summary.given, s.summary.attempted, blank(s.durationS), s.flags.join(';'), s.sessionId, s.packetId, s.packetVersion, s.integrity, s.sourceFile,
         s.title, s.measureName, s.summary.attempted ? Math.round(s.summary.correct / s.summary.attempted * 100) : '', blank(s.activeS)];
     }));
@@ -1169,6 +1198,7 @@
       if (nextCursor > cdEnd) break;
       var rawName = decodeUtf8(bytes.subarray(cursor + 46, cursor + 46 + nameLen));
       cursor = nextCursor;
+      if (/[\/\\]$/.test(String(rawName || '').replace(/[\u0000-\u001f\u007f]/g, ''))) continue;
       var clean = zipCleanName(rawName);
       if (zipSkipMeta(clean)) continue;
       if (/\.zip$/i.test(clean)) { pushSkipped(clean, 'Nested .zip folders are not opened. Unzip it on your device first.'); continue; }
@@ -1218,9 +1248,10 @@
     MATH_STRANDS: MATH_STRANDS.map(function (row) { return row.slice(); }), MATH_ACTIVITIES: MATH_ACTIVITIES,
     VOCAB_STRANDS: VOCAB_STRANDS.map(function (row) { return row.slice(); }), VOCAB_ACTIVITIES: VOCAB_ACTIVITIES, VOCAB_MEASURES: VOCAB_MEASURES,
     SYMBOL_STRANDS: SYMBOL_STRANDS.map(function (row) { return row.slice(); }), SYMBOL_ACTIVITIES: SYMBOL_ACTIVITIES, SYMBOL_MEASURES: SYMBOL_MEASURES,
+    READ_ALONG_STRANDS: READ_ALONG_STRANDS.map(function (row) { return row.slice(); }), READ_ALONG_ACTIVITIES: READ_ALONG_ACTIVITIES,
     MEASURE_UNITS: MEASURE_UNITS, REASONS: REASONS,
     read: read, refuse: refuse, parseCsv: parseCsv, readCsv: readCsv, readJson: readJson, finish: finish, fnv1a: fnv1a, sha256: sha256, stamp: stamp, sheetStamp: sheetStamp, csvCell: csvCell,
-    labelKey: labelKey, looksAlike: looksAlike, pairKey: pairKey, middle: middle, addUp: addUp, learnerSeries: learnerSeries, wrongAnswers: wrongAnswers,
+    labelKey: labelKey, looksAlike: looksAlike, pairKey: pairKey, middle: middle, addUp: addUp, learnerSeries: learnerSeries, wrongAnswers: wrongAnswers, checkMissedItems: checkMissedItems,
     summaryCsv: summaryCsv, makeBundle: makeBundle, readBundle: readBundle, cleanSession: cleanSession, unpackZip: unpackZip,
     dayText: dayText, cleanGoalDates: cleanGoalDates, cleanPaper: cleanPaper,
   };

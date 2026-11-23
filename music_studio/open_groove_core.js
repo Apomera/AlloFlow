@@ -1312,6 +1312,7 @@
   }
 
   function ogFinite(value, fallback) {
+    if (value == null || value === '' || typeof value === 'boolean' || (typeof value === 'string' && !value.trim())) return fallback;
     var n = Number(value);
     return isFinite(n) ? n : fallback;
   }
@@ -1371,6 +1372,7 @@
   }
 
   function ogEnsureCounters(project) {
+    if (!project || typeof project !== 'object') return;
     project.counters = project.counters || {};
     ['track', 'pattern', 'event', 'asset', 'scene'].forEach(function (key) {
       project.counters[key] = Math.max(0, ogInt(project.counters[key], 0));
@@ -1446,8 +1448,9 @@
     options = options || {};
     if (!project || !Array.isArray(project.tracks)) throw new Error('OpenGroove: project is not ready');
     var type = ogSafeTrackType(options.type);
+    var safeTrackId = (options.id && !ogIsUnsafeKey(options.id)) ? options.id : ogMintId(project, 'track');
     var track = {
-      id: options.id || ogMintId(project, 'track'),
+      id: safeTrackId,
       type: type,
       name: ogSafeString(options.name, type === 'drumRack' ? 'Drum Rack' : 'Track'),
       gain: ogClamp(options.gain, 0, 2, 1),
@@ -1466,8 +1469,9 @@
   function ogAddPattern(project, options) {
     options = options || {};
     if (!project || !Array.isArray(project.patterns)) throw new Error('OpenGroove: project is not ready');
+    var safePatternId = (options.id && !ogIsUnsafeKey(options.id)) ? options.id : ogMintId(project, 'pattern');
     var pattern = {
-      id: options.id || ogMintId(project, 'pattern'),
+      id: safePatternId,
       name: ogSafeString(options.name, 'Pattern ' + (project.patterns.length + 1)),
       bars: Math.max(1, ogInt(options.bars, 4)),
       events: Array.isArray(options.events) ? ogClone(options.events) : []
@@ -1478,13 +1482,13 @@
 
   function ogFindTrack(project, trackId) {
     var tracks = project && Array.isArray(project.tracks) ? project.tracks : [];
-    for (var i = 0; i < tracks.length; i++) if (tracks[i].id === trackId) return tracks[i];
+    for (var i = 0; i < tracks.length; i++) if (tracks[i] && tracks[i].id === trackId) return tracks[i];
     return null;
   }
 
   function ogFindPattern(project, patternId) {
     var patterns = project && Array.isArray(project.patterns) ? project.patterns : [];
-    for (var i = 0; i < patterns.length; i++) if (patterns[i].id === patternId) return patterns[i];
+    for (var i = 0; i < patterns.length; i++) if (patterns[i] && patterns[i].id === patternId) return patterns[i];
     return null;
   }
 
@@ -4138,14 +4142,15 @@
     if (!ogFindTrack(project, trackId)) throw new Error('OpenGroove: track not found');
     var spec = ogFindAutomationTarget(target);
     var perBar = Math.max(1, ogInt(stepsPerBar, 16));
-    var totalSteps = Math.max(1, pattern.bars * perBar);
+    var totalSteps = Math.max(1, Math.max(1, ogInt(pattern.bars, 1)) * perBar);
     var step = Math.max(0, Math.min(totalSteps - 1, ogInt(stepIndex, 0)));
     var stepTicks = Math.round(ogTicksPerMeasure(project) / perBar);
     var startTick = step * stepTicks;
     var existing = null;
+    if (!Array.isArray(pattern.events)) pattern.events = [];
     for (var i = 0; i < pattern.events.length; i++) {
       var event = pattern.events[i];
-      if (event.type === 'automationPoint' && event.trackId === trackId && event.target === spec.id && event.startTick === startTick) {
+      if (event && event.type === 'automationPoint' && event.trackId === trackId && event.target === spec.id && event.startTick === startTick) {
         existing = event;
         break;
       }
@@ -4186,7 +4191,7 @@
 
   function ogResolveTrackEffectsAtTick(project, patternId, trackId, tick) {
     var effects = ogGetTrackEffects(project, trackId);
-    var effectMap = {};
+    var effectMap = Object.create(null);
     effects.forEach(function (effect) {
       if (effect.enabled) effectMap[effect.type] = effect;
     });
@@ -4269,7 +4274,7 @@
   function ogAnyMixerSolo(project) {
     var tracks = project && Array.isArray(project.tracks) ? project.tracks : [];
     return tracks.some(function (track) {
-      return ogGetMixerChannel(project, track.id).solo;
+      return !!(track && ogGetMixerChannel(project, track.id).solo);
     });
   }
 
@@ -4284,7 +4289,7 @@
     return {
       master: ogGetMixerChannel(project, 'master'),
       soloActive: ogAnyMixerSolo(project),
-      channels: tracks.map(function (track) {
+      channels: tracks.filter(Boolean).map(function (track) {
         var channel = ogGetMixerChannel(project, track.id);
         channel.trackId = track.id;
         channel.name = track.name;
@@ -4500,9 +4505,10 @@
   function ogClearPadEvents(project, patternId, trackId, padId) {
     var pattern = ogFindPattern(project, patternId);
     if (!pattern) throw new Error('OpenGroove: pattern not found');
-    var before = pattern.events.length;
-    pattern.events = pattern.events.filter(function (event) {
-      return !(event.type === 'drumHit' && event.trackId === trackId && event.padId === padId);
+    var events = Array.isArray(pattern.events) ? pattern.events : [];
+    var before = events.length;
+    pattern.events = events.filter(function (event) {
+      return !(event && event.type === 'drumHit' && event.trackId === trackId && event.padId === padId);
     });
     return before - pattern.events.length;
   }
@@ -4512,7 +4518,7 @@
     if (!pattern) throw new Error('OpenGroove: pattern not found');
     var count = 0;
     (pattern.events || []).forEach(function (event) {
-      if (event.type === 'drumHit' && event.trackId === trackId && event.padId === padId) {
+      if (event && event.type === 'drumHit' && event.trackId === trackId && event.padId === padId) {
         event.velocity = ogNormalizeVelocity(velocity == null ? 1 : velocity);
         count += 1;
       }
@@ -4529,7 +4535,7 @@
     var seed = ogSafeString(options.seed, project && project.title || 'open-groove');
     var changed = 0;
     (pattern.events || []).forEach(function (event) {
-      if (event.type !== 'drumHit') return;
+      if (!event || event.type !== 'drumHit') return;
       if (trackId && event.trackId !== trackId) return;
       var timingRand = ogSeededUnit(seed + ':' + event.id + ':time');
       var velocityRand = ogSeededUnit(seed + ':' + event.id + ':velocity');
@@ -4552,6 +4558,7 @@
       measures.push({ bar: bar + 1, notes: [], rests: [], drumHits: [], chords: [] });
     }
     (pattern.events || []).forEach(function (event) {
+      if (!event || typeof event !== 'object') return;
       var nStart = event.notation && event.notation.startTick != null ? event.notation.startTick : event.startTick;
       var barIndex = Math.max(0, Math.min(bars - 1, Math.floor(Math.max(0, ogInt(nStart, 0)) / measureTicks)));
       var inMeasure = Math.max(0, ogInt(nStart, 0) - barIndex * measureTicks);
@@ -5626,18 +5633,22 @@
     var scenes = project && Array.isArray(project.scenes) ? project.scenes : [];
     var tracks = project && Array.isArray(project.tracks) ? project.tracks : [];
     var effectTrackCount = tracks.filter(function (track) {
-      return ogGetTrackEffects(project, track.id).length > 0;
+      return !!(track && ogGetTrackEffects(project, track.id).length > 0);
     }).length;
     var patternScenes = Object.create(null);
     scenes.forEach(function (scene) {
+      if (!scene || typeof scene !== 'object') return;
       (scene.patternIds || []).forEach(function (patternId) {
+        if (ogIsUnsafeKey(patternId)) return;
         patternScenes[patternId] = patternScenes[patternId] || [];
         patternScenes[patternId].push({ id: scene.id, name: scene.name });
       });
     });
     var patternSections = Object.create(null);
     timeline.forEach(function (section) {
+      if (!section || typeof section !== 'object') return;
       (section.patternIds || []).forEach(function (patternId) {
+        if (ogIsUnsafeKey(patternId)) return;
         patternSections[patternId] = patternSections[patternId] || [];
         patternSections[patternId].push({
           sceneId: section.sceneId,
@@ -5647,9 +5658,9 @@
         });
       });
     });
-    var patterns = (project && Array.isArray(project.patterns) ? project.patterns : []).map(function (pattern, index) {
+    var patterns = (project && Array.isArray(project.patterns) ? project.patterns : []).filter(Boolean).map(function (pattern, index) {
       var events = Array.isArray(pattern.events) ? pattern.events : [];
-      var chord = events.filter(function (event) { return event.type === 'chord'; })[0] || null;
+      var chord = events.filter(function (event) { return event && event.type === 'chord'; })[0] || null;
       return {
         id: pattern.id,
         index: index,
@@ -6881,9 +6892,10 @@
   }
 
   function ogPrepareStemSlots(project, options) {
+    if (!project || typeof project !== 'object') throw new Error('OpenGroove: project is not ready');
     options = options || {};
     var plan = ogBuildStemSeparationPlan(project, options);
-    var groupId = options.groupId || ogMintId(project, 'asset') + '_stems';
+    var groupId = (options.groupId && !ogIsUnsafeKey(options.groupId)) ? options.groupId : ogMintId(project, 'asset') + '_stems';
     var created = [];
     plan.targets.forEach(function (target) {
       var asset = ogRegisterUserRecording(project, {
@@ -6915,8 +6927,8 @@
   function ogBuildStemAssetSummary(project) {
     var groups = Object.create(null);
     (project && project.assets || []).forEach(function (asset) {
-      if (!asset || !asset.stemRole) return;
-      var groupId = asset.stemGroupId || 'ungrouped';
+      if (!asset || !asset.stemRole || ogIsUnsafeKey(asset.stemRole)) return;
+      var groupId = (asset.stemGroupId && !ogIsUnsafeKey(asset.stemGroupId)) ? asset.stemGroupId : 'ungrouped';
       if (!groups[groupId]) groups[groupId] = { groupId: groupId, assets: [], roles: Object.create(null), readyCount: 0 };
       groups[groupId].assets.push(asset);
       groups[groupId].roles[asset.stemRole] = asset.id;
@@ -7270,8 +7282,8 @@
     var output = project;
     if (options.includeEmbeddedAudio === false) {
       output = ogClone(project);
-      (output.assets || []).forEach(function (asset) {
-        if (asset.dataUrl) {
+      (output && Array.isArray(output.assets) ? output.assets : []).forEach(function (asset) {
+        if (asset && asset.dataUrl) {
           asset.dataUrl = null;
           asset.storage = asset.storage === 'embedded' ? 'session' : asset.storage;
           asset.embeddedAudioOmitted = true;

@@ -300,9 +300,9 @@
             h('div', { style: { marginTop: 14, fontSize: 12, color: _qqFg('#94a3b8') } },
               'Question ' + (currentIdx + 1) + ' of ' + QUERIES.length,
               d.manualOverride != null ? h('span', null, ' · ',
-                h('button', { type: 'button', onClick: resetAuto, style: { background: 'transparent', border: 'none', color: _qqFg('#a78bfa'), cursor: 'pointer', fontSize: 12, textDecoration: 'underline' } }, 'reset to this week\'s automatic')
+                h('button', { type: 'button', onClick: resetAuto, style: { background: 'transparent', border: 'none', color: _qqFg('#a78bfa'), cursor: 'pointer', fontSize: 12, textDecoration: 'underline', minHeight: 28, padding: '4px 6px' } }, 'reset to this week\'s automatic')
               ) : h('span', null, ' · ',
-                h('button', { type: 'button', onClick: tryDifferent, style: { background: 'transparent', border: 'none', color: _qqFg('#a78bfa'), cursor: 'pointer', fontSize: 12, textDecoration: 'underline' } }, 'try a different question')
+                h('button', { type: 'button', onClick: tryDifferent, style: { background: 'transparent', border: 'none', color: _qqFg('#a78bfa'), cursor: 'pointer', fontSize: 12, textDecoration: 'underline', minHeight: 28, padding: '4px 6px' } }, 'try a different question')
               )
             )
           ),

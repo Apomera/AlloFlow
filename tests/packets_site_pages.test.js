@@ -320,6 +320,8 @@ describe('the pages as files', () => {
       ['Make a 1-minute naming check', [['Make a 1-minute naming check', 'packets-symbol-runner.html#check-mode']]],
       ['Make a vocabulary check', [['Make a vocabulary check', 'packets-vocab.html#check-mode']]],
       ['Add up results', [['Add up results', 'packets-results.html']]],
+      // 2026-11-22: Collect by sealed QR — zero-network public-key encrypted offline QR results companion.
+      ['Collect by sealed QR', [['Collect by sealed QR', 'packets-qr.html']]],
       ['Present & print word cards', [['Present & print word cards', 'packets-present-export.html']]],
       ['Check it yourself', [['Check it yourself', '#check']]]]);
     // 2026-11-16: the student's way in was a text link 3,215 px down a phone page; it now leads the section.
@@ -349,14 +351,15 @@ describe('the pages as files', () => {
     expect(cards[1].text).toContain('Three steps. No sound needed.');
     expect(cards[3].text).toContain('Works offline.');
     expect(cards[3].text).not.toMatch(/Stroop|flanker|3D|5x8/);
-    expect(cards[8].text).toContain('PowerPoint slides');
+    expect(cards[8].text).toContain('zero network');
+    expect(cards[9].text).toContain('PowerPoint slides');
     expect(cards[7].text).toContain('not uploaded');
     expect(cards[7].text).toContain('each student over time');
     expect(doc.getElementById('check')).toBeTruthy();
     expect(doc.body.textContent).toContain('For practice and for checking progress. Not a standardized test.');
     // Each card is built the same way: a heading that is the card's one link, a line, a foot; packets.css stretches that
-    // link over the whole card (.card a::after). The ones that make a file are filled; the three for what comes after are outlined.
-    expect([...doc.querySelectorAll('.cards > *')].map((node) => node.className)).toEqual([...Array(7).fill('card card-main'), 'card card-go', 'card card-go', 'card card-go']);
+    // link over the whole card (.card a::after). The ones that make a file are filled; the four for what comes after are outlined (2026-11-22: added Collect by sealed QR).
+    expect([...doc.querySelectorAll('.cards > *')].map((node) => node.className)).toEqual([...Array(7).fill('card card-main'), 'card card-go', 'card card-go', 'card card-go', 'card card-go']);
     for (const card of doc.querySelectorAll('.card')) {
       expect([...card.children].map((node) => node.tagName + (node.className ? '.' + node.className : ''))).toEqual(['H3', 'P', 'P.card-foot']);
       expect(!!card.querySelector('h3 > a')).toBe(true);
@@ -703,7 +706,7 @@ describe('the maker, run with the real builder', () => {
     if (!counting.checked) counting.click();
     page.$('next-1').click();
     await wait(60);
-    expect(page.$('f-shape').value).toBe('CVC');
+    expect([...page.$('f-shapes').querySelectorAll('input[data-shape]:checked')].map((b) => b.value)).toEqual(['CVC']);
     expect(soundsOf(page.chips())).toEqual([3]);
     const note = page.d.querySelector('#mix-notes [data-mix="counting"]');
     expect(page.$('mix-notes').hidden).toBe(false);
@@ -712,7 +715,7 @@ describe('the maker, run with the real builder', () => {
     // One press: the pattern is cleared and the words are dealt out by their number of sounds, 2 to 6 first.
     page.$('mix-fix').click();
     await wait(60);
-    expect(page.$('f-shape').value).toBe('');
+    expect([...page.$('f-shapes').querySelectorAll('input[data-shape]:checked')].map((b) => b.value)).toEqual([]);
     const mixed = page.chips();
     expect(soundsOf(mixed).length).toBeGreaterThanOrEqual(4);
     expect(Math.min(...soundsOf(mixed))).toBeGreaterThanOrEqual(2);
@@ -744,7 +747,7 @@ describe('the maker, run with the real builder', () => {
     const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     const tags = () => [...page.d.querySelectorAll('#pick-chips li.chip')].map((li) => [li.querySelector('span').textContent, (li.querySelector('.chip-tag') || {}).textContent || '']);
     page.$('next-1').click();
-    page.set('f-shape', '');
+    for (const box of page.$('f-shapes').querySelectorAll('input[data-shape]:checked')) box.click();
     page.set('f-stage', 'G1 late');
     await wait(60);
     const before = page.chips(), total = page.fileCount();
@@ -822,7 +825,7 @@ describe('the maker, run with the real builder', () => {
     page.$('next-1').click();
     for (const [id, level, name, inBooks] of [['wider:challenging', 'challenging', 'More challenging words', (row) => row.books >= 10], ['wider:advanced', 'advanced', 'Advanced words', (row) => row.books < 10]]) {
       page.set('f-stage', id);
-      page.set('f-shape', '');
+      for (const box of page.$('f-shapes').querySelectorAll('input[data-shape]:checked')) box.click();
       await wait(60);
       expect(page.$('f-stage').value).toBe(id);
       expect(page.$('f-stage').selectedOptions[0].textContent).toBe(name);
@@ -875,9 +878,9 @@ describe('the maker, run with the real builder', () => {
       expect(dictionary.lookup(example)[0], option.textContent).toContain(option.value);
       expect(wordlist.isBlocked(example), example).toBe(false);
     }
-    const shapes = [...page.$('f-shape').querySelectorAll('option')].filter((option) => option.value);
+    const shapes = [...page.$('f-shapes').querySelectorAll('input[data-shape]')];
     expect(shapes.length).toBeGreaterThanOrEqual(4);
-    for (const option of shapes) for (const example of /, like (.+)$/.exec(option.textContent)[1].split(', ')) expect(wordlist.get(example).shape, example).toBe(option.value);
+    for (const box of shapes) for (const example of /, like (.+)$/.exec(box.parentNode.textContent)[1].split(', ')) expect(wordlist.get(example).shape, example).toBe(box.value);
     // The stages are the builder's own rows, and a chosen stage shows what the builder says about its source.
     const stages = builder.stageList();
     expect(stages.map((row) => row.id)).toEqual(expect.arrayContaining(builder.STAGES));
@@ -946,7 +949,7 @@ describe('the maker, run with the real builder', () => {
     page.set('f-sound', 'sh');
     expect(page.$('f-position').disabled).toBe(false);
     page.set('f-position', 'first');
-    page.set('f-shape', 'CVC');
+    for (const box of page.$('f-shapes').querySelectorAll('input[data-shape]')) if (box.checked !== (box.value === 'CVC')) box.click();
     await page.until(() => page.$('pick-line').textContent === direct.pool + ' words fit.', 'the sh words');
     expect(page.fileCount()).toBeGreaterThan(0);
     expect(page.chips()).toEqual(direct.words.slice(0, page.fileCount()));
@@ -2093,13 +2096,14 @@ describe('the maker: choose the words yourself, and any number of words', () => 
   // 2026-11-14 (T1): Stage first in Step 2, Include pictures auto-on only when most words have a picture (or Only words with a picture), and >= 10 MB size warning.
   it('places Stage first in step 2, auto-enables Include pictures only when most words have pictures, and warns on >= 10 MB files', async () => {
     const makerDoc = parse('packets-make.html');
-    // 2026-11-16: Grade level is the one choice on show; the sound, where it is and the pattern wait under More options.
-    const step2Selects = [...makerDoc.querySelectorAll('#step-2 .fields select')].map((s) => s.id);
-    expect(step2Selects).toEqual(['f-stage', 'f-sound', 'f-position', 'f-shape']);
+    // 2026-11-16 / 2026-11-21: Level and Sound patterns are on show in step 2 (full-width #pick-top, orphaned .fields removed); sound and position wait under More options.
+    const step2Selects = [...makerDoc.querySelectorAll('#step-2 .field select')].map((s) => s.id);
+    expect(step2Selects).toEqual(['f-stage', 'f-sound', 'f-position']);
     expect(makerDoc.getElementById('f-stage').closest('details')).toBeNull();
+    expect(makerDoc.getElementById('shape-field').closest('details')).toBeNull();
     // 2026-11-18 (owner): "Level", named by what it practices, not by grade.
     expect(makerDoc.querySelector('label[for="f-stage"]').textContent).toBe('Level');
-    for (const id of ['f-sound', 'f-position', 'f-shape']) expect(makerDoc.getElementById(id).closest('details').id, id).toBe('more-2');
+    for (const id of ['f-sound', 'f-position']) expect(makerDoc.getElementById(id).closest('details').id, id).toBe('more-2');
     expect(makerDoc.querySelector('header .top-link').textContent).toBe('Add up results');
     expect(makerDoc.querySelector('header .top-link').getAttribute('href')).toBe('packets-results.html');
 
@@ -2248,19 +2252,19 @@ describe('the maker: quick make, the word count, Pick different words and More o
     first.$('next-1').click();
     await first.until(() => first.chips().length > 0, 'the first words');
     expect(first.$('f-stage').value).toBe('K early');
-    expect(first.$('f-shape').value).toBe('');
+    expect([...first.$('f-shapes').querySelectorAll('input[data-shape]:checked')].map((b) => b.value)).toEqual([]);
     expect(first.$('f-stage').closest('details')).toBeNull();
     expect(first.chips()).toEqual(pickedFor({ count: 30, stage: 'K early' }).words.slice(0, first.fileCount()));
     // Beginning-reader words, not the most common words of all.
     for (const word of first.chips()) expect(dictionary.lookup(word)[0].length, word).toBeLessThanOrEqual(3);
-    // A returning browser (what openMaker stands in for by default): CVC at any grade level, and the box that holds
-    // the pattern opens by itself because a pattern is set.
+    // A returning browser (what openMaker stands in for by default): CVC at any grade level, with CVC checked on the visible Sound patterns pills.
     const back = await openMaker();
     back.$('next-1').click();
     await back.until(() => back.chips().length > 0, 'the earlier words');
-    expect([back.$('f-stage').value, back.$('f-shape').value]).toEqual(['', 'CVC']);
-    expect(back.$('more-2').open).toBe(true);
-    expect(back.$('more-2-now').textContent).toBe('any sound, CVC pattern, version A');
+    expect(back.$('f-stage').value).toBe('');
+    expect([...back.$('f-shapes').querySelectorAll('input[data-shape]:checked')].map((b) => b.value)).toEqual(['CVC']);
+    expect(back.$('more-2').open).toBe(false);
+    expect(back.$('more-2-now').textContent).toBe('any sound, version A');
   }, 120000);
 
   it('Make it with the usual settings goes from step 1 to a built file, and the chips are the words of that file', async () => {
@@ -2366,12 +2370,11 @@ describe('the maker: quick make, the word count, Pick different words and More o
   it('every choice is still on the page: one More options box in each step holds the rarely used ones and says what is set', async () => {
     const doc = parse('packets-make.html');
     const inside = (id) => [...doc.querySelectorAll('#' + id + ' input, #' + id + ' select, #' + id + ' textarea')].map((node) => node.id || node.name + '=' + node.value);
-    // 2026-11-18 (owner), deliberately: "Mix the activities" first, with the activities' other settings.
-    expect(inside('more-1')).toEqual(['f-mix', 'f-trace-cases', 'f-choices']);
-    // 2026-11-17 (owner: simpler step 2), deliberately: the box now comes after the words and also holds groups of words
-    // (drawn by the page, so not listed here), "Choose the words yourself" (f-find, f-only-pictures, f-add) and "Why not
-    // more words?" (tests/packets_site_pages.test.js 'a second group of words').
-    expect(inside('more-2')).toEqual(['f-sound', 'f-position', 'f-shape', 'f-stage-other', 'version=A', 'version=B', 'version=C', 'f-find', 'f-only-pictures', 'f-add']);
+    // 2026-11-21 / 2026-11-22 (Wave 9 P0-1): "Mix the activities" (#f-mix) is surfaced directly below the activities in step 1; More options holds trace, choices & show-letters.
+    expect(inside('more-1')).toEqual(['f-trace-cases', 'f-choices', 'f-show-letters']);
+    expect(doc.getElementById('f-mix').closest('details.more')).toBeNull();
+    // 2026-11-17 / 2026-11-21: Sound patterns and multi-level toggle sit above the words; More options holds sound, other curricula, version, groups and manual pick.
+    expect(inside('more-2')).toEqual(['f-sound', 'f-position', 'f-stage-other', 'version=A', 'version=B', 'version=C', 'f-find', 'f-only-pictures', 'f-add']);
     expect(doc.getElementById('panel-pick').compareDocumentPosition(doc.getElementById('more-2')) & 4).toBeTruthy();
     for (const id of ['group-add', 'pick-list', 'pick-out-box']) expect(doc.getElementById(id).closest('#more-2'), id).not.toBeNull();
     expect(inside('more-3')).toEqual(['length=short', 'length=regular', 'length=long', 'length=custom', 'f-pictures', 'f-directions-once', 'f-repeat-missed']); // 2026-11-19 Wave 2B: student code names unified into #batch
@@ -2382,8 +2385,8 @@ describe('the maker: quick make, the word count, Pick different words and More o
       expect(box.querySelector('summary .more-name').textContent, id).toBe('More options');
       expect(box.querySelector('summary .more-now').id, id).toBe(id + '-now');
     }
-    // What stays on show: the activities, the grade level or the typed words, the count and the words, the title, save.
-    for (const id of ['quick-make', 'next-1', 'f-stage', 'f-own', 'pick-shuffle', 'pick-chips', 'f-title', 'save', 'try', 'print-cards', 'open-present-export', 'batch'])
+    // What stays on show: the activities, mix toggle, level + patterns or typed words, count and words, title, save.
+    for (const id of ['quick-make', 'f-mix', 'next-1', 'f-stage', 'f-multi-stage', 'shape-field', 'f-own', 'pick-shuffle', 'pick-chips', 'f-title', 'save', 'try', 'print-cards', 'open-present-export', 'batch'])
       expect(doc.getElementById(id).closest('details.more'), id).toBeNull();
     const page = await openMaker();
     // Step 1: the groups are boxes, open where an activity is chosen; the line says how many.
@@ -2394,14 +2397,15 @@ describe('the maker: quick make, the word count, Pick different words and More o
       expect(group.open, group.getAttribute('data-strand')).toBe(on > 0);
       expect(group.querySelector('.strand-count').textContent).toBe(on ? on + ' chosen' : 'none chosen');
     }
-    // 2026-11-18 (owner): with two or more activities the line starts with the order ("activities mixed", the usual one,
-    // so the box stays closed; tests/packets_question_order_2026_11_18.test.js).
-    expect(page.$('more-1-now').textContent).toBe('activities mixed, Choices: Medium');
+    // 2026-11-21: #f-mix is visible above #more-1 when 2+ activities are chosen; #more-1-now shows Choices without duplicating mix status.
+    expect(page.seen('mix-field')).toBe(true);
+    expect(page.$('f-mix').checked).toBe(true);
+    expect(page.$('more-1-now').textContent).toBe('Choices: Medium');
     expect(page.$('more-1').open).toBe(false);
     page.set('f-choices', 'easy');
     page.$('next-1').click();
     page.$('back-2').click();
-    expect(page.$('more-1-now').textContent).toBe('activities mixed, Choices: Easy');
+    expect(page.$('more-1-now').textContent).toBe('Choices: Easy');
     expect(page.$('more-1').open).toBe(true);
   }, 120000);
 

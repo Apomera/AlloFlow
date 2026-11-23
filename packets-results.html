@@ -25,6 +25,19 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 3 7.5l9 4.5 9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
       <span id="product-name">AlloFlow Packets</span>
     </a>
+    <details class="top-menu">
+      <summary>Switch maker</summary>
+      <nav aria-label="Other Packets tools">
+        <a href="packets-make.html">Word Sounds</a>
+        <a href="packets-vocab.html">Vocabulary</a>
+        <a href="packets-math-practice.html">Math Fact Practice</a>
+        <a href="packets-check.html">Math Check</a>
+        <a href="packets-read-along.html">Read-Along</a>
+        <a href="packets-symbol-runner.html">Symbol Runner</a>
+        <a href="packets-present-export.html">Present &amp; print</a>
+        <a href="packets-results.html">Add up results</a>
+      </nav>
+    </details>
     <a class="top-link" href="packets.html">Make a file</a>
   </div>
 <details class="proof">
@@ -64,6 +77,7 @@
         <svg class="drop-mark" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M24 30V8"/><path d="m15 17 9-9 9 9"/><path d="M8 30v8a2 2 0 0 0 2 2h28a2 2 0 0 0 2-2v-8"/></svg>
         <h2 id="drop-title">Drop results files here</h2>
         <p class="drop-sub" id="drop-sub">The files your students saved at the end: CSV, JSON, or a .zip folder of them. Up to 500 at a time.</p>
+        <p class="drop-tip">Using Google Classroom or a shared Drive folder? Download the folder as one .zip and drop it here so you do not have to open each student's file one by one.</p>
         <p class="drop-go"><button type="button" class="btn btn-primary" id="choose" aria-describedby="drop-sub">Choose files</button></p>
         <input type="file" id="files" multiple accept=".csv,.json,.zip,text/csv,application/json,application/zip" aria-label="Results files" hidden>
       </div>
@@ -127,7 +141,11 @@
         <h3 id="learner-title" tabindex="-1">One student</h3>
         <div class="field learner-pick no-print">
           <label for="pick-learner">Student</label>
-          <select id="pick-learner"></select>
+          <div class="learner-pick-row">
+            <button type="button" class="btn btn-small learner-step" id="prev-learner" aria-label="Previous student" title="Previous student">&#8592;</button>
+            <select id="pick-learner"></select>
+            <button type="button" class="btn btn-small learner-step" id="next-learner" aria-label="Next student" title="Next student">&#8594;</button>
+          </div>
         </div>
         <div id="learner-body"></div>
       </section>
@@ -137,11 +155,13 @@
         <div class="take-row">
           <button type="button" class="btn" id="print-group">Print the group</button>
           <button type="button" class="btn" id="print-learner">Print this student</button>
+          <button type="button" class="btn" id="copy-summary">Copy student summary</button>
           <button type="button" class="btn" id="save-csv">Save a summary (CSV)</button>
           <button type="button" class="btn" id="save-bundle">Save all of this as one file</button>
         </div>
         <p class="hint">The summary has one row for each result and opens in a spreadsheet. For a timed check, the column accuracy_of_attempted_pct is the share right of the questions the student reached (accuracy_pct also counts the ones not reached). The one file holds everything on this page: drop it here later to open where you left off.</p>
         <p id="take-said" class="take-said" role="status"></p>
+        <div id="copy-summary-box" class="copy-summary-wrap" hidden></div>
         <div class="keep">
           <label class="keep-switch"><input type="checkbox" id="keep" role="switch" aria-describedby="keep-hint"> Keep these results on this device</label>
           <p class="hint" id="keep-hint">Off: nothing is kept, and closing this tab clears the page. On: the results stay in this browser, on this device, until you remove them. On a shared computer, leave it off.</p>

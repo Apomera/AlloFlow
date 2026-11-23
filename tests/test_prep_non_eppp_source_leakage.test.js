@@ -15,11 +15,12 @@ function nonEpppPackStems() {
 }
 
 describe('Non-EPPP Praxis/ParaPro zero-warning quality gate', () => {
-  it('keeps all 11,000 items across all 22 Praxis/ParaPro packs free of warnings', () => {
+  it('keeps all 11,000 items across all 22 Praxis/ParaPro packs free of warnings and prose severe length cues', () => {
     const stems = nonEpppPackStems();
     expect(stems).toHaveLength(22);
 
     const warnings = {};
+    const proseSevereLengthCues = [];
     for (const stem of stems) {
       const pack = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep', stem + '_pack.json'), 'utf8'));
       expect(pack.items).toHaveLength(500);
@@ -29,9 +30,15 @@ describe('Non-EPPP Praxis/ParaPro zero-warning quality gate', () => {
         if (codes.length > 0) {
           warnings[stem + '/' + item.id] = codes;
         }
+        const kl = String(item.choices[item.answerIndex] || '').length;
+        const md = Math.max(...item.choices.filter((_, i) => i !== item.answerIndex).map((c) => String(c || '').length));
+        if (kl >= md * 1.25 && item.choices.some((c) => String(c || '').length > 25)) {
+          proseSevereLengthCues.push(`${stem}/${item.id} (${kl} vs ${md})`);
+        }
       }
     }
     expect(warnings).toEqual({});
+    expect(proseSevereLengthCues).toEqual([]);
   }, 30_000);
 
   it('keeps representative source-only and batch-3 packs in byte-for-byte guided-review parity', () => {

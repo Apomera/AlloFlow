@@ -215,6 +215,7 @@ module.exports = {
     var clearBtn = ctx.el('button', { type: 'button', on: { click: function () {
       if (locked()) return;
       clearAll(); lastSubmitted = null; draw(); ctx.announce(L.word_scramble_cleared);
+      if (tiles[0] && tiles[0].btn) { try { tiles[0].btn.focus(); } catch (_) {} }
     } }, text: L.word_scramble_clear });
     var checkBtn = ctx.el('button', { type: 'button', class: 'primary', on: { click: function () { onCheck(); } }, text: L.word_scramble_check });
 
@@ -288,6 +289,15 @@ module.exports = {
       ctx.keys(function (key) {
         if (locked()) return false;
         var k = String(key == null ? '' : key);
+        if (k === 'Escape' || k === 'Esc') {
+          if (picked == null) return false;
+          var drop = picked;
+          picked = null;
+          draw();
+          ctx.announce(ctx.fmt(L.word_scramble_dropped, { letter: up(drop) }));
+          if (tiles[drop] && tiles[drop].btn) { try { tiles[drop].btn.focus(); } catch (_) {} }
+          return true;
+        }
         if (k === 'Backspace') {
           for (var bi = n - 1; bi >= 0; bi--) {
             if (boxes[bi] != null) {

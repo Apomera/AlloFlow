@@ -12,6 +12,7 @@
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.PersonaChatView) {
     console.log('[CDN] ViewPersonaChatModule already loaded, skipping');
     return;
@@ -81,12 +82,64 @@
     className: "mt-2 leading-relaxed"
   }, label('unavailable', 'The saved passage could not be matched to this lesson. Check the original source before using this claim.')));
 }
+function _pcIsBlockedKey(k) {
+  return k === '__proto__' || k === 'constructor' || k === 'prototype';
+}
 function _aiUsable(kind, fn) {
-  if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) return false;
+  if (_pcHardAiPolicyBlocked(kind)) return false;
+  if (typeof window !== 'undefined' && window.__alloStudentAiDisabled === true) return false;
   try {
     if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
   } catch (_) {}
   return typeof fn === 'function' && !fn._alloQrBlocked;
+}
+function _pcHardAiPolicyBlocked(kind) {
+  if (typeof window === 'undefined') return false;
+  try {
+    if (window.__alloAiSecretsLocked === true || window.__alloOfflineOnly === true || window.__alloQrStudentMode === true) return true;
+    var mp = window.ALLOFLOW_MANAGED_AI_POLICY;
+    if (mp && typeof mp === 'object') {
+      if (mp.enabled === false) return true;
+      if (Array.isArray(mp.connections) && mp.connections.length === 0) return true;
+      if ((kind === 'images' || kind === 'image') && mp.allowImages === false) return true;
+    }
+    var sp = window.AlloModules && window.AlloModules.StudentPolicy;
+    if (sp && typeof sp === 'object' && (sp.aiDisabled === true || sp.aiEnabled === false)) return true;
+  } catch (_) {
+    return true;
+  }
+  return false;
+}
+var _PC_CRISIS_FALLBACK_RE = /\b(?:kill\s+my\s*self|end\s+my\s+life|want\s+to\s+die|want\s+to\s+kill\s+myself|commit\s+suicide|suicidal|hurt\s+myself|harm\s+myself|self[\s-]?harm|cut\s+myself|overdose\s+on)\b/i;
+var _PC_CRISIS_MESSAGE = 'If you or someone you know is going through a difficult time or having thoughts of self-harm, please pause and reach out to a trusted adult right away. You can call or text 988 (Suicide & Crisis Lifeline), text HOME to 741741 (Crisis Text Line), or call 911 in an emergency.';
+function _pcScreenCrisis(text) {
+  var s = String(text || '').trim();
+  if (!s) return null;
+  try {
+    var checker = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SafetyContentChecker;
+    if (checker && typeof checker.check === 'function') {
+      var res = checker.check(s);
+      if (res && (res.severity === 'crisis' || res.category === 'self_harm' || res.crisis === true || res.blocked === true)) {
+        return {
+          blocked: true,
+          message: _PC_CRISIS_MESSAGE
+        };
+      }
+    }
+  } catch (_) {}
+  if (_PC_CRISIS_FALLBACK_RE.test(s)) return {
+    blocked: true,
+    message: _PC_CRISIS_MESSAGE
+  };
+  return null;
+}
+function _pcIsGlobalMuted() {
+  if (typeof window === 'undefined') return false;
+  try {
+    if (window.__alloGlobalMuted === true || window._alloGlobalMute === true) return true;
+    if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+  } catch (_) {}
+  return false;
 }
 function _safePersonaChatAvatarUrl(raw) {
   if (typeof raw !== 'string') return null;
@@ -96,7 +149,9 @@ function _safePersonaChatAvatarUrl(raw) {
   if (/^blob:/i.test(s)) {
     try {
       var bu = new URL(s);
-      return bu.protocol === 'blob:' ? s : null;
+      if (bu.protocol !== 'blob:') return null;
+      if (typeof window !== 'undefined' && window.location && window.location.origin && window.location.origin !== 'null' && bu.origin && bu.origin !== 'null' && bu.origin !== window.location.origin) return null;
+      return s;
     } catch (_) {
       return null;
     }
@@ -191,6 +246,7 @@ function PersonaRoleSwap(props) {
     });
   };
   var setField = function (q, field, value) {
+    if (!q || _pcIsBlockedKey(q.id) || _pcIsBlockedKey(field)) return;
     update(function (next) {
       next.answers[q.id] = Object.assign({
         speaker: q.speaker,
@@ -222,6 +278,17 @@ function PersonaRoleSwap(props) {
   }, []);
   var save = function () {
     if (busy || !entries.length) return;
+    var combinedText = entries.map(function (ent) {
+      return [ent.question, ent.answer, ent.evidence].filter(Boolean).join(' ');
+    }).join('\n');
+    var crisis = _pcScreenCrisis(combinedText);
+    if (crisis) {
+      setStatus({
+        error: true,
+        text: crisis.message
+      });
+      return;
+    }
     var saveFn = typeof props.onSave === 'function' ? props.onSave : typeof window !== 'undefined' && window.AlloModules && window.AlloModules.PersonaRoleSwap && typeof window.AlloModules.PersonaRoleSwap.save === 'function' ? window.AlloModules.PersonaRoleSwap.save : null;
     var failed = {
       error: true,
@@ -417,13 +484,15 @@ function PersonaRoleSwap(props) {
 }
 function PersonaChatView(props) {
   // State (object-bundle)
-  var personaState = props.personaState;
+  var personaState = props && props.personaState && typeof props.personaState === 'object' ? props.personaState : {};
   var generatedContent = props.generatedContent;
   var appId = props.appId;
   var studentNickname = props.studentNickname;
   // State reads (scalar/boolean)
   var theme = ['light', 'dark', 'contrast'].includes(props.theme) ? props.theme : 'light';
-  var t = props.t;
+  var t = typeof props.t === 'function' ? props.t : function (k) {
+    return k;
+  };
   var inquiryLabel = function (key, fallback) {
     var value = t('persona.inquiry.' + key);
     return value && value !== 'persona.inquiry.' + key ? value : fallback;
@@ -446,9 +515,10 @@ function PersonaChatView(props) {
   var panelTtsPending = Array.isArray(props.panelTtsPending) ? props.panelTtsPending : [];
   var personaTurnHintsViewed = props.personaTurnHintsViewed;
   var playingContentId = props.playingContentId;
-  var playbackState = props.playbackState;
+  var playbackState = props && props.playbackState && typeof props.playbackState === 'object' ? props.playbackState : {};
   // Refs
-  var personaScrollRef = props.personaScrollRef;
+  var fallbackScrollRef = React.useRef(null);
+  var personaScrollRef = props.personaScrollRef || fallbackScrollRef;
   var personaDialogRef = React.useRef(null);
   var personaPreviousFocusRef = React.useRef(null);
   var personaDefinitionDialogRef = React.useRef(null);
@@ -496,14 +566,24 @@ function PersonaChatView(props) {
       window.removeEventListener('alloflow:ai-key-lock-changed', bump);
     };
   }, []);
-  // Learner with no usable AI: the figure cannot reply, so hide AI extras and show the stored greeting with a note.
-  var personaStudentTextAiOff = !isTeacherMode && !_aiUsable('text', typeof window !== 'undefined' ? window.callGemini : undefined);
-  var personaStudentImageAiOff = personaStudentTextAiOff || !isTeacherMode && !_aiUsable('images', typeof window !== 'undefined' ? window.callGeminiImageEdit : undefined);
+  // Hard-deny locks (offline-only, managed policy disabled, secrets locked, QR student mode)
+  // always apply regardless of isTeacherMode; student-only lockouts apply when !isTeacherMode.
+  var hardTextAiOff = _pcHardAiPolicyBlocked('text');
+  var hardImageAiOff = hardTextAiOff || _pcHardAiPolicyBlocked('images');
+  var personaStudentTextAiOff = hardTextAiOff || !isTeacherMode && !_aiUsable('text', typeof window !== 'undefined' ? window.callGemini : undefined);
+  var personaStudentImageAiOff = hardImageAiOff || personaStudentTextAiOff || !isTeacherMode && !_aiUsable('images', typeof window !== 'undefined' ? window.callGeminiImageEdit : undefined);
   if (personaStudentTextAiOff) {
     handlePersonaTopicSpark = null;
     handleGeneratePersonaSummary = null;
+    handleGenerateReflectionPrompt = null;
+    handleSaveReflection = null;
+    generatePanelFollowUps = null;
+    generatePersonaFollowUps = null;
   }
   if (personaStudentImageAiOff) handleRetryPortraitGeneration = null;
+  var _crisisBannerState = React.useState(null);
+  var personaCrisisBanner = _crisisBannerState[0];
+  var setPersonaCrisisBanner = _crisisBannerState[1];
   var handleSavePersonaRoleSwap = props.handleSavePersonaRoleSwap;
   var _roleSwapOpenState = React.useState(false);
   var showRoleSwap = personaStudentTextAiOff || _roleSwapOpenState[0];
@@ -574,10 +654,28 @@ function PersonaChatView(props) {
   var handleSaveReflection = props.handleSaveReflection;
   var handleSetIsPersonaReflectionOpenToFalse = props.handleSetIsPersonaReflectionOpenToFalse;
   var handleSetPersonaDefinitionDataToNull = props.handleSetPersonaDefinitionDataToNull;
-  var handleSpeak = props.handleSpeak;
+  var _rawHandleSpeak = props.handleSpeak;
+  var handleSpeak = function () {
+    if (_pcIsGlobalMuted()) return;
+    if (typeof _rawHandleSpeak === 'function') return _rawHandleSpeak.apply(null, arguments);
+  };
   var handleTogglePersonaAutoSend = props.handleTogglePersonaAutoSend;
   var handleToggleShowPersonaHints = props.handleToggleShowPersonaHints;
-  var stopPlayback = props.stopPlayback;
+  var stopPlayback = typeof props.stopPlayback === 'function' ? props.stopPlayback : function () {};
+  React.useEffect(function () {
+    if (typeof window === 'undefined') return undefined;
+    var onMuteChanged = function () {
+      if (_pcIsGlobalMuted()) {
+        try {
+          stopPlayback();
+        } catch (_) {}
+      }
+    };
+    window.addEventListener('alloflow-mute-changed', onMuteChanged);
+    return function () {
+      window.removeEventListener('alloflow-mute-changed', onMuteChanged);
+    };
+  }, [stopPlayback]);
   var _panelChoicePendingState = React.useState(false);
   var panelChoicePending = _panelChoicePendingState[0];
   var setPanelChoicePending = _panelChoicePendingState[1];
@@ -737,13 +835,25 @@ function PersonaChatView(props) {
     var value = typeof personaInput === 'string' ? personaInput : '';
     var busy = personaState.isLoading || panelChoicePending;
     var send = function () {
-      if (busy || !value.trim()) return;
-      if (panel) handlePanelChatSubmit(value);else handlePersonaChatSubmit();
+      if (busy || personaStudentTextAiOff || !value.trim()) return;
+      var crisis = _pcScreenCrisis(value);
+      if (crisis) {
+        setPersonaCrisisBanner(crisis.message);
+        return;
+      }
+      if (personaCrisisBanner) setPersonaCrisisBanner(null);
+      if (panel) {
+        if (typeof handlePanelChatSubmit === 'function') handlePanelChatSubmit(value);
+      } else if (typeof handlePersonaChatSubmit === 'function') handlePersonaChatSubmit();
     };
     return /*#__PURE__*/React.createElement("section", {
       "data-persona-composer": true,
       className: "min-w-0 p-3 sm:p-4 bg-white text-slate-800"
-    }, renderPersonaTurnError(), renderPersonaHintRecovery(panel), /*#__PURE__*/React.createElement("div", {
+    }, personaCrisisBanner && /*#__PURE__*/React.createElement("div", {
+      role: "alert",
+      "data-persona-crisis-banner": true,
+      className: "mb-3 rounded-xl border-2 border-rose-300 bg-rose-50 p-3 text-xs font-semibold leading-relaxed text-rose-950"
+    }, personaCrisisBanner), renderPersonaTurnError(), renderPersonaHintRecovery(panel), /*#__PURE__*/React.createElement("div", {
       className: "mb-1 flex items-center justify-between gap-2"
     }, /*#__PURE__*/React.createElement("label", {
       htmlFor: id,
@@ -762,7 +872,7 @@ function PersonaChatView(props) {
       onChange: e => setPersonaInput(e.target.value),
       "aria-describedby": id + '-guide ' + id + '-keys' + (personaState.turnError ? ' persona-turn-error' : ''),
       onKeyDown: e => {
-        if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229) {
+        if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey && !e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229) {
           e.preventDefault();
           send();
         }
@@ -788,8 +898,15 @@ function PersonaChatView(props) {
         var prev = String(value || '').trimEnd();
         var merged = ((prev ? prev + ' ' : '') + spoken).slice(0, 2000);
         setPersonaInput(merged);
-        if (personaAutoSend && merged.trim() && !busy) {
-          if (panel) handlePanelChatSubmit(merged);else handlePersonaChatSubmit(merged);
+        if (personaAutoSend && merged.trim() && !busy && !personaStudentTextAiOff) {
+          var crisis = _pcScreenCrisis(merged);
+          if (crisis) {
+            setPersonaCrisisBanner(crisis.message);
+            return;
+          }
+          if (panel) {
+            if (typeof handlePanelChatSubmit === 'function') handlePanelChatSubmit(merged);
+          } else if (typeof handlePersonaChatSubmit === 'function') handlePersonaChatSubmit(merged);
         }
       }
     })), /*#__PURE__*/React.createElement("div", {
@@ -873,7 +990,17 @@ function PersonaChatView(props) {
     });
   };
   var _submitPersonaReflection = function () {
-    if (reflectionSubmitPendingRef.current || reflectionBusy || isGeneratingReflectionPrompt || !personaReflectionText.trim() || typeof handleSaveReflection !== 'function') return;
+    if (personaStudentTextAiOff || reflectionSubmitPendingRef.current || reflectionBusy || isGeneratingReflectionPrompt || !personaReflectionText.trim() || typeof handleSaveReflection !== 'function') return;
+    var crisis = _pcScreenCrisis(personaReflectionText);
+    if (crisis) {
+      setPersonaCrisisBanner(crisis.message);
+      if (typeof setReflectionFeedback === 'function') setReflectionFeedback({
+        feedback: crisis.message,
+        score: null,
+        xpEarned: 0
+      });
+      return;
+    }
     reflectionSubmitPendingRef.current = true;
     setReflectionSubmitPending(true);
     Promise.resolve().then(function () {
@@ -1075,21 +1202,22 @@ function PersonaChatView(props) {
     personaPreviousFocusRef.current = document.activeElement;
     var focusTimer = window.setTimeout(function () {
       var initial = dialog.querySelector('[data-persona-initial-focus]');
-      if (initial && typeof initial.focus === 'function') initial.focus();else dialog.focus();
+      if (initial && initial.isConnected && typeof initial.focus === 'function') initial.focus();else if (dialog.isConnected) dialog.focus();
     }, 0);
-    var focusableSelector = 'button:not([disabled]), a[href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    var focusableSelector = 'button:not([disabled]), a[href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), summary, [tabindex]:not([tabindex="-1"])';
     var handleDialogKeyDown = function (event) {
       if (event.isComposing || event.nativeEvent && event.nativeEvent.isComposing || event.keyCode === 229) return;
       if (event.key === 'Escape') {
+        if (event.ctrlKey || event.metaKey || event.altKey) return;
         if (event.target && typeof event.target.closest === 'function' && event.target.closest('[data-persona-definition-dialog], [data-persona-reflection-dialog], [data-persona-summary-dialog], [data-persona-archive-dialog]')) {
           return;
         }
         // Role Swap holds unsaved student writing; Escape there must not close (and erase) it.
         if (event.target && typeof event.target.closest === 'function' && event.target.closest('[data-persona-role-swap]')) return;
         // Closing erases the interview, so Escape while typing does not close it.
-        if (event.target && /^(TEXTAREA|INPUT|SELECT)$/.test(event.target.tagName || '')) return;
+        if (event.target && (/^(TEXTAREA|INPUT|SELECT)$/.test(event.target.tagName || '') || event.target.isContentEditable)) return;
         event.preventDefault();
-        personaCloseHandlerRef.current();
+        if (typeof personaCloseHandlerRef.current === 'function') personaCloseHandlerRef.current();
         return;
       }
       if (event.key !== 'Tab') return;
@@ -1250,7 +1378,7 @@ function PersonaChatView(props) {
     Object.keys(rawAnswers).slice(0, 14).forEach(function (entryKey) {
       var k = _boundedSnapshotText(entryKey, 600);
       var entry = rawAnswers[entryKey];
-      if (!k || !entry || typeof entry !== 'object' || Array.isArray(entry)) return;
+      if (!k || _pcIsBlockedKey(k) || !entry || typeof entry !== 'object' || Array.isArray(entry)) return;
       var speaker = _boundedSnapshotText(entry.speaker, 160);
       var question = _boundedSnapshotText(entry.question, 500);
       var answer = _boundedSnapshotText(entry.answer, 4000);
@@ -1318,6 +1446,7 @@ function PersonaChatView(props) {
     if (personaResumeOffer && _dsResumeOfferVersionRef.current !== _dsConversationVersion) setPersonaResumeOffer(null);
   }, [_dsConversationVersion, personaResumeOffer]);
   var _ensureDeviceStorage = function () {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return Promise.reject(new Error('Device storage unavailable outside browser'));
     if (!window.__alloDeviceStoragePromise) {
       window.__alloDeviceStoragePromise = window.alloDeviceStorage ? Promise.resolve(window.alloDeviceStorage) : new Promise(function (resolve, reject) {
         if (typeof window.__alloConfigureTrustedScript !== 'function') {
@@ -1698,6 +1827,7 @@ function PersonaChatView(props) {
     resumeActionPendingRef.current = true;
     var snap = _normalizePersonaResumeSnapshot(personaResumeOffer);
     if (!snap || snap.appId !== (appId || null) || snap.resourceId !== _personaSnapshotResourceId || snap.studentId !== _personaSnapshotStudentId) {
+      resumeActionPendingRef.current = false;
       _clearPersonaSnapshot();
       setPersonaResumeOffer(null);
       return;
@@ -2329,6 +2459,7 @@ function PersonaChatView(props) {
             },
             onKeyDown: e => {
               if (e.target !== e.currentTarget && e.target.closest && e.target.closest('button, a, [role="button"]')) return;
+              if (e.isComposing || e.nativeEvent && e.nativeEvent.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 e.stopPropagation();
@@ -2363,7 +2494,7 @@ function PersonaChatView(props) {
       size: 12,
       "aria-hidden": "true"
     }))), /*#__PURE__*/React.createElement("p", {
-      lang: window.AlloFlowLang?.bcp47Full?.(msg.translationTarget || msg.translationLanguage || 'English'),
+      lang: typeof window !== 'undefined' ? window.AlloFlowLang?.bcp47Full?.(msg.translationTarget || msg.translationLanguage || 'English') : undefined,
       dir: "auto",
       className: "text-xs text-slate-600 leading-relaxed italic"
     }, panelTranslationText)), !isUser && /*#__PURE__*/React.createElement(PersonaEvidenceNote, {
@@ -3161,6 +3292,7 @@ function PersonaChatView(props) {
             "aria-label": cleanText + '. ' + t('common.click_to_read'),
             onKeyDown: e => {
               if (e.target !== e.currentTarget && e.target.closest && e.target.closest('button, a, [role="button"]')) return;
+              if (e.isComposing || e.nativeEvent && e.nativeEvent.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 e.stopPropagation();
@@ -3194,7 +3326,7 @@ function PersonaChatView(props) {
         size: 12,
         "aria-hidden": "true"
       }))), /*#__PURE__*/React.createElement("p", {
-        lang: window.AlloFlowLang?.bcp47Full?.(msg.translationTarget || msg.translationLanguage || 'English'),
+        lang: typeof window !== 'undefined' ? window.AlloFlowLang?.bcp47Full?.(msg.translationTarget || msg.translationLanguage || 'English') : undefined,
         dir: "auto",
         className: "text-xs text-slate-600 leading-relaxed italic"
       }, translationText)));
@@ -3462,7 +3594,7 @@ function PersonaChatView(props) {
     "aria-labelledby": "persona-archive-title",
     tabIndex: -1,
     onKeyDown: e => {
-      if (e.isComposing || e.nativeEvent && e.nativeEvent.isComposing || e.keyCode === 229) return;
+      if (e.isComposing || e.nativeEvent && e.nativeEvent.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.key === 'Escape') {
         e.preventDefault();
         e.stopPropagation();
@@ -3614,7 +3746,7 @@ function PersonaChatView(props) {
     "aria-labelledby": "persona-summary-title",
     tabIndex: -1,
     onKeyDown: e => {
-      if (e.isComposing || e.nativeEvent && e.nativeEvent.isComposing || e.keyCode === 229) return;
+      if (e.isComposing || e.nativeEvent && e.nativeEvent.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.key === 'Escape') {
         e.preventDefault();
         e.stopPropagation();

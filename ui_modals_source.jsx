@@ -1,16 +1,102 @@
 // ui_modals_source.jsx — StudentQuizOverlay, TeacherGate, RoleSelectionModal, StudentEntryModal, StudentWelcomeModal
 // Extracted from AlloFlowANTI.txt for CDN modularization
 
-var LanguageContext = window.AlloLanguageContext;
-var useFocusTrap = window.__alloHooks && window.__alloHooks.useFocusTrap;
-var UiLanguageSelector = window.UiLanguageSelector || function() { return null; };
 var useState = React.useState; var useEffect = React.useEffect; var useRef = React.useRef;
 var useContext = React.useContext; var useMemo = React.useMemo; var useCallback = React.useCallback;
-var APP_CONFIG = window.APP_CONFIG || {};
-var warnLog = window.warnLog || function() { console.warn.apply(console, arguments); };
-var doc = window._fbDoc || function() { return null; };
-var updateDoc = window._fbUpdateDoc || function() { return Promise.resolve(); };
-var db = window._fbDb || null;
+var _fallbackLangCtx = React.createContext({ t: function(k) { return k; } });
+var _useLang = function() {
+  var ctx = (typeof window !== 'undefined' && window.AlloLanguageContext) || _fallbackLangCtx;
+  var val = useContext(ctx);
+  return val && typeof val.t === 'function' ? val : { t: function(k) { return k; } };
+};
+var useFocusTrap = function(ref, active, onClose) {
+  var fn = typeof window !== 'undefined' && window.__alloHooks && typeof window.__alloHooks.useFocusTrap === 'function'
+    ? window.__alloHooks.useFocusTrap : null;
+  if (fn) return fn(ref, active, typeof onClose === 'function' ? onClose : undefined);
+};
+var UiLanguageSelector = function(props) {
+  var Comp = typeof window !== 'undefined' && typeof window.UiLanguageSelector === 'function'
+    ? window.UiLanguageSelector : null;
+  return Comp ? React.createElement(Comp, props) : null;
+};
+var _getAppConfig = function() { return (typeof window !== 'undefined' && window.APP_CONFIG) || {}; };
+var warnLog = function() {
+  if (typeof window !== 'undefined' && typeof window.warnLog === 'function') {
+    return window.warnLog.apply(window, arguments);
+  }
+  console.warn.apply(console, arguments);
+};
+var _getFbDoc = function() { return (typeof window !== 'undefined' && typeof window._fbDoc === 'function') ? window._fbDoc : function() { return null; }; };
+var _getFbUpdateDoc = function() { return (typeof window !== 'undefined' && typeof window._fbUpdateDoc === 'function') ? window._fbUpdateDoc : function() { return Promise.resolve(); }; };
+var _getFbDb = function() { return (typeof window !== 'undefined' && window._fbDb) ? window._fbDb : null; };
+
+var _UIM_BLOCKED_KEYS = { __proto__: true, constructor: true, prototype: true };
+var _uimHasOwn = function(obj, key) {
+  if (!obj || typeof obj !== 'object') return false;
+  var k = String(key);
+  if (k === '__proto__' || k === 'constructor' || k === 'prototype') return false;
+  return Object.prototype.hasOwnProperty.call(obj, k);
+};
+var _uimSafeUid = function(raw) {
+  var uid = String(raw == null ? '' : raw).trim();
+  return /^[A-Za-z0-9_-]{1,128}$/.test(uid) ? uid : '';
+};
+var _uimSafeImageUrl = function(raw) {
+  if (typeof raw !== 'string') return null;
+  var trimmed = raw.trim();
+  if (!trimmed || /[\u0000-\u001f\u007f]/.test(trimmed)) return null;
+  if (/^data:image\/(?:png|jpe?g|gif|webp|avif);base64,[A-Za-z0-9+/=\s]+$/i.test(trimmed)) {
+    return trimmed;
+  }
+  try {
+    var parsed = new URL(trimmed);
+    if (parsed.protocol !== 'https:' || parsed.username || parsed.password) return null;
+    return parsed.href;
+  } catch (_) {
+    return null;
+  }
+};
+var _UIM_CRISIS_RE = /\b(kill\s+my\s*self|suicid(?:e|al)|end\s+my\s+life|want\s+to\s+die|don['’]?t\s+want\s+to\s+live|hurt\s+my\s*self|cut(?:ting)?\s+my\s*self|self[- ]?harm|overdose|jump\s+off\s+a\s+bridge)\b/i;
+var _UIM_CRISIS_MSG = 'If you or someone you know is struggling or in crisis, please reach out for free, confidential support right away: call or text 988 (Suicide & Crisis Lifeline), text HOME to 741741 (Crisis Text Line), or call 911 in an emergency. Please also tell a trusted teacher, counselor, or family member.';
+var _uimScreenCrisis = function(value) {
+  var text = String(value == null ? '' : value).trim();
+  if (!text) return { blocked: false, message: '' };
+  try {
+    var checker = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SafetyContentChecker;
+    if (checker) {
+      var fn = typeof checker.checkContent === 'function' ? checker.checkContent
+        : typeof checker.checkText === 'function' ? checker.checkText
+        : typeof checker.screenText === 'function' ? checker.screenText : null;
+      if (fn) {
+        var res = fn(text);
+        if (res && (res.isCrisis || res.blocked || res.flagged || res.level === 'critical' || res.severity === 'critical' || res.category === 'self_harm')) {
+          return { blocked: true, message: (typeof res.message === 'string' && res.message.includes('988')) ? res.message : _UIM_CRISIS_MSG };
+        }
+      }
+    }
+  } catch (_) {}
+  if (_UIM_CRISIS_RE.test(text)) {
+    return { blocked: true, message: _UIM_CRISIS_MSG };
+  }
+  return { blocked: false, message: '' };
+};
+var _uimRenderSafeExplanation = function(text) {
+  var lines = String(text == null ? '' : text).split('\n');
+  return lines.map(function(line, lineIdx) {
+    var segments = line.split(/(\*\*.*?\*\*)/g);
+    return (
+      <React.Fragment key={lineIdx}>
+        {lineIdx > 0 && <br />}
+        {segments.map(function(seg, segIdx) {
+          if (seg.length >= 4 && seg.startsWith('**') && seg.endsWith('**')) {
+            return <strong key={segIdx}>{seg.slice(2, -2)}</strong>;
+          }
+          return <React.Fragment key={segIdx}>{seg}</React.Fragment>;
+        })}
+      </React.Fragment>
+    );
+  });
+};
 var UI_MODAL_A11Y_STYLES = `
   [data-allo-ui-modal]:is(button, input, select, textarea, [href], [tabindex]:not([tabindex="-1"])):focus-visible,
   [data-allo-ui-modal] :is(button, input, select, textarea, [href], [tabindex]:not([tabindex="-1"])):focus-visible {
@@ -98,7 +184,7 @@ var UI_MODAL_A11Y_STYLES = `
 `;
 // Lazy icon wrappers — window.AlloIcons is set in a useEffect after CDN scripts load,
 // so each icon must look up window.AlloIcons at RENDER time, not at script load time.
-var _lazyIcon = function(name) { return function(props) { var I = window.AlloIcons && window.AlloIcons[name]; return I ? React.createElement(I, props) : null; }; };
+var _lazyIcon = function(name) { return function(props) { var I = typeof window !== 'undefined' && window.AlloIcons && window.AlloIcons[name]; return I ? React.createElement(I, props) : null; }; };
 var CheckCircle = _lazyIcon('CheckCircle');
 var CheckCircle2 = _lazyIcon('CheckCircle2');
 var FolderOpen = _lazyIcon('FolderOpen');
@@ -229,7 +315,7 @@ const fillLiveCopy = (text, params) => {
 };
 // Quiz text uses the Assess view's light markdown (**bold**, *italic*, lists); plain text until that module loads.
 const LIVE_QUIZ_PLAIN_MD = { inline: v => v == null ? '' : String(v), block: v => v == null ? '' : String(v), plain: v => v == null ? '' : String(v) };
-const liveQuizMd = () => window.AlloModules?.QuizView?.markdown || LIVE_QUIZ_PLAIN_MD;
+const liveQuizMd = () => (typeof window !== 'undefined' && window.AlloModules?.QuizView?.markdown) || LIVE_QUIZ_PLAIN_MD;
 const LiveAdvancedQuizResponse = React.memo(({
   question,
   questionType,
@@ -239,7 +325,7 @@ const LiveAdvancedQuizResponse = React.memo(({
   hasAnswered,
   onSubmit
 }) => {
-  const { t } = useContext(LanguageContext);
+  const { t } = _useLang();
   const [draft, setDraft] = useState({
       text: '',
       unit: '',
@@ -255,6 +341,7 @@ const LiveAdvancedQuizResponse = React.memo(({
       partnerAnswer: ''
   });
   const [sequenceStatus, setSequenceStatus] = useState('');
+  const [crisisAlert, setCrisisAlert] = useState('');
   useEffect(() => {
       setDraft({
           text: '',
@@ -271,18 +358,24 @@ const LiveAdvancedQuizResponse = React.memo(({
           partnerAnswer: ''
       });
       setSequenceStatus('');
+      setCrisisAlert('');
   }, [questionKey]);
-  const patchDraft = (patch) => setDraft((previous) => ({ ...previous, ...patch }));
+  const patchDraft = (patch) => {
+      if (crisisAlert) setCrisisAlert('');
+      setDraft((previous) => ({ ...previous, ...patch }));
+  };
   const isDisabled = hasAnswered || phase !== 'answering';
   const sendAnswer = (answer) => {
       if (isDisabled || !answer || typeof answer !== 'object' || Array.isArray(answer)) return;
-      onSubmit({
-          questionIdx: questionIndex,
-          itemType: questionType,
-          conceptLabel: boundedLiveQuizText(question?.conceptLabel, 240),
-          answer,
-          timestamp: Date.now()
-      });
+      if (typeof onSubmit === 'function') {
+          onSubmit({
+              questionIdx: questionIndex,
+              itemType: questionType,
+              conceptLabel: boundedLiveQuizText(question?.conceptLabel, 240),
+              answer,
+              timestamp: Date.now()
+          });
+      }
   };
   const sharedButtonClass = 'min-h-11 rounded-xl border px-4 py-3 text-left text-sm font-bold transition-colors motion-reduce:transition-none disabled:cursor-not-allowed disabled:opacity-60';
   const submitButtonClass = 'min-h-11 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-black text-white shadow-lg hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50';
@@ -293,6 +386,11 @@ const LiveAdvancedQuizResponse = React.memo(({
       const submitText = () => {
           const text = boundedLiveQuizText(draft.text, maxLength).trim();
           if (!text) return;
+          const crisis = _uimScreenCrisis(text);
+          if (crisis.blocked) {
+              setCrisisAlert(crisis.message);
+              return;
+          }
           let status = 'submitted';
           if (isFillBlank) {
               const targets = [question?.expectedFill || '']
@@ -305,6 +403,11 @@ const LiveAdvancedQuizResponse = React.memo(({
       };
       return (
           <div className="mt-8 w-full max-w-3xl rounded-3xl border border-white/20 bg-white/10 p-5 text-left shadow-xl" data-live-response-type={questionType}>
+              {crisisAlert && (
+                  <p role="alert" className="mb-3 rounded-xl border border-amber-300 bg-amber-950/90 px-4 py-3 text-sm font-semibold text-amber-100">
+                      {crisisAlert}
+                  </p>
+              )}
               <label htmlFor="live-quiz-written-response" className="mb-2 block text-sm font-bold text-white">
                   {isFillBlank ? (t('quiz.live_student.type_missing') || 'Type the missing word or phrase') : questionType === 'self-explanation' ? (t('quiz.live_student.explain_thinking') || 'Explain your thinking') : (t('quiz.live_student.write_response') || 'Write your response')}
               </label>
@@ -317,7 +420,7 @@ const LiveAdvancedQuizResponse = React.memo(({
                       maxLength={maxLength}
                       disabled={isDisabled}
                       onChange={(event) => patchDraft({ text: event.target.value })}
-                      onKeyDown={(event) => { if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.nativeEvent?.keyCode === 229) return; if (event.key === 'Enter') { event.preventDefault(); submitText(); } }}
+                      onKeyDown={(event) => { if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.nativeEvent?.keyCode === 229) return; if (event.key === 'Enter' && !event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey) { event.preventDefault(); submitText(); } }}
                       className="min-h-12 w-full rounded-xl border-2 border-white/30 bg-white px-4 py-3 text-base text-slate-900"
                   />
               ) : (
@@ -393,7 +496,7 @@ const LiveAdvancedQuizResponse = React.memo(({
                           value={draft.text}
                           disabled={isDisabled}
                           onChange={(event) => patchDraft({ text: event.target.value })}
-                          onKeyDown={(event) => { if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.nativeEvent?.keyCode === 229) return; if (event.key === 'Enter') { event.preventDefault(); submitNumeric(); } }}
+                          onKeyDown={(event) => { if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.nativeEvent?.keyCode === 229) return; if (event.key === 'Enter' && !event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey) { event.preventDefault(); submitNumeric(); } }}
                           className="mt-2 min-h-12 w-full rounded-xl border-2 border-white/30 bg-white px-4 py-3 text-base text-slate-900"
                       />
                   </label>
@@ -637,7 +740,7 @@ const LiveAdvancedQuizResponse = React.memo(({
                       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
                           {principles.map((principle) => (
                               <button key={principle} type="button" disabled={isDisabled} onClick={() => submitPrinciple(principle)} className={`${sharedButtonClass} border-white/30 bg-white text-slate-900`}>
-                                  {principleLabels[principle] || principle}
+                                  {_uimHasOwn(principleLabels, principle) ? principleLabels[principle] : principle}
                               </button>
                           ))}
                       </div>
@@ -663,6 +766,11 @@ const LiveAdvancedQuizResponse = React.memo(({
       const submitPartner = (partnerValue) => {
           const partnerAnswer = boundedLiveQuizText(partnerValue, 500).trim();
           if (!partnerAnswer || !Number.isInteger(draft.clickedPairIdx)) return;
+          const crisis = _uimScreenCrisis(partnerAnswer);
+          if (crisis.blocked) {
+              setCrisisAlert(crisis.message);
+              return;
+          }
           const step1Correct = wrongPairIndex === null ? null : draft.clickedPairIdx === wrongPairIndex;
           const step2Correct = correctPartner ? partnerAnswer === correctPartner : null;
           let score = null;
@@ -676,6 +784,11 @@ const LiveAdvancedQuizResponse = React.memo(({
       };
       return (
           <div className="mt-8 w-full max-w-4xl rounded-3xl border border-white/20 bg-white/10 p-5 text-left shadow-xl" data-live-response-type={questionType}>
+              {crisisAlert && (
+                  <p role="alert" className="mb-3 rounded-xl border border-amber-300 bg-amber-950/90 px-4 py-3 text-sm font-semibold text-amber-100">
+                      {crisisAlert}
+                  </p>
+              )}
               <div role="group" aria-label={(t('quiz.live_student.find_mismatch') || 'Find the mismatched pair')} className="space-y-2">
                   {pairs.map((pair, index) => (
                       <button
@@ -713,7 +826,7 @@ const LiveAdvancedQuizResponse = React.memo(({
                                       maxLength="500"
                                       disabled={isDisabled}
                                       onChange={(event) => patchDraft({ partnerAnswer: event.target.value })}
-                                      onKeyDown={(event) => { if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.nativeEvent?.keyCode === 229) return; if (event.key === 'Enter' && draft.partnerAnswer.trim()) { event.preventDefault(); submitPartner(draft.partnerAnswer); } }}
+                                      onKeyDown={(event) => { if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.nativeEvent?.keyCode === 229) return; if (event.key === 'Enter' && !event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey && draft.partnerAnswer.trim()) { event.preventDefault(); submitPartner(draft.partnerAnswer); } }}
                                       className="mt-2 min-h-12 w-full rounded-xl border-2 border-white/30 bg-white px-4 py-3 text-base text-slate-900"
                                   />
                               </label>
@@ -732,7 +845,7 @@ const LiveAdvancedQuizResponse = React.memo(({
 });
 
 const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, activeSessionCode, targetAppId, connectionStatus, onConnectionAction, onCoverChange }) => {
-  const { t } = useContext(LanguageContext);
+  const { t } = _useLang();
   const isQuizOpen = Boolean(sessionData?.quizState?.isActive && generatedContent && generatedContent.type === 'quiz');
   const quizState = sessionData?.quizState || {};
   const {
@@ -748,7 +861,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
   // A teacher-revealed fact check is never shown when it disputes the key.
   const liveExplanation = (() => {
       if (!currentQuestion?.factCheck) return '';
-      const keyQuality = window.AlloModules?.QuizView?.keyQuality;
+      const keyQuality = typeof window !== 'undefined' && window.AlloModules?.QuizView?.keyQuality;
       if (keyQuality && typeof keyQuality.studentExplanation === 'function') {
           try { return String(keyQuality.studentExplanation(currentQuestion, true) || ''); } catch (_) { return ''; }
       }
@@ -766,10 +879,11 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
   const receiptQuestionIndex = Number.isInteger(currentQuestionIndex)
       ? Math.min(9999, Math.max(0, currentQuestionIndex))
       : 0;
-  const responseAttemptKey = presentationActivityId + ':' + receiptQuestionIndex + ':' + String(quizState.roundId || 'legacy') + ':' + String(user?.uid || '');
-  const teamColor = user ? teams?.[user.uid] : null;
-  const studentGroupId = sessionData?.roster?.[user?.uid]?.groupId;
-  const studentGroup = studentGroupId ? sessionData.groups?.[studentGroupId] : null;
+  const safeUserUid = _uimSafeUid(user?.uid);
+  const responseAttemptKey = presentationActivityId + ':' + receiptQuestionIndex + ':' + String(quizState.roundId || 'legacy') + ':' + safeUserUid;
+  const teamColor = safeUserUid && _uimHasOwn(teams, safeUserUid) ? teams[safeUserUid] : null;
+  const studentGroupId = safeUserUid && _uimHasOwn(sessionData?.roster, safeUserUid) ? sessionData.roster[safeUserUid]?.groupId : null;
+  const studentGroup = studentGroupId && _uimHasOwn(sessionData?.groups, studentGroupId) ? sessionData.groups[studentGroupId] : null;
   const groupLanguage = studentGroup?.language;
   const showTranslated = groupLanguage && groupLanguage !== 'English';
   const [hasAnswered, setHasAnswered] = useState(false);
@@ -778,6 +892,11 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
   const [selectedConfidence, setSelectedConfidence] = useState(null);
   const [submitError, setSubmitError] = useState('');
   const [deliveryStatus, setDeliveryStatus] = useState('');
+  const mountedRef = useRef(true);
+  useEffect(() => {
+      mountedRef.current = true;
+      return () => { mountedRef.current = false; };
+  }, []);
   const sendingRef = useRef('');
   const latestAttemptRef = useRef(responseAttemptKey);
   latestAttemptRef.current = responseAttemptKey;
@@ -840,8 +959,8 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
   }, [coversScreen, phase, responseAttemptKey]);
   useEffect(() => {
       setSubmitError('');
-      if (user && responses && responses[user.uid] !== undefined) {
-          const savedResponse = responses[user.uid];
+      if (safeUserUid && _uimHasOwn(responses, safeUserUid) && responses[safeUserUid] !== undefined) {
+          const savedResponse = responses[safeUserUid];
           localAnswerKeyRef.current = responseAttemptKey;
           setHasAnswered(true);
           setSelectedOptionIndex(getLiveQuizResponseOptionIndex(currentQuestion, savedResponse, liveOptions));
@@ -854,14 +973,14 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
           setSubmittedResponse(null);
           setSelectedConfidence(null);
       }
-  }, [responseAttemptKey, responses, user, liveOptions.length, currentQuestion]);
+  }, [responseAttemptKey, responses, safeUserUid, liveOptions.length, currentQuestion]);
   useEffect(() => {
-      if (isQuizOpen && mode === 'team-showdown' && user && activeSessionCode) {
-          const currentTeam = teams?.[user.uid];
+      if (isQuizOpen && mode === 'team-showdown' && safeUserUid && activeSessionCode) {
+          const currentTeam = _uimHasOwn(teams, safeUserUid) ? teams[safeUserUid] : null;
           if (!currentTeam) {
               const teamOptions = ['Red', 'Blue', 'Green', 'Yellow'];
               const groupedTeamIds = Object.keys(sessionData?.groups || {})
-                  .filter(groupId => sessionData.groups?.[groupId] && typeof sessionData.groups[groupId] === 'object')
+                  .filter(groupId => _uimHasOwn(sessionData?.groups, groupId) && sessionData.groups[groupId] && typeof sessionData.groups[groupId] === 'object')
                   .sort();
               const existingGroupIndex = studentGroupId ? groupedTeamIds.indexOf(studentGroupId) : -1;
               // Reuse the live roster's grouping when one exists. The quiz wire
@@ -878,9 +997,9 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                       // missing one is a wiring bug: refuse rather than write elsewhere.
                       const effectiveAppId = String(targetAppId || '').trim();
                       if (!effectiveAppId) { console.warn('[StudentQuizOverlay] joinTeam: no targetAppId'); return; }
-                      const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
-                      await updateDoc(sessionRef, {
-                          [`quizState.teams.${user.uid}`]: assignedColor
+                      const sessionRef = _getFbDoc()(_getFbDb(), 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
+                      await _getFbUpdateDoc()(sessionRef, {
+                          [`quizState.teams.${safeUserUid}`]: assignedColor
                       });
                   } catch (e) {
                       warnLog("Team assignment failed:", e);
@@ -889,7 +1008,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
               joinTeam();
           }
       }
-  }, [isQuizOpen, mode, user, teams, activeSessionCode, targetAppId, studentGroupId, sessionData?.groups]);
+  }, [isQuizOpen, mode, safeUserUid, teams, activeSessionCode, targetAppId, studentGroupId, sessionData?.groups]);
   const transmitQuizResponse = async (responseValue) => {
       // FERPA-first transport: the answer rides the existing P2P quiz channel
       // when available. The cloud fallback remains a content-free receipt.
@@ -897,17 +1016,17 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
       let sentViaP2P = false;
       if (typeof p2pSend === 'function') {
           try {
-              sentViaP2P = Boolean(p2pSend('boss:' + currentQuestionIndex + (quizState.roundId ? ':' + quizState.roundId : ''), responseValue));
+              sentViaP2P = Boolean(p2pSend('boss:' + receiptQuestionIndex + (quizState.roundId ? ':' + quizState.roundId : ''), responseValue));
           } catch (p2pError) {
               warnLog("P2P quiz response failed; recording receipt:", p2pError);
           }
       }
       if (sentViaP2P) return 'peer';
       const effectiveAppId = String(targetAppId || '').trim();
-      if (!effectiveAppId) throw new Error('Quiz response could not be recorded: no session app id.');
-      const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
-      await updateDoc(sessionRef, {
-          [`quizState.responseReceipts.${user.uid}`]: {
+      if (!effectiveAppId || !safeUserUid) throw new Error('Quiz response could not be recorded: no session app id or student id.');
+      const sessionRef = _getFbDoc()(_getFbDb(), 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
+      await _getFbUpdateDoc()(sessionRef, {
+          [`quizState.responseReceipts.${safeUserUid}`]: {
               activityId: presentationActivityId,
               questionIndex: receiptQuestionIndex,
               submittedAt: Date.now(),
@@ -917,7 +1036,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
       return 'receipt';
   };
   const submitQuizResponse = async (responseValue, selectedMarker = responseValue) => {
-      if (hasAnswered || sendingRef.current === responseAttemptKey || !isQuizOpen || phase !== 'answering' || !user || !activeSessionCode) return;
+      if (hasAnswered || sendingRef.current === responseAttemptKey || !isQuizOpen || phase !== 'answering' || !safeUserUid || !activeSessionCode) return;
       sendingRef.current = responseAttemptKey;
       setDeliveryStatus('sending');
       setSubmitError('');
@@ -927,10 +1046,10 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
       setSubmittedResponse(responseValue);
       try {
           const delivery = await transmitQuizResponse(responseValue);
-          if (latestAttemptRef.current === responseAttemptKey) setDeliveryStatus(delivery);
+          if (mountedRef.current && latestAttemptRef.current === responseAttemptKey) setDeliveryStatus(delivery);
       } catch (e) {
           warnLog("Error submitting quiz response:", e);
-          if (latestAttemptRef.current !== responseAttemptKey) return;
+          if (!mountedRef.current || latestAttemptRef.current !== responseAttemptKey) return;
           setDeliveryStatus('');
           localAnswerKeyRef.current = '';
           setHasAnswered(false);
@@ -945,14 +1064,14 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
       sendingRef.current = responseAttemptKey; setDeliveryStatus('sending'); setSubmitError('');
       try {
           const delivery = await transmitQuizResponse(submittedResponse);
-          if (latestAttemptRef.current === responseAttemptKey) setDeliveryStatus(delivery);
+          if (mountedRef.current && latestAttemptRef.current === responseAttemptKey) setDeliveryStatus(delivery);
       } catch (error) {
-          if (latestAttemptRef.current !== responseAttemptKey) return;
+          if (!mountedRef.current || latestAttemptRef.current !== responseAttemptKey) return;
           setDeliveryStatus('receipt'); setSubmitError((t('quiz.live_student.retry_failed') || 'Your answer could not be sent. Your participation is still recorded; try again when connected.'));
       } finally { if (sendingRef.current === responseAttemptKey) sendingRef.current = ''; }
   };
   const submitQuizConfidence = async (confidence) => {
-      if (sendingRef.current === responseAttemptKey || !isQuizOpen || !confidenceEnabled || !hasAnswered || submittedResponse == null || !user || !activeSessionCode || phase !== 'answering') return;
+      if (sendingRef.current === responseAttemptKey || !isQuizOpen || !confidenceEnabled || !hasAnswered || submittedResponse == null || !safeUserUid || !activeSessionCode || phase !== 'answering') return;
       const nextResponse = attachLiveQuizConfidence(submittedResponse, currentQuestion, receiptQuestionIndex, confidence);
       if (!nextResponse) return;
       const previousConfidence = selectedConfidence;
@@ -963,10 +1082,10 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
       setSubmittedResponse(nextResponse);
       try {
           const delivery = await transmitQuizResponse(nextResponse);
-          if (latestAttemptRef.current === responseAttemptKey) setDeliveryStatus(delivery);
+          if (mountedRef.current && latestAttemptRef.current === responseAttemptKey) setDeliveryStatus(delivery);
       } catch (e) {
           warnLog("Error updating quiz confidence:", e);
-          if (latestAttemptRef.current !== responseAttemptKey) return;
+          if (!mountedRef.current || latestAttemptRef.current !== responseAttemptKey) return;
           setSubmittedResponse(previousResponse);
           setSelectedConfidence(previousConfidence);
           setSubmitError(t('errors.quiz_submit_failed') || 'Your confidence update could not be sent. Please try again.');
@@ -1065,7 +1184,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
              <div className="flex flex-col items-end">
                 <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">{t('quiz.question_label')}</span>
                 <span className="text-3xl font-mono font-black text-white leading-none">
-                    {currentQuestionIndex + 1} <span className="text-lg text-white/50">/ {generatedContent?.data?.questions?.length || 0}</span>
+                    {receiptQuestionIndex + 1} <span className="text-lg text-white/50">/ {generatedContent?.data?.questions?.length || 0}</span>
                 </span>
             </div>
         <button
@@ -1078,7 +1197,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
         </button>
         </div>
         {connectionStatus && (() => {
-            const noticeText = {
+            const noticeMap = {
                 connecting: t('live_connection.connecting'),
                 retrying: t('live_connection.retrying'),
                 failed: t('live_connection.failed'),
@@ -1087,7 +1206,8 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                 'mailbox-stalled': t('live_connection.retrying'),
                 'host-paused': (t('live_connection.host_paused') || 'Teacher connection paused — keeping your place while AlloFlow reconnects.'),
                 'host-stale': (t('live_connection.host_stale') || 'Teacher status check is stale - the live session may still be connected. Your work stays on this device.')
-            }[connectionStatus];
+            };
+            const noticeText = _uimHasOwn(noticeMap, connectionStatus) ? noticeMap[connectionStatus] : null;
             if (!noticeText) return null;
             const canReconnect = ['retrying', 'failed', 'access', 'sign_in', 'mailbox-stalled'].includes(connectionStatus);
             const isHostNotice = connectionStatus === 'host-paused' || connectionStatus === 'host-stale';
@@ -1105,12 +1225,21 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                 <p className="mt-2 text-sm leading-relaxed text-indigo-100">{bossStats?.endReason === 'no-scored-items' ? (t('quiz.live_student.end_no_scored') || 'These questions were for discussion or teacher review. No battle score was assigned.') : bossStats?.endReason === 'questions-complete' ? (t('quiz.live_student.end_questions_complete') || 'All questions are complete. The result compares the percentage of health remaining; ties favor the class.') : phase === 'boss-defeated' ? (t('quiz.live_student.end_victory') || 'Your class defeated the monster together.') : (t('quiz.live_student.end_regroup') || 'Use the explanation below to plan your next attempt together.')}</p>
                 <p className="mt-2 text-sm text-indigo-100">{(t('quiz.live_student.end_review_last') || 'Review the last question below. Your teacher can restart the battle.')}</p>
             </section>}
-            {mode === 'boss-battle' && bossStats && (
+            {mode === 'boss-battle' && bossStats && (() => {
+                const safeBossImage = _uimSafeImageUrl(bossStats.image);
+                const bossMaxHp = Number.isFinite(Number(bossStats.maxHP)) && Number(bossStats.maxHP) > 0 ? Math.round(Number(bossStats.maxHP)) : 1;
+                const bossCurHp = Math.min(bossMaxHp, Math.max(0, Number.isFinite(Number(bossStats.currentHP)) ? Math.round(Number(bossStats.currentHP)) : 0));
+                const bossPct = Math.min(100, Math.max(0, Math.round((bossCurHp / bossMaxHp) * 100)));
+                const classMaxHp = Number.isFinite(Number(bossStats.classMaxHP)) && Number(bossStats.classMaxHP) > 0 ? Math.round(Number(bossStats.classMaxHP)) : 100;
+                const rawClassHp = bossStats.classHP != null && Number.isFinite(Number(bossStats.classHP)) ? Number(bossStats.classHP) : classMaxHp;
+                const classCurHp = Math.min(classMaxHp, Math.max(0, Math.round(rawClassHp)));
+                const classPct = Math.min(100, Math.max(0, Math.round((classCurHp / classMaxHp) * 100)));
+                return (
                 <div className="mb-5 w-full max-w-lg shrink-0 flex flex-col items-center animate-in fade-in zoom-in duration-700 motion-reduce:animate-none">
                      <div className={`relative mb-6 ${isRevealed && bossStats.lastDamage > 0 ? 'animate-shake motion-reduce:animate-none' : ''}`}>
-                         {bossStats.image ? (
+                         {safeBossImage ? (
                              <img loading="lazy"
-                                src={bossStats.image}
+                                src={safeBossImage}
                                 alt={t('quiz.boss.alt_text')}
                                 className="w-32 h-32 md:w-48 md:h-48 object-contain pixelated drop-shadow-2xl"
                                 style={{ imageRendering: 'pixelated' }}
@@ -1130,36 +1259,36 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                          <div className="mb-2 flex flex-wrap items-center justify-center gap-2 text-xs font-bold"><span className="rounded-full bg-red-950 px-2 py-1 text-red-200">{t('concept_quest.boss_phase', { phase: bossPhaseLabel })}</span><span className="rounded-full bg-yellow-950 px-2 py-1 text-yellow-200">{t('concept_quest.boss_mastery_streak', { count: bossStats.masteryStreak || 0 })}</span>{bossStats.lastComboBonus > 0 && <span className="rounded-full bg-purple-950 px-2 py-1 text-purple-200">⚡ {t('concept_quest.boss_combo_bonus', { bonus: bossStats.lastComboBonus })}</span>}</div>
                          <div className="flex justify-between text-xs font-bold text-slate-300 mb-1 uppercase tracking-wider">
                              <span>{fillLiveCopy(t('quiz.live_student.boss_hp', { name: bossStats.name || (t('quiz.live_student.boss_default_name') || 'Boss') }) || '{name} HP', { name: bossStats.name || (t('quiz.live_student.boss_default_name') || 'Boss') })}</span>
-                             <span>{Math.round(bossStats.currentHP)} / {bossStats.maxHP}</span>
+                             <span>{bossCurHp} / {bossMaxHp}</span>
                          </div>
                          <div className="w-full h-6 bg-slate-800 rounded-full overflow-hidden border-2 border-slate-700 relative shadow-inner">
                              <div
                                 role="progressbar"
                                 aria-label={fillLiveCopy(t('quiz.live_student.boss_health', { name: bossStats.name || (t('quiz.live_student.boss_default_name') || 'Boss') }) || '{name} health', { name: bossStats.name || (t('quiz.live_student.boss_default_name') || 'Boss') })}
                                 aria-valuemin="0"
-                                aria-valuemax={bossStats.maxHP || 1}
-                                aria-valuenow={Math.min(bossStats.maxHP || 1, Math.max(0, Math.round(bossStats.currentHP || 0)))}
-                                aria-valuetext={`${Math.min(bossStats.maxHP || 1, Math.max(0, Math.round(bossStats.currentHP || 0)))} of ${bossStats.maxHP || 1} HP (${Math.min(100, Math.max(0, Math.round(((bossStats.currentHP || 0) / (bossStats.maxHP || 1)) * 100)))}%)`}
+                                aria-valuemax={bossMaxHp}
+                                aria-valuenow={bossCurHp}
+                                aria-valuetext={`${bossCurHp} of ${bossMaxHp} HP (${bossPct}%)`}
                                 className="h-full bg-gradient-to-r from-red-600 to-red-500 transition-all duration-500 ease-out motion-reduce:transition-none"
-                                style={{ width: `${Math.min(100, Math.max(0, ((bossStats.currentHP || 0) / (bossStats.maxHP || 1)) * 100))}%` }}
+                                style={{ width: `${bossPct}%` }}
                              ></div>
                          </div>
                      </div>
                      <div className="w-full mt-3">
                          <div className="flex justify-between text-xs font-bold text-slate-300 mb-1 uppercase tracking-wider">
                              <span>{t('quiz.boss.class_hp') || 'Class HP'}</span>
-                             <span>{Math.round(bossStats.classHP ?? 100)} / {bossStats.classMaxHP || 100}</span>
+                             <span>{classCurHp} / {classMaxHp}</span>
                          </div>
                          <div className="w-full h-5 bg-slate-800 rounded-full overflow-hidden border-2 border-slate-700 relative shadow-inner">
                              <div
                                 role="progressbar"
                                 aria-label={t('quiz.boss.class_hp') || 'Class HP'}
                                 aria-valuemin="0"
-                                aria-valuemax={bossStats.classMaxHP || 100}
-                                aria-valuenow={Math.min(bossStats.classMaxHP || 100, Math.max(0, Math.round(bossStats.classHP ?? 100)))}
-                                aria-valuetext={`${Math.min(bossStats.classMaxHP || 100, Math.max(0, Math.round(bossStats.classHP ?? 100)))} of ${bossStats.classMaxHP || 100} HP (${Math.min(100, Math.max(0, Math.round(((bossStats.classHP ?? 100) / (bossStats.classMaxHP || 100)) * 100)))}%)`}
+                                aria-valuemax={classMaxHp}
+                                aria-valuenow={classCurHp}
+                                aria-valuetext={`${classCurHp} of ${classMaxHp} HP (${classPct}%)`}
                                 className="h-full bg-gradient-to-r from-green-600 to-emerald-500 transition-all duration-500 ease-out motion-reduce:transition-none"
-                                style={{ width: `${Math.min(100, Math.max(0, ((bossStats.classHP ?? 100) / (bossStats.classMaxHP || 100)) * 100))}%` }}
+                                style={{ width: `${classPct}%` }}
                              ></div>
                          </div>
                          {isRevealed && bossStats.lastClassDamage > 0 && (
@@ -1171,21 +1300,25 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                          {isRevealed && bossStats.roundFeedback && <details className="mt-2 rounded-lg bg-slate-800 p-2 text-left text-xs text-slate-200"><summary className="min-h-11 flex items-center cursor-pointer font-bold">{bossStats.roundFeedback.scoringPaused ? (t('quiz.live_student.battle_scoring_paused') || 'Battle scoring paused') : t('concept_quest.boss_round_recap', { accuracy: bossStats.roundFeedback.accuracy })}</summary>{bossStats.roundFeedback.explanation ? <div className="mt-1">{liveQuizMd().block(bossStats.roundFeedback.explanation)}</div> : <p className="mt-1">{t('concept_quest.boss_discuss_evidence')}</p>}</details>}
                      </div>
                 </div>
-            )}
+                );
+            })()}
             <div className="shrink-0 bg-white/10 backdrop-blur-md p-5 md:p-8 rounded-3xl border border-white/10 shadow-2xl max-w-3xl w-full">
-                {currentQuestion?.imageUrl && (
-                    <img
-                        key={currentQuestion.imageUrl}
-                        src={currentQuestion.imageUrl}
-                        alt={String(currentQuestion.imageAlt || currentQuestion.question || t('quiz.question_image') || 'Question image')}
-                        loading="eager"
-                        decoding="async"
-                        onLoad={(event) => { event.currentTarget.hidden = false; }}
-                        onError={(event) => { event.currentTarget.hidden = true; }}
-                        data-live-quiz-question-image="true"
-                        className="mb-5 max-h-64 w-full rounded-2xl border border-white/20 bg-white object-contain shadow-lg"
-                    />
-                )}
+                {(() => {
+                    const safeQuestionImage = _uimSafeImageUrl(currentQuestion?.imageUrl);
+                    return safeQuestionImage ? (
+                        <img
+                            key={safeQuestionImage}
+                            src={safeQuestionImage}
+                            alt={String(currentQuestion.imageAlt || currentQuestion.question || t('quiz.question_image') || 'Question image')}
+                            loading="eager"
+                            decoding="async"
+                            onLoad={(event) => { event.currentTarget.hidden = false; }}
+                            onError={(event) => { event.currentTarget.hidden = true; }}
+                            data-live-quiz-question-image="true"
+                            className="mb-5 max-h-64 w-full rounded-2xl border border-white/20 bg-white object-contain shadow-lg"
+                        />
+                    ) : null;
+                })()}
                 <h3 id="student-quiz-question" aria-live="polite" aria-atomic="true" className="text-2xl md:text-4xl font-bold text-white leading-tight drop-shadow-sm" data-help-key="quiz_student_question">
                     {currentQuestion ? liveQuizMd().inline(currentQuestion.question) : t('quiz.loading_question')}
                 </h3>
@@ -1214,8 +1347,8 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
             ) : questionType === 'likert' ? (
               <div className="w-full max-w-3xl mt-8 px-4">
                 <div className="flex justify-between text-xs md:text-sm font-bold text-white/80 mb-2 uppercase tracking-wider">
-                  <span>{currentQuestion.scale?.lowLabel || t('quiz.likert_strongly_disagree') || 'Strongly disagree'}</span>
-                  <span>{currentQuestion.scale?.highLabel || t('quiz.likert_strongly_agree') || 'Strongly agree'}</span>
+                  <span>{currentQuestion?.scale?.lowLabel || t('quiz.likert_strongly_disagree') || 'Strongly disagree'}</span>
+                  <span>{currentQuestion?.scale?.highLabel || t('quiz.likert_strongly_agree') || 'Strongly agree'}</span>
                 </div>
                 <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${Math.max(3, Math.min(7, Number(currentQuestion?.scale?.steps) || liveOptions.length || 5))}, minmax(0, 1fr))` }}>
                   {liveOptions.map((tickLabel, idx) => {
@@ -1251,7 +1384,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                     const isSelected = selectedOptionIndex === idx;
                     const letter = String.fromCharCode(65 + idx);
                     const optionImageUrl = Array.isArray(currentQuestion?.optionImageUrls)
-                        ? currentQuestion.optionImageUrls[idx]
+                        ? _uimSafeImageUrl(currentQuestion.optionImageUrls[idx])
                         : null;
                     const isDisabled = hasAnswered || phase !== 'answering';
                     let btnClass = 'bg-white text-slate-800 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50';
@@ -1468,14 +1601,10 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                                  <h4 className="text-xs font-black text-indigo-700 uppercase tracking-widest mb-3 flex items-center gap-2 border-b border-slate-100 pb-2">
                                      <Sparkles size={14} aria-hidden="true" className="fill-yellow-400 text-yellow-500"/> {(t('quiz.live_student.explanation') || 'Explanation')}
                                  </h4>
-                                 {/* Shared light markdown when loaded. XSS guard on the fallback: factCheck is AI-generated; escape <,>,& BEFORE the bold replacement so injected tags can't echo through. */}
-                                 {window.AlloModules?.QuizView?.markdown ? <div className="prose prose-sm max-w-none text-slate-700 leading-relaxed">{liveQuizMd().block(liveExplanation)}</div> : <div
+                                 {/* Shared light markdown when loaded; safe React JSX fallback (no dangerouslySetInnerHTML). */}
+                                 {typeof window !== 'undefined' && window.AlloModules?.QuizView?.markdown ? <div className="prose prose-sm max-w-none text-slate-700 leading-relaxed">{liveQuizMd().block(liveExplanation)}</div> : <div
                                     className="prose prose-sm max-w-none text-slate-700 leading-relaxed whitespace-pre-wrap"
-                                    dangerouslySetInnerHTML={{ __html: liveExplanation
-                                        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-                                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                                        .replace(/\n/g, '<br/>') }}
-                                 />}
+                                 >{_uimRenderSafeExplanation(liveExplanation)}</div>}
                                  {showTranslated && currentQuestion.factCheck_en && (
                                      <div className="mt-3 pt-3 border-t border-slate-200">
                                          <p className="text-xs text-slate-600 italic whitespace-pre-wrap">
@@ -1493,7 +1622,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
 });
 
 const TeacherGate = React.memo(({ isOpen, onClose, onUnlock }) => {
-  const { t } = useContext(LanguageContext);
+  const { t } = _useLang();
   const [passwordInput, setPasswordInput] = useState('');
   const [showCode, setShowCode] = useState(false);
   const [error, setError] = useState('');
@@ -1508,7 +1637,7 @@ const TeacherGate = React.memo(({ isOpen, onClose, onUnlock }) => {
     gateOpenRef.current = false;
     setBusy(false);
     setShowCode(false);
-    onClose();
+    if (typeof onClose === 'function') onClose();
   };
   useFocusTrap(gateRef, isOpen, closeGate);
   useEffect(() => {
@@ -1550,7 +1679,7 @@ const TeacherGate = React.memo(({ isOpen, onClose, onUnlock }) => {
       const result = await accessCode.verify(submittedCode);
       if (!gateOpenRef.current || attemptId !== attemptRef.current) return;
       if (result?.ok) {
-        onUnlock();
+        if (typeof onUnlock === 'function') onUnlock();
         closeGate();
         setError('');
         setBlockedUntil(0);
@@ -1650,7 +1779,7 @@ const TeacherGate = React.memo(({ isOpen, onClose, onUnlock }) => {
 });
 
 const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceAccess }) => {
-  const { t } = useContext(LanguageContext);
+  const { t } = _useLang();
   const roleRef = useRef(null);
   const pendingTimerRef = useRef(null);
   useFocusTrap(roleRef, true);
@@ -1678,15 +1807,15 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
     pendingTimerRef.current = setTimeout(() => {
       pendingTimerRef.current = null;
       const selectRole = () => {
-        const accessCodeRequired = typeof window._alloEducatorAccessCodeRequired === 'function'
+        const accessCodeRequired = typeof window !== 'undefined' && typeof window._alloEducatorAccessCodeRequired === 'function'
           ? window._alloEducatorAccessCodeRequired()
-          : !!APP_CONFIG._cfg_validation_key;
+          : !!_getAppConfig()._cfg_validation_key;
         if (accessCodeRequired && ['teacher', 'parent', 'independent'].includes(role)) {
           restoreButton();
-          if (onGateRequired) onGateRequired(role);
+          if (typeof onGateRequired === 'function') onGateRequired(role);
         } else {
           restoreButton();
-          onSelect(role);
+          if (typeof onSelect === 'function') onSelect(role);
         }
       };
       if (typeof React.startTransition === 'function') React.startTransition(selectRole);
@@ -1734,7 +1863,16 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
           return;
       }
       // Safe legacy fallback: probe permission only when the host has not
-      // supplied its global voice-session callback.
+      // supplied its global voice-session callback, and never bypass local-only speech policy.
+      const localSpeechOnly = typeof window !== 'undefined' && (
+          window.__alloOfflineOnly === true
+          || window.AlloModules?.SpeechPolicy?.isLocalSpeechOnly?.() === true
+      );
+      if (localSpeechOnly) {
+          setMicStatus('unsupported');
+          return;
+      }
+      if (typeof window === 'undefined') { setMicStatus('unsupported'); return; }
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
           setMicStatus('unsupported');
@@ -1746,18 +1884,22 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
       }
       const recognition = new SpeechRecognition();
       micRecognitionRef.current = recognition;
+      let startedOk = false;
       recognition.onstart = () => {
+          startedOk = true;
           if (micMountedRef.current) setMicStatus('granted');
           try { recognition.stop(); } catch (_) {}
           if (micRecognitionRef.current === recognition) micRecognitionRef.current = null;
       };
-      recognition.onerror = (event) => {
+      recognition.onerror = () => {
           if (micRecognitionRef.current === recognition) micRecognitionRef.current = null;
           if (!micMountedRef.current) return;
-          if (event.error === 'not-allowed' || event.error === 'permission-denied') {
-              setMicStatus('denied');
-          } else {
-              setMicStatus('denied');
+          setMicStatus('denied');
+      };
+      recognition.onend = () => {
+          if (micRecognitionRef.current === recognition) micRecognitionRef.current = null;
+          if (micMountedRef.current && !startedOk) {
+              setMicStatus(prev => (prev === 'requesting' ? 'denied' : prev));
           }
       };
       try {
@@ -1906,10 +2048,11 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
 });
 
 const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
-  const { t } = useContext(LanguageContext);
+  const { t } = _useLang();
   const [selectedAdj, setSelectedAdj] = useState('');
   const [selectedAnimal, setSelectedAnimal] = useState('');
   const entryRef = useRef(null);
+  const safeOnClose = useCallback(() => { if (typeof onClose === 'function') onClose(); }, [onClose]);
   useFocusTrap(entryRef, isOpen, onClose);
   const rawAdjectives = t('codenames.adjectives', { returnObjects: true });
   const rawAnimals = t('codenames.animals', { returnObjects: true });
@@ -1930,7 +2073,7 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
   }, [isOpen, randomizeName]);
   const getFullName = () => `${selectedAdj} ${selectedAnimal}`;
   const handleConfirm = (mode) => {
-    if (selectedAdj && selectedAnimal) {
+    if (selectedAdj && selectedAnimal && typeof onConfirm === 'function') {
       onConfirm(getFullName(), mode);
     }
   };
@@ -1945,7 +2088,7 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
     codenameReady: !!(selectedAdj && selectedAnimal),
     randomize: randomizeName,
     startNew: () => handleConfirm('new'),
-    cancel: onClose,
+    cancel: safeOnClose,
   };
   useEffect(() => {
     if (!isOpen || typeof window === 'undefined') return undefined;
@@ -2124,8 +2267,9 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
 });
 
 const StudentWelcomeModal = React.memo(({ isOpen, onClose, onUpload }) => {
-  const { t } = useContext(LanguageContext);
+  const { t } = _useLang();
   const welcomeRef = useRef(null);
+  const safeOnClose = useCallback(() => { if (typeof onClose === 'function') onClose(); }, [onClose]);
   useFocusTrap(welcomeRef, isOpen, onClose);
   if (!isOpen) return null;
   return (
@@ -2142,7 +2286,7 @@ const StudentWelcomeModal = React.memo(({ isOpen, onClose, onUpload }) => {
       <div className="my-auto max-h-[calc(100vh-2rem)] overflow-y-auto bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-md w-full text-center border-4 border-teal-100 transform transition-all animate-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none relative">
         <button
             type="button"
-            onClick={onClose}
+            onClick={safeOnClose}
             className="absolute top-4 right-4 min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors motion-reduce:transition-none"
             style={{ minHeight: '44px', minWidth: '44px' }}
             aria-label={t('welcome.close_aria') || 'Close welcome dialog'}
@@ -2162,8 +2306,8 @@ const StudentWelcomeModal = React.memo(({ isOpen, onClose, onUpload }) => {
                 type="button"
                 data-autofocus="true"
                 onClick={() => {
-                    onUpload();
-                    onClose();
+                    if (typeof onUpload === 'function') onUpload();
+                    safeOnClose();
                 }}
                 className="w-full min-h-11 flex items-center justify-center gap-3 p-4 rounded-xl bg-teal-700 text-white font-bold hover:bg-teal-800 transition-all motion-reduce:transition-none motion-reduce:transform-none shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95"
                 data-help-key="welcome_load_btn"
@@ -2172,7 +2316,7 @@ const StudentWelcomeModal = React.memo(({ isOpen, onClose, onUpload }) => {
             </button>
             <button
                 type="button"
-                onClick={onClose}
+                onClick={safeOnClose}
                 className="w-full min-h-11 p-3 rounded-xl text-slate-700 font-bold hover:bg-slate-100 transition-colors motion-reduce:transition-none active:scale-95"
                 data-help-key="welcome_skip_btn"
             >
@@ -2184,11 +2328,13 @@ const StudentWelcomeModal = React.memo(({ isOpen, onClose, onUpload }) => {
   );
 });
 
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.StudentQuizOverlay = StudentQuizOverlay;
-window.AlloModules.TeacherGate = TeacherGate;
-window.AlloModules.RoleSelectionModal = RoleSelectionModal;
-window.AlloModules.StudentEntryModal = StudentEntryModal;
-window.AlloModules.StudentWelcomeModal = StudentWelcomeModal;
-window.AlloModules.UIModalsModule = true;
-console.log('[UIModalsModule] 5 components registered');
+if (typeof window !== 'undefined') {
+  window.AlloModules = window.AlloModules || {};
+  window.AlloModules.StudentQuizOverlay = StudentQuizOverlay;
+  window.AlloModules.TeacherGate = TeacherGate;
+  window.AlloModules.RoleSelectionModal = RoleSelectionModal;
+  window.AlloModules.StudentEntryModal = StudentEntryModal;
+  window.AlloModules.StudentWelcomeModal = StudentWelcomeModal;
+  window.AlloModules.UIModalsModule = true;
+  console.log('[UIModalsModule] 5 components registered');
+}

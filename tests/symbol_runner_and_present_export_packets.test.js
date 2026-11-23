@@ -978,6 +978,7 @@ describe('12. Wave 3: Vocabulary Maker opt-in diagrams, custom image import, clo
     const bank = p.w.AlloVocabBank;
     const matcher = p.w.AlloWordPictureMatcher;
     const symbols = p.w.AlloModules.WordSoundsSymbols;
+    for (const sh of symbols.shards) symbols.add(JSON.parse(read(sh.url)));
     const art = p.w.AlloPacketBuilder;
     const customRows = V.draftRows({
       words: V.parseWords('habitat, predator, prey, cell, bat, nest').words,
@@ -1534,7 +1535,7 @@ describe('18. Wave 4: Closed RTI loop from packets-results -> packets-vocab, pac
     expect(vocabRehearse).toBeTruthy();
     expect(decodeURIComponent(vocabRehearse.href.split('#rehearse=')[1])).toBe('habitat,photosynthesis');
     expect(vocabPresent).toBeTruthy();
-    expect(decodeURIComponent(vocabPresent.href.split('#words=')[1])).toBe('habitat,photosynthesis');
+    expect(decodeURIComponent(vocabPresent.href.split('#words=')[1])).toBe('habitat,photosynthesis,ship');
     expect(wsRehearse).toBeTruthy();
     expect(decodeURIComponent(wsRehearse.href.split('#rehearse=')[1])).toBe('ship');
 

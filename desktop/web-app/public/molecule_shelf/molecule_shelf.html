@@ -131,7 +131,7 @@
   header { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: var(--panel); border-bottom: 1px solid var(--line); flex: 0 0 auto; flex-wrap: wrap; }
   header h1 { font-size: 15px; margin: 0; font-weight: 700; }
   header .sub { color: var(--dim); font-size: 11.5px; }
-  header select { margin-left: auto; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; min-height: 36px; font-size: 13px; max-width: 46vw; }
+  header select { margin-left: auto; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-height: 44px; font-size: 13px; max-width: 46vw; }
   .wrap { flex: 1 1 auto; display: flex; min-height: 0; }
   .coach { flex: 0 0 330px; display: flex; flex-direction: column; background: var(--panel); border-right: 1px solid var(--line); min-width: 0; overflow-y: auto; }
   .coach h2 { font-size: 12px; margin: 0; padding: 10px 12px 4px; color: var(--heading); text-transform: uppercase; letter-spacing: 0.06em; }
@@ -139,14 +139,14 @@
   .ai-state .on { color: var(--ok); font-weight: 700; }
   .ai-state .off { color: var(--warn); font-weight: 700; }
   .steps { display: flex; gap: 4px; padding: 4px 12px 8px; }
-  .steps button { flex: 1; background: var(--panel2); color: var(--dim); border: 1px solid var(--line); border-radius: 8px; padding: 6px 4px; min-height: 36px; font-size: 11.5px; font-weight: 700; cursor: pointer; }
+  .steps button { flex: 1; background: var(--panel2); color: var(--dim); border: 1px solid var(--line); border-radius: 8px; padding: 8px 4px; min-height: 44px; font-size: 11.5px; font-weight: 700; cursor: pointer; }
   .steps button[aria-selected="true"] { background: var(--tab-active-bg); color: var(--tab-active-fg); border-color: var(--accent); }
   .steps button.done { color: var(--ok); }
   .steps button.done[aria-selected="true"] { color: var(--tab-active-fg); }
   .body { padding: 4px 12px 12px; display: flex; flex-direction: column; gap: 8px; }
   .qcard { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; font-size: 13px; line-height: 1.5; }
   textarea { width: 100%; min-height: 84px; background: var(--bg); border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 13px; font-family: inherit; resize: vertical; }
-  button.go { background: var(--accent2); color: var(--btn-fg); border: 1px solid transparent; border-radius: 8px; padding: 9px 14px; min-height: 40px; font-size: 13px; font-weight: 700; cursor: pointer; }
+  button.go { background: var(--accent2); color: var(--btn-fg); border: 1px solid transparent; border-radius: 8px; padding: 10px 14px; min-height: 44px; font-size: 13px; font-weight: 700; cursor: pointer; }
   button.go:disabled { opacity: 0.65; cursor: not-allowed; }
   .locked { background: rgba(129, 140, 248, 0.12); border: 1px solid var(--line); border-radius: 10px; padding: 8px 11px; font-size: 12.5px; white-space: pre-wrap; }
   .locked b { color: var(--accent); }
@@ -166,14 +166,14 @@
   .simcard .name { font-weight: 700; font-size: 13px; margin: 6px 0 3px; }
   .simcard .meta { font-size: 11px; color: var(--dim); line-height: 1.4; }
   .backbar { position: absolute; top: 8px; left: 8px; z-index: 6; }
-  .backbar button { background: var(--backbar-bg); color: var(--backbar-fg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; min-height: 36px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .backbar button { background: var(--backbar-bg); color: var(--backbar-fg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; min-height: 44px; font-size: 12px; font-weight: 700; cursor: pointer; }
   .loadmsg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #f1f5f9; background: rgba(15, 23, 42, 0.72); font-size: 13px; z-index: 3; text-align: center; padding: 20px; }
   @media (max-width: 760px) { .wrap { flex-direction: column; } .coach { flex: 0 0 46%; border-right: 0; border-bottom: 1px solid var(--line); } }
   /* Described view — an AI-generated spoken description of the current 3-D view,
      for learners who cannot see the WebGL canvas (screen readers see nothing there). */
   .described { margin: 0 12px 8px; border: 1px solid var(--line); background: rgba(79,70,229,0.10); border-radius: 10px; padding: 9px 10px; }
   .described-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11.5px; font-weight: 700; color: var(--heading); text-transform: uppercase; letter-spacing: 0.05em; }
-  .ra-toggle { display: inline-flex; align-items: center; gap: 4px; text-transform: none; letter-spacing: 0; font-weight: 600; color: var(--dim); cursor: pointer; min-height: 32px; }
+  .ra-toggle { display: inline-flex; align-items: center; gap: 4px; text-transform: none; letter-spacing: 0; font-weight: 600; color: var(--dim); cursor: pointer; min-height: 44px; }
   button.describe-go { width: 100%; margin-top: 8px; background: var(--accent2); color: var(--btn-fg); border: 1px solid transparent; border-radius: 8px; padding: 10px 12px; font-size: 13px; font-weight: 700; cursor: pointer; min-height: 44px; }
   button.describe-go:disabled { opacity: 0.65; cursor: not-allowed; }
   button.describe-go:focus-visible, .ra-toggle input:focus-visible, .ask-form input:focus-visible, .ask-form button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
@@ -185,14 +185,14 @@
   .ask-form input { flex: 1 1 auto; min-width: 0; background: var(--bg); border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 8px 10px; min-height: 44px; font-size: 13px; font-family: inherit; }
   .ask-form button { background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight: 700; cursor: pointer; min-height: 44px; }
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
-  .skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 10000; }
-  .skip-link:focus { position: fixed; left: 8px; top: 8px; width: auto; height: auto; padding: 10px 18px; background: #0f172a; color: #f8fafc; font: 700 14px system-ui, sans-serif; border-radius: 8px; outline: 3px solid #facc15; text-decoration: none; }
+  .skip-link { position: absolute; inset-inline-start: 8px; top: 8px; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; z-index: 10000; }
+  .skip-link:focus { position: fixed; inset-inline-start: 8px; top: 8px; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; min-height: 44px; display: inline-flex; align-items: center; padding: 10px 18px; background: #0f172a; color: #f8fafc; font: 700 14px system-ui, sans-serif; border-radius: 8px; outline: 3px solid #facc15; text-decoration: none; }
 </style>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to molecular viewer</a>
 <header>
-  <h1>🧬 Molecule Shelf</h1>
+  <h1><span aria-hidden="true">🧬 </span>Molecule Shelf</h1>
   <span class="sub">Mol* viewer (molstar.org, MIT) · structures from the RCSB Protein Data Bank + AlloFlow Notice-Wonder coach</span>
   <select id="molSelect" aria-label="Choose a structure"><option value="">Choose a structure…</option></select>
 </header>
@@ -583,6 +583,7 @@
   tabOrder.forEach(function (k, idx) {
     tabs[k].addEventListener('click', function () { if (current) setStep(k); });
     tabs[k].addEventListener('keydown', function (e) {
+      if (e.isComposing || e.keyCode === 229) return;
       if (!current) return;
       var nextIdx = idx;
       if (e.key === 'ArrowRight') nextIdx = (idx + 1) % tabOrder.length;
@@ -690,6 +691,13 @@
     if (!q) return;
     askInput.value = '';
     describeView(q);
+  });
+  askInput.addEventListener('keydown', function (e) {
+    if (e.isComposing || e.keyCode === 229) return;
+    if (e.key === 'Escape' && askInput.value) {
+      e.preventDefault();
+      askInput.value = '';
+    }
   });
   raToggle.addEventListener('change', function () { if (!raToggle.checked) stopSpeak(); });
 

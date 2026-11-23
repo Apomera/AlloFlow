@@ -24,10 +24,10 @@
   var CLIP = /^data:audio\/(?:mpeg|mp3|wav);base64,[A-Za-z0-9+/]+=*$/;
   // Words that end in a full stop without ending a sentence.
   var ABBREVIATIONS = ['mr', 'mrs', 'ms', 'dr', 'st', 'jr', 'sr', 'vs', 'etc', 'e.g', 'i.e', 'no', 'mt', 'prof', 'gen', 'capt', 'sgt', 'lt', 'rev',
-    'gov', 'sen', 'rep', 'fig', 'ch', 'sec', 'vol', 'eq', 'ex', 'p', 'pp', 'apt', 'dept'];
-  // Months and street/time/country abbreviations that stay joined before a number or continuation token,
+    'gov', 'sen', 'rep', 'fig', 'ch', 'sec', 'vol', 'eq', 'ex', 'p', 'pp', 'apt', 'dept', 'u.s'];
+  // Months and street/time abbreviations that stay joined before a number or continuation token,
   // while still allowing a genuine sentence end (e.g. "We arrived at 3 p.m. Then we ate.").
-  var NUM_ABBREVIATIONS = ['jan', 'feb', 'mar', 'apr', 'aug', 'sep', 'sept', 'oct', 'nov', 'dec', 'ave', 'blvd', 'rd', 'ln', 'ct', 'u.s', 'a.m', 'p.m'];
+  var NUM_ABBREVIATIONS = ['jan', 'feb', 'mar', 'apr', 'aug', 'sep', 'sept', 'oct', 'nov', 'dec', 'ave', 'blvd', 'rd', 'ln', 'ct', 'a.m', 'p.m'];
 
   function text(value) { return value == null ? '' : String(value); }
   // FNV-1a, as in the other builders: a short name for a text, not a secret.
@@ -76,6 +76,7 @@
             var hRow = { text: hText.slice(0, MAX_SENTENCE_CHARS), heading: hMatch[1].length };
             if (pendingBreak && out.length) {
               hRow.pageBreak = true;
+              hRow.para = true;
               pendingBreak = false;
             } else if (first && pi > 0 && out.length) {
               hRow.para = true;
@@ -92,6 +93,7 @@
             var row = { text: piece };
             if (pendingBreak && out.length) {
               row.pageBreak = true;
+              row.para = true;
               pendingBreak = false;
             } else if (first && pi > 0 && out.length) {
               row.para = true;
@@ -159,6 +161,14 @@
 
   // What a recording is filed under: the sentence as it will be said (spaces tidied).
   function clipKey(sentence) { return text(sentence).replace(/\s+/g, ' ').trim(); }
+  // Spoken text key for a teacher-added custom support (quote + explanation, or explanation alone).
+  function supportSpeechText(sup) {
+    if (!sup || typeof sup !== 'object') return '';
+    var q = clipKey(sup.quote).slice(0, 80);
+    var t = clipKey(sup.text).slice(0, 360);
+    if (!t) return '';
+    return q ? (q + '. ' + t) : t;
+  }
 
   // The sentence with a middle dot at each syllable break of the words the lookup knows ("The kite sailed
   // o.ver the trees", with a raised dot), or '' when no word in it is split. lookup(word in small letters) ->
@@ -170,13 +180,13 @@
   var _ES_VOWELS = 'aeiou\u00e1\u00e9\u00ed\u00f3\u00fa\u00fc';
   var _ES_STRONG = 'aeo\u00e1\u00e9\u00f3';
   var _ES_ACCENTED_WEAK = '\u00ed\u00fa';
-  var _ES_ONSETS = /^(pr|pl|br|bl|tr|dr|cr|cl|gr|gl|fr|fl|ch|ll|rr)$/;
+  var _ES_ONSETS = /^(pr|pl|br|bl|tr|dr|cr|cl|gr|gl|fr|fl|ch|ll|rr|qu|gu)$/;
   var _ES_EXCEPTIONS = {
     subrayar: 'sub|ra|yar', subrayado: 'sub|ra|ya|do', subrogar: 'sub|ro|gar',
     transatlantico: 'trans|at|lan|ti|co', 'transatl\u00e1ntico': 'trans|at|l\u00e1n|ti|co'
   };
   function syllabifySpanish(raw) {
-    if (typeof raw !== 'string' || raw.length < 4) return null;
+    if (typeof raw !== 'string' || raw.length < 3) return null;
     var word = raw.normalize ? raw.normalize('NFC').toLowerCase() : raw.toLowerCase();
     if (!/^[a-z\u00e1\u00e9\u00ed\u00f3\u00fa\u00fc\u00f1]+$/.test(word)) return null;
     if (/[kw]|ph|th|sh|ck|tion$|ing$/.test(word) || !/[aeiou\u00e1\u00e9\u00ed\u00f3\u00fa\u00fc]/.test(word)) return null;
@@ -211,10 +221,118 @@
     return parts.length >= 2 ? parts : null;
   }
 
+  // Compact curated offline Spanish-to-English high-frequency K-12 cognate & gloss dictionary (zero AI).
+  var SPANISH_GLOSSES = {
+    agua: { word: 'agua', pos: 'noun', def: 'water' },
+    aire: { word: 'aire', pos: 'noun', def: 'air' },
+    amigo: { word: 'amigo', pos: 'noun', def: 'friend' },
+    amiga: { word: 'amiga', pos: 'noun', def: 'friend' },
+    animal: { word: 'animal', pos: 'noun', def: 'animal' },
+    'árbol': { word: 'árbol', pos: 'noun', def: 'tree' },
+    bosque: { word: 'bosque', pos: 'noun', def: 'forest; woods' },
+    camino: { word: 'camino', pos: 'noun', def: 'path; road; way' },
+    campo: { word: 'campo', pos: 'noun', def: 'field; countryside' },
+    casa: { word: 'casa', pos: 'noun', def: 'house; home' },
+    cielo: { word: 'cielo', pos: 'noun', def: 'sky; heaven' },
+    ciencia: { word: 'ciencia', pos: 'noun', def: 'science' },
+    ciudad: { word: 'ciudad', pos: 'noun', def: 'city' },
+    clase: { word: 'clase', pos: 'noun', def: 'class; classroom' },
+    color: { word: 'color', pos: 'noun', def: 'color' },
+    comer: { word: 'comer', pos: 'verb', def: 'to eat' },
+    correr: { word: 'correr', pos: 'verb', def: 'to run' },
+    cuerpo: { word: 'cuerpo', pos: 'noun', def: 'body' },
+    'día': { word: 'día', pos: 'noun', def: 'day' },
+    'energía': { word: 'energía', pos: 'noun', def: 'energy' },
+    escuela: { word: 'escuela', pos: 'noun', def: 'school' },
+    estrella: { word: 'estrella', pos: 'noun', def: 'star' },
+    estudiante: { word: 'estudiante', pos: 'noun', def: 'student' },
+    familia: { word: 'familia', pos: 'noun', def: 'family' },
+    flor: { word: 'flor', pos: 'noun', def: 'flower' },
+    fuego: { word: 'fuego', pos: 'noun', def: 'fire' },
+    gato: { word: 'gato', pos: 'noun', def: 'cat' },
+    grande: { word: 'grande', pos: 'adjective', def: 'big; large; great' },
+    historia: { word: 'historia', pos: 'noun', def: 'story; history' },
+    hoja: { word: 'hoja', pos: 'noun', def: 'leaf; sheet of paper' },
+    isla: { word: 'isla', pos: 'noun', def: 'island' },
+    'jardín': { word: 'jardín', pos: 'noun', def: 'garden' },
+    lago: { word: 'lago', pos: 'noun', def: 'lake' },
+    leer: { word: 'leer', pos: 'verb', def: 'to read' },
+    libro: { word: 'libro', pos: 'noun', def: 'book' },
+    lluvia: { word: 'lluvia', pos: 'noun', def: 'rain' },
+    luna: { word: 'luna', pos: 'noun', def: 'moon' },
+    luz: { word: 'luz', pos: 'noun', def: 'light' },
+    madre: { word: 'madre', pos: 'noun', def: 'mother' },
+    maestro: { word: 'maestro', pos: 'noun', def: 'teacher' },
+    maestra: { word: 'maestra', pos: 'noun', def: 'teacher' },
+    mar: { word: 'mar', pos: 'noun', def: 'sea' },
+    'montaña': { word: 'montaña', pos: 'noun', def: 'mountain' },
+    mundo: { word: 'mundo', pos: 'noun', def: 'world' },
+    naturaleza: { word: 'naturaleza', pos: 'noun', def: 'nature' },
+    nieve: { word: 'nieve', pos: 'noun', def: 'snow' },
+    'niño': { word: 'niño', pos: 'noun', def: 'boy; child' },
+    'niña': { word: 'niña', pos: 'noun', def: 'girl; child' },
+    noche: { word: 'noche', pos: 'noun', def: 'night' },
+    nube: { word: 'nube', pos: 'noun', def: 'cloud' },
+    'océano': { word: 'océano', pos: 'noun', def: 'ocean' },
+    padre: { word: 'padre', pos: 'noun', def: 'father' },
+    'pájaro': { word: 'pájaro', pos: 'noun', def: 'bird' },
+    palabra: { word: 'palabra', pos: 'noun', def: 'word' },
+    'pequeño': { word: 'pequeño', pos: 'adjective', def: 'small; little' },
+    'pequeña': { word: 'pequeña', pos: 'adjective', def: 'small; little' },
+    perro: { word: 'perro', pos: 'noun', def: 'dog' },
+    pez: { word: 'pez', pos: 'noun', def: 'fish' },
+    planeta: { word: 'planeta', pos: 'noun', def: 'planet' },
+    planta: { word: 'planta', pos: 'noun', def: 'plant' },
+    pueblo: { word: 'pueblo', pos: 'noun', def: 'town; village' },
+    puente: { word: 'puente', pos: 'noun', def: 'bridge' },
+    'río': { word: 'río', pos: 'noun', def: 'river' },
+    roca: { word: 'roca', pos: 'noun', def: 'rock' },
+    semilla: { word: 'semilla', pos: 'noun', def: 'seed' },
+    sistema: { word: 'sistema', pos: 'noun', def: 'system' },
+    sol: { word: 'sol', pos: 'noun', def: 'sun' },
+    sonido: { word: 'sonido', pos: 'noun', def: 'sound' },
+    tiempo: { word: 'tiempo', pos: 'noun', def: 'time; weather' },
+    tierra: { word: 'tierra', pos: 'noun', def: 'earth; land; soil' },
+    viento: { word: 'viento', pos: 'noun', def: 'wind' },
+    vida: { word: 'vida', pos: 'noun', def: 'life' },
+    'volcán': { word: 'volcán', pos: 'noun', def: 'volcano' },
+    zorro: { word: 'zorro', pos: 'noun', def: 'fox' },
+  };
+  var _ES_GLOSS_FOLDED = Object.create(null);
+  function _foldEs(s) {
+    return String(s || '').normalize('NFC').toLowerCase()
+      .replace(/[\u00e1]/g, 'a').replace(/[\u00e9]/g, 'e').replace(/[\u00ed]/g, 'i')
+      .replace(/[\u00f3]/g, 'o').replace(/[\u00fa\u00fc]/g, 'u');
+  }
+  Object.keys(SPANISH_GLOSSES).forEach(function (k) {
+    _ES_GLOSS_FOLDED[_foldEs(k)] = SPANISH_GLOSSES[k];
+  });
+  function esGlossFor(raw) {
+    if (typeof raw !== 'string') return null;
+    var w = raw.normalize ? raw.normalize('NFC').toLowerCase().trim() : raw.toLowerCase().trim();
+    w = w.replace(/^[^a-z\u00e1\u00e9\u00ed\u00f3\u00fa\u00fc\u00f1]+|[^a-z\u00e1\u00e9\u00ed\u00f3\u00fa\u00fc\u00f1]+$/g, '');
+    if (!w) return null;
+    if (Object.prototype.hasOwnProperty.call(SPANISH_GLOSSES, w)) return SPANISH_GLOSSES[w];
+    var f = _foldEs(w);
+    if (_ES_GLOSS_FOLDED[f]) return _ES_GLOSS_FOLDED[f];
+    if (w.length > 4 && /es$/.test(w)) {
+      var stemEs = _foldEs(w.slice(0, -2));
+      if (_ES_GLOSS_FOLDED[stemEs]) return _ES_GLOSS_FOLDED[stemEs];
+    }
+    if (w.length > 3 && /s$/.test(w)) {
+      var stemS = _foldEs(w.slice(0, -1));
+      if (_ES_GLOSS_FOLDED[stemS]) return _ES_GLOSS_FOLDED[stemS];
+    }
+    return null;
+  }
+
   function syllableText(sentence, lookup, opts) {
     var plain = clipKey(sentence), split = 0;
-    if (typeof lookup !== 'function' || !plain || plain.indexOf(DOT) >= 0) return '';
-    var allowUnicode = !!(opts && opts.spanish);
+    var langOpt = (opts && typeof opts === 'object' && typeof opts.lang === 'string') ? opts.lang : (typeof opts === 'string' ? opts : '');
+    var isEsOpt = !!(opts && typeof opts === 'object' && opts.spanish) || /^es(?:-|$)/i.test(langOpt);
+    var fn = typeof lookup === 'function' ? lookup : (isEsOpt ? syllabifySpanish : null);
+    if (typeof fn !== 'function' || !plain || plain.indexOf(DOT) >= 0) return '';
+    var allowUnicode = isEsOpt;
     var re = allowUnicode ? /[A-Za-z\u00C0-\u024F]{3,}/g : /[A-Za-z]{3,}/g;
     var out = plain.replace(re, function (word, at) {
       var prev = plain.charAt(at - 1), next = plain.charAt(at + word.length);
@@ -229,7 +347,7 @@
       }
       var low = word.toLowerCase();
       var parts = null;
-      try { parts = lookup(low); } catch (_) { parts = null; }
+      try { parts = fn(low); } catch (_) { parts = null; }
       if (!Array.isArray(parts) || parts.length < 2 || parts.some(function (part) { return typeof part !== 'string' || !part; }) || parts.join('') !== low) return word;
       var pieces = [], from = 0;
       parts.forEach(function (part) { pieces.push(word.slice(from, from + part.length)); from += part.length; });
@@ -237,6 +355,12 @@
       return pieces.join(DOT);
     });
     return split ? out : '';
+  }
+  function syllabifyLine(sentence, lookupOrLang, opts) {
+    if (typeof lookupOrLang === 'string') {
+      return syllableText(sentence, /^es(?:-|$)/i.test(lookupOrLang) ? syllabifySpanish : null, { lang: lookupOrLang });
+    }
+    return syllableText(sentence, lookupOrLang, opts);
   }
 
   // Deterministic, zero-AI English Parts of Speech tagger for content words:
@@ -246,6 +370,9 @@
   var _posSet = function (list) { var m = Object.create(null); list.split(' ').forEach(function (w) { if (w) m[w] = true; }); return m; };
   var POS_DET = _posSet('a an the this that these those my your his her its our their some any every each no both few many several all another such what which whose');
   var POS_FUNC = _posSet('i me you he him she it we us they them myself yourself himself herself itself ourselves themselves who whom whose that which what whoever whatever in on at by for with about against between into through during before after above below to from up down out off over under again further then once of as until while because although though since unless whereas whether if or nor but and so yet than per via upon onto within without among around across behind beside beyond near toward towards throughout despite except plus like unlike am is are was were be been being have has had do does did will would shall should can could may might must let ought not no yes oh ah hey hello hi well please thanks');
+  var POS_PRON = _posSet('i me you he him she her it we us they them myself yourself himself herself itself ourselves themselves mine yours hers ours theirs who whom whoever whomever someone somebody something anyone anybody anything everyone everybody everything nobody nothing');
+  var POS_PREP = _posSet('in on at by for with about against between into through during before after above below to from up down out off over under of as until upon onto within without among around across behind beside beyond near toward towards throughout despite except per via underneath beneath alongside amid amidst');
+  var POS_CONJ = _posSet('and but or nor so yet because although though since unless whereas whether while if whenever wherever than');
   var POS_AUX = _posSet('am is are was were be been being have has had do does did will would shall should can could may might must');
   var POS_SUBJ = _posSet('i you he she it we they who');
   var POS_DEG = _posSet('very so too quite rather really almost nearly pretty fairly extremely super quite just');
@@ -265,15 +392,28 @@
     }
     return out;
   }
-  function classifyWord(raw, prevLower, nextLower, isFirst, posLookup) {
+  function classifyWord(raw, prevLower, nextLower, isFirst, posLookup, extended) {
     var w = raw.toLowerCase();
-    if (!w || w.length < 2) return '';
+    if (!w) return '';
+    if (extended && w === 'i') return 'p';
+    if (w.length < 2) return '';
     if (w.indexOf("'") >= 0 || w.indexOf('\u2019') >= 0) {
       if (/(?:'|\u2019)s$/.test(w)) {
         var base = w.slice(0, -2);
         return (base && !POS_FUNC[base] && !POS_DET[base]) ? 'n' : '';
       }
       return '';
+    }
+    if (extended) {
+      if (POS_PRON[w]) {
+        if (w === 'her' && nextLower && !POS_FUNC[nextLower] && !POS_VERBS[nextLower] && !POS_CONJ[nextLower] && !POS_PREP[nextLower]) return '';
+        return 'p';
+      }
+      if (POS_CONJ[w]) {
+        if ((w === 'before' || w === 'after' || w === 'until' || w === 'since') && nextLower && (POS_DET[nextLower] || POS_PRON[nextLower] || POS_NOUNS[nextLower])) return 'r';
+        return 'c';
+      }
+      if (POS_PREP[w]) return 'r';
     }
     if (POS_DET[w] || POS_FUNC[w]) return '';
     if (POS_ADVS[w]) {
@@ -326,9 +466,12 @@
     if (POS_ADJS[w]) return 'j';
     return '';
   }
-  function posText(sentence, posLookup) {
+  function posText(sentence, posLookup, opts) {
     var plain = clipKey(sentence);
     if (!plain) return '';
+    var lookupFn = typeof posLookup === 'function' ? posLookup : null;
+    var optObj = (posLookup && typeof posLookup === 'object') ? posLookup : opts;
+    var extended = !!(optObj === true || (optObj && (optObj.extended === true || optObj.posExtended === true)));
     var tokens = [];
     var re = /[A-Za-z]+(?:['\u2019][A-Za-z]+)*/g, m;
     while ((m = re.exec(plain))) tokens.push(m[0]);
@@ -337,19 +480,24 @@
     for (var i = 0; i < tokens.length; i++) {
       var prev = i > 0 ? tokens[i - 1].toLowerCase() : '';
       var next = i + 1 < tokens.length ? tokens[i + 1].toLowerCase() : '';
-      var tag = classifyWord(tokens[i], prev, next, i === 0, posLookup);
+      var tag = classifyWord(tokens[i], prev, next, i === 0, lookupFn, extended);
       if (tag) tags.push(i + ':' + tag);
     }
     return tags.join(',');
   }
 
   // Deterministic, zero-AI audio-energy valley snapper (same RMS envelope math as word_timing_module.js).
-  // Returns monotonic per-word end positions normalized to 1..1000 matching sentence.split(/\s+/).filter(Boolean).
+  // Returns monotonic per-word end positions normalized to 1..1000 matching the read_along word tokenizer.
   var MAX_TIMING_SAMPLES = 48000 * 120;
+  var WORD_TOKEN_RE = /[A-Za-z\u00C0-\u024F\u00b7]+(?:['\u2019][A-Za-z\u00C0-\u024F\u00b7]+)*/g;
   function computeWordTimings(sentence, samples, sampleRate) {
     var plain = clipKey(sentence);
     if (!plain || !samples || !samples.length || samples.length > MAX_TIMING_SAMPLES || !(sampleRate > 0) || !isFinite(sampleRate)) return null;
-    var words = plain.split(/\s+/).filter(Boolean);
+    var words = [], wm;
+    WORD_TOKEN_RE.lastIndex = 0;
+    while ((wm = WORD_TOKEN_RE.exec(plain))) {
+      words.push({ text: wm[0], end: wm.index + wm[0].length });
+    }
     if (!words.length) return null;
     if (words.length === 1) return [1000];
     var totalMs = (samples.length / sampleRate) * 1000;
@@ -378,10 +526,10 @@
     if (first < 0) { first = 0; last = frames.length - 1; }
     var startMs = first * hopMs, endMs = Math.min(totalMs, (last + 1) * hopMs);
     var speechMs = Math.max(40, endMs - startMs);
-    var weights = words.map(function (w) {
-      var tail = w.replace(/["'\u201d\u2019)\]]*$/, '').slice(-1);
+    var weights = words.map(function (entry) {
+      var tail = plain.slice(entry.end, entry.end + 3).replace(/^["'\u201d\u2019)\]]+/, '').charAt(0);
       var bonus = /[.!?]/.test(tail) ? 5 : (/[,;:]/.test(tail) ? 3 : 0);
-      return Math.max(2, w.length) + bonus;
+      return Math.max(2, entry.text.replace(/\u00b7/g, '').length) + bonus;
     });
     var totalW = weights.reduce(function (a, b) { return a + b; }, 0) || 1;
     var snap = function (ms) {
@@ -470,12 +618,87 @@
     }
     return true;
   }
+  // Wave 6 shared schema sanitizers (matches word_sounds_take_home_loader.js & read_along.js verbatim).
+  var POS_SCHEMES = ['default', 'fitzgerald', 'montessori', 'okabe', 'mono', 'custom'];
+  var POS_STYLES = ['underline', 'pill', 'tags'];
+  var POS_CODES = ['n', 'v', 'j', 'a', 'p', 'r', 'c'];
+  var RULER_TINTS = ['yellow', 'sky', 'rose', 'mint', 'line'];
+  var HEX_COLOR_RE = /^#[0-9a-f]{6}$/i;
+  var POS_EXT_RE = /^(?:\d{1,3}:[nvjaprc](?:,\d{1,3}:[nvjaprc])*)$/;
+
+  function cleanPosScheme(v) {
+    var s = typeof v === 'string' ? v.trim().toLowerCase() : '';
+    return POS_SCHEMES.indexOf(s) >= 0 ? s : 'default';
+  }
+  function cleanPosStyle(v) {
+    var s = typeof v === 'string' ? v.trim().toLowerCase() : '';
+    return POS_STYLES.indexOf(s) >= 0 ? s : 'underline';
+  }
+  function cleanPosPalette(raw) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    var out = {}, count = 0;
+    POS_CODES.forEach(function (code) {
+      var val = Object.prototype.hasOwnProperty.call(raw, code) ? raw[code] : '';
+      if (typeof val === 'string' && HEX_COLOR_RE.test(val.trim())) {
+        out[code] = val.trim().toLowerCase();
+        count++;
+      }
+    });
+    return count ? out : null;
+  }
+  function cleanDefaultTools(raw) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    var out = {}, count = 0;
+    var bounds = { size: [0, 3], colors: [0, 7], spacing: [0, 2], font: [0, 6], focus: [0, 3], bold: [0, 1], motion: [0, 1], speed: [0, 4] };
+    Object.keys(bounds).forEach(function (k) {
+      if (!Object.prototype.hasOwnProperty.call(raw, k) || raw[k] === '' || raw[k] == null) return;
+      var n = Math.floor(Number(raw[k]));
+      if (isFinite(n) && n >= bounds[k][0] && n <= bounds[k][1]) {
+        out[k] = n;
+        count++;
+      }
+    });
+    if (typeof raw.rulerTint === 'string') {
+      var rt = raw.rulerTint.trim().toLowerCase();
+      if (RULER_TINTS.indexOf(rt) >= 0) { out.rulerTint = rt; count++; }
+    }
+    return count ? out : null;
+  }
+  function cleanQuestions(raw) {
+    if (!Array.isArray(raw) || !raw.length) return [];
+    var out = [];
+    for (var i = 0; i < raw.length && out.length < 6; i++) {
+      var q = raw[i];
+      if (!q || typeof q !== 'object' || Array.isArray(q)) continue;
+      var prompt = clipKey(q.prompt).slice(0, 240);
+      if (!prompt) continue;
+      var id = (typeof q.id === 'string' && /^[A-Za-z0-9_-]{1,40}$/.test(q.id.trim())) ? q.id.trim() : ('q' + (out.length + 1));
+      var kind = q.kind === 'mc' ? 'mc' : 'open';
+      if (kind === 'mc') {
+        var rawChoices = Array.isArray(q.choices) ? q.choices : [];
+        var choices = [];
+        for (var ci = 0; ci < rawChoices.length && choices.length < 4; ci++) {
+          var c = clipKey(rawChoices[ci]).slice(0, 140);
+          if (c) choices.push(c);
+        }
+        if (choices.length < 2) continue;
+        var ans = Math.floor(Number(q.answer));
+        if (!isFinite(ans) || ans < 0 || ans >= choices.length) ans = 0;
+        out.push({ id: id, prompt: prompt, kind: 'mc', choices: choices, answer: ans });
+      } else {
+        out.push({ id: id, prompt: prompt, kind: 'open' });
+      }
+    }
+    return out;
+  }
+
   // Builds a compact per-page glossary from an offline dictionary lookup(word) -> { word, pos, def, example } | null
   // and optional offline picture lookup(word) -> { uri, label, set, credit } | null.
-  function glossaryFor(rows, lookup, picLookup, addImage) {
+  function glossaryFor(rows, lookup, picLookup, addImage, dictSeen, opts) {
     var hasDict = typeof lookup === 'function';
     var hasPic = typeof picLookup === 'function' && typeof addImage === 'function';
     if ((!hasDict && !hasPic) || !Array.isArray(rows)) return null;
+    var allowUnicode = !!(opts && opts.spanish);
     var out = {}, count = 0;
     var hasOwn = Object.prototype.hasOwnProperty;
     var addPhraseEntry = function (phrase) {
@@ -509,11 +732,11 @@
           }
         }
       }
-      var re = /[A-Za-z]{3,}/g, m;
+      var re = allowUnicode ? /[A-Za-z\u00C0-\u024F]{3,}/g : /[A-Za-z]{3,}/g, m;
       while ((m = re.exec(plain))) {
         if (count >= 120) break;
         var k = m[0].toLowerCase();
-        if (hasOwn.call(out, k) || hasOwn.call(POS_DET, k) || hasOwn.call(POS_FUNC, k)) continue;
+        if (hasOwn.call(out, k) || (!allowUnicode && (hasOwn.call(POS_DET, k) || hasOwn.call(POS_FUNC, k)))) continue;
         var found = null;
         if (hasDict) { try { found = lookup(k); } catch (_) { found = null; } }
         var hasDef = !!(found && typeof found === 'object' && typeof found.def === 'string' && found.def.trim());
@@ -526,6 +749,7 @@
           d: hasDef ? text(found.def).replace(/\s+/g, ' ').trim().slice(0, 240) : ('Picture of ' + text((pic && pic.label) || k).replace(/\s+/g, ' ').trim().slice(0, 40)),
         };
         if (hasDef) {
+          if (dictSeen && typeof dictSeen === 'object') dictSeen[k] = true;
           var p = text(found.pos).replace(/\s+/g, ' ').trim().slice(0, 24);
           var ex = text(found.example).replace(/\s+/g, ' ').trim().slice(0, 200);
           if (p) entry.p = p;
@@ -559,10 +783,10 @@
     var loader = o.loader;
     if (!loader || !loader.CHECK_ADAPTERS || !loader.CHECK_ADAPTERS[ACTIVITY]) throw new Error('lessonFromReadAlong needs loader (AlloWordSoundsTakeHome, with the read-along activity)');
     var adapter = loader.CHECK_ADAPTERS[ACTIVITY];
-    var sentences = Array.isArray(o.sentences) ? o.sentences.map(function (row) {
+    var sentences = Array.isArray(o.sentences) ? o.sentences.map(function (row, idx) {
       var out = { text: clipKey(row && row.text).slice(0, MAX_SENTENCE_CHARS).trim() };
       if (row && row.para === true) out.para = true;
-      if (row && row.pageBreak === true) out.pageBreak = true;
+      if (row && row.pageBreak === true) { out.pageBreak = true; if (idx > 0) out.para = true; }
       if (row && (row.heading === 1 || row.heading === 2 || row.heading === 3)) out.heading = row.heading;
       return out;
     }).filter(function (row) { return row.text; }).slice(0, MAX_SENTENCES)
@@ -570,10 +794,17 @@
     if (!sentences.length) throw new Error('There is no passage yet.');
     var lang = cleanLang(o.lang || 'en');
     var isEn = /^en(?:-|$)/i.test(lang);
+    var isEs = /^es(?:-|$)/i.test(lang);
     var pageMode = cleanPageMode(o.pageMode);
+    var posExtended = isEn && o.posExtended === true;
+    var posScheme = cleanPosScheme(o.posScheme);
+    var posStyle = cleanPosStyle(o.posStyle);
+    var posPalette = cleanPosPalette(o.posPalette);
+    var defaultTools = cleanDefaultTools(o.defaultTools);
+    var questions = cleanQuestions(o.questions);
     var posLookup = isEn && typeof o.posLookup === 'function' ? o.posLookup : null;
-    var posFn = !isEn ? null : (typeof o.partsOfSpeech === 'function' ? o.partsOfSpeech : (o.partsOfSpeech === true ? function (s) { return posText(s, posLookup); } : null));
-    var dictFn = isEn && typeof o.dictionary === 'function' ? o.dictionary : null;
+    var posFn = !isEn ? null : (typeof o.partsOfSpeech === 'function' ? o.partsOfSpeech : (o.partsOfSpeech === true ? function (s) { return posText(s, posLookup, { extended: posExtended }); } : null));
+    var dictFn = isEn && typeof o.dictionary === 'function' ? o.dictionary : (isEs && (typeof o.dictionary === 'function' ? o.dictionary : (o.dictionary === true || o.esGloss === true ? esGlossFor : null)));
     var picFn = isEn && typeof o.pictures === 'function' ? o.pictures : null;
     var studentMic = o.studentMic === true;
     var deviceVoice = o.deviceVoice === true;
@@ -581,11 +812,13 @@
     var clips = o.clips && typeof o.clips === 'object' ? o.clips : {};
     var timingsIn = o.timings && typeof o.timings === 'object' ? o.timings : {};
     var sourcesIn = o.clipSources && typeof o.clipSources === 'object' ? o.clipSources : {};
-    var isEs = /^es(?:-|$)/i.test(lang);
     var audio = {}, images = {}, picIdOf = Object.create(null), picNext = 0, picSets = Object.create(null), picCredits = [], idOf = Object.create(null), teacherClips = [], recorded = 0, teacherRecorded = 0, computerRecorded = 0, next = 0, lookup = isEn && typeof o.syllables === 'function' ? o.syllables : (isEs && o.syllables !== false ? syllabifySpanish : null), sylOpts = isEs ? { spanish: true } : null, split = 0, example = '', posCount = 0, dictSeen = Object.create(null), timedCount = 0;
+    var supIdOf = Object.create(null), supNext = 0, supTeacherClips = [], supCount = 0, supRecorded = 0, supTeacherRecorded = 0, supComputerRecorded = 0;
+    var glossaryAudioIn = o.glossaryAudio && typeof o.glossaryAudio === 'object' ? o.glossaryAudio : {};
+    var customSupportsIn = Array.isArray(o.customSupports) ? o.customSupports : [];
     var addImage = function (wordKey, uri, setName, creditNote) {
       if (picIdOf[wordKey]) return picIdOf[wordKey];
-      if (picNext >= 40) return '';
+      if (picNext >= 60) return '';
       var pid = 'p' + (++picNext);
       picIdOf[wordKey] = pid;
       images[pid] = uri;
@@ -593,6 +826,16 @@
       var cleanCredit = text(creditNote).replace(/https?:\/\//gi, '').replace(/\s+/g, ' ').trim().slice(0, 220);
       if (cleanCredit && picCredits.indexOf(cleanCredit) < 0 && picCredits.length < 20) picCredits.push(cleanCredit);
       return pid;
+    };
+    var supportClipFor = function (key, rawUri, rawSrc) {
+      var uri = typeof rawUri === 'string' ? rawUri : '';
+      if (!uri) return { id: '', source: '' };
+      if (uri.length > MAX_CLIP_CHARS || !CLIP.test(uri)) throw new Error('A recording must be an audio file.');
+      var src = rawSrc === 'teacher' ? 'teacher' : 'computer';
+      var cacheKey = key || ('u:' + fnv(uri) + ':' + uri.length);
+      if (!supIdOf[cacheKey]) { supIdOf[cacheKey] = 'g' + (++supNext); audio[supIdOf[cacheKey]] = uri; }
+      if (src === 'teacher' && supTeacherClips.indexOf(supIdOf[cacheKey]) < 0) supTeacherClips.push(supIdOf[cacheKey]);
+      return { id: supIdOf[cacheKey], source: src };
     };
     var clipFor = function (sentence) {
       var key = clipKey(sentence), raw = Object.prototype.hasOwnProperty.call(clips, key) ? clips[key] : null;
@@ -606,6 +849,53 @@
     };
     var title = text(o.title).replace(/\s+/g, ' ').trim().slice(0, 120) || 'Read along';
     var pages = pagesOf(sentences, { pageMode: pageMode });
+    var pageOffsets = [];
+    var cursorLine = 0;
+    pages.forEach(function (pg) { pageOffsets.push(cursorLine); cursorLine += pg.length; });
+    var normalizedSupportsByPage = pages.map(function () { return []; });
+    customSupportsIn.slice(0, 120).forEach(function (sr, idx) {
+      if (!sr || typeof sr !== 'object') return;
+      var sText = clipKey(sr.text).slice(0, 360);
+      var globalLine = Math.floor(Number(sr.line));
+      if (!sText || !isFinite(globalLine) || globalLine < 0 || globalLine >= sentences.length) return;
+      // Locate which page owns globalLine
+      var pIdx = 0;
+      for (var pi = 0; pi < pages.length; pi++) {
+        if (globalLine >= pageOffsets[pi] && globalLine < pageOffsets[pi] + pages[pi].length) { pIdx = pi; break; }
+      }
+      var localLine = globalLine - pageOffsets[pIdx];
+      var sQuote = clipKey(sr.quote).slice(0, 80);
+      var sOcc = Math.floor(Number(sr.occ));
+      var supObj = {
+        id: (typeof sr.id === 'string' && /^[A-Za-z0-9_-]{1,40}$/.test(sr.id)) ? sr.id : ('sup' + (idx + 1)),
+        line: localLine,
+        text: sText,
+      };
+      if (sQuote) {
+        supObj.quote = sQuote;
+        if (isFinite(sOcc) && sOcc > 0 && sOcc <= 20) supObj.occ = sOcc;
+      }
+      var imgUri = typeof sr.imgUri === 'string' ? sr.imgUri : (typeof sr.img === 'string' && sr.img.indexOf('data:image/') === 0 ? sr.img : '');
+      if (imgUri && validImageUri(imgUri)) {
+        var pid = addImage('sup:' + supObj.id + ':' + fnv(imgUri), imgUri, sr.imgSet || 'teacher', sr.imgCredit || '');
+        if (pid) {
+          supObj.img = pid;
+          var sAlt = clipKey(sr.alt || sQuote || 'Teacher support picture').slice(0, 60);
+          if (sAlt) supObj.alt = sAlt;
+        }
+      }
+      var aUri = typeof sr.audioUri === 'string' ? sr.audioUri : '';
+      if (aUri) {
+        var gotSup = supportClipFor(supportSpeechText(supObj), aUri, sr.audioSource);
+        if (gotSup.id) {
+          supObj.audio = gotSup.id;
+          supRecorded++;
+          if (gotSup.source === 'teacher') supTeacherRecorded++; else supComputerRecorded++;
+        }
+      }
+      normalizedSupportsByPage[pIdx].push(supObj);
+      supCount++;
+    });
     var items = pages.map(function (page, i) {
       var raw = { lines: page.map(function (row) {
         var got = clipFor(row.text);
@@ -631,34 +921,91 @@
       }), page: i + 1, pages: pages.length, lang: lang };
       if (pageMode !== 'auto') raw.pageMode = pageMode;
       if (simpleBar) raw.simpleBar = true;
-      if (dictFn || picFn) {
-        var gloss = glossaryFor(page, dictFn, picFn, addImage);
-        if (gloss) {
-          raw.glossary = gloss;
-          Object.keys(gloss).forEach(function (k) { dictSeen[k] = true; });
-        }
+      if (posFn) {
+        if (posScheme !== 'default') raw.posScheme = posScheme;
+        if (posStyle !== 'underline') raw.posStyle = posStyle;
+        if (posScheme === 'custom' && posPalette) raw.posPalette = posPalette;
+      }
+      if (i === pages.length - 1 && questions.length) raw.questions = questions;
+      var pageGloss = (dictFn || picFn) ? glossaryFor(page, dictFn, picFn, addImage, dictSeen, sylOpts) : null;
+      var pageSups = normalizedSupportsByPage[i];
+      if (pageSups && pageSups.length) {
+        raw.supports = pageSups;
+        // Also mirror clean 1-3 word quoted supports into pageGloss so tapping the word in Word meanings shows + reads them.
+        pageSups.forEach(function (sup) {
+          if (!sup.quote) return;
+          var qKey = sup.quote.toLowerCase().replace(/\s+/g, ' ').trim();
+          if (!/^[a-z]{2,24}(?: [a-z]{2,24}){0,2}$/.test(qKey) || qKey.length > 40) return;
+          if (!pageGloss) pageGloss = {};
+          var gEntry = { w: sup.quote.slice(0, 40), d: sup.text.slice(0, 240), c: true };
+          if (sup.img) { gEntry.img = sup.img; if (sup.alt) gEntry.alt = sup.alt; }
+          if (sup.audio) gEntry.a = sup.audio;
+          pageGloss[qKey] = gEntry;
+        });
+      }
+      if (pageGloss) {
+        Object.keys(pageGloss).forEach(function (gk) {
+          if (pageGloss[gk].a || !Object.prototype.hasOwnProperty.call(glossaryAudioIn, gk)) return;
+          var rawGa = glossaryAudioIn[gk];
+          var gaUri = typeof rawGa === 'string' ? rawGa : (rawGa && typeof rawGa === 'object' ? rawGa.uri : '');
+          var gaSrc = rawGa && typeof rawGa === 'object' ? rawGa.source : 'computer';
+          if (gaUri) {
+            var gotGa = supportClipFor('gloss:' + gk + ':' + pageGloss[gk].d, gaUri, gaSrc);
+            if (gotGa.id) {
+              pageGloss[gk].a = gotGa.id;
+              supRecorded++;
+              if (gotGa.source === 'teacher') supTeacherRecorded++; else supComputerRecorded++;
+            }
+          }
+        });
+        raw.glossary = pageGloss;
       }
       var made = adapter.prepare(raw);
       if (!made || !made.item) {
         throw new Error('Page ' + (i + 1) + ' cannot be used: ' + (made && made.missing ? made.missing.join(', ') : 'no reason given'));
       }
       var n = (i < 9 ? '0' : '') + (i + 1);
-      return Object.assign({ id: ACTIVITY + '-' + n }, made.item);
+      var finalItem = Object.assign({ id: ACTIVITY + '-' + n }, made.item);
+      if (raw.posScheme && !finalItem.posScheme) finalItem.posScheme = raw.posScheme;
+      if (raw.posStyle && !finalItem.posStyle) finalItem.posStyle = raw.posStyle;
+      if (raw.posPalette && !finalItem.posPalette) finalItem.posPalette = raw.posPalette;
+      if (raw.questions && !finalItem.questions) finalItem.questions = raw.questions;
+      if (posExtended && Array.isArray(finalItem.lines) && Array.isArray(raw.lines)) {
+        for (var li = 0; li < finalItem.lines.length; li++) {
+          var rawPos = raw.lines[li] && raw.lines[li].pos;
+          if (rawPos && !finalItem.lines[li].pos && rawPos.length <= 400 && POS_EXT_RE.test(rawPos)) {
+            finalItem.lines[li].pos = rawPos;
+          }
+        }
+      }
+      return finalItem;
     });
     var lesson = { schema: LESSON_SCHEMA, player: PLAYER, lessonId: 'read-along-' + fnv(sentences.map(function (row) { return row.text; }).join('\n')), revision: '', language: lang, title: title, showLetters: false,
       mode: 'practice', activityTitles: {}, blocks: [{ activity: ACTIVITY, items: items }], feedback: { correct: [], retry: null }, audio: audio, images: images, submit: null };
     if (studentMic) lesson.studentMic = true;
     if (deviceVoice) lesson.deviceVoice = true;
+    if (defaultTools) lesson.defaultTools = defaultTools;
     lesson.activityTitles[ACTIVITY] = adapter.title;
-    lesson.revision = 'r' + fnv(JSON.stringify([lesson.title, lesson.blocks, Object.keys(audio).map(function (id) { return audio[id].length; }), Object.keys(images).map(function (id) { return images[id].length; }), studentMic ? 1 : 0, deviceVoice ? 1 : 0, simpleBar ? 1 : 0, lang]));
+    lesson.revision = 'r' + fnv(JSON.stringify([lesson.title, lesson.blocks, Object.keys(audio).map(function (id) { return audio[id].length; }), Object.keys(images).map(function (id) { return images[id].length; }), studentMic ? 1 : 0, deviceVoice ? 1 : 0, simpleBar ? 1 : 0, lang, defaultTools || null, posScheme, posStyle, posPalette || null, posExtended ? 1 : 0, questions.length ? questions : null]));
     var dictCount = Object.keys(dictSeen).length;
     var picCount = Object.keys(images).length;
     return { lesson: lesson, sentences: sentences.length, pages: pages.length, pageMode: pageMode, lang: lang, recorded: recorded, missing: sentences.length - recorded,
       teacherRecorded: teacherRecorded, computerRecorded: computerRecorded, teacherClips: teacherClips, voice: text(o.voice).slice(0, 60),
       syllables: split ? { sentences: split, example: example, source: (text(o.syllableSource) || (isEs ? 'Spanish orthographic syllable rules (on-device)' : '')).replace(/\s+/g, ' ').trim().slice(0, 300) } : null,
-      partsOfSpeech: posCount ? { sentences: posCount, dictionaryBacked: !!posLookup } : null,
-      dictionary: dictCount ? { words: dictCount, source: text(o.dictionarySource).replace(/\s+/g, ' ').trim().slice(0, 300) } : null,
+      partsOfSpeech: posCount ? { sentences: posCount, dictionaryBacked: !!posLookup, extended: posExtended, scheme: posScheme, style: posStyle, palette: posScheme === 'custom' ? posPalette : null } : null,
+      posScheme: posFn ? posScheme : 'default',
+      posStyle: posFn ? posStyle : 'underline',
+      posPalette: (posFn && posScheme === 'custom') ? posPalette : null,
+      posExtended: posExtended,
+      defaultTools: defaultTools,
+      questions: questions,
+      dictionary: dictCount ? { words: dictCount, source: (text(o.dictionarySource) || (isEs ? 'Built-in Spanish-English K-12 glossary (on-device)' : '')).replace(/\s+/g, ' ').trim().slice(0, 300) } : null,
       pictures: picCount ? { count: picCount, sets: Object.keys(picSets), credits: picCredits } : null,
+      customSupports: supCount,
+      supportRecordings: supRecorded,
+      supportTeacherRecorded: supTeacherRecorded,
+      supportComputerRecorded: supComputerRecorded,
+      supportTeacherClips: supTeacherClips,
       timingsCount: timedCount,
       studentMic: studentMic,
       deviceVoice: deviceVoice,
@@ -724,6 +1071,16 @@
         made.pictures.credits.forEach(function (c) { if (c) credits.push('Picture credit: ' + c); });
       }
     }
+    if (made.customSupports > 0) {
+      credits.push('Teacher notes & supports: ' + made.customSupports + ' custom support' + (made.customSupports === 1 ? '' : 's') + ' written by the teacher.');
+    }
+    if (made.supportRecordings > 0) {
+      var stRec = Number(made.supportTeacherRecorded) || 0;
+      var scRec = Number(made.supportComputerRecorded) || 0;
+      if (stRec > 0 && scRec === 0) credits.push('Support recordings: recorded by the teacher on their device.');
+      else if (stRec > 0 && scRec > 0) credits.push('Support recordings: ' + stRec + ' recorded by the teacher and ' + scRec + ' made ahead of time with Kokoro-82M text-to-speech (voice ' + voice + ').');
+      else credits.push('Support recordings: made ahead of time with Kokoro-82M text-to-speech (voice ' + voice + '), a machine voice.');
+    }
     var htmlLabels = { intro: intro, about_never: aboutNever };
     if (lang !== 'en') htmlLabels.lang = lang;
     if (isRtlLang(lang)) htmlLabels.dir = 'rtl';
@@ -734,9 +1091,19 @@
     if (made.partsOfSpeech) readAlongMeta.sentencesWithPos = made.partsOfSpeech.sentences;
     if (made.dictionary) readAlongMeta.dictionaryWords = made.dictionary.words;
     if (made.pictures && made.pictures.count) readAlongMeta.pictureWords = made.pictures.count;
+    if (made.customSupports > 0) readAlongMeta.customSupports = made.customSupports;
+    if (made.supportRecordings > 0) readAlongMeta.supportRecordings = made.supportRecordings;
+    if (made.supportTeacherRecorded > 0 && made.supportComputerRecorded > 0 && Array.isArray(made.supportTeacherClips) && made.supportTeacherClips.length) {
+      readAlongMeta.supportTeacherClips = made.supportTeacherClips.slice();
+    }
     if (studentMic) readAlongMeta.studentMic = true;
     if (deviceVoice) readAlongMeta.deviceVoice = true;
     if (made.simpleBar) readAlongMeta.simpleBar = true;
+    if (made.posScheme && made.posScheme !== 'default') readAlongMeta.posScheme = made.posScheme;
+    if (made.posStyle && made.posStyle !== 'underline') readAlongMeta.posStyle = made.posStyle;
+    if (made.posExtended) readAlongMeta.posExtended = true;
+    if (made.defaultTools) readAlongMeta.defaultTools = true;
+    if (Array.isArray(made.questions) && made.questions.length) readAlongMeta.questions = made.questions.length;
     if (teacherRec > 0 && computerRec > 0 && Array.isArray(made.teacherClips) && made.teacherClips.length) readAlongMeta.teacherClips = made.teacherClips.slice();
     html = withManifest(html, {
       readAlong: readAlongMeta,
@@ -758,20 +1125,52 @@
     var raMeta = manifest.readAlong && typeof manifest.readAlong === 'object' ? manifest.readAlong : {};
     var items = Array.isArray(lesson.blocks[0].items) ? lesson.blocks[0].items : [];
     var audio = lesson.audio && typeof lesson.audio === 'object' ? lesson.audio : {};
+    var images = lesson.images && typeof lesson.images === 'object' ? lesson.images : {};
     var speechMade = String((manifest.speech && manifest.speech.recordings && manifest.speech.recordings.made) || '');
     var voiceMatch = /\(voice ([a-z0-9_]+)\)/i.exec(speechMade);
     var voice = voiceMatch ? voiceMatch[1] : '';
     var teacherOnly = /^recorded by the teacher/i.test(speechMade) && !/Kokoro/i.test(speechMade);
     var teacherClipIds = Array.isArray(raMeta.teacherClips) ? raMeta.teacherClips : null;
+    var supTeacherClipIds = Array.isArray(raMeta.supportTeacherClips) ? raMeta.supportTeacherClips : null;
     var savedMode = raMeta.pageMode === 'scroll' || raMeta.pageMode === 'custom' ? raMeta.pageMode : 'auto';
     var savedLang = cleanLang(raMeta.lang || lesson.language || 'en');
     var sentences = [];
     var clips = {};
     var clipSources = {};
+    var timings = {};
+    var customSupports = [];
+    var glossaryAudio = {};
     var hasPos = false;
-    var hasGlossary = false;
+    var hasExtendedPos = false;
+    var hasDefEntries = false;
+    var savedPosScheme = cleanPosScheme(raMeta.posScheme);
+    var savedPosStyle = cleanPosStyle(raMeta.posStyle);
+    var savedPosPalette = null;
+    var savedQuestions = [];
     items.forEach(function (item, itemIdx) {
-      if (item && item.glossary && typeof item.glossary === 'object' && Object.keys(item.glossary).length) hasGlossary = true;
+      var pageBaseLine = sentences.length;
+      if (item && item.posScheme && savedPosScheme === 'default') savedPosScheme = cleanPosScheme(item.posScheme);
+      if (item && item.posStyle && savedPosStyle === 'underline') savedPosStyle = cleanPosStyle(item.posStyle);
+      if (item && item.posPalette && !savedPosPalette) savedPosPalette = cleanPosPalette(item.posPalette);
+      if (item && Array.isArray(item.questions) && item.questions.length) {
+        var cleanedQ = cleanQuestions(item.questions);
+        if (cleanedQ.length) savedQuestions = cleanedQ;
+      }
+      if (item && item.glossary && typeof item.glossary === 'object') {
+        Object.keys(item.glossary).forEach(function (gk) {
+          var ge = item.glossary[gk];
+          if (ge && typeof ge === 'object' && (!ge.img || ge.p || ge.e || !/^Picture of /i.test(String(ge.d || '')))) {
+            if (!ge.c) hasDefEntries = true;
+          }
+          if (ge && typeof ge.a === 'string' && Object.prototype.hasOwnProperty.call(audio, ge.a)) {
+            var gaUri = audio[ge.a];
+            if (typeof gaUri === 'string' && gaUri.length <= MAX_CLIP_CHARS && CLIP.test(gaUri)) {
+              var gaSrc = supTeacherClipIds ? (supTeacherClipIds.indexOf(ge.a) >= 0 ? 'teacher' : 'computer') : 'computer';
+              glossaryAudio[gk] = { uri: gaUri, source: gaSrc };
+            }
+          }
+        });
+      }
       var lines = item && Array.isArray(item.lines) ? item.lines : [];
       lines.forEach(function (line, lineIdx) {
         var lineText = clipKey(line && line.text);
@@ -779,16 +1178,57 @@
         var row = { text: lineText };
         if (line && line.para === true) row.para = true;
         if (line && (line.heading === 1 || line.heading === 2 || line.heading === 3)) row.heading = line.heading;
-        if (line && typeof line.pos === 'string' && line.pos) hasPos = true;
+        if (line && typeof line.pos === 'string' && line.pos) {
+          hasPos = true;
+          if (/:[prc](?:,|$)/.test(line.pos)) hasExtendedPos = true;
+        }
         if (savedMode === 'custom' && itemIdx > 0 && lineIdx === 0) row.pageBreak = true;
         sentences.push(row);
         var cid = line && typeof line.audio === 'string' ? line.audio : '';
         var uri = cid && Object.prototype.hasOwnProperty.call(audio, cid) ? audio[cid] : '';
-        if (typeof uri === 'string' && uri.length <= MAX_CLIP_CHARS && CLIP.test(uri) && lineText !== '__proto__') {
+        var safeKey = lineText !== '__proto__' && lineText !== 'constructor' && lineText !== 'prototype';
+        if (typeof uri === 'string' && uri.length <= MAX_CLIP_CHARS && CLIP.test(uri) && safeKey) {
           clips[lineText] = uri;
           clipSources[lineText] = teacherClipIds ? (teacherClipIds.indexOf(cid) >= 0 ? 'teacher' : 'computer') : (teacherOnly ? 'teacher' : 'computer');
+          if (line && Array.isArray(line.timings) && line.timings.length && line.timings.length <= 120) {
+            var cleanT = [], prevT = 0, validT = true;
+            for (var ti = 0; ti < line.timings.length; ti++) {
+              var tv = Math.round(Number(line.timings[ti]));
+              if (!(tv >= 1 && tv <= 1000) || tv < prevT) { validT = false; break; }
+              cleanT.push(tv);
+              prevT = tv;
+            }
+            if (validT) timings[lineText] = cleanT;
+          }
         }
       });
+      if (item && Array.isArray(item.supports)) {
+        item.supports.forEach(function (sr) {
+          if (!sr || typeof sr !== 'object') return;
+          var sText = clipKey(sr.text).slice(0, 360);
+          var localLine = Math.floor(Number(sr.line));
+          if (!sText || !isFinite(localLine) || localLine < 0) return;
+          var outSup = {
+            id: typeof sr.id === 'string' && sr.id ? sr.id : ('sup' + (customSupports.length + 1)),
+            line: pageBaseLine + localLine,
+            text: sText,
+          };
+          if (typeof sr.quote === 'string' && sr.quote.trim()) outSup.quote = clipKey(sr.quote).slice(0, 80);
+          if (Number(sr.occ) > 0) outSup.occ = Math.floor(Number(sr.occ));
+          if (sr.img && Object.prototype.hasOwnProperty.call(images, sr.img) && validImageUri(images[sr.img])) {
+            outSup.imgUri = images[sr.img];
+            if (sr.alt) outSup.alt = clipKey(sr.alt).slice(0, 60);
+          }
+          if (sr.audio && Object.prototype.hasOwnProperty.call(audio, sr.audio)) {
+            var sUri = audio[sr.audio];
+            if (typeof sUri === 'string' && sUri.length <= MAX_CLIP_CHARS && CLIP.test(sUri)) {
+              outSup.audioUri = sUri;
+              outSup.audioSource = supTeacherClipIds ? (supTeacherClipIds.indexOf(sr.audio) >= 0 ? 'teacher' : 'computer') : 'computer';
+            }
+          }
+          customSupports.push(outSup);
+        });
+      }
     });
     if (!sentences.length) return { ok: false, why: 'This read-along file has no sentences.' };
     if (savedMode === 'auto' && items.length === 1 && sentences.length > PAGE_SENTENCES) savedMode = 'scroll';
@@ -813,7 +1253,13 @@
       pageMode: savedMode,
       lang: savedLang,
       partsOfSpeech: Boolean(raMeta.sentencesWithPos || hasPos),
-      dictionary: Boolean(raMeta.dictionaryWords || hasGlossary),
+      posScheme: savedPosScheme,
+      posStyle: savedPosStyle,
+      posPalette: savedPosPalette,
+      posExtended: Boolean(raMeta.posExtended || hasExtendedPos),
+      defaultTools: cleanDefaultTools(lesson.defaultTools),
+      questions: savedQuestions,
+      dictionary: Boolean(raMeta.dictionaryWords || hasDefEntries),
       pictures: Boolean(raMeta.pictureWords || (lesson.images && Object.keys(lesson.images).length)),
       studentMic: Boolean(lesson.studentMic === true || raMeta.studentMic === true),
       deviceVoice: Boolean(lesson.deviceVoice === true || raMeta.deviceVoice === true),
@@ -822,6 +1268,9 @@
       learner: codeName(manifest.learner || ''),
       clips: clips,
       clipSources: clipSources,
+      timings: timings,
+      customSupports: customSupports,
+      glossaryAudio: glossaryAudio,
       recordings: Object.keys(clips).length,
     };
   }
@@ -829,13 +1278,13 @@
   // The manifest (the data block of the file) with more keys. Only the data block changes: the script and its hash do not.
   function editManifest(html, change) {
     var open = '<script type="application/json" id="packet-manifest">';
-    var at = html.indexOf(open);
+    var at = typeof html === 'string' ? html.indexOf(open) : -1;
     if (at < 0) return html;
     var from = at + open.length, to = html.indexOf('</script>', from), manifest;
     if (to < 0) return html;
     try { manifest = JSON.parse(html.slice(from, to), function (k, v) { return k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v; }); } catch (_) { return html; }
     if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) return html;
-    change(manifest);
+    if (change(manifest) === false) return html;
     var json = JSON.stringify(manifest).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
     return html.slice(0, from) + json + html.slice(to);
   }
@@ -847,11 +1296,18 @@
   }
   function withCodeName(html, name) {
     var clean = codeName(name);
-    return clean ? editManifest(html, function (manifest) { manifest.learner = clean; }) : html;
+    return editManifest(html, function (manifest) {
+      if (clean) { manifest.learner = clean; return true; }
+      if (!Object.prototype.hasOwnProperty.call(manifest, 'learner')) return false;
+      delete manifest.learner;
+      return true;
+    });
   }
 
   var api = { VERSION: VERSION, ACTIVITY: ACTIVITY, MAX_CHARS: MAX_CHARS, MAX_SENTENCES: MAX_SENTENCES, MAX_SENTENCE_CHARS: MAX_SENTENCE_CHARS, PAGE_SENTENCES: PAGE_SENTENCES, PAGE_CHARS: PAGE_CHARS, MAX_CLIP_CHARS: MAX_CLIP_CHARS,
-    cleanPageMode: cleanPageMode, cleanLang: cleanLang, isRtlLang: isRtlLang, splitPassage: splitPassage, sentenceCount: sentenceCount, syllabifySpanish: syllabifySpanish, syllableText: syllableText, posText: posText, computeWordTimings: computeWordTimings, glossaryFor: glossaryFor, pagesOf: pagesOf, clipKey: clipKey, lessonFromReadAlong: lessonFromReadAlong, buildReadAlongPacket: buildReadAlongPacket, readBack: readBack, codeName: codeName, withCodeName: withCodeName };
+    SPANISH_GLOSSES: SPANISH_GLOSSES, esGlossFor: esGlossFor,
+    cleanPageMode: cleanPageMode, cleanLang: cleanLang, isRtlLang: isRtlLang, cleanPosScheme: cleanPosScheme, cleanPosStyle: cleanPosStyle, cleanPosPalette: cleanPosPalette, cleanDefaultTools: cleanDefaultTools, cleanQuestions: cleanQuestions,
+    splitPassage: splitPassage, sentenceCount: sentenceCount, syllabifySpanish: syllabifySpanish, syllabifyLine: syllabifyLine, syllableText: syllableText, posText: posText, computeWordTimings: computeWordTimings, glossaryFor: glossaryFor, pagesOf: pagesOf, clipKey: clipKey, supportSpeechText: supportSpeechText, lessonFromReadAlong: lessonFromReadAlong, buildReadAlongPacket: buildReadAlongPacket, readBack: readBack, codeName: codeName, withCodeName: withCodeName };
   root.AlloPacketReadAlong = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

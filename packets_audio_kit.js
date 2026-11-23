@@ -12,12 +12,18 @@
   // A WAV's own facts: { format, channels, rate, byteRate, bits, at (where the sound starts), size (its bytes) }, or null.
   function wavInfo(bytes) {
     try {
+      if (!bytes || bytes.byteLength < 12) return null;
       var view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength), info = null;
-      if (bytes.length < 12 || String.fromCharCode(bytes[0], bytes[1], bytes[2], bytes[3]) !== 'RIFF'
+      if (String.fromCharCode(bytes[0], bytes[1], bytes[2], bytes[3]) !== 'RIFF'
         || String.fromCharCode(bytes[8], bytes[9], bytes[10], bytes[11]) !== 'WAVE') return null;
       for (var at = 12; at + 8 <= bytes.byteLength;) {
         var name = String.fromCharCode(bytes[at], bytes[at + 1], bytes[at + 2], bytes[at + 3]), size = view.getUint32(at + 4, true);
-        if (name === 'fmt ') info = { format: view.getUint16(at + 8, true), channels: view.getUint16(at + 10, true), rate: view.getUint32(at + 12, true), byteRate: view.getUint32(at + 16, true), bits: view.getUint16(at + 22, true) };
+        if (name === 'fmt ') {
+          if (size < 16 || at + 8 + size > bytes.byteLength) return null;
+          var fmt = { format: view.getUint16(at + 8, true), channels: view.getUint16(at + 10, true), rate: view.getUint32(at + 12, true), byteRate: view.getUint32(at + 16, true), bits: view.getUint16(at + 22, true) };
+          if (!(fmt.channels > 0 && fmt.rate > 0 && fmt.byteRate > 0 && fmt.bits > 0)) return null;
+          info = fmt;
+        }
         if (name === 'data') { if (!info) return null; info.at = at + 8; info.size = Math.min(size, bytes.byteLength - at - 8); return info; }
         at += 8 + size + (size % 2);
       }
@@ -39,7 +45,7 @@
   function fromDataUri(uri) {
     var raw = String(uri || '');
     if (raw.length > MAX_DATA_URI_CHARS) return null;
-    var m = /^data:[^;,]*;base64,([A-Za-z0-9+/]*=*)$/.exec(raw);
+    var m = /^data:[^,]*;base64,([A-Za-z0-9+/]*=*)$/i.exec(raw);
     if (!m) return null;
     try {
       var text = win.atob(m[1]), out = new Uint8Array(text.length);
@@ -60,6 +66,7 @@
         if (settled) return;
         settled = true;
         asked = null;
+        script.onload = script.onerror = null;
         try { if (script.parentNode) script.parentNode.removeChild(script); } catch (_) {}
         resolve(false);
       }, 15000) : 0;
@@ -67,6 +74,7 @@
         if (settled) return;
         settled = true;
         if (timer && typeof win.clearTimeout === 'function') win.clearTimeout(timer);
+        script.onload = script.onerror = null;
         if (!ok) {
           asked = null;
           try { if (script.parentNode) script.parentNode.removeChild(script); } catch (_) {}
@@ -75,7 +83,9 @@
       };
       script.onload = function () { finish(!!(win.lamejs && win.lamejs.Mp3Encoder)); };
       script.onerror = function () { finish(false); };
-      doc.head.appendChild(script);
+      var host = doc && (doc.head || doc.documentElement);
+      if (!host) { finish(false); return; }
+      host.appendChild(script);
     });
     return asked;
   }
@@ -84,9 +94,11 @@
   function wavToMp3(bytes, kbps) {
     var info = wavInfo(bytes);
     if (!win.lamejs || !win.lamejs.Mp3Encoder || !info || info.format !== 1 || info.channels !== 1 || info.bits !== 16 || info.size < 2 || !(info.rate >= 8000 && info.rate <= 96000)) return null;
+    var n = Number(kbps);
+    var rateKbps = isFinite(n) && n > 0 ? Math.max(8, Math.min(320, Math.round(n))) : 64;
     try {
       var samples = new Int16Array(bytes.buffer.slice(bytes.byteOffset + info.at, bytes.byteOffset + info.at + info.size - (info.size % 2)));
-      var encoder = new win.lamejs.Mp3Encoder(1, info.rate, kbps || 64), parts = [], total = 0, BLOCK = 1152;
+      var encoder = new win.lamejs.Mp3Encoder(1, info.rate, rateKbps), parts = [], total = 0, BLOCK = 1152;
       var keep = function (part) { if (part && part.length) { parts.push(part); total += part.length; } };
       for (var i = 0; i < samples.length; i += BLOCK) keep(encoder.encodeBuffer(samples.subarray(i, i + BLOCK)));
       keep(encoder.flush());

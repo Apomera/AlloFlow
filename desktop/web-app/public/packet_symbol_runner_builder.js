@@ -365,19 +365,44 @@
     if (Number.isInteger(obj.flankerCenter)) out.flankerCenter = obj.flankerCenter;
     if (typeof obj.stroopInk === 'string' && obj.stroopInk) out.stroopInk = obj.stroopInk;
     if (typeof obj.stroopShape === 'string' && obj.stroopShape) out.stroopShape = obj.stroopShape;
-    if (obj.sizePair && typeof obj.sizePair === 'object') out.sizePair = Object.assign({}, obj.sizePair);
+    if (obj.sizePair && typeof obj.sizePair === 'object' && !Array.isArray(obj.sizePair)) {
+      var sp = {};
+      ['left', 'right', 'leftScale', 'rightScale', 'pick'].forEach(function (k) {
+        if (Object.prototype.hasOwnProperty.call(obj.sizePair, k)) sp[k] = obj.sizePair[k];
+      });
+      out.sizePair = sp;
+    }
     if (typeof obj.congruent === 'boolean') out.congruent = obj.congruent;
     return out;
   }
 
+  var CUSTOM_OK = (function () { try { return new RegExp("^[\\p{L}\\p{N}](?:[\\p{L}\\p{M}\\p{N}'\u2019-]*[\\p{L}\\p{M}\\p{N}])?$", 'u'); } catch (_) { return /^[A-Za-z0-9](?:[A-Za-z0-9'-]*[A-Za-z0-9])?$/; } })();
+
   function parseItems(input) {
     var parts = Array.isArray(input)
       ? input
-      : text(input).split(/[\s,;|/\r\n]+/);
+      : text(input).replace(/^\uFEFF/, '').split(/\r?\n/).map(function (line) {
+          return line.replace(/^\s*(?:\(\d{1,3}\)|\d{1,3}[.)]|[\u2022\u25CF\u25CB\u25AA\u2023\u2043*\u2013\u2014-])\s+/, '');
+        }).join('\n').split(/[\s,;|/\r\n]+/);
     var out = [];
     var seen = Object.create(null);
     for (var i = 0; i < parts.length && out.length < 40; i++) {
-      var norm = normalizeItem(parts[i]);
+      var raw = parts[i];
+      var norm;
+      if (raw && typeof raw === 'object') {
+        norm = normalizeItem(raw);
+      } else {
+        var s = text(raw).replace(/^\uFEFF/, '').trim();
+        try { s = s.normalize('NFC'); } catch (_) {}
+        if (!s) continue;
+        if (!CUSTOM_OK.test(s)) {
+          var stripped = s.replace(/^["'\u201c\u201d\u2018\u2019(\[{]+|["'\u201c\u201d\u2018\u2019)\]}.,!?:;]+$/g, '');
+          if (stripped && CUSTOM_OK.test(stripped)) s = stripped;
+        }
+        if (!CUSTOM_OK.test(s)) continue;
+        var cat = /^[0-9]+$/.test(s) ? 'number' : (Array.from(s).length > 1 ? 'word' : 'letter');
+        norm = normalizeItem({ word: s, answer: s, category: cat });
+      }
       if (!norm) continue;
       if (seen[norm.answer]) continue;
       seen[norm.answer] = true;
@@ -453,6 +478,42 @@
 
   var MEASURE = { measure: 'symbol_naming', scoreUnit: 'items_correct', scoringVersion: 1, formVersion: 1, allowSkip: true };
 
+  function buildAlternatingItems(mode, pool, totalCount, seedBase) {
+    if (mode.alternating === 'triple') {
+      var tLetters = pool.filter(function (p) { return p.category === 'letter'; });
+      var tNumbers = pool.filter(function (p) { return p.category === 'number'; });
+      var tColors = pool.filter(function (p) { return p.category === 'color_stroop'; });
+      if (tLetters.length && tNumbers.length && tColors.length) {
+        var tQueues = [mixed(tLetters, seedBase + '|tl'), mixed(tNumbers, seedBase + '|tn'), mixed(tColors, seedBase + '|tc')];
+        var tCursors = [0, 0, 0];
+        var tOut = [];
+        for (var ti = 0; ti < totalCount; ti++) {
+          var bi = ti % 3;
+          var q = tQueues[bi];
+          tOut.push(q[tCursors[bi] % q.length]);
+          tCursors[bi]++;
+        }
+        return tOut;
+      }
+    } else if (mode.alternating) {
+      var dLetters = pool.filter(function (p) { return /^[A-Za-z]+$/.test(p.answer); });
+      var dNumbers = pool.filter(function (p) { return /^[0-9]+$/.test(p.answer); });
+      if (dLetters.length && dNumbers.length) {
+        var dQueues = [mixed(dLetters, seedBase + '|dl'), mixed(dNumbers, seedBase + '|dn')];
+        var dCursors = [0, 0];
+        var dOut = [];
+        for (var di = 0; di < totalCount; di++) {
+          var dbi = di % 2;
+          var dq = dQueues[dbi];
+          dOut.push(dq[dCursors[dbi] % dq.length]);
+          dCursors[dbi]++;
+        }
+        return dOut;
+      }
+    }
+    return null;
+  }
+
   function planSymbolRunner(input) {
     var o = input || {};
     var resolved = resolvePool(o);
@@ -469,21 +530,44 @@
     var knownSymbols = [];
 
     if (rehearsal) {
+      var uniqueAnswers = [];
+      var seenPoolAns = Object.create(null);
+      for (var ui = 0; ui < pool.length; ui++) {
+        if (!seenPoolAns[pool[ui].answer]) {
+          seenPoolAns[pool[ui].answer] = true;
+          uniqueAnswers.push(pool[ui].answer);
+        }
+      }
       var knownMap = Object.create(null);
       if (Array.isArray(o.known)) {
         o.known.forEach(function (k) { knownMap[text(k).trim().toLowerCase()] = true; });
       } else if (typeof o.known === 'string' && o.known.trim()) {
         o.known.split(/[\s,;|\r\n]+/).forEach(function (k) { if (k.trim()) knownMap[k.trim().toLowerCase()] = true; });
       } else {
-        // Default: keep up to 3 target symbols as new, treat remaining >= 3 symbols as known.
-        var defaultNewCount = Math.min(3, Math.max(1, pool.length - 3));
-        for (var d = defaultNewCount; d < pool.length; d++) knownMap[pool[d].answer] = true;
+        // Default: keep up to 3 distinct target answers as new, treat remaining >= 3 distinct answers as known.
+        var defaultNewCount = Math.min(3, Math.max(1, uniqueAnswers.length - 3));
+        for (var d = defaultNewCount; d < uniqueAnswers.length; d++) knownMap[uniqueAnswers[d]] = true;
       }
 
-      newSymbols = pool.filter(function (p) { return !knownMap[p.answer]; }).slice(0, 3);
+      var seenNewAns = Object.create(null);
+      for (var npi = 0; npi < pool.length && newSymbols.length < 3; npi++) {
+        var nItem = pool[npi];
+        if (!knownMap[nItem.answer] && !seenNewAns[nItem.answer]) {
+          seenNewAns[nItem.answer] = true;
+          newSymbols.push(nItem);
+        }
+      }
       knownSymbols = pool.filter(function (p) { return !!knownMap[p.answer]; });
+      var seenKnownAns = Object.create(null);
+      var uniqueKnownAnswers = 0;
+      for (var ki = 0; ki < knownSymbols.length; ki++) {
+        if (!seenKnownAns[knownSymbols[ki].answer]) {
+          seenKnownAns[knownSymbols[ki].answer] = true;
+          uniqueKnownAnswers++;
+        }
+      }
       if (!newSymbols.length) throw new Error('Leave at least 1 symbol unselected as known so there is a new symbol to rehearse.');
-      if (knownSymbols.length < 3) throw new Error('Rehearsal needs at least 3 known symbols to space between new symbols.');
+      if (uniqueKnownAnswers < 3) throw new Error('Rehearsal needs at least 3 known symbols to space between new symbols.');
 
       var kQueue = mixed(knownSymbols, 'known|' + seedBase);
       var kCursor = 0;
@@ -509,59 +593,57 @@
         cards.push({ base: takeKnown(), role: 'known', study: false });
       }
     } else if (packetMode === 'check') {
-      cards.push({ base: pool[0], role: '', study: false, practice: true });
-      cards.push({ base: pool[1 % pool.length], role: '', study: false, practice: true });
-      var checkCount = Math.max(4, Math.min(60, Number(o.count) || 40));
-      var scored = [];
-      while (scored.length < checkCount) {
-        var cPass = mixed(pool, seedBase + '|cpass|' + scored.length);
-        for (var ci = 0; ci < cPass.length && scored.length < checkCount; ci++) {
-          if (scored.length && scored[scored.length - 1].base.answer === cPass[ci].answer && cPass.length > 1) {
-            var cSwap = cPass[(ci + 1) % cPass.length];
-            cPass[(ci + 1) % cPass.length] = cPass[ci];
-            cPass[ci] = cSwap;
-          }
-          scored.push({ base: cPass[ci], role: '', study: false, practice: false });
+      var rawCheckCount = Number(o.count);
+      var checkCount = Math.max(4, Math.min(60, (Number.isFinite(rawCheckCount) && rawCheckCount > 0) ? Math.round(rawCheckCount) : 40));
+      var sampleCount = mode.alternating === 'triple' ? 3 : 2;
+      var altCheck = buildAlternatingItems(mode, pool, sampleCount + checkCount, seedBase);
+      if (altCheck) {
+        for (var aci = 0; aci < altCheck.length; aci++) {
+          cards.push({ base: altCheck[aci], role: '', study: false, practice: aci < sampleCount });
         }
+      } else {
+        cards.push({ base: pool[0], role: '', study: false, practice: true });
+        cards.push({ base: pool[1 % pool.length], role: '', study: false, practice: true });
+        var scored = [];
+        while (scored.length < checkCount) {
+          var cPass = mixed(pool, seedBase + '|cpass|' + scored.length);
+          for (var ci = 0; ci < cPass.length && scored.length < checkCount; ci++) {
+            if (scored.length && scored[scored.length - 1].base.answer === cPass[ci].answer) {
+              for (var ck = ci + 1; ck < cPass.length; ck++) {
+                if (cPass[ck].answer !== cPass[ci].answer) {
+                  var cSwap = cPass[ck];
+                  cPass[ck] = cPass[ci];
+                  cPass[ci] = cSwap;
+                  break;
+                }
+              }
+            }
+            scored.push({ base: cPass[ci], role: '', study: false, practice: false });
+          }
+        }
+        cards = cards.concat(scored);
       }
-      cards = cards.concat(scored);
     } else {
-      var targetCount = Math.max(4, Math.min(48, Number(o.count) || Math.min(24, Math.max(12, pool.length * 2))));
-      if (mode.alternating === 'triple') {
-        var tLetters = pool.filter(function (p) { return p.category === 'letter'; });
-        var tNumbers = pool.filter(function (p) { return p.category === 'number'; });
-        var tColors = pool.filter(function (p) { return p.category === 'color_stroop'; });
-        if (tLetters.length && tNumbers.length && tColors.length) {
-          var tQueues = [mixed(tLetters, seedBase + '|tl'), mixed(tNumbers, seedBase + '|tn'), mixed(tColors, seedBase + '|tc')];
-          var tCursors = [0, 0, 0];
-          for (var ti = 0; ti < targetCount; ti++) {
-            var bi = ti % 3;
-            var q = tQueues[bi];
-            cards.push({ base: q[tCursors[bi] % q.length], role: '', study: false });
-            tCursors[bi]++;
-          }
-        }
-      } else if (mode.alternating) {
-        var dLetters = pool.filter(function (p) { return /^[A-Za-z]+$/.test(p.answer); });
-        var dNumbers = pool.filter(function (p) { return /^[0-9]+$/.test(p.answer); });
-        if (dLetters.length && dNumbers.length) {
-          var dQueues = [mixed(dLetters, seedBase + '|dl'), mixed(dNumbers, seedBase + '|dn')];
-          var dCursors = [0, 0];
-          for (var di = 0; di < targetCount; di++) {
-            var dbi = di % 2;
-            var dq = dQueues[dbi];
-            cards.push({ base: dq[dCursors[dbi] % dq.length], role: '', study: false });
-            dCursors[dbi]++;
-          }
+      var rawTargetCount = Number(o.count);
+      var targetCount = Math.max(4, Math.min(48, (Number.isFinite(rawTargetCount) && rawTargetCount > 0) ? Math.round(rawTargetCount) : Math.min(24, Math.max(12, pool.length * 2))));
+      var altPractice = buildAlternatingItems(mode, pool, targetCount, seedBase);
+      if (altPractice) {
+        for (var api = 0; api < altPractice.length; api++) {
+          cards.push({ base: altPractice[api], role: '', study: false });
         }
       }
       while (cards.length < targetCount) {
         var pass = mixed(pool, seedBase + '|pass|' + cards.length);
         for (var pi = 0; pi < pass.length && cards.length < targetCount; pi++) {
-          if (cards.length && cards[cards.length - 1].base.answer === pass[pi].answer && pass.length > 1) {
-            var swap = pass[(pi + 1) % pass.length];
-            pass[(pi + 1) % pass.length] = pass[pi];
-            pass[pi] = swap;
+          if (cards.length && cards[cards.length - 1].base.answer === pass[pi].answer) {
+            for (var pk = pi + 1; pk < pass.length; pk++) {
+              if (pass[pk].answer !== pass[pi].answer) {
+                var swap = pass[pk];
+                pass[pk] = pass[pi];
+                pass[pi] = swap;
+                break;
+              }
+            }
           }
           cards.push({ base: pass[pi], role: '', study: false });
         }
@@ -705,6 +787,7 @@
       throw new Error('lessonFromSymbolRunner needs loader (AlloWordSoundsTakeHome with symbol_runner)');
     }
     var plan = planSymbolRunner(o);
+    var isCheck = plan.packetMode === 'check';
     var adapter = loader.CHECK_ADAPTERS.symbol_runner;
     var images = {};
     var audio = {};
@@ -722,41 +805,42 @@
     var clipMap = o.clips && typeof o.clips === 'object' ? o.clips : {};
     var hasOwn = Object.prototype.hasOwnProperty;
 
-    plan.pool.forEach(function (sym) {
-      if (!picByAns[sym.answer]) {
-        var rawPic = hasOwn.call(picMap, sym.answer) ? picMap[sym.answer] : (hasOwn.call(picMap, sym.word) ? picMap[sym.word] : null);
-        var imgData = safeDataImage(rawPic && typeof rawPic === 'object' ? (rawPic.src || rawPic.dataUri) : rawPic);
-        if (imgData) {
-          var pid = 'p' + (nextImgId++);
-          images[pid] = imgData;
-          picByAns[sym.answer] = pid;
-          if (rawPic && typeof rawPic === 'object') {
-            var creditLine = cleanCredit(rawPic.credit);
-            if (creditLine && !seenCredits[creditLine]) {
-              seenCredits[creditLine] = true;
-              attributions.push(creditLine);
-            }
-            if (rawPic.set === 'mulberry' || /Mulberry/i.test(creditLine)) hasMulberry = true;
-            if (rawPic.set === 'openmoji' || /OpenMoji/i.test(creditLine)) hasOpenMoji = true;
-            var metaKey = text(sym.answer).trim().toLowerCase();
-            if (metaKey && (creditLine || rawPic.set)) {
-              pictureMeta[metaKey] = { credit: creditLine, set: text(rawPic.set).trim().slice(0, 32) };
+    if (!isCheck) {
+      plan.pool.forEach(function (sym) {
+        if (!picByAns[sym.answer]) {
+          var rawPic = hasOwn.call(picMap, sym.answer) ? picMap[sym.answer] : (hasOwn.call(picMap, sym.word) ? picMap[sym.word] : null);
+          var imgData = safeDataImage(rawPic && typeof rawPic === 'object' ? (rawPic.src || rawPic.dataUri) : rawPic);
+          if (imgData) {
+            var pid = 'p' + (nextImgId++);
+            images[pid] = imgData;
+            picByAns[sym.answer] = pid;
+            if (rawPic && typeof rawPic === 'object') {
+              var creditLine = cleanCredit(rawPic.credit);
+              if (creditLine && !seenCredits[creditLine]) {
+                seenCredits[creditLine] = true;
+                attributions.push(creditLine);
+              }
+              if (rawPic.set === 'mulberry' || /Mulberry/i.test(creditLine)) hasMulberry = true;
+              if (rawPic.set === 'openmoji' || /OpenMoji/i.test(creditLine)) hasOpenMoji = true;
+              var metaKey = text(sym.answer).trim().toLowerCase();
+              if (metaKey && (creditLine || rawPic.set)) {
+                pictureMeta[metaKey] = { credit: creditLine, set: text(rawPic.set).trim().slice(0, 32) };
+              }
             }
           }
         }
-      }
-      if (!audByAns[sym.answer]) {
-        var rawClip = hasOwn.call(clipMap, sym.answer) ? clipMap[sym.answer] : (hasOwn.call(clipMap, sym.word) ? clipMap[sym.word] : null);
-        var audData = safeDataAudio(rawClip && typeof rawClip === 'object' ? rawClip.dataUri : rawClip);
-        if (audData) {
-          var aid = 'a' + (nextAudId++);
-          audio[aid] = audData;
-          audByAns[sym.answer] = aid;
+        if (!audByAns[sym.answer]) {
+          var rawClip = hasOwn.call(clipMap, sym.answer) ? clipMap[sym.answer] : (hasOwn.call(clipMap, sym.word) ? clipMap[sym.word] : null);
+          var audData = safeDataAudio(rawClip && typeof rawClip === 'object' ? rawClip.dataUri : rawClip);
+          if (audData) {
+            var aid = 'a' + (nextAudId++);
+            audio[aid] = audData;
+            audByAns[sym.answer] = aid;
+          }
         }
-      }
-    });
+      });
+    }
 
-    var isCheck = plan.packetMode === 'check';
     if (!isCheck && Object.keys(audio).length > 0) {
       // 2026-11-17: letter, sound and sight-word clips come from audio_bank/ (made ahead of time with Google Gemini),
       // other word clips from word_audio_shards/ (Kokoro). Both are named, as the Word Sounds builder does.
@@ -790,8 +874,8 @@
       if (typeof card.congruent === 'boolean') raw.congruent = card.congruent;
       if (card.practice) raw.practice = true;
       if (card.role && !isCheck) raw.role = card.role;
-      if (picByAns[card.answer]) raw.image = picByAns[card.answer];
-      if (audByAns[card.answer]) raw.audio = audByAns[card.answer];
+      if (!isCheck && picByAns[card.answer]) raw.image = picByAns[card.answer];
+      if (!isCheck && audByAns[card.answer]) raw.audio = audByAns[card.answer];
       var made = adapter.prepare(raw);
       if (!made || !made.item) {
         throw new Error('Card ' + (i + 1) + ' cannot be built: ' + (made && made.missing ? made.missing.join(', ') : 'invalid item'));
@@ -811,7 +895,8 @@
       : ('Symbol Runner: ' + plan.modeTitle + (plan.control === 'lockon' ? ' (aim first)' : ''));
     var title = cleanTitle || defaultTitle.slice(0, 120);
     var untimed = isCheck && o.untimed === true;
-    var limit = Number(o.timeLimitS) > 0 ? Math.min(600, Math.round(Number(o.timeLimitS))) : 60;
+    var rawLimit = Number(o.timeLimitS);
+    var limit = (Number.isFinite(rawLimit) && rawLimit > 0) ? Math.max(1, Math.min(600, Math.round(rawLimit))) : 60;
     var sig = fnv(JSON.stringify([plan.packetMode, plan.mode, plan.control, plan.rehearsal, untimed, limit, plan.pool.map(function (p) { return p.answer; })]));
     var lesson = {
       schema: LESSON_SCHEMA,
@@ -876,7 +961,8 @@
     var code = text(o.teacherCode).trim();
     if (isCheck && code && code.length < 4) throw new Error('The teacher code needs 4 or more characters.');
     if (isCheck && code.length > 64) throw new Error('The teacher code can have 64 characters at most.');
-    var lesson = JSON.parse(JSON.stringify(givenLesson));
+    var stripProto = function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; };
+    var lesson = JSON.parse(JSON.stringify(givenLesson), stripProto);
     var title = text(o.title).replace(/\s+/g, ' ').trim().slice(0, 120);
     if (title) {
       lesson.title = title;
@@ -897,18 +983,22 @@
     } else if (plan && plan.mode === 'custom') {
       itemsMeta = plan.pool.map(function (it) { return it.word; });
     }
-    var pictureMeta = {};
+    var pictureMeta = Object.create(null);
     if (!isCheck) {
       if (builtMeta && builtMeta.pictureMeta) {
-        pictureMeta = Object.assign({}, builtMeta.pictureMeta);
+        Object.keys(builtMeta.pictureMeta).forEach(function (k) {
+          if (k === '__proto__' || k === 'constructor' || k === 'prototype') return;
+          pictureMeta[k] = builtMeta.pictureMeta[k];
+        });
       } else if (o.pictures && typeof o.pictures === 'object') {
         Object.keys(o.pictures).forEach(function (k) {
           var rawPic = o.pictures[k];
           if (!rawPic || typeof rawPic !== 'object') return;
           var mk = text(k).trim().toLowerCase();
+          if (!mk || mk === '__proto__' || mk === 'constructor' || mk === 'prototype') return;
           var cl = cleanCredit(rawPic.credit);
           var st = text(rawPic.set).trim();
-          if (mk && (cl || st)) pictureMeta[mk] = { credit: cl, set: st.slice(0, 32) };
+          if (cl || st) pictureMeta[mk] = { credit: cl, set: st.slice(0, 32) };
         });
       }
     }
@@ -923,7 +1013,7 @@
       includeAudio: !isCheck && Object.keys(lesson.audio || {}).length > 0,
       audioMode: isCheck ? 'auto' : (o.audioMode === 'name' || o.audioMode === 'sound' ? o.audioMode : 'auto'),
       items: itemsMeta,
-      known: (!isCheck && plan && plan.rehearsal) ? plan.knownSymbols.map(function (k) { return k.answer; }) : [],
+      known: (!isCheck && plan && plan.rehearsal) ? plan.knownSymbols.map(function (k) { return k.answer; }).filter(function (ans, idx, arr) { return arr.indexOf(ans) === idx; }) : [],
     };
     if (Object.keys(pictureMeta).length) recipe.pictureMeta = pictureMeta;
     html = withManifest(html, { symbolRunner: recipe });
@@ -931,7 +1021,7 @@
     var block = /<script type="application\/json" id="packet-manifest">([\s\S]*?)<\/script>/.exec(html);
     return {
       html: html,
-      manifest: block ? JSON.parse(block[1]) : null,
+      manifest: block ? JSON.parse(block[1], stripProto) : null,
       sha256: loader.sha256(html).hex,
       lesson: lesson,
       plan: plan,
@@ -968,7 +1058,7 @@
   function withCodeName(html, name) {
     var clean = codeName(name);
     var open = '<script type="application/json" id="packet-manifest">';
-    var at = clean ? html.indexOf(open) : -1;
+    var at = typeof html === 'string' ? html.indexOf(open) : -1;
     if (at < 0) return html;
     var from = at + open.length;
     var to = html.indexOf('</script>', from);
@@ -976,7 +1066,12 @@
     var manifest;
     try { manifest = JSON.parse(html.slice(from, to), function (k, v) { return k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v; }); } catch (_) { return html; }
     if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) return html;
-    manifest.learner = clean;
+    if (clean) {
+      manifest.learner = clean;
+    } else {
+      if (!Object.prototype.hasOwnProperty.call(manifest, 'learner')) return html;
+      delete manifest.learner;
+    }
     return html.slice(0, from) + safeJson(manifest) + html.slice(to);
   }
 
@@ -1057,7 +1152,7 @@
         if (!it || !it.image) return;
         var src = hasOwn.call(lesson.images, it.image) ? safeDataImage(lesson.images[it.image]) : '';
         var ans = text(it.answer || it.word).trim().toLowerCase();
-        if (src && ans && ans !== '__proto__' && !hasOwn.call(out.pictures, ans)) {
+        if (src && ans && ans !== '__proto__' && ans !== 'constructor' && ans !== 'prototype' && !hasOwn.call(out.pictures, ans)) {
           var rawAns = text(it.answer || it.word).trim();
           var meta = picMeta ? (hasOwn.call(picMeta, ans) ? picMeta[ans] : (hasOwn.call(picMeta, rawAns) ? picMeta[rawAns] : null)) : null;
           var credit = (meta && text(meta.credit).trim()) || (picAttribs.length === 1 ? picAttribs[0].trim() : 'Restored from file');

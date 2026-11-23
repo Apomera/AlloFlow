@@ -15,7 +15,7 @@
 
 ## Elevator pitch
 
-AlloFlow is a single-creator AI lesson-design and student-experience platform with an extensive documented feature inventory and a July 2026 measured codebase footprint of **~2.70M canonical-ish source lines** after excluding deployment mirrors and generated source/module duplicate pairs. It is distributed primarily as a Gemini Canvas artifact, so districts using Canvas can run it without a separate vendor bill; self-hosted Firebase deployment is also supported for teams that want more control. AlloFlow Desktop now provides the everyday local-first path, while the Docker School Box stack remains optional server/appliance infrastructure. AlloFlow includes **122 STEM Lab tool files / 123 registered STEM plugin IDs**, **70 SEL Hub tools** mapped to CASEL, a WCAG/VPAT accessibility infrastructure, LTI 1.3 LMS integration, multi-provider TTS with offline/local fallback paths, gamepad/adaptive-controller support, Behavior Lens for FBA/BIP workflows, Symbol Studio as a Boardmaker-style alternative, Cinematic Studio, AlloStudio for born-accessible visual documents, Open Groove Studio for music composition, community Professional Development, and a PDF accessibility audit/remediation pipeline with native tagged-PDF output plus local veraPDF/PDF-UA QA workflows.
+AlloFlow is a single-creator AI lesson-design and student-experience platform with an extensive documented feature inventory and a July 2026 measured codebase footprint of **~2.70M canonical-ish source lines** after excluding deployment mirrors and generated source/module duplicate pairs. It is distributed primarily as a Gemini Canvas artifact, so districts using Canvas can run it without a separate vendor bill; self-hosted Firebase deployment is also supported for teams that want more control. AlloFlow Desktop now provides the everyday local-first path, while the Docker School Box stack remains optional server/appliance infrastructure. AlloFlow includes **122 STEM Lab tool files / 123 registered STEM plugin IDs**, **70 SEL Hub tools** mapped to CASEL, a WCAG/VPAT accessibility infrastructure, a client-side LMS document-audit bookmarklet (`lms_bookmarklet.js`; server-side LTI 1.3 is currently retired/fail-closed pending district identity), multi-provider TTS with offline/local fallback paths, gamepad/adaptive-controller support, Behavior Lens for FBA/BIP workflows, Symbol Studio as a Boardmaker-style alternative, Cinematic Studio, AlloStudio for born-accessible visual documents, Open Groove Studio for music composition, community Professional Development, and a PDF accessibility audit/remediation pipeline with native tagged-PDF output plus local veraPDF/PDF-UA QA workflows.
 
 The creator is a school psychologist (PsyD), so SEL, FBA/BIP, accessibility, and special-education depth are unusually strong relative to teacher-built or VC-funded competitors that lead with classroom-content generation.
 
@@ -64,7 +64,7 @@ Numbers below are documented user-facing features, not internal helpers. AlloFlo
 | **AlloBot Sage** | Cross-tool roguelite with mastery-linked unlocks | No | No | No | No | No | No | No |
 | **AlloStudio** | Born-accessible flyer/worksheet/digital-art studio with reading order and tagged-PDF export | No | No | No | No | No | No | No |
 | **Open Groove Studio** | Browser groovebox/composition environment | No | No | No | No | No | No | No |
-| **LTI 1.3 LMS integration** | Canvas/Schoology/Brightspace/Moodle/D2L support path | Limited | Browser extension only | No | Limited | No | Some | Yes |
+| **LTI 1.3 LMS integration** | Not active (Firebase LTI backend retired/fail-closed pending district identity & tenant isolation; client-side `lms_bookmarklet.js` works across LMS pages) | Limited | Browser extension only | No | Limited | No | Some | Yes |
 | **Live multi-student session** | Firestore-backed teacher dashboard + real-time push | Limited | No | No | Yes, core product | No | Yes | Limited |
 | **Adventure / persona / role-play** | Quest system + harmony tracking + role-play components | Limited | No | No | No | No | Chat-based | Tutor-based |
 | **Web search grounding** | SearxNG + Firebase proxy path | Limited | No | No | No | No | No | Yes |
@@ -136,7 +136,7 @@ The honest-disclosure hook: **"It is pre-distribution and still needs readiness 
 | Solo maintainer cannot scale support | Prioritize pilots and partner channels before broad teacher acquisition |
 | Variable tool quality undermines first impression | Add Ready/Beta/Experimental classification and default demos to Ready flows |
 | Accessibility drift as features ship faster than audits | Generate docs from registry/test/audit outputs and keep per-tool gates in CI |
-| District IT blocks Gemini Canvas | Maintain LTI/self-host path and procurement/security documentation |
+| District IT blocks Gemini Canvas | Maintain Desktop local-first, self-host Firebase/Docker paths, LMS bookmarklet, and procurement/security documentation (LTI 1.3 deferred until district identity exists) |
 | Huge feature surface is hard to explain | Lead with 4-5 strongest workflows, then reveal breadth as proof rather than as the first message |
 
 ---

@@ -19398,11 +19398,11 @@ var EMOTION_JOURNAL_TEMPLATES = [
         var diffToggle = h('div', { style: { display: 'flex', justifyContent: 'center', gap: 4, marginBottom: 16 } },
           h('button', { type: 'button', 'aria-label': 'Emoji Faces',
             onClick: function() { upd('faceDifficulty', 'emoji'); if (soundEnabled) sfxClick(); },
-            style: { padding: '6px 16px', borderRadius: '8px 0 0 8px', border: ('1px solid ' + P.border), background: faceDifficulty === 'emoji' ? '#3b82f6' : P.card, color: faceDifficulty === 'emoji' ? '#fff' : P.textMuted, fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+            style: { padding: '6px 16px', borderRadius: '8px 0 0 8px', border: ('1px solid ' + P.border), background: faceDifficulty === 'emoji' ? (_hcT ? '#000000' : '#1d4ed8') : P.card, color: faceDifficulty === 'emoji' ? (_hcT ? '#ffff00' : '#fff') : P.textMuted, fontWeight: 600, fontSize: 12, cursor: 'pointer' }
           }, '\uD83D\uDE04 Emoji Faces'),
           h('button', { type: 'button', 'aria-label': 'Body Language',
             onClick: function() { upd('faceDifficulty', 'body'); if (soundEnabled) sfxClick(); },
-            style: { padding: '6px 16px', borderRadius: '0 8px 8px 0', border: ('1px solid ' + P.border), background: faceDifficulty === 'body' ? '#f59e0b' : P.card, color: faceDifficulty === 'body' ? '#fff' : P.textMuted, fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+            style: { padding: '6px 16px', borderRadius: '0 8px 8px 0', border: ('1px solid ' + P.border), background: faceDifficulty === 'body' ? (_hcT ? '#000000' : '#b45309') : P.card, color: faceDifficulty === 'body' ? (_hcT ? '#ffff00' : '#fff') : P.textMuted, fontWeight: 600, fontSize: 12, cursor: 'pointer' }
           }, '\uD83D\uDD0D Body Language')
         );
 
@@ -19990,13 +19990,13 @@ var EMOTION_JOURNAL_TEMPLATES = [
                 type: 'button',
                 className: detectiveSelectedCount === 5 && !detectiveRevealed ? 'btn btn-primary' : 'btn',
                 disabled: detectiveSelectedCount < 5 || detectiveRevealed,
-                'aria-label': 'Check my Emotion Detective read',
+                'aria-label': detectiveRevealed ? 'Read checked' : 'Check my read — Emotion Detective',
                 onClick: detectiveCheck
               }, detectiveRevealed ? 'Read checked' : 'Check my read'),
               detectiveRevealed ? h('button', {
                 type: 'button',
                 className: 'btn',
-                'aria-label': 'Try the next Emotion Detective case',
+                'aria-label': 'Next case — try another Emotion Detective case',
                 onClick: detectiveNextCase
               }, 'Next case') : null
             )
@@ -20835,7 +20835,7 @@ if (activeTab === 'face_builder') {
         onChange: function(e) { var v = parseInt(e.target.value, 10); var o = {}; o[key] = v; upd(o); },
         style: { width: '100%' }
       }),
-      h('div', { style: { color: '#64748b', fontSize: 10 } }, hint)
+      h('div', { style: { color: P.text2, fontSize: 10 } }, hint)
     );
   }
   faceBuilderContent = h('div', { style: { padding: '0 12px 24px' } },
@@ -22154,7 +22154,7 @@ if (activeTab === 'color') {
         onChange: function(e) { var v = parseInt(e.target.value, 10); var o = {}; o[key] = v; upd(o); },
         style: { width: '100%' }
       }),
-      h('div', { style: { color: '#64748b', fontSize: 10 } }, hint)
+      h('div', { style: { color: P.text2, fontSize: 10 } }, hint)
     );
   }
   colorContent = h('div', { style: { padding: '0 12px 24px' } },

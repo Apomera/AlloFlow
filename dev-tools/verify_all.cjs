@@ -269,7 +269,7 @@ const checks = [
   {
     name: 'Firebase functions surface',
     cmd: ['node', 'dev-tools/check_firebase_functions.cjs', '--quiet'],
-    description: '12 expected Firebase function exports present + well-shaped',
+    description: 'Optional Firebase Functions fail-closed contract: only searchProxy + sourceFetchProxy exported; 11 retired LTI/LMS/institutional endpoints absent',
   },
   {
     name: 'PDF audit pipeline contract',
@@ -289,7 +289,7 @@ const checks = [
   {
     name: 'LTI 1.3 surface',
     cmd: ['node', 'dev-tools/check_lti_surface.cjs', '--quiet'],
-    description: 'LTI endpoints + OIDC params + JWT verification + secrets',
+    description: 'Fail-closed LTI boundary: ltiLogin/ltiLaunch/ltiSession absent from Functions/config and client refuses URL role/token',
   },
   // ── Security checks ─────────────────────────────────────────────
   {
@@ -299,21 +299,18 @@ const checks = [
   },
   {
     name: 'CORS strict origin',
-    cmd: ['node', 'dev-tools/check_cors_strict.cjs', '--quiet'],
-    description: 'Flag CORS wildcards on Firebase Functions (informational)',
-    informational: true,
+    cmd: ['node', 'dev-tools/check_cors_strict.cjs', '--strict', '--quiet'],
+    description: 'Blocking CORS origin audit across Firebase Functions, Cloudflare Workers, Remote MCP, TTS servers, and _headers',
   },
   {
     name: 'XSS surface',
     cmd: ['node', 'dev-tools/check_xss_surface.cjs', '--quiet'],
-    description: 'dangerouslySetInnerHTML uses with non-sanitized input (informational)',
-    informational: true,
+    description: 'Blocking AST XSS sink gate (JSX + compiled JS dangerouslySetInnerHTML, innerHTML/outerHTML, insertAdjacentHTML, document.write, interpolated templates) with ratchet baseline',
   },
   {
     name: 'eval / Function(string)',
-    cmd: ['node', 'dev-tools/check_eval.cjs', '--quiet'],
-    description: 'eval / new Function(string) / setTimeout(string) usage (informational)',
-    informational: true,
+    cmd: ['node', 'dev-tools/check_eval.cjs', '--strict', '--quiet'],
+    description: 'Blocking AST scan for eval / indirect eval / Function / new Function / setTimeout(string) across host, modules, JSX, desktop, catalog, services, and apps_script with ratchet baseline',
   },
   {
     name: 'npm audit (HIGH+CRITICAL)',

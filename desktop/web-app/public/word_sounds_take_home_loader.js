@@ -85,6 +85,18 @@
     saving_work: 'Your browser is saving {file}. Give that file to your teacher. If nothing appears, press Save my work again, or ask a grown-up.',
     grown_ups: 'For grown-ups',
     grown_ups_file: 'Save my work makes a spreadsheet file (CSV). Give that file to the teacher.',
+    // 2026-11-22: Show my teacher — deskside conferencing summary on a practice file's end screen.
+    confer_open: 'Show my teacher',
+    confer_focus: 'To go over together',
+    confer_all_first: 'All questions were right on the first try.',
+    confer_missed: 'Missed',
+    confer_retry: 'Right on retry',
+    confer_answered: 'answered {got}',
+    confer_expected: 'expected {want}',
+    confer_supports: 'Supports used: {list}.',
+    confer_supports_none: 'Supports used: none.',
+    confer_time: 'Active time: {time}.',
+    confer_note: 'Shown on this device only. Nothing is sent anywhere.',
     // 2026-11-13: practice that is not scored (Letter Trace), counted on the end screen.
     done_practice: 'Practice, not scored: {done} of {total} done.',
     // 2026-11-17: the missed questions, once more at the end (lesson.repeatMissed).
@@ -152,6 +164,7 @@
     tools_colors_7: 'Rose',
     tools_spacing: 'Spacing',
     tools_spacing_1: 'Wider',
+    tools_spacing_2: 'Extra wide',
     tools_font: 'Letters',
     tools_font_1: 'Lexend',
     tools_font_2: 'Atkinson',
@@ -162,6 +175,7 @@
     tools_focus: 'Reading focus',
     tools_focus_1: '1 line',
     tools_focus_2: '3 lines',
+    tools_focus_3: 'Ruler',
     tools_focus_hint: 'Tap a line, or use the up and down arrow keys on the text.',
     tools_lens: 'Magnifier',
     tools_lens_hint: 'Move it with the mouse, or drag the round handle. With the keyboard, go to the handle and use the arrow keys. Esc closes it.',
@@ -188,9 +202,12 @@
     tools_speed_2: 'Very slow',
     tools_speed_3: 'Faster',
     tools_speed_4: 'Fastest',
-    tools_speed_hint: 'Plays recorded words and read-aloud slower.',
+    tools_speed_hint: 'Changes how fast recorded words and read-aloud play.',
     tools_bold: 'Bold start',
     tools_bold_hint: 'Bolds the start of each word to help your eyes follow the text.',
+    tools_motion: 'Motion',
+    tools_motion_1: 'Less',
+    tools_motion_hint: 'Turns off animations and movement on screen.',
     tools_no_voice: 'This device has no built-in reading voice.',
     // "Hear all" (hearAllIn): plays or reads each answer choice in turn.
     hear_all: 'Hear all',
@@ -264,6 +281,8 @@
     check_teacher_wait: 'Too many incorrect codes. Wait {seconds} seconds, then try again.',
     check_review_title: 'Results for the teacher',
     check_review_close: 'Close the results',
+    check_review_focus: 'To go over together ({n}):',
+    check_review_focus_none: 'To go over together: none missed on the attempted items.',
     check_review_score: 'Score: {score} {unit}.',
     check_review_no_score: 'No score: {reason}.',
     check_reason_ended_early: 'the check was stopped before the end',
@@ -319,6 +338,21 @@
     check_review_tools: 'Reading tools used: {tools}.',
     // The teacher's screen of a check made without a teacher code: the score only, never the answers.
     check_review_no_code: 'To see each answer, make the check with a teacher code, or open the saved results file.',
+  };
+
+  // Sealed QR result labels (travel ONLY in a file made or sealed with a teacher QR public key).
+  var QR_LABELS = {
+    qr_show: 'Show sealed QR for teacher',
+    qr_hide: 'Hide sealed QR',
+    qr_title: 'Sealed QR for teacher',
+    qr_note: 'Encrypted on this device for teacher key {fp}. Only the matching teacher key on this site can read it. Nothing is sent over the internet.',
+    qr_alt: 'Sealed result QR code for teacher key {fp}',
+    qr_copy: 'Copy sealed code',
+    qr_copied: 'Sealed code copied.',
+    qr_copy_manual: 'Copy this sealed code into Collect by sealed QR:',
+    qr_trimmed: 'Long packet: all missed and retried items plus full totals are included; some first-try items were condensed to fit in one QR.',
+    qr_error: 'Could not make the sealed QR in this browser. Save the CSV file instead.',
+    qr_about: 'Sealed QR results: enabled for teacher key {fp} (X25519 + HKDF-SHA-256 + ChaCha20-Poly1305). The code is encrypted on this device and cannot be read without the teacher\'s private key. Nothing is sent over the internet.',
   };
 
   function str(value) { return value == null ? '' : String(value); }
@@ -690,31 +724,54 @@
           answerAudio: [answerClip] } };
       },
       render: function (item, ctx) {
-        var win = ctx.root.ownerDocument.defaultView;
+        var doc = ctx.root.ownerDocument;
+        var win = doc.defaultView;
         var cards = [];
         var token = 0;
+        var timer = null;
+        var watchingStop = false;
+        var clearTimer = function () {
+          if (timer != null) { try { win.clearTimeout(timer); } catch (_) {} timer = null; }
+        };
         var mark = function (index) {
           cards.forEach(function (c, i) { c.box.style.outline = i === index ? '4px solid var(--accent)' : ''; c.box.style.outlineOffset = i === index ? '2px' : ''; });
         };
+        var onDocStop = function (e) {
+          if (!ctx.root.isConnected || (e && e.target && e.target.closest && e.target.closest('[data-player-stop-audio]'))) halt();
+        };
+        var onDocKey = function (e) {
+          var k = String((e && e.key) || '');
+          if (!ctx.root.isConnected || k === 'Escape' || k === 'Esc') halt();
+        };
+        var watchStop = function (on) {
+          if (!doc || !doc.addEventListener || watchingStop === on) return;
+          watchingStop = on;
+          if (on) { doc.addEventListener('click', onDocStop, true); doc.addEventListener('keydown', onDocKey, true); }
+          else { doc.removeEventListener('click', onDocStop, true); doc.removeEventListener('keydown', onDocKey, true); }
+        };
+        var halt = function () { token++; clearTimer(); watchStop(false); mark(-1); };
         // Play a sequence with the app's pauses; any tap, answer or new screen
         // ends it (a stopped clip never resolves, and the token moves on).
         var run = function (steps) {
+          clearTimer();
           var mine = ++token;
           var i = 0;
+          watchStop(true);
           var step = function () {
-            if (mine !== token || !ctx.root.isConnected) return;
-            if (i >= steps.length) { mark(-1); return; }
+            timer = null;
+            if (mine !== token) return;
+            if (!ctx.root.isConnected) { watchStop(false); mark(-1); return; }
+            if (i >= steps.length) { watchStop(false); mark(-1); return; }
             var s = steps[i++];
             mark(s.hi == null ? -1 : s.hi);
             ctx.play(s.id).then(function (ok) {
               if (mine !== token) return;
-              if (ok === false) { mark(-1); return; }
-              win.setTimeout(step, s.gap || 0);
+              if (ok === false) { watchStop(false); mark(-1); return; }
+              timer = win.setTimeout(step, s.gap || 0);
             });
           };
           step();
         };
-        var halt = function () { token++; mark(-1); };
         var soundSteps = function () {
           var gap = ctx.soundGap ? ctx.soundGap() : 500;
           return item.sounds.map(function (id) { return { id: id, gap: gap }; }).concat([{ id: item.question, gap: 100 }]);
@@ -741,7 +798,7 @@
                 missedText: ctx.showLetters ? ctx.fmt(ctx.L.blending_missed, { word: item.target }) : ctx.L.blending_missed_no_letters,
               });
               if (outcome !== 'correct') { box.classList.add('tried'); choose.setAttribute('aria-disabled', 'true'); }
-            } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', text: shownWord }) : ctx.fmt(ctx.L.blending_option_n, { n: n })]);
+            } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', lang: 'en', text: shownWord }) : ctx.fmt(ctx.L.blending_option_n, { n: n })]);
           var box = ctx.el('li', { class: 'choice' }, [listen, choose]);
           cards.push({ box: box, choose: choose, right: String(choice.text).toLowerCase() === String(item.target).toLowerCase() });
           list.appendChild(box);
@@ -758,12 +815,25 @@
           hear ? hear.note : null,
         ]));
         ctx.root.appendChild(list);
+        if (typeof ctx.keys === 'function') {
+          ctx.keys(function (key) {
+            var k = String(key == null ? '' : key);
+            if (k === 'Escape' || k === 'Esc') {
+              var active = watchingStop || timer != null;
+              halt();
+              if (typeof ctx.stop === 'function') ctx.stop();
+              return active;
+            }
+            return false;
+          });
+        }
         // Opening sequence (word_sounds_module.js:16790-16845): instruction, each
         // sound, "Which word did you hear?", then every choice in turn.
         if (!ctx.isDone()) {
           run((ctx.skipDirections || !item.instruction ? [] : [{ id: item.instruction, gap: 200 }]).concat(soundSteps(), optionSteps(200)));
         }
         return {
+          stop: halt,
           // The R key: the sounds and the question again.
           replay: function () { run(soundSteps()); },
           reveal: function () {
@@ -807,6 +877,7 @@
         counting_sounds_more: '11 or more sounds',
         counting_correct: 'Yes! The word has {count}.',
         counting_missed: 'The word has {count}. Listen to it again.',
+        counting_answer_mark: '(the answer)',
       },
       prepare: function (w, env) {
         var phonemes = Array.isArray(w.phonemes) ? w.phonemes : [];
@@ -836,10 +907,10 @@
           return v === '11+' ? ctx.L.counting_sounds_more : v === '1' ? ctx.L.counting_sounds_one : ctx.fmt(ctx.L.counting_sounds_n, { n: v });
         };
         var cards = [];
-        var list = ctx.el('ul', { class: 'counting-numbers', style: 'display:flex;flex-wrap:wrap;gap:10px;list-style:none;padding:0;margin:16px 0' });
+        var list = ctx.el('ul', { class: 'counting-numbers', style: 'display:flex;flex-wrap:wrap;gap:8px;list-style:none;padding:0;margin:16px 0' });
         values.forEach(function (v) {
           var button = ctx.el('button', { type: 'button', class: 'primary', 'aria-label': v === '11+' ? '11+ — ' + ctx.L.counting_sounds_more : countText(v),
-            style: 'min-width:64px;min-height:64px;font-size:1.4rem;font-weight:700',
+            style: 'min-width:56px;min-height:56px;padding:8px 10px;font-size:1.4rem;font-weight:700',
             on: { click: function () {
               if (ctx.isDone() || button.getAttribute('aria-disabled') === 'true') return;
               var outcome = ctx.answer(v, v === item.target, {
@@ -849,10 +920,22 @@
               if (outcome !== 'correct') { box.classList.add('tried'); button.setAttribute('aria-disabled', 'true'); }
             } } }, [v]);
           // data-key: the number key that presses it (the same as its label, also when fewer numbers are shown).
-          var box = ctx.el('li', { class: 'choice solo', style: 'padding:6px', 'data-key': /^[1-9]$/.test(v) ? v : false }, [button]);
+          var box = ctx.el('li', { class: 'choice solo', style: 'padding:4px', 'data-key': /^[1-9]$/.test(v) ? v : false }, [button]);
           cards.push({ box: box, button: button, value: v });
           list.appendChild(box);
         });
+        if (typeof ctx.keys === 'function') {
+          ctx.keys(function (key) {
+            if (ctx.isDone()) return false;
+            var k = String(key == null ? '' : key);
+            var targetVal = k === '0' ? '10' : (k === '+' || k === '=') ? '11+' : '';
+            if (!targetVal) return false;
+            var hit = cards.filter(function (c) { return c.value === targetVal; })[0];
+            if (!hit || hit.button.disabled || hit.button.getAttribute('aria-disabled') === 'true') return false;
+            hit.button.click();
+            return true;
+          });
+        }
         ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.counting_question }));
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
           ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); ctx.play(item.promptAudio); } }, text: ctx.L.hear_question }),
@@ -862,7 +945,13 @@
         ctx.root.appendChild(list);
         return {
           reveal: function () {
-            cards.forEach(function (c) { c.button.setAttribute('aria-disabled', 'true'); if (c.value === item.target) c.box.classList.add('right'); });
+            cards.forEach(function (c) {
+              c.button.setAttribute('aria-disabled', 'true');
+              if (c.value === item.target && !c.box.classList.contains('right')) {
+                c.box.classList.add('right');
+                c.button.setAttribute('aria-label', c.button.getAttribute('aria-label') + ' ' + (ctx.L.counting_answer_mark || '(the answer)'));
+              }
+            });
           },
         };
       },
@@ -953,7 +1042,7 @@
           var src = ctx.image(choice.image);
           var name = ctx.fmt(ctx.L.decoding_picture_of, { word: choice.text });
           // The picture's number, the key 1-9 that chooses it (2026-11-13).
-          var number = i < 9 ? ctx.el('span', { 'aria-hidden': 'true', 'data-key-number': '', style: 'position:absolute;top:6px;inset-inline-start:6px;min-width:28px;height:28px;line-height:28px;border-radius:14px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:1rem;text-align:center', text: String(i + 1) }) : null;
+          var number = i < 9 ? ctx.el('span', { 'aria-hidden': 'true', 'data-key-number': '', style: 'position:absolute;top:6px;inset-inline-start:6px;min-width:28px;height:28px;line-height:26px;border-radius:14px;border:1px solid var(--accent-ink);background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:1rem;text-align:center', text: String(i + 1) }) : null;
           var pick = ctx.el('button', { type: 'button', 'aria-label': name, style: 'position:relative;width:100%;display:flex;justify-content:center;background:#fff',
             on: { click: function () {
               if (ctx.isDone() || pick.getAttribute('aria-disabled') === 'true') return;
@@ -962,14 +1051,14 @@
                 missedText: ctx.fmt(ctx.L.decoding_missed, { word: item.printed }),
               });
               if (outcome !== 'correct') { box.classList.add('tried'); pick.setAttribute('aria-disabled', 'true'); }
-            } } }, [number, ctx.el('img', { class: 'picture', src: src || '', alt: '' })]);
+            } } }, [number, ctx.el('img', { class: 'picture', src: src || '', alt: '', style: 'max-width:min(100%,160px);height:auto;object-fit:contain' })]);
           var box = ctx.el('li', { class: 'choice' }, [pick]);
           cards.push({ box: box, pick: pick, right: right });
           list.appendChild(box);
         });
         ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.decoding_prompt }));
         // The printed word, as the app shows it (CSS capitalize).
-        ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', dir: 'ltr', style: 'font-size:3rem;text-transform:capitalize;margin:8px 0', text: item.printed }));
+        ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', dir: 'ltr', style: 'font-size:clamp(2rem,9vw,3rem);text-transform:capitalize;margin:8px 0;overflow-wrap:anywhere', text: item.printed }));
         if (item.prompt) {
           ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
             ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); ctx.play(item.prompt); } }, text: ctx.L.decoding_hear_instructions }),
@@ -1091,6 +1180,7 @@
         letter_tracing_question: 'Trace the letter {letter} with your finger, a pen or the mouse.',
         letter_tracing_canvas: 'Tracing area for the letter {letter}',
         letter_tracing_done: 'I traced it',
+        letter_tracing_undo: 'Undo stroke',
         letter_tracing_clear: 'Start again',
         letter_tracing_skip: 'Skip (not traced)',
         letter_tracing_more: 'Keep going. Trace over more of the letter.',
@@ -1157,7 +1247,7 @@
         var at = 0;
         var pen = 22; // the width of the student's line and of the guide
         // A square that shrinks on a narrow phone (padding-top keeps it square without aspect-ratio).
-        var wrap = ctx.el('div', { 'data-trace-box': '', style: 'position:relative;width:var(--trace-sz,' + size + 'px);max-width:100%;margin:12px auto;border:2px dashed var(--muted);border-radius:16px;background:var(--card);overflow:hidden;touch-action:none' });
+        var wrap = ctx.el('div', { 'data-trace-box': '', style: 'position:relative;width:var(--trace-sz,' + size + 'px);max-width:100%;margin:6px auto;border:2px dashed var(--muted);border-radius:16px;background:var(--card);overflow:hidden;touch-action:none' });
         wrap.appendChild(ctx.el('div', { 'aria-hidden': 'true', style: 'padding-top:100%' }));
         var guide = doc.createElement('canvas');
         var ink = doc.createElement('canvas');
@@ -1285,7 +1375,7 @@
           // a short line to it) that is 36 px from every earlier dot and 24 px from every earlier arrow, inside the box,
           // and leaves room for its own arrow (24 px from other dots, 22 from its own, 21 from every arrow), best nearer its own dot
           // than any other. Dots are drawn last, dot 1 on top. Guides only: the tracing check does not use them.
-          var R = 12, many = shape.strokes.length > 1, dots = [], arrows = [], all = [];
+          var R = 12, dots = [], arrows = [], all = [];
           shape.strokes.forEach(function (st) { all = all.concat(st.pts); });
           var mid = [all.reduce(function (n, q) { return n + q[0]; }, 0) / all.length, all.reduce(function (n, q) { return n + q[1]; }, 0) / all.length];
           var lenOf = function (pts) { var t = 0; for (var i = 1; i < pts.length; i++) t += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); return t; };
@@ -1359,6 +1449,7 @@
           pg.restore();
         };
         var drawing = false, activeId = null, last = null;
+        var strokes = [], curStroke = null, undo = null;
         // The first stroke of a part (after Start again too): where it began and how long it is, for the start tip.
         var first = null, firstDone = false;
         var spot = function (e) {
@@ -1371,11 +1462,31 @@
           pg.strokeStyle = palette().accent; pg.lineWidth = pen; pg.lineCap = 'round'; pg.lineJoin = 'round';
           pg.beginPath(); pg.moveTo(a.x, a.y); pg.lineTo(b.x, b.y); pg.stroke();
         };
-        var wipe = function () { first = null; firstDone = false; drawing = false; activeId = null; last = null; if (pg) { pg.setTransform(1, 0, 0, 1, 0, 0); pg.clearRect(0, 0, px, px); } };
+        var redrawInk = function () {
+          if (!pg) return;
+          pg.setTransform(1, 0, 0, 1, 0, 0);
+          pg.clearRect(0, 0, px, px);
+          strokes.forEach(function (pts) {
+            if (!pts || !pts.length) return;
+            line(pts[0], pts[0]);
+            for (var i = 1; i < pts.length; i++) line(pts[i - 1], pts[i]);
+          });
+        };
+        var updateUndo = function () {
+          if (!undo) return;
+          var has = strokes.length > 0 && !ctx.isDone();
+          undo.hidden = strokes.length === 0;
+          undo.disabled = !has;
+          undo.setAttribute('aria-disabled', has ? 'false' : 'true');
+        };
+        var wipe = function () { first = null; firstDone = false; drawing = false; activeId = null; last = null; strokes = []; curStroke = null; if (pg) { pg.setTransform(1, 0, 0, 1, 0, 0); pg.clearRect(0, 0, px, px); } updateUndo(); };
         ink.addEventListener('pointerdown', function (e) {
           // Ignore secondary touches (palm rest / second finger on iPad) and non-left mouse buttons.
           if (ctx.isDone() || drawing || e.isPrimary === false || (e.pointerType === 'mouse' && e.button !== 0)) return;
-          drawing = true; activeId = e.pointerId != null ? e.pointerId : null; last = spot(e); line(last, last);
+          drawing = true; activeId = e.pointerId != null ? e.pointerId : null; last = spot(e);
+          curStroke = [last]; strokes.push(curStroke);
+          line(last, last);
+          updateUndo();
           if (!firstDone) first = { x: last.x, y: last.y, len: 0 };
           try { ink.setPointerCapture(e.pointerId); } catch (_) {}
           e.preventDefault();
@@ -1383,6 +1494,7 @@
         ink.addEventListener('pointermove', function (e) {
           if (!drawing || (activeId != null && e.pointerId !== activeId)) return;
           var p = spot(e);
+          if (curStroke) curStroke.push(p);
           if (first && !firstDone) first.len += Math.sqrt((p.x - last.x) * (p.x - last.x) + (p.y - last.y) * (p.y - last.y));
           line(last, p); last = p; e.preventDefault();
         });
@@ -1396,7 +1508,7 @@
         };
         var stop = function (e) {
           if (!drawing || (e && activeId != null && e.pointerId !== activeId)) return;
-          startTip(); drawing = false; activeId = null; last = null;
+          startTip(); drawing = false; activeId = null; last = null; curStroke = null; updateUndo();
         };
         ink.addEventListener('pointerup', stop);
         ink.addEventListener('pointercancel', stop);
@@ -1441,11 +1553,11 @@
           for (var c2 = 0; c2 < G * G; c2++) if ((want[c2] || 0) >= 6) { cells++; if ((got[c2] || 0) / want[c2] >= 0.35) covered++; }
           return { done: cells ? covered / cells : 0, stray: all ? away / all : 0 };
         };
-        var question = ctx.el('p', { class: 'letters', 'data-trace-question': '' });
-        var tools = ctx.el('p', { class: 'muted', style: 'margin:0', text: L.letter_tracing_tools || '' });
-        var stepLine = ctx.el('p', { class: 'muted', 'data-trace-part': '', style: 'margin:0' });
-        var how = ctx.el('p', { class: 'muted', 'data-trace-how': '' });
-        var note = ctx.el('p', { class: 'letters', 'aria-live': 'polite' });
+        var question = ctx.el('p', { class: 'letters', 'data-trace-question': '', style: 'margin:0 0 2px' });
+        var tools = ctx.el('p', { class: 'muted', style: 'margin:0;font-size:0.875rem', text: L.letter_tracing_tools || '' });
+        var stepLine = ctx.el('p', { class: 'muted', 'data-trace-part': '', style: 'margin:0;font-size:0.9rem' });
+        var how = ctx.el('p', { class: 'muted', 'data-trace-how': '', style: 'margin:4px 0 0;font-size:0.9rem' });
+        var note = ctx.el('p', { class: 'letters', 'aria-live': 'polite', style: 'margin:4px 0 0;min-height:1.2em' });
         var skipLower = ctx.el('button', { type: 'button', 'data-trace-skip-lowercase': '', hidden: true, on: { click: function () {
           if (ctx.isDone()) return;
           ctx.support('lowercaseSkipped');
@@ -1488,20 +1600,29 @@
           note.textContent = '';
           ctx.practice('traced', L.letter_tracing_traced);
         } }, text: L.letter_tracing_done });
+        undo = ctx.el('button', { type: 'button', 'data-trace-undo': '', hidden: true, disabled: true, 'aria-disabled': 'true', on: { click: function () {
+          if (ctx.isDone() || !strokes.length) return;
+          strokes.pop();
+          if (!strokes.length) { first = null; firstDone = false; note.textContent = ''; }
+          redrawInk();
+          updateUndo();
+        } }, text: L.letter_tracing_undo || 'Undo stroke' });
         var clear = ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; wipe(); note.textContent = ''; } }, text: L.letter_tracing_clear });
         var skip = ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; ctx.practice('skipped', L.letter_tracing_skipped); } }, text: L.letter_tracing_skip });
         ctx.root.appendChild(question);
-        if (item.word) ctx.root.appendChild(ctx.el('p', { class: 'letters', 'data-trace-word': '', style: 'font-size:1.25rem;margin:0 0 4px' }, String(L.letter_tracing_word || '{word}').split('{word}').reduce(function (out, bit, i) { if (i) out.push(ctx.el('span', { lang: 'en', dir: 'ltr', text: item.word })); if (bit) out.push(bit); return out; }, [])));
+        var metaKids = [];
+        if (item.word) metaKids.push(ctx.el('p', { class: 'letters', 'data-trace-word': '', style: 'font-size:1.1rem;margin:0' }, String(L.letter_tracing_word || '{word}').split('{word}').reduce(function (out, bit, i) { if (i) out.push(ctx.el('span', { lang: 'en', dir: 'ltr', text: item.word })); if (bit) out.push(bit); return out; }, [])));
+        metaKids.push(stepLine);
+        ctx.root.appendChild(ctx.el('div', { style: 'display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:2px 10px;margin:0 0 2px' }, metaKids));
         ctx.root.appendChild(tools);
-        ctx.root.appendChild(stepLine);
-        if (buttons.length) ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'margin-top:8px' }, buttons));
+        if (buttons.length) ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'margin-top:4px;gap:6px' }, buttons));
         ctx.root.appendChild(how);
         ctx.root.appendChild(wrap);
         ctx.root.appendChild(note);
-        ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'margin-top:12px' }, [done, clear, skipLower, skip]));
+        ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'margin-top:6px;gap:8px' }, [done, undo, clear, skipLower, skip]));
         showPart();
         return {
-          reveal: function () { [done, clear, skipLower, skip].forEach(function (b) { b.setAttribute('aria-disabled', 'true'); }); },
+          reveal: function () { [done, undo, clear, skipLower, skip].forEach(function (b) { b.setAttribute('aria-disabled', 'true'); }); if (undo) undo.disabled = true; },
         };
       },
     };
@@ -1595,25 +1716,52 @@
           instruction: instruction, wordAudio: wordAudio, choices: choices, answerAudio: [answerAudio] } };
       },
       render: function (item, ctx) {
-        var win = ctx.root.ownerDocument.defaultView;
+        var doc = ctx.root.ownerDocument;
+        var win = doc.defaultView;
         var cards = [];
         var token = 0;
+        var timer = null;
+        var watchingStop = false;
+        var clearTimer = function () {
+          if (timer != null) { try { win.clearTimeout(timer); } catch (_) {} timer = null; }
+        };
         var mark = function (index) {
           cards.forEach(function (c, i) { c.box.style.outline = i === index ? '4px solid var(--accent)' : ''; c.box.style.outlineOffset = i === index ? '2px' : ''; });
         };
+        var onDocStop = function (e) {
+          if (!ctx.root.isConnected || (e && e.target && e.target.closest && e.target.closest('[data-player-stop-audio]'))) halt();
+        };
+        var onDocKey = function (e) {
+          var k = String((e && e.key) || '');
+          if (!ctx.root.isConnected || k === 'Escape' || k === 'Esc') halt();
+        };
+        var watchStop = function (on) {
+          if (!doc || !doc.addEventListener || watchingStop === on) return;
+          watchingStop = on;
+          if (on) { doc.addEventListener('click', onDocStop, true); doc.addEventListener('keydown', onDocKey, true); }
+          else { doc.removeEventListener('click', onDocStop, true); doc.removeEventListener('keydown', onDocKey, true); }
+        };
+        var halt = function () { token++; clearTimer(); watchStop(false); mark(-1); };
         var run = function (steps) {
+          clearTimer();
           var mine = ++token;
           var i = 0;
+          watchStop(true);
           var step = function () {
-            if (mine !== token || !ctx.root.isConnected) return;
-            if (i >= steps.length) { mark(-1); return; }
+            timer = null;
+            if (mine !== token) return;
+            if (!ctx.root.isConnected) { watchStop(false); mark(-1); return; }
+            if (i >= steps.length) { watchStop(false); mark(-1); return; }
             var s = steps[i++];
             mark(s.hi == null ? -1 : s.hi);
-            ctx.play(s.id).then(function (ok) { if (mine !== token) return; if (ok === false) { mark(-1); return; } win.setTimeout(step, s.gap || 0); });
+            ctx.play(s.id).then(function (ok) {
+              if (mine !== token) return;
+              if (ok === false) { watchStop(false); mark(-1); return; }
+              timer = win.setTimeout(step, s.gap || 0);
+            });
           };
           step();
         };
-        var halt = function () { token++; mark(-1); };
         // 120 ms between instruction parts (word_sounds_module.js:9762).
         var instructionSteps = function (lastGap) {
           return item.instruction.map(function (id, i) { return { id: id, gap: i === item.instruction.length - 1 ? lastGap : 120 }; });
@@ -1635,7 +1783,7 @@
                 missedText: ctx.showLetters ? ctx.fmt(ctx.L.manipulation_missed, { word: item.target }) : ctx.L.manipulation_missed_no_letters,
               });
               if (outcome !== 'correct') { box.classList.add('tried'); choose.setAttribute('aria-disabled', 'true'); }
-            } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', text: choice.text }) : ctx.fmt(ctx.L.manipulation_option_n, { n: n })]);
+            } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', lang: 'en', text: choice.text }) : ctx.fmt(ctx.L.manipulation_option_n, { n: n })]);
           var box = ctx.el('li', { class: 'choice' }, [listen, choose]);
           cards.push({ box: box, choose: choose, right: right });
           list.appendChild(box);
@@ -1643,22 +1791,36 @@
         ctx.root.appendChild(ctx.el('p', { text: ctx.L.manipulation_prompt }));
         // The app prints the task card (type + instruction) for every learner.
         ctx.root.appendChild(ctx.el('p', { class: 'muted', text: item.type === 'deletion' ? ctx.L.manipulation_type_deletion : ctx.L.manipulation_type_substitution }));
-        ctx.root.appendChild(ctx.el('p', { class: 'letters', text: item.instructionText }));
-        ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
-          ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); run(instructionSteps(0)); } }, text: ctx.L.manipulation_hear_instruction }),
-          ctx.el('button', { type: 'button', on: { click: function () { halt(); ctx.support('wordReplays'); ctx.play(item.wordAudio); } }, text: ctx.L.hear_word }),
-        ]));
+        ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', text: item.instructionText }));
         // Hear all (the player's ctx.hearAll): each choice in turn, marked with its number. The opening already plays them.
         var hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ before: halt, auto: false,
           list: function () { return cards.map(function (c, i) { return { box: c.box, say: function () { return ctx.play(item.choices[i].audio); } }; }); } }) : null;
-        if (hear) ctx.root.appendChild(hear.node);
+        ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
+          ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); run(instructionSteps(0)); } }, text: ctx.L.manipulation_hear_instruction }),
+          ctx.el('button', { type: 'button', on: { click: function () { halt(); ctx.support('wordReplays'); ctx.play(item.wordAudio); } }, text: ctx.L.hear_word }),
+          hear ? hear.button : null,
+          hear ? hear.note : null,
+        ]));
         ctx.root.appendChild(list);
+        if (typeof ctx.keys === 'function') {
+          ctx.keys(function (key) {
+            var k = String(key == null ? '' : key);
+            if (k === 'Escape' || k === 'Esc') {
+              var active = watchingStop || timer != null;
+              halt();
+              if (typeof ctx.stop === 'function') ctx.stop();
+              return active;
+            }
+            return false;
+          });
+        }
         // Opening sequence (word_sounds_module.js:16890-16937): the instruction,
         // 400 ms, then every choice in turn with 350 ms between.
         if (!ctx.isDone()) {
           run(instructionSteps(400).concat(item.choices.map(function (c, i) { return { id: c.audio, gap: 350, hi: i }; })));
         }
         return {
+          stop: halt,
           // The R key: the instruction again.
           replay: function () { run(instructionSteps(0)); },
           reveal: function () {
@@ -1932,6 +2094,7 @@
           picked = null; errors = [];
           for (var i = 0; i < n; i++) slots[i] = null;
           draw(); ctx.announce(L.mapping_cleared);
+          if (chipEls[0] && chipEls[0].pick) { try { chipEls[0].pick.focus(); } catch (_) {} }
         } }, text: L.mapping_clear });
 
         var draw = function () {
@@ -2051,6 +2214,65 @@
           placeChip(picked, si, e);
         };
 
+        if (typeof ctx.keys === 'function') {
+          ctx.keys(function (key) {
+            if (locked()) return false;
+            var k = String(key == null ? '' : key);
+            if (k === 'Escape' || k === 'Esc') {
+              if (picked == null) return false;
+              var drop = picked;
+              picked = null;
+              draw();
+              ctx.announce(ctx.fmt(L.mapping_dropped, { spelling: text(drop) }));
+              if (chipEls[drop] && chipEls[drop].pick) { try { chipEls[drop].pick.focus(); } catch (_) {} }
+              return true;
+            }
+            if (k === 'Backspace') {
+              for (var si = n - 1; si >= 0; si--) {
+                if (slots[si] != null) {
+                  var out = slots[si];
+                  var first = slots.indexOf(out);
+                  takeOut(out);
+                  picked = null; errors = [];
+                  draw();
+                  ctx.announce(ctx.fmt(L.mapping_removed, { spelling: text(out), n: first + 1 }));
+                  return true;
+                }
+              }
+              return false;
+            }
+            if (k === 'Enter') {
+              var ae = doc && doc.activeElement;
+              var onBtn = !!(ae && String(ae.tagName || '').toUpperCase() === 'BUTTON' && !ae.closest('[hidden]') && !ae.disabled && ae.getAttribute('aria-disabled') !== 'true');
+              if (onBtn || picked == null) return false;
+              var sp = spanOf(picked);
+              for (var ei = 0; ei <= n - sp; ei++) {
+                var fits = true;
+                for (var kk = 0; kk < sp; kk++) if (slots[ei + kk] != null) { fits = false; break; }
+                if (fits) { placeChip(picked, ei, { detail: 1 }); return true; }
+              }
+              if (sp > 1) { ctx.announce(ctx.fmt(L.mapping_needs_two, { spelling: text(picked) })); return true; }
+              return false;
+            }
+            if (/^[1-9]$/.test(k)) {
+              var idx = Number(k) - 1;
+              if (picked != null) {
+                if (idx < n && !covered(idx)) {
+                  if (idx + spanOf(picked) > n) { ctx.announce(ctx.fmt(L.mapping_needs_two, { spelling: text(picked) })); return true; }
+                  placeChip(picked, idx, { detail: 1 });
+                  return true;
+                }
+                return false;
+              }
+              if (idx < chipEls.length && slots.indexOf(idx) < 0) {
+                onChip(idx, { detail: 1 });
+                return true;
+              }
+            }
+            return false;
+          });
+        }
+
         ctx.root.appendChild(ctx.el('p', { class: 'letters', text: L.mapping_question }));
         ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.fmt(L.mapping_word, { word: item.word }) }));
         ctx.root.appendChild(ctx.el('p', { class: 'muted', text: L.mapping_how + ' ' + L.mapping_auto }));
@@ -2128,6 +2350,7 @@
         missing_letter_word_is: 'The word is {word}.',
         missing_letter_correct: 'Yes! The missing letter is {letter}.',
         missing_letter_missed: 'The missing letter is {letter}. Listen to the word.',
+        missing_letter_answer_mark: '(the answer)',
       },
       prepare: function (w, env) {
         var board = w.activityItems && w.activityItems.missing_letter;
@@ -2168,7 +2391,7 @@
         var wordText = item.letters.map(function (l, i) { return i === item.hiddenIndex ? cased(item.target) : l; }).join('');
         var slots = item.letters.map(function (l, i) {
           if (i !== item.hiddenIndex && fixed(l)) return ctx.el('li', { 'data-fixed': '', style: 'display:flex;align-items:center;font-size:1.4rem;font-weight:700' }, [l === ' ' ? ' ' : l]);
-          return ctx.el('li', { class: 'slot', style: i === item.hiddenIndex ? 'border-style:dashed;border-color:var(--accent)' : 'border-style:solid' },
+          return ctx.el('li', { class: 'slot', style: (i === item.hiddenIndex ? 'border-style:dashed;border-color:var(--accent);' : 'border-style:solid;') + 'min-width:clamp(36px,11vw,56px);min-height:clamp(44px,12vw,60px)' },
             [i === item.hiddenIndex ? '?' : l]);
         });
         var srWord = ctx.el('p', { class: 'sr' });
@@ -2207,7 +2430,14 @@
                 c.button.setAttribute('aria-disabled', 'true');
               }
             });
+            var wasOnCheck = !!(doc && doc.activeElement === check);
             select('');
+            if (wasOnCheck && !ctx.noFocus) {
+              var nextChoice = cards.filter(function (c) { return !c.tried; })[0];
+              if (nextChoice && nextChoice.button && typeof nextChoice.button.focus === 'function') {
+                try { nextChoice.button.focus(); } catch (_) {}
+              }
+            }
           }
         } }, text: ctx.L.missing_letter_check });
         var select = function (letter) {
@@ -2232,6 +2462,11 @@
           ctx.keys(function (key) {
             if (ctx.isDone()) return false;
             var k = String(key == null ? '' : key);
+            if (k === 'Backspace' || k === 'Escape' || k === 'Esc') {
+              if (!selected) return false;
+              select('');
+              return true;
+            }
             if (k === 'Enter') {
               var ae = doc && doc.activeElement;
               var onSelectedChoice = cards.some(function (c) { return c.button === ae && c.letter === selected; });
@@ -2266,7 +2501,13 @@
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [check]));
         return {
           reveal: function () {
-            cards.forEach(function (c) { c.button.setAttribute('aria-disabled', 'true'); if (c.letter === item.target) c.box.classList.add('right'); });
+            cards.forEach(function (c) {
+              c.button.setAttribute('aria-disabled', 'true');
+              if (c.letter === item.target && !c.box.classList.contains('right')) {
+                c.box.classList.add('right');
+                c.button.setAttribute('aria-label', c.button.getAttribute('aria-label') + ' ' + (ctx.L.missing_letter_answer_mark || '(the answer)'));
+              }
+            });
             check.setAttribute('aria-disabled', 'true');
             showButton.setAttribute('aria-disabled', 'true');
             updateWord(item.target);
@@ -2303,6 +2544,7 @@
         orthography_add: 'Add {letter}',
         orthography_backspace: 'Remove last letter',
         orthography_clear: 'Clear',
+        orthography_slow: 'Hear it slowly',
         orthography_check: 'Check spelling',
         orthography_empty: 'Type or tap letters to spell the word first.',
         orthography_same: 'Change your spelling, then check it again.',
@@ -2369,17 +2611,21 @@
         var input = ctx.el('input', { id: inputId, type: 'text', dir: 'ltr', autocomplete: 'off', autocorrect: 'off', autocapitalize: 'none', spellcheck: 'false',
           inputmode: /[^a-z]/.test(own(target)) ? 'text' : 'none', placeholder: placeholder,
           maxlength: '40', style: 'font-size:1.6rem;font-weight:700;letter-spacing:.1em;text-transform:lowercase;text-align:center', on: {
-            input: function () { lastSubmitted = null; },
+            input: function () { lastSubmitted = null; syncCheck(); },
             keydown: function (e) {
               if (e.key !== 'Enter' || e.repeat || e.isComposing || e.keyCode === 229) return;
               e.preventDefault();
               submit();
             },
           } });
+        var syncCheck = function () {
+          if (check) check.setAttribute('aria-disabled', ctx.isDone() || !String(input.value || '').trim() ? 'true' : 'false');
+        };
         var edit = function (value) {
           if (ctx.isDone()) return;
           input.value = value;
           lastSubmitted = null;
+          syncCheck();
         };
         var submit = function () {
           if (ctx.isDone()) return;
@@ -2401,23 +2647,25 @@
           : 'abcdefghijklmnopqrstuvwxyz'.split('').concat(item.extraTiles || []);
         var tiles = letters.map(function (letter) {
           return ctx.el('button', { type: 'button', 'aria-label': ctx.fmt(ctx.L.orthography_add, { letter: letter }),
-            style: 'min-width:52px;font-size:1.3rem;font-weight:700;padding:6px 10px',
+            style: 'min-width:44px;min-height:44px;font-size:1.15rem;font-weight:700;padding:4px 8px',
             on: { click: function () { edit(String(input.value || '') + letter); } } }, [letter]);
         });
-        var back = ctx.el('button', { type: 'button', on: { click: function () { edit(String(input.value || '').slice(0, -1)); } }, text: ctx.L.orthography_backspace });
-        var clear = ctx.el('button', { type: 'button', on: { click: function () { edit(''); } }, text: ctx.L.orthography_clear });
-        var check = ctx.el('button', { type: 'button', class: 'primary', on: { click: submit }, text: ctx.L.orthography_check });
+        var back = ctx.el('button', { type: 'button', 'aria-label': ctx.L.orthography_backspace, style: 'min-width:44px;min-height:44px', on: { click: function () { edit(String(input.value || '').slice(0, -1)); } } }, ['⌫']);
+        var clear = ctx.el('button', { type: 'button', style: 'min-height:44px', on: { click: function () { edit(''); } }, text: ctx.L.orthography_clear });
+        var check = ctx.el('button', { type: 'button', class: 'primary', 'aria-disabled': 'true', on: { click: submit }, text: ctx.L.orthography_check });
         var answerLine = ctx.el('p', { class: 'letters', hidden: true, text: ctx.fmt(ctx.L.orthography_answer, { word: written }) });
         ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.orthography_question }));
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
           ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); ctx.play(item.promptAudio); } }, text: ctx.L.hear_question }),
           ctx.el('button', { type: 'button', on: { click: function () { ctx.support('wordReplays'); ctx.play(item.wordAudio); } }, text: ctx.L.hear_word }),
+          ctx.el('button', { type: 'button', on: { click: function () { ctx.support('slowReplays'); ctx.play(item.wordAudio, 0.5); } }, text: ctx.L.orthography_slow || 'Hear it slowly' }),
         ]));
         ctx.root.appendChild(ctx.el('label', { for: inputId, text: ctx.L.orthography_input }));
         ctx.root.appendChild(input);
-        ctx.root.appendChild(ctx.el('div', { class: 'row', role: 'group', 'aria-label': ctx.L.orthography_tiles, style: 'margin:16px 0;gap:8px' }, tiles));
-        ctx.root.appendChild(ctx.el('div', { class: 'row' }, [back, clear, check]));
+        ctx.root.appendChild(ctx.el('div', { class: 'row', role: 'group', 'aria-label': ctx.L.orthography_tiles, style: 'flex-wrap:wrap;margin:8px 0;gap:4px' }, tiles));
+        ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'margin-top:8px;gap:6px' }, [back, clear, check]));
         ctx.root.appendChild(answerLine);
+        syncCheck();
         return {
           reveal: function () {
             input.setAttribute('readonly', '');
@@ -2530,12 +2778,36 @@
       render: function (item, ctx) {
         // The key prepare() uses (2026-11-13): spaces or an accent written two ways are one choice.
         var norm = function (s) { var t = String(s == null ? '' : s); try { t = t.normalize('NFC'); } catch (_) {} return t.toLowerCase().trim().replace(/\s+/g, ' '); };
+        var doc = ctx.root.ownerDocument;
         var picture = ctx.image(item.picture);
         var blanks = [];
         var lineNodes = [];
+        var run = 0;
+        var watchingStop = false;
+        var mark = function (index) {
+          lineNodes.forEach(function (n, i) {
+            var on = i === index;
+            n.style.background = on ? 'var(--ok-bg)' : '';
+            if (on) n.setAttribute('aria-current', 'true'); else n.removeAttribute('aria-current');
+          });
+        };
+        var onDocStop = function (e) {
+          if (!ctx.root.isConnected || (e && e.target && e.target.closest && e.target.closest('[data-player-stop-audio]'))) halt();
+        };
+        var onDocKey = function (e) {
+          var k = String((e && e.key) || '');
+          if (!ctx.root.isConnected || k === 'Escape' || k === 'Esc') halt();
+        };
+        var watchStop = function (on) {
+          if (!doc || !doc.addEventListener || watchingStop === on) return;
+          watchingStop = on;
+          if (on) { doc.addEventListener('click', onDocStop, true); doc.addEventListener('keydown', onDocKey, true); }
+          else { doc.removeEventListener('click', onDocStop, true); doc.removeEventListener('keydown', onDocKey, true); }
+        };
+        var halt = function () { run++; watchStop(false); mark(-1); };
         // data-read: running text, where the shell's reading focus can go.
         var storyBox = ctx.el('div', { role: 'group', 'aria-label': ctx.L.read_passage_story, class: 'letters', lang: 'en', dir: 'ltr', 'data-read': '',
-          style: 'font-size:1.6rem;border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin:12px 0' });
+          style: 'font-size:clamp(1.2rem,4.5vw,1.6rem);border:1px solid var(--line);border-radius:14px;padding:12px clamp(12px,3.5vw,16px);margin:12px 0;overflow-wrap:anywhere' });
         item.lines.forEach(function (line) {
           var node;
           if (line.text != null) node = ctx.el('p', { style: 'margin:6px 0;padding:2px 6px;border-radius:8px', text: line.text });
@@ -2555,7 +2827,7 @@
         else ctx.root.appendChild(ctx.el('p', {}, [ctx.L.read_passage_word_hint + ' ', ctx.el('span', { class: 'letters', lang: 'en', text: item.target })]));
         ctx.root.appendChild(storyBox);
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
-          ctx.el('button', { type: 'button', on: { click: function () { run++; mark(-1); ctx.support('questionReplays'); ctx.play(item.prompt); } }, text: ctx.L.read_passage_hear_instructions }),
+          ctx.el('button', { type: 'button', on: { click: function () { halt(); ctx.support('questionReplays'); ctx.play(item.prompt); } }, text: ctx.L.read_passage_hear_instructions }),
         ]));
         var cards = [];
         var list = ctx.el('ul', { class: 'choices' });
@@ -2574,29 +2846,45 @@
         ctx.root.appendChild(list);
         ctx.root.appendChild(after);
         // Follow-along read-back: each line is highlighted while its clip plays.
-        // A newer run, or leaving the screen (which pauses the clip), ends the old one.
-        var run = 0;
-        var mark = function (index) {
-          lineNodes.forEach(function (n, i) {
-            var on = i === index;
-            n.style.background = on ? 'var(--ok-bg)' : '';
-            if (on) n.setAttribute('aria-current', 'true'); else n.removeAttribute('aria-current');
-          });
-        };
+        // A newer run, Escape/stop, or leaving the screen ends the old one.
         // auto: the read-back after a right answer (not a help the student asked for).
         var readBack = function (auto) {
           var mine = ++run;
           if (auto !== true) ctx.support('storyReadBacks');
-          if (!item.readBackByLine) { mark(-1); ctx.play(item.readBack[0]); return; }
+          if (!item.readBackByLine) { watchStop(false); mark(-1); ctx.play(item.readBack[0]); return; }
+          watchStop(true);
           var step = function (i) {
-            if (mine !== run || !ctx.root.isConnected) return;
-            if (i >= item.readBack.length) { mark(-1); return; }
+            if (mine !== run) return;
+            if (!ctx.root.isConnected || i >= item.readBack.length) { watchStop(false); mark(-1); return; }
             mark(i);
-            ctx.play(item.readBack[i]).then(function (ok) { if (mine !== run || ok === false) { if (mine === run) mark(-1); return; } step(i + 1); });
+            ctx.play(item.readBack[i]).then(function (ok) {
+              if (mine !== run) return;
+              if (ok === false) { watchStop(false); mark(-1); return; }
+              step(i + 1);
+            });
           };
           step(0);
         };
+        if (typeof ctx.keys === 'function') {
+          ctx.keys(function (key) {
+            var k = String(key == null ? '' : key);
+            if (k === 'Escape' || k === 'Esc') {
+              var active = watchingStop;
+              halt();
+              if (typeof ctx.stop === 'function') ctx.stop();
+              return active;
+            }
+            return false;
+          });
+        }
         return {
+          stop: halt,
+          // The R key: clear any read-back line highlight and replay the instructions.
+          replay: function () {
+            halt();
+            if (!item.prompt) return false;
+            ctx.play(item.prompt);
+          },
           // After a right answer, once the praise is over, the story is read back line by line (the app's payoff).
           payoff: function () { if (item.readBack && item.readBack.length) readBack(true); },
           reveal: function () {
@@ -2740,7 +3028,7 @@
         else ctx.root.appendChild(ctx.el('p', {}, [ctx.L.read_sentence_word_hint + ' ', ctx.el('span', { class: 'letters', lang: 'en', text: item.target })]));
         // data-read: running text, where the shell's reading focus can go.
         // dir: an English sentence keeps its full stop on the right in a right-to-left page.
-        ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', dir: 'ltr', style: 'font-size:1.8rem;white-space:pre-wrap', 'data-read': '' }, [item.before, blank, item.after]));
+        ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', dir: 'ltr', style: 'font-size:clamp(1.25rem,5vw,1.8rem);white-space:pre-wrap;overflow-wrap:anywhere', 'data-read': '' }, [item.before, blank, item.after]));
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
           ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); ctx.play(item.prompt); } }, text: ctx.L.read_sentence_hear_instructions }),
         ]));
@@ -2869,25 +3157,52 @@
         return { item: { target: rw, promptAudio: prompt, wordAudio: wordAudio, choices: choices, answerAudio: [wordAudio, answerAudio] } };
       },
       render: function (item, ctx) {
-        var win = ctx.root.ownerDocument.defaultView;
+        var doc = ctx.root.ownerDocument;
+        var win = doc.defaultView;
         var cards = [];
         var token = 0;
+        var timer = null;
+        var watchingStop = false;
+        var clearTimer = function () {
+          if (timer != null) { try { win.clearTimeout(timer); } catch (_) {} timer = null; }
+        };
         var mark = function (index) {
           cards.forEach(function (c, i) { c.box.style.outline = i === index ? '4px solid var(--accent)' : ''; c.box.style.outlineOffset = i === index ? '2px' : ''; });
         };
+        var onDocStop = function (e) {
+          if (!ctx.root.isConnected || (e && e.target && e.target.closest && e.target.closest('[data-player-stop-audio]'))) halt();
+        };
+        var onDocKey = function (e) {
+          var k = String((e && e.key) || '');
+          if (!ctx.root.isConnected || k === 'Escape' || k === 'Esc') halt();
+        };
+        var watchStop = function (on) {
+          if (!doc || !doc.addEventListener || watchingStop === on) return;
+          watchingStop = on;
+          if (on) { doc.addEventListener('click', onDocStop, true); doc.addEventListener('keydown', onDocKey, true); }
+          else { doc.removeEventListener('click', onDocStop, true); doc.removeEventListener('keydown', onDocKey, true); }
+        };
+        var halt = function () { token++; clearTimer(); watchStop(false); mark(-1); };
         var run = function (steps) {
+          clearTimer();
           var mine = ++token;
           var i = 0;
+          watchStop(true);
           var step = function () {
-            if (mine !== token || !ctx.root.isConnected) return;
-            if (i >= steps.length) { mark(-1); return; }
+            timer = null;
+            if (mine !== token) return;
+            if (!ctx.root.isConnected) { watchStop(false); mark(-1); return; }
+            if (i >= steps.length) { watchStop(false); mark(-1); return; }
             var s = steps[i++];
             mark(s.hi == null ? -1 : s.hi);
-            ctx.play(s.id).then(function (ok) { if (mine !== token) return; if (ok === false) { mark(-1); return; } win.setTimeout(step, s.gap || 0); });
+            ctx.play(s.id).then(function (ok) {
+              if (mine !== token) return;
+              if (ok === false) { watchStop(false); mark(-1); return; }
+              timer = win.setTimeout(step, s.gap || 0);
+            });
           };
           step();
         };
-        var halt = function () { token++; mark(-1); };
         var answerText = '';
         var list = ctx.el('ul', { class: 'choices' });
         item.choices.forEach(function (choice, i) {
@@ -2906,25 +3221,39 @@
                 missedText: ctx.showLetters ? ctx.fmt(ctx.L.rhyming_missed, { answer: answerText, word: item.word }) : ctx.L.rhyming_missed_no_letters,
               });
               if (outcome !== 'correct') { box.classList.add('tried'); choose.setAttribute('aria-disabled', 'true'); }
-            } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', text: choice.text }) : ctx.fmt(ctx.L.rhyming_option_n, { n: n })]);
+            } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', lang: 'en', text: choice.text }) : ctx.fmt(ctx.L.rhyming_option_n, { n: n })]);
           var box = ctx.el('li', { class: 'choice' }, [listen, choose]);
           cards.push({ box: box, choose: choose, answer: choice.answer });
           list.appendChild(box);
         });
         ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.showLetters ? ctx.fmt(ctx.L.rhyming_prompt_word, { word: item.word }) : ctx.L.rhyming_prompt }));
-        ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
-          ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); run([{ id: item.promptAudio, gap: 200 }, { id: item.wordAudio }]); } }, text: ctx.L.hear_question }),
-          ctx.el('button', { type: 'button', on: { click: function () { halt(); ctx.support('wordReplays'); ctx.play(item.wordAudio); } }, text: ctx.L.hear_word }),
-        ]));
         // Hear all (the player's ctx.hearAll): each choice in turn, marked with its number. The opening already plays them.
         var hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ before: halt, auto: false,
           list: function () { return cards.map(function (c, i) { return { box: c.box, say: function () { return ctx.play(item.choices[i].audio); } }; }); } }) : null;
-        if (hear) ctx.root.appendChild(hear.node);
+        ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
+          ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); run([{ id: item.promptAudio, gap: 200 }, { id: item.wordAudio }]); } }, text: ctx.L.hear_question }),
+          ctx.el('button', { type: 'button', on: { click: function () { halt(); ctx.support('wordReplays'); ctx.play(item.wordAudio); } }, text: ctx.L.hear_word }),
+          hear ? hear.button : null,
+          hear ? hear.note : null,
+        ]));
         ctx.root.appendChild(list);
+        if (typeof ctx.keys === 'function') {
+          ctx.keys(function (key) {
+            var k = String(key == null ? '' : key);
+            if (k === 'Escape' || k === 'Esc') {
+              var active = watchingStop || timer != null;
+              halt();
+              if (typeof ctx.stop === 'function') ctx.stop();
+              return active;
+            }
+            return false;
+          });
+        }
         if (!ctx.isDone()) {
           run((ctx.skipDirections ? [] : [{ id: item.promptAudio, gap: 200 }]).concat([{ id: item.wordAudio, gap: 200 }], item.choices.map(function (c, i) { return { id: c.audio, gap: 350, hi: i }; })));
         }
         return {
+          stop: halt,
           // The R key: the question and the word again.
           replay: function () { run([{ id: item.promptAudio, gap: 200 }, { id: item.wordAudio }]); },
           reveal: function () {
@@ -3167,6 +3496,7 @@
           halt(); picked = null; errors = [];
           for (var i = 0; i < n; i++) boxes[i] = null;
           draw(); tell(L.segmentation_cleared);
+          if (chipEls[0] && chipEls[0].pick) { try { chipEls[0].pick.focus(); } catch (_) {} }
         } }, text: L.segmentation_clear });
         // "Test Sequence" (:18795-18815): each box's sound spaced by ctx.soundGap() (500/800/250 ms); +100 ms for an empty box.
         var playBoxes = ctx.el('button', { type: 'button', on: { click: function () {
@@ -3280,6 +3610,15 @@
           ctx.keys(function (key) {
             if (locked()) return false;
             var k = String(key == null ? '' : key);
+            if (k === 'Escape' || k === 'Esc') {
+              if (picked == null) return false;
+              var drop = picked;
+              picked = null;
+              draw();
+              tell(ctx.fmt(L.segmentation_dropped, { sound: name(drop) }));
+              if (chipEls[drop] && chipEls[drop].pick) { try { chipEls[drop].pick.focus(); } catch (_) {} }
+              return true;
+            }
             if (k === 'Backspace') {
               for (var bi = n - 1; bi >= 0; bi--) {
                 if (boxes[bi] != null) {
@@ -3414,6 +3753,9 @@
         sentence_match_hear_sentence: 'Hear the sentence',
         sentence_match_correct: 'Yes! The pictures match the sentence.',
         sentence_match_missed: 'Here are the pictures that match the sentence.',
+        sentence_match_placed: '{word} is in slot {n}.',
+        sentence_match_removed: '{word} taken out of slot {n}.',
+        sentence_match_cleared: 'All the slots are empty again.',
       },
       prepare: function (w, env) {
         remember(w, env);
@@ -3470,7 +3812,7 @@
             var mark = retryMarks ? retryMarks[i] : '';
             b.textContent = '';
             b.appendChild(ctx.el('span', { 'aria-hidden': 'true', style: 'font-size:1rem;margin-inline-end:6px', text: String(i + 1) }));
-            b.appendChild(word ? ctx.el('img', { src: imageOf[word] || '', alt: '', style: 'width:72px;height:72px;object-fit:contain;background:#fff;border-radius:8px;padding:4px' }) : ctx.el('span', { 'aria-hidden': 'true', text: '?' }));
+            b.appendChild(word ? ctx.el('img', { src: imageOf[word] || '', alt: '', style: 'width:clamp(48px,14vw,72px);height:clamp(48px,14vw,72px);object-fit:contain;background:#fff;border-radius:8px;padding:4px' }) : ctx.el('span', { 'aria-hidden': 'true', text: '?' }));
             b.setAttribute('aria-label', word ? ctx.fmt(ctx.L.sentence_match_slot_filled, { n: i + 1, word: word }) : ctx.fmt(ctx.L.sentence_match_slot_empty, { n: i + 1 }));
             if (!word || ctx.isDone()) b.setAttribute('aria-disabled', 'true'); else b.removeAttribute('aria-disabled');
             if (mark) b.setAttribute('data-retry-mark', mark); else b.removeAttribute('data-retry-mark');
@@ -3505,9 +3847,10 @@
             }
           }
         };
+        var say = function (text) { if (typeof ctx.announce === 'function') ctx.announce(text); };
         item.tiles.forEach(function (tile, ti) {
           // The picture's number, the key 1-9 that chooses it.
-          var number = ti < 9 ? ctx.el('span', { 'aria-hidden': 'true', 'data-key-number': '', style: 'position:absolute;top:6px;inset-inline-start:6px;min-width:28px;height:28px;line-height:28px;border-radius:14px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:1rem;text-align:center', text: String(ti + 1) }) : null;
+          var number = ti < 9 ? ctx.el('span', { 'aria-hidden': 'true', 'data-key-number': '', style: 'position:absolute;top:6px;inset-inline-start:6px;min-width:28px;height:28px;line-height:26px;border-radius:14px;border:1px solid var(--accent-ink);background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:1rem;text-align:center', text: String(ti + 1) }) : null;
           var pick = ctx.el('button', { type: 'button', 'aria-label': ctx.fmt(ctx.L.sentence_match_picture_of, { word: tile.text }),
             style: 'position:relative;width:100%;display:flex;justify-content:center;background:#fff',
             on: { click: function () {
@@ -3518,28 +3861,74 @@
               if (at < 0) return;
               slots[at] = ti;
               drawSlots(false);
-              grade();
-            } } }, [number, ctx.el('img', { class: 'picture', src: imageOf[tile.text] || '', alt: '' })]);
+              if (slots.indexOf(null) >= 0) {
+                say(ctx.fmt(ctx.L.sentence_match_placed || '{word} is in slot {n}.', { word: tile.text, n: at + 1 }));
+              } else {
+                grade();
+              }
+            } } }, [number, ctx.el('img', { class: 'picture', src: imageOf[tile.text] || '', alt: '', style: 'max-width:min(100%,160px);height:auto;object-fit:contain' })]);
           var box = ctx.el('li', { class: 'choice' }, [pick]);
           tileCards.push({ text: tile.text, pick: pick, box: box, tried: false });
           tray.appendChild(box);
         });
         item.sequence.forEach(function (_, i) {
-          var b = ctx.el('button', { type: 'button', class: 'slot', style: 'border-style:dashed;min-width:96px;min-height:96px',
+          var b = ctx.el('button', { type: 'button', class: 'slot', style: 'border-style:dashed;min-width:clamp(70px,21vw,96px);min-height:clamp(70px,21vw,96px);padding:6px',
             on: { click: function () {
               if (ctx.isDone()) return;
-              if (retryMarks) { stopRetryHold(true); drawSlots(false); return; }
+              if (retryMarks) {
+                stopRetryHold(true);
+                drawSlots(false);
+                say(ctx.L.sentence_match_cleared || 'All the slots are empty again.');
+                return;
+              }
               if (slots[i] == null) return;
+              var removed = wordIn(i);
               slots[i] = null;
               drawSlots(false);
+              say(ctx.fmt(ctx.L.sentence_match_removed || '{word} taken out of slot {n}.', { word: removed, n: i + 1 }));
             } } });
           slotButtons.push(b);
           slotRow.appendChild(ctx.el('li', {}, [b]));
         });
+        if (typeof ctx.keys === 'function') {
+          ctx.keys(function (key) {
+            if (ctx.isDone()) return false;
+            var k = String(key == null ? '' : key);
+            if (k === 'Backspace') {
+              if (retryMarks) {
+                stopRetryHold(true);
+                drawSlots(false);
+                say(ctx.L.sentence_match_cleared || 'All the slots are empty again.');
+                return true;
+              }
+              for (var bi = slots.length - 1; bi >= 0; bi--) {
+                if (slots[bi] != null) {
+                  var out = wordIn(bi);
+                  slots[bi] = null;
+                  drawSlots(false);
+                  say(ctx.fmt(ctx.L.sentence_match_removed || '{word} taken out of slot {n}.', { word: out, n: bi + 1 }));
+                  return true;
+                }
+              }
+              return false;
+            }
+            if (k === 'Escape' || k === 'Esc') {
+              if (retryMarks || slots.some(function (s) { return s != null; })) {
+                stopRetryHold(true);
+                slots = item.sequence.map(function () { return null; });
+                drawSlots(false);
+                say(ctx.L.sentence_match_cleared || 'All the slots are empty again.');
+                return true;
+              }
+              return false;
+            }
+            return false;
+          });
+        }
         drawSlots(false);
         ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.sentence_match_prompt }));
         // data-read: running text, where the shell's reading focus can go.
-        ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', dir: 'ltr', style: 'font-size:1.8rem', 'data-read': '', text: item.sentence }));
+        ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', dir: 'ltr', style: 'font-size:clamp(1.25rem,5vw,1.8rem);overflow-wrap:anywhere', 'data-read': '', text: item.sentence }));
         if (item.sequence.length > 1) ctx.root.appendChild(ctx.el('p', { class: 'muted', text: ctx.L.sentence_match_order_hint }));
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
           ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); ctx.play(item.prompt); } }, text: ctx.L.sentence_match_hear_instructions }),
@@ -3548,6 +3937,7 @@
         ctx.root.appendChild(tray);
         ctx.root.appendChild(after);
         return {
+          stop: function () { stopRetryHold(false); },
           // After a right answer, once the praise is over, the sentence is read back by itself (the app's payoff).
           payoff: function () { if (item.sentenceAudio) ctx.play(item.sentenceAudio); },
           reveal: function () {
@@ -3707,27 +4097,54 @@
       render: function (item, ctx) {
         var P = String(item.id || '').replace(/-\d+(?:-again)?$/, '') + '_';
         var T = function (key, params) { return ctx.fmt(ctx.L[P + key] || '', params); };
-        var win = ctx.root.ownerDocument.defaultView;
+        var doc = ctx.root.ownerDocument;
+        var win = doc.defaultView;
         var cards = [];
         var found = [];
         var total = item.chips.filter(function (c) { return c.member; }).length;
         var token = 0;
+        var timer = null;
+        var watchingStop = false;
+        var clearTimer = function () {
+          if (timer != null) { try { win.clearTimeout(timer); } catch (_) {} timer = null; }
+        };
         var mark = function (index) {
           cards.forEach(function (c, i) { c.box.style.outline = i === index ? '4px solid var(--accent)' : ''; c.box.style.outlineOffset = i === index ? '2px' : ''; });
         };
+        var onDocStop = function (e) {
+          if (!ctx.root.isConnected || (e && e.target && e.target.closest && e.target.closest('[data-player-stop-audio]'))) halt();
+        };
+        var onDocKey = function (e) {
+          var k = String((e && e.key) || '');
+          if (!ctx.root.isConnected || k === 'Escape' || k === 'Esc') halt();
+        };
+        var watchStop = function (on) {
+          if (!doc || !doc.addEventListener || watchingStop === on) return;
+          watchingStop = on;
+          if (on) { doc.addEventListener('click', onDocStop, true); doc.addEventListener('keydown', onDocKey, true); }
+          else { doc.removeEventListener('click', onDocStop, true); doc.removeEventListener('keydown', onDocKey, true); }
+        };
+        var halt = function () { token++; clearTimer(); watchStop(false); mark(-1); };
         var run = function (steps) {
+          clearTimer();
           var mine = ++token;
           var i = 0;
+          watchStop(true);
           var step = function () {
-            if (mine !== token || !ctx.root.isConnected) return;
-            if (i >= steps.length) { mark(-1); return; }
+            timer = null;
+            if (mine !== token) return;
+            if (!ctx.root.isConnected) { watchStop(false); mark(-1); return; }
+            if (i >= steps.length) { watchStop(false); mark(-1); return; }
             var s = steps[i++];
             mark(s.hi == null ? -1 : s.hi);
-            ctx.play(s.id).then(function (ok) { if (mine !== token) return; if (ok === false) { mark(-1); return; } win.setTimeout(step, s.gap || 0); });
+            ctx.play(s.id).then(function (ok) {
+              if (mine !== token) return;
+              if (ok === false) { watchStop(false); mark(-1); return; }
+              timer = win.setTimeout(step, s.gap || 0);
+            });
           };
           step();
         };
-        var halt = function () { token++; mark(-1); };
         var heading = item.mode === 'rime'
           ? (ctx.showLetters ? T('heading_rime', { rime: '-' + item.rime }) : T('heading_rime_hidden'))
           : (ctx.showLetters ? T('heading_' + item.mode, { sound: typeof ctx.sound === 'function' ? ctx.sound(item.sound) : '/' + item.sound + '/' }) : T('heading_' + item.mode + '_hidden'));
@@ -3769,7 +4186,7 @@
                 retryText: ctx.showLetters ? T('no_match_word', { word: chip.text }) : T('no_match'),
                 missedText: ctx.showLetters ? T('missed', { words: memberText }) : T('missed_no_letters'),
               });
-            } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', text: chip.text }) : T('option_n', { n: n })]);
+            } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', lang: 'en', text: chip.text }) : T('option_n', { n: n })]);
           var box = ctx.el('li', { class: 'choice' }, [listen, choose]);
           card.box = box; card.choose = choose;
           cards.push(card);
@@ -3786,19 +4203,34 @@
         var hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ label: T('hear_all'), support: 'allWordListens', before: halt, auto: false,
           ready: function () { return !ctx.isDone(); },
           list: function () { return cards.map(function (c, i) { return c.found ? null : { box: c.box, n: i + 1, total: cards.length, say: function () { return ctx.play(c.chip.audio); } }; }); } }) : null;
+        var hearBtn = hear ? hear.button : ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; ctx.support('allWordListens'); run(chipSteps(true)); } }, text: T('hear_all') });
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
           ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); run(instructionSteps()); } }, text: ctx.L.hear_question }),
-          hear ? hear.button : ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; ctx.support('allWordListens'); run(chipSteps(true)); } }, text: T('hear_all') }),
+          hearBtn,
           hear ? hear.note : null,
         ]));
         ctx.root.appendChild(counter);
         ctx.root.appendChild(list);
+        if (typeof ctx.keys === 'function') {
+          ctx.keys(function (key) {
+            var k = String(key == null ? '' : key);
+            if (k === 'Escape' || k === 'Esc') {
+              var active = watchingStop || timer != null;
+              halt();
+              if (typeof ctx.stop === 'function') ctx.stop();
+              return active;
+            }
+            return false;
+          });
+        }
         if (!ctx.isDone()) run(instructionSteps().concat(chipSteps(false)));
         return {
+          stop: halt,
           // The R key: the instruction again.
           replay: function () { run(instructionSteps()); },
           reveal: function () {
             halt();
+            hearBtn.setAttribute('aria-disabled', 'true');
             cards.forEach(function (c) {
               c.choose.setAttribute('aria-disabled', 'true');
               if (c.chip.member && !c.found && !c.box.classList.contains('right')) {
@@ -3855,6 +4287,7 @@
         spelling_bee_answer: 'The word is spelled: {word}',
         spelling_bee_letter_keys: 'Letter keys',
         spelling_bee_delete: 'Delete the last letter',
+        spelling_bee_clear: 'Clear',
       },
       prepare: function (w, env) {
         var word = String(env.word || '').trim();
@@ -3865,8 +4298,16 @@
         var prompt = env.bankClip('instructions', 'inst_spelling_bee');
         if (!prompt) missing.push('question');
         if (missing.length) return { missing: missing };
-        var item = { target: word.toLowerCase(), wordAudio: wordAudio, promptAudio: prompt,
+        var letterRe = null;
+        try { letterRe = new RegExp('[\\p{L}\\p{M}\\p{N}]', 'u'); } catch (_) {}
+        var target = word.toLowerCase();
+        var extra = [];
+        target.split('').forEach(function (ch) {
+          if (!/[a-z]/.test(ch) && extra.indexOf(ch) < 0 && ch.trim() && (letterRe ? letterRe.test(ch) : !/^['’\-.]$/.test(ch))) extra.push(ch);
+        });
+        var item = { target: target, wordAudio: wordAudio, promptAudio: prompt,
           introAudio: [prompt, wordAudio], answerAudio: [wordAudio] };
+        if (extra.length) item.extraTiles = extra;
         // A word written with a capital (a name): how it is written, for the answer line and the hints.
         if (word !== item.target && word.length === item.target.length) item.shown = word;
         return { item: item };
@@ -4000,7 +4441,12 @@
         ctx.root.appendChild(ctx.el('label', { for: inputId, text: L.spelling_bee_input }));
         ctx.root.appendChild(input);
         // On-screen letters for students without a keyboard (2026-11-07 parity audit). Typing still works.
-        var letterKeys = 'abcdefghijklmnopqrstuvwxyz'.split('').map(function (ch) {
+        var keyChars = 'abcdefghijklmnopqrstuvwxyz'.split('');
+        (Array.isArray(item.extraTiles) ? item.extraTiles : []).forEach(function (ch) {
+          var c = String(ch == null ? '' : ch);
+          if (c && keyChars.indexOf(c) < 0) keyChars.push(c);
+        });
+        var letterKeys = keyChars.map(function (ch) {
           return ctx.el('button', { type: 'button', style: 'min-width:44px;min-height:44px;font-weight:700', on: { click: function () {
             if (ctx.isDone() || own(value()).length >= total) return;
             set(hasFixed ? align(value() + ch) : value() + ch);
@@ -4010,7 +4456,11 @@
           if (ctx.isDone() || !value()) return;
           set(hasFixed ? align(own(value()).slice(0, -1)) : value().slice(0, -1));
         } } }, ['⌫']);
-        ctx.root.appendChild(ctx.el('div', { class: 'row', role: 'group', 'aria-label': L.spelling_bee_letter_keys, style: 'flex-wrap:wrap;gap:4px;margin-top:8px' }, letterKeys.concat([deleteKey])));
+        var clearKey = ctx.el('button', { type: 'button', style: 'min-height:44px;padding:0 12px', on: { click: function () {
+          if (ctx.isDone() || !value()) return;
+          set('');
+        } } }, [L.spelling_bee_clear || 'Clear']);
+        ctx.root.appendChild(ctx.el('div', { class: 'row', role: 'group', 'aria-label': L.spelling_bee_letter_keys, style: 'flex-wrap:wrap;gap:4px;margin-top:8px' }, letterKeys.concat([deleteKey, clearKey])));
         ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'margin-top:12px' }, [checkBtn, firstBtn, moreBtn]));
         ctx.root.appendChild(answerLine);
         draw();
@@ -4018,7 +4468,7 @@
           reveal: function () {
             input.setAttribute('readonly', '');
             input.setAttribute('aria-readonly', 'true');
-            [checkBtn, firstBtn, moreBtn, deleteKey].concat(letterKeys).forEach(function (b) { b.setAttribute('aria-disabled', 'true'); });
+            [checkBtn, firstBtn, moreBtn, deleteKey, clearKey].concat(letterKeys).forEach(function (b) { b.setAttribute('aria-disabled', 'true'); });
             answerLine.hidden = false;
           },
         };
@@ -4113,47 +4563,106 @@
           answerAudio: units.concat([answerAudio]) } };
       },
       render: function (item, ctx) {
-        var win = ctx.root.ownerDocument.defaultView;
+        var doc = ctx.root.ownerDocument;
+        var win = doc.defaultView;
         var token = 0;
+        var timer = null;
+        var cancelPending = null;
         var delivered = false;
         var busy = false;
+        var watchingStop = false;
         var hear = null;
+        var playBtn = null;
+        var questionBtn = null;
         var cards = [];
         var parts = [];
         var answerText = item.target;
         var note = ctx.el('p', { class: 'muted', text: ctx.L.syllable_blending_listen_first });
+        var clearTimer = function () {
+          if (timer != null) { try { win.clearTimeout(timer); } catch (_) {} timer = null; }
+        };
         var setState = function () {
+          var done = ctx.isDone();
           cards.forEach(function (c) {
-            var lockChoose = ctx.isDone() || c.tried || !delivered || busy;
+            var lockChoose = done || c.tried || !delivered || busy;
             if (lockChoose) c.choose.setAttribute('aria-disabled', 'true'); else c.choose.removeAttribute('aria-disabled');
             if (busy) c.listen.setAttribute('aria-disabled', 'true'); else c.listen.removeAttribute('aria-disabled');
           });
-          if (hear) { if (busy) hear.button.setAttribute('aria-disabled', 'true'); else hear.button.removeAttribute('aria-disabled'); }
-          note.hidden = delivered || ctx.isDone();
+          if (hear) { if (busy || done) hear.button.setAttribute('aria-disabled', 'true'); else hear.button.removeAttribute('aria-disabled'); }
+          if (playBtn) { if (done) playBtn.setAttribute('aria-disabled', 'true'); else playBtn.removeAttribute('aria-disabled'); }
+          if (questionBtn) { if (done) questionBtn.setAttribute('aria-disabled', 'true'); else questionBtn.removeAttribute('aria-disabled'); }
+          note.hidden = delivered || done;
         };
         var highlight = function (index) {
           parts.forEach(function (p, i) { p.style.background = i === index ? 'var(--accent)' : ''; p.style.color = i === index ? 'var(--accent-ink)' : ''; });
         };
-        var halt = function () { token++; busy = false; highlight(-1); setState(); };
+        var onDocStop = function (e) {
+          if (!ctx.root.isConnected || (e && e.target && e.target.closest && e.target.closest('[data-player-stop-audio]'))) halt();
+        };
+        var onDocKey = function (e) {
+          var k = String((e && e.key) || '');
+          if (!ctx.root.isConnected || k === 'Escape' || k === 'Esc') halt();
+        };
+        var watchStop = function (on) {
+          if (!doc || !doc.addEventListener || watchingStop === on) return;
+          watchingStop = on;
+          if (on) { doc.addEventListener('click', onDocStop, true); doc.addEventListener('keydown', onDocKey, true); }
+          else { doc.removeEventListener('click', onDocStop, true); doc.removeEventListener('keydown', onDocKey, true); }
+        };
+        var halt = function () {
+          token++;
+          clearTimer();
+          watchStop(false);
+          var pending = cancelPending;
+          cancelPending = null;
+          busy = false;
+          highlight(-1);
+          setState();
+          if (pending) pending(false);
+        };
         // The syllable run the answer waits for: every unit must play through.
         var runSyllables = function (withPrompt) {
+          clearTimer();
+          var prev = cancelPending;
+          cancelPending = null;
+          if (prev) prev(false);
           var mine = ++token;
-          delivered = false; busy = true; setState();
+          busy = true;
+          watchStop(true);
+          setState();
           var gap = typeof ctx.soundGap === 'function' ? ctx.soundGap() : 350;
           var steps = (withPrompt ? [{ id: item.promptAudio, gap: 200, hi: -1 }] : [])
             .concat(item.units.map(function (id, i) { return { id: id, gap: i < item.units.length - 1 ? gap : 0, hi: i }; }));
           var i = 0;
           return new Promise(function (resolve) {
-            var finish = function (ok) { busy = false; if (ok) delivered = true; highlight(-1); setState(); resolve(ok); };
+            var settled = false;
+            var done = function (ok) {
+              if (settled) return;
+              settled = true;
+              if (cancelPending === done) cancelPending = null;
+              resolve(ok);
+            };
+            cancelPending = done;
+            var finish = function (ok) {
+              clearTimer();
+              watchStop(false);
+              busy = false;
+              if (ok) delivered = true;
+              highlight(-1);
+              setState();
+              done(ok);
+            };
             var step = function () {
-              if (mine !== token || !ctx.root.isConnected) { resolve(false); return; }
+              timer = null;
+              if (mine !== token) { done(false); return; }
+              if (!ctx.root.isConnected) { finish(false); return; }
               if (i >= steps.length) { finish(true); return; }
               var s = steps[i++];
               highlight(s.hi);
               ctx.play(s.id).then(function (ok) {
-                if (mine !== token) { resolve(false); return; }
+                if (mine !== token) { done(false); return; }
                 if (!ok) { finish(false); return; }
-                win.setTimeout(step, s.gap || 0);
+                timer = win.setTimeout(step, s.gap || 0);
               });
             };
             step();
@@ -4162,16 +4671,11 @@
         ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.syllable_blending_prompt }));
         var row = ctx.el('div', { class: 'row', 'aria-hidden': 'true', dir: 'ltr' });
         item.syllables.forEach(function (syllable) {
-          var p = ctx.el('span', { class: 'slot', text: ctx.showLetters ? syllable : '●' });
+          var p = ctx.el('span', { class: 'slot', style: 'padding:0 12px', text: ctx.showLetters ? syllable : '●' });
           parts.push(p);
           row.appendChild(p);
         });
         ctx.root.appendChild(row);
-        ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
-          ctx.el('button', { type: 'button', class: 'primary', on: { click: function () { if (ctx.isDone()) return; ctx.support('syllableReplays'); runSyllables(false); } }, text: '▶ ' + ctx.L.syllable_blending_play }),
-          ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; ctx.support('questionReplays'); runSyllables(true); } }, text: ctx.L.hear_question }),
-        ]));
-        ctx.root.appendChild(note);
         var list = ctx.el('ul', { class: 'choices' });
         item.choices.forEach(function (choice, i) {
           var n = i + 1;
@@ -4190,25 +4694,49 @@
                 missedText: ctx.showLetters ? ctx.fmt(ctx.L.syllable_blending_missed, { word: answerText }) : ctx.L.syllable_blending_missed_no_letters,
               });
               if (outcome !== 'correct') { card.tried = true; box.classList.add('tried'); setState(); }
-            } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', text: choice.text }) : ctx.fmt(ctx.L.syllable_blending_option_n, { n: n })]);
+            } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', lang: 'en', text: choice.text }) : ctx.fmt(ctx.L.syllable_blending_option_n, { n: n })]);
           var box = ctx.el('li', { class: 'choice' }, [listen, choose]);
           card.box = box; card.choose = choose; card.listen = listen;
           cards.push(card);
           list.appendChild(box);
         });
         // Hear all (the player's ctx.hearAll): each choice in turn, marked with its number, once the syllables are not playing.
-        hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ ready: function () { return !busy; },
+        hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ before: halt, ready: function () { return !busy && !ctx.isDone(); },
           list: function () { return cards.map(function (c, i) { return { box: c.box, say: function () { return ctx.play(item.choices[i].audio); } }; }); } }) : null;
-        if (hear) ctx.root.appendChild(hear.node);
+        playBtn = ctx.el('button', { type: 'button', class: 'primary', on: { click: function () { if (ctx.isDone()) return; ctx.support('syllableReplays'); runSyllables(false); } }, text: '▶ ' + ctx.L.syllable_blending_play });
+        questionBtn = ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; ctx.support('questionReplays'); runSyllables(true); } }, text: ctx.L.hear_question });
+        ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
+          playBtn,
+          questionBtn,
+          hear ? hear.button : null,
+          hear ? hear.note : null,
+        ]));
+        ctx.root.appendChild(note);
         ctx.root.appendChild(list);
+        if (typeof ctx.keys === 'function') {
+          ctx.keys(function (key) {
+            var k = String(key == null ? '' : key);
+            if (k === 'Escape' || k === 'Esc') {
+              var active = busy || timer != null || watchingStop;
+              halt();
+              if (typeof ctx.stop === 'function') ctx.stop();
+              return active;
+            }
+            return false;
+          });
+        }
         setState();
         var opening = !ctx.isDone() ? runSyllables(!ctx.skipDirections) : null;
         return {
           opening: opening,
+          stop: halt,
           // The R key: the question and the syllables again (the choices wait for them, as on the button).
           replay: function () { if (!ctx.isDone()) runSyllables(true); },
           reveal: function () {
             halt();
+            playBtn.setAttribute('aria-disabled', 'true');
+            questionBtn.setAttribute('aria-disabled', 'true');
+            if (hear) hear.button.setAttribute('aria-disabled', 'true');
             cards.forEach(function (c) {
               c.choose.setAttribute('aria-disabled', 'true');
               if (c.answer && !c.box.classList.contains('right')) {
@@ -4391,6 +4919,13 @@
               undo.click();
               return true;
             }
+            if (k === 'Enter') {
+              var ae2 = doc && doc.activeElement;
+              var onBtn = !!(ae2 && String(ae2.tagName || '').toUpperCase() === 'BUTTON' && ae2 !== submit && !ae2.closest('[hidden]') && !ae2.disabled && ae2.getAttribute('aria-disabled') !== 'true');
+              if (onBtn || !canSubmit()) return false;
+              submit.click();
+              return true;
+            }
             return false;
           });
         }
@@ -4552,27 +5087,54 @@
       render: function (item, ctx) {
         var P = String(item.id || '').replace(/-\d+(?:-again)?$/, '') + '_';
         var T = function (key, params) { return ctx.fmt(ctx.L[P + key] || '', params); };
-        var win = ctx.root.ownerDocument.defaultView;
+        var doc = ctx.root.ownerDocument;
+        var win = doc.defaultView;
         var cards = [];
         var found = [];
         var total = item.chips.filter(function (c) { return c.member; }).length;
         var token = 0;
+        var timer = null;
+        var watchingStop = false;
+        var clearTimer = function () {
+          if (timer != null) { try { win.clearTimeout(timer); } catch (_) {} timer = null; }
+        };
         var mark = function (index) {
           cards.forEach(function (c, i) { c.box.style.outline = i === index ? '4px solid var(--accent)' : ''; c.box.style.outlineOffset = i === index ? '2px' : ''; });
         };
+        var onDocStop = function (e) {
+          if (!ctx.root.isConnected || (e && e.target && e.target.closest && e.target.closest('[data-player-stop-audio]'))) halt();
+        };
+        var onDocKey = function (e) {
+          var k = String((e && e.key) || '');
+          if (!ctx.root.isConnected || k === 'Escape' || k === 'Esc') halt();
+        };
+        var watchStop = function (on) {
+          if (!doc || !doc.addEventListener || watchingStop === on) return;
+          watchingStop = on;
+          if (on) { doc.addEventListener('click', onDocStop, true); doc.addEventListener('keydown', onDocKey, true); }
+          else { doc.removeEventListener('click', onDocStop, true); doc.removeEventListener('keydown', onDocKey, true); }
+        };
+        var halt = function () { token++; clearTimer(); watchStop(false); mark(-1); };
         var run = function (steps) {
+          clearTimer();
           var mine = ++token;
           var i = 0;
+          watchStop(true);
           var step = function () {
-            if (mine !== token || !ctx.root.isConnected) return;
-            if (i >= steps.length) { mark(-1); return; }
+            timer = null;
+            if (mine !== token) return;
+            if (!ctx.root.isConnected) { watchStop(false); mark(-1); return; }
+            if (i >= steps.length) { watchStop(false); mark(-1); return; }
             var s = steps[i++];
             mark(s.hi == null ? -1 : s.hi);
-            ctx.play(s.id).then(function (ok) { if (mine !== token) return; if (ok === false) { mark(-1); return; } win.setTimeout(step, s.gap || 0); });
+            ctx.play(s.id).then(function (ok) {
+              if (mine !== token) return;
+              if (ok === false) { watchStop(false); mark(-1); return; }
+              timer = win.setTimeout(step, s.gap || 0);
+            });
           };
           step();
         };
-        var halt = function () { token++; mark(-1); };
         var heading = item.mode === 'rime'
           ? (ctx.showLetters ? T('heading_rime', { rime: '-' + item.rime }) : T('heading_rime_hidden'))
           : (ctx.showLetters ? T('heading_' + item.mode, { sound: typeof ctx.sound === 'function' ? ctx.sound(item.sound) : '/' + item.sound + '/' }) : T('heading_' + item.mode + '_hidden'));
@@ -4614,7 +5176,7 @@
                 retryText: ctx.showLetters ? T('no_match_word', { word: chip.text }) : T('no_match'),
                 missedText: ctx.showLetters ? T('missed', { words: memberText }) : T('missed_no_letters'),
               });
-            } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', text: chip.text }) : T('option_n', { n: n })]);
+            } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', lang: 'en', text: chip.text }) : T('option_n', { n: n })]);
           var box = ctx.el('li', { class: 'choice' }, [listen, choose]);
           card.box = box; card.choose = choose;
           cards.push(card);
@@ -4631,19 +5193,34 @@
         var hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ label: T('hear_all'), support: 'allWordListens', before: halt, auto: false,
           ready: function () { return !ctx.isDone(); },
           list: function () { return cards.map(function (c, i) { return c.found ? null : { box: c.box, n: i + 1, total: cards.length, say: function () { return ctx.play(c.chip.audio); } }; }); } }) : null;
+        var hearBtn = hear ? hear.button : ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; ctx.support('allWordListens'); run(chipSteps(true)); } }, text: T('hear_all') });
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
           ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); run(instructionSteps()); } }, text: ctx.L.hear_question }),
-          hear ? hear.button : ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; ctx.support('allWordListens'); run(chipSteps(true)); } }, text: T('hear_all') }),
+          hearBtn,
           hear ? hear.note : null,
         ]));
         ctx.root.appendChild(counter);
         ctx.root.appendChild(list);
+        if (typeof ctx.keys === 'function') {
+          ctx.keys(function (key) {
+            var k = String(key == null ? '' : key);
+            if (k === 'Escape' || k === 'Esc') {
+              var active = watchingStop || timer != null;
+              halt();
+              if (typeof ctx.stop === 'function') ctx.stop();
+              return active;
+            }
+            return false;
+          });
+        }
         if (!ctx.isDone()) run(instructionSteps().concat(chipSteps(false)));
         return {
+          stop: halt,
           // The R key: the instruction again.
           replay: function () { run(instructionSteps()); },
           reveal: function () {
             halt();
+            hearBtn.setAttribute('aria-disabled', 'true');
             cards.forEach(function (c) {
               c.choose.setAttribute('aria-disabled', 'true');
               if (c.chip.member && !c.found && !c.box.classList.contains('right')) {
@@ -4876,6 +5453,7 @@
         var clearBtn = ctx.el('button', { type: 'button', on: { click: function () {
           if (locked()) return;
           clearAll(); lastSubmitted = null; draw(); ctx.announce(L.word_scramble_cleared);
+          if (tiles[0] && tiles[0].btn) { try { tiles[0].btn.focus(); } catch (_) {} }
         } }, text: L.word_scramble_clear });
         var checkBtn = ctx.el('button', { type: 'button', class: 'primary', on: { click: function () { onCheck(); } }, text: L.word_scramble_check });
 
@@ -4949,6 +5527,15 @@
           ctx.keys(function (key) {
             if (locked()) return false;
             var k = String(key == null ? '' : key);
+            if (k === 'Escape' || k === 'Esc') {
+              if (picked == null) return false;
+              var drop = picked;
+              picked = null;
+              draw();
+              ctx.announce(ctx.fmt(L.word_scramble_dropped, { letter: up(drop) }));
+              if (tiles[drop] && tiles[drop].btn) { try { tiles[drop].btn.focus(); } catch (_) {} }
+              return true;
+            }
             if (k === 'Backspace') {
               for (var bi = n - 1; bi >= 0; bi--) {
                 if (boxes[bi] != null) {
@@ -5167,7 +5754,7 @@
         ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'justify-content:center' }, [coverButton]));
         ctx.root.appendChild(pad.node);
         // A card that starts covered (a known fact) is timed from being shown.
-        if (phase === 'look') { try { coverButton.focus(); } catch (_) {} } else { if (ctx.lap && !ctx.isDone()) ctx.lap('recall', true); focusPad(); }
+        if (phase === 'look') { if (!ctx.noFocus) { try { coverButton.focus(); } catch (_) {} } } else { if (ctx.lap && !ctx.isDone()) ctx.lap('recall', true); if (!ctx.noFocus) focusPad(); }
         return {
           // The card is over (right, or every try used, or reopened when done): the answer shows, uncovered.
           reveal: function (correct) {
@@ -5227,10 +5814,10 @@
           if (!display || display.length > 40) return { missing: ['a problem of 1 to 40 characters'] };
           if (!whole(p.answer)) return { missing: ['a whole-number answer'] };
           var own = { word: display, display: display, answer: String(Number(p.answer)) };
-          var signs = display.replace(/(^|\s)[-\u2013\u2014](?=\s|\d)/g, function (all, lead) { return lead + String.fromCharCode(0x2212); })
-            .replace(/(\d)\s*[-\u2013\u2014]\s*(?=\d)/g, function (all, lead) { return lead + ' ' + String.fromCharCode(0x2212) + ' '; })
-            .replace(/(\d)\s*[xX*\u00B7\u22C5]\s*(?=\d)/g, function (all, lead) { return lead + ' ' + String.fromCharCode(0xD7) + ' '; })
-            .replace(/(\d)\s*\/\s*(?=\d)/g, function (all, lead) { return lead + ' ' + String.fromCharCode(0xF7) + ' '; });
+          var signs = display.replace(/(^|[\s(])[-\u2013\u2014](?=\s|\d|\()/g, '$1\u2212')
+            .replace(/([\d)])\s*[-\u2013\u2014]\s*(?=[\d(])/g, '$1 \u2212 ')
+            .replace(/([\d)])\s*[xX*\u00B7\u22C5]\s*(?=[\d(])/g, '$1 \u00D7 ')
+            .replace(/([\d)])\s*\/\s*(?=[\d(])/g, '$1 \u00F7 ');
           // said: the label's text (the signs, the plain numbers).
           if (signs !== display) own.said = signs;
           if (grouped(signs) !== display) own.shown = grouped(signs);
@@ -5259,7 +5846,7 @@
         ctx.root.appendChild(ctx.el('p', { class: 'prompt', 'aria-hidden': 'true', style: 'white-space:nowrap;font-size:min(2.6rem,' + (137 / n | 0) + 'vw,' + (1130 / n | 0) + 'px)', text: shown }));
         if (note) ctx.root.appendChild(ctx.el('p', { class: 'muted', style: 'text-align:center', text: note }));
         ctx.root.appendChild(pad.node);
-        pad.focus();
+        if (!ctx.noFocus) pad.focus();
         return {
           // Practice items only: lock the keys.
           reveal: function () { pad.lock(); },
@@ -5433,7 +6020,7 @@
         ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'justify-content:center' }, [coverButton]));
         ctx.root.appendChild(pad.node);
         // A card that starts covered (a known fact) is timed from being shown.
-        if (phase === 'look') { try { coverButton.focus(); } catch (_) {} } else { if (ctx.lap && !ctx.isDone()) ctx.lap('recall', true); focusPad(); }
+        if (phase === 'look') { if (!ctx.noFocus) { try { coverButton.focus(); } catch (_) {} } } else { if (ctx.lap && !ctx.isDone()) ctx.lap('recall', true); if (!ctx.noFocus) focusPad(); }
         return {
           // The card is over (right, or every try used, or reopened when done): the answer shows, uncovered.
           reveal: function (correct) {
@@ -5508,7 +6095,7 @@
         ctx.root.appendChild(ctx.el('p', { class: 'letters', style: 'text-align:center', text: L.missing_number_question }));
         ctx.root.appendChild(ctx.el('p', { class: 'prompt', 'aria-hidden': 'true', style: 'white-space:nowrap;font-size:min(2.6rem,' + (137 / n | 0) + 'vw,' + (1130 / n | 0) + 'px)' }, pieces));
         ctx.root.appendChild(pad.node);
-        pad.focus();
+        if (!ctx.noFocus) pad.focus();
         return {
           // Practice items only: lock the keys and show the number in the blank.
           reveal: function (answer) { pad.lock(); if (answer != null) blank.textContent = String(answer); },
@@ -5545,23 +6132,24 @@
       // form whose own answer disagrees is refused.
       prepare: function (p) {
         p = p || {};
-        var whole = function (v) { return v != null && v !== '' && Number.isSafeInteger(Number(v)) && Math.abs(Number(v)) <= 99999999; };
+        var whole = function (v) { return (typeof v === 'number' || (typeof v === 'string' && v.trim() !== '')) && Number.isSafeInteger(Number(v)) && Math.abs(Number(v)) <= 99999999; };
         if (!whole(p.left) || !whole(p.right)) return { missing: ['two whole numbers'] };
         var left = Number(p.left), right = Number(p.right);
         if (left === right) return { missing: ['two different numbers'] };
         var bigger = Math.max(left, right);
-        if (p.answer != null && Number(p.answer) !== bigger) return { missing: ['an answer that is the bigger number'] };
+        if (p.answer != null && (!whole(p.answer) || Number(p.answer) !== bigger)) return { missing: ['an answer that is the bigger number'] };
         return { item: { word: left + ' or ' + right, left: left, right: right, answer: String(bigger) } };
       },
       render: function (item, ctx) {
         var buttons = [];
+        var qId = 'qd-q-' + String(item && item.id || '0').replace(/[^A-Za-z0-9_-]/g, '');
         var make = function (value) {
-          var b = ctx.el('button', { type: 'button', 'data-choice': String(value), on: { click: function () { ctx.answer(String(value)); } }, text: String(value) });
+          var b = ctx.el('button', { type: 'button', 'data-choice': String(value), on: { click: function () { if (ctx.isDone() || b.getAttribute('aria-disabled') === 'true') return; ctx.answer(String(value)); } }, text: String(value) });
           buttons.push(b);
           return ctx.el('li', {}, [b]);
         };
-        ctx.root.appendChild(ctx.el('p', { class: 'letters', style: 'text-align:center', text: ctx.L.quantity_discrimination_question }));
-        ctx.root.appendChild(ctx.el('ul', { class: 'pair' }, [make(item.left), make(item.right)]));
+        ctx.root.appendChild(ctx.el('p', { id: qId, class: 'letters', style: 'text-align:center', text: ctx.L.quantity_discrimination_question }));
+        ctx.root.appendChild(ctx.el('ul', { class: 'pair', 'aria-labelledby': qId }, [make(item.left), make(item.right)]));
         // Keys 1 and 2 pick the first and the second number; Left/Right arrows move focus without submitting.
         ctx.keys(function (key) {
           if (ctx.isDone()) return false;
@@ -5625,6 +6213,10 @@
         read_along_define_hint: 'Tap an underlined word in the passage, or choose one below, to see its meaning.',
         read_along_define_words: 'Words on this page',
         read_along_define_close: 'Close meaning',
+        read_along_hear_meaning: 'Hear meaning',
+        read_along_with_supports: 'Read with supports',
+        read_along_supports_heading: 'Notes & supports',
+        read_along_support_hint: 'Tap a note below to read or listen to a teacher support.',
         read_along_sent_prev: 'Previous sentence',
         read_along_sent_next: 'Next sentence',
         read_along_resume_note: 'You stopped at sentence {n} of {total}.',
@@ -5635,6 +6227,15 @@
         read_along_pos_v: 'Verb',
         read_along_pos_j: 'Adjective',
         read_along_pos_a: 'Adverb',
+        read_along_pos_p: 'Pronoun',
+        read_along_pos_r: 'Preposition',
+        read_along_pos_c: 'Conjunction',
+        read_along_pos_scheme: 'Colors',
+        read_along_pos_style: 'Style',
+        read_along_checks_heading: 'Check your understanding',
+        read_along_checks_right: 'Nice work!',
+        read_along_checks_retry: 'Try another choice.',
+        read_along_checks_open_note: 'Stays on this device only.',
         read_along_rec: 'Record my voice',
         read_along_rec_stop: 'Stop recording',
         read_along_rec_play: 'Play my voice',
@@ -5665,7 +6266,7 @@
           var out = { text: line(row && row.text, 600), audio: clip(row && row.audio) }, syl = line(row && row.syl, 900);
           // Kept only when it is the text itself with dots added: the words a student reads are never changed.
           if (syl && syl !== out.text && syl.split(DOT).join('') === out.text) out.syl = syl;
-          var pos = typeof (row && row.pos) === 'string' && row.pos.length <= 400 && /^(?:\d{1,3}:[nvja](?:,\d{1,3}:[nvja])*)$/.test(row.pos) ? row.pos : '';
+          var pos = typeof (row && row.pos) === 'string' && row.pos.length <= 400 && /^(?:\d{1,3}:[nvjaprc](?:,\d{1,3}:[nvjaprc])*)$/.test(row.pos) ? row.pos : '';
           if (pos) out.pos = pos;
           if (row && Array.isArray(row.timings) && row.timings.length && row.timings.length <= 120) {
             var cleanT = [], prevT = 0, validT = true;
@@ -5687,6 +6288,34 @@
         var item = { lines: lines, lang: lang, page: Math.max(1, page), pages: Math.max(1, pages), word: lines[0].text.slice(0, 60), target: 'read' };
         if (line(p.heading, 120)) item.heading = line(p.heading, 120);
         if (p.simpleBar === true) item.simpleBar = true;
+        if (/^(?:default|fitzgerald|montessori|okabe|mono|custom)$/.test(String(p.posScheme || ''))) item.posScheme = String(p.posScheme);
+        if (/^(?:underline|pill|tags)$/.test(String(p.posStyle || ''))) item.posStyle = String(p.posStyle);
+        if (p.posPalette && typeof p.posPalette === 'object' && !Array.isArray(p.posPalette)) {
+          var pal = {}, pHas = false;
+          ['n', 'v', 'j', 'a', 'p', 'r', 'c'].forEach(function (pk) {
+            var c = p.posPalette[pk];
+            if (typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c)) { pal[pk] = c; pHas = true; }
+          });
+          if (pHas) item.posPalette = pal;
+        }
+        if (Array.isArray(p.questions) && p.questions.length) {
+          var qs = [];
+          for (var qi = 0; qi < p.questions.length && qs.length < 6; qi++) {
+            var qr = p.questions[qi]; if (!qr || typeof qr !== 'object') continue;
+            var qp = line(qr.prompt, 240); if (!qp) continue;
+            var qk = qr.kind === 'mc' ? 'mc' : 'open';
+            var qObj = { id: clip(qr.id) || ('q' + (qs.length + 1)), prompt: qp, kind: qk };
+            if (qk === 'mc') {
+              var qcs = Array.isArray(qr.choices) ? qr.choices.map(function (c) { return line(c, 120); }).filter(Boolean).slice(0, 4) : [];
+              if (qcs.length < 2) continue;
+              qObj.choices = qcs;
+              var qa = Math.floor(Number(qr.answer));
+              if (isFinite(qa) && qa >= 0 && qa < qcs.length) qObj.answer = qa;
+            }
+            qs.push(qObj);
+          }
+          if (qs.length) item.questions = qs;
+        }
         if (p.glossary && typeof p.glossary === 'object' && !Array.isArray(p.glossary)) {
           var gloss = {}, gCount = 0;
           Object.keys(p.glossary).forEach(function (k) {
@@ -5696,20 +6325,44 @@
             var def = line(v.d, 240);
             if (!def) return;
             var entry = { w: line(v.w, 40) || k, d: def };
-            var vp = line(v.p, 24), ve = line(v.e, 200), vImg = clip(v.img), vAlt = line(v.alt, 60);
+            var vp = line(v.p, 24), ve = line(v.e, 200), vImg = clip(v.img), vAlt = line(v.alt, 60), vAudio = clip(v.a);
             if (vp) entry.p = vp;
             if (ve) entry.e = ve;
             if (vImg) { entry.img = vImg; if (vAlt) entry.alt = vAlt; }
+            if (vAudio) entry.a = vAudio;
+            if (v.c === true) entry.c = true;
             gloss[k] = entry;
             gCount++;
           });
           if (gCount) item.glossary = gloss;
         }
+        if (Array.isArray(p.supports) && p.supports.length) {
+          var sups = [];
+          for (var si = 0; si < p.supports.length && sups.length < 60; si++) {
+            var sr = p.supports[si]; if (!sr || typeof sr !== 'object') continue;
+            var sText = line(sr.text, 360), sLine = Math.floor(Number(sr.line));
+            if (!sText || !isFinite(sLine) || sLine < 0 || sLine >= lines.length) continue;
+            var sup = { id: clip(sr.id) || ('sup' + (sups.length + 1)), line: sLine, text: sText };
+            var sq = line(sr.quote, 80);
+            if (sq) { sup.quote = sq; var so = Math.floor(Number(sr.occ)); if (isFinite(so) && so > 0 && so <= 20) sup.occ = so; }
+            var sImg = clip(sr.img), sAlt = line(sr.alt, 60), sAud = clip(sr.audio);
+            if (sImg) { sup.img = sImg; if (sAlt) sup.alt = sAlt; }
+            if (sAud) sup.audio = sAud;
+            sups.push(sup);
+          }
+          if (sups.length) item.supports = sups;
+        }
         return { item: item };
       },
       render: function (item, ctx) {
-        var L = ctx.L, nodes = [], paraNodes = [], run = 0, playing = false, from = 0, counted = {};
+        var L = ctx.L, B = function (a, k) { a.type = 'button'; return ctx.el('button', a, k); }, nodes = [], paraNodes = [], run = 0, playing = false, from = 0, counted = {};
         var activeLine = -1, activeWord = -1;
+        var allPages = (Array.isArray(ctx.pages) && ctx.pages.length) ? ctx.pages : [item];
+        var pageIdx = allPages.indexOf(item);
+        if (pageIdx < 0) pageIdx = Math.max(0, Math.min(allPages.length - 1, (item.page || 1) - 1));
+        var isMultiPage = allPages.length > 1;
+        var cache = (ctx.sessionCache && typeof ctx.sessionCache === 'object') ? ctx.sessionCache : null;
+        var nav = (ctx.nav && typeof ctx.nav === 'object') ? ctx.nav : null;
         // Persist Syllables, Bold start, Chunk view, and Parts of speech filters in state.tools via ctx.toolPref.
         var doc = ctx.root.ownerDocument, top = doc.documentElement;
         var readPref = function (prefKey, attr, fallback) {
@@ -5732,38 +6385,121 @@
         var gloss = item.glossary && typeof item.glossary === 'object' ? item.glossary : null;
         var glossKeys = gloss ? Object.keys(gloss) : [];
         var hasDef = glossKeys.length > 0, showDef = hasDef && readPref('define', 'define', false);
+        var supports = Array.isArray(item.supports) ? item.supports : [], hasSupports = supports.length > 0, supportsByLine = {}, supportById = {};
+        supports.forEach(function (s) { if (s && s.id) { supportById[s.id] = s; (supportsByLine[String(s.line)] = supportsByLine[String(s.line)] || []).push(s); } });
+        var hasSupportAudio = supports.some(function (s) { return !!s.audio; });
+        var devVoice = typeof ctx.deviceVoice === 'function' ? ctx.deviceVoice(item.lang) : null, hasDevVoice = !!(devVoice && devVoice.available && devVoice.available());
+        var readWithSupports = hasSupports && (hasSupportAudio || hasDevVoice) && readPref('withSupports', 'with-supports', false);
         var showBold = readPref('bold', 'bold', false);
         var showPosLabels = readPref('posLabels', 'pos-labels', false);
-        var chunkMode = item.lines.length > 1 && readPref('chunk', 'chunk', false);
+        var chunkMode = (item.lines.length > 1 || isMultiPage) && readPref('chunk', 'chunk', false);
         var autoAdv = !readPref('noAuto', 'no-auto', false);
-        var devVoice = typeof ctx.deviceVoice === 'function' ? ctx.deviceVoice(item.lang) : null;
-        var hasDevVoice = !!(devVoice && typeof devVoice.available === 'function' && devVoice.available());
         var tapMode = showDef ? 'define' : (hasAudio ? 'sentence' : (hasDevVoice ? 'speak' : (hasSyl ? 'sounds' : 'sentence')));
-        var pausedLine = -1, pausedTime = 0, closeOverlays = null, chunkTimer = 0, chunkAutoOn = false, chunkPaceMs = 3500, chunkMood = 'highlight', twTimer = 0, twFull = false, devReading = false;
+        var pausedLine = -1, pausedTime = 0, closeOverlays = null, chunkTimer = 0, chunkAutoOn = false, chunkPaceMs = (cache && cache.chunkPaceMs >= 1000 && cache.chunkPaceMs <= 8000) ? cache.chunkPaceMs : 3500, chunkMood = (cache && cache.chunkMood) || 'highlight', twTimer = 0, twFull = false, devReading = false, pageTurnTimer = 0, finishedRun = false;
         var win = doc.defaultView || {};
-        var reducedMotion = function () { try { return !!(win.matchMedia && win.matchMedia('(prefers-reduced-motion:reduce)').matches); } catch (_) { return false; } };
+        var reducedMotion = function () {
+          if (top && top.getAttribute('data-lt-motion') === '1') return true;
+          try { return !!(win.matchMedia && win.matchMedia('(prefers-reduced-motion:reduce)').matches); } catch (_) { return false; }
+        };
         var posOn = {
           n: !readPref('posHideN', 'pos-hide-n', false),
           v: !readPref('posHideV', 'pos-hide-v', false),
           j: !readPref('posHideJ', 'pos-hide-j', false),
           a: !readPref('posHideA', 'pos-hide-a', false),
+          p: !readPref('posHideP', 'pos-hide-p', false),
+          r: !readPref('posHideR', 'pos-hide-r', false),
+          c: !readPref('posHideC', 'pos-hide-c', false),
         };
+        var posScheme = item.posScheme || 'default';
+        var posStyle = item.posStyle || (showPosLabels ? 'tags' : 'underline');
+        var POS_TAGS = { n: 'N', v: 'V', j: 'Adj', a: 'Adv', p: 'Pron', r: 'Prep', c: 'Conj' };
         var use = function (name) { if (!counted[name]) { counted[name] = true; ctx.support(name); } };
         var press = function (button, on) { button.setAttribute('aria-pressed', String(on)); button.style.background = on ? 'var(--accent)' : ''; button.style.color = on ? 'var(--accent-ink)' : ''; };
         if (item.heading) ctx.root.appendChild(ctx.el('p', { class: 'letters', style: 'margin:0 0 4px', text: item.heading }));
-        if (item.pages > 1) ctx.root.appendChild(ctx.el('p', { class: 'muted', style: 'margin:0 0 4px', 'data-read-along-page': '', text: ctx.fmt(L.read_along_page, { n: item.page, total: item.pages }) }));
-        var sentCounter = item.lines.length > 1 ? ctx.el('p', { class: 'muted', style: 'margin:0 0 4px', 'data-read-along-sentence': '', text: ctx.fmt(L.read_along_sentence || 'Sentence {n} of {total}', { n: 1, total: item.lines.length }) }) : null;
-        var progFill = item.lines.length > 1 ? ctx.el('span', { class: 'ra-progress-fill', style: 'width:' + Math.round(100 / item.lines.length) + '%' }) : null;
+        var jumpSel = null, bmBtn = null, bmGoBtn = null;
+        if (item.pages > 1 || isMultiPage) {
+          var pageLabel = ctx.el('p', { class: 'muted', style: 'margin:0', 'data-read-along-page': '', text: ctx.fmt(L.read_along_page, { n: item.page, total: item.pages }) });
+          var pageBarItems = [pageLabel];
+          if (isMultiPage && typeof ctx.goto === 'function') {
+            jumpSel = ctx.el('select', { class: 'ra-page-jump', 'aria-label': 'Jump to page', 'data-read-along-jump': '' }, allPages.map(function (pg, pi) {
+              var hLine = Array.isArray(pg.lines) ? pg.lines.filter(function (l) { return l && l.heading; })[0] : null;
+              var lbl = 'Page ' + (pi + 1) + (hLine ? (' \u2014 ' + String(hLine.text || '').slice(0, 28)) : (pg.heading ? (' \u2014 ' + String(pg.heading).slice(0, 28)) : ''));
+              return ctx.el('option', { value: String(pi), text: lbl });
+            }));
+            jumpSel.value = String(pageIdx);
+            jumpSel.addEventListener('change', function () {
+              var target = Math.floor(Number(jumpSel.value));
+              if (!isFinite(target) || target === pageIdx) return;
+              if (guardMic()) { jumpSel.value = String(pageIdx); return; }
+              halt(false);
+              ctx.goto(target, { fromLine: 0 });
+            });
+            pageBarItems.push(jumpSel);
+            if (typeof ctx.bookmark === 'function') {
+              bmBtn = B({ class: 'ra-bookmark-btn', 'data-read-along-bookmark': '', 'aria-pressed': 'false', text: 'Bookmark' });
+              bmGoBtn = B({ class: 'ra-bookmark-btn', 'data-read-along-bookmark-go': '', hidden: true, text: 'Go to bookmark' });
+              var syncBookmark = function () {
+                var bm = ctx.bookmark();
+                var here = !!(bm && bm.page === pageIdx);
+                bmBtn.setAttribute('aria-pressed', String(here));
+                bmBtn.textContent = here ? 'Bookmarked' : 'Bookmark';
+                if (bm && bm.page !== pageIdx && bm.page >= 0 && bm.page < allPages.length) {
+                  bmGoBtn.hidden = false;
+                  bmGoBtn.textContent = 'Go to bookmark (Page ' + (bm.page + 1) + ')';
+                } else {
+                  bmGoBtn.hidden = true;
+                }
+              };
+              bmBtn.addEventListener('click', function () {
+                var bm = ctx.bookmark();
+                if (bm && bm.page === pageIdx) ctx.bookmark(null);
+                else ctx.bookmark({ page: pageIdx, line: from });
+                syncBookmark();
+              });
+              bmGoBtn.addEventListener('click', function () {
+                if (guardMic()) return;
+                var bm = ctx.bookmark();
+                if (bm && bm.page >= 0 && bm.page < allPages.length) { halt(false); ctx.goto(bm.page, { fromLine: bm.line || 0 }); }
+              });
+              syncBookmark();
+              pageBarItems.push(bmBtn, bmGoBtn);
+            }
+          }
+          ctx.root.appendChild(ctx.el('div', { class: 'ra-page-bar', 'data-read-along-page-bar': '' }, pageBarItems));
+        }
+        var showMultiSent = item.lines.length > 1 || isMultiPage;
+        var sentCounter = showMultiSent ? ctx.el('p', { class: 'muted', style: 'margin:0 0 4px', 'data-read-along-sentence': '', text: ctx.fmt(L.read_along_sentence || 'Sentence {n} of {total}', { n: 1, total: item.lines.length }) }) : null;
+        var progFill = showMultiSent ? ctx.el('span', { class: 'ra-progress-fill', style: 'width:' + Math.round(100 / Math.max(1, item.lines.length)) + '%' }) : null;
         var progBar = progFill ? ctx.el('div', { class: 'ra-progress', 'aria-hidden': 'true', 'data-read-along-progress': '' }, [progFill]) : null;
         var dock = ctx.el('div', { class: 'ra-dock' + (item.lines.length > 6 ? ' is-sticky' : ''), 'data-read-along-dock': '' });
         if (sentCounter) dock.appendChild(sentCounter);
         if (progBar) dock.appendChild(progBar);
         ctx.root.appendChild(dock);
+        var overlayJumpBar = null, overlayJumpText = null, overlayJumpGo = null, overlayJumpTarget = -1;
+        if (isMultiPage && typeof ctx.goto === 'function') {
+          overlayJumpText = ctx.el('span', { text: '' });
+          overlayJumpGo = B({ class: 'primary', 'data-overlay-jump-go': '', text: 'Go to Page' });
+          var overlayJumpStay = B({ 'data-overlay-jump-dismiss': '', text: 'Stay here' });
+          overlayJumpBar = ctx.el('div', { class: 'ra-jump-note', 'data-read-along-overlay-jump': '', hidden: true }, [overlayJumpText, overlayJumpGo, overlayJumpStay]);
+          overlayJumpGo.addEventListener('click', function () {
+            if (guardMic()) return;
+            if (overlayJumpTarget >= 0 && overlayJumpTarget < allPages.length) { halt(false); ctx.goto(overlayJumpTarget, { fromLine: 0 }); }
+          });
+          overlayJumpStay.addEventListener('click', function () { overlayJumpBar.hidden = true; });
+          ctx.root.appendChild(overlayJumpBar);
+        }
+        var showOverlayJump = function (targetIdx) {
+          if (!overlayJumpBar || !(targetIdx >= 0 && targetIdx < allPages.length) || targetIdx === pageIdx) return;
+          overlayJumpTarget = targetIdx;
+          overlayJumpText.textContent = 'You read into Page ' + (targetIdx + 1) + '.';
+          overlayJumpGo.textContent = 'Go to Page ' + (targetIdx + 1);
+          overlayJumpBar.hidden = false;
+        };
         var resumeBar = null;
-        var savedPlace = typeof ctx.place === 'function' ? Math.floor(Number(ctx.place()) || 0) : 0;
+        var savedPlace = (!nav && typeof ctx.place === 'function') ? Math.floor(Number(ctx.place()) || 0) : 0;
         if (savedPlace > 0 && savedPlace < item.lines.length) {
-          var resumeGo = ctx.el('button', { type: 'button', class: 'primary', 'data-read-along-resume-go': '', text: ctx.fmt(L.read_along_resume_go || 'Continue from sentence {n}', { n: savedPlace + 1 }) });
-          var resumeTop = ctx.el('button', { type: 'button', 'data-read-along-resume-top': '', text: L.read_along_resume_top || 'Start from sentence 1' });
+          var resumeGo = B({ class: 'primary', 'data-read-along-resume-go': '', text: ctx.fmt(L.read_along_resume_go || 'Continue from sentence {n}', { n: savedPlace + 1 }) });
+          var resumeTop = B({ 'data-read-along-resume-top': '', text: L.read_along_resume_top || 'Start from sentence 1' });
           resumeBar = ctx.el('div', { class: 'ra-resume-bar', 'data-read-along-resume': '' }, [
             ctx.el('p', { style: 'margin:0 0 8px', text: ctx.fmt(L.read_along_resume_note || 'You stopped at sentence {n} of {total}.', { n: savedPlace + 1, total: item.lines.length }) }),
             ctx.el('div', { class: 'row' }, [resumeGo, resumeTop]),
@@ -5791,7 +6527,7 @@
           return map;
         };
         var wordWeights = function (sentence) {
-          var re = /[A-Za-z\u00b7]+(?:['\u2019][A-Za-z\u00b7]+)*/g, m, list = [];
+          var re = /[A-Za-z\u00C0-\u024F\u00b7]+(?:['\u2019][A-Za-z\u00C0-\u024F\u00b7]+)*/g, m, list = [];
           while ((m = re.exec(sentence))) {
             var clean = m[0].replace(/\u00b7/g, ''), tail = sentence.slice(m.index + m[0].length, m.index + m[0].length + 2);
             var bonus = /[.!?]/.test(tail) ? 6 : /[,;:]/.test(tail) ? 3 : /-/.test(tail) ? 2 : 0;
@@ -5829,15 +6565,15 @@
           var sylTokens = null;
           if (tapMode === 'sounds' && row.syl) {
             sylTokens = [];
-            var sre = /[A-Za-z\u00b7]+(?:['\u2019][A-Za-z\u00b7]+)*/g, sm;
+            var sre = /[A-Za-z\u00C0-\u024F\u00b7]+(?:['\u2019][A-Za-z\u00C0-\u024F\u00b7]+)*/g, sm;
             while ((sm = sre.exec(row.syl))) sylTokens.push(sm[0]);
           }
           n.textContent = '';
-          var re = /[A-Za-z\u00b7]+(?:['\u2019][A-Za-z\u00b7]+)*/g, m, last = 0, wi = 0;
+          var re = /[A-Za-z\u00C0-\u024F\u00b7]+(?:['\u2019][A-Za-z\u00C0-\u024F\u00b7]+)*/g, m, last = 0, wi = 0;
           var lineTokens = null, phraseAt = null;
           if (showDef && gloss) {
             lineTokens = [];
-            var preRe = /[A-Za-z\u00b7]+(?:['\u2019][A-Za-z\u00b7]+)*/g, pm;
+            var preRe = /[A-Za-z\u00C0-\u024F\u00b7]+(?:['\u2019][A-Za-z\u00C0-\u024F\u00b7]+)*/g, pm;
             while ((pm = preRe.exec(shown))) lineTokens.push(pm[0].replace(/\u00b7/g, '').toLowerCase());
             phraseAt = {};
             for (var pi = 0; pi < lineTokens.length; pi++) {
@@ -5869,7 +6605,7 @@
               var attrs = { class: cls.join(' ') };
               if (tag) {
                 attrs['data-pos'] = tag;
-                attrs['data-pos-tag'] = tag === 'n' ? 'N' : tag === 'v' ? 'V' : tag === 'j' ? 'Adj' : 'Adv';
+                attrs['data-pos-tag'] = POS_TAGS[tag] || tag.toUpperCase();
               }
               if (defKey) attrs['data-def-word'] = defKey;
               if (tapMode === 'speak' || tapMode === 'sounds') attrs['data-tap-word'] = plainWord;
@@ -5894,11 +6630,11 @@
           soundsCard.textContent = '';
           var headRow = [ctx.el('strong', { text: plainWord + ' (' + parts.length + (parts.length === 1 ? ' syllable)' : ' syllables)') })];
           if (hasDevVoice) {
-            var hearBtn = ctx.el('button', { type: 'button', 'data-sounds-hear': '', text: 'Hear word' });
+            var hearBtn = B({ 'data-sounds-hear': '', text: 'Hear word' });
             hearBtn.addEventListener('click', function () { devVoice.speak(plainWord); });
             headRow.push(hearBtn);
           }
-          var closeS = ctx.el('button', { type: 'button', 'data-sounds-close': '', text: L.tools_close || 'Close' });
+          var closeS = B({ 'data-sounds-close': '', text: L.tools_close || 'Close' });
           closeS.addEventListener('click', function () { soundsCard.hidden = true; });
           headRow.push(closeS);
           soundsCard.appendChild(ctx.el('div', { class: 'row', style: 'justify-content:space-between;align-items:center' }, headRow));
@@ -5912,33 +6648,54 @@
           Object.keys(tapBtns).forEach(function (k) { press(tapBtns[k], k === tapMode); });
           paint();
         };
-        var showDefinition = function (key) {
-          if (!defCard || !gloss || !Object.prototype.hasOwnProperty.call(gloss, key)) return;
-          var entry = gloss[key];
-          defCard.textContent = '';
-          var head = entry.w && entry.w !== key ? key + ' (' + entry.w + ')' : (entry.w || key);
-          var textCol = ctx.el('div', { class: 'ra-def-body' }, [
-            ctx.el('p', { class: 'ra-def-head', text: head + (entry.p ? ' - ' + entry.p : '') }),
-            ctx.el('p', { style: 'margin:4px 0', text: entry.d }),
-            entry.e ? ctx.el('p', { class: 'muted', style: 'margin:4px 0 0', text: '"' + entry.e + '"' }) : null,
-          ]);
-          var imgSrc = entry.img && typeof ctx.image === 'function' ? ctx.image(entry.img) : null;
-          if (imgSrc) {
-            defCard.appendChild(ctx.el('div', { class: 'ra-def-layout' }, [
-              ctx.el('img', { class: 'ra-def-img', src: imgSrc, alt: entry.alt || entry.w || key, 'data-def-img': key }),
-              textCol,
-            ]));
-          } else {
-            defCard.appendChild(textCol);
+        var fillCard = function (card, head, body, ex, audio, spk, hAttr, hVal, img, alt, iAttr) {
+          card.textContent = '';
+          var hr = null;
+          if (audio || hasDevVoice) {
+            var o = { type: 'button', text: L.read_along_hear_meaning || 'Hear meaning', style: 'margin-top:6px' }; o[hAttr] = hVal;
+            var hb = ctx.el('button', o);
+            hb.addEventListener('click', function () { halt(false); if (audio) ctx.play(audio, 0, null, 0); else if (hasDevVoice) devVoice.speak(spk); });
+            hr = ctx.el('div', { class: 'row', style: 'margin-top:4px' }, [hb]);
           }
-          Object.keys(defPickBtns).forEach(function (k) { defPickBtns[k].setAttribute('aria-pressed', String(k === key)); });
+          var col = ctx.el('div', { class: 'ra-def-body' }, [ctx.el('p', { class: 'ra-def-head', text: head }), ctx.el('p', { style: 'margin:4px 0', text: body }), ex ? ctx.el('p', { class: 'muted', style: 'margin:4px 0 0', text: '"' + ex + '"' }) : null, hr]);
+          var src = img && typeof ctx.image === 'function' ? ctx.image(img) : null;
+          if (src) { var io = { class: 'ra-def-img', src: src, alt: alt }; io[iAttr] = hVal; card.appendChild(ctx.el('div', { class: 'ra-def-layout' }, [ctx.el('img', io), col])); }
+          else card.appendChild(col);
+        };
+        var showDefinition = function (k) {
+          if (!defCard || !gloss || !Object.prototype.hasOwnProperty.call(gloss, k)) return;
+          var e = gloss[k], h = e.w && e.w !== k ? k + ' (' + e.w + ')' : (e.w || k);
+          fillCard(defCard, h + (e.p ? ' - ' + e.p : ''), e.d, e.e, e.a, (e.w || k) + '. ' + e.d, 'data-def-hear', k, e.img, e.alt || e.w || k, 'data-def-img');
+          Object.keys(defPickBtns).forEach(function (x) { defPickBtns[x].setAttribute('aria-pressed', String(x === k)); });
+        };
+        var supCard = null, supPickBtns = {}, supLineBtns = [];
+        var showSupport = function (id) {
+          if (!supCard || !Object.prototype.hasOwnProperty.call(supportById, id)) return;
+          var s = supportById[id], h = s.quote ? (s.quote + ' (sentence ' + (s.line + 1) + ')') : ('Note for sentence ' + (s.line + 1));
+          fillCard(supCard, h, s.text, '', s.audio, (s.quote ? s.quote + '. ' : '') + s.text, 'data-support-hear', s.id, s.img, s.alt || s.quote || h, 'data-support-img');
+          Object.keys(supPickBtns).forEach(function (x) { supPickBtns[x].setAttribute('aria-pressed', String(x === id)); });
+        };
+        var applyPosTheme = function () {
+          var targets = [box, posLegend].filter(Boolean);
+          targets.forEach(function (elNode) {
+            if (posScheme && posScheme !== 'default') elNode.setAttribute('data-pos-scheme', posScheme);
+            else elNode.removeAttribute('data-pos-scheme');
+            if (posStyle && posStyle !== 'underline') elNode.setAttribute('data-pos-style', posStyle);
+            else elNode.removeAttribute('data-pos-style');
+            ['n', 'v', 'j', 'a', 'p', 'r', 'c'].forEach(function (pk) {
+              var customHex = (posScheme === 'custom' && item.posPalette && item.posPalette[pk]) ? item.posPalette[pk] : '';
+              if (customHex) elNode.style.setProperty('--pos-' + pk, customHex);
+              else elNode.style.removeProperty('--pos-' + pk);
+            });
+          });
         };
         var paint = function () {
           if (posLegend) posLegend.hidden = !showPos;
           if (box) {
-            if (showPos && showPosLabels) box.setAttribute('data-pos-tags', '1');
+            if (showPos && (showPosLabels || posStyle === 'tags')) box.setAttribute('data-pos-tags', '1');
             else box.removeAttribute('data-pos-tags');
           }
+          applyPosTheme();
           if (defBox) defBox.hidden = !showDef;
           for (var i = 0; i < nodes.length; i++) paintLine(i);
         };
@@ -5966,6 +6723,28 @@
             }
           }, 36);
         };
+        var canPrevSent = function () { return from > 0 || (isMultiPage && pageIdx > 0 && typeof ctx.goto === 'function'); };
+        var canNextSent = function () { return from < item.lines.length - 1 || (isMultiPage && pageIdx < allPages.length - 1 && typeof ctx.goto === 'function'); };
+        var stepChunk = function (dir, keepAuto) {
+          if (guardMic()) return false;
+          if (dir > 0) {
+            if (from < item.lines.length - 1) { setActiveSentence(from + 1, true); return true; }
+            if (isMultiPage && pageIdx < allPages.length - 1 && typeof ctx.goto === 'function') {
+              if (cache) { cache.chunkPaceMs = chunkPaceMs; cache.chunkMood = chunkMood; }
+              if (!ctx.isDone()) ctx.practice('read', '', { quiet: true });
+              ctx.goto(pageIdx + 1, { fromLine: 0, autoPlay: keepAuto ? 'chunk' : false });
+              return true;
+            }
+            return false;
+          }
+          if (from > 0) { setActiveSentence(from - 1, true); return true; }
+          if (isMultiPage && pageIdx > 0 && typeof ctx.goto === 'function') {
+            if (cache) { cache.chunkPaceMs = chunkPaceMs; cache.chunkMood = chunkMood; }
+            ctx.goto(pageIdx - 1, { fromLine: -1, autoPlay: false });
+            return true;
+          }
+          return false;
+        };
         var scheduleChunkTimer = function () {
           if (chunkTimer && win.clearTimeout) { win.clearTimeout(chunkTimer); chunkTimer = 0; }
           if (!chunkMode || !chunkAutoOn || playing) return;
@@ -5973,6 +6752,10 @@
             chunkTimer = 0;
             if (!chunkMode || !chunkAutoOn || playing) return;
             if (from >= item.lines.length - 1) {
+              if (isMultiPage && pageIdx < allPages.length - 1 && typeof ctx.goto === 'function') {
+                stepChunk(1, true);
+                return;
+              }
               chunkAutoOn = false;
               if (chunkAutoBtn) press(chunkAutoBtn, false);
               return;
@@ -5991,21 +6774,35 @@
             n.hidden = chunkMode && i !== from;
             if (n.nextSibling && n.nextSibling.nodeType === 3) n.nextSibling.nodeValue = chunkMode ? '' : ' ';
           });
+          supLineBtns.forEach(function (entry) {
+            entry.el.hidden = chunkMode && entry.line !== from;
+          });
           paraNodes.forEach(function (p) { p.hidden = chunkMode; });
           if (chunkNav) chunkNav.hidden = !chunkMode;
-          if (sentPrevBtn) sentPrevBtn.disabled = from <= 0;
-          if (sentNextBtn) sentNextBtn.disabled = from >= item.lines.length - 1;
+          if (sentPrevBtn) sentPrevBtn.disabled = !canPrevSent();
+          if (sentNextBtn) sentNextBtn.disabled = !canNextSent();
           if (!chunkMode) { chunkAutoOn = false; if (chunkAutoBtn) press(chunkAutoBtn, false); stopChunkTimers(); }
           else runTypewriter(from);
         };
         var mic = typeof ctx.studentMic === 'function' ? ctx.studentMic({
+          itemId: item.id,
+          page: item.page,
+          pages: allPages.length,
+          onRecordStart: function () { haltPlaybackOnly(false); },
           getSentence: function () { return { index: from, total: item.lines.length, text: (item.lines[from] && item.lines[from].text) || '' }; },
         }) : null;
+        var guardMic = function () {
+          if (mic && typeof mic.isRecording === 'function' && mic.isRecording()) {
+            if (typeof mic.warnRecording === 'function') mic.warnRecording();
+            return true;
+          }
+          return false;
+        };
         var setActiveSentence = function (idx, savePlace) {
           var clamped = Math.max(0, Math.min(item.lines.length - 1, idx));
           from = clamped;
           if (sentCounter) sentCounter.textContent = ctx.fmt(L.read_along_sentence || 'Sentence {n} of {total}', { n: from + 1, total: item.lines.length });
-          if (progFill) progFill.style.width = Math.round(((from + 1) / item.lines.length) * 100) + '%';
+          if (progFill) progFill.style.width = Math.round(((from + 1) / Math.max(1, item.lines.length)) * 100) + '%';
           if (savePlace !== false && typeof ctx.place === 'function') ctx.place(from);
           if (mic && typeof mic.setSentence === 'function') mic.setSentence(from, item.lines.length);
           applyChunkView();
@@ -6034,56 +6831,101 @@
           });
           if (index >= 0 && nodes[index] && typeof nodes[index].scrollIntoView === 'function') { try { nodes[index].scrollIntoView({ block: 'nearest' }); } catch (_) {} }
         };
-        var playButton = hasAudio ? ctx.el('button', { type: 'button', class: 'primary', 'data-read-along-play': '', text: L.read_along_play }) : null;
-        var devReadButton = (!hasAudio && hasDevVoice) ? ctx.el('button', { type: 'button', class: 'primary', 'data-read-along-device-read': '', text: 'Read with device voice' }) : null;
-        var restartButton = (hasAudio || hasDevVoice || item.lines.length > 1) ? ctx.el('button', { type: 'button', 'data-read-along-restart': '', text: L.read_along_restart || 'Restart' }) : null;
-        var autoButton = ((hasAudio || hasDevVoice) && item.lines.length > 1) ? ctx.el('button', { type: 'button', 'data-read-along-auto': '', text: L.read_along_auto || 'Auto-advance' }) : null;
-        var sylButton = hasSyl ? ctx.el('button', { type: 'button', 'data-read-along-syllables': '', text: L.read_along_syllables }) : null;
-        var posButton = hasPos ? ctx.el('button', { type: 'button', 'data-read-along-pos': '', text: L.read_along_pos || 'Parts of speech' }) : null;
-        var defButton = hasDef ? ctx.el('button', { type: 'button', 'data-read-along-define': '', text: L.read_along_define || 'Word meanings' }) : null;
-        var boldButton = ctx.el('button', { type: 'button', 'data-read-along-bold': '', text: L.read_along_bold || 'Bold start' });
-        var chunkButton = item.lines.length > 1 ? ctx.el('button', { type: 'button', 'data-read-along-chunk': '', text: L.read_along_chunk || 'One sentence' }) : null;
-        var rsvpButton = ctx.el('button', { type: 'button', 'data-read-along-rsvp': '', text: L.read_along_rsvp || 'Focus mode' });
-        var crawlButton = ctx.el('button', { type: 'button', 'data-read-along-crawl': '', text: L.read_along_crawl || 'Crawl' });
+        var playButton = hasAudio ? B({ class: 'primary', 'data-read-along-play': '', text: L.read_along_play }) : null;
+        var devReadButton = (!hasAudio && hasDevVoice) ? B({ class: 'primary', 'data-read-along-device-read': '', text: 'Read with device voice' }) : null;
+        var restartButton = (hasAudio || hasDevVoice || showMultiSent) ? B({ 'data-read-along-restart': '', text: L.read_along_restart || 'Restart' }) : null;
+        var autoButton = ((hasAudio || hasDevVoice) && showMultiSent) ? B({ 'data-read-along-auto': '', text: L.read_along_auto || 'Auto-advance' }) : null;
+        var sylButton = hasSyl ? B({ 'data-read-along-syllables': '', text: L.read_along_syllables }) : null;
+        var posButton = hasPos ? B({ 'data-read-along-pos': '', text: L.read_along_pos || 'Parts of speech' }) : null;
+        var defButton = hasDef ? B({ 'data-read-along-define': '', text: L.read_along_define || 'Word meanings' }) : null;
+        var withSupButton = (hasSupports && (hasSupportAudio || hasDevVoice)) ? B({ 'data-read-along-with-supports': '', text: L.read_along_with_supports || 'Read with supports' }) : null;
+        var boldButton = B({ 'data-read-along-bold': '', text: L.read_along_bold || 'Bold start' });
+        var chunkButton = showMultiSent ? B({ 'data-read-along-chunk': '', text: L.read_along_chunk || 'One sentence' }) : null;
+        var rsvpButton = B({ 'data-read-along-rsvp': '', text: L.read_along_rsvp || 'Focus mode' });
+        var crawlButton = B({ 'data-read-along-crawl': '', text: L.read_along_crawl || 'Crawl' });
         if (autoButton) press(autoButton, autoAdv);
         if (sylButton) press(sylButton, showSyl);
         if (posButton) press(posButton, showPos);
         if (defButton) press(defButton, showDef);
+        if (withSupButton) press(withSupButton, readWithSupports);
         press(boldButton, showBold);
         if (chunkButton) press(chunkButton, chunkMode);
-        var posFilterBtns = {};
-        var posLabelsBtn = hasPos ? ctx.el('button', { type: 'button', class: 'ra-pos-pill', 'data-pos-labels': '', 'aria-pressed': String(showPosLabels), text: L.read_along_pos_labels || 'Show tags' }) : null;
+        var posFilterBtns = {}, posSchemeSel = null, posStyleSel = null;
+        var posLabelsBtn = hasPos ? B({ class: 'ra-pos-pill', 'data-pos-labels': '', 'aria-pressed': String(showPosLabels || posStyle === 'tags'), text: L.read_along_pos_labels || 'Show tags' }) : null;
         if (posLabelsBtn) {
           posLabelsBtn.addEventListener('click', function () {
             showPosLabels = !showPosLabels;
+            posStyle = showPosLabels ? 'tags' : (posStyle === 'tags' ? 'underline' : posStyle);
             posLabelsBtn.setAttribute('aria-pressed', String(showPosLabels));
+            if (posStyleSel) posStyleSel.value = posStyle;
             remember('posLabels', 'pos-labels', showPosLabels);
             paint();
           });
         }
-        var posLegend = hasPos ? ctx.el('div', { class: 'ra-pos-legend', role: 'group', 'aria-label': L.read_along_pos || 'Parts of speech', 'data-read-along-pos-legend': '', hidden: !showPos }, [
-          ['n', L.read_along_pos_n || 'Noun', 'posHideN', 'pos-hide-n'],
-          ['v', L.read_along_pos_v || 'Verb', 'posHideV', 'pos-hide-v'],
-          ['j', L.read_along_pos_j || 'Adjective', 'posHideJ', 'pos-hide-j'],
-          ['a', L.read_along_pos_a || 'Adverb', 'posHideA', 'pos-hide-a'],
-        ].map(function (entry) {
-          var code = entry[0], label = entry[1], pref = entry[2], attr = entry[3];
-          var btn = ctx.el('button', { type: 'button', class: 'ra-pos-pill ra-pos ra-pos-' + code, 'data-pos-filter': code, 'aria-pressed': String(posOn[code]), text: label });
-          btn.addEventListener('click', function () {
-            posOn[code] = !posOn[code];
-            btn.setAttribute('aria-pressed', String(posOn[code]));
-            remember(pref, attr, !posOn[code]);
+        var presentPos = {};
+        if (hasPos) {
+          item.lines.forEach(function (row) {
+            if (!row.pos) return;
+            row.pos.split(',').forEach(function (pair) { var c = pair.split(':')[1]; if (c) presentPos[c] = true; });
+          });
+        }
+        var posLegend = null;
+        if (hasPos) {
+          var posRows = [
+            ['n', L.read_along_pos_n || 'Noun', 'posHideN', 'pos-hide-n'],
+            ['v', L.read_along_pos_v || 'Verb', 'posHideV', 'pos-hide-v'],
+            ['j', L.read_along_pos_j || 'Adjective', 'posHideJ', 'pos-hide-j'],
+            ['a', L.read_along_pos_a || 'Adverb', 'posHideA', 'pos-hide-a'],
+            ['p', L.read_along_pos_p || 'Pronoun', 'posHideP', 'pos-hide-p'],
+            ['r', L.read_along_pos_r || 'Preposition', 'posHideR', 'pos-hide-r'],
+            ['c', L.read_along_pos_c || 'Conjunction', 'posHideC', 'pos-hide-c'],
+          ].filter(function (entry) { return !!presentPos[entry[0]]; });
+          var schemeOpts = [
+            ['default', 'Default'],
+            ['fitzgerald', 'Fitzgerald Key'],
+            ['montessori', 'Montessori'],
+            ['okabe', 'Colorblind-safe'],
+            ['mono', 'Monochrome'],
+          ];
+          if (item.posPalette || posScheme === 'custom') schemeOpts.push(['custom', 'Custom']);
+          posSchemeSel = ctx.el('select', { class: 'ra-pos-sel', 'aria-label': L.read_along_pos_scheme || 'Colors', 'data-pos-scheme': '' }, schemeOpts.map(function (o) {
+            return ctx.el('option', { value: o[0], text: o[1] });
+          }));
+          posSchemeSel.value = posScheme;
+          posSchemeSel.addEventListener('change', function () { posScheme = posSchemeSel.value || 'default'; paint(); });
+          posStyleSel = ctx.el('select', { class: 'ra-pos-sel', 'aria-label': L.read_along_pos_style || 'Style', 'data-pos-style': '' }, [
+            ctx.el('option', { value: 'underline', text: 'Underline' }),
+            ctx.el('option', { value: 'pill', text: 'Highlight' }),
+            ctx.el('option', { value: 'tags', text: 'Tags' }),
+          ]);
+          posStyleSel.value = posStyle;
+          posStyleSel.addEventListener('change', function () {
+            posStyle = posStyleSel.value || 'underline';
+            showPosLabels = posStyle === 'tags';
+            if (posLabelsBtn) posLabelsBtn.setAttribute('aria-pressed', String(showPosLabels));
+            remember('posLabels', 'pos-labels', showPosLabels);
             paint();
           });
-          posFilterBtns[code] = btn;
-          return btn;
-        }).concat([posLabelsBtn])) : null;
+          posLegend = ctx.el('div', { class: 'ra-pos-legend', role: 'group', 'aria-label': L.read_along_pos || 'Parts of speech', 'data-read-along-pos-legend': '', hidden: !showPos }, posRows.map(function (entry) {
+            var code = entry[0], label = entry[1], pref = entry[2], attr = entry[3];
+            var btn = B({ class: 'ra-pos-pill ra-pos ra-pos-' + code, 'data-pos-filter': code, 'aria-pressed': String(posOn[code]), text: label });
+            btn.addEventListener('click', function () {
+              posOn[code] = !posOn[code];
+              btn.setAttribute('aria-pressed', String(posOn[code]));
+              remember(pref, attr, !posOn[code]);
+              paint();
+            });
+            posFilterBtns[code] = btn;
+            return btn;
+          }).concat([posLabelsBtn, posSchemeSel, posStyleSel]));
+        }
         var setPlaying = function (on) {
           playing = on;
           if (playButton) playButton.textContent = on ? L.read_along_stop : L.read_along_play;
           if (devReadButton) devReadButton.textContent = on ? L.read_along_stop : 'Read with device voice';
         };
-        var halt = function (keepPause) {
+        var haltPlaybackOnly = function (keepPause) {
+          if (pageTurnTimer && win.clearTimeout) { win.clearTimeout(pageTurnTimer); pageTurnTimer = 0; }
           if (keepPause && playing && !devReading && typeof ctx.audioTime === 'function') {
             var curT = ctx.audioTime();
             if (curT > 0.15) { pausedLine = from; pausedTime = curT; }
@@ -6097,7 +6939,13 @@
           if (chunkAutoBtn) press(chunkAutoBtn, false);
           stopChunkTimers();
           run++; ctx.stop(); mark(-1); setPlaying(false);
-          if (mic && typeof mic.halt === 'function') mic.halt();
+        };
+        var halt = function (keepPause, unmounting) {
+          haltPlaybackOnly(keepPause);
+          if (mic) {
+            if (unmounting && typeof mic.unmount === 'function') mic.unmount();
+            else if (typeof mic.halt === 'function') mic.halt();
+          }
           if (!keepPause && typeof closeOverlays === 'function') closeOverlays();
         };
         var playedAny = false;
@@ -6129,81 +6977,148 @@
             setWordHighlight(i, wi);
           };
         };
+        var speakWithDev = function (lineIdx, mine, cb) {
+          devVoice.speak(item.lines[lineIdx].text, function (ok) {
+            if (mine === run) cb(ok);
+          }, function (wi) {
+            if (mine === run) setWordHighlight(lineIdx, wi);
+          });
+        };
+        var playSupportsForLine = function (li, mine, cb) {
+          var ls = readWithSupports && hasSupports ? (supportsByLine[String(li)] || []) : [];
+          if (!ls.length) { cb(true); return; }
+          (function go(si) {
+            if (mine !== run) return;
+            if (si >= ls.length) { cb(true); return; }
+            var s = ls[si]; showSupport(s.id);
+            if (s.audio) ctx.play(s.audio, 0, null, 0).then(function (ok) { if (mine === run) ok === false ? cb(false) : go(si + 1); });
+            else if (hasDevVoice) devVoice.speak((s.quote ? s.quote + '. ' : '') + s.text, function (ok) { if (mine === run) ok ? go(si + 1) : cb(false); });
+            else go(si + 1);
+          })(0);
+        };
         var playLine = function (i, countSupport) {
-          if (!hasAudio || i < 0 || i >= item.lines.length || !item.lines[i].audio) return false;
+          if (guardMic()) return false;
+          if (i < 0 || i >= item.lines.length) return false;
+          var hasLineClip = !!item.lines[i].audio;
+          if (!hasLineClip && !hasDevVoice) return false;
           if (resumeBar) resumeBar.hidden = true;
-          pausedLine = -1; pausedTime = 0;
+          pausedLine = -1; pausedTime = 0; finishedRun = false;
           var mine = ++run;
           setPlaying(false);
           setActiveSentence(i, true);
           playedAny = true;
           if (countSupport !== false) ctx.support('lineReplays');
           mark(i);
-          ctx.play(item.lines[i].audio, 0, makeWordTracker(i, mine), 0).then(function () { if (mine === run) mark(-1); });
+          var finishOne = function (ok) {
+            if (mine !== run) return;
+            if (ok === false) { mark(-1); return; }
+            playSupportsForLine(i, mine, function () { if (mine === run) mark(-1); });
+          };
+          if (hasLineClip) ctx.play(item.lines[i].audio, 0, makeWordTracker(i, mine), 0).then(finishOne);
+          else speakWithDev(i, mine, finishOne);
           return true;
         };
         var findAudio = function (start, stepDir) {
           for (var j = start; j >= 0 && j < item.lines.length; j += stepDir) {
-            if (item.lines[j] && item.lines[j].audio) return j;
+            if (item.lines[j] && (item.lines[j].audio || hasDevVoice)) return j;
           }
           return -1;
         };
-        // The page from line i to its end (or just line i if Auto-advance is off): resumes mid-sentence when paused.
+        var scheduleAutoPageTurn = function (mine, mode) {
+          if (!autoAdv || !isMultiPage || pageIdx >= allPages.length - 1 || typeof ctx.goto !== 'function') return false;
+          mark(-1);
+          pageTurnTimer = win.setTimeout(function () {
+            pageTurnTimer = 0;
+            if (mine !== run || guardMic()) { setPlaying(false); return; }
+            if (!ctx.isDone()) ctx.practice('read', '', { quiet: true });
+            ctx.goto(pageIdx + 1, { fromLine: 0, autoPlay: mode });
+          }, 700);
+          return true;
+        };
+        // The page from line i to its end (and seamlessly to the next page when Auto-advance is on): resumes mid-sentence when paused.
         var readFrom = function (i) {
-          if (!hasAudio) return;
+          if (guardMic()) return;
+          if (!hasAudio && !hasDevVoice) return;
           if (resumeBar) resumeBar.hidden = true;
+          finishedRun = false;
           var mine = ++run;
           setPlaying(true);
           var step = function (at) {
             if (mine !== run) return;
-            while (at < item.lines.length && !item.lines[at].audio) at++;
-            if (at >= item.lines.length) { pausedLine = -1; pausedTime = 0; mark(-1); setPlaying(false); setActiveSentence(0, true); return; }
+            while (at < item.lines.length && !item.lines[at].audio && !hasDevVoice) at++;
+            if (at >= item.lines.length) {
+              pausedLine = -1; pausedTime = 0;
+              if (!scheduleAutoPageTurn(mine, 'audio')) { finishedRun = true; mark(-1); setPlaying(false); }
+              return;
+            }
             var startSec = (at === pausedLine && pausedTime > 0.15) ? pausedTime : 0;
             pausedLine = -1; pausedTime = 0;
             setActiveSentence(at, true);
             playedAny = true;
             mark(at);
-            ctx.play(item.lines[at].audio, 0, makeWordTracker(at, mine), startSec).then(function (ok) {
+            var afterLine = function (ok) {
               if (mine !== run) return;
               if (ok === false) { mark(-1); setPlaying(false); return; }
-              if (!autoAdv) { mark(-1); setPlaying(false); return; }
-              step(at + 1);
-            });
+              playSupportsForLine(at, mine, function (supOk) {
+                if (mine !== run) return;
+                if (!supOk || !autoAdv) { mark(-1); setPlaying(false); return; }
+                step(at + 1);
+              });
+            };
+            if (item.lines[at].audio) ctx.play(item.lines[at].audio, 0, makeWordTracker(at, mine), startSec).then(afterLine);
+            else speakWithDev(at, mine, afterLine);
           };
           step(i);
         };
         if (playButton) playButton.addEventListener('click', function () {
+          if (guardMic()) return;
           if (playing) { halt(true); return; }
           ctx.support('readThroughs');
-          readFrom(from);
+          var startAt = finishedRun ? 0 : from;
+          finishedRun = false;
+          readFrom(startAt);
         });
         var readDeviceFrom = function (i) {
+          if (guardMic()) return;
           if (!hasDevVoice) return;
           if (resumeBar) resumeBar.hidden = true;
+          finishedRun = false;
           var mine = ++run;
           devReading = true;
           setPlaying(true);
           var step = function (at) {
             if (mine !== run || !devReading) return;
-            if (at >= item.lines.length) { devReading = false; mark(-1); setPlaying(false); setActiveSentence(0, true); return; }
+            if (at >= item.lines.length) {
+              if (!scheduleAutoPageTurn(mine, 'device')) { devReading = false; finishedRun = true; mark(-1); setPlaying(false); }
+              return;
+            }
             setActiveSentence(at, true);
             playedAny = true;
             mark(at);
-            devVoice.speak(item.lines[at].text, function (ok) {
+            speakWithDev(at, mine, function (ok) {
               if (mine !== run || !devReading) return;
-              if (!ok || !autoAdv) { devReading = false; mark(-1); setPlaying(false); return; }
-              step(at + 1);
+              if (!ok) { devReading = false; mark(-1); setPlaying(false); return; }
+              playSupportsForLine(at, mine, function (supOk) {
+                if (mine !== run || !devReading) return;
+                if (!supOk || !autoAdv) { devReading = false; mark(-1); setPlaying(false); return; }
+                step(at + 1);
+              });
             });
           };
           step(i);
         };
         if (devReadButton) devReadButton.addEventListener('click', function () {
+          if (guardMic()) return;
           if (playing) { halt(false); return; }
           ctx.support('readThroughs');
-          readDeviceFrom(from);
+          var startAt = finishedRun ? 0 : from;
+          finishedRun = false;
+          readDeviceFrom(startAt);
         });
         if (restartButton) restartButton.addEventListener('click', function () {
-          halt();
+          if (guardMic()) return;
+          halt(false);
+          finishedRun = false;
           if (resumeBar) resumeBar.hidden = true;
           setActiveSentence(0, true);
           if (nodes[0] && typeof nodes[0].scrollIntoView === 'function') { try { nodes[0].scrollIntoView({ block: 'nearest' }); } catch (_) {} }
@@ -6223,6 +7138,12 @@
           else if (tapMode === 'define') tapMode = hasAudio ? 'sentence' : (hasDevVoice ? 'speak' : 'sentence');
           Object.keys(tapBtns).forEach(function (k) { press(tapBtns[k], k === tapMode); });
           paint();
+        });
+        if (withSupButton) withSupButton.addEventListener('click', function () {
+          readWithSupports = !readWithSupports;
+          remember('withSupports', 'with-supports', readWithSupports);
+          press(withSupButton, readWithSupports);
+          if (readWithSupports) use('readWithSupports');
         });
         boldButton.addEventListener('click', function () { showBold = !showBold; remember('bold', 'bold', showBold); press(boldButton, showBold); if (showBold) use('boldStart'); paint(); });
         if (win.MutationObserver && top) {
@@ -6250,6 +7171,7 @@
         if (sylButton) coreStudy.push(sylButton);
         if (posButton) coreStudy.push(posButton);
         if (defButton) coreStudy.push(defButton);
+        if (withSupButton) coreStudy.push(withSupButton);
         if (item.simpleBar && restartButton) extraStudy.push(restartButton);
         if (item.simpleBar && autoButton) extraStudy.push(autoButton);
         extraStudy.push(boldButton);
@@ -6263,7 +7185,7 @@
         if (tapChoices.length >= 2) {
           var tapNodes = [ctx.el('span', { text: 'Tap:' })];
           tapChoices.forEach(function (tc) {
-            var b = ctx.el('button', { type: 'button', 'data-tap-mode': tc[0], text: tc[1] });
+            var b = B({ 'data-tap-mode': tc[0], text: tc[1] });
             press(b, tc[0] === tapMode);
             b.addEventListener('click', function () { setTapMode(tc[0]); });
             tapBtns[tc[0]] = b;
@@ -6273,7 +7195,7 @@
         }
         if (item.simpleBar) {
           var extraWrap = ctx.el('div', { class: 'ra-extra-tools', 'data-read-along-extra-tools': '', hidden: true }, extraStudy);
-          var moreBtn = ctx.el('button', { type: 'button', 'data-read-along-more-tools': '', 'aria-expanded': 'false', text: 'More tools' });
+          var moreBtn = B({ 'data-read-along-more-tools': '', 'aria-expanded': 'false', text: 'More tools' });
           moreBtn.addEventListener('click', function () {
             var open = extraWrap.hidden;
             extraWrap.hidden = !open;
@@ -6302,6 +7224,7 @@
             }
             if (tapMode === 'speak' && hasDevVoice) {
               ev.preventDefault(); ev.stopPropagation();
+              if (guardMic()) return true;
               devVoice.speak(wTxt);
               return true;
             }
@@ -6322,10 +7245,10 @@
           var node;
           if (hasAudio) {
             // A sentence is a button that looks like text: pressing it reads that sentence, and "Read to me" then goes on from it.
-            node = ctx.el('button', { type: 'button', 'data-read-along-line': String(i + 1), text: row.text,
+            node = B({ 'data-read-along-line': String(i + 1), text: row.text,
               style: (isHeading ? headingStyle : 'display:inline;') + 'font:inherit;color:inherit;background:none;border:0;border-radius:6px;padding:6px 6px;margin:' + (isHeading ? (i > 0 ? '.65em 0 .25em' : '0 0 .25em') : '0') + ';min-height:0;min-width:36px;text-align:start;cursor:pointer;-webkit-box-decoration-break:clone;box-decoration-break:clone' + (isHeading ? ';font-weight:800;font-size:' + (row.heading === 1 ? '1.25em' : '1.12em') + ';line-height:1.35' : '') });
             if (isHeading) node.setAttribute('data-heading', String(row.heading));
-            if (!row.audio) {
+            if (!row.audio && !hasDevVoice) {
               node.setAttribute('aria-disabled', 'true');
               node.style.cursor = 'default';
               node.style.opacity = '0.72';
@@ -6345,9 +7268,28 @@
           }
           nodes.push(node);
           box.appendChild(node);
+          (supportsByLine[String(i)] || []).forEach(function (sup) {
+            var chip = B({ class: 'ra-def-pick', 'data-support-chip': sup.id, text: sup.quote ? ('Note: ' + sup.quote) : 'Note', style: 'margin:0 4px;padding:2px 8px;font-size:.82rem;min-height:28px;vertical-align:middle' });
+            chip.addEventListener('click', function (ev) { if (ev && ev.stopPropagation) ev.stopPropagation(); showSupport(sup.id); if (supCard && supCard.scrollIntoView) try { supCard.scrollIntoView({ block: 'nearest' }); } catch (_) {} });
+            supLineBtns.push({ line: i, el: chip });
+            box.appendChild(chip);
+          });
           if (!isHeading) box.appendChild(doc.createTextNode(' '));
         });
         ctx.root.appendChild(box);
+        if (hasSupports) {
+          supCard = ctx.el('div', { class: 'ra-def-card', 'aria-live': 'polite', 'data-read-along-support-card': '' }, [ctx.el('p', { class: 'muted', style: 'margin:0', text: L.read_along_support_hint || 'Tap a note below to read or listen to a teacher support.' })]);
+          var supChips = supports.map(function (s) {
+            var b = B({ class: 'ra-def-pick', 'data-support-pick': s.id, 'aria-pressed': 'false', text: s.quote || ('Sentence ' + (s.line + 1)) });
+            b.addEventListener('click', function () { showSupport(s.id); });
+            return (supPickBtns[s.id] = b);
+          });
+          ctx.root.appendChild(ctx.el('div', { class: 'ra-def-box', 'data-read-along-supports-box': '' }, [
+            ctx.el('p', { class: 'ra-def-head', style: 'margin:0 0 6px', text: L.read_along_supports_heading || 'Notes & supports' }),
+            supCard,
+            ctx.el('div', { class: 'ra-def-picks', role: 'group', 'aria-label': L.read_along_supports_heading || 'Notes & supports' }, supChips),
+          ]));
+        }
         if (hasSyl) {
           soundsCard = ctx.el('div', { class: 'ra-sounds-card', 'aria-live': 'polite', 'data-read-along-sounds-card': '', hidden: true });
           ctx.root.appendChild(soundsCard);
@@ -6357,7 +7299,7 @@
             ctx.el('p', { class: 'muted', style: 'margin:0', text: L.read_along_define_hint || 'Tap an underlined word in the passage, or choose one below, to see its meaning.' }),
           ]);
           var chips = glossKeys.map(function (k) {
-            var b = ctx.el('button', { type: 'button', class: 'ra-def-pick', 'data-def-pick': k, 'aria-pressed': 'false', text: k });
+            var b = B({ class: 'ra-def-pick', 'data-def-pick': k, 'aria-pressed': 'false', text: k });
             b.addEventListener('click', function () { showDefinition(k); });
             defPickBtns[k] = b;
             return b;
@@ -6368,12 +7310,12 @@
           ]);
           ctx.root.appendChild(defBox);
         }
-        if (item.lines.length > 1) {
-          sentPrevBtn = ctx.el('button', { type: 'button', 'data-read-along-sent-prev': '', text: L.read_along_sent_prev || 'Previous sentence' });
-          sentNextBtn = ctx.el('button', { type: 'button', 'data-read-along-sent-next': '', text: L.read_along_sent_next || 'Next sentence' });
-          chunkAutoBtn = ctx.el('button', { type: 'button', 'data-chunk-auto-timer': '', text: 'Auto pace' });
+        if (showMultiSent) {
+          sentPrevBtn = B({ 'data-read-along-sent-prev': '', text: L.read_along_sent_prev || 'Previous sentence' });
+          sentNextBtn = B({ 'data-read-along-sent-next': '', text: L.read_along_sent_next || 'Next sentence' });
+          chunkAutoBtn = B({ 'data-chunk-auto-timer': '', text: 'Auto pace' });
           press(chunkAutoBtn, false);
-          var chunkPaceOut = ctx.el('span', { class: 'muted', 'data-chunk-pace-out': '', text: '3.5s' });
+          var chunkPaceOut = ctx.el('span', { class: 'muted', 'data-chunk-pace-out': '', text: (chunkPaceMs / 1000).toFixed(1) + 's' });
           var chunkPaceIn = ctx.el('input', { type: 'range', min: '1000', max: '8000', step: '500', value: String(chunkPaceMs), 'aria-label': 'Seconds per sentence', 'data-chunk-pace': '' });
           var chunkMoodSel = ctx.el('select', { 'aria-label': 'Sentence style', 'data-chunk-mood': '' }, [
             ctx.el('option', { value: 'highlight', text: 'Sweep' }),
@@ -6381,20 +7323,24 @@
             ctx.el('option', { value: 'popin', text: 'Pop-In' }),
             ctx.el('option', { value: 'pulse', text: 'Pulse' }),
           ]);
-          sentPrevBtn.addEventListener('click', function () { halt(); setActiveSentence(from - 1, true); });
-          sentNextBtn.addEventListener('click', function () { halt(); setActiveSentence(from + 1, true); });
+          chunkMoodSel.value = chunkMood;
+          sentPrevBtn.addEventListener('click', function () { if (guardMic()) return; halt(false); stepChunk(-1, false); });
+          sentNextBtn.addEventListener('click', function () { if (guardMic()) return; halt(false); stepChunk(1, false); });
           chunkAutoBtn.addEventListener('click', function () {
+            if (guardMic()) return;
             chunkAutoOn = !chunkAutoOn;
             press(chunkAutoBtn, chunkAutoOn);
             if (chunkAutoOn) scheduleChunkTimer(); else stopChunkTimers();
           });
           chunkPaceIn.addEventListener('input', function () {
             chunkPaceMs = Math.max(1000, Math.min(8000, Number(chunkPaceIn.value) || 3500));
+            if (cache) cache.chunkPaceMs = chunkPaceMs;
             chunkPaceOut.textContent = (chunkPaceMs / 1000).toFixed(1) + 's';
             if (chunkAutoOn) scheduleChunkTimer();
           });
           chunkMoodSel.addEventListener('change', function () {
             chunkMood = chunkMoodSel.value || 'highlight';
+            if (cache) cache.chunkMood = chunkMood;
             applyChunkView();
           });
           chunkNav = ctx.el('div', { class: 'ra-ov-controls', style: 'margin:8px 0', 'data-read-along-chunk-nav': '', hidden: !chunkMode }, [
@@ -6405,21 +7351,55 @@
           ctx.root.appendChild(chunkNav);
         }
         if (showSyl || showPos || showBold || showDef || tapMode === 'speak' || tapMode === 'sounds') { paint(); if (showSyl) use('syllables'); if (showPos) use('partsOfSpeech'); if (showBold) use('boldStart'); if (showDef) use('wordMeanings'); }
+        else if (hasPos) applyPosTheme();
         applyChunkView();
+        if (Array.isArray(item.questions) && item.questions.length) {
+          var qNodes = item.questions.map(function (q, qi) {
+            var qid = q.id || ('q' + (qi + 1));
+            var card = ctx.el('div', { class: 'ra-chk-q', 'data-check-q': qid }, [
+              ctx.el('p', { class: 'ra-chk-p', text: (qi + 1) + '. ' + q.prompt }),
+            ]);
+            if (q.kind === 'mc' && Array.isArray(q.choices)) {
+              var fb = ctx.el('p', { class: 'ra-chk-fb', 'aria-live': 'polite', 'data-check-feedback': qid });
+              var optBtns = [];
+              q.choices.forEach(function (ch, ci) {
+                var ob = B({ 'data-check-choice': String(ci), 'aria-pressed': 'false', text: ch });
+                ob.addEventListener('click', function () {
+                  optBtns.forEach(function (b, bi) { b.setAttribute('aria-pressed', String(bi === ci)); });
+                  var ok = typeof q.answer === 'number' ? ci === q.answer : true;
+                  fb.textContent = ok ? (L.read_along_checks_right || 'Nice work!') : (L.read_along_checks_retry || 'Try another choice.');
+                  fb.setAttribute('data-ok', ok ? '1' : '0');
+                  use('comprehensionCheck');
+                });
+                optBtns.push(ob);
+              });
+              card.appendChild(ctx.el('div', { class: 'ra-chk-opts', role: 'group', 'aria-label': q.prompt }, optBtns));
+              card.appendChild(fb);
+            } else {
+              card.appendChild(ctx.el('textarea', { class: 'ra-chk-open', rows: '3', 'aria-label': q.prompt, 'data-check-open': qid }));
+              card.appendChild(ctx.el('p', { class: 'muted', style: 'margin:4px 0 0;font-size:.86rem', text: L.read_along_checks_open_note || 'Stays on this device only.' }));
+            }
+            return card;
+          });
+          ctx.root.appendChild(ctx.el('section', { class: 'ra-checks', 'aria-label': L.read_along_checks_heading || 'Check your understanding', 'data-read-along-checks': '' }, [
+            ctx.el('h3', { text: L.read_along_checks_heading || 'Check your understanding' }),
+          ].concat(qNodes)));
+        }
         if (mic && mic.el) {
           if (typeof mic.setSentence === 'function') mic.setSentence(from, item.lines.length);
           ctx.root.appendChild(mic.el);
         }
         var navButtons = [];
         if (item.page > 1 && typeof ctx.goPrev === 'function') {
-          var prev = ctx.el('button', { type: 'button', 'data-read-along-prev': '', text: L.read_along_prev });
-          prev.addEventListener('click', function () { halt(); ctx.goPrev(); });
+          var prev = B({ 'data-read-along-prev': '', text: L.read_along_prev });
+          prev.addEventListener('click', function () { if (guardMic()) return; halt(false); ctx.goPrev(); });
           navButtons.push(prev);
         }
         var doneLabel = item.page >= item.pages ? (L.read_along_finish || L.finish || L.read_along_done) : (L.read_along_next || L.read_along_done);
-        var done = ctx.el('button', { type: 'button', 'data-read-along-done': '', text: doneLabel });
+        var done = B({ 'data-read-along-done': '', text: doneLabel });
         done.addEventListener('click', function () {
-          halt();
+          if (guardMic()) return;
+          halt(false);
           if (!ctx.isDone()) ctx.practice('read', L.read_along_done_said, { advance: true });
           else if (typeof ctx.goNext === 'function') ctx.goNext();
         });
@@ -6429,19 +7409,134 @@
           ctx.el('summary', { text: 'Keyboard shortcuts' }),
           ctx.el('p', { text: 'Space: play or pause. Left / Right arrows: previous or next sentence. Home / End: first or last sentence. R: replay sentence.' }),
         ]));
+        var printAll = null;
+        var renderPrintAll = function () {
+          if (!printAll) return;
+          printAll.textContent = '';
+          allPages.forEach(function (pg, pi) {
+            var sec = ctx.el('section', { class: 'ra-print-page', 'data-print-page': String(pi + 1) });
+            sec.appendChild(ctx.el('p', { class: 'ra-print-page-label', text: 'Page ' + (pi + 1) + ' of ' + allPages.length + (pg.heading ? (' \u2014 ' + pg.heading) : '') }));
+            var cur = [], lines = Array.isArray(pg.lines) ? pg.lines : [];
+            var flushP = function () { if (cur.length) { sec.appendChild(ctx.el('p', { class: 'ra-print-p', text: cur.join(' ') })); cur = []; } };
+            lines.forEach(function (row) {
+              var t = (showSyl && row.syl) ? row.syl : row.text;
+              if (row.heading) { flushP(); sec.appendChild(ctx.el('p', { class: 'ra-print-h', 'data-heading': String(row.heading), text: t })); return; }
+              if (row.para) flushP();
+              cur.push(t);
+            });
+            flushP();
+            printAll.appendChild(sec);
+          });
+        };
+        if (isMultiPage) {
+          ctx.root.setAttribute('data-has-print-all', '1');
+          printAll = ctx.el('div', { class: 'ra-print-all', 'data-read-along-print-all': '', 'aria-hidden': 'true' });
+          ctx.root.appendChild(printAll);
+          renderPrintAll();
+          if (win.addEventListener) win.addEventListener('beforeprint', renderPrintAll);
+        }
+        var pagesForScope = function (scope) {
+          if (!isMultiPage || scope === 'this') return [{ page: item, idx: pageIdx }];
+          var start = scope === 'all' ? 0 : pageIdx, out = [];
+          for (var pi = start; pi < allPages.length; pi++) out.push({ page: allPages[pi], idx: pi });
+          return out;
+        };
+        var makeScopeSelect = function (attr) {
+          if (!isMultiPage) return null;
+          var sel = ctx.el('select', { class: 'ra-ov-scope', 'aria-label': 'Pages to include' }, [
+            ctx.el('option', { value: 'from', text: 'From here' }),
+            ctx.el('option', { value: 'all', text: 'Whole passage' }),
+            ctx.el('option', { value: 'this', text: 'This page' }),
+          ]);
+          sel.setAttribute(attr, '');
+          sel.value = 'from';
+          return sel;
+        };
+        var splitRsvpWords = function (text, lang) {
+          var s = String(text || '');
+          if (!s.trim()) return [];
+          try {
+            if (win.Intl && typeof win.Intl.Segmenter === 'function') {
+              var seg = new win.Intl.Segmenter(lang || item.lang || undefined, { granularity: 'word' });
+              var out = [], pending = '';
+              Array.from(seg.segment(s)).forEach(function (part) {
+                var t = part.segment;
+                if (!t || /^\s+$/.test(t)) return;
+                if (part.isWordLike) { out.push(pending + t); pending = ''; }
+                else if (/^[\(\[\{"'\u201c\u2018\u300c\u300e\u300a\u00ab]+$/.test(t)) pending += t;
+                else if (out.length) out[out.length - 1] += t;
+                else pending += t;
+              });
+              if (pending) { if (out.length) out[out.length - 1] += pending; else out.push(pending); }
+              if (out.length) return out;
+            }
+          } catch (_) {}
+          return s.split(/\s+/).filter(Boolean);
+        };
+        var splitGraphemes = function (word, lang) {
+          var w = String(word || '');
+          if (!w) return [];
+          try {
+            if (win.Intl && typeof win.Intl.Segmenter === 'function') {
+              var gs = new win.Intl.Segmenter(lang || item.lang || undefined, { granularity: 'grapheme' });
+              return Array.from(gs.segment(w)).map(function (p) { return p.segment; });
+            }
+          } catch (_) {}
+          return Array.from(w);
+        };
         // Focus Mode (RSVP / 1-6 word bold-assist) & Cinematic Crawl overlays (100% offline, zero AI, reduced-motion safe).
         var activeOverlay = null;
+        var setOverlayInert = function (dialogEl, on, saved) {
+          if (!doc || !doc.body) return [];
+          if (on) {
+            var list = [];
+            Array.prototype.forEach.call(doc.body.children, function (node) {
+              if (!node || node === dialogEl || node.tagName === 'SCRIPT' || node.tagName === 'STYLE') return;
+              list.push({ node: node, hadInert: node.hasAttribute('inert'), prevHidden: node.getAttribute('aria-hidden') });
+              try { node.inert = true; } catch (_) {}
+              node.setAttribute('inert', '');
+              node.setAttribute('aria-hidden', 'true');
+            });
+            return list;
+          }
+          (saved || []).forEach(function (entry) {
+            var node = entry.node;
+            if (!node) return;
+            if (!entry.hadInert) {
+              try { node.inert = false; } catch (_) {}
+              node.removeAttribute('inert');
+            }
+            if (entry.prevHidden == null) node.removeAttribute('aria-hidden');
+            else node.setAttribute('aria-hidden', entry.prevHidden);
+          });
+          return [];
+        };
         closeOverlays = function () {
           if (activeOverlay && typeof activeOverlay.close === 'function') activeOverlay.close(false);
         };
         var openRsvp = function () {
+          if (guardMic()) return;
           halt(false);
-          var allWords = [];
-          item.lines.forEach(function (row) {
-            String(row.text || '').split(/\s+/).filter(Boolean).forEach(function (w) { allWords.push(w); });
-          });
+          var scope = isMultiPage ? 'from' : 'this';
+          var buildWords = function () {
+            var list = [];
+            pagesForScope(scope).forEach(function (entry) {
+              var lines = Array.isArray(entry.page.lines) ? entry.page.lines : [];
+              var pgLang = entry.page.lang || item.lang;
+              lines.forEach(function (row) {
+                splitRsvpWords(row.text, pgLang).forEach(function (w) { list.push({ w: w, p: entry.idx, lang: pgLang }); });
+              });
+            });
+            return list;
+          };
+          var allWords = buildWords();
           if (!allWords.length) return;
-          var wpm = 250, chunkSize = 1, chunkIdx = 0, rsvpPlaying = false, punctPauses = true, timer = 0, countdown = 0, rsvpTheme = 'warm', focusColor = '#dc2626';
+          var wpm = (cache && cache.rsvpWpm >= 100 && cache.rsvpWpm <= 900) ? cache.rsvpWpm : 250;
+          var chunkSize = (cache && cache.rsvpChunkSize >= 1 && cache.rsvpChunkSize <= 6) ? cache.rsvpChunkSize : 1;
+          var chunkIdx = 0, rsvpPlaying = false, timer = 0, countdown = 0, lastSeenPageIdx = allWords[0].p;
+          var punctPauses = (cache && typeof cache.rsvpPunctPauses === 'boolean') ? cache.rsvpPunctPauses : true;
+          var rsvpTheme = (cache && cache.rsvpTheme) || 'warm';
+          var focusColor = (cache && cache.rsvpColor) || '#dc2626';
           var rsvpThemes = {
             warm: { bg: '#fdfbf7', ink: '#111827', card: '#ffffff' },
             dark: { bg: '#0f172a', ink: '#f1f5f9', card: '#1e293b' },
@@ -6457,26 +7552,30 @@
             return out;
           };
           var chunks = chunksOf();
-          var closeBtn = ctx.el('button', { type: 'button', 'data-rsvp-close': '', text: L.tools_close || 'Close' });
-          var playBtn = ctx.el('button', { type: 'button', class: 'primary', 'data-rsvp-play': '', text: 'Play' });
-          var prevBtn = ctx.el('button', { type: 'button', 'data-rsvp-prev': '', text: 'Previous' });
-          var nextBtn = ctx.el('button', { type: 'button', 'data-rsvp-next': '', text: 'Next' });
-          var resetBtn = ctx.el('button', { type: 'button', 'data-rsvp-restart': '', text: L.read_along_restart || 'Restart' });
-          var punctBtn = ctx.el('button', { type: 'button', 'data-rsvp-punct': '', 'aria-pressed': 'true', text: 'Pause at punctuation' });
+          var closeBtn = B({ 'data-rsvp-close': '', text: L.tools_close || 'Close' });
+          var playBtn = B({ class: 'primary', 'data-rsvp-play': '', text: 'Play' });
+          var prevBtn = B({ 'data-rsvp-prev': '', text: 'Previous' });
+          var nextBtn = B({ 'data-rsvp-next': '', text: 'Next' });
+          var resetBtn = B({ 'data-rsvp-restart': '', text: L.read_along_restart || 'Restart' });
+          var punctBtn = B({ 'data-rsvp-punct': '', 'aria-pressed': String(punctPauses), text: 'Pause at punctuation' });
           var wpmInput = ctx.el('input', { type: 'range', min: '100', max: '900', step: '25', value: String(wpm), 'aria-label': 'Words per minute', 'data-rsvp-wpm': '' });
           var wpmOut = ctx.el('span', { class: 'muted', 'data-rsvp-wpm-out': '', text: wpm + ' wpm' });
           var sizeInput = ctx.el('input', { type: 'range', min: '1', max: '6', step: '1', value: String(chunkSize), 'aria-label': 'Words per chunk', 'data-rsvp-chunk-size': '' });
-          var sizeOut = ctx.el('span', { class: 'muted', 'data-rsvp-size-out': '', text: '1 word' });
+          var sizeOut = ctx.el('span', { class: 'muted', 'data-rsvp-size-out': '', text: chunkSize === 1 ? '1 word' : chunkSize + ' words' });
           var themeSel = ctx.el('select', { 'aria-label': 'Focus mode theme', 'data-rsvp-theme': '' }, [
             ctx.el('option', { value: 'warm', text: 'Warm' }),
             ctx.el('option', { value: 'dark', text: 'Dark' }),
             ctx.el('option', { value: 'sepia', text: 'Sepia' }),
           ]);
+          themeSel.value = rsvpTheme;
+          var scopeSel = makeScopeSelect('data-rsvp-scope');
+          var pageOut = isMultiPage ? ctx.el('span', { class: 'muted', 'data-rsvp-page': '', text: 'Page ' + (lastSeenPageIdx + 1) + ' of ' + allPages.length }) : null;
           var swatchBtns = [];
           var swatchWrap = ctx.el('div', { class: 'ra-rsvp-swatches', role: 'group', 'aria-label': 'Center letter color', 'data-rsvp-colors': '' }, colorOpts.map(function (co) {
-            var b = ctx.el('button', { type: 'button', class: 'ra-rsvp-swatch', 'data-rsvp-color': co[1], 'aria-label': 'Focus color ' + co[0], 'aria-pressed': String(co[1] === focusColor), style: 'background:' + co[1] });
+            var b = B({ class: 'ra-rsvp-swatch', 'data-rsvp-color': co[1], 'aria-label': 'Focus color ' + co[0], 'aria-pressed': String(co[1] === focusColor), style: 'background:' + co[1] });
             b.addEventListener('click', function () {
               focusColor = co[1];
+              if (cache) cache.rsvpColor = focusColor;
               swatchBtns.forEach(function (sb) { sb.setAttribute('aria-pressed', String(sb.getAttribute('data-rsvp-color') === focusColor)); });
               drawStage();
             });
@@ -6484,13 +7583,16 @@
             return b;
           }));
           var countOut = ctx.el('span', { class: 'muted', 'data-rsvp-count': '', text: '1 / ' + chunks.length });
+          var rsvpProgFill = ctx.el('span', { class: 'ra-progress-fill', style: 'width:0%' });
+          var rsvpProg = ctx.el('div', { class: 'ra-progress ra-ov-progress', 'aria-hidden': 'true', 'data-rsvp-progress': '' }, [rsvpProgFill]);
           var stage = ctx.el('div', { class: 'ra-rsvp-stage', 'data-rsvp-stage': '', 'aria-live': 'off' });
+          var headItems = [ctx.el('strong', { text: L.read_along_rsvp || 'Focus mode' })];
+          if (scopeSel) headItems.push(scopeSel);
+          if (pageOut) headItems.push(pageOut);
+          headItems.push(countOut, closeBtn);
           var dialog = ctx.el('div', { class: 'ra-overlay', role: 'dialog', 'aria-modal': 'true', 'aria-label': L.read_along_rsvp || 'Focus mode', 'data-rsvp-dialog': '' }, [
-            ctx.el('div', { class: 'ra-ov-head' }, [
-              ctx.el('strong', { text: L.read_along_rsvp || 'Focus mode' }),
-              countOut,
-              closeBtn,
-            ]),
+            ctx.el('div', { class: 'ra-ov-head' }, headItems),
+            rsvpProg,
             ctx.el('div', { class: 'ra-ov-controls' }, [
               ctx.el('label', { class: 'ra-ov-range' }, ['Words ', sizeInput, sizeOut]),
               ctx.el('label', { class: 'ra-ov-range' }, ['Speed ', wpmInput, wpmOut]),
@@ -6501,80 +7603,54 @@
             stage,
             ctx.el('div', { class: 'row', style: 'justify-content:center' }, [prevBtn, playBtn, nextBtn, resetBtn]),
           ]);
-          var applyRsvpTheme = function () {
-            var th = rsvpThemes[rsvpTheme] || rsvpThemes.warm;
-            dialog.style.background = th.bg;
-            dialog.style.color = th.ink;
-            stage.style.background = th.card;
-            stage.style.color = th.ink;
-          };
+          var applyRsvpTheme = function () { var th = rsvpThemes[rsvpTheme] || rsvpThemes.warm; dialog.style.background = th.bg; dialog.style.color = th.ink; stage.style.background = th.card; stage.style.color = th.ink; };
           var clearT = function () { if (timer && win.clearTimeout) { win.clearTimeout(timer); timer = 0; } };
           var delayFor = function (idx) {
-            var ch = chunks[idx] || [];
-            var base = (60000 / Math.max(100, wpm)) * Math.max(1, ch.length);
+            var ch = chunks[idx] || [], base = (60000 / Math.max(100, wpm)) * Math.max(1, ch.length);
             if (!punctPauses || !ch.length) return Math.max(60, base);
-            var tail = ch[ch.length - 1].replace(/["'\u201d\u2019)\]]*$/, '').slice(-1);
-            var mult = /[.!?]/.test(tail) ? 2.0 : /[,;:]/.test(tail) ? 1.4 : 1;
-            return Math.max(60, Math.round(base * mult));
+            var tail = ch[ch.length - 1].w.replace(/["'\u201d\u2019)\]\u300d\u300f]*$/, '').slice(-1);
+            return Math.max(60, Math.round(base * (/[.!?\u3002\uff01\uff1f]/.test(tail) ? 2.0 : /[,;:\u3001\uff0c\uff1b\uff1a]/.test(tail) ? 1.4 : 1)));
           };
           var drawStage = function () {
-            chunks = chunksOf();
-            chunkIdx = Math.max(0, Math.min(chunks.length - 1, chunkIdx));
-            countOut.textContent = (chunkIdx + 1) + ' / ' + chunks.length;
-            wpmOut.textContent = wpm + ' wpm';
-            sizeOut.textContent = chunkSize === 1 ? '1 word' : chunkSize + ' words';
-            swatchWrap.hidden = chunkSize !== 1;
-            prevBtn.disabled = chunkIdx <= 0;
-            nextBtn.disabled = chunkIdx >= chunks.length - 1;
-            playBtn.textContent = rsvpPlaying ? 'Pause' : 'Play';
-            stage.textContent = '';
-            if (countdown > 0) {
-              stage.appendChild(ctx.el('span', { class: 'ra-rsvp-countdown', 'data-rsvp-countdown': String(countdown), text: String(countdown) }));
-              return;
-            }
+            chunks = chunksOf(); chunkIdx = Math.max(0, Math.min(chunks.length - 1, chunkIdx));
             var ch = chunks[chunkIdx] || [];
+            if (ch.length) lastSeenPageIdx = ch[0].p;
+            if (pageOut) pageOut.textContent = 'Page ' + (lastSeenPageIdx + 1) + ' of ' + allPages.length;
+            countOut.textContent = (chunkIdx + 1) + ' / ' + chunks.length; wpmOut.textContent = wpm + ' wpm';
+            rsvpProgFill.style.width = Math.round(((chunkIdx + 1) / Math.max(1, chunks.length)) * 100) + '%';
+            sizeOut.textContent = chunkSize === 1 ? '1 word' : chunkSize + ' words'; swatchWrap.hidden = chunkSize !== 1;
+            prevBtn.disabled = chunkIdx <= 0; nextBtn.disabled = chunkIdx >= chunks.length - 1;
+            playBtn.textContent = rsvpPlaying ? 'Pause' : 'Play'; stage.textContent = '';
+            if (countdown > 0) { stage.appendChild(ctx.el('span', { class: 'ra-rsvp-countdown', 'data-rsvp-countdown': String(countdown), text: String(countdown) })); return; }
             if (chunkSize === 1) {
-              var word = ch[0] || '', mid = Math.floor(word.length / 2);
-              stage.appendChild(doc.createTextNode(word.slice(0, mid)));
-              stage.appendChild(ctx.el('span', { class: 'ra-rsvp-orp', style: 'color:' + focusColor, text: word.charAt(mid) }));
-              stage.appendChild(doc.createTextNode(word.slice(mid + 1)));
+              var tok = ch[0] || { w: '', lang: item.lang };
+              var gs = splitGraphemes(tok.w, tok.lang), mid = Math.floor(gs.length / 2);
+              if (mid > 0) stage.appendChild(doc.createTextNode(gs.slice(0, mid).join('')));
+              stage.appendChild(ctx.el('span', { class: 'ra-rsvp-orp', style: 'color:' + focusColor, text: gs[mid] || '' }));
+              if (mid + 1 < gs.length) stage.appendChild(doc.createTextNode(gs.slice(mid + 1).join('')));
             } else {
-              ch.forEach(function (w, wi) {
-                var cut = Math.max(1, Math.ceil(w.length * 0.4));
-                stage.appendChild(ctx.el('strong', { class: 'ra-bionic', text: w.slice(0, cut) }));
-                if (cut < w.length) stage.appendChild(doc.createTextNode(w.slice(cut)));
+              ch.forEach(function (tok, wi) {
+                var gs = splitGraphemes(tok.w, tok.lang), cut = Math.max(1, Math.ceil(gs.length * 0.4));
+                stage.appendChild(ctx.el('strong', { class: 'ra-bionic', text: gs.slice(0, cut).join('') }));
+                if (cut < gs.length) stage.appendChild(doc.createTextNode(gs.slice(cut).join('')));
                 if (wi < ch.length - 1) stage.appendChild(doc.createTextNode(' '));
               });
             }
           };
           var tick = function () {
-            clearT();
-            if (!rsvpPlaying) return;
-            if (countdown > 0) {
-              timer = win.setTimeout(function () {
-                if (!rsvpPlaying) return;
-                countdown--;
-                drawStage();
-                tick();
-              }, 500);
-              return;
-            }
+            clearT(); if (!rsvpPlaying) return;
+            if (countdown > 0) { timer = win.setTimeout(function () { if (rsvpPlaying) { countdown--; drawStage(); tick(); } }, 500); return; }
             timer = win.setTimeout(function () {
               if (!rsvpPlaying) return;
               if (chunkIdx >= chunks.length - 1) { rsvpPlaying = false; drawStage(); return; }
-              chunkIdx++;
-              drawStage();
-              tick();
+              chunkIdx++; drawStage(); tick();
             }, delayFor(chunkIdx));
           };
           var toggle = function () {
             if (rsvpPlaying) { rsvpPlaying = false; countdown = 0; clearT(); drawStage(); return; }
             var freshStart = chunkIdx === 0 || chunkIdx >= chunks.length - 1;
             if (chunkIdx >= chunks.length - 1) chunkIdx = 0;
-            countdown = (freshStart && !reducedMotion()) ? 3 : 0;
-            rsvpPlaying = true;
-            drawStage();
-            tick();
+            countdown = (freshStart && !reducedMotion()) ? 3 : 0; rsvpPlaying = true; drawStage(); tick();
           };
           var onKey = function (e) {
             if (e.key === 'Escape' || e.key === 'Esc') { e.preventDefault(); close(true); return; }
@@ -6582,31 +7658,39 @@
             if (e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); toggle(); }
             else if (e.key === 'ArrowRight') { e.preventDefault(); rsvpPlaying = false; countdown = 0; clearT(); chunkIdx++; drawStage(); }
             else if (e.key === 'ArrowLeft') { e.preventDefault(); rsvpPlaying = false; countdown = 0; clearT(); chunkIdx--; drawStage(); }
-            else if (e.key === '+' || e.key === '=') { wpm = Math.min(900, wpm + 25); wpmInput.value = String(wpm); drawStage(); }
-            else if (e.key === '-' || e.key === '_') { wpm = Math.max(100, wpm - 25); wpmInput.value = String(wpm); drawStage(); }
-            else if (e.key === '[') { chunkSize = Math.max(1, chunkSize - 1); sizeInput.value = String(chunkSize); drawStage(); }
-            else if (e.key === ']') { chunkSize = Math.min(6, chunkSize + 1); sizeInput.value = String(chunkSize); drawStage(); }
-            else if (e.key === 'p' || e.key === 'P') { punctPauses = !punctPauses; punctBtn.setAttribute('aria-pressed', String(punctPauses)); }
+            else if (e.key === '+' || e.key === '=') { wpm = Math.min(900, wpm + 25); if (cache) cache.rsvpWpm = wpm; wpmInput.value = String(wpm); drawStage(); }
+            else if (e.key === '-' || e.key === '_') { wpm = Math.max(100, wpm - 25); if (cache) cache.rsvpWpm = wpm; wpmInput.value = String(wpm); drawStage(); }
+            else if (e.key === '[') { chunkSize = Math.max(1, chunkSize - 1); if (cache) cache.rsvpChunkSize = chunkSize; sizeInput.value = String(chunkSize); drawStage(); }
+            else if (e.key === ']') { chunkSize = Math.min(6, chunkSize + 1); if (cache) cache.rsvpChunkSize = chunkSize; sizeInput.value = String(chunkSize); drawStage(); }
+            else if (e.key === 'p' || e.key === 'P') { punctPauses = !punctPauses; if (cache) cache.rsvpPunctPauses = punctPauses; punctBtn.setAttribute('aria-pressed', String(punctPauses)); }
           };
+          var savedInert = [];
           var close = function (restoreFocus) {
-            rsvpPlaying = false;
-            countdown = 0;
-            clearT();
-            doc.removeEventListener('keydown', onKey, true);
+            rsvpPlaying = false; countdown = 0; clearT(); doc.removeEventListener('keydown', onKey, true);
             if (dialog.parentNode) dialog.parentNode.removeChild(dialog);
+            savedInert = setOverlayInert(dialog, false, savedInert);
             if (activeOverlay && activeOverlay.dialog === dialog) activeOverlay = null;
+            if (restoreFocus !== false && isMultiPage && lastSeenPageIdx !== pageIdx) showOverlayJump(lastSeenPageIdx);
             if (restoreFocus && rsvpButton) rsvpButton.focus();
           };
+          if (scopeSel) scopeSel.addEventListener('change', function () {
+            rsvpPlaying = false; countdown = 0; clearT();
+            scope = scopeSel.value || 'from';
+            allWords = buildWords();
+            chunkIdx = 0;
+            drawStage();
+          });
           playBtn.addEventListener('click', toggle);
           prevBtn.addEventListener('click', function () { rsvpPlaying = false; countdown = 0; clearT(); chunkIdx--; drawStage(); });
           nextBtn.addEventListener('click', function () { rsvpPlaying = false; countdown = 0; clearT(); chunkIdx++; drawStage(); });
           resetBtn.addEventListener('click', function () { rsvpPlaying = false; countdown = 0; clearT(); chunkIdx = 0; drawStage(); });
-          punctBtn.addEventListener('click', function () { punctPauses = !punctPauses; punctBtn.setAttribute('aria-pressed', String(punctPauses)); });
-          themeSel.addEventListener('change', function () { rsvpTheme = themeSel.value || 'warm'; applyRsvpTheme(); });
-          wpmInput.addEventListener('input', function () { wpm = Math.max(100, Math.min(900, Number(wpmInput.value) || 250)); drawStage(); });
+          punctBtn.addEventListener('click', function () { punctPauses = !punctPauses; if (cache) cache.rsvpPunctPauses = punctPauses; punctBtn.setAttribute('aria-pressed', String(punctPauses)); });
+          themeSel.addEventListener('change', function () { rsvpTheme = themeSel.value || 'warm'; if (cache) cache.rsvpTheme = rsvpTheme; applyRsvpTheme(); });
+          wpmInput.addEventListener('input', function () { wpm = Math.max(100, Math.min(900, Number(wpmInput.value) || 250)); if (cache) cache.rsvpWpm = wpm; drawStage(); });
           sizeInput.addEventListener('input', function () {
             var prevSize = chunkSize, wordPos = chunkIdx * prevSize;
             chunkSize = Math.max(1, Math.min(6, Number(sizeInput.value) || 1));
+            if (cache) cache.rsvpChunkSize = chunkSize;
             chunkIdx = Math.floor(wordPos / chunkSize);
             drawStage();
           });
@@ -6614,30 +7698,30 @@
           applyRsvpTheme();
           activeOverlay = { dialog: dialog, close: close };
           doc.body.appendChild(dialog);
+          savedInert = setOverlayInert(dialog, true);
           doc.addEventListener('keydown', onKey, true);
           drawStage();
           use('focusMode');
           playBtn.focus();
         };
         var openCrawl = function () {
+          if (guardMic()) return;
           halt(false);
-          var paras = [], cur = [];
-          item.lines.forEach(function (row, idx) {
-            if ((row.para || row.heading) && cur.length) { paras.push(cur.join(' ')); cur = []; }
-            cur.push(row.text);
-            if (row.heading) { paras.push(cur.join(' ')); cur = []; }
-            if (idx === item.lines.length - 1 && cur.length) paras.push(cur.join(' '));
-          });
-          var speed = 60, y = 0, crawlPlaying = !reducedMotion(), raf = 0, lastTs = 0, palette = 'gold', ambientOn = false, padCtx = null, padNodes = null;
+          var scope = isMultiPage ? 'from' : 'this';
+          var isFlat = reducedMotion();
+          var speed = (cache && cache.crawlSpeed >= 10 && cache.crawlSpeed <= 140) ? cache.crawlSpeed : 60;
+          var palette = (cache && cache.crawlPalette) || 'gold';
+          var y = 0, crawlPlaying = !isFlat, raf = 0, lastTs = 0, ambientOn = false, padCtx = null, padNodes = null;
+          var included = pagesForScope(scope), pageMarkers = [], lastSeenPageIdx = included[0] ? included[0].idx : pageIdx;
           var palettes = {
             gold: { bg: '#000000', ink: '#fde047' },
             aqua: { bg: '#061629', ink: '#67e8f9' },
             paper: { bg: '#111827', ink: '#f9fafb' },
           };
-          var closeBtn = ctx.el('button', { type: 'button', 'data-crawl-close': '', text: L.tools_close || 'Close' });
-          var playBtn = ctx.el('button', { type: 'button', class: 'primary', 'data-crawl-play': '', text: crawlPlaying ? 'Pause' : 'Play' });
-          var resetBtn = ctx.el('button', { type: 'button', 'data-crawl-restart': '', text: L.read_along_restart || 'Restart' });
-          var ambientBtn = ctx.el('button', { type: 'button', 'data-crawl-ambient': '', 'aria-pressed': 'false', text: 'Ambient sound' });
+          var closeBtn = B({ 'data-crawl-close': '', text: L.tools_close || 'Close' });
+          var playBtn = B({ class: 'primary', 'data-crawl-play': '', text: crawlPlaying ? 'Pause' : 'Play' });
+          var resetBtn = B({ 'data-crawl-restart': '', text: L.read_along_restart || 'Restart' });
+          var ambientBtn = B({ 'data-crawl-ambient': '', 'aria-pressed': 'false', text: 'Ambient sound' });
           var speedInput = ctx.el('input', { type: 'range', min: '10', max: '140', step: '5', value: String(speed), 'aria-label': 'Crawl speed', 'data-crawl-speed': '' });
           var speedOut = ctx.el('span', { 'data-crawl-speed-out': '', text: speed + ' px/s' });
           var themeSel = ctx.el('select', { 'aria-label': 'Crawl colors', 'data-crawl-theme': '' }, [
@@ -6645,18 +7729,25 @@
             ctx.el('option', { value: 'aqua', text: 'Aqua' }),
             ctx.el('option', { value: 'paper', text: 'Paper' }),
           ]);
-          var replayEndBtn = ctx.el('button', { type: 'button', class: 'primary', 'data-crawl-replay': '', text: 'Replay' });
+          themeSel.value = palette;
+          var scopeSel = makeScopeSelect('data-crawl-scope');
+          var pageOut = isMultiPage ? ctx.el('span', { 'data-crawl-page': '', text: 'Page ' + (lastSeenPageIdx + 1) + ' of ' + allPages.length }) : null;
+          var crawlProgFill = ctx.el('span', { class: 'ra-progress-fill', style: 'width:0%' });
+          var crawlProg = ctx.el('div', { class: 'ra-progress ra-ov-progress', 'aria-hidden': 'true', 'data-crawl-progress': '' }, [crawlProgFill]);
+          var replayEndBtn = B({ class: 'primary', 'data-crawl-replay': '', text: 'Replay' });
           var endCard = ctx.el('div', { class: 'ra-crawl-end', 'data-crawl-end': '', hidden: true }, [
             ctx.el('h3', { text: 'THE END' }),
             replayEndBtn,
           ]);
-          var textWrap = ctx.el('div', { class: 'ra-crawl-text', 'data-crawl-text': '' }, paras.map(function (p) { return ctx.el('p', { text: p }); }));
-          var viewport = ctx.el('div', { class: 'ra-crawl-view' + (reducedMotion() ? ' is-flat' : ''), 'data-crawl-view': '' }, [textWrap, endCard]);
+          var textWrap = ctx.el('div', { class: 'ra-crawl-text', 'data-crawl-text': '' });
+          var viewport = ctx.el('div', { class: 'ra-crawl-view' + (isFlat ? ' is-flat' : ''), 'data-crawl-view': '' }, [textWrap, endCard]);
+          var headItems = [ctx.el('strong', { text: L.read_along_crawl || 'Crawl' })];
+          if (scopeSel) headItems.push(scopeSel);
+          if (pageOut) headItems.push(pageOut);
+          headItems.push(closeBtn);
           var dialog = ctx.el('div', { class: 'ra-overlay ra-crawl-overlay', role: 'dialog', 'aria-modal': 'true', 'aria-label': L.read_along_crawl || 'Crawl', 'data-crawl-dialog': '' }, [
-            ctx.el('div', { class: 'ra-ov-head' }, [
-              ctx.el('strong', { text: L.read_along_crawl || 'Crawl' }),
-              closeBtn,
-            ]),
+            ctx.el('div', { class: 'ra-ov-head' }, headItems),
+            crawlProg,
             ctx.el('div', { class: 'ra-ov-controls' }, [
               ctx.el('label', { class: 'ra-ov-range' }, ['Speed ', speedInput, speedOut]),
               ctx.el('label', { class: 'ra-ov-range' }, ['Colors ', themeSel]),
@@ -6666,6 +7757,47 @@
             ]),
             viewport,
           ]);
+          var applyTransform = function () {
+            textWrap.style.transform = isFlat ? 'none' : ('translateY(' + Math.round(y) + 'px) rotateX(18deg)');
+          };
+          var buildCrawlNodes = function () {
+            textWrap.textContent = '';
+            pageMarkers = [];
+            included = pagesForScope(scope);
+            lastSeenPageIdx = included[0] ? included[0].idx : pageIdx;
+            included.forEach(function (entry, ei) {
+              if (ei > 0) {
+                var sep = ctx.el('div', { class: 'ra-crawl-page-sep', 'data-crawl-page-sep': String(entry.idx + 1), text: 'Page ' + (entry.idx + 1) });
+                textWrap.appendChild(sep);
+                pageMarkers.push({ el: sep, pageIdx: entry.idx });
+              }
+              var cur = [], plainCur = [], lines = Array.isArray(entry.page.lines) ? entry.page.lines : [];
+              var flush = function () {
+                if (!cur.length) return;
+                var attrs = { text: cur.join(' ') };
+                if (showSyl && cur.join(' ') !== plainCur.join(' ')) attrs['aria-label'] = plainCur.join(' ');
+                textWrap.appendChild(ctx.el('p', attrs));
+                cur = []; plainCur = [];
+              };
+              lines.forEach(function (row) {
+                var shown = (showSyl && row.syl) ? row.syl : row.text;
+                if (row.heading) {
+                  flush();
+                  var hAttrs = { class: 'ra-crawl-h ra-crawl-h' + row.heading, 'data-crawl-heading': String(row.heading), text: shown };
+                  if (showSyl && row.syl && row.syl !== row.text) hAttrs['aria-label'] = row.text;
+                  textWrap.appendChild(ctx.el('h3', hAttrs));
+                  return;
+                }
+                if (row.para) flush();
+                cur.push(shown); plainCur.push(row.text);
+              });
+              flush();
+            });
+            if (pageOut) pageOut.textContent = 'Page ' + (lastSeenPageIdx + 1) + ' of ' + allPages.length;
+            crawlProgFill.style.width = '0%';
+          };
+          buildCrawlNodes();
+          applyTransform();
           var syncAmbient = function () {
             if (!ambientOn || !crawlPlaying) {
               if (padNodes && padNodes.gain) { try { padNodes.gain.gain.setTargetAtTime(0, padCtx.currentTime, 0.25); } catch (_) {} }
@@ -6719,6 +7851,26 @@
             }
             lastTs = 0;
           };
+          var updateCrawlPage = function (limit) {
+            var pct = Math.max(0, Math.min(100, Math.round((-y / Math.max(1, limit)) * 100)));
+            crawlProgFill.style.width = pct + '%';
+            if (included.length <= 1) return;
+            var seen = included[0].idx;
+            var vpRect = viewport.getBoundingClientRect ? viewport.getBoundingClientRect() : null;
+            if (vpRect && vpRect.height > 0 && pageMarkers.length) {
+              pageMarkers.forEach(function (pm) {
+                var r = pm.el.getBoundingClientRect ? pm.el.getBoundingClientRect() : null;
+                if (r && r.top <= vpRect.bottom - 20) seen = pm.pageIdx;
+              });
+            } else {
+              var est = Math.min(included.length - 1, Math.floor(((-y) / Math.max(1, limit)) * included.length));
+              if (est >= 0 && included[est]) seen = included[est].idx;
+            }
+            if (seen !== lastSeenPageIdx) {
+              lastSeenPageIdx = seen;
+              if (pageOut) pageOut.textContent = 'Page ' + (lastSeenPageIdx + 1) + ' of ' + allPages.length;
+            }
+          };
           var stepFrame = function (ts) {
             if (!crawlPlaying) return;
             var now = typeof ts === 'number' ? ts : Date.now();
@@ -6726,20 +7878,26 @@
             var dt = Math.min(100, Math.max(0, now - lastTs)) / 1000;
             lastTs = now;
             y -= dt * speed;
-            textWrap.style.transform = 'translateY(' + Math.round(y) + 'px)';
+            applyTransform();
             var limit = (viewport.clientHeight || 400) + (textWrap.clientHeight || 400);
-            if (y < -limit) { crawlPlaying = false; playBtn.textContent = 'Play'; endCard.hidden = false; stopFrame(); syncAmbient(); return; }
+            updateCrawlPage(limit);
+            if (y < -limit) {
+              if (included.length) lastSeenPageIdx = included[included.length - 1].idx;
+              if (pageOut) pageOut.textContent = 'Page ' + (lastSeenPageIdx + 1) + ' of ' + allPages.length;
+              crawlProgFill.style.width = '100%';
+              crawlPlaying = false; playBtn.textContent = 'Play'; endCard.hidden = false; stopFrame(); syncAmbient(); return;
+            }
             raf = win.requestAnimationFrame ? win.requestAnimationFrame(stepFrame) : win.setTimeout(function () { stepFrame(Date.now()); }, 32);
           };
           var setCrawlPlay = function (on) {
-            if (on && !endCard.hidden) { y = 0; textWrap.style.transform = 'translateY(0px)'; endCard.hidden = true; }
+            if (on && !endCard.hidden) { y = 0; applyTransform(); endCard.hidden = true; crawlProgFill.style.width = '0%'; }
             crawlPlaying = !!on;
             playBtn.textContent = crawlPlaying ? 'Pause' : 'Play';
             stopFrame();
             syncAmbient();
             if (crawlPlaying) raf = win.requestAnimationFrame ? win.requestAnimationFrame(stepFrame) : win.setTimeout(function () { stepFrame(Date.now()); }, 32);
           };
-          var restartCrawl = function () { endCard.hidden = true; y = 0; textWrap.style.transform = 'translateY(0px)'; setCrawlPlay(true); };
+          var restartCrawl = function () { endCard.hidden = true; y = 0; applyTransform(); crawlProgFill.style.width = '0%'; setCrawlPlay(!isFlat); };
           var toggleAmbient = function () { ambientOn = !ambientOn; ambientBtn.setAttribute('aria-pressed', String(ambientOn)); syncAmbient(); };
           var onKey = function (e) {
             if (e.key === 'Escape' || e.key === 'Esc') { e.preventDefault(); close(true); return; }
@@ -6748,26 +7906,37 @@
             else if (e.key === 'r' || e.key === 'R') { e.preventDefault(); restartCrawl(); }
             else if (e.key === 'm' || e.key === 'M') { e.preventDefault(); toggleAmbient(); }
           };
+          var savedInert = [];
           var close = function (restoreFocus) {
             crawlPlaying = false;
             stopFrame();
             tearAmbient();
             doc.removeEventListener('keydown', onKey, true);
             if (dialog.parentNode) dialog.parentNode.removeChild(dialog);
+            savedInert = setOverlayInert(dialog, false, savedInert);
             if (activeOverlay && activeOverlay.dialog === dialog) activeOverlay = null;
+            if (restoreFocus !== false && isMultiPage && lastSeenPageIdx !== pageIdx) showOverlayJump(lastSeenPageIdx);
             if (restoreFocus && crawlButton) crawlButton.focus();
           };
+          if (scopeSel) scopeSel.addEventListener('change', function () {
+            scope = scopeSel.value || 'from';
+            endCard.hidden = true;
+            y = 0;
+            buildCrawlNodes();
+            applyTransform();
+          });
           playBtn.addEventListener('click', function () { setCrawlPlay(!crawlPlaying); });
           viewport.addEventListener('click', function (ev) { if (ev && ev.target === replayEndBtn) return; setCrawlPlay(!crawlPlaying); });
           replayEndBtn.addEventListener('click', function (ev) { ev.stopPropagation(); restartCrawl(); });
           resetBtn.addEventListener('click', restartCrawl);
           ambientBtn.addEventListener('click', toggleAmbient);
-          speedInput.addEventListener('input', function () { speed = Math.max(10, Math.min(140, Number(speedInput.value) || 60)); speedOut.textContent = speed + ' px/s'; });
-          themeSel.addEventListener('change', function () { palette = themeSel.value; applyPalette(); });
+          speedInput.addEventListener('input', function () { speed = Math.max(10, Math.min(140, Number(speedInput.value) || 60)); if (cache) cache.crawlSpeed = speed; speedOut.textContent = speed + ' px/s'; });
+          themeSel.addEventListener('change', function () { palette = themeSel.value; if (cache) cache.crawlPalette = palette; applyPalette(); });
           closeBtn.addEventListener('click', function () { close(true); });
           applyPalette();
           activeOverlay = { dialog: dialog, close: close };
           doc.body.appendChild(dialog);
+          savedInert = setOverlayInert(dialog, true);
           doc.addEventListener('keydown', onKey, true);
           use('crawlMode');
           if (crawlPlaying) setCrawlPlay(true);
@@ -6785,32 +7954,42 @@
               paintLine(from);
               return true;
             }
-            if (hasAudio && (key === ' ' || key === 'Spacebar') && !onBtn) {
-              if (playing) halt(true);
-              else { ctx.support('readThroughs'); readFrom(from); }
+            if ((hasAudio || hasDevVoice) && (key === ' ' || key === 'Spacebar') && !onBtn) {
+              if (guardMic()) return true;
+              if (playing) halt(hasAudio);
+              else {
+                ctx.support('readThroughs');
+                var startAt = finishedRun ? 0 : from;
+                finishedRun = false;
+                if (hasAudio) readFrom(startAt); else readDeviceFrom(startAt);
+              }
               return true;
             }
             if (key === 'Home' && item.lines.length > 1) {
+              if (guardMic()) return true;
               halt(false);
               setActiveSentence(0, true);
               return true;
             }
             if (key === 'End' && item.lines.length > 1) {
+              if (guardMic()) return true;
               halt(false);
               setActiveSentence(item.lines.length - 1, true);
               return true;
             }
             if (key === 'ArrowRight') {
+              if (guardMic()) return true;
               if (chunkMode || !hasAudio) {
-                if (from < item.lines.length - 1) { halt(false); setActiveSentence(from + 1, true); return true; }
+                if (canNextSent()) { halt(false); stepChunk(1, false); return true; }
               } else {
                 var nextIdx = playedAny ? findAudio(from + 1, 1) : findAudio(0, 1);
                 if (nextIdx >= 0) { playLine(nextIdx, true); return true; }
               }
             }
             if (key === 'ArrowLeft') {
+              if (guardMic()) return true;
               if (chunkMode || !hasAudio) {
-                if (from > 0) { halt(false); setActiveSentence(from - 1, true); return true; }
+                if (canPrevSent()) { halt(false); stepChunk(-1, false); return true; }
               } else {
                 var prevIdx = playedAny ? findAudio(from - 1, -1) : findAudio(item.lines.length - 1, -1);
                 if (prevIdx >= 0) { playLine(prevIdx, true); return true; }
@@ -6819,11 +7998,46 @@
             return false;
           });
         }
-        var handle = { allowRevisit: true, reveal: function () { halt(false); } };
+        if (nav) {
+          if (typeof nav.fromLine === 'number') {
+            var initLine = nav.fromLine < 0 ? Math.max(0, item.lines.length - 1) : Math.max(0, Math.min(item.lines.length - 1, nav.fromLine));
+            setActiveSentence(initLine, true);
+          }
+          if (nav.autoPlay === 'chunk' && chunkMode && chunkAutoBtn) {
+            chunkAutoOn = true;
+            press(chunkAutoBtn, true);
+            scheduleChunkTimer();
+          } else if (nav.autoPlay === 'device' && hasDevVoice) {
+            readDeviceFrom(from);
+          } else if ((nav.autoPlay === 'audio' || nav.autoPlay === true) && (hasAudio || hasDevVoice)) {
+            if (hasAudio) readFrom(from); else readDeviceFrom(from);
+          }
+        }
+        var handle = {
+          allowRevisit: true,
+          reveal: function () { halt(false); },
+          stop: function () {
+            halt(false, true);
+            if (printAll && win.removeEventListener) win.removeEventListener('beforeprint', renderPrintAll);
+          },
+        };
         if (hasAudio) {
           handle.replay = function () {
-            var target = (item.lines[from] && item.lines[from].audio) ? from : findAudio(0, 1);
+            if (guardMic()) return;
+            var target = (item.lines[from] && (item.lines[from].audio || hasDevVoice)) ? from : findAudio(0, 1);
             if (target >= 0) playLine(target, false);
+          };
+        } else if (hasDevVoice) {
+          handle.replay = function () {
+            if (guardMic()) return;
+            var target = (from >= 0 && from < item.lines.length) ? from : 0;
+            if (!item.lines[target]) return;
+            halt(false);
+            setActiveSentence(target, true);
+            playedAny = true;
+            mark(target);
+            var mine = ++run;
+            speakWithDev(target, mine, function () { if (mine === run) mark(-1); });
           };
         }
         return handle;
@@ -6846,7 +8060,7 @@
         symbol_runner_study: 'A new symbol to learn. Look closely at it, then choose Cover it.',
         symbol_runner_cover: 'Cover it',
         symbol_runner_direct: 'Choose the matching key or type the answer.',
-        symbol_runner_lockon_wait: 'Lock onto lane {n} by hovering over it or using Left and Right arrows.',
+        symbol_runner_lockon_wait: 'Lock onto lane {n} by tapping, hovering over it, or using Left and Right arrows.',
         symbol_runner_lockon_ready: 'Target locked on. Now choose or type the answer.',
         symbol_runner_lane_group: 'Three-lane target track',
         symbol_runner_lane: 'Lane {n}',
@@ -7057,11 +8271,11 @@
               } else if (item.sizePair) {
                 children.push(ctx.el('div', {
                   'data-sr-symbol': item.word,
-                  style: 'display:flex;align-items:baseline;justify-content:center;gap:12px;line-height:1.1;margin:4px 0',
+                  style: 'display:flex;align-items:baseline;justify-content:center;gap:clamp(4px,2vw,12px);line-height:1.1;margin:4px 0',
                 }, [
-                  ctx.el('span', { style: 'font-weight:900;font-size:' + (1.45 * item.sizePair.leftScale).toFixed(2) + 'rem', text: item.sizePair.left }),
-                  ctx.el('span', { 'aria-hidden': 'true', style: 'opacity:0.4;font-size:1rem', text: '|' }),
-                  ctx.el('span', { style: 'font-weight:900;font-size:' + (1.45 * item.sizePair.rightScale).toFixed(2) + 'rem', text: item.sizePair.right }),
+                  ctx.el('span', { style: 'font-weight:900;font-size:clamp(' + (1.0 * item.sizePair.leftScale).toFixed(2) + 'rem,' + (4.2 * item.sizePair.leftScale).toFixed(2) + 'vw,' + (1.45 * item.sizePair.leftScale).toFixed(2) + 'rem)', text: item.sizePair.left }),
+                  ctx.el('span', { 'aria-hidden': 'true', style: 'opacity:0.4;font-size:clamp(0.8rem,2.5vw,1rem)', text: '|' }),
+                  ctx.el('span', { style: 'font-weight:900;font-size:clamp(' + (1.0 * item.sizePair.rightScale).toFixed(2) + 'rem,' + (4.2 * item.sizePair.rightScale).toFixed(2) + 'vw,' + (1.45 * item.sizePair.rightScale).toFixed(2) + 'rem)', text: item.sizePair.right }),
                 ]));
               } else if (item.stroopInk) {
                 var badgeChildren = [];
@@ -7072,7 +8286,7 @@
                 children.push(ctx.el('span', {
                   'data-sr-symbol': item.word,
                   // A fixed white card in every theme (and with forced colors), so the ink is seen as it was made.
-                  style: 'display:inline-block;font-size:1.7rem;font-weight:900;line-height:1.1;margin:4px 0;padding:6px 14px;border-radius:10px;border:2px solid #6b7280;background:#ffffff;forced-color-adjust:none;color:' + item.stroopInk,
+                  style: 'display:inline-block;max-width:100%;font-size:clamp(1.05rem,4.8vw,1.7rem);font-weight:900;line-height:1.1;margin:4px 0;padding:6px clamp(6px,2.5vw,14px);border-radius:10px;border:2px solid #6b7280;background:#ffffff;forced-color-adjust:none;color:' + item.stroopInk,
                 }, badgeChildren));
               } else if (item.flankerCenter >= 0) {
                 var chars = item.word.split('');
@@ -7083,12 +8297,12 @@
                 });
                 children.push(ctx.el('span', {
                   'data-sr-symbol': item.word,
-                  style: 'font-size:1.8rem;font-weight:800;line-height:1.1;margin:4px 0;letter-spacing:0.08em',
+                  style: 'font-size:clamp(1.05rem,5vw,1.8rem);font-weight:800;line-height:1.1;margin:4px 0;letter-spacing:clamp(0.02em,0.8vw,0.08em)',
                 }, fNodes));
               } else {
                 children.push(ctx.el('span', {
                   'data-sr-symbol': item.word,
-                  style: 'font-size:2.4rem;font-weight:900;line-height:1.1;margin:4px 0',
+                  style: 'font-size:clamp(1.25rem,6.5vw,2.4rem);font-weight:900;line-height:1.1;margin:4px 0;max-width:100%;overflow-wrap:anywhere',
                   text: item.word,
                 }));
               }
@@ -7128,6 +8342,7 @@
           })(i);
         }
 
+        var numericChoices = item.choices.length > 0 && item.choices.every(function (c) { return /^[0-9]+$/.test(String(c).trim()); });
         var textInput = ctx.el('input', {
           type: 'text',
           autocomplete: 'off',
@@ -7137,6 +8352,7 @@
           'aria-label': L.symbol_runner_input_label,
           style: 'max-width:160px;text-align:center;font-size:1.3rem;font-weight:700',
         });
+        if (numericChoices) textInput.setAttribute('inputmode', 'numeric');
 
         var submitBtn = ctx.el('button', {
           type: 'button',
@@ -7179,7 +8395,6 @@
         });
 
         var shapeMap = { red: '●', blue: '▲', green: '■', gold: '★' };
-        var numericChoices = item.choices.length > 0 && item.choices.every(function (c) { return /^[0-9]+$/.test(String(c).trim()); });
         var choiceButtons = item.choices.map(function (c, cIdx) {
           var shapeCue = item.stroopInk ? (shapeMap[String(c).toLowerCase()] || '') : '';
           var labelChildren = [];
@@ -7340,7 +8555,7 @@
         ctx.root.appendChild(coverButton);
         ctx.root.appendChild(padWrap);
         redraw();
-        if (isLockOn && phase === 'play' && !ctx.isDone() && laneButtons[aimLane]) {
+        if (!ctx.noFocus && isLockOn && phase === 'play' && !ctx.isDone() && laneButtons[aimLane]) {
           try { laneButtons[aimLane].focus(); } catch (_) {}
         }
 
@@ -7680,7 +8895,14 @@
   }
   function imageUri(value) {
     if (typeof value !== 'string') return null;
-    return /^data:image\/(png|jpe?g|gif|webp|svg\+xml);base64,[a-z0-9+/=\s]+$/i.test(value) && value.length < 1500000 ? value : null;
+    if (!/^data:image\/(png|jpe?g|gif|webp|svg\+xml);base64,[a-z0-9+/=\s]+$/i.test(value) || value.length >= 1500000) return null;
+    if (/^data:image\/svg\+xml;base64,/i.test(value)) {
+      try {
+        var decoded = atob(value.slice(value.indexOf(',') + 1).replace(/\s+/g, ''));
+        if (/<script\b|javascript:|vbscript:|<foreignobject\b|\bon[a-z]+\s*=|xlink:href\s*=\s*["']\s*(?:javascript:|data:text\/html)/i.test(decoded)) return null;
+      } catch (_) { return null; }
+    }
+    return value;
   }
 
   // When a word's own picture shows, activity by activity. This is the app's
@@ -7719,10 +8941,10 @@
     if (!core || typeof core.soundAnswerMatches !== 'function') throw new Error('lessonFromPack needs WS_CORE');
     var adapters = Object.assign({}, ADAPTERS, opts.adapters || {});
     var activities = (Array.isArray(opts.activities) && opts.activities.length ? opts.activities : ['isolation'])
-      .filter(function (id, i, all) { return adapters[id] && all.indexOf(id) === i; });
+      .filter(function (id, i, all) { return typeof id === 'string' && id !== '__proto__' && id !== 'constructor' && id !== 'prototype' && Object.prototype.hasOwnProperty.call(adapters, id) && adapters[id] && all.indexOf(id) === i; });
     var banks = opts.banks || {};
     var isEnglish = opts.isEnglish !== false;
-    var audio = {}, byUri = {}, images = {}, byImage = {};
+    var audio = {}, byUri = Object.create(null), images = {}, byImage = Object.create(null);
     var addAudio = function (uri) {
       if (!uri) return null;
       if (byUri[uri]) return byUri[uri];
@@ -7741,7 +8963,7 @@
     var assets = core.packAudioAssets(words);
     // Pictures by word, pack-wide, with the player's precedence: a row's own
     // image wins over the shared _decodingAssets/_aacAssets manifest.
-    var pictures = {};
+    var pictures = Object.create(null);
     (Array.isArray(words) ? words : []).forEach(function (w) {
       [w && w._decodingAssets, w && w._aacAssets].forEach(function (bucket) {
         if (bucket && typeof bucket === 'object' && !Array.isArray(bucket)) Object.keys(bucket).forEach(function (k) { if (typeof bucket[k] === 'string') pictures[k.trim().toLowerCase()] = bucket[k]; });
@@ -7803,7 +9025,7 @@
     activities.forEach(function (id) {
       var adapter = adapters[id];
       var items = [];
-      var seen = {};
+      var seen = Object.create(null);
       (Array.isArray(words) ? words : []).forEach(function (w) {
         if (!w || items.length >= MAX_ITEMS) return;
         var word = str(w.targetWord || w.word || w.term).trim();
@@ -7830,9 +9052,9 @@
     feedback.retry = env.bankClip('instructions', FEEDBACK_RETRY);
     // Keep only the clips and pictures a shipped item or the feedback uses:
     // a word that was left out may already have looked some up.
-    var used = {};
+    var used = Object.create(null);
     var walk = function (value) {
-      if (typeof value === 'string') { if (audio[value] || images[value]) used[value] = true; return; }
+      if (typeof value === 'string') { if (Object.prototype.hasOwnProperty.call(audio, value) || Object.prototype.hasOwnProperty.call(images, value)) used[value] = true; return; }
       if (value && typeof value === 'object') Object.keys(value).forEach(function (k) { walk(value[k]); });
     };
     walk(blocks); walk(feedback);
@@ -7841,6 +9063,56 @@
     var title = str(opts.title).trim().slice(0, 120) || DEFAULT_LABELS.title;
     var content = { title: title, showLetters: !!opts.showLetters, blocks: blocks };
     if (opts.instructionsOnce === true) content.instructionsOnce = true;
+    var sequence = null;
+    if (opts.order === 'mixed' && blocks.length >= 2) {
+      // Deterministic weighted interleave matching word_sounds_packet_builder.js mixedOrder:
+      // spreads activities, prevents 3-in-a-row while other activities remain, and preserves per-activity word order.
+      var usual = [];
+      blocks.forEach(function (b) { b.items.forEach(function (it) { usual.push(String(it.id)); }); });
+      var seedBase = opts.orderSeed != null ? String(opts.orderSeed) : (str(opts.lessonId) || title || 'mixed') + '|' + usual.join(',');
+      var buildMixed = function (seedText) {
+        var a = parseInt(hashText(seedText + '|question-order'), 16) >>> 0;
+        var nextRand = function () {
+          a = (a + 0x6D2B79F5) >>> 0;
+          var t = a;
+          t = Math.imul(t ^ (t >>> 15), t | 1);
+          t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+        var left = blocks.map(function (b) { return b.items.map(function (it) { return String(it.id); }); });
+        var total = left.reduce(function (n, l) { return n + l.length; }, 0);
+        var out = [], last = -1, run = 0;
+        while (out.length < total) {
+          var open = [];
+          left.forEach(function (l, i) { if (l.length && !(i === last && run >= 2)) open.push(i); });
+          if (!open.length) open = [last];
+          var weight = open.reduce(function (n, i) { return n + left[i].length; }, 0);
+          var draw = nextRand() * weight, chosen = open[open.length - 1];
+          for (var k = 0; k < open.length; k++) { draw -= left[open[k]].length; if (draw < 0) { chosen = open[k]; break; } }
+          out.push(left[chosen].shift());
+          run = chosen === last ? run + 1 : 1;
+          last = chosen;
+        }
+        return out;
+      };
+      var mixed = buildMixed(seedBase);
+      for (var retry = 1; mixed.join(',') === usual.join(',') && retry <= 8; retry++) {
+        mixed = buildMixed(seedBase + '#' + retry);
+      }
+      if (mixed.join(',') === usual.join(',')) {
+        var queues = blocks.map(function (b) { return b.items.map(function (it) { return String(it.id); }); });
+        mixed = [];
+        while (queues.some(function (q) { return q.length > 0; })) {
+          for (var offset = 0; offset < queues.length; offset++) {
+            var q = queues[(1 + offset) % queues.length];
+            if (q.length) mixed.push(q.shift());
+          }
+        }
+      }
+      if (mixed.join(',') !== usual.join(',')) sequence = mixed;
+    }
+    if (sequence) content.sequence = sequence;
+    if (opts.repeatMissed === true) content.repeatMissed = true;
     var lesson = {
       schema: LESSON_SCHEMA,
       player: PLAYER,
@@ -7861,6 +9133,8 @@
         ? { url: str(opts.submit.url), packId: str(opts.submit.packId), secret: str(opts.submit.secret).slice(0, 64), expiresAt: str(opts.submit.expiresAt).slice(0, 40) } : null,
     };
     if (opts.instructionsOnce === true) lesson.instructionsOnce = true;
+    if (sequence) lesson.sequence = sequence;
+    if (opts.repeatMissed === true) lesson.repeatMissed = true;
     // Only a lesson with word pictures says when they show.
     if (Object.keys(pictured).length) lesson.pictures = { rule: pictured };
     var ready = blocks.reduce(function (n, b) { return n + b.items.length; }, 0);
@@ -7873,7 +9147,16 @@
 
   // JSON inside a <script> block: no "</script>", no line separators.
   function safeJson(value) {
-    return JSON.stringify(value).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026')
+    var seen = typeof WeakSet !== 'undefined' ? new WeakSet() : null;
+    var raw = JSON.stringify(value, function (k, v) {
+      if (k === '__proto__' || k === 'constructor' || k === 'prototype') return undefined;
+      if (seen && v && typeof v === 'object') {
+        if (seen.has(v)) return undefined;
+        seen.add(v);
+      }
+      return v;
+    });
+    return String(raw || 'null').replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026')
       .replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
   }
   function escapeHtml(value) {
@@ -7920,10 +9203,18 @@
     '.save-icon::before{content:"";position:absolute;left:50%;top:0;height:.5em;margin-left:-.08em;border-left:.16em solid currentColor}',
     '.save-icon::after{content:"";position:absolute;left:50%;top:.14em;width:.44em;height:.44em;margin-left:-.22em;border-right:.16em solid currentColor;border-bottom:.16em solid currentColor;transform:rotate(45deg);box-sizing:border-box}',
     '.grown-ups{margin-top:16px;border-top:1px solid var(--line);padding-top:4px}.grown-ups summary{cursor:pointer;padding:10px 0;color:var(--muted);font-weight:600}',
+    '.confer{margin-top:16px;border-top:1px solid var(--line);padding-top:4px}.confer summary{cursor:pointer;padding:10px 0;color:var(--ink);font-weight:700}',
+    '.confer-meta{margin:6px 0 10px;font-weight:600}.confer-list{list-style:none;padding:0;margin:8px 0 12px;display:grid;gap:8px}',
+    '.confer-list li{padding:10px 12px;border-radius:10px;background:var(--soft);border-inline-start:4px solid var(--warn);overflow-wrap:anywhere}',
+    '.confer-list li[data-confer-item="retry"]{border-inline-start-color:var(--accent)}',
+    '.confer-tag{display:inline-block;padding:2px 8px;margin-inline-end:8px;border-radius:999px;font-size:.82rem;font-weight:700;border:1px solid currentColor}',
+    '.confer-box{margin:12px 0;padding:10px 14px;border-radius:12px;background:var(--soft);border-inline-start:4px solid var(--warn);overflow-wrap:anywhere}.confer-box p{margin:4px 0}',
+    '@media (forced-colors:active){.confer-list li,.confer-box{border:1px solid CanvasText;border-inline-start:4px solid CanvasText}}',
     'label{display:block;margin:12px 0 4px;font-weight:600}input{font:inherit;width:100%;max-width:360px;min-height:48px;padding:8px 12px;border-radius:10px;border:2px solid var(--line);background:var(--card);color:var(--ink)}',
     '.about ul{margin:0;padding-inline-start:20px}.about li{margin:8px 0;overflow-wrap:anywhere}',
     '.muted{color:var(--muted)}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}',
     '@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}',
+    '[data-lt-motion="1"] *{transition:none!important;animation:none!important}',
     // "hidden" wins over every display rule (a placed tile is an li.row: .row{display:flex} kept it on screen).
     '[hidden]{display:none!important}summary{cursor:pointer;min-height:48px;padding:12px 0;font-weight:600}',
     // Hear all: the choice being heard is outlined and shows its number. No movement, so nothing to turn off for reduced motion.
@@ -7936,7 +9227,8 @@
     // screen()), the file's title is one small line and the Reading tools button sits beside the heading. Four or
     // more sound choices go two across, Listen above the choice. Lists that set their own columns are left alone.
     '@media (max-width:480px){main{padding-top:12px}[data-step] h1{font-size:1rem;margin:0 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}[data-step] #app>h2:first-child{display:flex;align-items:center;min-height:48px;margin:0 0 8px;padding-inline-end:64px}}',
-    '@media (max-width:480px){[data-step] .lt-bar{margin:-56px 0 8px}}',
+    '@media (max-width:480px){[data-step] .lt-bar{margin:-56px 0 8px}[data-step] .lt-bar{flex-wrap:wrap}}',
+    '@media (max-width:480px){[data-step] [data-player-stop-audio]{flex-basis:100%}}',
     '@media (max-width:480px){.choices:not([style]):has(>.choice:nth-child(4)){grid-template-columns:1fr 1fr;gap:10px}.choices:not([style]):has(>.choice:nth-child(4))>.choice:not([style]){flex-direction:column;padding:8px}.choices:not([style]):has(>.choice:nth-child(4))>.choice>button{flex:none;padding-inline:8px;overflow-wrap:anywhere}}',
     '@media (min-width:960px){:root{--seg-sz:78px;--seg-box:94px;--map-sz:86px;--map-h:66px;--map-box:94px;--map-span:184px;--map-span-box:196px;--ws-tile:70px;--ws-box-w:76px;--ws-box-h:78px;--trace-sz:360px;--sr-lane:680px;--sr-keys:640px}main{max-width:min(1080px,90vw);padding:32px 28px 56px}.card{padding:clamp(24px,3vw,36px) clamp(24px,3.5vw,42px)}.choices{grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}.slots{gap:16px}.row{gap:14px}.picture{max-width:220px;max-height:220px}[data-seg-tray]{gap:18px!important;margin:18px 0!important}[data-read-along-text]{max-width:46rem;margin-inline:auto}}',
     // Reading tools (takeHomeTools): attributes on <html> set the size, the colors (the variables above) and the spacing.
@@ -7953,35 +9245,58 @@
     '[data-tool^=colors-]::before{content:"";display:inline-block;width:.8em;height:.8em;margin-inline-end:.4em;border-radius:50%;border:1px solid var(--ink);vertical-align:-.1em;background:linear-gradient(90deg,#fff 50%,#3d3aa8 50%)}[data-tool=colors-1]::before{background:linear-gradient(90deg,#000 50%,#ffeb3b 50%)}',
     '[data-tool=colors-2]::before{background:#e8d6a8}[data-tool=colors-3]::before{background:#1f2535}[data-tool=colors-4]::before{background:#0b5c86}[data-tool=colors-5]::before{background:#f6b400}[data-tool=colors-6]::before{background:#1f5f55}[data-tool=colors-7]::before{background:#9c144c}',
     '[data-lt-spacing] main *{line-height:1.5!important;letter-spacing:.12em!important;word-spacing:.16em!important}[data-lt-spacing] main p{margin-bottom:2em!important}',
+    '[data-lt-spacing="2"] main *{line-height:2.05!important;letter-spacing:.18em!important;word-spacing:.26em!important}[data-lt-spacing="2"] [data-read],[data-lt-spacing="2"] [data-read-along-text]{max-width:54ch!important;margin-inline:auto}',
     // Letters: the device's own fonts. Buttons and fields take the page's font (font:inherit).
     '[data-lt-font="1"] body,[data-tool=font-1]{font-family:Lexend,system-ui,sans-serif}[data-lt-font="2"] body,[data-tool=font-2]{font-family:"Atkinson Hyperlegible",system-ui,sans-serif}',
     '[data-lt-font="3"] body,[data-tool=font-3]{font-family:Georgia,"Times New Roman",Times,serif}[data-lt-font="4"] body,[data-tool=font-4]{font-family:"Comic Sans MS","Comic Sans","Chalkboard SE","Comic Neue","Comic Relief",system-ui,sans-serif}',
     '[data-lt-font="5"] body,[data-tool=font-5]{font-family:ui-monospace,"SF Mono",Consolas,monospace}[data-lt-font="6"] body,[data-tool=font-6]{font-family:"OpenDyslexic","OpenDyslexic3","Atkinson Hyperlegible",system-ui,sans-serif}',
-    '.lt-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 8px}.lt-bar{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin:0 0 8px}.lt-panel{clear:both}.lt-h,.lt-l{font-weight:700;margin:0;min-width:7em}@media (max-width:480px){.lt-g .lt-l{flex-basis:100%}}',
+    '.lt-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 8px}.lt-bar{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin:0 0 8px}.lt-panel{clear:both;display:flex;flex-direction:column}.lt-panel:not(.lt-m) [data-tool-group=lens]{display:none}.lt-more{margin:8px 0;border-top:1px solid var(--line);order:1}.lt-panel [data-tool-group=lens]{order:2}.lt-panel>.row:last-child{order:3}.lt-h,.lt-l{font-weight:700;margin:0;min-width:7em}@media (max-width:480px){.lt-g .lt-l{flex-basis:100%}}',
     '.lt-g{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}.lt-g p{flex-basis:100%;margin:0}.lt-panel [aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}',
     '.lt-read{position:relative}.lt-shade,.lt-line{position:absolute;left:0;right:0;pointer-events:none}.lt-shade{top:0;bottom:0}.lt-line{outline:3px solid var(--accent);border-radius:6px}',
+    '.lt-ruler{position:fixed;left:0;right:0;height:2.4em;pointer-events:none;z-index:40;transform:translateY(-50%);background:rgba(254,240,138,.36);border-top:2px solid rgba(202,138,4,.75);border-bottom:2px solid rgba(202,138,4,.75)}.lt-ruler[data-ruler-size=tall]{height:4.4em}.lt-ruler[data-ruler-tint=sky]{background:rgba(125,211,252,.32);border-color:rgba(2,132,199,.75)}.lt-ruler[data-ruler-tint=rose]{background:rgba(253,164,175,.32);border-color:rgba(225,29,72,.7)}.lt-ruler[data-ruler-tint=mint]{background:rgba(134,239,172,.32);border-color:rgba(22,163,74,.7)}.lt-ruler[data-ruler-tint=line]{height:0!important;background:none;border-top:0;border-bottom:3px solid var(--accent)}.lt-ruler-sub{display:flex;flex-wrap:wrap;align-items:center;gap:6px;flex-basis:100%;margin-top:4px}.lt-ruler-sub button{min-height:34px;padding:4px 9px;font-size:.86rem}',
     '.lt-lens{position:fixed;z-index:1;width:180px;height:180px;border:3px solid;border-radius:50%;overflow:hidden;pointer-events:none;background:var(--bg);box-shadow:0 4px 16px #0006}.lt-lens>main{position:absolute;left:0;top:0;margin:0;max-width:none;transform-origin:0 0}',
     '.lt-grip{position:fixed;z-index:2;padding:0;border-radius:50%;background:var(--accent);color:var(--accent-ink);pointer-events:none}.lt-grip[data-touch]{pointer-events:auto;touch-action:none}',
-    '.ra-pos-legend{display:flex;flex-wrap:wrap;gap:10px 8px;align-items:center;margin:6px 0 10px;font-size:.95rem}.ra-pos{border-radius:3px;padding:0 1px}.ra-pos-pill{min-height:36px;padding:4px 10px;font-size:.9rem;background:var(--card);border:1px solid var(--line)}.ra-pos-pill[data-pos-filter][aria-pressed=false]{opacity:.45;text-decoration:line-through}.ra-pos-pill[data-pos-labels][aria-pressed=false]{opacity:.85}',
-    '.ra-pos-n{color:#6d28d9;border-bottom:2px solid #6d28d9}.ra-pos-v{color:#0f766e;border-bottom:3px double #0f766e}.ra-pos-j{color:#1d4ed8;border-bottom:2px dashed #1d4ed8}.ra-pos-a{color:#b45309;border-bottom:2px dotted #b45309}',
-    '[data-lt-colors="1"] .ra-pos-n,[data-lt-colors="3"] .ra-pos-n{color:#e9d5ff;border-bottom-color:#e9d5ff}[data-lt-colors="1"] .ra-pos-v,[data-lt-colors="3"] .ra-pos-v{color:#99f6e4;border-bottom-color:#99f6e4}[data-lt-colors="1"] .ra-pos-j,[data-lt-colors="3"] .ra-pos-j{color:#bfdbfe;border-bottom-color:#bfdbfe}[data-lt-colors="1"] .ra-pos-a,[data-lt-colors="3"] .ra-pos-a{color:#fde68a;border-bottom-color:#fde68a}',
-    '.ra-word-active{background:var(--accent);color:var(--accent-ink);border-radius:4px;padding:0 2px}.ra-bionic{font-weight:800}.ra-resume-bar{margin:8px 0 12px;padding:12px 14px;border:1px solid var(--accent);border-radius:12px;background:var(--soft)}',
+    '.ra-bionic{font-weight:800}',
+    '.lt-custom-colors{display:flex;flex-wrap:wrap;align-items:center;gap:10px;flex-basis:100%;margin-top:4px}.lt-custom-colors label{display:inline-flex;align-items:center;gap:6px;margin:0;font-size:.92rem}.lt-custom-colors input[type=color]{width:38px;min-height:38px;padding:2px;border-radius:8px;cursor:pointer}.lt-custom-size{display:flex;flex-wrap:wrap;align-items:center;gap:8px;flex-basis:100%;margin-top:4px;font-size:.92rem}.lt-custom-size input[type=range]{width:140px;min-height:36px;padding:0;border:0}',
+    '@media (forced-colors:active){[data-tool-group=colors]{display:none!important}.lt-line,.lt-panel [aria-pressed=true]{outline:3px solid Highlight}.ra-word-active,.choice.right::after,.progress span{forced-color-adjust:none;background:Highlight;color:HighlightText}[data-feedback]:not(:empty)::before,.done-star::after{forced-color-adjust:none;background:Highlight;color:HighlightText}}@media print{.lt-bar,.lt-panel,.lt-lens,.lt-ruler,.ra-mic-bar,.ra-resume-bar,.ra-def-box{display:none!important}}',
+    // 2026-11-13/19: printed with backgrounds off (including Dark / High Contrast), force dark ink on white paper.
+    '@media print{:root,[data-lt-colors]{--bg:#fff;--card:#fff;--ink:#000;--muted:#333;--line:#999;--soft:#f5f5f5;--ok:#000;--ok-bg:#fff;--warn:#000;--warn-bg:#fff;color-scheme:light}button.primary{color:inherit;box-shadow:none}}',
+  ].join('\n');
+
+  var RA_POS_CSS = [
+    ':root{--pos-n:#6d28d9;--pos-v:#0f766e;--pos-j:#1d4ed8;--pos-a:#b45309;--pos-p:#7c3aed;--pos-r:#0e7490;--pos-c:#be185d}',
+    '[data-lt-colors="1"],[data-lt-colors="3"]{--pos-n:#e9d5ff;--pos-v:#99f6e4;--pos-j:#bfdbfe;--pos-a:#fde68a;--pos-p:#ddd6fe;--pos-r:#a5f3fc;--pos-c:#fbcfe8}',
+    '[data-pos-scheme=fitzgerald]{--pos-n:#c2410c;--pos-v:#15803d;--pos-j:#1d4ed8;--pos-a:#78350f;--pos-p:#a16207;--pos-r:#be185d;--pos-c:#0f766e}',
+    '[data-lt-colors="1"] [data-pos-scheme=fitzgerald],[data-lt-colors="3"] [data-pos-scheme=fitzgerald]{--pos-n:#fdba74;--pos-v:#86efac;--pos-j:#93c5fd;--pos-a:#d6b48c;--pos-p:#fde047;--pos-r:#f9a8d4;--pos-c:#5eead4}',
+    '[data-pos-scheme=montessori]{--pos-n:#1f2937;--pos-v:#b91c1c;--pos-j:#1e3a8a;--pos-a:#c2410c;--pos-p:#6d28d9;--pos-r:#15803d;--pos-c:#be185d}',
+    '[data-lt-colors="1"] [data-pos-scheme=montessori],[data-lt-colors="3"] [data-pos-scheme=montessori]{--pos-n:#e5e7eb;--pos-v:#fca5a5;--pos-j:#93c5fd;--pos-a:#fdba74;--pos-p:#d8b4fe;--pos-r:#86efac;--pos-c:#f9a8d4}',
+    '[data-pos-scheme=okabe]{--pos-n:#0072b2;--pos-v:#d55e00;--pos-j:#009e73;--pos-a:#cc79a7;--pos-p:#b45309;--pos-r:#0369a1;--pos-c:#581c87}',
+    '[data-lt-colors="1"] [data-pos-scheme=okabe],[data-lt-colors="3"] [data-pos-scheme=okabe]{--pos-n:#56b4e9;--pos-v:#f0e442;--pos-j:#66e0b8;--pos-a:#f4b6d8;--pos-p:#fdb863;--pos-r:#93c5fd;--pos-c:#d8b4fe}',
+    '[data-pos-scheme=mono]{--pos-n:currentColor;--pos-v:currentColor;--pos-j:currentColor;--pos-a:currentColor;--pos-p:currentColor;--pos-r:currentColor;--pos-c:currentColor}',
+    '.ra-pos-legend{display:flex;flex-wrap:wrap;gap:10px 8px;align-items:center;margin:6px 0 10px;font-size:.95rem}.ra-pos{border-radius:3px;padding:0 1px}.ra-pos-pill{min-height:36px;padding:4px 10px;font-size:.9rem;background:var(--card);border:1px solid var(--line)}.ra-pos-pill[data-pos-filter][aria-pressed=false]{opacity:.45;text-decoration:line-through}.ra-pos-pill[data-pos-labels][aria-pressed=false]{opacity:.85}.ra-pos-sel{min-height:34px;font:inherit;font-size:.86rem;padding:3px 7px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)}',
+    '.ra-pos-n{color:var(--pos-n);border-bottom:2px solid var(--pos-n)}.ra-pos-v{color:var(--pos-v);border-bottom:3px double var(--pos-v)}.ra-pos-j{color:var(--pos-j);border-bottom:2px dashed var(--pos-j)}.ra-pos-a{color:var(--pos-a);border-bottom:2px dotted var(--pos-a)}.ra-pos-p{color:var(--pos-p);border-bottom:2px solid var(--pos-p)}.ra-pos-r{color:var(--pos-r);border-bottom:2px dashed var(--pos-r)}.ra-pos-c{color:var(--pos-c);border-bottom:2px dotted var(--pos-c)}',
+    '[data-pos-style=pill] .ra-pos{border-bottom:0;border-radius:6px;padding:1px 5px;background:color-mix(in srgb,currentColor 14%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,currentColor 40%,transparent)}',
+    '[data-pos-tags="1"] [data-pos-tag],[data-pos-style=tags] [data-pos-tag],[data-pos-scheme=mono] [data-pos-tag]{white-space:nowrap}[data-pos-tags="1"] [data-pos-tag]::after,[data-pos-style=tags] [data-pos-tag]::after,[data-pos-scheme=mono] [data-pos-tag]::after{content:"\\00a0" attr(data-pos-tag);font-size:.56em;font-weight:700;vertical-align:super;opacity:.88}',
+  ].join('\n');
+
+  var RA_CHECKS_CSS = '.ra-checks{margin:14px 0;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--soft)}.ra-checks h3{margin:0 0 10px;font-size:1.08rem}.ra-chk-q{margin:10px 0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card)}.ra-chk-p{margin:0 0 8px;font-weight:700}.ra-chk-opts{display:flex;flex-wrap:wrap;gap:8px}.ra-chk-opts button{min-height:40px;padding:6px 12px;border-radius:10px;background:var(--bg);text-align:start}.ra-chk-opts button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}.ra-chk-fb{margin:8px 0 0;font-weight:700;font-size:.94rem}.ra-chk-fb[data-ok="1"]{color:var(--ok)}.ra-chk-fb[data-ok="0"]{color:var(--warn)}.ra-chk-open{width:100%;min-height:76px;font:inherit;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);resize:vertical}';
+
+  var RA_CSS = [
+    '.ra-word-active{background:var(--accent);color:var(--accent-ink);border-radius:4px;padding:0 2px}.ra-resume-bar{margin:8px 0 12px;padding:12px 14px;border:1px solid var(--accent);border-radius:12px;background:var(--soft)}',
     '.ra-def-word{text-decoration:underline dotted var(--accent);text-underline-offset:.2em;cursor:help}.ra-def-box{margin:10px 0 12px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--soft)}.ra-def-card{margin:0 0 10px}.ra-def-layout{display:flex;align-items:flex-start;gap:12px}.ra-def-img{width:76px;height:76px;object-fit:contain;border-radius:10px;background:#fff;border:1px solid var(--line);padding:4px;flex-shrink:0}.ra-def-body{min-width:0;flex:1}.ra-def-head{margin:0;font-weight:700}.ra-def-picks{display:flex;flex-wrap:wrap;gap:6px}.ra-def-pick{min-height:36px;padding:4px 10px;font-size:.9rem}.ra-def-pick[aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}',
-    '[data-pos-tags="1"] [data-pos-tag]{white-space:nowrap}[data-pos-tags="1"] [data-pos-tag]::after{content:"\\00a0" attr(data-pos-tag);font-size:.56em;font-weight:700;vertical-align:super;opacity:.88}',
     '.ra-overlay{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;gap:12px;padding:16px;background:var(--bg);color:var(--ink);overflow:auto}.ra-ov-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.ra-ov-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.ra-ov-range{display:inline-flex;align-items:center;gap:6px;margin:0;font-weight:600}.ra-ov-range input[type=range]{width:110px;min-height:36px;padding:0;border:0}.ra-ov-range select{min-height:40px;font:inherit;padding:4px 8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)}',
     '.ra-rsvp-stage{flex:1;min-height:180px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(2rem,6vw,3.5rem);font-weight:600;border:1px solid var(--line);border-radius:16px;padding:24px;background:var(--card);position:relative}.ra-rsvp-orp{color:var(--warn);font-weight:900;text-decoration:underline}.ra-rsvp-countdown{font-size:clamp(4rem,14vw,7rem);font-weight:900;color:var(--accent)}.ra-rsvp-swatches{display:inline-flex;align-items:center;gap:7px;margin-inline-start:4px}.ra-rsvp-swatch{width:28px;min-width:28px;height:28px;min-height:28px;padding:0;border-radius:50%;border:2px solid transparent}.ra-rsvp-swatch[aria-pressed=true]{border-color:var(--ink);transform:scale(1.12)}',
-    '.ra-crawl-view{flex:1;min-height:220px;overflow:hidden;position:relative;border-radius:14px;padding:24px;perspective:360px;cursor:pointer}.ra-crawl-text{max-width:34rem;margin:0 auto;font-size:clamp(1.35rem,3vw,2rem);line-height:1.8;font-weight:700;transform-origin:50% 100%}.ra-crawl-view:not(.is-flat) .ra-crawl-text{transform:rotateX(18deg)}.ra-crawl-view.is-flat{overflow:auto;perspective:none}.ra-crawl-end{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(0,0,0,.72);text-align:center;padding:20px}.ra-crawl-end h3{margin:0;font-size:clamp(1.8rem,4vw,2.6rem);letter-spacing:.14em}',
+    '.ra-crawl-view{flex:1;min-height:220px;overflow:hidden;position:relative;border-radius:14px;padding:24px;perspective:360px;cursor:pointer}.ra-crawl-text{max-width:34rem;margin:0 auto;font-size:clamp(1.35rem,3vw,2rem);line-height:1.8;font-weight:700;transform-origin:50% 100%}.ra-crawl-view:not(.is-flat) .ra-crawl-text{position:absolute;left:0;right:0;top:100%;padding:0 16px;transform:rotateX(18deg)}.ra-crawl-view.is-flat{overflow:auto;perspective:none}.ra-crawl-page-sep{margin:1.2em 0 .6em;font-size:.7em;letter-spacing:.08em;text-transform:uppercase;opacity:.75;border-top:1px solid currentColor;padding-top:.5em}.ra-crawl-h{margin:.9em 0 .35em;line-height:1.3}.ra-crawl-h1{font-size:1.3em}.ra-crawl-h2{font-size:1.15em}.ra-crawl-end{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(0,0,0,.72);text-align:center;padding:20px}.ra-crawl-end h3{margin:0;font-size:clamp(1.8rem,4vw,2.6rem);letter-spacing:.14em}',
+    '.ra-page-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 6px}.ra-page-jump{min-height:36px;max-width:220px;font:inherit;font-size:.9rem;padding:4px 8px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink)}.ra-bookmark-btn{min-height:36px;padding:4px 10px;font-size:.88rem;border-radius:999px;border:1px solid var(--line);background:var(--card)}.ra-bookmark-btn[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}.ra-jump-note{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:8px 0;padding:8px 12px;border:1px solid var(--accent);border-radius:10px;background:var(--soft);font-size:.92rem}.ra-jump-note button{min-height:36px;padding:4px 10px;font-size:.88rem}',
+    '.ra-mic-mode{min-height:40px;font:inherit;font-size:.92rem;padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink)}.ra-ov-scope{min-height:36px;font:inherit;font-size:.9rem;padding:4px 8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)}.ra-ov-progress{margin:0}.ra-print-all{display:none}',
     '.ra-dock.is-sticky{position:sticky;top:0;z-index:5;background:var(--bg);padding:6px 0;border-bottom:1px solid var(--line);margin-bottom:6px}.ra-bar-main{display:flex;flex-wrap:wrap;align-items:center;gap:10px 8px;margin:6px 0}.ra-tools-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 8px;margin:6px 0 10px;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--soft)}.ra-extra-tools{display:flex;flex-wrap:wrap;align-items:center;gap:10px 8px;flex-basis:100%;padding-top:8px;border-top:1px dashed var(--line)}.ra-tools-bar button{min-height:38px;padding:6px 11px;font-size:.92rem;border-radius:999px;background:var(--card)}.ra-tools-bar button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}',
     '.ra-tap-bar{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px;padding:3px 6px;border:1px solid var(--line);border-radius:999px;background:var(--card)}.ra-tap-bar>span{font-size:.82rem;font-weight:700;color:var(--muted);padding:0 4px}.ra-tap-bar button{min-height:34px;padding:4px 10px;font-size:.86rem;border-radius:999px}',
     '.ra-progress{height:5px;border-radius:999px;background:var(--soft);overflow:hidden;margin:4px 0 8px}.ra-progress-fill{display:block;height:100%;background:var(--accent)}',
     '.ra-sounds-card{margin:10px 0 12px;padding:12px 14px;border:1px solid var(--accent);border-radius:12px;background:var(--soft)}.ra-syl-tiles{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.ra-syl-tile{display:inline-block;padding:6px 12px;border-radius:10px;background:var(--card);border:2px solid var(--accent);font-weight:800;font-size:1.25rem}',
     '.ra-keys-hint{margin:8px 0;font-size:.88rem;color:var(--muted)}.ra-keys-hint summary{cursor:pointer;font-weight:600}.ra-keys-hint p{margin:6px 0 0}',
     '[data-read-along-text] button[data-read-along-line]:hover{background:var(--hover)}[data-chunk-mood="popin"] [data-read-along-line]:not([hidden]){font-weight:700;letter-spacing:.01em}[data-chunk-mood="pulse"] [data-read-along-line]:not([hidden]){box-shadow:0 0 0 3px var(--ok-bg),0 0 0 5px var(--accent);border-radius:10px}',
-    '.lt-custom-colors{display:flex;flex-wrap:wrap;align-items:center;gap:10px;flex-basis:100%;margin-top:4px}.lt-custom-colors label{display:inline-flex;align-items:center;gap:6px;margin:0;font-size:.92rem}.lt-custom-colors input[type=color]{width:38px;min-height:38px;padding:2px;border-radius:8px;cursor:pointer}.lt-custom-size{display:flex;flex-wrap:wrap;align-items:center;gap:8px;flex-basis:100%;margin-top:4px;font-size:.92rem}.lt-custom-size input[type=range]{width:140px;min-height:36px;padding:0;border:0}',
     '.ra-mic-bar{margin:12px 0;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--soft)}.ra-mic-bar .row{margin:0 0 6px}.ra-mic-note{margin:4px 0 0;font-size:.92rem}',
-    '@media (forced-colors:active){[data-tool-group=colors]{display:none!important}.lt-line,.lt-panel [aria-pressed=true]{outline:3px solid Highlight}.ra-word-active,.choice.right::after,.progress span{forced-color-adjust:none;background:Highlight;color:HighlightText}[data-feedback]:not(:empty)::before,.done-star::after{forced-color-adjust:none;background:Highlight;color:HighlightText}}@media print{.lt-bar,.lt-panel,.lt-lens,.ra-mic-bar,.ra-resume-bar,.ra-def-box{display:none!important}}',
-    // 2026-11-13/19: printed with backgrounds off (including Dark / High Contrast), force dark ink on white paper.
-    '@media print{:root,[data-lt-colors]{--bg:#fff;--card:#fff;--ink:#000;--muted:#333;--line:#999;--soft:#f5f5f5;--ok:#000;--ok-bg:#fff;--warn:#000;--warn-bg:#fff;color-scheme:light}button.primary{color:inherit;box-shadow:none}}',
+    '@media print{[data-has-print-all] [data-read-along-text],[data-has-print-all] [data-read-along-dock],[data-has-print-all] [data-read-along-tools-bar],[data-has-print-all] [data-read-along-page-bar],[data-has-print-all] [data-read-along-chunk-nav],[data-has-print-all] [data-read-along-keys-hint],[data-has-print-all] [data-read-along-overlay-jump]{display:none!important}[data-has-print-all] .ra-print-all{display:block!important}.ra-print-page{margin:0 0 18px}.ra-print-page-label{font-size:.85rem;font-weight:700;margin:0 0 6px;color:#333}.ra-print-h{font-weight:800;margin:10px 0 4px}.ra-print-p{margin:0 0 10px;line-height:1.7}}',
   ].join('\n');
 
   // ---------------------------------------------------------------------------
@@ -7994,10 +9309,20 @@
   // ---------------------------------------------------------------------------
   function takeHomeTools(o) {
     var doc = o.doc, win = o.win, L = o.L, el = o.el, page = o.page, html = doc.documentElement;
-    var NAMES = { size: ['', 'textLarger', 'textLargest', 'textExtraLarge'], colors: ['', 'contrastHigh', 'contrastSoft', 'colorsDark', 'colorsOcean', 'colorsSunny', 'colorsForest', 'colorsRose'], spacing: ['', 'spacingWide'], font: ['', 'lettersLexend', 'lettersAtkinson', 'lettersBook', 'lettersRounded', 'lettersMono', 'lettersOpenDyslexic'], focus: ['', 'readingFocus', 'readingFocus'], lens: ['', 'magnifier'], choices: ['', 'readChoices'], directions: ['', ''], speed: ['', '', '', '', ''], sounds: ['', 'soundsMore', 'soundsLess'], bold: ['', 'boldStart'] };
-    var EXTRA = ['syllables', 'pos', 'posLabels', 'define', 'bold', 'chunk', 'noAuto', 'posHideN', 'posHideV', 'posHideJ', 'posHideA'];
-    var KEYS = Object.keys(NAMES), p = {}, ep = {}, customBg = '', customInk = '', customSize = 0, groups = {}, rec = null, text = null, at = 0, painted = '', read = null, noVoiceNote = null, bionicBusy = false;
+    var NAMES = { size: ['', 'textLarger', 'textLargest', 'textExtraLarge'], colors: ['', 'contrastHigh', 'contrastSoft', 'colorsDark', 'colorsOcean', 'colorsSunny', 'colorsForest', 'colorsRose'], spacing: ['', 'spacingWide', 'spacingExtraWide'], font: ['', 'lettersLexend', 'lettersAtkinson', 'lettersBook', 'lettersRounded', 'lettersMono', 'lettersOpenDyslexic'], focus: ['', 'readingFocus', 'readingFocus', 'readingRuler'], lens: ['', 'magnifier'], choices: ['', 'readChoices'], directions: ['', ''], speed: ['', '', '', '', ''], sounds: ['', 'soundsMore', 'soundsLess'], bold: ['', 'boldStart'], motion: ['', ''] };
+    var EXTRA = ['syllables', 'pos', 'posLabels', 'define', 'bold', 'chunk', 'noAuto', 'posHideN', 'posHideV', 'posHideJ', 'posHideA', 'posHideP', 'posHideR', 'posHideC'];
+    var RULER_TINTS = ['yellow', 'sky', 'rose', 'mint', 'line'];
+    var KEYS = Object.keys(NAMES), p = {}, ep = {}, customBg = '', customInk = '', customSize = 0, rulerTint = 'yellow', rulerSize = 'slim', rulerY = 200, groups = {}, rec = null, text = null, at = 0, painted = '', read = null, noVoiceNote = null, bionicBusy = false;
     var HEX = /^#[0-9a-f]{6}$/i;
+    var hexLum = function (h) { return (0.299 * parseInt(h.slice(1, 3), 16) + 0.587 * parseInt(h.slice(3, 5), 16) + 0.114 * parseInt(h.slice(5, 7), 16)) / 255; };
+    var mixHex = function (h, to, t) {
+      var out = '#';
+      for (var i = 1; i < 7; i += 2) {
+        var a = parseInt(h.slice(i, i + 2), 16), b = parseInt(to.slice(i, i + 2), 16), v = Math.round(a + (b - a) * t);
+        out += (v < 16 ? '0' : '') + v.toString(16);
+      }
+      return out;
+    };
     var def = function (k) { return k === 'directions' && o.directionsOnce ? 1 : 0; };
     var clean = function (raw) {
       KEYS.forEach(function (k) {
@@ -8013,23 +9338,19 @@
       customInk = raw && typeof raw.customInk === 'string' && HEX.test(raw.customInk) ? raw.customInk : '';
       var cs = raw && Number(raw.customSize);
       customSize = cs >= 14 && cs <= 40 ? Math.round(cs) : 0;
+      rulerTint = raw && RULER_TINTS.indexOf(raw.rulerTint) >= 0 ? raw.rulerTint : 'yellow';
+      rulerSize = raw && raw.rulerSize === 'tall' ? 'tall' : 'slim';
     };
     var bgPicker = null, inkPicker = null, sizeSlider = null, sizeOut = null;
     var mountPickers = function () {
       if (bgPicker) return;
-      if (groups.size) {
-        sizeOut = el('span', { class: 'muted', text: (customSize || 16) + 'px' });
-        sizeSlider = el('input', { type: 'range', min: '14', max: '40', step: '1', value: String(customSize || 16), 'aria-label': 'Exact text size', 'data-tool-custom-size': '', on: { input: function () { customSize = Number(sizeSlider.value) || 16; apply(); o.store(); } } });
-        groups.size.box.appendChild(el('label', { class: 'lt-custom-size' }, ['Exact size ', sizeSlider, sizeOut]));
-      }
-      if (groups.colors) {
-        bgPicker = el('input', { type: 'color', value: customBg || '#fdfbf7', 'aria-label': 'Custom background color', 'data-tool-custom-bg': '', on: { input: function () { customBg = bgPicker.value; apply(); o.store(); } } });
-        inkPicker = el('input', { type: 'color', value: customInk || '#1e293b', 'aria-label': 'Custom text color', 'data-tool-custom-ink': '', on: { input: function () { customInk = inkPicker.value; apply(); o.store(); } } });
-        groups.colors.box.appendChild(el('div', { class: 'lt-custom-colors' }, [
-          el('label', {}, ['Background ', bgPicker]),
-          el('label', {}, ['Text ', inkPicker]),
-        ]));
-      }
+      sizeOut = el('span', { class: 'muted', text: (customSize || 16) + 'px' });
+      sizeSlider = el('input', { type: 'range', min: '14', max: '40', step: '1', value: String(customSize || 16), 'aria-label': 'Exact text size', 'data-tool-custom-size': '', on: { input: function () { customSize = Number(sizeSlider.value) || 16; apply(); o.store(); } } });
+      bgPicker = el('input', { type: 'color', value: customBg || '#fdfbf7', 'aria-label': 'Custom background color', 'data-tool-custom-bg': '', on: { input: function () { customBg = bgPicker.value; apply(); o.store(); } } });
+      inkPicker = el('input', { type: 'color', value: customInk || '#1e293b', 'aria-label': 'Custom text color', 'data-tool-custom-ink': '', on: { input: function () { customInk = inkPicker.value; apply(); o.store(); } } });
+      var ref = groups.sounds && groups.sounds.box;
+      more.insertBefore(el('label', { class: 'lt-custom-size' }, ['Exact size ', sizeSlider, sizeOut]), ref);
+      more.insertBefore(el('div', { class: 'lt-custom-colors' }, [el('label', {}, ['Background ', bgPicker]), el('label', {}, ['Text ', inkPicker])]), ref);
     };
     var showPanel = function (on) { if (on) mountPickers(); panel.hidden = !on; aa.setAttribute('aria-expanded', String(on)); };
     var back = function () { showPanel(false); aa.focus(); };
@@ -8040,25 +9361,46 @@
     };
     var aa = el('button', { type: 'button', class: 'lt-aa', title: L.tools_button, 'aria-expanded': 'false', 'aria-controls': 'lt-panel', 'data-tools-open': '',
       on: { click: function () { showPanel(panel.hidden); } } }, ['Aa', el('span', { class: 'sr', text: ' ' + L.tools_button })]);
+    var more = el('details', { class: 'lt-more', on: { toggle: function () { panel.classList.toggle('lt-m', more.open); } } }, [
+      el('summary', { text: L.tools_more || 'More reading tools' }),
+      group('sounds', L.tools_sounds, [L.tools_sounds_0, L.tools_sounds_1, L.tools_sounds_2], L.tools_sounds_hint),
+      group('bold', L.tools_bold || 'Bold start', [L.tools_off, L.tools_on], L.tools_bold_hint),
+      group('motion', L.tools_motion || 'Motion', [L.tools_colors_0 || 'Usual', L.tools_motion_1 || 'Less'], L.tools_motion_hint),
+    ]);
     var panel = el('section', { id: 'lt-panel', class: 'card lt-panel', 'aria-labelledby': 'lt-title', hidden: true, 'data-tools': '',
       on: { keydown: function (e) { if (/^Esc/.test(e.key)) { e.preventDefault(); back(); } } } }, [
       el('div', { class: 'lt-top' }, [el('p', { id: 'lt-title', class: 'lt-h', text: L.tools_button }),
         el('button', { type: 'button', 'data-tools-close-top': '', on: { click: back }, text: L.tools_close })]),
       group('size', L.tools_size, [L.tools_normal, L.tools_size_1, L.tools_size_2, L.tools_size_3 || 'Extra large']),
       group('colors', L.tools_colors, [L.tools_colors_0, L.tools_colors_1, L.tools_colors_2, L.tools_colors_3, L.tools_colors_4, L.tools_colors_5, L.tools_colors_6, L.tools_colors_7 || 'Rose']),
-      group('spacing', L.tools_spacing, [L.tools_normal, L.tools_spacing_1]),
+      group('spacing', L.tools_spacing, [L.tools_normal, L.tools_spacing_1, L.tools_spacing_2 || 'Extra wide']),
       group('font', L.tools_font, [L.tools_colors_0, L.tools_font_1, L.tools_font_2, L.tools_font_3, L.tools_font_4, L.tools_font_5 || 'Mono', L.tools_font_6 || 'OpenDyslexic']),
-      group('focus', L.tools_focus, [L.tools_off, L.tools_focus_1 || L.tools_on, L.tools_focus_2 || '3 lines'], L.tools_focus_hint),
+      group('focus', L.tools_focus, [L.tools_off, L.tools_focus_1 || L.tools_on, L.tools_focus_2 || '3 lines', L.tools_focus_3 || 'Ruler'], L.tools_focus_hint),
       group('lens', L.tools_lens, [L.tools_off, L.tools_on], L.tools_lens_hint),
       group('choices', L.tools_choices, [L.tools_off, L.tools_on], L.tools_choices_hint),
       group('directions', L.tools_directions, [L.tools_directions_0, L.tools_directions_1], L.tools_directions_hint),
       group('speed', L.tools_speed, [L.tools_speed_0, L.tools_speed_1, L.tools_speed_2 || 'Very slow', L.tools_speed_3 || 'Faster', L.tools_speed_4 || 'Fastest'], L.tools_speed_hint),
-      group('sounds', L.tools_sounds, [L.tools_sounds_0, L.tools_sounds_1, L.tools_sounds_2], L.tools_sounds_hint),
-      group('bold', L.tools_bold || 'Bold start', [L.tools_off, L.tools_on], L.tools_bold_hint),
+      more,
       (noVoiceNote = el('p', { class: 'muted', hidden: true, 'data-tools-no-voice': '', text: L.tools_no_voice })),
       el('div', { class: 'row' }, [
         el('button', { type: 'button', 'data-tools-reset': '', on: { click: function () { clean(); apply(); o.store(); } }, text: L.tools_reset })]),
     ]);
+    var rulerTintBtns = RULER_TINTS.map(function (t) {
+      var lbl = { yellow: 'Yellow', sky: 'Sky', rose: 'Rose', mint: 'Mint', line: 'Line' }[t];
+      return el('button', { type: 'button', 'data-ruler-tint-opt': t, 'aria-pressed': String(t === rulerTint), on: { click: function () { rulerTint = t; apply(); o.store(); } }, text: lbl });
+    });
+    var rulerSizeBtns = ['slim', 'tall'].map(function (sz) {
+      return el('button', { type: 'button', 'data-ruler-size-opt': sz, 'aria-pressed': String(sz === rulerSize), on: { click: function () { rulerSize = sz; apply(); o.store(); } }, text: sz === 'tall' ? 'Tall' : 'Slim' });
+    });
+    var rulerSub = el('div', { class: 'lt-ruler-sub', 'data-ruler-controls': '', hidden: true }, rulerTintBtns.concat(rulerSizeBtns));
+    groups.focus.box.appendChild(rulerSub);
+    var ruler = el('div', { class: 'lt-ruler', 'data-reading-ruler': '', 'aria-hidden': 'true', hidden: true });
+    var moveRuler = function (y) {
+      if (p.focus !== 3) return;
+      var H = win.innerHeight || 600;
+      rulerY = Math.max(8, Math.min(H - 8, Math.round(y)));
+      ruler.style.top = rulerY + 'px';
+    };
     var grip = el('button', { type: 'button', class: 'lt-grip', hidden: true, 'aria-label': L.tools_lens_move, 'aria-describedby': 'lt-lens-hint', 'data-lens-grip': '' },
       [el('span', { 'aria-hidden': 'true', text: String.fromCharCode(0x2725) })]);
     var lens = el('div', { class: 'lt-lens', 'aria-hidden': 'true', hidden: true, 'data-lens': '' });
@@ -8066,6 +9408,7 @@
     var bar = el('div', { class: 'lt-bar' }, [aa, grip]);
     page.insertBefore(bar, panel);
     doc.body.appendChild(lens);
+    doc.body.appendChild(ruler);
     var P = null, touch = false, copy = null, queued = false, drag = null;
     var place = function () {
       queued = false;
@@ -8114,8 +9457,8 @@
       return out.sort(function (x, y) { return x.t - y.t; });
     };
     var paint = function () {
-      var dark = p.colors === 1 || p.colors === 3;
-      if (!dark && !p.colors) { try { dark = !!(win.matchMedia && win.matchMedia('(prefers-color-scheme:dark)').matches); } catch (_) {} }
+      var dark = customBg ? hexLum(customBg) < 0.45 : (p.colors === 1 || p.colors === 3);
+      if (!customBg && !dark && !p.colors) { try { dark = !!(win.matchMedia && win.matchMedia('(prefers-color-scheme:dark)').matches); } catch (_) {} }
       var all = lines(), l = all[at = Math.max(0, Math.min(all.length - 1, at))], dim = dark ? 'rgba(0,0,0,.72)' : 'rgba(0,0,0,.45)';
       line.hidden = !l;
       if (!l) { shade.style.background = 'none'; return; }
@@ -8136,7 +9479,7 @@
       var found = o.app.querySelector('[data-read]'), host = shade.parentNode, on;
       if (found !== text) { text = found; at = 0; }
       if (groups.focus.box.hidden !== !text) groups.focus.box.hidden = !text;
-      on = !!text && !!p.focus;
+      on = !!text && (p.focus === 1 || p.focus === 2);
       if (host && (!on || host !== text)) {
         host.classList.remove('lt-read'); host.removeChild(shade); host.removeChild(line);
         if (host.hasAttribute('data-lt-tab')) { host.removeAttribute('tabindex'); host.removeAttribute('data-lt-tab'); }
@@ -8206,19 +9549,37 @@
       if (changed) o.save();
     };
     var apply = function () {
-      ['size', 'colors', 'spacing', 'font', 'bold'].forEach(function (k) { if (p[k]) html.setAttribute('data-lt-' + k, p[k]); else html.removeAttribute('data-lt-' + k); });
+      ['size', 'colors', 'spacing', 'font', 'bold', 'motion'].forEach(function (k) { if (p[k]) html.setAttribute('data-lt-' + k, p[k]); else html.removeAttribute('data-lt-' + k); });
       ep.bold = p.bold ? 1 : 0;
       if (customSize) html.style.fontSize = customSize + 'px';
       else html.style.removeProperty('font-size');
       if (sizeSlider) sizeSlider.value = String(customSize || [16, 20, 24, 28][p.size] || 16);
       if (sizeOut) sizeOut.textContent = (customSize || [16, 20, 24, 28][p.size] || 16) + 'px';
-      if (customBg) { html.style.setProperty('--bg', customBg); html.style.setProperty('--card', customBg); }
-      else { html.style.removeProperty('--bg'); html.style.removeProperty('--card'); }
-      if (customInk) html.style.setProperty('--ink', customInk);
-      else html.style.removeProperty('--ink');
+      if (customBg) {
+        var dk = hexLum(customBg) < 0.45;
+        html.style.setProperty('--bg', customBg);
+        html.style.setProperty('--card', mixHex(customBg, '#ffffff', dk ? 0.06 : 0.35));
+        html.style.setProperty('--soft', mixHex(customBg, dk ? '#ffffff' : '#000000', dk ? 0.14 : 0.07));
+        html.style.setProperty('--line', mixHex(customBg, dk ? '#ffffff' : '#000000', dk ? 0.3 : 0.22));
+        html.style.setProperty('--muted', customInk ? mixHex(customInk, customBg, 0.25) : (dk ? '#cbd5e1' : '#4a5468'));
+        html.style.setProperty('--ink', customInk || (dk ? '#f1f5f9' : '#1d2433'));
+        html.style.setProperty('color-scheme', dk ? 'dark' : 'light');
+      } else {
+        ['--bg', '--card', '--soft', '--line', '--muted', 'color-scheme'].forEach(function (v) { html.style.removeProperty(v); });
+        if (customInk) html.style.setProperty('--ink', customInk);
+        else html.style.removeProperty('--ink');
+      }
       if (bgPicker) bgPicker.value = customBg || '#fdfbf7';
       if (inkPicker) inkPicker.value = customInk || '#1e293b';
       KEYS.forEach(function (k) { groups[k].buttons.forEach(function (b, v) { b.setAttribute('aria-pressed', String(v === p[k])); }); });
+      var isRuler = p.focus === 3;
+      rulerSub.hidden = !isRuler;
+      ruler.hidden = !isRuler;
+      ruler.setAttribute('data-ruler-tint', rulerTint);
+      ruler.setAttribute('data-ruler-size', rulerSize);
+      if (isRuler) moveRuler(rulerY);
+      rulerTintBtns.forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-ruler-tint-opt') === rulerTint)); });
+      rulerSizeBtns.forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-ruler-size-opt') === rulerSize)); });
       grip.hidden = lens.hidden = !p.lens;
       copy = drag = null;
       if (!p.lens) lens.textContent = '';
@@ -8238,12 +9599,17 @@
       scan(); copy = null; queue();
     }).observe(page, { childList: true, subtree: true, attributes: true, characterData: true });
     doc.addEventListener('input', function () { copy = null; queue(); }, true);
-    var follow = function (e) { if (p.focus && text && text.contains(e.target)) nearest(e.clientY); };
+    var follow = function (e) { if ((p.focus === 1 || p.focus === 2) && text && text.contains(e.target)) nearest(e.clientY); };
     doc.addEventListener('pointermove', function (e) {
+      if (p.focus === 3 && typeof e.clientY === 'number') moveRuler(e.clientY);
       if (drag && e.pointerId === drag.id) { P = { x: e.clientX + drag.x, y: e.clientY + drag.y }; queue(); }
       else if (e.pointerType === 'mouse') { touch = false; P = { x: e.clientX, y: e.clientY }; queue(); follow(e); }
     }, true);
+    doc.addEventListener('touchmove', function (e) {
+      if (p.focus === 3 && e.touches && e.touches[0]) moveRuler(e.touches[0].clientY);
+    }, { passive: true, capture: true });
     doc.addEventListener('pointerdown', function (e) {
+      if (p.focus === 3 && typeof e.clientY === 'number' && !panel.contains(e.target)) moveRuler(e.clientY);
       if (grip.contains(e.target)) return;
       if (e.pointerType !== 'mouse') { touch = true; P = { x: e.clientX, y: e.clientY }; queue(); }
       follow(e);
@@ -8257,14 +9623,15 @@
     grip.addEventListener('focus', function () { touch = false; queue(); });
     var STEP = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
     doc.addEventListener('keydown', function (e) {
-      var d = STEP[e.key], n = e.shiftKey ? 60 : 20;
-      if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.isComposing || e.keyCode === 229) return;
+      var d = Object.prototype.hasOwnProperty.call(STEP, e.key) ? STEP[e.key] : null, n = e.shiftKey ? 60 : 20;
       if (d && e.target === grip && P) {
         touch = false;
         P = { x: Math.max(0, Math.min(win.innerWidth, P.x + d[0] * n)), y: Math.max(0, Math.min(win.innerHeight, P.y + d[1] * n)) };
         queue();
-      } else if (d && !d[0] && p.focus && text && e.target === text) { at += d[1]; paint(); }
-      else if (/^Esc/.test(e.key) && p.lens) { set('lens', 0); if (e.target === grip) aa.focus(); }
+      } else if (d && !d[0] && p.focus === 3 && !(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))) { moveRuler(rulerY + d[1] * n); }
+      else if (d && !d[0] && (p.focus === 1 || p.focus === 2) && text && e.target === text) { at += d[1]; paint(); }
+      else if (/^Esc/.test(String(e.key || '')) && p.lens) { set('lens', 0); if (e.target === grip) aa.focus(); }
       else return;
       e.preventDefault();
     });
@@ -8301,6 +9668,7 @@
       directionsOnce: function () { return !!o.directions && p.directions === 1; },
       slow: function () { return !!o.speed && p.speed === 1; },
       speedRate: function () { return o.speed ? ([1, 0.8, 0.6, 1.25, 1.5][p.speed] || 1) : 1; },
+      reducedMotion: function () { return p.motion === 1; },
       noVoice: function (on) { if (noVoiceNote) noVoiceNote.hidden = !on; },
       soundGap: function () { return o.sounds ? [500, 800, 250][p.sounds] || 500 : 500; },
       getExtra: function (k) { return k === 'bold' ? (p.bold ? 1 : 0) : (EXTRA.indexOf(k) >= 0 ? (ep[k] || 0) : null); },
@@ -8312,6 +9680,8 @@
         if (customBg) (out = out || {}).customBg = customBg;
         if (customInk) (out = out || {}).customInk = customInk;
         if (customSize) (out = out || {}).customSize = customSize;
+        if (rulerTint !== 'yellow') (out = out || {}).rulerTint = rulerTint;
+        if (rulerSize !== 'slim') (out = out || {}).rulerSize = rulerSize;
         return out;
       },
     };
@@ -8322,6 +9692,8 @@
   function takeHomeDeviceVoice(win, lang, getRate) {
     var syn = win && win.speechSynthesis;
     var want = String(lang || 'en').toLowerCase().split('-')[0];
+    var speakGen = 0, fbTimer = 0;
+    var clearFb = function () { if (fbTimer && win && win.clearTimeout) { win.clearTimeout(fbTimer); fbTimer = 0; } };
     var pick = function () {
       if (!syn || typeof syn.getVoices !== 'function') return null;
       var list = [];
@@ -8330,20 +9702,59 @@
       if (!local.length) return null;
       return local.filter(function (v) { return String(v.lang || '').toLowerCase().indexOf(want) === 0; })[0] || local[0];
     };
-    var stop = function () { try { if (syn && typeof syn.cancel === 'function') syn.cancel(); } catch (_) {} };
+    var stop = function () { speakGen++; clearFb(); try { if (syn && typeof syn.cancel === 'function') syn.cancel(); } catch (_) {} };
     return {
       available: function () { return !!pick(); },
       stop: stop,
-      speak: function (text, onEnd) {
+      speak: function (text, onEnd, onWord) {
         var v = pick();
         if (!v || !win.SpeechSynthesisUtterance || !text) { if (onEnd) onEnd(false); return false; }
         stop();
-        var u = new win.SpeechSynthesisUtterance(String(text));
+        var mine = ++speakGen;
+        var str = String(text);
+        var rate = typeof getRate === 'function' ? (getRate() || 1) : 1;
+        var u = new win.SpeechSynthesisUtterance(str);
         u.voice = v;
         u.lang = v.lang || lang || 'en';
-        u.rate = typeof getRate === 'function' ? (getRate() || 1) : 1;
-        var done = false;
-        var fin = function (ok) { if (done) return; done = true; if (onEnd) onEnd(ok); };
+        u.rate = rate;
+        var done = false, gotBoundary = false;
+        var fin = function (ok) { if (done) return; done = true; clearFb(); if (mine === speakGen && onEnd) onEnd(ok); };
+        if (typeof onWord === 'function') {
+          var words = [], m, re = /[A-Za-z\u00C0-\u024F\u00b7]+(?:['\u2019][A-Za-z\u00C0-\u024F\u00b7]+)*/g;
+          while ((m = re.exec(str))) words.push({ s: m.index, l: m[0].length });
+          if (!words.length) {
+            var re2 = /\S+/g;
+            while ((m = re2.exec(str))) words.push({ s: m.index, l: m[0].length });
+          }
+          if (words.length) {
+            u.onboundary = function (ev) {
+              if (done || mine !== speakGen) return;
+              if (ev && ev.name && ev.name !== 'word') return;
+              var ci = ev && typeof ev.charIndex === 'number' ? ev.charIndex : -1;
+              if (ci < 0) return;
+              gotBoundary = true;
+              clearFb();
+              var wi = 0;
+              for (var k = 0; k < words.length; k++) {
+                if (words[k].s <= ci) wi = k; else break;
+              }
+              try { onWord(wi); } catch (_) {}
+            };
+            var stepFb = function (idx) {
+              if (done || mine !== speakGen || gotBoundary || idx >= words.length) return;
+              try { onWord(idx); } catch (_) {}
+              if (idx + 1 < words.length && win && win.setTimeout) {
+                var ms = Math.max(160, Math.round((Math.max(2, words[idx].l) * 58) / Math.max(0.5, rate)));
+                fbTimer = win.setTimeout(function () { fbTimer = 0; stepFb(idx + 1); }, ms);
+              }
+            };
+            try { onWord(0); } catch (_) {}
+            if (words.length > 1 && win && win.setTimeout) {
+              var firstMs = Math.max(220, Math.round((Math.max(2, words[0].l) * 58) / Math.max(0.5, rate)));
+              fbTimer = win.setTimeout(function () { fbTimer = 0; stepFb(1); }, firstMs);
+            }
+          }
+        }
         u.onend = function () { fin(true); };
         u.onerror = function () { fin(false); };
         try { syn.speak(u); return true; } catch (_) { fin(false); return false; }
@@ -8352,30 +9763,48 @@
   }
 
   // Optional local-only student voice practice (embedded ONLY when teacher opts in on a read-along practice file).
-  // Click-gated, in-memory blob URLs per sentence only, never stored in localStorage, never saved to results, never transmitted.
+  // Click-gated, in-memory blob URLs per sentence/page in RAM sessionCache only, never stored in localStorage, never saved to results, never transmitted.
   function takeHomeStudentMic(doc, win, el, L, opts) {
     var o = opts || {};
     var curIdx = 0, curTotal = 1;
-    var clips = {};
+    var pageNum = Math.max(1, Math.floor(Number(o.page) || 1));
+    var totalPages = Math.max(1, Math.floor(Number(o.pages) || 1));
+    var itemKey = String(o.itemId || ('page-' + pageNum));
+    var cache = (o.cache && typeof o.cache === 'object') ? o.cache : null;
+    var clips = cache ? (cache.micClips || (cache.micClips = Object.create(null))) : Object.create(null);
+    var takeMode = (cache && cache.micMode === 'page') ? 'page' : 'sentence';
+    var keyFor = function (mode, idx) { return itemKey + ':' + (mode === 'page' ? 'page' : idx); };
+    var modeSel = el('select', { class: 'ra-mic-mode', 'aria-label': L.read_along_rec_scope || 'Recording length', 'data-student-rec-mode': '', hidden: true }, [
+      el('option', { value: 'sentence', text: L.read_along_rec_sent || 'This sentence' }),
+      el('option', { value: 'page', text: L.read_along_rec_page || 'Whole page' }),
+    ]);
+    modeSel.value = takeMode;
     var recBtn = el('button', { type: 'button', 'data-student-rec': '', text: L.read_along_rec || 'Record my voice' });
     var playBtn = el('button', { type: 'button', 'data-student-rec-play': '', hidden: true, text: L.read_along_rec_play || 'Play my voice' });
     var saveBtn = el('button', { type: 'button', 'data-student-rec-save': '', hidden: true, text: L.read_along_rec_save || 'Save my recording' });
     var clearBtn = el('button', { type: 'button', 'data-student-rec-clear': '', hidden: true, text: L.read_along_rec_clear || 'Clear' });
     var status = el('p', { class: 'muted ra-mic-note', 'aria-live': 'polite', 'data-student-rec-status': '', text: L.read_along_rec_note || 'Stays on this device only. Nothing is saved or sent.' });
     var wrap = el('div', { class: 'ra-mic-bar', 'data-student-mic': '' }, [
-      el('div', { class: 'row' }, [recBtn, playBtn, saveBtn, clearBtn]),
+      el('div', { class: 'row' }, [recBtn, modeSel, playBtn, saveBtn, clearBtn]),
       status,
     ]);
-    var stream = null, recorder = null, chunks = [], player = null, recording = false, playing = false, timer = 0, alive = true, recTargetIdx = 0;
+    var stream = null, recorder = null, chunks = [], player = null, recording = false, playing = false, timer = 0, alive = true, recTargetKey = '', recTargetMode = 'sentence', recTargetIdx = 0;
     var say = function (tpl, fallback, n) { return String(tpl || fallback).replace(/\{n\}/g, String(n)); };
+    var warnRecording = function () {
+      status.textContent = L.read_along_rec_busy || 'Stop recording before switching sentences or pages.';
+    };
     var syncButtons = function () {
-      var clip = clips[curIdx] || null;
+      modeSel.hidden = !(curTotal > 1);
+      if (curTotal <= 1 && takeMode === 'page') { takeMode = 'sentence'; modeSel.value = 'sentence'; }
+      var clip = clips[keyFor(takeMode, curIdx)] || null;
       playBtn.hidden = !clip;
       saveBtn.hidden = !clip;
       clearBtn.hidden = !clip;
       if (!recording) {
         status.textContent = clip
-          ? say(L.read_along_rec_ready, 'Your recording for sentence {n} is ready to play back.', curIdx + 1)
+          ? (takeMode === 'page'
+            ? (L.read_along_rec_ready_page || 'Your recording for this page is ready to play back.')
+            : say(L.read_along_rec_ready, 'Your recording for sentence {n} is ready to play back.', curIdx + 1))
           : (L.read_along_rec_note || 'Stays on this device only. Nothing is saved or sent.');
       }
     };
@@ -8402,45 +9831,90 @@
       stopPlay();
       if (recorder && recorder.state !== 'inactive') { try { recorder.stop(); } catch (_) {} }
       recording = false;
+      modeSel.disabled = false;
       stopTracks();
       recBtn.textContent = L.read_along_rec || 'Record my voice';
     };
-    var cleanup = function () { alive = false; halt(); clearAll(); };
-    win.addEventListener('pagehide', cleanup);
-    win.addEventListener('beforeunload', cleanup);
+    var onLeave = function () {
+      alive = false;
+      halt();
+      if (!cache) clearAll();
+    };
+    win.addEventListener('pagehide', onLeave);
+    win.addEventListener('beforeunload', onLeave);
+    if (cache && !cache._micUnloadBound) {
+      cache._micUnloadBound = true;
+      var revokeCache = function () {
+        var map = cache.micClips;
+        if (!map) return;
+        Object.keys(map).forEach(function (k) {
+          if (map[k] && map[k].url) { try { win.URL.revokeObjectURL(map[k].url); } catch (_) {} }
+          delete map[k];
+        });
+      };
+      win.addEventListener('pagehide', revokeCache);
+      win.addEventListener('beforeunload', revokeCache);
+    }
+    var unmount = function () {
+      alive = false;
+      try { win.removeEventListener('pagehide', onLeave); } catch (_) {}
+      try { win.removeEventListener('beforeunload', onLeave); } catch (_) {}
+      halt();
+    };
+    modeSel.addEventListener('change', function () {
+      if (recording) { modeSel.value = takeMode; warnRecording(); return; }
+      stopPlay();
+      takeMode = modeSel.value === 'page' ? 'page' : 'sentence';
+      if (cache) cache.micMode = takeMode;
+      syncButtons();
+    });
     recBtn.addEventListener('click', function () {
       if (recording) {
         if (recorder && recorder.state !== 'inactive') { try { recorder.stop(); } catch (_) {} }
         return;
       }
+      if (typeof o.onRecordStart === 'function') { try { o.onRecordStart(); } catch (_) {} }
       stopPlay();
       if (typeof o.getSentence === 'function') {
         var info = o.getSentence() || {};
         if (typeof info.index === 'number') curIdx = info.index;
         if (typeof info.total === 'number' && info.total > 0) curTotal = info.total;
       }
+      recTargetMode = curTotal > 1 ? takeMode : 'sentence';
       recTargetIdx = curIdx;
+      recTargetKey = keyFor(recTargetMode, recTargetIdx);
       var media = win.navigator && win.navigator.mediaDevices;
       if (!media || typeof media.getUserMedia !== 'function' || typeof win.MediaRecorder !== 'function') {
         status.textContent = L.read_along_rec_unsupported || 'This browser cannot record from a microphone here.';
         return;
       }
       recBtn.disabled = true;
+      modeSel.disabled = true;
       var asked;
       try { asked = media.getUserMedia({ audio: true }); } catch (err) { asked = Promise.reject(err); }
       Promise.resolve(asked).then(function (s) {
         recBtn.disabled = false;
-        if (!alive) { try { s.getTracks().forEach(function (t) { t.stop(); }); } catch (_) {} return; }
+        if (!alive) { modeSel.disabled = false; try { s.getTracks().forEach(function (t) { t.stop(); }); } catch (_) {} return; }
         stream = s;
         chunks = [];
         try { recorder = new win.MediaRecorder(s); } catch (_) {
+          modeSel.disabled = false;
           stopTracks();
           status.textContent = L.read_along_rec_unsupported || 'This browser cannot record from a microphone here.';
           return;
         }
+        var failRec = function () {
+          recording = false;
+          modeSel.disabled = false;
+          stopTracks();
+          recBtn.textContent = L.read_along_rec || 'Record my voice';
+          if (alive) status.textContent = L.read_along_rec_unsupported || 'This browser cannot record from a microphone here.';
+        };
         recorder.ondataavailable = function (ev) { if (ev && ev.data && ev.data.size) chunks.push(ev.data); };
+        recorder.onerror = failRec;
         recorder.onstop = function () {
           recording = false;
+          modeSel.disabled = false;
           stopTracks();
           recBtn.textContent = L.read_along_rec || 'Record my voice';
           if (!alive) return;
@@ -8450,24 +9924,28 @@
           }
           var mime = (chunks[0] && chunks[0].type) || recorder.mimeType || 'audio/webm';
           var blob = new win.Blob(chunks, { type: mime });
-          clearKey(recTargetIdx);
-          clips[recTargetIdx] = { url: win.URL.createObjectURL(blob), mime: mime };
+          clearKey(recTargetKey);
+          clips[recTargetKey] = { url: win.URL.createObjectURL(blob), mime: mime };
           syncButtons();
         };
         recording = true;
         recBtn.textContent = L.read_along_rec_stop || 'Stop recording';
-        status.textContent = say(L.read_along_rec_recording, 'Recording sentence {n}...', recTargetIdx + 1);
-        recorder.start();
-        timer = win.setTimeout(function () { if (recorder && recorder.state !== 'inactive') { try { recorder.stop(); } catch (_) {} } }, 60000);
+        status.textContent = recTargetMode === 'page'
+          ? (L.read_along_rec_recording_page || 'Recording whole page...')
+          : say(L.read_along_rec_recording, 'Recording sentence {n}...', recTargetIdx + 1);
+        try { recorder.start(); } catch (_) { failRec(); return; }
+        timer = win.setTimeout(function () { if (recorder && recorder.state !== 'inactive') { try { recorder.stop(); } catch (_) {} } }, recTargetMode === 'page' ? 180000 : 60000);
       }, function () {
         recBtn.disabled = false;
+        modeSel.disabled = false;
         stopTracks();
         status.textContent = L.read_along_rec_denied || 'Microphone permission was refused.';
       });
     });
     playBtn.addEventListener('click', function () {
+      if (recording) { warnRecording(); return; }
       if (playing) { stopPlay(); return; }
-      var clip = clips[curIdx];
+      var clip = clips[keyFor(takeMode, curIdx)];
       if (!clip || !clip.url) return;
       stopPlay();
       try {
@@ -8481,18 +9959,21 @@
       } catch (_) { stopPlay(); }
     });
     saveBtn.addEventListener('click', function () {
-      var clip = clips[curIdx];
+      var clip = clips[keyFor(takeMode, curIdx)];
       if (!clip || !clip.url) return;
       var ext = /mp4|m4a/i.test(clip.mime) ? 'm4a' : /ogg/i.test(clip.mime) ? 'ogg' : /wav/i.test(clip.mime) ? 'wav' : 'webm';
-      var a = el('a', { href: clip.url, download: 'my-reading-sentence-' + (curIdx + 1) + '.' + ext });
+      var pagePrefix = totalPages > 1 ? ('page-' + pageNum + '-') : '';
+      var suffix = takeMode === 'page' ? 'whole-page' : ('sentence-' + (curIdx + 1));
+      var a = el('a', { href: clip.url, download: 'my-reading-' + pagePrefix + suffix + '.' + ext });
       a.hidden = true;
       doc.body.appendChild(a);
       a.click();
       doc.body.removeChild(a);
     });
     clearBtn.addEventListener('click', function () {
+      if (recording) { warnRecording(); return; }
       stopPlay();
-      clearKey(curIdx);
+      clearKey(keyFor(takeMode, curIdx));
       syncButtons();
     });
     var setSentence = function (index, total) {
@@ -8504,7 +9985,7 @@
       }
       syncButtons();
     };
-    return { el: wrap, halt: halt, setSentence: setSentence };
+    return { el: wrap, halt: halt, unmount: unmount, setSentence: setSentence, isRecording: function () { return !!recording; }, warnRecording: warnRecording };
   }
 
   // ---------------------------------------------------------------------------
@@ -8539,9 +10020,12 @@
   // cannot be seen to finish. A SOUND that does not play is said on the item too (sound_failed), and a clip with no
   // progress for 5 s settles, so Hear all and an opening never stay stuck. screen() clears #live.
   function takeHomeShell(doc, win, lesson, L, matches, renders, kit) {
+    var safeParse = function (raw) {
+      return JSON.parse(raw, function (k, v) { return k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v; });
+    };
     var storageKey = 'alloflow-take-home:' + lesson.lessonId + ':' + lesson.revision;
     var manifest = {};
-    try { manifest = JSON.parse(doc.getElementById('packet-manifest').textContent) || {}; } catch (_) {}
+    try { manifest = safeParse(doc.getElementById('packet-manifest').textContent) || {}; } catch (_) {}
     // A teacher can hand out the file with the label filled in: file.html#learner=BlueHeron7, or made for one student
     // (the code name in the manifest; the link's wins). Each code name keeps its own progress on a shared device.
     var givenName = '';
@@ -8556,12 +10040,14 @@
     var audioEl = null;
     var screenId = 0;
     var namePrompted = false;
+    var sessionCache = Object.create(null);
+    var pendingNav = null;
     var items = [];
     lesson.blocks.forEach(function (block) { block.items.forEach(function (item, i) { items.push({ activity: block.activity, item: item, n: i + 1, total: block.items.length }); }); });
     // 2026-11-18: the file's own order (lesson.sequence), when it names each question once; "2 of 5" stays per activity.
     var ownOrder = false;
     if (Array.isArray(lesson.sequence) && lesson.mode !== 'probe' && lesson.sequence.length === items.length) {
-      var byId = {}, place = {};
+      var byId = Object.create(null), place = Object.create(null);
       items.forEach(function (e) { byId[e.item.id] = e; });
       var ordered = lesson.sequence.map(function (id) { var e = byId[id]; delete byId[id]; return e; });
       if (ordered.every(Boolean)) {
@@ -8601,7 +10087,7 @@
     var linked = function () {
       if (link !== undefined) return link;
       link = null;
-      try { var snap = win.parent !== win && JSON.parse(doc.getElementById('packet-store-snapshot').textContent); if (snap && snap.kind === 'alloflow-packet-store' && snap.items && typeof snap.items === 'object') link = { items: snap.items, tell: function (message) { win.parent.postMessage(message, '*'); } }; } catch (_) {}
+      try { var snap = win.parent !== win && safeParse(doc.getElementById('packet-store-snapshot').textContent); if (snap && snap.kind === 'alloflow-packet-store' && snap.items && typeof snap.items === 'object') link = { items: snap.items, nav: typeof snap.nav === 'string' && snap.nav.length >= 16 ? snap.nav : '', tell: function (message) { win.parent.postMessage(message, '*'); } }; } catch (_) {}
       return link; };
     // The one place the file keeps (every read and write of it is here).
     var writePlace = function (text) { if (text != null) win.localStorage.setItem(storageKey, text); else win.localStorage.removeItem(storageKey); };
@@ -8632,7 +10118,7 @@
     var stored = function () {
       try {
         var raw; try { raw = readPlace(); } catch (error) { if (!linked()) { storeOk = false; return null; } raw = typeof link.items[storageKey] === 'string' ? link.items[storageKey] : null; }
-        var parsed = raw && JSON.parse(raw);
+        var parsed = raw && safeParse(raw);
         return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
       } catch (_) {}
       // Damaged JSON is not a refusal: the next save writes over it.
@@ -8790,8 +10276,11 @@
     // A press also ends the moment an opening copy holds its writes (settle).
     ['pointerdown', 'keydown', 'click'].forEach(function (name) { doc.addEventListener(name, function () { pressed = true; settle(); }, true); });
     doc.addEventListener('keydown', function (e) {
+      if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       var k = String(e.key || '');
-      if (/^([1-9rR]|Esc|Escape)$/.test(k)) hearStops.slice().forEach(function (halt) { halt(); });
+      var tgt = e.target, tg = tgt && tgt.tagName ? String(tgt.tagName).toUpperCase() : '';
+      var inField = tg === 'INPUT' || tg === 'TEXTAREA' || tg === 'SELECT' || !!(tgt && tgt.isContentEditable);
+      if (!inField && /^([1-9rR]|Esc|Escape)$/.test(k)) hearStops.slice().forEach(function (halt) { halt(); });
       if (/^(Esc|Escape)$/.test(k) && playing) { stop(); announce(L.audio_stopped || 'Audio stopped'); }
     }, true);
     var hearAllIn = function (area, support) {
@@ -8896,8 +10385,13 @@
         button.click();
       }
     });
+    var activeHandle = null;
+    var silentFocus = false;
     var screen = function (heading, nodes, hideHeading) {
       screenId++;
+      hearStops.slice().forEach(function (halt) { try { halt(); } catch (_) {} });
+      if (activeHandle && typeof activeHandle.stop === 'function') { try { activeHandle.stop(); } catch (_) {} }
+      activeHandle = null;
       stop();
       clockStop();
       keyItem = null;
@@ -8915,7 +10409,7 @@
       nodes.forEach(function (n) { if (n) main.appendChild(n); });
       // Storage refused or full: said on every screen until the finish screen, which says it itself.
       if (!storeOk && !(state && state.finishedAt)) { var off = statusLine(L.saved_device_off, 'warn'); off.setAttribute('data-store-off', ''); main.appendChild(off); }
-      h.focus();
+      if (!silentFocus) h.focus();
     };
     var statusLine = function (text, tone) { return el('p', { class: 'status' + (tone ? ' ' + tone : ''), role: 'status', text: text }); };
     // Two tabs (see the note above takeHomeShell): the screen of a copy that waits, Continue here, and the storage events.
@@ -8933,7 +10427,7 @@
     var takeOver = function () {
       if (tab.owner) return;
       var raw = null, o = null;
-      try { raw = readPlace(); o = raw && JSON.parse(raw); } catch (_) {}
+      try { raw = readPlace(); o = raw && safeParse(raw); } catch (_) {}
       tab.n = Math.max(tab.n, (holderOf(raw) || {}).n || 0) + 1;
       tab.owner = true; tab.took = true;
       if (o && Array.isArray(o.items)) { delete o.ping; put(o); }
@@ -8947,7 +10441,7 @@
       return true;
     };
     var unping = function () {
-      try { var raw = readPlace(), o = pingOf(raw) === tab.id && JSON.parse(raw); if (o) { delete o.ping; writePlace(JSON.stringify(o)); } } catch (_) {}
+      try { var raw = readPlace(), o = pingOf(raw) === tab.id && safeParse(raw); if (o) { delete o.ping; writePlace(JSON.stringify(o)); } } catch (_) {}
     };
     var settle = function () {
       if (!tab.opening) return;
@@ -8967,13 +10461,13 @@
         if (ping && ping !== tab.id) {
           if (!tab.owner || tab.opening) return;
           if (state && tab.wrote) save();
-          else { try { var q = JSON.parse(e.newValue); delete q.ping; writePlace(JSON.stringify(q)); } catch (_) {} }
+          else { try { var q = safeParse(e.newValue); delete q.ping; writePlace(JSON.stringify(q)); } catch (_) {} }
           return;
         }
         // Another copy wrote: this one waits if it has not written since it opened, or the other's claim is newer.
         if (tab.owner && !ping && (tab.opening || !tab.wrote || newer(holderOf(e.newValue)))) waitHere();
       });
-      try { o = raw && JSON.parse(raw); } catch (_) {}
+      try { o = raw && safeParse(raw); } catch (_) {}
       if (!o || typeof o !== 'object' || !Array.isArray(o.items)) return;
       // A place is kept: ask whether another copy has the file open, and hold this copy's writes for the answer.
       o.ping = tab.id;
@@ -9000,6 +10494,7 @@
         typeof m.fonts === 'string' ? m.fonts : '',
       ];
       if (check) texts = check.about(texts);
+      if (lesson.qr && L.qr_about) texts.push(fmt(L.qr_about, { fp: lesson.qr.fp || '' }));
       var panel = el('div', { class: 'card about', id: 'about-panel', hidden: true, 'data-about': '' }, [
         el('ul', {}, texts.filter(Boolean).map(function (t) { return el('li', { text: t }); })),
       ]);
@@ -9015,7 +10510,8 @@
       var prior = load();
       if (check && check.resume(prior)) return;
       var given = givenName;
-      var nameInput = el('input', { id: 'learner-name', type: 'text', autocomplete: 'off', maxlength: '60' });
+      var buttons = [];
+      var nameInput = el('input', { id: 'learner-name', type: 'text', autocomplete: 'off', maxlength: '60', on: { keydown: function (e) { if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && buttons[0]) { e.preventDefault(); buttons[0].click(); } } } });
       var hasPlace = !!(prior && Array.isArray(prior.items) && prior.items[prior.index || 0] && Number(prior.items[prior.index || 0].place) > 0);
       var resumable = prior && (prior.index > 0 || hasPlace) && !prior.finishedAt;
       // A finished run is still here: it can be seen (and saved) again. Unsaved results are never erased without asking.
@@ -9052,9 +10548,8 @@
       var overText = el('p', { id: 'start-over-text', tabindex: '-1', style: 'margin:0 0 8px', text: finished ? L.practice_again_confirm : L.start_over_confirm });
       var overKeep = el('button', { type: 'button', class: 'primary', 'data-start-over-keep': '', on: { click: function () { overBox.hidden = true; (buttons[0] || nameInput).focus(); } }, text: finished ? L.keep_results : L.keep_going });
       var overBox = el('div', { class: 'status warn', role: 'group', 'aria-labelledby': 'start-over-text', hidden: true, 'data-start-over-confirm': '',
-        on: { keydown: function (e) { if (e.key === 'Escape' || e.key === 'Esc') { e.preventDefault(); overKeep.click(); } } } }, [
+        on: { keydown: function (e) { if ((e.key === 'Escape' || e.key === 'Esc') && !e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); overKeep.click(); } } } }, [
         overText, el('div', { class: 'row' }, [overKeep, el('button', { type: 'button', 'data-start-over-yes': '', on: { click: function () { begin(false); } }, text: L.start_over })])]);
-      var buttons = [];
       if (finished) buttons.push(el('button', { class: 'primary', type: 'button', 'data-see-results': '', on: { click: function () { state = load() || prior; renderFinish(); } }, text: L.finish }));
       else if (resumable) buttons.push(el('button', { class: 'primary', type: 'button', 'data-continue': '', on: { click: function () { begin(true); } }, text: L.continue }));
       buttons.push(finished || resumable
@@ -9069,7 +10564,11 @@
         el('div', { class: 'card' }, [
           el('p', { text: L.intro }),
           // Whose answers Continue goes on with (the name field is left for the student now at the device).
-          resumable && prior.name ? el('p', { class: 'muted', 'data-continue-name': '', text: fmt(L.continue_whose, { name: prior.name }) }) : null,
+          resumable ? el('p', { class: 'muted', 'data-continue-note': '' }, [
+            prior.name ? el('span', { 'data-continue-name': '', text: fmt(L.continue_whose, { name: prior.name }) }) : null,
+            prior.name && items.length ? ' ' : null,
+            items.length ? el('span', { 'data-continue-progress': '', text: '(' + (items.every(function (e) { return e.activity === 'read_along'; }) ? 'Page ' : 'Question ') + Math.min((prior.index || 0) + 1, items.length) + ' of ' + items.length + ')' }) : null,
+          ]) : null,
           el('label', { for: 'learner-name', text: L.learner_label }), nameInput, namePrompt,
           el('div', { class: 'row', style: 'margin-top:16px' }, buttons), overBox,
         ]),
@@ -9104,7 +10603,7 @@
       var shownAt = Date.now();
       area.addEventListener('click', function (e) { if (e.isTrusted && Date.now() - shownAt < 250 && e.target && e.target.closest && e.target.closest('button')) { e.stopPropagation(); e.preventDefault(); } }, true);
       var handle = null;
-      var lapFrom = {};
+      var lapFrom = Object.create(null);
       var nextButton = el('button', { class: 'primary', type: 'button', hidden: true, 'data-next': '', on: { click: function () { state.index++; save(); renderItem(); } },
         text: state.index === items.length - 1 ? L.finish : L.next });
       var finishPractice = function () {
@@ -9113,7 +10612,7 @@
         save();
         if (handle && typeof handle.reveal === 'function') { try { handle.reveal(null); } catch (_) {} }
         nextButton.hidden = false;
-        nextButton.focus();
+        if (!silentFocus) nextButton.focus();
       };
       var finishItem = function (correct) {
         clockStop();
@@ -9121,17 +10620,42 @@
         save();
         if (handle && typeof handle.reveal === 'function') { try { handle.reveal(correct); } catch (_) {} }
         nextButton.hidden = false;
-        nextButton.focus();
+        if (!silentFocus) nextButton.focus();
+      };
+      var navOpts = pendingNav;
+      pendingNav = null;
+      var raEntries = entry.activity === 'read_along' ? items.filter(function (e) { return e.activity === 'read_along'; }) : null;
+      var gotoPage = function (idx, opts) {
+        var n = Math.floor(Number(idx));
+        if (!isFinite(n) || n < 0) return;
+        var targetIndex = raEntries ? (raEntries[n] ? items.indexOf(raEntries[n]) : -1) : n;
+        if (targetIndex < 0 || targetIndex >= items.length) return;
+        clockStop();
+        pendingNav = (opts && typeof opts === 'object') ? opts : null;
+        state.index = targetIndex;
+        save();
+        renderItem();
       };
       var ctx = {
-        root: area, el: el, fmt: fmt, L: L, item: item, matches: matches, showLetters: !!lesson.showLetters, skipDirections: skipDirections,
+        root: area, el: el, fmt: fmt, L: L, item: item, matches: matches, showLetters: !!lesson.showLetters, skipDirections: skipDirections, noFocus: silentFocus,
+        sessionCache: sessionCache, nav: navOpts, goto: gotoPage,
+        pages: raEntries ? raEntries.map(function (e) { return e.item; }) : undefined,
         soundGap: function () { return tools && tools.soundGap ? tools.soundGap() : 500; },
         slow: function () { return !!(tools && tools.slow && tools.slow()); },
         speedRate: function () { return tools && tools.speedRate ? tools.speedRate() : 1; },
         noVoice: function (on) { if (tools && tools.noVoice) tools.noVoice(on); },
         toolPref: function (k, v) { if (!tools) return null; if (arguments.length > 1) { if (tools.setExtra) tools.setExtra(k, v); return v ? 1 : 0; } return tools.getExtra ? tools.getExtra(k) : null; },
         place: function (v) { if (arguments.length > 0) { var n = Math.max(0, Math.floor(Number(v) || 0)); if (n > 0) rec.place = n; else delete rec.place; save(); return n; } return Math.max(0, Math.floor(Number(rec.place) || 0)); },
-        studentMic: kit.studentMic ? function (opts) { return kit.studentMic(doc, win, el, L, opts); } : null,
+        bookmark: function (v) {
+          if (arguments.length > 0) {
+            if (v == null) delete state.bookmark;
+            else state.bookmark = { page: Math.max(0, Math.floor(Number(v.page) || 0)), line: Math.max(0, Math.floor(Number(v.line) || 0)) };
+            save();
+            return state.bookmark || null;
+          }
+          return state.bookmark && typeof state.bookmark === 'object' ? state.bookmark : null;
+        },
+        studentMic: kit.studentMic ? function (opts) { return kit.studentMic(doc, win, el, L, Object.assign({ cache: sessionCache }, opts || {})); } : null,
         deviceVoice: kit.deviceVoice ? function (lang) { return kit.deviceVoice(win, lang, function () { return tools && tools.speedRate ? tools.speedRate() : 1; }); } : null,
         keys: function (handler) { if (keyItem) keyItem.keys = handler; },
         keypad: kit.keypad ? function (options) { var pad = kit.keypad(el, win, L, options); if (keyItem) keyItem.pad = pad; return pad; } : null,
@@ -9167,6 +10691,12 @@
           rec.attempts++;
           rec.responses.push(kind);
           rec.practice = kind;
+          if (options && options.quiet) {
+            clockLap();
+            rec.done = true; rec.correct = false; rec.firstTry = false;
+            save();
+            return;
+          }
           if (options && options.advance) {
             clockStop();
             rec.done = true; rec.correct = false; rec.firstTry = false;
@@ -9217,12 +10747,14 @@
       };
       // Where the student is in the whole file, when it has more than one activity.
       screen(entry.again ? fmt(L.again_of, { n: entry.n, total: entry.total }) : fmt(L.item_of, { activity: activityTitle(entry.activity), n: entry.n, total: entry.total }), [
-        entry.total < items.length ? el('p', { class: 'muted', 'data-progress': '', style: 'margin:0', text: fmt(L.progress_all, { n: state.index + 1, total: items.length }) }) : null,
+        entry.total < items.length ? el('p', { class: ownOrder ? '' : 'muted', 'data-progress': '', style: ownOrder ? 'margin:0;font-weight:700' : 'margin:0',
+          text: ownOrder ? 'Question ' + (state.index + 1) + ' of ' + items.length + ' (' + activityTitle(entry.activity) + ')' : fmt(L.progress_all, { n: state.index + 1, total: items.length }) }) : null,
         el('div', { class: 'progress', 'aria-hidden': 'true' }, [el('span', { style: 'width:' + Math.round(100 * (state.index + 1) / items.length) + '%' })]),
         el('div', { class: 'card' }, [area, feedback, nextButton]),
       ]);
       keyItem = { area: area, item: item, shownAt: shownAt, replay: function () { ctx.support('questionReplays'); } };
       try { handle = render(item, ctx) || null; } catch (err) { area.appendChild(statusLine(L.audio_missing, 'warn')); }
+      activeHandle = handle;
       keyItem.handle = handle;
       // Reopened on an answered item: show its outcome, do not ask again (except revisit-enabled pages like Read Along).
       if (rec.done) { if (!(handle && handle.allowRevisit)) { if (rec.practice) finishPractice(); else finishItem(rec.correct); } }
@@ -9318,7 +10850,8 @@
       var savingText = check ? L.saving_file : L.saving_work;
       var fileStatus = statusLine(state.sent ? fmt(L.sent, { receipt: state.sent }) : savingFile ? fmt(savingText, { file: savingFile }) : (storeOk ? L.saved_device : L.saved_device_off),
         state.sent ? 'ok' : (storeOk || savingFile ? '' : 'warn'));
-      var saying = function (name) { savingFile = name; if (!state.sent) { fileStatus.className = 'status'; fileStatus.textContent = fmt(savingText, { file: name }); announce(fileStatus.textContent); } };
+      var hideLast = function () { var ls = main.querySelector('[data-last-step]'); if (ls) ls.hidden = true; };
+      var saying = function (name) { savingFile = name; hideLast(); if (!state.sent) { fileStatus.className = 'status'; fileStatus.textContent = fmt(savingText, { file: name }); announce(fileStatus.textContent); } };
       // Older iPad Safari (before iOS 13) cannot download: show the results as
       // text to copy instead of a button that does nothing.
       var copyBox = el('div', { hidden: true, 'data-results-text': '' });
@@ -9337,9 +10870,14 @@
         var a = el('a', { download: name });
         if (!('download' in a) || !win.Blob || !win.URL || !win.URL.createObjectURL) { showText(L.copy_results, body.charCodeAt(0) === 0xFEFF ? body.slice(1) : body); return; }
         var url = win.URL.createObjectURL(new win.Blob([body], { type: type }));
-        a.setAttribute('href', url);
-        doc.body.appendChild(a); a.click(); a.remove();
-        win.setTimeout(function () { win.URL.revokeObjectURL(url); }, 60000);
+        try {
+          a.setAttribute('href', url);
+          doc.body.appendChild(a);
+          a.click();
+        } finally {
+          try { if (a.parentNode) a.parentNode.removeChild(a); } catch (_) {}
+          win.setTimeout(function () { try { win.URL.revokeObjectURL(url); } catch (_) {} }, 60000);
+        }
         state.savedFile = name; save();
         saying(name);
       };
@@ -9384,7 +10922,7 @@
           sendButton.setAttribute('aria-disabled', 'true');
           fileStatus.className = 'status'; fileStatus.textContent = L.sending; announce(L.sending);
           send().then(function (data) {
-            state.sent = String((data && data.filename) || 'ok').slice(0, 120); save();
+            state.sent = String((data && data.filename) || 'ok').slice(0, 120); save(); hideLast();
             fileStatus.className = 'status ok'; fileStatus.textContent = fmt(L.sent, { receipt: state.sent }); announce(fileStatus.textContent);
           }, function () {
             sendButton.removeAttribute('aria-disabled');
@@ -9405,7 +10943,7 @@
       var confirmText = el('p', { id: 'practice-again-text', tabindex: '-1', style: 'margin:0 0 8px', text: L.practice_again_confirm });
       var keepButton = el('button', { type: 'button', class: 'primary', 'data-practice-keep': '', on: { click: function () { confirmBox.hidden = true; againButton.focus(); } }, text: L.keep_results });
       var confirmBox = el('div', { class: 'status warn', role: 'group', 'aria-labelledby': 'practice-again-text', hidden: true, 'data-practice-confirm': '',
-        on: { keydown: function (e) { if (e.key === 'Escape' || e.key === 'Esc') { e.preventDefault(); keepButton.click(); } } } }, [
+        on: { keydown: function (e) { if ((e.key === 'Escape' || e.key === 'Esc') && !e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); keepButton.click(); } } } }, [
         confirmText,
         el('div', { class: 'row' }, [keepButton, el('button', { type: 'button', 'data-practice-start-over': '', on: { click: startOver }, text: L.start_over })]),
       ]);
@@ -9413,10 +10951,11 @@
         if (state.sent || state.savedFile) { startOver(); return; }
         confirmBox.hidden = false; confirmText.focus();
       } }, text: L.practice_again });
-      if (check) { check.finish({ send: sendButton, save: saveButton, csv: csvButton, copy: copyButton, more: more, about: info, status: fileStatus, copyBox: copyBox, note: closedNote || (sendButton ? L.send_note : L.not_sent) }); return; }
+      var qrBox = kit.qr && kit.qrLib && lesson.qr && lesson.qr.k ? kit.qr({ doc: doc, win: win, el: el, fmt: fmt, L: L, qr: lesson.qr, lib: kit.qrLib, getResult: resultFile, announce: announce, showText: showText }) : null;
+      if (check) { check.finish({ send: sendButton, save: saveButton, csv: csvButton, copy: copyButton, more: more, about: info, status: fileStatus, copyBox: copyBox, qr: qrBox, note: closedNote || (sendButton ? L.send_note : L.not_sent) }); return; }
       // A star for finishing (drawn by the style rules), and each activity's own result when the file has several.
       // In the file's own order, by id.
-      var recOf = {};
+      var recOf = Object.create(null);
       if (ownOrder) state.items.forEach(function (r) { if (r) recOf[r.itemId] = r; });
       var at = 0, tally = lesson.blocks.map(function (b) {
         var t = 0, f = 0, pt = 0, pd = 0;
@@ -9427,6 +10966,60 @@
       }).filter(Boolean);
       var practiceTotal = state.items.filter(function (r, i) { return !(items[i] && items[i].again) && (r.practice || (items[i] && items[i].activity === 'letter_tracing')); }).length;
       var againDone = state.items.filter(function (r, i) { return items[i] && items[i].again && r.done; }).length;
+      // 2026-11-22: Show my teacher — concise 3-second deskside conferencing summary inside a collapsed fold.
+      var conferCard = (function () {
+        var file = resultFile(), secs = Math.max(0, Math.round((Number(file.activeMs) || 0) / 1000));
+        var timeTxt = secs < 60 ? secs + ' s' : Math.floor(secs / 60) + ' min' + (secs % 60 ? ' ' + (secs % 60) + ' s' : '');
+        var meta = [];
+        if (file.learner) meta.push(file.learner);
+        meta.push(fmt(L.confer_time, { time: timeTxt }));
+        meta.push(s.items || !practiceTotal ? fmt(L.done_summary, { first: s.firstTry, total: s.items }) : fmt(L.done_practice, { done: s.practised, total: practiceTotal }));
+        var multiAct = lesson.blocks.length > 1, missedRows = [], retryRows = [];
+        file.items.forEach(function (it, i) {
+          if ((items[i] && items[i].again) || !it.done || it.practice || it.activity === 'letter_tracing') return;
+          if (!it.correct) missedRows.push({ kind: 'missed', it: it });
+          else if (!it.firstTry) retryRows.push({ kind: 'retry', it: it });
+        });
+        var focusRows = missedRows.concat(retryRows).map(function (row) {
+          var it = row.it, got = (it.responses || []).filter(Boolean).join(', '), parts = [];
+          if (got) parts.push(fmt(L.confer_answered, { got: got }));
+          if (it.target != null && String(it.target) !== '' && (row.kind === 'missed' || String(it.target) !== got)) parts.push(fmt(L.confer_expected, { want: String(it.target) }));
+          var title = (multiAct ? activityTitle(it.activity) + ': ' : '') + (it.word || ('#' + it.n));
+          return el('li', { 'data-confer-item': row.kind }, [
+            el('span', { class: 'confer-tag', text: row.kind === 'missed' ? L.confer_missed : L.confer_retry }),
+            el('b', { text: title }),
+            parts.length ? el('span', { text: ' — ' + parts.join(' · ') }) : null,
+          ]);
+        });
+        var supList = [], supSeen = Object.create(null), addSup = function (label) { if (label && !supSeen[label]) { supSeen[label] = 1; supList.push(label); } };
+        var prefs = tools && tools.prefs ? tools.prefs() : null;
+        if (prefs) {
+          var tMap = { size: L.tools_size, colors: L.tools_colors, spacing: L.tools_spacing, font: L.tools_font, focus: L.tools_focus, lens: L.tools_lens, choices: L.tools_choices, speed: L.tools_speed, sounds: L.tools_sounds, bold: L.tools_bold };
+          Object.keys(prefs).forEach(function (k) { if (tMap[k]) addSup(tMap[k]); });
+        }
+        var counts = Object.create(null), skipTool = /^(?:text(?:Larg|Extra)|contrast|colors|spacing(?:Wide|ExtraWide)$|letters|reading(?:Focus|Ruler)$|magnifier$|readChoices$|sounds(?:More|Less)$|boldStart$)/;
+        file.items.forEach(function (it) {
+          var sp = it.supports || {};
+          Object.keys(sp).forEach(function (k) {
+            var n = Number(sp[k]) || 0;
+            if (!(n > 0) || skipTool.test(k)) return;
+            var label = /^(wordReplays|questionReplays|replays)$/.test(k) ? 'Replayed audio' : k === 'hearAll' ? (L.hear_all || 'Hear all') : k === 'copied' ? 'Copied fact' : k.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/_/g, ' ');
+            counts[label] = (counts[label] || 0) + n;
+          });
+        });
+        Object.keys(counts).forEach(function (k) { addSup(k + ' (' + counts[k] + ')'); });
+        return el('details', { class: 'more-saves confer', 'data-teacher-confer': '' }, [
+          el('summary', { text: L.confer_open }),
+          el('p', { class: 'confer-meta', 'data-confer-head': '', text: meta.join(' · ') }),
+          s.items ? (focusRows.length ? el('div', { 'data-confer-focus': '' }, [
+            el('p', { style: 'margin:8px 0 4px;font-weight:700', text: L.confer_focus + ' (' + focusRows.length + ')' }),
+            el('ul', { class: 'confer-list' }, focusRows),
+          ]) : el('p', { 'data-confer-focus': '', text: L.confer_all_first })) : null,
+          el('p', { class: 'muted', 'data-confer-supports': '', text: supList.length ? fmt(L.confer_supports, { list: supList.join(', ') }) : L.confer_supports_none }),
+          qrBox,
+          el('p', { class: 'muted', style: 'margin:6px 0 0', text: L.confer_note }),
+        ]);
+      })();
       screen(L.done_title, [
         el('div', { class: 'card' }, [
           el('div', { class: 'hero' }, [el('span', { class: 'done-star', 'aria-hidden': 'true' }),
@@ -9444,6 +11037,7 @@
           el('div', { class: 'row', style: 'justify-content:center' }, [againButton]),
           confirmBox,
           copyBox,
+          conferCard,
           // For the adult beside the student: what the file is, the other ways to save, and About this file.
           el('details', { class: 'more-saves grown-ups', 'data-more-saves': '', 'data-grown-ups': '' }, [
             el('summary', { text: L.grown_ups }),
@@ -9456,13 +11050,14 @@
       ]);
     };
     // The reading tools, before the check's flow: their keys come first.
+    var savedTools = (stored() || {}).tools;
     var tools = kit.tools ? kit.tools({ doc: doc, win: win, L: L, el: el, page: doc.querySelector('main') || main.parentNode, app: main,
-      prefs: (stored() || {}).tools, store: function () { storePrefs(); }, save: function () { save(); },
+      prefs: savedTools !== undefined ? savedTools : (lesson.defaultTools && typeof lesson.defaultTools === 'object' ? lesson.defaultTools : undefined), store: function () { storePrefs(); }, save: function () { save(); },
       // Read the choices: in a file whose choices are read by the device voice, or whose opening does not play its sound choices.
       choices: lesson.blocks.some(function (b) { return /^(isolation|segmentation|mapping|syllable_blending)$/.test(b.activity) || b.items.some(function (it) { return it.read === true; }); }),
       directions: lesson.mode !== 'probe' && lesson.blocks.some(function (b) { return !/^(math_|vocab_|read_along$|symbol_runner$|manipulation$|sound_sort$|word_families$)/.test(b.activity); }),
       directionsOnce: !!lesson.instructionsOnce,
-      speed: Object.keys(lesson.audio || {}).length > 0 || lesson.blocks.some(function (b) { return b.items.some(function (it) { return it.read === true; }); }),
+      speed: Object.keys(lesson.audio || {}).length > 0 || lesson.deviceVoice === true || lesson.blocks.some(function (b) { return b.items.some(function (it) { return it.read === true; }); }),
       onSpeed: function (rate) { if (audioEl && !audioEl.paused) { try { audioEl.defaultPlaybackRate = rate; audioEl.playbackRate = rate; } catch (_) {} } },
       sounds: lesson.mode !== 'probe' && lesson.blocks.some(function (b) { return /^(blending|syllable_blending|segmentation)$/.test(b.activity); }) }) : null;
     stopBtn = el('button', { type: 'button', hidden: true, 'data-player-stop-audio': '', on: { click: function () {
@@ -9475,17 +11070,58 @@
     var toolBar = doc.querySelector('.lt-bar');
     if (toolBar) toolBar.appendChild(stopBtn);
     // A check (lesson.mode 'probe') brings its own flow in kit.check; a practice file has none.
+    var ensureNavState = function () {
+      if (state) return false;
+      var prior = load(), resumed = !!(prior && prior.startedAt && !prior.finishedAt);
+      state = resumed ? prior : fresh();
+      if (!state.name && givenName) state.name = givenName.slice(0, 60);
+      if (!state.startedAt) { var d = new Date(); state.startedAt = d.toISOString(); state.startedLocal = localIso(d); }
+      if (!state.sessionId) state.sessionId = uuid();
+      return !resumed;
+    };
     var check = kit.check ? kit.check({ doc: doc, win: win, lesson: lesson, L: L, kit: kit, items: items, renders: renders, matches: matches, el: el, fmt: fmt, announce: announce,
       screen: screen, statusLine: statusLine, fresh: fresh, save: save, now: now, clockStart: clockStart, clockStop: clockStop, clockHold: clockHold, play: play, playAll: playAll, stop: stop,
       hearAllIn: hearAllIn, autoHear: autoHear, givenName: function () { return givenName; },
+      handle: function (h) { activeHandle = h || null; }, noFocus: function () { return silentFocus; }, ensureNavState: ensureNavState,
       slow: function () { return !!(tools && tools.slow && tools.slow()); },
+      speedRate: function () { return tools && tools.speedRate ? tools.speedRate() : 1; },
+      toolPref: function (k, v) { if (!tools) return null; if (arguments.length > 1) { if (tools.setExtra) tools.setExtra(k, v); return v ? 1 : 0; } return tools.getExtra ? tools.getExtra(k) : null; },
       noVoice: function (on) { if (tools && tools.noVoice) tools.noVoice(on); },
       // Two tabs: held() is false in a copy that waits (or should); took() while Continue here reads the place.
       held: owned, took: function () { return tab.took; }, stored: function () { return storeOk; },
       state: function (next) { if (next !== undefined) state = next; return state; }, results: function () { return resultFile(); },
       renderStart: function () { renderStart(); }, renderFinish: function () { renderFinish(); } }) : null;
+    var previewNav = function (action, target) {
+      if (!items.length || !tab.owner) return;
+      silentFocus = true;
+      try {
+        if (check && check.nav) { check.nav(action, target); return; }
+        var go = function (i) { state.finishedAt = null; state.finishedLocal = ''; state.index = i; save(); renderItem(); };
+        if (action === 'prev') {
+          if (!state) { var p = load(); if (!p || !p.startedAt || p.finishedAt || !(p.index > 0)) return; state = p; }
+          if (state.finishedAt) { go(items.length - 1); return; }
+          if (state.index > 0) go(state.index - 1);
+        } else if (action === 'next') {
+          if (ensureNavState()) { go(0); return; }
+          if (state.finishedAt) return;
+          if (state.index + 1 >= items.length) { state.index = items.length; renderFinish(); } else go(state.index + 1);
+        } else if (action === 'goto') {
+          ensureNavState();
+          if (target === 'end' || Number(target) >= items.length) { state.index = items.length; renderFinish(); return; }
+          var idx = Math.floor(Number(target));
+          if (isFinite(idx)) go(Math.max(0, Math.min(idx, items.length - 1)));
+        }
+      } finally { silentFocus = false; }
+    };
     openTabs();
     renderStart();
+    var navGate = false;
+    try { readPlace(); } catch (_) { navGate = true; }
+    var navToken = navGate && linked() && link.nav ? link.nav : '';
+    if (navToken) win.addEventListener('message', function (e) {
+      var d = e && e.data;
+      if (e.source === win.parent && d && d.kind === 'alloflow-packet-nav' && d.token === navToken) previewNav(d.action, d.index);
+    });
     return { results: function () { return state && resultFile(); } };
   }
 
@@ -9577,9 +11213,89 @@
     // A short phone screen (2026-11-16, measured at 360 x 640: the Next key of a Missing Number check was 48 px below the
     // screen): the keys are 48 px tall, still a full touch target, and the spaces are a little smaller.
     '@media (max-width:480px) and (max-height:700px){.prompt{font-size:2.2rem;margin:4px 0 10px}.answer{font-size:1.6rem;padding:4px 12px}.pad{gap:8px;margin-top:10px}.pad button{min-height:48px}.timer{margin-bottom:8px}[data-step] .card{margin-top:8px}}',
-    '.pair{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;list-style:none;padding:0;margin:16px 0}.pair button{min-width:132px;min-height:132px;font-size:3rem;font-weight:700;border-width:4px}.pair button.right{border-color:var(--ok);background:var(--ok-bg)}',
+    '.pair{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;list-style:none;padding:0;margin:16px 0}.pair button{min-width:132px;min-height:132px;font-size:3rem;font-weight:700;border-width:4px}.pair button.right{border-color:var(--ok);background:var(--ok-bg);opacity:1;position:relative}.pair button.right::after{content:"\\2713";position:absolute;top:6px;inset-inline-end:8px;font-size:1.1rem;color:var(--ok)}@media (forced-colors:active){.pair button.right{outline:4px solid Highlight}.pair button.right::after{forced-color-adjust:none;background:Highlight;color:HighlightText;padding:1px 5px}}@media (max-width:480px){.pair{gap:14px}.pair button{min-width:min(132px,42vw);font-size:clamp(2rem,10vw,3rem)}}',
     '.scroll{overflow-x:auto}.review{width:100%;border-collapse:collapse;font-size:.95rem}.review th,.review td{border:1px solid var(--line);padding:6px 8px;text-align:start}.review td:nth-child(2),.review td:nth-child(5){white-space:nowrap}',
   ].join('\n');
+
+  // Sealed QR styles and UI: travel ONLY in a file made or sealed with a teacher QR public key.
+  var QR_CSS = [
+    '.qr-wrap{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}',
+    '.qr-panel{margin-top:10px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--soft);text-align:center}',
+    '.qr-frame{display:inline-block;padding:8px;background:#ffffff;border:1px solid #d5dbe3;border-radius:10px;forced-color-adjust:none}',
+    '.qr-img{display:block;width:min(280px,100%);height:auto;image-rendering:pixelated;image-rendering:crisp-edges;forced-color-adjust:none}',
+    '.qr-fp{margin:8px 0 4px;font-size:.9rem;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--ink)}',
+    '.qr-code{margin:8px 0;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.8rem;word-break:break-all;text-align:start;max-height:78px;overflow:auto;user-select:all}',
+    '@media (forced-colors:active){.qr-frame{background:#ffffff;border:2px solid CanvasText;forced-color-adjust:none}.qr-img{forced-color-adjust:none}}',
+    '@media print{.qr-frame,.qr-img{-webkit-print-color-adjust:exact;print-color-adjust:exact}}',
+  ].join('\n');
+
+  function takeHomeQr(opts) {
+    var doc = opts.doc, win = opts.win, el = opts.el, fmt = opts.fmt, L = opts.L, qr = opts.qr, lib = opts.lib;
+    var shown = false, currentCode = '';
+    var frame = el('div', { class: 'qr-frame', 'data-qr-frame': '' });
+    var fpLine = el('p', { class: 'qr-fp', 'data-qr-fp': '', text: 'Key ID: ' + (qr.fp || '') });
+    var noteLine = el('p', { class: 'muted', 'data-qr-note': '', text: fmt(L.qr_note, { fp: qr.fp || '' }) });
+    var trimLine = el('p', { class: 'muted', 'data-qr-trimmed': '', hidden: true, text: L.qr_trimmed });
+    var codeBox = el('pre', { class: 'qr-code', 'data-qr-code': '', tabindex: '0', 'aria-label': L.qr_title });
+    var status = el('p', { class: 'status', 'data-qr-status': '', role: 'status', 'aria-live': 'polite', hidden: true });
+    var clearFrame = function () {
+      while (frame.firstChild) frame.removeChild(frame.firstChild);
+      codeBox.textContent = '';
+      currentCode = '';
+    };
+    var setVisible = function (next) {
+      shown = !!next;
+      toggleBtn.setAttribute('aria-expanded', shown ? 'true' : 'false');
+      toggleBtn.textContent = shown ? L.qr_hide : L.qr_show;
+      panel.hidden = !shown;
+      status.hidden = true;
+      status.textContent = '';
+      if (!shown) { clearFrame(); return; }
+      try {
+        var sealed = lib.sealResult(opts.getResult(), qr.k);
+        currentCode = sealed.code;
+        while (frame.firstChild) frame.removeChild(frame.firstChild);
+        frame.appendChild(lib.qrImgEl(doc, sealed.code, fmt(L.qr_alt, { fp: sealed.fingerprint })));
+        fpLine.textContent = 'Key ID: ' + sealed.fingerprint;
+        noteLine.textContent = fmt(L.qr_note, { fp: sealed.fingerprint });
+        trimLine.hidden = !sealed.truncated;
+        codeBox.textContent = sealed.code;
+        opts.announce(fmt(L.qr_alt, { fp: sealed.fingerprint }));
+      } catch (_) {
+        clearFrame();
+        status.hidden = false;
+        status.className = 'status warn';
+        status.textContent = L.qr_error;
+        opts.announce(L.qr_error);
+      }
+    };
+    var toggleBtn = el('button', { type: 'button', 'data-qr-toggle': '', 'aria-expanded': 'false', on: { click: function () { setVisible(!shown); } }, text: L.qr_show });
+    var copyBtn = el('button', { type: 'button', 'data-qr-copy': '', on: { click: function () {
+      if (!currentCode) return;
+      var manual = function () { opts.showText(L.qr_copy_manual, currentCode); };
+      try {
+        win.navigator.clipboard.writeText(currentCode).then(function () {
+          status.hidden = false;
+          status.className = 'status ok';
+          status.textContent = L.qr_copied;
+          opts.announce(L.qr_copied);
+        }, manual);
+      } catch (_) { manual(); }
+    } }, text: L.qr_copy });
+    var hideBtn = el('button', { type: 'button', 'data-qr-hide': '', on: { click: function () { setVisible(false); toggleBtn.focus(); } }, text: L.qr_hide });
+    var panel = el('div', { class: 'qr-panel', 'data-qr-panel': '', hidden: true, on: { keydown: function (e) {
+      if ((e.key === 'Escape' || e.key === 'Esc') && !e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        setVisible(false);
+        toggleBtn.focus();
+      }
+    } } }, [
+      frame, fpLine, noteLine, trimLine, codeBox,
+      el('div', { class: 'row', style: 'justify-content:center' }, [copyBtn, hideBtn]),
+      status,
+    ]);
+    return el('div', { class: 'qr-wrap', 'data-qr-wrap': '' }, [toggleBtn, panel]);
+  }
 
   // Scrambled answers and the teacher-code lock. Used here to seal a check and
   // embedded in the file (toString) to read it back, so the two cannot differ.
@@ -9695,12 +11411,12 @@
   // scrambled form and the teacher code by its salted hash. Nothing here comes
   // from the clock: the same lesson and code make the same bytes.
   function sealCheck(lesson, adapters, teacherCode) {
-    var copy = JSON.parse(JSON.stringify(lesson));
+    var copy = JSON.parse(JSON.stringify(lesson), function (k, v) { return k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v; });
     var codec = checkCodec(sha256);
-    var seen = {};
+    var seen = Object.create(null);
     var minus = false;
     copy.blocks.forEach(function (block) {
-      var adapter = adapters[block.activity];
+      var adapter = Object.prototype.hasOwnProperty.call(adapters, block.activity) ? adapters[block.activity] : null;
       if (!adapter || typeof adapter.prepare !== 'function') throw new Error('Unknown check activity: ' + str(block.activity));
       block.items = (Array.isArray(block.items) ? block.items : []).map(function (raw, i) {
         var made = null;
@@ -9716,12 +11432,16 @@
     });
     var meta = copy.check = Object.assign({}, copy.check && typeof copy.check === 'object' ? copy.check : {});
     var content = JSON.stringify([copy.lessonId, copy.revision, copy.title, copy.form || '', copy.timeLimitS || null, copy.blocks]);
-    var lockSalt = sha256('alloflow-check-lock|' + content).hex.slice(0, 32);
+    var lockHashObj = sha256('alloflow-check-lock|' + content);
+    if (!lockHashObj || !lockHashObj.hex) throw new Error('Unable to compute SHA-256 for check sealing');
+    var lockSalt = lockHashObj.hex.slice(0, 32);
     var code = str(teacherCode).trim();
     if (code && (code.length < 4 || code.length > 64)) throw new Error('The teacher code needs 4 to 64 characters');
     meta.lock = code ? { salt: lockSalt, rounds: CHECK_ROUNDS, hash: codec.lockHash(code, lockSalt, CHECK_ROUNDS) } : null;
     // The file salt comes from the lesson and the code's hash, never from the clock.
-    meta.salt = sha256('alloflow-check-salt|' + content + '|' + (meta.lock ? meta.lock.hash : '')).hex.slice(0, 32);
+    var saltHashObj = sha256('alloflow-check-salt|' + content + '|' + (meta.lock ? meta.lock.hash : ''));
+    if (!saltHashObj || !saltHashObj.hex) throw new Error('Unable to compute SHA-256 for check salt');
+    meta.salt = saltHashObj.hex.slice(0, 32);
     meta.minus = minus;
     copy.blocks.forEach(function (block) {
       block.items.forEach(function (item) { item.key = codec.scramble(str(item.answer), meta.salt, item.id); delete item.answer; delete item.target; });
@@ -9756,31 +11476,34 @@
       return local.filter(function (v) { return match(v) === lang || match(v).indexOf(lang + '-') === 0; })[0] || null;
     };
     if (synth) { try { synth.cancel(); synth.getVoices(); } catch (_) {} }
-    var readers = [];
+    var readers = [], sayToken = 0, sayTimer = 0, sayEnd = null;
+    var clearSay = function () { if (sayTimer && view) { view.clearTimeout(sayTimer); sayTimer = 0; } var d = sayEnd; sayEnd = null; if (d) d(false); };
     var say = function (text) {
       return new Promise(function (resolve) {
+        clearSay();
         var v = synth ? voice() : null;
         if (!v) { resolve(false); return; }
-        var over = false, end = function () { if (!over) { over = true; resolve(true); } };
+        var tok = ++sayToken, over = false, end = function (ok) { if (over) return; over = true; if (sayTimer && view) { view.clearTimeout(sayTimer); sayTimer = 0; } if (sayEnd === end) sayEnd = null; resolve(ok !== false); };
+        sayEnd = end;
         try {
           synth.cancel();
           var u = new view.SpeechSynthesisUtterance(text);
           u.voice = v; u.lang = v.lang; u.rate = ctx.speedRate ? (ctx.speedRate() === 1 ? 0.9 : Math.max(0.5, Math.min(1.5, Math.round(ctx.speedRate() * 0.975 * 100) / 100))) : (ctx.slow && ctx.slow() ? 0.78 : 0.9);
-          u.onend = end; u.onerror = end;
+          u.onend = function () { end(tok === sayToken); }; u.onerror = function () { end(false); };
           synth.speak(u);
-        } catch (_) { end(); }
-        view.setTimeout(end, 2000 + String(text).length * 130);
+        } catch (_) { end(false); return; }
+        if (!over && view) sayTimer = view.setTimeout(function () { end(false); }, 2000 + String(text).length * 130);
       });
     };
     var wake = function () { if (!synth || !voice()) return; try { var u = new view.SpeechSynthesisUtterance(''); u.volume = 0; synth.speak(u); } catch (_) {} };
-    var hush = function () { if (synth) { try { synth.cancel(); } catch (_) {} } };
+    var hush = function (fromShell) { sayToken++; clearSay(); if (synth) try { synth.cancel(); } catch (_) {} if (!fromShell && ctx.stop) ctx.stop(); };
     var cleanSay = function (text) { return isPicture ? text : text.replace(/_{2,}/g, ', blank, '); };
     var sayChoice = function (c) { return c.audio ? ctx.play(c.audio) : say(cleanSay(c.text)); };
     var sayAsk = function () {
-      var question = L[P + 'question'];
-      if (isPicture && !pictured) return say(question);
-      if (item.askAudio) { wake(); return ctx.play(item.askAudio).then(function () { return say(question); }); }
-      return say(cleanSay(item.ask) + '. ' + question);
+      var q = L[P + 'question'];
+      if (isPicture && !pictured) return say(q);
+      if (item.askAudio) { var tok = ++sayToken; wake(); return Promise.resolve(ctx.play(item.askAudio)).then(function (ok) { return ok !== false && tok === sayToken && ctx.root.isConnected ? say(q) : false; }); }
+      return say(cleanSay(item.ask) + '. ' + q);
     };
     var reader = function (run, attrs, label, clipped) {
       var b = ctx.el('button', Object.assign({ type: 'button', hidden: true, on: { click: function () { ctx.support('readAloud'); hush(); run(); } } }, attrs), [label]);
@@ -9804,7 +11527,7 @@
       });
     };
     var picture = function (src, size) {
-      return ctx.el('img', { src: src || '', alt: '', style: 'display:block;margin:0 auto;width:' + size + 'px;height:' + size + 'px;max-width:100%;object-fit:contain;background:#fff;border-radius:10px;padding:6px' });
+      return ctx.el('img', { src: src || '', alt: '', style: 'display:block;margin:0 auto;width:min(100%,' + size + 'px);aspect-ratio:1/1;height:auto;object-fit:contain;background:#fff;border-radius:10px;padding:6px' });
     };
     ctx.root.appendChild(ctx.el('p', { class: 'muted', style: 'margin:0', text: L[P + 'question'] }));
     var shown = null;
@@ -9845,14 +11568,14 @@
       var b = pictured
         ? ctx.el('button', { type: 'button', 'data-choice': String(i + 1), 'aria-label': ctx.fmt(L[P + 'picture'], { n: i + 1 }), style: 'flex:1 1 auto;width:100%;min-height:140px;padding:8px',
           on: { click: function () { pick(i); } } }, [number, picture(ctx.image(c.image), 120)])
-        : ctx.el('button', { type: 'button', lang: item.lang || 'en', 'data-choice': String(i + 1), style: 'flex:1 1 auto;text-align:start;font-size:1.2rem;line-height:1.4;min-height:56px',
+        : ctx.el('button', { type: 'button', lang: item.lang || 'en', 'data-choice': String(i + 1), style: 'flex:1 1 200px;min-width:0;overflow-wrap:anywhere;text-align:start;font-size:1.2rem;line-height:1.4;min-height:56px',
           on: { click: function () { pick(i); } } }, isPicture ? [number, c.text] : [number].concat(marked(c.text)));
       var box = ctx.el('li', { class: 'choice', style: pictured ? '' : 'flex-direction:row;align-items:center;flex-wrap:wrap' }, [b,
         pictured ? null : reader(function () { sayChoice(c); }, { 'data-read-aloud': 'choice-' + (i + 1), 'aria-label': ctx.fmt(L[P + 'read_choice'], { n: i + 1 }), style: 'min-height:48px;padding:6px 12px' }, L[P + 'hear'], !!c.audio)]);
       boxes.push(box); picks.push(b); tried.push(false);
       list.appendChild(box);
     });
-    hear = !pictured && typeof ctx.hearAll === 'function' ? ctx.hearAll({ stop: hush, before: wake, ready: function () { return !hear.button.hidden && !ctx.isDone(); },
+    hear = !pictured && typeof ctx.hearAll === 'function' ? ctx.hearAll({ stop: function () { hush(true); }, before: wake, ready: function () { return !hear.button.hidden && !ctx.isDone(); },
       list: function () { return item.choices.map(function (c, i) { return { box: boxes[i], say: function () { return sayChoice(c); } }; }); } }) : null;
     if (hear) { readRow.appendChild(hear.button); readRow.appendChild(hear.note); }
     var sylMap = (item && item.syllables) || (ctx && ctx.syllables) || (typeof lesson !== 'undefined' && lesson && lesson.syllables) || null;
@@ -9927,31 +11650,33 @@
     ctx.root.appendChild(list);
     if (hasSyl && sylOn) applySyl(true);
     showReaders();
+    var stopEl = doc && doc.querySelector('[data-player-stop-audio]'), onStop = function () { hush(true); }, onVoices = null, unRetry = null;
+    if (stopEl) stopEl.addEventListener('click', onStop);
     if (synth) {
-      try { synth.onvoiceschanged = showReaders; } catch (_) {}
-      // Chrome and iPadOS may return [] from getVoices() until after the first user gesture: retry once.
+      onVoices = function () { if (ctx.root.isConnected) showReaders(); else if (synth.onvoiceschanged === onVoices) try { synth.onvoiceschanged = null; } catch (_) {} };
+      try { synth.onvoiceschanged = onVoices; } catch (_) {}
       if (!voice() && doc) {
-        var retried = false;
-        var retryVoices = function () {
-          if (retried) return;
-          retried = true;
-          ['pointerdown', 'keydown', 'click'].forEach(function (ev) { try { doc.removeEventListener(ev, retryVoices, true); } catch (_) {} });
-          if (!ctx.root.isConnected) return;
-          try { synth.getVoices(); } catch (_) {}
-          showReaders();
-        };
-        ['pointerdown', 'keydown', 'click'].forEach(function (ev) { try { doc.addEventListener(ev, retryVoices, true); } catch (_) {} });
+        var retried = false, evs = ['pointerdown', 'keydown', 'click'];
+        unRetry = function () { evs.forEach(function (ev) { try { doc.removeEventListener(ev, retryVoices, true); } catch (_) {} }); };
+        var retryVoices = function () { if (retried) return; retried = true; unRetry(); if (!ctx.root.isConnected) return; try { synth.getVoices(); } catch (_) {} showReaders(); };
+        evs.forEach(function (ev) { try { doc.addEventListener(ev, retryVoices, true); } catch (_) {} });
       }
     }
     if (typeof ctx.keys === 'function') ctx.keys(function (key) {
+      if (key === 'Escape' || key === 'Esc') { var b = !!(sayEnd || (synth && synth.speaking)); hush(); return b; }
       if (key === 'r' || key === 'R') return replayAsk();
       var n = Number(key);
       if (!(n >= 1 && n <= item.choices.length)) return false;
-      pick(n - 1);
-      return true;
+      pick(n - 1); return true;
     });
     return {
       replay: item.read ? replayAsk : null,
+      stop: function () {
+        hush();
+        if (stopEl) try { stopEl.removeEventListener('click', onStop); } catch (_) {}
+        if (synth && onVoices && synth.onvoiceschanged === onVoices) try { synth.onvoiceschanged = null; } catch (_) {}
+        if (unRetry) unRetry();
+      },
       reveal: function (answer) {
         var key = typeof answer === 'string' ? answer : item.answer;
         var filled = '';
@@ -9971,7 +11696,7 @@
             b.style.textUnderlineOffset = '4px';
           });
         }
-        if (shown) shown.setAttribute('alt', item.word);
+        if (shown) shown.setAttribute('alt', key || item.word);
       },
     };
   }
@@ -10038,6 +11763,9 @@
       lock: function () { locked = true; input.setAttribute('readonly', ''); next.setAttribute('aria-disabled', 'true'); } };
   }
 
+  // The clock (kept out of the function, so out of every file): deadline is wall-clock (Date.now) in saved state;
+  // while loaded, max(wall, performance.now) prevents clock-rollback and catches sleep. Wall lag > 2 s sets clock_changed.
+  // The countdown is plain text and a bar (no colour change or flashing; reduced motion updates every 5 s with no bar).
   function takeHomeCheck(api) {
     var doc = api.doc, win = api.win, lesson = api.lesson, L = api.L, kit = api.kit, items = api.items, el = api.el, fmt = api.fmt;
     var meta = lesson.check || {};
@@ -10051,17 +11779,8 @@
       if (!s.check.flags || typeof s.check.flags !== 'object') s.check.flags = {};
       return s.check;
     };
-    // The first screen of a check says what a check is; its button leads on to
-    // the practice items or to "Get ready", where Start begins the clock.
     L.intro = L.check_about; L.start = L.check_go_on;
 
-    // The clock. The deadline is a wall-clock time (Date.now) kept in the saved
-    // state, so a reload finds the time that is truly left. While the page
-    // stays loaded, time is also measured with performance.now and the LARGER
-    // of the two is used: setting the device clock back gives no time back, and
-    // a device that slept still loses the time it slept. A wall clock that falls
-    // more than 2 s behind is recorded as "clock_changed". (Running ahead is not:
-    // a phone that suspends the page stops performance.now, not the wall clock.)
     var wallNow = function () { try { return win.Date.now(); } catch (_) { return Date.now(); } };
     var anchor = { wall: wallNow(), perf: api.now() };
     var jumped = false;
@@ -10079,10 +11798,9 @@
       if (n % 60 === 0) return n === 60 ? L.check_one_minute : fmt(L.check_minutes, { n: n / 60 });
       return fmt(L.check_seconds, { n: n });
     };
-    // The reading tools' names in the supports (takeHomeTools), with the label words the teacher sees.
     var TOOLS = { textLarger: ['tools_size', 'tools_size_1'], textLargest: ['tools_size', 'tools_size_2'], textExtraLarge: ['tools_size', 'tools_size_3'], contrastHigh: ['tools_colors', 'tools_colors_1'],
       contrastSoft: ['tools_colors', 'tools_colors_2'], colorsDark: ['tools_colors', 'tools_colors_3'], colorsOcean: ['tools_colors', 'tools_colors_4'], colorsSunny: ['tools_colors', 'tools_colors_5'],
-      colorsForest: ['tools_colors', 'tools_colors_6'], colorsRose: ['tools_colors', 'tools_colors_7'], spacingWide: ['tools_spacing', 'tools_spacing_1'], lettersLexend: ['tools_font', 'tools_font_1'], lettersAtkinson: ['tools_font', 'tools_font_2'], lettersBook: ['tools_font', 'tools_font_3'], lettersRounded: ['tools_font', 'tools_font_4'], lettersMono: ['tools_font', 'tools_font_5'], lettersOpenDyslexic: ['tools_font', 'tools_font_6'], readingFocus: ['tools_focus'], readChoices: ['tools_choices'], magnifier: ['tools_lens'], boldStart: ['tools_bold'] };
+      colorsForest: ['tools_colors', 'tools_colors_6'], colorsRose: ['tools_colors', 'tools_colors_7'], spacingWide: ['tools_spacing', 'tools_spacing_1'], spacingExtraWide: ['tools_spacing', 'tools_spacing_2'], lettersLexend: ['tools_font', 'tools_font_1'], lettersAtkinson: ['tools_font', 'tools_font_2'], lettersBook: ['tools_font', 'tools_font_3'], lettersRounded: ['tools_font', 'tools_font_4'], lettersMono: ['tools_font', 'tools_font_5'], lettersOpenDyslexic: ['tools_font', 'tools_font_6'], readingFocus: ['tools_focus'], readingRuler: ['tools_focus', 'tools_focus_3'], readChoices: ['tools_choices'], magnifier: ['tools_lens'], boldStart: ['tools_bold'] };
     var answerOf = function (item) { return kit.codec.unscramble(item.key, meta.salt, item.id); };
     var markOf = function (entry, answer, response) {
       var scorer = kit.scorers && kit.scorers[entry.activity];
@@ -10091,16 +11809,13 @@
       return mark || { correct: String(response) === String(answer), digitsCorrect: null, digitsPossible: null };
     };
 
-    var current = null;   // the item on screen: { rec, at, keys, pad }
+    var current = null;
     var ticker = null, timerText = null, timerBar = null, shownSecond = -1, warned = false, lastSave = 0;
     var calm = false, touch = false;
     try { calm = win.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) {}
     try { touch = win.matchMedia('(hover: none) and (pointer: coarse)').matches; } catch (_) {}
-    // The countdown is plain text and a bar that shortens once a second: no
-    // colour change, no flashing. With reduced motion there is no bar and the
-    // text changes every 5 seconds. Screen readers hear the time only at the
-    // start, at 10 seconds left and at the end (the text is not a live region).
     var paint = function (left) {
+      if (doc && doc.hidden) return;
       var s = Math.max(0, Math.ceil(left / 1000));
       var shown = calm ? Math.ceil(s / 5) * 5 : s;
       if (shown === shownSecond) return;
@@ -10158,9 +11873,9 @@
     // Hardware keys on an item: the number pad, or the keys an activity asked for.
     doc.addEventListener('keydown', function (e) {
       var cur = current, sc = S() && S().check;
-      if (!cur || (sc && sc.pausedFrom) || e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+      if (!cur || (sc && sc.pausedFrom) || e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.repeat || e.isComposing || e.keyCode === 229) return;
       var t = e.target, tag = t && t.tagName ? String(t.tagName).toUpperCase() : '';
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable)) return;
       var key = String(e.key || '');
       if (cur.pad) {
         var k = /^[0-9]$/.test(key) ? key : key === 'Backspace' ? 'back' : key === '-' || key === String.fromCharCode(0x2212) ? 'minus' : key === 'Enter' && tag !== 'BUTTON' ? 'next' : '';
@@ -10175,10 +11890,20 @@
       if (current) current.pad = pad;
       return pad;
     } : null;
+    var tP = Object.create(null), speedOf = function () {
+      if (api.speedRate) return api.speedRate();
+      var b = doc && doc.querySelector('[data-tool^="speed-"][aria-pressed="true"]'), m = b && /(\d)$/.exec(b.getAttribute('data-tool') || '');
+      return m ? ([1, 0.8, 0.6, 1.25, 1.5][+m[1]] || 1) : (api.slow && api.slow() ? 0.8 : 1);
+    }, prefOf = function (k, v) {
+      if (api.toolPref) return arguments.length > 1 ? api.toolPref(k, v) : api.toolPref(k);
+      if (arguments.length > 1) return (tP[k] = v ? 1 : 0);
+      var s = S(); return k in tP ? tP[k] : (s && s.tools && s.tools[k] != null ? +!!s.tools[k] : null);
+    };
     var ctxFor = function (entry, rec, area, practice, answer) {
-      var ctx = { root: area, el: el, fmt: fmt, L: L, item: entry.item, matches: api.matches, showLetters: !!lesson.showLetters, check: true, practice: practice,
-        announce: api.announce, play: api.play, playAll: api.playAll, stop: api.stop, slow: api.slow, noVoice: api.noVoice,
-        hearAll: api.hearAllIn(area, function (name) { rec.supports[name] = (rec.supports[name] || 0) + 1; api.save(); }),
+      var mh = api.hearAllIn(area, function (name) { rec.supports[name] = (rec.supports[name] || 0) + 1; api.save(); });
+      var ctx = { root: area, el: el, fmt: fmt, L: L, item: entry.item, matches: api.matches, showLetters: !!lesson.showLetters, check: true, practice: practice, noFocus: !!(api.noFocus && api.noFocus()),
+        announce: api.announce, play: api.play, playAll: api.playAll, stop: api.stop, slow: api.slow, speedRate: speedOf, toolPref: prefOf, noVoice: api.noVoice,
+        hearAll: function (sp) { var h = mh(sp); if (current && h && h.halt) current.halts.push(h.halt); return h; },
         image: function (id) { return (id && lesson.images && lesson.images[id]) || null; },
         support: function (name) { rec.supports[name] = (rec.supports[name] || 0) + 1; api.save(); },
         isDone: function () { return rec.done; },
@@ -10192,6 +11917,8 @@
     var show = function (entry, rec, ctx) {
       var handle = null;
       try { handle = api.renders[entry.activity](entry.item, ctx) || null; } catch (_) {}
+      if (current) current.handle = handle;
+      if (api.handle) api.handle(handle);
       // Seen in an earlier opening of the file: the time on it counts from now.
       if (rec.shown) rec.flag = 'resumed';
       rec.shown = true; rec.ms = 0;
@@ -10231,7 +11958,7 @@
       api.screen(fmt(L.check_practice_title, { n: n, total: practiceTotal }), [
         el('div', { class: 'card' }, [el('p', { class: 'muted', text: L.check_practice_note }), area, feedback, next]),
       ]);
-      current = { rec: rec, at: api.now(), keys: null, pad: null };
+      current = { rec: rec, at: api.now(), keys: null, pad: null, halts: [], handle: null };
       handle = show(entry, rec, ctxFor(entry, rec, area, true, answer));
     };
     var readyScreen = function () {
@@ -10347,7 +12074,7 @@
       var pause = function (on) {
         var c2 = C();
         if (c2.phase !== 'run' || !c2.pausedFrom === !on) return;
-        if (on) { c2.pausedFrom = c2.seen = nowMs(); api.stop(); } else unpause(c2, nowMs());
+        if (on) { c2.pausedFrom = c2.seen = nowMs(); if (current) { current.halts.forEach(function (f) { try { f(); } catch (_) {} }); if (current.handle && current.handle.stop) try { current.handle.stop(); } catch (_) {} } api.stop(); } else unpause(c2, nowMs());
         api.clockHold(on); card.hidden = on; api.save();
         if (!on) tick();
       };
@@ -10366,7 +12093,7 @@
       };
       var stopButton = el('button', { type: 'button', 'data-stop': '', on: { click: function () { pause(true); stopBox.hidden = false; stopText.focus(); } }, text: L.check_stop });
       var stopBox = el('div', { class: 'status warn', role: 'group', 'aria-labelledby': 'check-stop-text', hidden: true, 'data-stop-confirm': '',
-        on: { keydown: function (e) { if (/^Esc/.test(e.key)) { e.preventDefault(); keep(); } } } }, [
+        on: { keydown: function (e) { if (/^Esc/.test(String(e.key || '')) && !e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); keep(); } } } }, [
         stopText,
         limitMs ? el('p', { style: 'margin:0 0 8px', 'data-stop-paused': '', text: L.check_paused }) : null,
         el('div', { class: 'row' }, [
@@ -10375,7 +12102,7 @@
         ]),
       ]);
       api.screen(fmt(L.check_item_of, { n: n, total: scoredTotal }), [timer, card, el('div', { class: 'row' }, [stopButton]), stopBox]);
-      current = { rec: rec, at: api.now(), keys: null, pad: null };
+      current = { rec: rec, at: api.now(), keys: null, pad: null, halts: [], handle: null };
       show(entry, rec, ctxFor(entry, rec, area, false, function (response) { return record(response, false); }));
     };
     // At the deadline the item on screen ends unanswered.
@@ -10524,9 +12251,24 @@
               : !it.attempts ? L.check_r_not_reached : it.correct ? L.check_r_right : L.check_r_wrong;
             return el('tr', {}, [cell(it.n), cell(it.word), cell((it.responses || []).join(' | ')), cell(result), cell(it.target), cell(Math.round((Number(it.ms) || 0) / 100) / 10)]);
           });
+          // 2026-11-22: glanceable coaching summary above the table on code-unlocked teacher review (uses <p>, not <li>).
+          var focusBox = !lock ? null : (function () {
+            var miss = f.items.filter(function (it) { return !it.practice && it.attempts > 0 && (!it.correct || it.flag === 'skipped'); });
+            if (!miss.length) return el('div', { class: 'confer-box', 'data-confer-focus': '' }, [el('p', { text: L.check_review_focus_none })]);
+            var shown = miss.slice(0, 12).map(function (it) {
+              var got = it.flag === 'skipped' ? L.check_r_skipped : (it.responses || []).join(' | ');
+              return '#' + it.n + ' ' + it.word + ' (' + (got ? fmt(L.confer_answered, { got: got }) + ', ' : '') + fmt(L.confer_expected, { want: it.target }) + ')';
+            });
+            if (miss.length > 12) shown.push('+' + (miss.length - 12) + ' more in table below');
+            return el('div', { class: 'confer-box', 'data-confer-focus': '' }, [
+              el('p', {}, [el('b', { text: fmt(L.check_review_focus, { n: miss.length }) })]),
+              el('p', { text: shown.join(' · ') }),
+            ]);
+          })();
           api.screen(L.check_review_title, [
             el('div', { class: 'card', 'data-review': lock ? '' : 'score-only' }, [
               el('ul', {}, lines.filter(Boolean).map(function (text) { return el('li', { text: text }); })),
+              focusBox,
               // A table wider than a phone scrolls sideways: the box takes the focus so the arrow keys can scroll it.
               !lock ? null : el('div', { class: 'scroll', tabindex: '0', role: 'region', 'aria-label': L.check_review_title }, [el('table', { class: 'review' }, [
                 el('thead', {}, [el('tr', {}, [L.check_col_n, L.check_col_prompt, L.check_col_response, L.check_col_result, L.check_col_expected, L.check_col_time]
@@ -10564,10 +12306,11 @@
               api.save();
             }, 30);
           };
-          code.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); tryCode(); } });
+          code.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); tryCode(); } });
           teacher = [el('h3', { style: 'margin:0 0 8px;font-size:1.1rem', text: L.check_teacher_title }), el('label', { for: 'teacher-code', text: L.check_teacher_code }),
             el('div', { class: 'row' }, [code, el('button', { type: 'button', 'data-teacher-show': '', on: { click: tryCode }, text: L.check_teacher_show })]), message];
         }
+        if (p.qr) teacher.push(p.qr);
         // Start over asks first when results have not been saved yet. Preserves baked-in givenName on personalized files; clears typed names on shared devices.
         var doAgain = function () {
           var next = api.fresh();
@@ -10579,7 +12322,7 @@
         var again = el('button', { type: 'button', 'data-check-again': '', on: { click: function () { if (s.sent || s.savedFile) { doAgain(); return; } againBox.hidden = false; againText.focus(); } }, text: L.check_again });
         var againNo = el('button', { type: 'button', class: 'primary', 'data-check-again-no': '', on: { click: function () { againBox.hidden = true; again.focus(); } }, text: L.check_again_no });
         var againBox = el('div', { class: 'status warn', role: 'group', 'aria-labelledby': 'check-again-text', hidden: true, 'data-check-again-confirm': '',
-          on: { keydown: function (e) { if (e.key === 'Escape' || e.key === 'Esc') { e.preventDefault(); againNo.click(); } } } }, [
+          on: { keydown: function (e) { if ((e.key === 'Escape' || e.key === 'Esc') && !e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); againNo.click(); } } } }, [
           againText,
           el('div', { class: 'row' }, [
             againNo,
@@ -10600,7 +12343,66 @@
           p.about.panel,
         ]);
       },
+      nav: function (action, target) {
+        if (!items.length) return;
+        var firstScored = items.length, lastScored = -1;
+        for (var i = 0; i < items.length; i++) if (!items[i].item.practice) { if (firstScored === items.length) firstScored = i; lastScored = i; }
+        var reset = function (idx) { var r = S() && S().items[idx]; if (r) { r.done = false; r.attempts = 0; r.responses = []; delete r.flag; } };
+        var enter = function (phase, idx) {
+          api.ensureNavState();
+          var s2 = S(), c2 = C(), t = nowMs();
+          if (ticker) { win.clearInterval(ticker); ticker = null; }
+          api.stop(); api.clockStop(); current = null;
+          if (phase === 'run') {
+            if (c2.phase !== 'run') {
+              c2.phase = 'run';
+              if (!c2.t0) c2.t0 = t;
+              if (limitMs && (!c2.deadline || c2.deadline <= t + 5000)) c2.deadline = t + limitMs;
+              c2.seen = t; c2.hiddenFrom = c2.pausedFrom = c2.completion = c2.end = null;
+              if (!c2.attempt) { var who = 't' + kit.hash(String(s2.name || '').trim().toLowerCase()); s2.tries = s2.tries || {}; c2.attempt = (Number(s2.tries[who]) || 0) + 1; s2.tries[who] = c2.attempt; }
+            } else if (c2.pausedFrom) { unpause(c2, t); api.clockHold(false); }
+          } else {
+            c2.phase = phase; c2.pausedFrom = c2.hiddenFrom = c2.completion = c2.end = null;
+          }
+          s2.finishedAt = null; s2.finishedLocal = ''; s2.index = idx;
+          if (idx < items.length && phase !== 'ready') reset(idx);
+          api.save();
+          if (phase === 'run') { startTicker(); if (idx < items.length) runItem(); }
+          else if (phase === 'practice') practiceItem();
+          else readyScreen();
+        };
+        var s = S(), c = s && s.check;
+        if (action === 'next') {
+          if (!s || !c || !c.phase) { enter(practiceTotal > 0 ? 'practice' : 'run', practiceTotal > 0 ? 0 : firstScored); return; }
+          if (c.phase === 'done') return;
+          if (c.phase === 'practice') { var np = s.index + 1; enter(np < items.length && items[np].item.practice ? 'practice' : 'ready', np < items.length && items[np].item.practice ? np : firstScored); return; }
+          if (c.phase === 'ready') { enter('run', firstScored); return; }
+          var nr = s.index + 1;
+          while (nr < items.length && items[nr].item.practice) nr++;
+          if (nr >= items.length) finishRun('complete'); else enter('run', nr);
+        } else if (action === 'prev') {
+          if (!s || !c || !c.phase) return;
+          if (c.phase === 'done') { if (lastScored >= 0) enter('run', lastScored); else enter('practice', items.length - 1); }
+          else if (c.phase === 'ready') { if (practiceTotal > 0) enter('practice', practiceTotal - 1); }
+          else if (s.index > 0) enter(items[s.index - 1].item.practice ? 'practice' : 'run', s.index - 1);
+        } else if (action === 'goto') {
+          if (target === 'end' || Number(target) >= items.length) { enter('run', items.length); finishRun('complete'); return; }
+          var gi = Math.floor(Number(target));
+          if (!isFinite(gi)) return;
+          gi = Math.max(0, Math.min(gi, items.length - 1));
+          enter(items[gi].item.practice ? 'practice' : 'run', gi);
+        }
+      },
     };
+  }
+
+  function resolveQrCrypto(opts) {
+    if (opts && opts.qrCrypto && typeof opts.qrCrypto.parsePublicKey === 'function') return opts.qrCrypto;
+    if (root && root.AlloPacketQrCrypto && typeof root.AlloPacketQrCrypto.parsePublicKey === 'function') return root.AlloPacketQrCrypto;
+    if (typeof require === 'function') {
+      try { return require('./packets_qr_crypto.js'); } catch (_) {}
+    }
+    return null;
   }
 
   function buildHtml(lesson, options) {
@@ -10618,10 +12420,20 @@
     // A check never shows a word's picture, so it carries none.
     if (probe && (lesson.pictures || hasWordPictures(lesson))) lesson = withoutWordPictures(lesson);
     if (probe) lesson = sealCheck(lesson, adapters, opts.teacherCode);
+    // Optional zero-network sealed QR results (opt-in via opts.qrPublicKey: AFPK1....).
+    var qrCrypto = null, qrSpec = null;
+    if (opts.qrPublicKey) {
+      qrCrypto = resolveQrCrypto(opts);
+      if (!qrCrypto || typeof qrCrypto.studentEmbedSource !== 'function') throw new Error('buildHtml with qrPublicKey needs AlloPacketQrCrypto');
+      qrSpec = qrCrypto.parsePublicKey(opts.qrPublicKey);
+      if (!qrSpec) throw new Error('Invalid teacher QR public key (expected AFPK1....)');
+      lesson = Object.assign({}, lesson, { qr: { k: qrSpec.publicKey, fp: qrSpec.fingerprint } });
+    }
     // Word pictures: their words and their code travel only in a practice file that has some.
     var pictured = !probe && !!lesson.pictures && !!lesson.pictures.rule && hasWordPictures(lesson);
     var labels = Object.assign({}, DEFAULT_LABELS, probe ? CHECK_LABELS : {}, pictured ? PICTURE_LABELS : {});
     used.forEach(function (id) { Object.assign(labels, adapters[id].labels || {}); labels[id + '_title'] = labels[id + '_title'] || adapters[id].title; });
+    if (qrSpec) Object.assign(labels, QR_LABELS);
     Object.assign(labels, opts.labels || {});
     // 2026-11-17: the practice end screen got words of its own that day (save_work, saving_work, grown_ups,
     // grown_ups_file). A translation made before them has none: its file keeps the words it does have for the same
@@ -10632,9 +12444,10 @@
     if (given.more_saves && !given.grown_ups) { labels.grown_ups = given.more_saves; if (!given.grown_ups_file) labels.grown_ups_file = ''; }
     // A sound's name (ctx.sound) shows only with letters on: other files do not carry the words.
     if (!lesson.showLetters) Object.keys(labels).forEach(function (k) { if (/^sound_name_/.test(k)) delete labels[k]; });
-    var stripSrc = function (fn) { return fn.toString().replace(/^[ \t]*\/\/[^\n]*\n/gm, '').replace(/\n +/g, '\n'); };
+    var stripSrc = function (fn) { return fn.toString().replace(/^[ \t]*\/\/[^\n]*\n/gm, '').replace(/\n[ \t]+/g, '\n').replace(/\n{2,}/g, '\n'); };
     var renders = '{' + used.map(function (id) { return JSON.stringify(id) + ':' + stripSrc(adapters[id].render); }).join(',\n') + '}';
     var pictureParts = pictured ? 'renders=(' + takeHomePictures.toString() + ')(renders,lesson.pictures.rule,labels);\n' : '';
+    var qrParts = !qrSpec ? '' : '/*afqr-start*/kit.qrLib=' + qrCrypto.studentEmbedSource() + ';\nkit.qr=' + stripSrc(takeHomeQr) + ';\n/*afqr-end*/\n';
     // A check carries its own flow, the SHA-256 that reads its answers and the
     // scoring of its activities. TextEncoder is stood in for where a browser
     // has none, so the answers can always be read.
@@ -10643,22 +12456,25 @@
       + sha256.toString() + ';})();\nkit.codec=(' + checkCodec.toString() + ')(kit.sha);\nkit.score=' + checkScore.toString()
       + ';\nkit.scorers={' + used.map(function (id) { return JSON.stringify(id) + ':' + (typeof adapters[id].score === 'function' ? adapters[id].score.toString() : 'null'); }).join(',\n')
       + '};\nkit.check=' + takeHomeCheck.toString() + ';\n';
+    var hasReadAlong = used.indexOf('read_along') >= 0;
+    var hasRaPos = hasReadAlong && lesson.blocks.some(function (b) { return b.activity === 'read_along' && b.items.some(function (it) { return Array.isArray(it.lines) && it.lines.some(function (l) { return !!l.pos; }); }); });
+    var hasRaChecks = hasReadAlong && lesson.blocks.some(function (b) { return b.activity === 'read_along' && b.items.some(function (it) { return Array.isArray(it.questions) && it.questions.length; }); });
     var hasVocab = used.some(function (id) { return /^vocab_/.test(id); });
     var hasKeypad = used.some(function (id) { return /^(math_|missing_number$)/.test(id); });
-    var hasStudentMic = !probe && lesson.studentMic === true && used.indexOf('read_along') >= 0;
-    var hasDeviceVoice = !probe && lesson.deviceVoice === true && used.indexOf('read_along') >= 0;
+    var hasStudentMic = !probe && lesson.studentMic === true && hasReadAlong;
+    var hasDeviceVoice = !probe && lesson.deviceVoice === true && hasReadAlong;
     var sharedParts = (hasVocab ? 'kit.vocabChoice=' + stripSrc(takeHomeVocab) + ';\n' : '')
       + (hasKeypad ? 'kit.keypad=' + stripSrc(takeHomeKeypad) + ';\n' : '')
       + (hasStudentMic ? 'kit.studentMic=' + stripSrc(takeHomeStudentMic) + ';\n' : '')
       + (hasDeviceVoice ? 'kit.deviceVoice=' + stripSrc(takeHomeDeviceVoice) + ';\n' : '');
-    var mailbox = lesson.submit && /^https:\/\/script\.google\.com\//.test(lesson.submit.url);
+    var mailbox = lesson.submit && /^https:\/\/script\.google\.com\/(?:a\/macros\/[A-Za-z0-9.-]+\/|macros\/)s\/[A-Za-z0-9_-]+\/exec$/.test(str(lesson.submit.url));
     var connect = mailbox ? 'https://script.google.com https://script.googleusercontent.com' : "'none'";
     // The mailbox code travels only in a file that has a mailbox. Line ends are
     // made \n because the browser reads them so, and the script is allowed by
     // its exact hash. The reading tools go in every file, without their indentation (1 KB less).
     var script = ('\n(function(){"use strict";\nvar lesson=' + safeJson(lesson) + ';\nvar labels=' + safeJson(labels) + ';\nvar matches=' + (hasCore ? core.soundAnswerMatches.toString() : 'null')
-      + ';\nvar renders=' + renders + ';\nvar kit={csv:' + packetCsv.toString() + ',\nhash:' + hashText.toString() + ',\ntools:' + takeHomeTools.toString().replace(/\n +/g, '\n') + ',\nmailbox:' + (mailbox ? takeHomeMailbox.toString() : 'null')
-      + '};\n' + sharedParts + checkParts + pictureParts + '(' + stripSrc(takeHomeShell) + ')(document,window,lesson,labels,matches,renders,kit);\n})();\n').replace(/\r\n?/g, '\n');
+      + ';\nvar renders=' + renders + ';\nvar kit={csv:' + stripSrc(packetCsv) + ',\nhash:' + stripSrc(hashText) + ',\ntools:' + stripSrc(takeHomeTools) + ',\nmailbox:' + (mailbox ? stripSrc(takeHomeMailbox) : 'null')
+      + '};\n' + sharedParts + checkParts + pictureParts + qrParts + '(' + stripSrc(takeHomeShell) + ')(document,window,lesson,labels,matches,renders,kit);\n})();\n').replace(/\r\n?/g, '\n');
     var digest = sha256(script);
     var csp = "default-src 'none'; script-src " + (digest ? "'sha256-" + digest.base64 + "'" : "'unsafe-inline'") + "; style-src 'unsafe-inline'; media-src data: blob:; img-src data:" + (FONT_CSS ? '; font-src data:' : '')
       + "; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none'; connect-src " + connect;
@@ -10679,6 +12495,9 @@
       integrity: 'Each saved file carries a check value (SHA-256, or FNV-1a where the browser cannot make SHA-256). It detects accidental edits, not deliberate ones.',
       csp: csp, scriptSha256: digest ? digest.hex : '', licence: 'AGPL-3.0', licenceUrl: 'gnu.org/licenses/agpl-3.0.html', source: 'github.com/Apomera/AlloFlow', attributions: Array.isArray(opts.attributions) ? opts.attributions.map(str) : [], fonts: FONT_CREDIT || undefined,
     };
+    if (qrSpec) {
+      manifest.qr = { keyFingerprint: qrSpec.fingerprint, algorithm: 'X25519+HKDF-SHA256+ChaCha20-Poly1305', network: 'none' };
+    }
     if (hasStudentMic) {
       manifest.microphone = 'Optional student voice practice: asks for the microphone only when the student presses Record my voice, keeps the recording in tab memory only until cleared or closed, and never saves or sends it.';
     }
@@ -10699,7 +12518,7 @@
       + '<meta name="viewport" content="width=device-width,initial-scale=1">'
       + '<meta http-equiv="Content-Security-Policy" content="' + csp + '">'
       + '<meta name="generator" content="' + PLAYER + '">'
-      + '<title>' + escapeHtml(lesson.title) + '</title><style>' + (FONT_CSS ? FONT_CSS + '\n' : '') + CSS + (probe ? '\n' + CHECK_CSS : '') + '</style></head>'
+      + '<title>' + escapeHtml(lesson.title) + '</title><style>' + (FONT_CSS ? FONT_CSS + '\n' : '') + CSS + (hasReadAlong ? '\n' + RA_CSS : '') + (hasRaPos ? '\n' + RA_POS_CSS : '') + (hasRaChecks ? '\n' + RA_CHECKS_CSS : '') + (probe ? '\n' + CHECK_CSS : '') + (qrSpec ? '\n/*afqr-css*/\n' + QR_CSS + '\n/*end-afqr-css*/' : '') + '</style></head>'
       // #app holds a plain note for previews that do not run the file (Drive, Classroom, iPad Files);
       // the player replaces it as soon as it starts.
       + '<body><main><h1>' + escapeHtml(lesson.title) + '</h1><div id="app"><p data-no-script>' + escapeHtml(labels.no_script) + '</p>' + (openHere ? '<p data-no-script data-open-here>' + escapeHtml(openHere) + '</p>' : '') + '</div><p id="live" class="sr" aria-live="polite"></p></main>'
@@ -10707,11 +12526,102 @@
       + '<script>' + script + '</script></body></html>';
   }
 
+  // Attach (or replace) a teacher's sealed QR public key (AFPK1....) on any existing AlloFlow packet HTML offline.
+  // Keeps connect-src unchanged (none on standard packets), updates CSP script-src sha256 and #packet-manifest.
+  function attachQrKey(packetHtml, qrPublicKey, options) {
+    var opts = options || {};
+    var qrCrypto = resolveQrCrypto(opts);
+    if (!qrCrypto || typeof qrCrypto.studentEmbedSource !== 'function') return { ok: false, error: 'no_crypto', message: 'Sealed QR crypto helper is unavailable.' };
+    var qrSpec = qrCrypto.parsePublicKey(qrPublicKey);
+    if (!qrSpec) return { ok: false, error: 'invalid_key', message: 'Enter a valid teacher public key starting with AFPK1.' };
+    var html = String(packetHtml || '');
+    var manifestOpen = '<script type="application/json" id="packet-manifest">';
+    var mStart = html.indexOf(manifestOpen);
+    if (mStart < 0) return { ok: false, error: 'not_packet', message: 'This file does not look like an AlloFlow packet (missing packet-manifest).' };
+    var mBodyStart = mStart + manifestOpen.length;
+    var mEnd = html.indexOf('</script>', mBodyStart);
+    if (mEnd < 0) return { ok: false, error: 'not_packet', message: 'Could not read the packet manifest.' };
+    var scriptTag = '<script>';
+    var sStart = html.indexOf(scriptTag, mEnd + 9);
+    var sEnd = sStart >= 0 ? html.lastIndexOf('</script>') : -1;
+    if (sStart < 0 || sEnd <= sStart) return { ok: false, error: 'not_packet', message: 'Could not locate the packet script.' };
+    var styleStart = html.indexOf('<style>');
+    var styleEnd = styleStart >= 0 ? html.indexOf('</style>', styleStart) : -1;
+    if (styleStart < 0 || styleEnd <= styleStart) return { ok: false, error: 'not_packet', message: 'Could not locate packet styles.' };
+    var cspRe = /(<meta\s+http-equiv="Content-Security-Policy"\s+content=")([^"]+)(")/i;
+    var cspMatch = cspRe.exec(html);
+    if (!cspMatch) return { ok: false, error: 'not_packet', message: 'Could not locate the packet security policy.' };
+
+    var manifestObj;
+    try { manifestObj = JSON.parse(html.slice(mBodyStart, mEnd)); }
+    catch (_) { return { ok: false, error: 'not_packet', message: 'Could not parse the packet manifest JSON.' }; }
+    if (!manifestObj || manifestObj.kind !== 'alloflow-packet-manifest') {
+      return { ok: false, error: 'not_packet', message: 'This file is not an AlloFlow packet.' };
+    }
+
+    var rawScript = html.slice(sStart + scriptTag.length, sEnd).replace(/\r\n?/g, '\n');
+    var shellIdx = rawScript.lastIndexOf('(function takeHomeShell(');
+    if (shellIdx < 0) return { ok: false, error: 'not_packet', message: 'Could not find the packet player script.' };
+    if (rawScript.slice(shellIdx).indexOf('kit.qr') < 0) {
+      return { ok: false, error: 'older_packet', message: 'This packet was made with an older version of AlloFlow. Remake it to enable sealed QR results.' };
+    }
+    var lessonMark = 'var lesson=', labelsMark = ';\nvar labels=', matchesMark = ';\nvar matches=';
+    var l0 = rawScript.indexOf(lessonMark);
+    var l1 = l0 >= 0 ? rawScript.indexOf(labelsMark, l0 + lessonMark.length) : -1;
+    var l2 = l1 >= 0 ? rawScript.indexOf(matchesMark, l1 + labelsMark.length) : -1;
+    if (l0 < 0 || l1 < 0 || l2 < 0) return { ok: false, error: 'not_packet', message: 'Could not read the lesson data inside this packet.' };
+
+    var lessonObj, labelsObj;
+    try {
+      lessonObj = JSON.parse(rawScript.slice(l0 + lessonMark.length, l1));
+      labelsObj = JSON.parse(rawScript.slice(l1 + labelsMark.length, l2));
+    } catch (_) {
+      return { ok: false, error: 'not_packet', message: 'Could not parse the lesson or labels inside this packet.' };
+    }
+    lessonObj.qr = { k: qrSpec.publicKey, fp: qrSpec.fingerprint };
+    Object.keys(QR_LABELS).forEach(function (k) { if (labelsObj[k] == null) labelsObj[k] = QR_LABELS[k]; });
+    var stripSrc = function (fn) { return fn.toString().replace(/^[ \t]*\/\/[^\n]*\n/gm, '').replace(/\n[ \t]+/g, '\n').replace(/\n{2,}/g, '\n'); };
+    var qrParts = '/*afqr-start*/kit.qrLib=' + qrCrypto.studentEmbedSource() + ';\nkit.qr=' + stripSrc(takeHomeQr) + ';\n/*afqr-end*/\n';
+
+    var updatedScript = rawScript.slice(0, l0 + lessonMark.length)
+      + safeJson(lessonObj)
+      + labelsMark + safeJson(labelsObj)
+      + rawScript.slice(l2);
+    updatedScript = updatedScript.replace(/\/\*afqr-start\*\/[\s\S]*?\/\*afqr-end\*\/\n?/g, '');
+    var newShellIdx = updatedScript.lastIndexOf('(function takeHomeShell(');
+    updatedScript = updatedScript.slice(0, newShellIdx) + qrParts + updatedScript.slice(newShellIdx);
+    updatedScript = updatedScript.replace(/\r\n?/g, '\n');
+
+    var digest = sha256(updatedScript);
+    if (!digest) return { ok: false, error: 'no_sha', message: 'Could not compute the packet script hash in this browser.' };
+
+    var oldCsp = cspMatch[2];
+    var newCsp = /'sha256-[A-Za-z0-9+/=]+'/.test(oldCsp)
+      ? oldCsp.replace(/'sha256-[A-Za-z0-9+/=]+'/, function () { return "'sha256-" + digest.base64 + "'"; })
+      : oldCsp.replace(/script-src\s+[^;]+/, function () { return "script-src 'sha256-" + digest.base64 + "'"; });
+
+    manifestObj.csp = newCsp;
+    manifestObj.scriptSha256 = digest.hex;
+    manifestObj.qr = { keyFingerprint: qrSpec.fingerprint, algorithm: 'X25519+HKDF-SHA256+ChaCha20-Poly1305', network: 'none' };
+
+    var oldStyle = html.slice(styleStart + 7, styleEnd).replace(/\n?\/\*afqr-css\*\/[\s\S]*?\/\*end-afqr-css\*\//g, '');
+    var newStyle = oldStyle + '\n/*afqr-css*/\n' + QR_CSS + '\n/*end-afqr-css*/';
+
+    // Splice regions from back to front so offsets never shift.
+    var out = html.slice(0, sStart + scriptTag.length) + updatedScript + html.slice(sEnd);
+    out = out.slice(0, mBodyStart) + safeJson(manifestObj) + out.slice(mEnd);
+    out = out.slice(0, styleStart + 7) + newStyle + out.slice(styleEnd);
+    var c2 = cspRe.exec(out);
+    out = out.slice(0, c2.index) + c2[1] + newCsp + c2[3] + out.slice(c2.index + c2[0].length);
+    return { ok: true, html: out, fingerprint: qrSpec.fingerprint, scriptSha256: digest.hex, title: str(lessonObj.title || manifestObj.title || '') };
+  }
+
   // Teacher side: read returned result files (v1 Find Sounds files too).
   // Anything that is not exactly a result file is rejected with a reason.
   function parseResult(text) {
+    var blockedKey = function (k) { return k === '__proto__' || k === 'constructor' || k === 'prototype'; };
     var data;
-    try { data = typeof text === 'string' ? JSON.parse(text) : text; } catch (_) { return { ok: false, error: 'not_json' }; }
+    try { data = typeof text === 'string' ? JSON.parse(text, function (k, v) { return blockedKey(k) ? undefined : v; }) : text; } catch (_) { return { ok: false, error: 'not_json' }; }
     if (data && data.kind === 'alloflow-take-home-submission' && data.takeHomeResult) data = data.takeHomeResult;
     if (!data || data.kind !== RESULT_KIND) return { ok: false, error: 'not_a_result' };
     if (data.schemaVersion !== 1 && data.schemaVersion !== 2 && data.schemaVersion !== RESULT_SCHEMA) return { ok: false, error: 'unsupported_version' };
@@ -10746,15 +12656,17 @@
           var out = {};
           if (s && typeof s === 'object' && !Array.isArray(s)) Object.keys(s).slice(0, 12).forEach(function (k) {
             var n = Number(s[k]);
-            if (/^[A-Za-z_]{1,40}$/.test(k) && Number.isFinite(n) && n > 0) out[k] = Math.min(999, Math.floor(n));
+            if (!blockedKey(k) && /^[A-Za-z_]{1,40}$/.test(k) && Number.isFinite(n) && n > 0) out[k] = Math.min(999, Math.floor(n));
           });
           return out;
         })(it && it.supports) };
     });
     var summary = { items: 0, done: 0, firstTry: 0, afterRetry: 0, missed: 0, practised: 0 };
-    var byActivity = {};
+    var byActivityMap = Object.create(null);
     items.forEach(function (r) {
-      var a = byActivity[r.activity] || (byActivity[r.activity] = { items: 0, done: 0, firstTry: 0, afterRetry: 0, missed: 0, practised: 0 });
+      var actKey = blockedKey(r.activity) ? 'invalid' : r.activity;
+      if (actKey !== r.activity) r.activity = actKey;
+      var a = byActivityMap[actKey] || (byActivityMap[actKey] = { items: 0, done: 0, firstTry: 0, afterRetry: 0, missed: 0, practised: 0 });
       // Practice (Letter Trace) is reported, never scored.
       if (r.practice || r.activity === 'letter_tracing') { if (r.done) { summary.practised++; a.practised++; } return; }
       summary.items++;
@@ -10763,10 +12675,13 @@
       summary.done++; a.done++;
       if (r.firstTry) { summary.firstTry++; a.firstTry++; } else if (r.correct) { summary.afterRetry++; a.afterRetry++; } else { summary.missed++; a.missed++; }
     });
+    var byActivity = Object.assign({}, byActivityMap);
     var titles = {};
     Object.keys(byActivity).forEach(function (id) {
-      var given = data.activityTitles && typeof data.activityTitles === 'object' ? data.activityTitles[id] : null;
-      titles[id] = str(given || (ADAPTERS[id] && ADAPTERS[id].title) || (id === 'isolation' ? 'Find Sounds' : id)).slice(0, 60);
+      if (blockedKey(id)) return;
+      var given = data.activityTitles && typeof data.activityTitles === 'object' && Object.prototype.hasOwnProperty.call(data.activityTitles, id) ? data.activityTitles[id] : null;
+      var adapterTitle = Object.prototype.hasOwnProperty.call(ADAPTERS, id) && ADAPTERS[id] ? ADAPTERS[id].title : null;
+      titles[id] = str(given || adapterTitle || (id === 'isolation' ? 'Find Sounds' : id)).slice(0, 60);
     });
     var result = { activityTitles: titles, lessonId: str(data.lessonId).slice(0, 120), revision: str(data.revision).slice(0, 40), lessonTitle: str(data.lessonTitle).slice(0, 120),
       learnerName: str(data.learnerName || data.learner).slice(0, 60), finishedAt: str(data.finishedAt).slice(0, 40), items: items, itemsCut: cut, summary: summary, byActivity: byActivity,
@@ -10857,9 +12772,11 @@
         var source = offline.createBufferSource();
         source.buffer = buffer; source.connect(offline.destination); source.start(0);
         return new Promise(function (resolve, reject) {
+          var settled = false;
+          var ok = function (b) { if (!settled) { settled = true; resolve(b); } };
+          offline.oncomplete = function (e) { ok(e.renderedBuffer); };
           var p = offline.startRendering();
-          if (p && p.then) p.then(resolve, reject);
-          else offline.oncomplete = function (e) { resolve(e.renderedBuffer); };
+          if (p && p.then) p.then(ok, function (e) { if (!settled) { settled = true; reject(e); } });
         });
       }).then(function (rendered) {
         lesson.audio[id] = wavDataUri(rendered.getChannelData(0), PORTABLE_RATE);
@@ -10869,8 +12786,9 @@
         if (typeof opts.onProgress === 'function') { try { opts.onProgress(done, todo.length); } catch (_) {} }
       });
     };
+    var closeCtx = function () { try { if (ctx && typeof ctx.close === 'function') { var p = ctx.close(); if (p && typeof p.catch === 'function') p.catch(function () {}); } } catch (_) {} };
     return todo.reduce(function (chain, id) { return chain.then(function () { return convert(id); }); }, Promise.resolve())
-      .then(function () { try { if (ctx.close) ctx.close(); } catch (_) {} return report; }, function (err) { try { if (ctx.close) ctx.close(); } catch (_) {} throw err; });
+      .then(function () { closeCtx(); return report; }, function (err) { closeCtx(); throw err; });
   }
 
   // Which activities this build can export, with their names (for the dialog).
@@ -10888,6 +12806,8 @@
     CHECK_ADAPTERS: CHECK_ADAPTERS, CHECK_LABELS: CHECK_LABELS, CHECK_ROUNDS: CHECK_ROUNDS, checkCodec: checkCodec, checkScore: checkScore, _check: takeHomeCheck,
     // Word pictures: when each activity shows one (see PICTURE_RULE), and the words for it.
     PICTURE_RULE: PICTURE_RULE, PICTURE_LABELS: PICTURE_LABELS, _pictures: takeHomePictures,
+    // Sealed QR results (opt-in via opts.qrPublicKey or attachQrKey).
+    QR_LABELS: QR_LABELS, attachQrKey: attachQrKey, _qr: takeHomeQr,
     // Reading tools, in every file: see takeHomeTools.
     _tools: takeHomeTools,
     _vocabChoice: takeHomeVocab,

@@ -5951,7 +5951,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           className: 'echo-hero-deck ' + (isContrast ? 'echo-hero-deck--hc' : (isDark ? 'echo-hero-deck--dark' : 'echo-hero-deck--light'))
         },
           h('div', { className: 'flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between' },
-            h('div', { className: 'flex items-start gap-3 min-w-0' },
+            h('div', { className: 'flex flex-wrap sm:flex-nowrap items-start gap-3 min-w-0' },
               h('button', {
                 type: 'button',
                 'aria-label': t('stem.echolocation.back_to_stem_lab_menu', 'Back to STEAM Lab menu'),
@@ -5968,7 +5968,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   h('circle', { cx: 22, cy: 31, r: 2.2, fill: isContrast ? '#ffff00' : '#34d399' })
                 )
               ),
-              h('div', { className: 'min-w-0' },
+              h('div', { className: 'flex-1 min-w-0', style: { minWidth: 'min(100%, 170px)' } },
                 h('div', { className: 'flex flex-wrap items-center gap-2 mb-1' },
                   h('span', { className: 'rounded-full px-2.5 py-0.5 text-[0.625rem] font-black uppercase tracking-[0.16em] ' + (isContrast ? 'bg-black text-yellow-300 border border-yellow-300' : 'bg-cyan-400/15 text-cyan-100 border border-cyan-300/30') },
                     t('stem.echolocation.subject_badge', 'Science · Bio-Acoustics & Sonar Studio')),

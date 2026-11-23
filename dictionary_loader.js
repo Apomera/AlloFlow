@@ -329,15 +329,22 @@
     var clip = (ownKey(shardClips, word) && typeof shardClips[word] === 'string' && shardClips[word]) ||
       (headword && ownKey(shardClips, headword) && typeof shardClips[headword] === 'string' && shardClips[headword]) || '';
     var prons = clip ? [{ phonetic: '', audio: clip }] : [];
+    var firstProv = (senses[0] && typeof senses[0].provenance === 'string') ? senses[0].provenance : '';
+    var sourceLabel = firstProv === 'human-reviewed'
+      ? 'AlloFlow School Vocabulary — human-reviewed (Wiktionary / WordNet, CC BY-SA 4.0)'
+      : firstProv === 'cross-verified'
+        ? 'AlloFlow School Vocabulary — cross-verified (Wiktionary / WordNet, CC BY-SA 4.0)'
+        : 'AlloFlow School Vocabulary (Wiktionary / WordNet, CC BY-SA 4.0)';
     var normalized = normalizeCachedEntry({
       word: word,
       audio: clip,
       pronunciations: prons,
       meanings: groups,
       synonyms: [],
-      source: 'AlloFlow School Vocabulary (Wiktionary / WordNet, CC BY-SA 4.0)',
+      source: sourceLabel,
       sourceUrl: 'https://en.wiktionary.org/wiki/' + encodeURIComponent(headword || word)
     }, word);
+    if (normalized && firstProv) normalized.provenance = firstProv;
     return normalized ? { entry: normalized, headword: headword || word } : null;
   }
   function lookupFromVocabBank(word) {
@@ -449,10 +456,26 @@
     const bankFallback = () => (options.useOfflineBank === false ? null : lookupFromVocabBankWithHead(w));
     const ensureAndLookupBank = async () => {
       let hit = bankFallback();
-      if (!hit && options.autoLoadOfflineBank === true && options.useOfflineBank !== false && !isVocabBankReady()) {
-        await loadOfflineBank({ signal: options.signal });
-        if (options.signal?.aborted) return 'cancelled';
-        hit = bankFallback();
+      if (!hit && options.autoLoadOfflineBank === true && options.useOfflineBank !== false) {
+        if (!isVocabBankReady()) {
+          await loadOfflineBank({ signal: options.signal });
+          if (options.signal?.aborted) return 'cancelled';
+          hit = bankFallback();
+        }
+        if (!hit && w && /^[a-z]/.test(w)) {
+          var activeBank = getActiveVocabBank();
+          var letter = w.charAt(0);
+          if (activeBank && typeof activeBank.loadLetter === 'function' && !(typeof activeBank.extReady === 'function' && activeBank.extReady(letter))) {
+            try {
+              var ok = await activeBank.loadLetter(letter);
+              if (!ok && typeof activeBank.loadLetter === 'function') {
+                await activeBank.loadLetter(letter, { base: '../' });
+              }
+            } catch (_) {}
+            if (options.signal?.aborted) return 'cancelled';
+            hit = bankFallback();
+          }
+        }
       }
       return hit;
     };

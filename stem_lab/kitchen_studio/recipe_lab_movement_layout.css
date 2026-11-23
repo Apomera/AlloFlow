@@ -10,4 +10,5 @@
 #sceneGestureCoach[data-layout="below"]{position:static;inset:auto;width:100%;max-width:100%;max-height:none;margin:.75rem 0;box-shadow:none;pointer-events:auto}
 #sceneGestureCoach[data-mode="receipt"] #gestureInstruction{font-size:.9375rem}
 #sceneGestureCoach[data-mode="receipt"] #gestureDetail{font-size:.8125rem}
+@media(prefers-reduced-motion:reduce){#sceneGestureCoach,#sceneGestureCoach *{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 @media(forced-colors:active){#sceneGestureCoach,#sceneGestureCoach[data-mode="receipt"]{background:Canvas;color:CanvasText;border-color:CanvasText}#sceneGestureCoach #gestureDetail,#sceneGestureCoach .gesture-clock,#sceneGestureCoach .gesture-exit{color:CanvasText}}

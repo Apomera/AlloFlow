@@ -402,7 +402,7 @@
       }
     ].forEach(function (tier) {
       var box = el('div', 'tier tier-' + tier.state);
-      add(box, el('h4', null, tier.name));
+      add(box, el('h3', null, tier.name));
       add(box, el('p', 'tier-cost', tier.cost));
       add(box, el('p', 'note', tier.body));
       if (tier.state === 'connected') add(box, el('span', 'flag go', 'Connected to ' + (state.delivery.owner || 'your Google account') + '.'));

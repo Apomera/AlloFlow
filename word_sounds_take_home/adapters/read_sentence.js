@@ -114,7 +114,7 @@ module.exports = {
     else ctx.root.appendChild(ctx.el('p', {}, [ctx.L.read_sentence_word_hint + ' ', ctx.el('span', { class: 'letters', lang: 'en', text: item.target })]));
     // data-read: running text, where the shell's reading focus can go.
     // dir: an English sentence keeps its full stop on the right in a right-to-left page.
-    ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', dir: 'ltr', style: 'font-size:1.8rem;white-space:pre-wrap', 'data-read': '' }, [item.before, blank, item.after]));
+    ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', dir: 'ltr', style: 'font-size:clamp(1.25rem,5vw,1.8rem);white-space:pre-wrap;overflow-wrap:anywhere', 'data-read': '' }, [item.before, blank, item.after]));
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
       ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); ctx.play(item.prompt); } }, text: ctx.L.read_sentence_hear_instructions }),
     ]));

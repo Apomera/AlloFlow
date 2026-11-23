@@ -17,16 +17,25 @@
   var doc = document, win = window;
   var $ = function (id) { return doc.getElementById(id); };
   var engine = win.AlloPacketVoiceEngine || null, builder = win.AlloPacketReadAlong || null, loader = win.AlloWordSoundsTakeHome || null;
-  var TRY_PAGE = 'packets-try.html', MP3_KBPS = 64, MIC_RATE = 22050, RECORD_MS = 30000, MAX_STUDENTS = 40;
+  var TRY_PAGE = 'packets-try.html', MP3_KBPS = 64, MIC_RATE = 22050, RECORD_MS = 30000, MAX_STUDENTS = 40, MAX_GLOSSARY_CLIPS = 25;
   var MAX_REOPEN_BYTES = 60 * 1024 * 1024;
   var MAX_ROSTER_BYTES = 256 * 1024;
+  var PRESET_KEY = 'alloflow-ra-presets/1', MAX_PRESETS = 20, MAX_QUESTIONS = 6;
+  var AUDIO_CLIP_RE = /^data:audio\/(?:mpeg|mp3|wav);base64,[A-Za-z0-9+/]+=*$/;
   // The app's English syllable table. A word it marks "check" (it is not sure of the break) is left whole.
   var table = (win.AlloModules && win.AlloModules.SyllableTableEn) || null;
   function syllablesOf(word) { var found = table ? table.lookup(word) : null; return found && !found.check ? found.parts : null; }
   function tableSource() { var src = table && table.source ? table.source : null; return src ? [src.moby, src.cmudict].filter(function (v) { return typeof v === 'string' && v; }).join('; checked against ') : ''; }
   // clips: { "the sentence": { uri, ms, voice, source } }, by the builder's key for a sentence.
-  var state = { sentences: [], total: 0, clips: Object.create(null), hiddenPics: Object.create(null), ready: false, getting: false, making: false, stop: null, makeRun: 0, mp3: false, playing: null, rec: null, built: null, baseHtml: '', made: null, fileUrl: '', unsaved: false };
+  var state = { sentences: [], total: 0, clips: Object.create(null), customSupports: [], questions: [], nextQSeq: 1, supportClips: Object.create(null), glossaryClips: Object.create(null), draftSupImg: '', draftSupAlt: '', draftSupSet: '', draftSupCredit: '', nextSupSeq: 1, hiddenPics: Object.create(null), previewPage: 0, ready: false, getting: false, making: false, stop: null, makeRun: 0, mp3: false, playing: null, rec: null, built: null, baseHtml: '', made: null, fileUrl: '', unsaved: false };
   var buildTimer = 0;
+  var previewSession = null;
+  function stopPreview() {
+    if (previewSession && typeof previewSession.stop === 'function') {
+      try { previewSession.stop(); } catch (_) {}
+    }
+    previewSession = null;
+  }
   function makeController() {
     if (typeof win.AbortController === 'function') return new win.AbortController();
     var ctrl = { signal: { aborted: false }, abort: function () { ctrl.signal.aborted = true; } };
@@ -53,6 +62,15 @@
   function keyOf(row) { return builder.clipKey(row.text); }
   function clipOf(row) { var key = keyOf(row); return Object.prototype.hasOwnProperty.call(state.clips, key) ? state.clips[key] : null; }
   function needing() { return state.sentences.filter(function (row) { return !clipOf(row); }); }
+  function supportSpeechKey(sup) { return typeof builder.supportSpeechText === 'function' ? builder.supportSpeechText(sup) : ''; }
+  function supportClipOf(sup) {
+    var k = supportSpeechKey(sup);
+    return k && Object.prototype.hasOwnProperty.call(state.supportClips, k) ? state.supportClips[k] : null;
+  }
+  function activeCustomSupports() {
+    return (state.customSupports || []).filter(function (s) { return s && s.text && s.line >= 0 && s.line < state.sentences.length; });
+  }
+  function needingSupports() { return activeCustomSupports().filter(function (s) { return !supportClipOf(s); }); }
   function pageMode() {
     var sel = $('f-page-mode');
     var v = sel ? sel.value : 'auto';
@@ -66,12 +84,79 @@
   function isEnglish() { return /^en(?:-|$)/i.test(passageLang()); }
   function isSpanish() { return /^es(?:-|$)/i.test(passageLang()); }
   function usePos() { return isEnglish() && !!($('f-pos') && $('f-pos').checked); }
+  function usePosExtended() { return usePos() && !!($('f-pos-extended') && $('f-pos-extended').checked); }
+  function posScheme() {
+    var v = ($('f-pos-scheme') && $('f-pos-scheme').value) || 'default';
+    return typeof builder.cleanPosScheme === 'function' ? builder.cleanPosScheme(v) : v;
+  }
+  function posStyle() {
+    var v = ($('f-pos-style') && $('f-pos-style').value) || 'underline';
+    return typeof builder.cleanPosStyle === 'function' ? builder.cleanPosStyle(v) : v;
+  }
+  function posPalette() {
+    if (posScheme() !== 'custom') return null;
+    var raw = {
+      n: $('f-pos-c-n') ? $('f-pos-c-n').value : '',
+      v: $('f-pos-c-v') ? $('f-pos-c-v').value : '',
+      j: $('f-pos-c-j') ? $('f-pos-c-j').value : '',
+      a: $('f-pos-c-a') ? $('f-pos-c-a').value : '',
+    };
+    return typeof builder.cleanPosPalette === 'function' ? builder.cleanPosPalette(raw) : raw;
+  }
+  function defaultTools() {
+    var raw = {};
+    if ($('f-def-focus') && $('f-def-focus').value !== '') raw.focus = Number($('f-def-focus').value);
+    if ($('f-def-font') && $('f-def-font').value !== '') raw.font = Number($('f-def-font').value);
+    if ($('f-def-spacing') && $('f-def-spacing').value !== '') raw.spacing = Number($('f-def-spacing').value);
+    if ($('f-def-colors') && $('f-def-colors').value !== '') raw.colors = Number($('f-def-colors').value);
+    if (!Object.keys(raw).length) return null;
+    return typeof builder.cleanDefaultTools === 'function' ? builder.cleanDefaultTools(raw) : raw;
+  }
+  function syncPosCustomizerUi() {
+    var on = usePos();
+    show('pos-customizer', on);
+    show('pos-custom-colors', on && posScheme() === 'custom');
+  }
   function useDict() { return isEnglish() && !!($('f-dict') && $('f-dict').checked); }
+  function useNarrateGlossary() { return useDict() && !!($('f-narrate-glossary') && $('f-narrate-glossary').checked); }
   function useDictPics() { return isEnglish() && !!($('f-dict-pics') && $('f-dict-pics').checked); }
   function useSimpleBar() { return !!($('f-simple-bar') && $('f-simple-bar').checked); }
   function useStudentMic() { return !!($('f-student-mic') && $('f-student-mic').checked); }
   function useDeviceVoice() { return !!($('f-device-voice') && $('f-device-voice').checked); }
-  var dictLoading = null, picsLoading = null, symbolBank = null, loadedPicShards = Object.create(null), myPics = Object.create(null), myWordsWatched = false;
+  function glossaryClipOf(key) {
+    return key && Object.prototype.hasOwnProperty.call(state.glossaryClips, key) ? state.glossaryClips[key] : null;
+  }
+  function autoGlossaryEntries() {
+    if (!useNarrateGlossary() || !state.sentences.length) return [];
+    var bankReady = !!(win.AlloVocabBank && typeof win.AlloVocabBank.ready === 'function' && win.AlloVocabBank.ready());
+    if (!bankReady || typeof builder.glossaryFor !== 'function') return [];
+    var gloss = builder.glossaryFor(state.sentences, dictLookup, null, null, null);
+    if (!gloss || typeof gloss !== 'object') return [];
+    var customQuotes = Object.create(null);
+    activeCustomSupports().forEach(function (sup) {
+      if (!sup.quote) return;
+      var qk = String(sup.quote).toLowerCase().replace(/\s+/g, ' ').trim();
+      if (qk) customQuotes[qk] = true;
+    });
+    var keys = Object.keys(gloss), out = [];
+    for (var i = 0; i < keys.length && out.length < MAX_GLOSSARY_CLIPS; i++) {
+      var k = keys[i];
+      if (!k || customQuotes[k]) continue;
+      var entry = gloss[k];
+      if (!entry || typeof entry.d !== 'string' || !entry.d.trim()) continue;
+      var headWord = String(entry.w || k).trim() || k;
+      var defText = entry.d.trim();
+      out.push({ key: k, word: headWord, def: defText, spoken: headWord + '. ' + defText });
+    }
+    return out;
+  }
+  function needingGlossary() {
+    return autoGlossaryEntries().filter(function (entry) { return !glossaryClipOf(entry.key); });
+  }
+  var dictLoading = null, picsLoading = null, symbolBank = null, extSymbolBank = null, loadedPicShards = Object.create(null), myPics = Object.create(null), myWordsWatched = false, supPicSearchSeq = 0;
+  function getExtSymbolBank() {
+    return win.AlloReadingSymbolsExt || (win.AlloModules && win.AlloModules.ReadingSymbolsExt) || extSymbolBank || null;
+  }
   function loadOptionalScript(src, present) {
     if (present) return Promise.resolve(true);
     return new Promise(function (resolve) {
@@ -112,9 +197,34 @@
       return true;
     }, function () { return false; });
   }
+  function localSvgRefusal(svg) {
+    var s = typeof svg === 'string' ? svg : '';
+    var stripped = s.replace(/^\s*<\?xml\s[^>]*\?>/i, '').replace(/^(?:\s*<!--[\s\S]*?-->)+/, '').trim();
+    if (!/^\s*<svg[\s>]/i.test(stripped) || !/<\/svg>\s*$/i.test(stripped)) return 'not an SVG drawing';
+    if (s.length > 300000 || s.indexOf('\\') >= 0) return 'invalid SVG';
+    if (/<!(?:doctype|entity)/i.test(s) || /<\?(?!xml\s)/i.test(s)) return 'unsafe declaration';
+    var plain = s.replace(/&#x([0-9a-f]+);?/gi, function (_, hex) { return String.fromCharCode(parseInt(hex, 16) & 0xFFFF); })
+      .replace(/&#(\d+);?/g, function (_, dec) { return String.fromCharCode(Number(dec) & 0xFFFF); })
+      .replace(/&(colon|newline|tab);/gi, function (_, name) { return name.toLowerCase() === 'colon' ? ':' : ''; });
+    if (/<\s*(?:[^\s<>"'=/:]+:)?(?:script|foreignObject|iframe|embed|object|audio|video|animate\w*|set|handler|listener)\b/i.test(plain)) return 'disallowed element';
+    if (/[\s"'\/]on[a-z]+\s*=/i.test(plain) || /(?:java|vb|live)script:/i.test(plain.replace(/[\x00-\x20]+/g, ''))) return 'script handler';
+    if (/xml:base\s*=/i.test(plain) || /[\s"'\/]src(?:doc)?\s*=/i.test(plain)) return 'external reference';
+    var m, hrefRe = /(?:[\s"'\/])(?:[^\s<>"'=/:]+:)?href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]*))/gi;
+    while ((m = hrefRe.exec(plain))) {
+      var val = String(m[1] != null ? m[1] : m[2] != null ? m[2] : m[3] || '').replace(/[\x00-\x20]+/g, '');
+      if (val.charAt(0) !== '#') return 'external link';
+    }
+    var urlRe = /url\s*\(\s*(?:"([^"]*)"|'([^']*)'|([^)]*))/gi;
+    while ((m = urlRe.exec(plain))) {
+      var uval = String(m[1] != null ? m[1] : m[2] != null ? m[2] : m[3] || '').replace(/[\x00-\x20]+/g, '');
+      if (uval.charAt(0) !== '#') return 'external url';
+    }
+    return '';
+  }
   function svgToDataUri(svg) {
     if (typeof svg !== 'string' || !svg.trim()) return '';
     try {
+      if (localSvgRefusal(svg)) return '';
       var refuser = (win.AlloPacketBuilder && win.AlloPacketBuilder.svgRefusal) || (win.AlloPacketMyWords && win.AlloPacketMyWords.svgRefusal);
       if (typeof refuser === 'function' && refuser(svg)) return '';
       var bytes = typeof win.TextEncoder === 'function' ? new win.TextEncoder().encode(svg) : null;
@@ -126,6 +236,30 @@
       return 'data:image/svg+xml;base64,' + win.btoa(unescape(encodeURIComponent(svg)));
     } catch (_) { return ''; }
   }
+  function normalizeDraftImageUri(rawUri) {
+    if (typeof rawUri !== 'string' || !rawUri || rawUri.length > 360 * 1024) return '';
+    var b64Match = /^data:image\/(png|jpeg|webp|svg\+xml);base64,([A-Za-z0-9+/]+={0,2})$/i.exec(rawUri);
+    if (b64Match && b64Match[2].length % 4 === 0 && rawUri.length <= 280 * 1024) {
+      if (b64Match[1].toLowerCase() === 'svg+xml') {
+        try {
+          var bin = win.atob(b64Match[2]), bytes = new Uint8Array(bin.length);
+          for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+          var decoded = typeof win.TextDecoder === 'function' ? new win.TextDecoder('utf-8').decode(bytes) : decodeURIComponent(escape(bin));
+          if (!decoded || localSvgRefusal(decoded)) return '';
+        } catch (_) { return ''; }
+      }
+      return rawUri;
+    }
+    var utfSvg = /^data:image\/svg\+xml(?:;charset=utf-8)?,(.+)$/i.exec(rawUri);
+    if (utfSvg) {
+      try {
+        var svgText = decodeURIComponent(utfSvg[1]);
+        var converted = svgToDataUri(svgText);
+        return converted && converted.length <= 280 * 1024 ? converted : '';
+      } catch (_) { return ''; }
+    }
+    return '';
+  }
   function getPictureMatcher() {
     return win.AlloWordPictureMatcher || (win.AlloModules && win.AlloModules.WordPictureMatcher) || null;
   }
@@ -134,7 +268,7 @@
     if (!k || (state.hiddenPics && state.hiddenPics[k])) return null;
     // 1. Teacher's own saved picture (Find a picture / AlloPacketMyWords / inline Replace) always wins.
     if (Object.prototype.hasOwnProperty.call(myPics, k) && myPics[k]) return myPics[k];
-    // 2. Exact match in bundled Mulberry Symbols / OpenMoji bank.
+    // 2. Exact match in bundled Mulberry Symbols / OpenMoji bank (core + extended reading symbols).
     if (symbolBank && typeof symbolBank.get === 'function') {
       var exact = symbolBank.get(k);
       if (exact && typeof exact.svg === 'string') {
@@ -142,7 +276,15 @@
         if (exactUri) return { uri: exactUri, label: exact.label || k, set: exact.set || 'mulberry' };
       }
     }
-    // 3. Offline WordPictureMatcher: 696 K-12 curriculum SVG diagrams, 213 concept cues, irregular lemmas, compounds, and definition fallback.
+    var extBank = getExtSymbolBank();
+    if (extBank && typeof extBank.get === 'function') {
+      var exactExt = extBank.get(k);
+      if (exactExt && typeof exactExt.svg === 'string') {
+        var extUri = svgToDataUri(exactExt.svg);
+        if (extUri) return { uri: extUri, label: exactExt.label || k, set: exactExt.set || 'mulberry' };
+      }
+    }
+    // 3. Offline WordPictureMatcher: 696 K-12 curriculum SVG diagrams, WordNet semantic visual bridge, concept cues, irregular lemmas, compounds, and definition fallback.
     var matcher = getPictureMatcher();
     if (opts && opts.phraseOnly) {
       if (matcher && typeof matcher.getDiagram === 'function') {
@@ -239,10 +381,14 @@
     setText('pics-said', 'Loading offline word pictures and curriculum diagrams...');
     picsLoading = Promise.all([
       loadOptionalScript('word_sounds_symbols_en.js', !!(symbolBank || typeof win.createWordSoundsSymbols === 'function')),
+      loadOptionalScript('reading_symbols_ext_en.js', !!(win.AlloReadingSymbolsExt || (win.AlloModules && win.AlloModules.ReadingSymbolsExt) || typeof win.createReadingSymbolsExt === 'function')),
+      loadOptionalScript('word_picture_semantic_en.js', !!(win.AlloWordPictureSemantic || (win.AlloModules && win.AlloModules.WordPictureSemantic))),
       loadOptionalScript('word_picture_matcher.js', !!getPictureMatcher()),
       loadOptionalScript('packets_my_words.js', !!win.AlloPacketMyWords),
     ]).then(function () {
       if (!symbolBank && typeof win.createWordSoundsSymbols === 'function') symbolBank = win.createWordSoundsSymbols();
+      var extBank = getExtSymbolBank() || (typeof win.createReadingSymbolsExt === 'function' ? win.createReadingSymbolsExt() : null);
+      if (extBank) extSymbolBank = extBank;
       var store = win.AlloPacketMyWords;
       if (store && typeof store.onChange === 'function' && !myWordsWatched) {
         myWordsWatched = true;
@@ -251,8 +397,9 @@
         });
       }
       var tasks = [syncMyPictures()];
-      if (symbolBank && Array.isArray(symbolBank.shards) && !(symbolBank.ready && symbolBank.ready()) && typeof win.fetch === 'function') {
-        var urls = symbolBank.shards.map(function (sh) { return sh.url; }).filter(function (u) { return !loadedPicShards[u]; });
+      function fetchBankShards(bank) {
+        if (!bank || !Array.isArray(bank.shards) || (bank.ready && bank.ready()) || typeof win.fetch !== 'function') return;
+        var urls = bank.shards.map(function (sh) { return sh.url; }).filter(function (u) { return !loadedPicShards[u]; });
         urls.forEach(function (u) {
           var ctrl = typeof win.AbortController === 'function' ? new win.AbortController() : null;
           var timer = ctrl ? win.setTimeout(function () { try { ctrl.abort(); } catch (_) {} }, 15000) : null;
@@ -260,17 +407,21 @@
           tasks.push(req.then(function (r) { return r && r.ok ? r.text() : null; }).then(function (txt) {
             if (!txt || txt.length > 8 * 1024 * 1024) return;
             var data = JSON.parse(txt, function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });
-            if (data && symbolBank) { symbolBank.add(data); loadedPicShards[u] = true; }
+            if (data && bank) { bank.add(data); loadedPicShards[u] = true; }
           }, function () {}).finally(function () { if (timer !== null) win.clearTimeout(timer); }));
         });
       }
+      fetchBankShards(symbolBank);
+      fetchBankShards(extBank);
       return Promise.all(tasks).then(function () { return true; });
     }).then(function () {
       picsLoading = null;
+      if (!useDictPics()) setText('pics-said', '');
       return true;
     }, function () {
       picsLoading = null;
-      setText('pics-said', 'Could not load offline word pictures right now. The file still builds without pictures.');
+      if (useDictPics()) setText('pics-said', 'Could not load offline word pictures right now. The file still builds without pictures.');
+      else setText('pics-said', '');
       return false;
     });
     return picsLoading;
@@ -278,10 +429,11 @@
   function dictLookup(word) {
     var bank = win.AlloVocabBank;
     if (!bank || typeof bank.ready !== 'function' || !bank.ready()) return null;
-    var list = bank.senses(word);
+    var wStr = String(word || '').trim();
+    var list = (wStr.indexOf(' ') >= 0 && typeof bank.phraseSenses === 'function') ? bank.phraseSenses(wStr) : bank.senses(wStr);
     if (!Array.isArray(list) || !list.length) return null;
     var s = list[0];
-    return { word: s.word || bank.head(word) || word, pos: s.pos || '', def: s.def || '', example: s.example || '' };
+    return { word: s.word || bank.head(wStr) || wStr, pos: s.pos || '', def: s.def || '', example: s.example || '', provenance: s.provenance || '' };
   }
   function posLookup(word) {
     var bank = win.AlloVocabBank;
@@ -289,6 +441,17 @@
     var list = bank.senses(word);
     if (!Array.isArray(list) || !list.length) return null;
     return list.map(function (s) { return s && s.pos ? s.pos : ''; }).filter(Boolean);
+  }
+  function ensureExtendedDictForPassage() {
+    var bank = win.AlloVocabBank;
+    if (!bank || typeof bank.ready !== 'function' || !bank.ready() || typeof bank.ensureForWords !== 'function') return Promise.resolve(false);
+    var words = passageWordsList();
+    if (!words.length) return Promise.resolve(true);
+    var tasks = [bank.ensureForWords(words)];
+    if (typeof bank.loadPhrases === 'function' && !(typeof bank.extReady === 'function' && bank.extReady('phrases'))) {
+      tasks.push(bank.loadPhrases());
+    }
+    return Promise.all(tasks).then(function () { return true; }, function () { return false; });
   }
   function wavTimings(sentence, wav) {
     if (typeof builder.computeWordTimings !== 'function' || !wav || wav.length < 48) return null;
@@ -318,7 +481,9 @@
   }
   function ensureDictionary() {
     var bank = win.AlloVocabBank;
-    if (bank && typeof bank.ready === 'function' && bank.ready()) return Promise.resolve(true);
+    if (bank && typeof bank.ready === 'function' && bank.ready()) {
+      return ensureExtendedDictForPassage().then(function () { return true; });
+    }
     if (dictLoading) return dictLoading;
     setText('dict-said', 'Loading offline dictionary...');
     var loadScript = bank ? Promise.resolve() : new Promise(function (resolve, reject) {
@@ -331,6 +496,8 @@
     dictLoading = loadScript.then(function () {
       if (!win.AlloVocabBank || typeof win.AlloVocabBank.load !== 'function') throw new Error('Dictionary did not load.');
       return win.AlloVocabBank.load();
+    }).then(function () {
+      return ensureExtendedDictForPassage();
     }).then(function () {
       dictLoading = null;
       setText('dict-said', 'Offline dictionary ready.');
@@ -349,6 +516,10 @@
     if ($('f-pos')) $('f-pos').disabled = !en;
     if ($('f-dict')) $('f-dict').disabled = !en;
     if ($('f-dict-pics')) $('f-dict-pics').disabled = !en;
+    var showNarrate = en && !!($('f-dict') && $('f-dict').checked);
+    show('f-narrate-glossary-wrap', showNarrate);
+    if ($('f-narrate-glossary')) $('f-narrate-glossary').disabled = !showNarrate;
+    syncPosCustomizerUi();
   }
   function pageGroups() { return builder.pagesOf(state.sentences, { pageMode: pageMode() }); }
   function pages() { return pageGroups().length; }
@@ -690,6 +861,7 @@
 
   function draw() {
     var list = $('line-rows');
+    if (!list) return;
     list.textContent = '';
     var busyMic = !!state.rec;
     var mode = pageMode();
@@ -736,6 +908,7 @@
         list.appendChild(sep);
       } else if (mode !== 'scroll' && index > 0) {
         var splitLi = el('li', 'ra-split-sep');
+        splitLi.hidden = mode !== 'custom';
         var splitBtn = el('button', 'btn btn-small ra-split-btn', 'Split page here');
         splitBtn.type = 'button';
         splitBtn.setAttribute('data-split-page', String(index));
@@ -790,18 +963,635 @@
       }
       list.appendChild(item);
     });
+    syncSupportLineOptions();
+    drawSupports();
     var need = needing().length;
-    $('make-all').disabled = !state.ready || state.making || busyMic || !need;
-    $('make-all').textContent = need && need < state.sentences.length ? 'Make the recordings for the ' + count(need, 'sentence') + ' that ' + (need === 1 ? 'has' : 'have') + ' none'
-      : need ? 'Make the recordings for ' + (need === 1 ? 'the sentence' : 'all ' + need + ' sentences') : 'Make the recordings';
+    var needSup = needingSupports().length;
+    var needGloss = needingGlossary().length;
+    var makeAllBtn = $('make-all');
+    if (makeAllBtn) {
+      makeAllBtn.disabled = !state.ready || state.making || busyMic || !(need || needSup || needGloss);
+      if (needGloss > 0) {
+        var partsMake = [];
+        if (need > 0) partsMake.push(count(need, 'sentence'));
+        if (needSup > 0) partsMake.push(count(needSup, 'custom support'));
+        partsMake.push(count(needGloss, 'word meaning'));
+        makeAllBtn.textContent = 'Make recordings for ' + (partsMake.length === 1 ? partsMake[0] : (partsMake.length === 2 ? partsMake[0] + ' and ' + partsMake[1] : partsMake[0] + ', ' + partsMake[1] + ', and ' + partsMake[2]));
+      } else if (needSup > 0 && need === 0) {
+        makeAllBtn.textContent = 'Make recordings for ' + count(needSup, 'custom support');
+      } else if (needSup > 0 && need > 0) {
+        makeAllBtn.textContent = 'Make recordings for ' + count(need, 'sentence') + ' and ' + count(needSup, 'custom support');
+      } else {
+        makeAllBtn.textContent = need && need < state.sentences.length ? 'Make the recordings for the ' + count(need, 'sentence') + ' that ' + (need === 1 ? 'has' : 'have') + ' none'
+          : need ? 'Make the recordings for ' + (need === 1 ? 'the sentence' : 'all ' + need + ' sentences') : 'Make the recordings';
+      }
+    }
     show('stop', state.making);
-    $('get-voice').disabled = state.getting || state.ready;
-    if (state.ready) $('get-voice').textContent = 'The voice is ready';
+    var getVoiceBtn = $('get-voice');
+    if (getVoiceBtn) {
+      getVoiceBtn.disabled = state.getting || state.ready;
+      if (state.ready) getVoiceBtn.textContent = 'The voice is ready';
+    }
+    if ($('hear-sample')) $('hear-sample').disabled = !state.ready || state.making || busyMic || !!state.sampling;
     if (!state.making && !busyMic) {
       if (!state.sentences.length) setText('make-said', state.ready ? 'Type a passage in step 1.' : 'Type a passage in step 1 first.');
       else if (!state.ready) setText('make-said', 'Record any sentence with your microphone below, get the computer voice in step 2, or save as a reading file without recordings in step 4.');
       else if (need === state.sentences.length) setText('make-said', 'The voice is ready. Press the button to make ' + (need === 1 ? 'the recording' : 'the ' + need + ' recordings') + '.');
     }
+  }
+
+  function syncSupportLineOptions() {
+    var sel = $('sup-line');
+    if (!sel) return;
+    var prev = sel.value;
+    sel.textContent = '';
+    state.sentences.forEach(function (row, idx) {
+      var opt = doc.createElement('option');
+      opt.value = String(idx);
+      var snip = row.text.length > 56 ? row.text.slice(0, 55).trim() + '\u2026' : row.text;
+      opt.textContent = 'Sentence ' + (idx + 1) + ': ' + snip;
+      sel.appendChild(opt);
+    });
+    if (prev && Number(prev) >= 0 && Number(prev) < state.sentences.length) sel.value = prev;
+    else if (state.sentences.length) sel.value = '0';
+    sel.disabled = !state.sentences.length;
+    if ($('sup-add')) $('sup-add').disabled = !state.sentences.length;
+  }
+  function openSupportComposerForLine(idx) {
+    var panel = $('custom-supports-panel');
+    if (panel) panel.open = true;
+    syncSupportLineOptions();
+    if ($('sup-line') && idx >= 0 && idx < state.sentences.length) $('sup-line').value = String(idx);
+    if ($('sup-quote')) $('sup-quote').focus();
+  }
+  function playAudioUri(uri, errTarget) {
+    if (!uri) return;
+    try { if (state.playing) state.playing.pause(); } catch (_) {}
+    var audio = new win.Audio(uri);
+    state.playing = audio;
+    audio.play().catch(function () { setText(errTarget || 'make-problem', 'This browser could not play that recording.'); });
+  }
+  function recordSupport(sup) {
+    if (!sup || state.making) return;
+    var spKey = 'sup:' + supportSpeechKey(sup);
+    if (state.rec && state.rec.key === spKey && state.rec.stage === 'recording') {
+      try { if (state.rec.recorder && state.rec.recorder.state !== 'inactive') state.rec.recorder.stop(); } catch (_) {}
+      return;
+    }
+    if (state.rec) return;
+    try { if (state.playing) state.playing.pause(); } catch (_) {}
+    setText('sup-problem', '');
+    var media = win.navigator && win.navigator.mediaDevices;
+    if (!media || typeof media.getUserMedia !== 'function' || typeof win.MediaRecorder !== 'function') {
+      setText('sup-problem', 'This browser cannot record from a microphone here.');
+      return;
+    }
+    var rec = { key: spKey, sup: sup, stage: 'asking', chunks: [], cancelled: false, timer: 0, stream: null, recorder: null };
+    state.rec = rec;
+    setText('sup-said', 'Allow the microphone to record this support.');
+    draw();
+    var asked;
+    try { asked = media.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true } }); } catch (err) { asked = Promise.reject(err); }
+    Promise.resolve(asked).then(function (stream) {
+      if (rec.cancelled || state.rec !== rec) { try { stream.getTracks().forEach(function (t) { t.stop(); }); } catch (_) {} return; }
+      rec.stream = stream;
+      var mime = pickRecorderMime();
+      var recorder;
+      try { recorder = mime ? new win.MediaRecorder(stream, { mimeType: mime }) : new win.MediaRecorder(stream); } catch (_) {
+        try { recorder = new win.MediaRecorder(stream); } catch (__) {
+          releaseMic(); state.rec = null; setText('sup-problem', 'This browser could not start microphone recording.'); draw(); return;
+        }
+      }
+      rec.recorder = recorder;
+      recorder.onerror = function () {
+        releaseMic(); if (state.rec !== rec) return; state.rec = null;
+        setText('sup-problem', 'This browser could not finish microphone recording. Try again.'); draw();
+      };
+      recorder.ondataavailable = function (ev) { if (ev && ev.data && ev.data.size) rec.chunks.push(ev.data); };
+      recorder.onstop = function () {
+        releaseMic();
+        if (rec.cancelled || state.rec !== rec) return;
+        if (!rec.chunks.length) { state.rec = null; setText('sup-problem', 'Nothing was heard. Try again.'); draw(); return; }
+        rec.stage = 'working';
+        setText('sup-said', 'Finishing your support recording...');
+        draw();
+        var blobType = (rec.chunks[0] && rec.chunks[0].type) || recorder.mimeType || mime || 'audio/webm';
+        var blob = new win.Blob(rec.chunks, { type: blobType });
+        readBlobBuffer(blob).then(decodeRecording).then(function (samples) {
+          if (state.rec !== rec) return null;
+          var spoken = trimSilence(samples, MIC_RATE);
+          if (!spoken) { state.rec = null; setText('sup-problem', 'Nothing was heard. Try again.'); draw(); return null; }
+          var wav = encodeWavBytes(spoken, MIC_RATE);
+          var ms = Math.round(spoken.length / MIC_RATE * 1000);
+          var encode = state.mp3 ? Promise.resolve(true) : (engine && typeof engine.getMp3 === 'function' ? engine.getMp3() : Promise.resolve(false));
+          return encode.then(function (hasMp3) {
+            if (state.rec !== rec) return;
+            if (hasMp3) state.mp3 = true;
+            var mp3 = hasMp3 && engine && typeof engine.wavToMp3 === 'function' ? engine.wavToMp3(wav, MP3_KBPS) : null;
+            var uri = mp3 ? engine.toDataUri(mp3, 'audio/mpeg') : ('data:audio/wav;base64,' + bytesToBase64(wav));
+            if (uri.length > builder.MAX_CLIP_CHARS) { state.rec = null; setText('sup-problem', 'That recording is too long to keep.'); draw(); return; }
+            state.supportClips[supportSpeechKey(sup)] = { uri: uri, ms: ms, voice: '', source: 'teacher' };
+            state.unsaved = true;
+            state.rec = null;
+            setText('sup-said', 'Recorded support with your voice.');
+            draw();
+            refreshFile();
+          });
+        }).catch(function (err) {
+          if (state.rec !== rec) return;
+          state.rec = null;
+          setText('sup-problem', said(err) || 'Could not keep that support recording.');
+          draw();
+        });
+      };
+      rec.stage = 'recording';
+      recorder.start();
+      rec.timer = win.setTimeout(function () { if (state.rec === rec && recorder.state === 'recording') { try { recorder.stop(); } catch (_) {} } }, RECORD_MS);
+      setText('sup-said', 'Recording support now. Press Stop when done.');
+      draw();
+    }, function () {
+      releaseMic();
+      if (state.rec !== rec) return;
+      state.rec = null;
+      setText('sup-problem', 'Microphone permission was refused or no microphone is available.');
+      draw();
+    });
+  }
+  function makeOneSupport(sup, signal) {
+    var voice = $('f-voice').value || 'af_heart';
+    var spoken = supportSpeechKey(sup);
+    if (!spoken) return Promise.resolve();
+    if (signal && signal.aborted) return Promise.reject(abortError());
+    return engine.speak(spoken, voice, { signal: signal }).then(function (wav) {
+      if (signal && signal.aborted) throw abortError();
+      var mp3 = state.mp3 ? engine.wavToMp3(wav, MP3_KBPS) : null;
+      if (signal && signal.aborted) throw abortError();
+      var uri = mp3 ? engine.toDataUri(mp3, 'audio/mpeg') : engine.toDataUri(wav, 'audio/wav');
+      if (uri.length > builder.MAX_CLIP_CHARS) throw new Error('too long');
+      state.supportClips[spoken] = { uri: uri, ms: engine.wavMs(wav), voice: voice, source: 'computer' };
+      state.unsaved = true;
+    });
+  }
+  function drawSupports() {
+    var list = $('support-rows');
+    var nowEl = $('custom-supports-now');
+    var sups = activeCustomSupports();
+    var recCount = sups.filter(function (s) { return !!supportClipOf(s); }).length;
+    if (nowEl) {
+      nowEl.textContent = sups.length ? (count(sups.length, 'support') + (recCount ? ' \u00b7 ' + recCount + ' recorded' : '')) : 'None added';
+    }
+    if (!list) return;
+    list.textContent = '';
+    var busyMic = !!state.rec;
+    sups.forEach(function (sup) {
+      var clip = supportClipOf(sup);
+      var spKey = 'sup:' + supportSpeechKey(sup);
+      var isThisRec = !!(state.rec && state.rec.key === spKey);
+      var li = el('li', 'voice-row' + (clip ? ' is-made' : ''));
+      li.setAttribute('data-support-row', sup.id);
+      var meta = el('div', 'ra-sup-meta');
+      if (sup.imgUri) {
+        var img = doc.createElement('img');
+        img.className = 'ra-sup-thumb';
+        img.src = sup.imgUri;
+        img.alt = sup.alt || sup.quote || 'Support picture';
+        meta.appendChild(img);
+      }
+      var copy = el('div', 'ra-sup-copy');
+      copy.appendChild(el('span', 'ra-sup-head', 'Sentence ' + (sup.line + 1) + (sup.quote ? ' \u2014 "' + sup.quote + '"' : '')));
+      copy.appendChild(el('span', 'ra-sup-body', sup.text));
+      meta.appendChild(copy);
+      li.appendChild(meta);
+      var statusText = isThisRec
+        ? (state.rec.stage === 'recording' ? 'Recording now...' : 'Saving recording...')
+        : (clip ? ('Recorded' + (clip.source === 'teacher' ? ' (your voice)' : ' (computer voice)') + '.') : 'No recording yet.');
+      li.appendChild(el('span', 'voice-state', statusText));
+      if (clip && !isThisRec) {
+        var playBtn = el('button', 'btn btn-small', 'Play');
+        playBtn.type = 'button';
+        playBtn.setAttribute('data-sup-play', sup.id);
+        playBtn.disabled = busyMic;
+        playBtn.addEventListener('click', function () { playAudioUri(clip.uri, 'sup-problem'); });
+        li.appendChild(playBtn);
+      }
+      var recBtn = el('button', 'btn btn-small', isThisRec && state.rec.stage === 'recording' ? 'Stop' : 'Record');
+      recBtn.type = 'button';
+      recBtn.setAttribute('data-sup-record', sup.id);
+      recBtn.disabled = state.making || (busyMic && !(isThisRec && state.rec.stage === 'recording'));
+      recBtn.addEventListener('click', function () { recordSupport(sup); });
+      li.appendChild(recBtn);
+      var mkBtn = el('button', 'btn btn-small', clip ? 'Make again' : 'Make with voice');
+      mkBtn.type = 'button';
+      mkBtn.setAttribute('data-sup-make', sup.id);
+      mkBtn.disabled = !state.ready || state.making || busyMic;
+      mkBtn.addEventListener('click', function () { makeSome([], 0, [sup]); });
+      li.appendChild(mkBtn);
+      var rmBtn = el('button', 'btn btn-small', 'Remove');
+      rmBtn.type = 'button';
+      rmBtn.setAttribute('data-sup-remove', sup.id);
+      rmBtn.disabled = state.making || busyMic;
+      rmBtn.addEventListener('click', function () {
+        state.customSupports = state.customSupports.filter(function (x) { return x.id !== sup.id; });
+        state.unsaved = true;
+        draw();
+        refreshFile();
+      });
+      li.appendChild(rmBtn);
+      list.appendChild(li);
+    });
+  }
+  function clearDraftSupportPic() {
+    state.draftSupImg = '';
+    state.draftSupAlt = '';
+    state.draftSupSet = '';
+    state.draftSupCredit = '';
+    if ($('sup-pic-preview')) { $('sup-pic-preview').src = ''; $('sup-pic-preview').alt = ''; $('sup-pic-preview').hidden = true; }
+    if ($('sup-pic-credit')) { $('sup-pic-credit').textContent = ''; $('sup-pic-credit').hidden = true; }
+    if ($('sup-pic-clear')) $('sup-pic-clear').hidden = true;
+  }
+  function closeSupportPicPicker() {
+    show('sup-pic-picker', false);
+    if ($('sup-pic-offline')) $('sup-pic-offline').setAttribute('aria-expanded', 'false');
+  }
+  function selectDraftSupportPic(uri, altText, setName, creditNote) {
+    if (!uri) return;
+    state.draftSupImg = uri;
+    state.draftSupAlt = String(altText || '').replace(/\s+/g, ' ').trim().slice(0, 60);
+    state.draftSupSet = String(setName || '').toLowerCase();
+    state.draftSupCredit = String(creditNote || '').replace(/\s+/g, ' ').trim().slice(0, 180);
+    if ($('sup-pic-preview')) {
+      $('sup-pic-preview').src = uri;
+      $('sup-pic-preview').alt = state.draftSupAlt || 'Support picture';
+      $('sup-pic-preview').hidden = false;
+    }
+    if ($('sup-pic-credit')) {
+      $('sup-pic-credit').textContent = state.draftSupCredit;
+      $('sup-pic-credit').hidden = !state.draftSupCredit;
+    }
+    if ($('sup-pic-clear')) $('sup-pic-clear').hidden = false;
+    closeSupportPicPicker();
+    setText('sup-problem', '');
+    setText('sup-said', 'Selected offline picture' + (state.draftSupAlt ? ': ' + state.draftSupAlt : '') + '.');
+  }
+  function defaultCreditForHit(hit) {
+    if (hit && hit.credit) return String(hit.credit);
+    var set = String((hit && hit.set) || '').toLowerCase();
+    if (set === 'diagram' || (hit && hit.matchType === 'diagram')) return 'AlloFlow Curriculum Diagrams (AGPL-3.0)';
+    if (set === 'openmoji') return 'OpenMoji 17.0.0 (CC BY-SA 4.0)';
+    return 'Mulberry Symbols 3.6.1 (CC BY-SA 4.0)';
+  }
+  function renderSupportPicResults(hits, query) {
+    var grid = $('sup-pic-results');
+    if (!grid) return;
+    grid.textContent = '';
+    var usable = [];
+    (Array.isArray(hits) ? hits : []).forEach(function (hit) {
+      if (!hit || typeof hit.svg !== 'string') return;
+      var uri = svgToDataUri(hit.svg);
+      if (!uri) return;
+      usable.push({
+        uri: uri,
+        word: String(hit.word || hit.label || ''),
+        label: String(hit.label || hit.word || 'Picture'),
+        alt: String(hit.alt || hit.label || hit.word || 'Support picture'),
+        set: String(hit.set || (hit.matchType === 'diagram' ? 'diagram' : 'mulberry')).toLowerCase(),
+        credit: defaultCreditForHit(hit),
+      });
+    });
+    if (!usable.length) {
+      setText('sup-pic-status', query ? ('No offline symbol or diagram matched "' + query + '". Try another word or choose a picture file.') : 'Type a word to search offline symbols and curriculum diagrams.');
+      return;
+    }
+    setText('sup-pic-status', count(usable.length, 'offline picture') + (query ? (' for "' + query + '"') : '') + '. Select one to attach it.');
+    usable.forEach(function (item) {
+      var wrap = el('div', 'ra-sup-pick-item');
+      wrap.setAttribute('role', 'listitem');
+      var btn = el('button', 'ra-sup-pick-btn');
+      btn.type = 'button';
+      btn.setAttribute('data-sup-pick-word', item.word);
+      btn.setAttribute('data-sup-pick-set', item.set);
+      var kindLabel = item.set === 'diagram' ? 'Diagram' : 'Symbol';
+      btn.setAttribute('aria-label', 'Attach ' + item.label + ' (' + kindLabel + ')');
+      var img = doc.createElement('img');
+      img.className = 'ra-sup-pick-img';
+      img.src = item.uri;
+      img.alt = '';
+      btn.appendChild(img);
+      btn.appendChild(el('span', 'ra-sup-pick-label', item.label));
+      btn.appendChild(el('span', 'ra-sup-pick-kind', kindLabel));
+      btn.addEventListener('click', function () {
+        selectDraftSupportPic(item.uri, item.alt, item.set, item.credit);
+      });
+      wrap.appendChild(btn);
+      grid.appendChild(wrap);
+    });
+  }
+  function searchOfflineSupportPics(rawQuery) {
+    var query = String(rawQuery || '').replace(/\s+/g, ' ').trim().slice(0, 60);
+    var seq = ++supPicSearchSeq;
+    setText('sup-pic-status', 'Loading offline symbols and curriculum diagrams...');
+    return ensurePictures().then(function () {
+      if (seq !== supPicSearchSeq) return [];
+      var matcher = getPictureMatcher();
+      var extBank = getExtSymbolBank();
+      var searchFn = matcher && (typeof matcher.searchSymbolsWithDiagrams === 'function'
+        ? matcher.searchSymbolsWithDiagrams
+        : (typeof matcher.searchSymbols === 'function' ? matcher.searchSymbols : null));
+      var runSearch = searchFn
+        ? Promise.resolve().then(function () {
+            return searchFn.call(matcher, query, {
+              symbols: symbolBank || extBank || null,
+              readingSymbolsExt: extBank || null,
+              preferDiagrams: true,
+              limit: 18,
+            });
+          })
+        : Promise.resolve([]);
+      return runSearch.then(function (hits) {
+        if (seq !== supPicSearchSeq) return [];
+        var list = Array.isArray(hits) ? hits.slice() : [];
+        if (!list.length && query && matcher && typeof matcher.getDiagram === 'function') {
+          var one = matcher.getDiagram(query, '', query);
+          if (one && typeof one.svg === 'string') list.push(one);
+        }
+        if (!list.length && !query && matcher && matcher.CURRICULUM_DIAGRAMS && typeof matcher.CURRICULUM_DIAGRAMS === 'object') {
+          Object.keys(matcher.CURRICULUM_DIAGRAMS).slice(0, 18).forEach(function (k) {
+            var d = matcher.CURRICULUM_DIAGRAMS[k];
+            if (d && typeof d.svg === 'string') {
+              list.push({ word: k, matchedKey: k, matchType: 'diagram', svg: d.svg, label: d.label || k, set: 'diagram', alt: d.label || k, credit: d.credit || '' });
+            }
+          });
+        }
+        renderSupportPicResults(list, query);
+        return list;
+      });
+    }).catch(function () {
+      if (seq === supPicSearchSeq) setText('sup-pic-status', 'Could not load offline symbols right now.');
+      return [];
+    });
+  }
+  function toggleSupportPicPicker() {
+    var panel = $('sup-pic-picker');
+    if (!panel) return;
+    var opening = panel.hidden;
+    panel.hidden = !opening;
+    if ($('sup-pic-offline')) $('sup-pic-offline').setAttribute('aria-expanded', opening ? 'true' : 'false');
+    if (!opening) return;
+    var input = $('sup-pic-search');
+    if (input) {
+      var quoteVal = ($('sup-quote') && $('sup-quote').value) ? String($('sup-quote').value).trim() : '';
+      if (quoteVal) input.value = quoteVal.slice(0, 60);
+      input.focus();
+      searchOfflineSupportPics(input.value);
+    } else {
+      searchOfflineSupportPics('');
+    }
+  }
+  function addCustomSupportFromForm() {
+    setText('sup-problem', '');
+    setText('sup-said', '');
+    if (!state.sentences.length) { setText('sup-problem', 'Type a passage in step 1 first.'); return; }
+    var lineIdx = Math.floor(Number(($('sup-line') && $('sup-line').value) || 0));
+    if (!isFinite(lineIdx) || lineIdx < 0 || lineIdx >= state.sentences.length) lineIdx = 0;
+    var quote = builder.clipKey(($('sup-quote') && $('sup-quote').value) || '').slice(0, 80);
+    var textVal = builder.clipKey(($('sup-text') && $('sup-text').value) || '').slice(0, 360);
+    if (!textVal) { setText('sup-problem', 'Write an explanation or note before adding.'); if ($('sup-text')) $('sup-text').focus(); return; }
+    var sup = {
+      id: 'sup' + (state.nextSupSeq++),
+      line: lineIdx,
+      quote: quote,
+      text: textVal,
+      imgUri: state.draftSupImg || '',
+      alt: state.draftSupAlt || quote || ('Note for sentence ' + (lineIdx + 1)),
+      imgSet: state.draftSupSet || '',
+      imgCredit: state.draftSupCredit || '',
+    };
+    state.customSupports.push(sup);
+    clearDraftSupportPic();
+    closeSupportPicPicker();
+    if ($('sup-quote')) $('sup-quote').value = '';
+    if ($('sup-text')) $('sup-text').value = '';
+    state.unsaved = true;
+    setText('sup-said', 'Added support for sentence ' + (lineIdx + 1) + '.');
+    draw();
+    refreshFile();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Optional Comprehension Check-In Questions (up to 6) & Saved Local Presets
+  // ---------------------------------------------------------------------------
+  function syncCheckKindUi() {
+    var kind = ($('chk-kind') && $('chk-kind').value) || 'mc';
+    show('chk-mc-fields', kind === 'mc');
+  }
+  function parseCheckChoices(raw) {
+    var s = String(raw || '').trim();
+    if (!s) return [];
+    var parts = s.indexOf('\n') >= 0 ? s.split(/\r?\n/) : s.split(',');
+    var out = [];
+    for (var i = 0; i < parts.length && out.length < 4; i++) {
+      var c = builder.clipKey(parts[i]).slice(0, 140);
+      if (c) out.push(c);
+    }
+    return out;
+  }
+  function drawQuestions() {
+    var list = $('chk-list');
+    var nowEl = $('check-questions-now');
+    var qs = Array.isArray(state.questions) ? state.questions : [];
+    if (nowEl) nowEl.textContent = qs.length ? count(qs.length, 'question') : 'None added';
+    if ($('chk-add')) $('chk-add').disabled = qs.length >= MAX_QUESTIONS;
+    if (!list) return;
+    list.textContent = '';
+    qs.forEach(function (q, idx) {
+      var li = el('li', 'voice-row');
+      li.setAttribute('data-check-row', q.id);
+      var copy = el('div', 'ra-sup-copy');
+      var kindLabel = q.kind === 'mc' ? 'Multiple choice' : 'Open response';
+      copy.appendChild(el('span', 'ra-sup-head', 'Question ' + (idx + 1) + ' (' + kindLabel + '): ' + q.prompt));
+      if (q.kind === 'mc' && Array.isArray(q.choices) && q.choices.length) {
+        var detail = q.choices.map(function (c, ci) {
+          var mark = ci === q.answer ? ' [Correct]' : '';
+          return wsLetterLabel(ci) + '. ' + c + mark;
+        }).join('  |  ');
+        copy.appendChild(el('span', 'ra-sup-body', detail));
+      }
+      li.appendChild(copy);
+      var rmBtn = el('button', 'btn btn-small', 'Remove');
+      rmBtn.type = 'button';
+      rmBtn.setAttribute('data-chk-remove', q.id);
+      rmBtn.addEventListener('click', function () {
+        state.questions = (state.questions || []).filter(function (x) { return x.id !== q.id; });
+        state.unsaved = true;
+        drawQuestions();
+        refreshFile();
+      });
+      li.appendChild(rmBtn);
+      list.appendChild(li);
+    });
+  }
+  function addCheckQuestionFromForm() {
+    setText('chk-problem', '');
+    setText('chk-said', '');
+    if ((state.questions || []).length >= MAX_QUESTIONS) {
+      setText('chk-problem', 'You can add up to ' + MAX_QUESTIONS + ' check-in questions.');
+      return;
+    }
+    var prompt = builder.clipKey(($('chk-prompt') && $('chk-prompt').value) || '').slice(0, 240);
+    if (!prompt) {
+      setText('chk-problem', 'Write a question prompt before adding.');
+      if ($('chk-prompt')) $('chk-prompt').focus();
+      return;
+    }
+    var kind = ($('chk-kind') && $('chk-kind').value) === 'open' ? 'open' : 'mc';
+    var q = { id: 'q' + (state.nextQSeq++), prompt: prompt, kind: kind };
+    if (kind === 'mc') {
+      var choices = parseCheckChoices($('chk-choices') && $('chk-choices').value);
+      if (choices.length < 2) {
+        setText('chk-problem', 'Enter 2 to 4 choices (one per line or comma-separated).');
+        if ($('chk-choices')) $('chk-choices').focus();
+        return;
+      }
+      var ans = Math.floor(Number(($('chk-answer') && $('chk-answer').value) || 0));
+      if (!isFinite(ans) || ans < 0 || ans >= choices.length) ans = 0;
+      q.choices = choices;
+      q.answer = ans;
+    }
+    state.questions.push(q);
+    if ($('chk-prompt')) $('chk-prompt').value = '';
+    if ($('chk-choices')) $('chk-choices').value = '';
+    if ($('chk-answer')) $('chk-answer').value = '0';
+    state.unsaved = true;
+    setText('chk-said', 'Added check-in question ' + state.questions.length + '.');
+    drawQuestions();
+    refreshFile();
+  }
+
+  function loadLocalPresets() {
+    try {
+      var raw = win.localStorage && win.localStorage.getItem(PRESET_KEY);
+      if (!raw) return [];
+      var parsed = JSON.parse(raw, function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter(function (p) { return p && typeof p.name === 'string' && p.name.trim() && p.data && typeof p.data === 'object'; }).slice(0, MAX_PRESETS);
+    } catch (_) { return []; }
+  }
+  function writeLocalPresets(list) {
+    try {
+      if (win.localStorage) win.localStorage.setItem(PRESET_KEY, JSON.stringify((Array.isArray(list) ? list : []).slice(0, MAX_PRESETS)));
+      return true;
+    } catch (_) { return false; }
+  }
+  function capturePresetData() {
+    return {
+      pos: !!($('f-pos') && $('f-pos').checked),
+      posScheme: posScheme(),
+      posStyle: posStyle(),
+      posExtended: !!($('f-pos-extended') && $('f-pos-extended').checked),
+      posColors: {
+        n: ($('f-pos-c-n') && $('f-pos-c-n').value) || '#7c3aed',
+        v: ($('f-pos-c-v') && $('f-pos-c-v').value) || '#0f766e',
+        j: ($('f-pos-c-j') && $('f-pos-c-j').value) || '#1d4ed8',
+        a: ($('f-pos-c-a') && $('f-pos-c-a').value) || '#b45309',
+      },
+      defFocus: ($('f-def-focus') && $('f-def-focus').value) || '',
+      defFont: ($('f-def-font') && $('f-def-font').value) || '',
+      defSpacing: ($('f-def-spacing') && $('f-def-spacing').value) || '',
+      defColors: ($('f-def-colors') && $('f-def-colors').value) || '',
+      simpleBar: !!($('f-simple-bar') && $('f-simple-bar').checked),
+      dict: !!($('f-dict') && $('f-dict').checked),
+      narrateGlossary: !!($('f-narrate-glossary') && $('f-narrate-glossary').checked),
+      dictPics: !!($('f-dict-pics') && $('f-dict-pics').checked),
+      deviceVoice: !!($('f-device-voice') && $('f-device-voice').checked),
+      studentMic: !!($('f-student-mic') && $('f-student-mic').checked),
+      printSyl: !!($('print-syl') && $('print-syl').checked),
+      printBold: !!($('print-bold') && $('print-bold').checked),
+      printDict: !!($('print-dict') && $('print-dict').checked),
+      printSupports: !($('print-supports') && !$('print-supports').checked),
+    };
+  }
+  function applyPresetData(d) {
+    if (!d || typeof d !== 'object') return;
+    if ($('f-pos')) $('f-pos').checked = !!d.pos;
+    if ($('f-pos-scheme') && typeof d.posScheme === 'string') $('f-pos-scheme').value = builder.cleanPosScheme ? builder.cleanPosScheme(d.posScheme) : d.posScheme;
+    if ($('f-pos-style') && typeof d.posStyle === 'string') $('f-pos-style').value = builder.cleanPosStyle ? builder.cleanPosStyle(d.posStyle) : d.posStyle;
+    if ($('f-pos-extended')) $('f-pos-extended').checked = !!d.posExtended;
+    if (d.posColors && typeof d.posColors === 'object') {
+      if ($('f-pos-c-n') && /^#[0-9a-f]{6}$/i.test(String(d.posColors.n || ''))) $('f-pos-c-n').value = d.posColors.n;
+      if ($('f-pos-c-v') && /^#[0-9a-f]{6}$/i.test(String(d.posColors.v || ''))) $('f-pos-c-v').value = d.posColors.v;
+      if ($('f-pos-c-j') && /^#[0-9a-f]{6}$/i.test(String(d.posColors.j || ''))) $('f-pos-c-j').value = d.posColors.j;
+      if ($('f-pos-c-a') && /^#[0-9a-f]{6}$/i.test(String(d.posColors.a || ''))) $('f-pos-c-a').value = d.posColors.a;
+    }
+    if ($('f-def-focus')) $('f-def-focus').value = d.defFocus != null ? String(d.defFocus) : '';
+    if ($('f-def-font')) $('f-def-font').value = d.defFont != null ? String(d.defFont) : '';
+    if ($('f-def-spacing')) $('f-def-spacing').value = d.defSpacing != null ? String(d.defSpacing) : '';
+    if ($('f-def-colors')) $('f-def-colors').value = d.defColors != null ? String(d.defColors) : '';
+    if ($('f-simple-bar')) $('f-simple-bar').checked = !!d.simpleBar;
+    if ($('f-dict')) $('f-dict').checked = !!d.dict;
+    if ($('f-narrate-glossary')) $('f-narrate-glossary').checked = !!d.narrateGlossary;
+    if ($('f-dict-pics')) $('f-dict-pics').checked = !!d.dictPics;
+    if ($('f-device-voice')) $('f-device-voice').checked = !!d.deviceVoice;
+    if ($('f-student-mic')) $('f-student-mic').checked = !!d.studentMic;
+    if ($('print-syl')) $('print-syl').checked = !!d.printSyl;
+    if ($('print-bold')) $('print-bold').checked = !!d.printBold;
+    if ($('print-dict')) $('print-dict').checked = !!d.printDict;
+    if ($('print-supports') && typeof d.printSupports === 'boolean') $('print-supports').checked = d.printSupports;
+    state.unsaved = true;
+    syncLangUi();
+    syncSupportCards();
+    if (useDict() || usePos()) {
+      ensureDictionary().then(function () { if (!$('f-text')) return; draw(); refreshFile(); });
+    }
+    if (useDictPics()) {
+      ensurePictures().then(function () { if (!$('f-text')) return; refreshFile(); });
+    }
+    refreshFile();
+  }
+  function renderPresetSelect(selectedName) {
+    var sel = $('ra-preset-select');
+    if (!sel) return;
+    var list = loadLocalPresets();
+    sel.textContent = '';
+    var defOpt = doc.createElement('option');
+    defOpt.value = '';
+    defOpt.textContent = list.length ? 'Saved presets (' + list.length + ')...' : 'Saved presets...';
+    sel.appendChild(defOpt);
+    list.forEach(function (p) {
+      var opt = doc.createElement('option');
+      opt.value = p.name;
+      opt.textContent = p.name;
+      sel.appendChild(opt);
+    });
+    if (selectedName && list.some(function (p) { return p.name === selectedName; })) sel.value = selectedName;
+    else sel.value = '';
+    if ($('ra-preset-delete')) $('ra-preset-delete').disabled = !sel.value;
+  }
+  function saveCurrentPreset() {
+    var nameInput = $('ra-preset-name');
+    var name = String((nameInput && nameInput.value) || '').replace(/\s+/g, ' ').trim().slice(0, 60);
+    if (!name) {
+      setText('ra-preset-said', 'Type a preset name first.');
+      if (nameInput) nameInput.focus();
+      return;
+    }
+    var list = loadLocalPresets().filter(function (p) { return p.name.toLowerCase() !== name.toLowerCase(); });
+    list.unshift({ name: name, data: capturePresetData() });
+    if (!writeLocalPresets(list)) {
+      setText('ra-preset-said', 'Could not save preset in this browser.');
+      return;
+    }
+    if (nameInput) nameInput.value = '';
+    renderPresetSelect(name);
+    setText('ra-preset-said', 'Saved preset "' + name + '" on this device.');
+  }
+  function deleteSelectedPreset() {
+    var sel = $('ra-preset-select');
+    var target = sel ? sel.value : '';
+    if (!target) return;
+    var list = loadLocalPresets().filter(function (p) { return p.name !== target; });
+    writeLocalPresets(list);
+    renderPresetSelect('');
+    setText('ra-preset-said', 'Deleted preset "' + target + '".');
   }
 
   function playClip(row) {
@@ -850,6 +1640,78 @@
       });
   }
 
+  function hearSample() {
+    if (!state.ready || state.making || state.rec || state.sampling) return;
+    var voice = ($('f-voice') && $('f-voice').value) || 'af_heart';
+    state.sampling = true;
+    setText('sample-said', 'Making a short sample...');
+    draw();
+    engine.speak('The quick fox jumped over the brown log.', voice, {}).then(function (wav) {
+      state.sampling = false;
+      draw();
+      var uri = engine.toDataUri(wav, 'audio/wav');
+      try { if (state.playing) state.playing.pause(); } catch (_) {}
+      var audio = new win.Audio(uri);
+      state.playing = audio;
+      setText('sample-said', 'Playing sample.');
+      audio.play().catch(function () { setText('sample-said', 'This browser could not play the sample.'); });
+    }, function () {
+      state.sampling = false;
+      draw();
+      setText('sample-said', 'The voice could not make a sample just now.');
+    });
+  }
+
+  function describePreview(lesson) {
+    var out = [], blocks = lesson && Array.isArray(lesson.blocks) ? lesson.blocks : [];
+    blocks.forEach(function (block) {
+      (Array.isArray(block.items) ? block.items : []).forEach(function (item, idx) {
+        var pageNum = item.page || (idx + 1);
+        var firstLine = Array.isArray(item.lines) && item.lines[0] ? String(item.lines[0].text || '').trim() : String(item.word || '').trim();
+        var snip = firstLine.length > 28 ? firstLine.slice(0, 27).trim() + '\u2026' : firstLine;
+        out.push({
+          itemId: String(item.id || ''),
+          activity: String(block.activity || 'read_along'),
+          word: snip,
+          sample: false,
+          label: 'Page ' + pageNum + (snip ? ' \u2014 ' + snip : ''),
+          canSwap: false,
+          canTogglePicture: false,
+        });
+      });
+    });
+    return out;
+  }
+
+  function syncSupportCards() {
+    var items = [
+      ['f-pos', 'Parts of speech'],
+      ['f-dict', 'Word meanings'],
+      ['f-dict-pics', 'Word pictures'],
+      ['f-simple-bar', 'Simple toolbar'],
+      ['f-device-voice', 'Device voice'],
+      ['f-student-mic', 'Voice practice'],
+    ];
+    var on = [];
+    items.forEach(function (pair) {
+      var box = $(pair[0]);
+      if (!box) return;
+      var checked = !box.disabled && !!box.checked;
+      var card = box.closest ? box.closest('.ra-support-card') : null;
+      if (card) card.classList.toggle('is-on', checked);
+      if (box.parentNode && box.parentNode.classList) box.parentNode.classList.toggle('is-on', checked);
+      if (checked) on.push(pair[1]);
+    });
+    if (useNarrateGlossary()) on.push('spoken word meanings');
+    var printOn = [];
+    if ($('print-syl') && $('print-syl').checked && !$('print-syl-wrap').hidden) printOn.push('syllables on paper');
+    if ($('print-bold') && $('print-bold').checked && !$('print-bold-wrap').hidden) printOn.push('bold starts on paper');
+    if ($('print-dict') && $('print-dict').checked && !$('print-dict-wrap').hidden) printOn.push('meanings on paper');
+    if ($('print-supports') && $('print-supports').checked && $('print-supports-wrap') && !$('print-supports-wrap').hidden) printOn.push('custom notes on paper');
+    var summary = on.concat(printOn);
+    setText('more-supports-now', summary.length ? summary.join(' \u00b7 ') : 'Default (Syllables + Reading tools)');
+  }
+
   // ---------------------------------------------------------------------------
   // Step 3: one recording for each sentence (computer voice)
   // ---------------------------------------------------------------------------
@@ -866,25 +1728,61 @@
       state.unsaved = true;
     });
   }
+  function makeOneGlossary(entry, signal) {
+    var voice = $('f-voice').value || 'af_heart';
+    var spoken = entry && entry.spoken ? String(entry.spoken).trim() : '';
+    if (!spoken) return Promise.resolve();
+    if (signal && signal.aborted) return Promise.reject(abortError());
+    return engine.speak(spoken, voice, { signal: signal }).then(function (wav) {
+      if (signal && signal.aborted) throw abortError();
+      var mp3 = state.mp3 ? engine.wavToMp3(wav, MP3_KBPS) : null;
+      if (signal && signal.aborted) throw abortError();
+      var uri = mp3 ? engine.toDataUri(mp3, 'audio/mpeg') : engine.toDataUri(wav, 'audio/wav');
+      if (uri.length > builder.MAX_CLIP_CHARS) throw new Error('too long');
+      state.glossaryClips[entry.key] = { uri: uri, ms: engine.wavMs(wav), voice: voice, source: 'computer' };
+      state.unsaved = true;
+    });
+  }
   // rows: the sentences to record. one: the number of the sentence whose own button was pressed, when it was one.
-  function makeSome(rows, one) {
-    if (state.making || state.rec || !state.ready || !rows.length) return;
+  // supports: optional array of custom supports to synthesize with the same Kokoro voice.
+  // glossaryEntries: optional array of auto-glossary entries (capped at MAX_GLOSSARY_CLIPS) to synthesize.
+  function makeSome(rows, one, supports, glossaryEntries) {
+    var sentList = Array.isArray(rows) ? rows : [];
+    var supList = Array.isArray(supports) ? supports : [];
+    var glossList = Array.isArray(glossaryEntries) ? glossaryEntries.slice(0, MAX_GLOSSARY_CLIPS) : [];
+    var totalTasks = sentList.length + supList.length + glossList.length;
+    if (state.making || state.rec || !state.ready || !totalTasks) return;
     var run = ++state.makeRun;
     var stop = makeController();
     state.making = true;
     state.stop = stop;
     clearBuilt();
     setText('make-problem', '');
+    setText('sup-problem', '');
     setText('file-said', 'Making the recordings.');
     draw();
-    var done = 0, failed = [], stopped = false, numbers = rows.map(function (row) { return state.sentences.indexOf(row) + 1; });
+    var done = 0, failed = [], supFailed = 0, glossFailed = 0, stopped = false, numbers = sentList.map(function (row) { return state.sentences.indexOf(row) + 1; });
     var step = function (index) {
       if (run !== state.makeRun || stop.signal.aborted) { stopped = true; return Promise.resolve(); }
-      if (index >= rows.length) return Promise.resolve();
-      setText('make-said', 'Making ' + (index + 1) + ' of ' + rows.length + '.');
-      return makeOne(rows[index], stop.signal).then(function () { done += 1; }, function (error) {
+      if (index >= totalTasks) return Promise.resolve();
+      setText('make-said', 'Making ' + (index + 1) + ' of ' + totalTasks + '.');
+      if (index < sentList.length) {
+        return makeOne(sentList[index], stop.signal).then(function () { done += 1; }, function (error) {
+          if (run !== state.makeRun || stop.signal.aborted || (error && error.name === 'AbortError')) { stopped = true; return; }
+          failed.push(numbers[index]);
+        }).then(function () { return (stopped || run !== state.makeRun) ? null : step(index + 1); });
+      }
+      if (index < sentList.length + supList.length) {
+        var sup = supList[index - sentList.length];
+        return makeOneSupport(sup, stop.signal).then(function () { done += 1; }, function (error) {
+          if (run !== state.makeRun || stop.signal.aborted || (error && error.name === 'AbortError')) { stopped = true; return; }
+          supFailed += 1;
+        }).then(function () { return (stopped || run !== state.makeRun) ? null : step(index + 1); });
+      }
+      var gEntry = glossList[index - sentList.length - supList.length];
+      return makeOneGlossary(gEntry, stop.signal).then(function () { done += 1; }, function (error) {
         if (run !== state.makeRun || stop.signal.aborted || (error && error.name === 'AbortError')) { stopped = true; return; }
-        failed.push(numbers[index]);
+        glossFailed += 1;
       }).then(function () { return (stopped || run !== state.makeRun) ? null : step(index + 1); });
     };
     step(0).then(function () {
@@ -894,6 +1792,8 @@
       draw();
       setText('make-said', (stopped ? 'Stopped. ' : '') + count(done, 'recording') + ' made.' + (done ? ' Press Play to hear ' + (done === 1 ? 'it' : 'each one') + '.' : ''));
       if (failed.length) setText('make-problem', 'Not made: ' + (failed.length === 1 ? 'sentence ' : 'sentences ') + failed.join(', ') + '. The voice gave no sound it could keep. Press Make recording on a sentence to try again, or change the sentence.');
+      if (supFailed) setText('sup-problem', count(supFailed, 'custom support recording') + ' could not be made. Try again or record with your microphone.');
+      if (glossFailed && !failed.length) setText('make-problem', count(glossFailed, 'word meaning recording') + ' could not be made. The remaining word meanings still show as text.');
       refreshFile();
       var focus = one ? doc.querySelector('[data-play="' + one + '"]') || doc.querySelector('[data-make="' + one + '"]') : $('save');
       if (!focus || focus.hidden || focus.disabled) focus = $('make-all');
@@ -946,10 +1846,19 @@
     var sylNote = made.syllables ? 'It has a Syllables button, which shows longer words in parts (' + made.syllables.example + '). ' : '';
     var posNote = made.partsOfSpeech ? 'It has a Parts of speech button. ' : '';
     var dictNote = made.dictionary ? 'It has a Word meanings button (' + count(made.dictionary.words, 'word') + '). ' : '';
+    var supNote = made.customSupports > 0 ? 'It has ' + count(made.customSupports, 'custom support') + '. ' : '';
     var micNote = made.studentMic ? 'Students can record and listen back to their own voice on their device only. ' : '';
-    setText('file-sub', recNote + sylNote + posNote + dictNote + micNote + 'It will be saved as ' + state.built.name + '.');
-    if (state.fileUrl) { $('try').setAttribute('href', TRY_PAGE + '#' + state.fileUrl); show('try', true); }
+    setText('file-sub', recNote + sylNote + posNote + dictNote + supNote + micNote + 'It will be saved as ' + state.built.name + '.');
+    stopPreview();
+    if (state.fileUrl) {
+      $('try').setAttribute('href', TRY_PAGE + '#' + state.fileUrl);
+      show('try', true);
+      if (win.AlloPacketHandoff && typeof win.AlloPacketHandoff.hostPreview === 'function') {
+        previewSession = win.AlloPacketHandoff.hostPreview({ url: state.fileUrl, html: html, describe: describePreview });
+      }
+    }
     show('save', true);
+    show('download-bundle', !!(win.AlloPacketZip && typeof win.AlloPacketZip.create === 'function'));
   }
   function drawBatch() {
     var list = batchList(), n = list.names.length, parts = [];
@@ -987,7 +1896,7 @@
       var zipName = titleStem() + '__' + list.names.length + '-students.zip';
       var url = URL.createObjectURL(new Blob(parts, { type: 'application/zip' }));
       download(url, zipName);
-      win.setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+      win.setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 60000);
       state.unsaved = false;
       setText('batch-said', 'Saved ' + zipName + ' (' + fileSize(zip.bytes) + '). Send each student their own file.');
     } catch (error) {
@@ -1018,9 +1927,11 @@
     var paper = $('paper');
     if (paper) paper.textContent = '';
     show('print', false);
+    show('download-worksheet', false);
     show('print-syl-wrap', false);
     show('print-bold-wrap', false);
     show('print-dict-wrap', false);
+    show('print-supports-wrap', false);
   }
   function loadPassageFile(file) {
     setText('passage-problem', '');
@@ -1107,7 +2018,7 @@
         body.appendChild(hNode);
         return;
       }
-      if (!currentP || (row.para && idx > 0)) {
+      if (!currentP || ((row.para || row.pageBreak) && idx > 0)) {
         currentP = el('p', 'paper-para');
         body.appendChild(currentP);
       }
@@ -1149,12 +2060,429 @@
         sheet.appendChild(gBox);
       }
     }
+    var customSupsForPaper = activeCustomSupports();
+    var withSupports = !($('print-supports') && !$('print-supports').checked);
+    if (withSupports && customSupsForPaper.length) {
+      var sBox = el('div', 'paper-gloss');
+      sBox.setAttribute('data-paper-supports', '1');
+      sBox.appendChild(el('h2', '', 'Notes & supports'));
+      var sUl = el('ul', 'paper-gloss-list');
+      customSupsForPaper.forEach(function (sup) {
+        var li = el('li', 'paper-gloss-item');
+        if (sup.imgUri) {
+          var sImg = doc.createElement('img');
+          sImg.className = 'paper-gloss-img';
+          sImg.src = sup.imgUri;
+          sImg.alt = sup.alt || sup.quote || 'Support picture';
+          li.appendChild(sImg);
+        }
+        var sp = el('span', '');
+        sp.appendChild(el('span', 'paper-gloss-word', (sup.quote ? sup.quote + ' (sentence ' + (sup.line + 1) + ')' : 'Sentence ' + (sup.line + 1)) + ': '));
+        sp.appendChild(doc.createTextNode(sup.text));
+        li.appendChild(sp);
+        sUl.appendChild(li);
+      });
+      sBox.appendChild(sUl);
+      sheet.appendChild(sBox);
+    }
     paper.appendChild(sheet);
     doc.body.classList.add('paper-on');
     show('print', true);
+    show('download-worksheet', true);
+    show('download-bundle', !!(state.built && win.AlloPacketZip && typeof win.AlloPacketZip.create === 'function'));
     show('print-syl-wrap', !!(state.made && state.made.syllables));
     show('print-bold-wrap', true);
     show('print-dict-wrap', !!(state.made && state.made.dictionary));
+    show('print-supports-wrap', customSupsForPaper.length > 0);
+    syncSupportCards();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Read-Along Printable Student Worksheet HTML Builder & Classroom Bundle (.zip)
+  // ---------------------------------------------------------------------------
+  var WS_CSP = "default-src 'none'; style-src 'unsafe-inline'; img-src data:; script-src 'none'";
+  var WS_IMG_RE = /^data:image\/(?:png|jpeg|jpg|webp|gif|svg\+xml)[;,]/i;
+
+  function wsEsc(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function (ch) {
+      return ch === '&' ? '&amp;' : ch === '<' ? '&lt;' : ch === '>' ? '&gt;' : ch === '"' ? '&quot;' : '&#39;';
+    });
+  }
+  function wsSafeImg(uri) {
+    var s = typeof uri === 'string' ? uri.trim() : '';
+    return s && WS_IMG_RE.test(s) ? s : '';
+  }
+  function wsHash(text) {
+    var h = 2166136261 >>> 0;
+    var s = String(text || '');
+    for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+    return h >>> 0;
+  }
+  function wsShuffle(list, seedText) {
+    var out = (Array.isArray(list) ? list : []).slice();
+    var h = wsHash(seedText) || 1;
+    for (var i = out.length - 1; i > 0; i--) {
+      h = (Math.imul(h, 1664525) + 1013904223) >>> 0;
+      var j = h % (i + 1);
+      var tmp = out[i]; out[i] = out[j]; out[j] = tmp;
+    }
+    return out;
+  }
+  function wsLetterLabel(idx) {
+    var n = Math.max(0, Math.floor(Number(idx) || 0));
+    var out = '';
+    do {
+      out = String.fromCharCode(65 + (n % 26)) + out;
+      n = Math.floor(n / 26) - 1;
+    } while (n >= 0);
+    return out;
+  }
+  function wsBoldHtml(textStr, withBold) {
+    if (!withBold) return wsEsc(textStr);
+    var re = /[A-Za-z\u00C0-\u024F\u00b7]+/g, m, last = 0, out = '';
+    while ((m = re.exec(textStr))) {
+      if (m.index > last) out += wsEsc(textStr.slice(last, m.index));
+      var tok = m[0];
+      var plainLen = tok.replace(/\u00b7/g, '').length;
+      if (plainLen < 2) {
+        out += wsEsc(tok);
+      } else {
+        var targetLetters = plainLen <= 3 ? Math.max(1, plainLen - 1) : Math.ceil(plainLen * 0.45);
+        var seen = 0, cutIdx = 0;
+        for (var ci = 0; ci < tok.length; ci++) {
+          if (tok[ci] !== '\u00b7') seen++;
+          cutIdx = ci + 1;
+          if (seen >= targetLetters) break;
+        }
+        out += '<strong>' + wsEsc(tok.slice(0, cutIdx)) + '</strong>' + (cutIdx < tok.length ? wsEsc(tok.slice(cutIdx)) : '');
+      }
+      last = m.index + tok.length;
+    }
+    if (last < textStr.length) out += wsEsc(textStr.slice(last));
+    return out;
+  }
+
+  function buildReadAlongWorksheetHtml(opts) {
+    var o = opts && typeof opts === 'object' ? opts : {};
+    var titleText = String(o.title || 'Read along').replace(/\s+/g, ' ').trim() || 'Read along';
+    var lang = String(o.lang || 'en').trim().toLowerCase() || 'en';
+    var isRtl = !!(builder && typeof builder.isRtlLang === 'function' && builder.isRtlLang(lang));
+    var sentences = Array.isArray(o.sentences) && o.sentences.length
+      ? o.sentences
+      : (typeof o.text === 'string' && o.text.trim() && builder && typeof builder.splitPassage === 'function'
+          ? builder.splitPassage(o.text)
+          : []);
+    var showSyllables = !!o.showSyllables;
+    var showBold = !!o.showBold;
+    var showSupports = o.showSupports !== false;
+    var includeAnswerKey = o.includeAnswerKey !== false;
+
+    var sylFn = typeof o.syllableLookup === 'function' ? o.syllableLookup : (table ? syllablesOf : null);
+    var langIsSpanish = lang === 'es';
+    var langIsEnglish = lang === 'en';
+    var formatSentence = function (rawText) {
+      var textOut = String(rawText || '');
+      if (showSyllables && builder && typeof builder.syllableText === 'function') {
+        var syl = '';
+        if (langIsSpanish && typeof builder.syllabifySpanish === 'function') {
+          syl = builder.syllableText(textOut, builder.syllabifySpanish, { spanish: true });
+        } else if (langIsEnglish && sylFn) {
+          syl = builder.syllableText(textOut, sylFn);
+        }
+        if (syl) textOut = syl;
+      }
+      return wsBoldHtml(textOut, showBold);
+    };
+
+    // Part 1 — Read the Passage
+    var passageHtmlParts = [];
+    var currentPara = [];
+    var flushPara = function () {
+      if (!currentPara.length) return;
+      passageHtmlParts.push('<p class="ws-para">' + currentPara.join(' ') + '</p>');
+      currentPara = [];
+    };
+    sentences.forEach(function (row, idx) {
+      if (!row || typeof row.text !== 'string' || !row.text.trim()) return;
+      var formatted = formatSentence(row.text);
+      if (row.heading === 1 || row.heading === 2 || row.heading === 3) {
+        flushPara();
+        passageHtmlParts.push('<h3 class="ws-subhead">' + formatted + '</h3>');
+        return;
+      }
+      if ((row.para || row.pageBreak) && idx > 0) flushPara();
+      currentPara.push(formatted);
+    });
+    flushPara();
+
+    var readSubtitle = '';
+    if (showSyllables && showBold) readSubtitle = 'Longer words are shown with syllable dots and bold word starts.';
+    else if (showSyllables) readSubtitle = 'Longer words are shown with syllable dots.';
+    else if (showBold) readSubtitle = 'Word starts are bolded to guide reading.';
+
+    var partsHtml = [];
+    partsHtml.push(
+      '<section class="ws-section" data-ra-part="passage">'
+      + '<div class="ws-section-head"><h2 class="ws-section-title">Part 1 \u2014 Read the Passage</h2>'
+      + (readSubtitle ? '<p class="ws-directions">' + wsEsc(readSubtitle) + '</p>' : '')
+      + '</div>'
+      + '<div class="ws-passage"' + (isRtl ? ' dir="rtl"' : '') + '>'
+      + (passageHtmlParts.length ? passageHtmlParts.join('') : '<p class="ws-para"></p>')
+      + '</div></section>'
+    );
+
+    // Part 2 — Reading Notes & Visual Supports
+    var cleanSupports = (Array.isArray(o.customSupports) ? o.customSupports : []).filter(function (sup) {
+      return sup && typeof sup === 'object' && String(sup.text || '').trim();
+    });
+    if (showSupports && cleanSupports.length) {
+      var supItemsHtml = cleanSupports.map(function (sup) {
+        var safeUri = wsSafeImg(sup.imgUri);
+        var label = sup.quote
+          ? String(sup.quote).trim() + (sup.line != null ? ' (sentence ' + (Number(sup.line) + 1) + ')' : '')
+          : (sup.line != null ? 'Sentence ' + (Number(sup.line) + 1) : 'Note');
+        var imgTag = safeUri
+          ? '<img class="ws-sup-img" src="' + wsEsc(safeUri) + '" alt="' + wsEsc(sup.alt || sup.quote || 'Support picture') + '">'
+          : '';
+        return '<li class="ws-sup-item">' + imgTag
+          + '<div class="ws-sup-body"><strong class="ws-sup-quote">' + wsEsc(label) + ':</strong> '
+          + '<span>' + wsEsc(String(sup.text || '').trim()) + '</span></div></li>';
+      }).join('');
+      partsHtml.push(
+        '<section class="ws-section" data-ra-part="supports">'
+        + '<div class="ws-section-head"><h2 class="ws-section-title">Part 2 \u2014 Reading Notes &amp; Visual Supports</h2>'
+        + '<p class="ws-directions">Use these notes and pictures to help you understand the passage.</p></div>'
+        + '<ul class="ws-sup-list">' + supItemsHtml + '</ul></section>'
+      );
+    }
+
+    // Part 3 — Match the Key Words (from custom quoted supports and/or active passage word meanings)
+    var keyWordItems = [];
+    var seenKeyWords = Object.create(null);
+    var addKeyWord = function (rawWord, rawMeaning) {
+      var w = String(rawWord || '').replace(/\s+/g, ' ').trim();
+      var m = String(rawMeaning || '').replace(/\s+/g, ' ').trim();
+      if (!w || !m) return;
+      var k = w.toLowerCase();
+      if (seenKeyWords[k]) return;
+      seenKeyWords[k] = true;
+      keyWordItems.push({ word: w, meaning: m });
+    };
+    cleanSupports.forEach(function (sup) {
+      if (sup.quote && sup.text) addKeyWord(sup.quote, sup.text);
+    });
+    if (Array.isArray(o.wordMeanings)) {
+      o.wordMeanings.forEach(function (entry) {
+        if (!entry || typeof entry !== 'object') return;
+        addKeyWord(entry.word || entry.w, entry.meaning || entry.def || entry.d);
+      });
+    } else if (o.wordMeanings && typeof o.wordMeanings === 'object') {
+      Object.keys(o.wordMeanings).sort().forEach(function (k) {
+        var entry = o.wordMeanings[k];
+        if (!entry || typeof entry !== 'object') return;
+        addKeyWord(entry.word || entry.w || k, entry.meaning || entry.def || entry.d);
+      });
+    }
+
+    var keyAnswerRows = [];
+    if (keyWordItems.length >= 2) {
+      var seedBase = titleText + '|' + keyWordItems.map(function (it) { return it.word; }).join(',');
+      var shuffledDefs = wsShuffle(keyWordItems.map(function (it, idx) {
+        return { idx: idx, word: it.word, meaning: it.meaning };
+      }), 'ramatch|' + seedBase);
+      if (shuffledDefs.every(function (d, i) { return d.idx === i; })) {
+        shuffledDefs.push(shuffledDefs.shift());
+      }
+      var letterByIdx = Object.create(null);
+      var defsColHtml = '<ol class="ws-match-defs">' + shuffledDefs.map(function (d, i) {
+        var letter = wsLetterLabel(i);
+        letterByIdx[d.idx] = letter;
+        return '<li class="ws-match-def"><span class="ws-match-letter">' + wsEsc(letter) + '.</span><span>' + wsEsc(d.meaning) + '</span></li>';
+      }).join('') + '</ol>';
+      var wordsColHtml = '<ol class="ws-match-words">' + keyWordItems.map(function (it, idx) {
+        keyAnswerRows.push({ num: idx + 1, word: it.word, letter: letterByIdx[idx] || '', meaning: it.meaning });
+        return '<li class="ws-match-word"><span class="ws-num">' + (idx + 1) + '.</span><span class="ws-match-blank" aria-label="letter blank"></span><span class="ws-word">' + wsEsc(it.word) + '</span></li>';
+      }).join('') + '</ol>';
+      partsHtml.push(
+        '<section class="ws-section" data-ra-part="matching">'
+        + '<div class="ws-section-head"><h2 class="ws-section-title">Part 3 \u2014 Match the Key Words</h2>'
+        + '<p class="ws-directions">Write the letter of the matching meaning on the line next to each word.</p></div>'
+        + '<div class="ws-match-grid">' + wordsColHtml + defsColHtml + '</div></section>'
+      );
+    }
+
+    // Part 4 — Comprehension Check-In Questions or Write About What You Read
+    var cleanQs = (builder && typeof builder.cleanQuestions === 'function')
+      ? builder.cleanQuestions(o.questions)
+      : (Array.isArray(o.questions) ? o.questions.slice(0, 6) : []);
+    var checkAnswerRows = [];
+    if (cleanQs.length) {
+      var qItemsHtml = cleanQs.map(function (q, qIdx) {
+        if (q.kind === 'mc' && Array.isArray(q.choices) && q.choices.length) {
+          var ansIdx = (typeof q.answer === 'number' && q.answer >= 0 && q.answer < q.choices.length) ? q.answer : 0;
+          checkAnswerRows.push({ num: qIdx + 1, prompt: q.prompt, letter: wsLetterLabel(ansIdx), choice: q.choices[ansIdx], open: false });
+          var chHtml = '<ul class="ws-mc-choices">' + q.choices.map(function (c, ci) {
+            return '<li class="ws-mc-choice"><span class="ws-mc-box" aria-hidden="true"></span><span class="ws-match-letter">' + wsEsc(wsLetterLabel(ci)) + '.</span><span>' + wsEsc(c) + '</span></li>';
+          }).join('') + '</ul>';
+          return '<li class="ws-check-item"><p class="ws-check-prompt"><strong>' + (qIdx + 1) + '.</strong> ' + wsEsc(q.prompt) + '</p>' + chHtml + '</li>';
+        }
+        checkAnswerRows.push({ num: qIdx + 1, prompt: q.prompt, open: true });
+        return '<li class="ws-check-item"><p class="ws-check-prompt"><strong>' + (qIdx + 1) + '.</strong> ' + wsEsc(q.prompt) + '</p><div class="ws-write-lines"><div class="ws-write-line"></div><div class="ws-write-line"></div></div></li>';
+      }).join('');
+      partsHtml.push(
+        '<section class="ws-section" data-ra-part="writing">'
+        + '<div class="ws-section-head"><h2 class="ws-section-title">Part 4 \u2014 Check Your Understanding</h2>'
+        + '<p class="ws-directions">Answer each question below about what you read.</p></div>'
+        + '<ol class="ws-check-list">' + qItemsHtml + '</ol></section>'
+      );
+    } else {
+      var writeLines = '';
+      for (var li = 0; li < 5; li++) writeLines += '<div class="ws-write-line"></div>';
+      partsHtml.push(
+        '<section class="ws-section" data-ra-part="writing">'
+        + '<div class="ws-section-head"><h2 class="ws-section-title">Part 4 \u2014 Write About What You Read</h2>'
+        + '<p class="ws-directions">Write a summary, main idea, or response about the passage on the lines below.</p></div>'
+        + '<div class="ws-write-lines">' + writeLines + '</div></section>'
+      );
+    }
+
+    // Teacher Answer Key (separate page when includeAnswerKey !== false and Part 3 or Part 4 has answers)
+    var keyHtml = '';
+    if (includeAnswerKey && (keyAnswerRows.length || checkAnswerRows.length)) {
+      var keySections = [];
+      if (keyAnswerRows.length) {
+        var keyListHtml = '<ol class="ws-key-list">' + keyAnswerRows.map(function (row) {
+          return '<li><strong>' + wsEsc(row.word) + '</strong> \u2014 ' + wsEsc(row.letter) + ' (' + wsEsc(row.meaning) + ')</li>';
+        }).join('') + '</ol>';
+        keySections.push('<h2>Part 3 \u2014 Match the Key Words</h2>' + keyListHtml);
+      }
+      if (checkAnswerRows.length) {
+        var chkKeyHtml = '<ol class="ws-key-list">' + checkAnswerRows.map(function (row) {
+          if (row.open) return '<li><strong>' + wsEsc(row.prompt) + '</strong> \u2014 Open response (answers will vary)</li>';
+          return '<li><strong>' + wsEsc(row.prompt) + '</strong> \u2014 ' + wsEsc(row.letter) + '. ' + wsEsc(row.choice) + '</li>';
+        }).join('') + '</ol>';
+        keySections.push('<h2>Part 4 \u2014 Check Your Understanding</h2>' + chkKeyHtml);
+      }
+      keyHtml = '<section class="ws-key" data-answer-key="true">'
+        + '<p class="ws-key-banner">Teacher Answer Key \u2014 keep apart from the student copy</p>'
+        + keySections.join('')
+        + '</section>';
+    }
+
+    var css = [
+      '@page{margin:12mm}',
+      '*{box-sizing:border-box}',
+      'body{margin:0 auto;max-width:780px;padding:16px 20px;background:#ffffff;color:#000000;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55}',
+      '.ws-header{border-bottom:2px solid #000000;padding-bottom:10px;margin-bottom:16px}',
+      '.ws-title{margin:0 0 10px;font-size:22px;font-weight:700;color:#000000}',
+      '.ws-meta{display:flex;flex-wrap:wrap;gap:10px 28px;font-size:14px;font-weight:700}',
+      '.ws-meta-field{display:inline-flex;align-items:baseline;gap:8px;flex:1 1 200px}',
+      '.ws-meta-line{flex:1 1 auto;border-bottom:1.5px solid #000000;min-width:110px;height:16px}',
+      '.ws-section{margin-top:18px}',
+      '.ws-section-head{break-after:avoid;page-break-after:avoid;margin-bottom:8px}',
+      '.ws-section-title{margin:0 0 4px;font-size:17px;font-weight:700;color:#000000}',
+      '.ws-directions{margin:0;font-size:13px;color:#000000}',
+      '.ws-passage{padding:12px 14px;border:1.5px solid #000000;background:#ffffff;font-size:16px;line-height:1.75}',
+      '.ws-subhead{margin:12px 0 6px;font-size:16px;font-weight:700;color:#000000}',
+      '.ws-para{margin:0 0 10px}.ws-para:last-child{margin-bottom:0}',
+      '.ws-sup-list{list-style:none;margin:8px 0 0;padding:0}',
+      '.ws-sup-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #808080;break-inside:avoid;page-break-inside:avoid}',
+      '.ws-sup-img{display:block;width:52px;height:52px;object-fit:contain;border:1px solid #808080;padding:2px;background:#ffffff;flex:none}',
+      '.ws-sup-body{flex:1 1 auto;min-width:0;font-size:14px}',
+      '.ws-sup-quote{font-weight:700}',
+      '.ws-match-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:14px 20px;margin-top:10px}',
+      '.ws-match-words,.ws-match-defs{list-style:none;margin:0;padding:0}',
+      '.ws-match-word{display:flex;align-items:baseline;gap:8px;padding:7px 0;border-bottom:1px solid #808080;break-inside:avoid;page-break-inside:avoid}',
+      '.ws-match-blank{display:inline-block;width:36px;border-bottom:1.5px solid #000000;flex:none}',
+      '.ws-num{min-width:24px;font-weight:700}',
+      '.ws-word{font-weight:700;font-size:15px}',
+      '.ws-match-def{display:flex;align-items:baseline;gap:8px;padding:7px 0;border-bottom:1px solid #808080;font-size:14px;break-inside:avoid;page-break-inside:avoid}',
+      '.ws-match-letter{min-width:22px;font-weight:700}',
+      '.ws-write-lines{margin-top:10px}',
+      '.ws-write-line{height:34px;border-bottom:1.5px solid #000000;border-top:1px dashed #808080;margin-bottom:6px}',
+      '.ws-check-list{list-style:none;margin:10px 0 0;padding:0}',
+      '.ws-check-item{margin:0 0 14px;break-inside:avoid;page-break-inside:avoid}',
+      '.ws-check-prompt{margin:0 0 6px;font-size:15px}',
+      '.ws-mc-choices{list-style:none;margin:4px 0 0 16px;padding:0}',
+      '.ws-mc-choice{display:flex;align-items:baseline;gap:8px;margin:4px 0;font-size:14px}',
+      '.ws-mc-box{display:inline-block;width:13px;height:13px;border:1.5px solid #000000;border-radius:50%;flex:none;position:relative;top:2px}',
+      '.ws-key{break-before:page;page-break-before:always;margin-top:24px;padding-top:12px;border-top:2px solid #000000}',
+      '.ws-key-banner{margin:0 0 12px;padding:8px 12px;border:2px solid #000000;font-size:14px;font-weight:700;background:#ffffff}',
+      '.ws-key h2{margin:0 0 8px;font-size:17px}',
+      '.ws-key-list{margin:6px 0 0;padding-left:24px;font-size:14px;line-height:1.6}',
+      '.ws-key-list li{margin:4px 0;break-inside:avoid;page-break-inside:avoid}',
+      '@media print{body{margin:0;max-width:none;padding:0}.ws-key{break-before:page;page-break-before:always;margin-top:0;border-top:none}}'
+    ].join('');
+
+    return '<!doctype html>\n<html lang="' + wsEsc(lang) + '"' + (isRtl ? ' dir="rtl"' : '') + '>\n<head>\n'
+      + '<meta charset="utf-8">\n'
+      + '<meta http-equiv="Content-Security-Policy" content="' + WS_CSP + '">\n'
+      + '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
+      + '<title>' + wsEsc(titleText) + ' \u2014 Read-Along Worksheet</title>\n'
+      + '<style>' + css + '</style>\n'
+      + '</head>\n<body>\n'
+      + '<header class="ws-header">'
+      + '<h1 class="ws-title">' + wsEsc(titleText) + '</h1>'
+      + '<div class="ws-meta">'
+      + '<span class="ws-meta-field"><span>Name:</span><span class="ws-meta-line"></span></span>'
+      + '<span class="ws-meta-field"><span>Date:</span><span class="ws-meta-line"></span></span>'
+      + '</div></header>\n'
+      + '<main>' + partsHtml.join('\n') + '</main>\n'
+      + keyHtml
+      + '\n</body>\n</html>\n';
+  }
+
+  function currentWorksheetOpts(includeAnswerKey) {
+    var titleText = String(($('f-title') && $('f-title').value) || '').replace(/\s+/g, ' ').trim() || 'Read along';
+    var mergedGlossary = Object.create(null);
+    if (state.made && state.made.lesson && state.made.lesson.blocks && state.made.lesson.blocks[0]) {
+      (state.made.lesson.blocks[0].items || []).forEach(function (it) {
+        if (!it || !it.glossary) return;
+        Object.keys(it.glossary).forEach(function (k) { if (!mergedGlossary[k]) mergedGlossary[k] = it.glossary[k]; });
+      });
+    }
+    return {
+      title: titleText,
+      sentences: state.sentences,
+      lang: passageLang(),
+      showSyllables: !!($('print-syl') && $('print-syl').checked && (isSpanish() || table)),
+      showBold: !!($('print-bold') && $('print-bold').checked),
+      showSupports: !($('print-supports') && !$('print-supports').checked),
+      customSupports: activeCustomSupports(),
+      questions: (state.questions || []).slice(),
+      wordMeanings: mergedGlossary,
+      includeAnswerKey: includeAnswerKey !== false,
+    };
+  }
+
+  function downloadWorksheet() {
+    if (!state.sentences.length) return;
+    var html = buildReadAlongWorksheetHtml(currentWorksheetOpts(true));
+    var url = '';
+    try { url = URL.createObjectURL(new Blob([html], { type: 'text/html' })); } catch (_) { url = ''; }
+    if (!url) { setText('file-problem', 'This browser cannot save files from a page. Open this page in Chrome, Edge, Firefox or Safari.'); return; }
+    download(url, titleStem() + '-read-along-worksheet.html');
+    win.setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 10000);
+  }
+
+  function downloadClassroomBundle() {
+    if (!state.built || !state.built.html) return;
+    if (!win.AlloPacketZip || typeof win.AlloPacketZip.create !== 'function') {
+      setText('file-problem', 'This page could not load the part that makes .zip files. Load the page again.');
+      return;
+    }
+    try {
+      var zip = win.AlloPacketZip.create();
+      zip.add('01-Interactive-Read-Along.html', state.built.html);
+      zip.add('02-Student-Worksheet.html', buildReadAlongWorksheetHtml(currentWorksheetOpts(false)));
+      zip.add('03-Teacher-Answer-Key.html', buildReadAlongWorksheetHtml(currentWorksheetOpts(true)));
+      var parts = zip.finish();
+      var url = URL.createObjectURL(new Blob(parts, { type: 'application/zip' }));
+      download(url, titleStem() + '-classroom-bundle.zip');
+      win.setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 10000);
+    } catch (error) {
+      setText('file-problem', 'The classroom bundle .zip could not be made (' + said(error) + ').');
+    }
   }
   function drawPreview() {
     var box = $('live-preview'), card = $('preview-card');
@@ -1162,18 +2490,44 @@
     if (!state.made || !state.made.lesson || !state.made.lesson.blocks || !state.made.lesson.blocks[0]) {
       box.hidden = true;
       card.textContent = '';
+      show('preview-page-wrap', false);
       return;
     }
-    var item = state.made.lesson.blocks[0].items && state.made.lesson.blocks[0].items[0];
+    var items = state.made.lesson.blocks[0].items || [];
+    if (!items.length) {
+      box.hidden = true;
+      show('preview-page-wrap', false);
+      return;
+    }
+    var idx = Math.max(0, Math.min(items.length - 1, Math.floor(Number(state.previewPage) || 0)));
+    state.previewPage = idx;
+    var item = items[idx];
     if (!item || !Array.isArray(item.lines) || !item.lines.length) {
       box.hidden = true;
+      show('preview-page-wrap', false);
       return;
     }
     box.hidden = false;
+    var sumEl = $('preview-summary');
+    if (sumEl) sumEl.textContent = items.length > 1 ? ('Preview how students will see pages (1 to ' + items.length + ')') : 'Preview how students will see page 1';
+    var pageSel = $('preview-page');
+    if (pageSel) {
+      pageSel.textContent = '';
+      items.forEach(function (pg, pi) {
+        var opt = doc.createElement('option');
+        opt.value = String(pi);
+        var hRow = Array.isArray(pg.lines) ? pg.lines.filter(function (l) { return l && l.heading; })[0] : null;
+        var snip = hRow ? String(hRow.text || '').slice(0, 28) : '';
+        opt.textContent = 'Page ' + (pi + 1) + (snip ? ' — ' + snip : '');
+        pageSel.appendChild(opt);
+      });
+      pageSel.value = String(idx);
+    }
+    show('preview-page-wrap', items.length > 1);
     var hasSyl = item.lines.some(function (l) { return !!l.syl; });
     show('preview-syl-wrap', hasSyl);
     var showSyl = hasSyl && !!($('preview-syl') && $('preview-syl').checked);
-    var modeLabel = pageMode() === 'scroll' ? 'All on one page (scroll down)' : ('Page 1 of ' + state.made.pages);
+    var modeLabel = pageMode() === 'scroll' ? 'All on one page (scroll down)' : ('Page ' + (idx + 1) + ' of ' + state.made.pages);
     var barLabel = useSimpleBar() ? ' · Simple toolbar' : '';
     setText('preview-meta', modeLabel + barLabel);
     card.textContent = '';
@@ -1191,7 +2545,7 @@
         target = el('h3', 'ra-preview-h');
         card.appendChild(target);
       } else {
-        if (!currentP || (row.para && idx > 0)) {
+        if (!currentP || ((row.para || row.pageBreak) && idx > 0)) {
           currentP = el('p', 'ra-preview-p');
           card.appendChild(currentP);
         } else if (currentP.childNodes.length) {
@@ -1203,7 +2557,7 @@
         target.appendChild(doc.createTextNode(shown));
         return;
       }
-      var re = /[A-Za-z\u00b7]+(?:['\u2019][A-Za-z\u00b7]+)*/g, m, last = 0, wi = 0;
+      var re = /[A-Za-z\u00C0-\u024F\u00b7]+(?:['\u2019][A-Za-z\u00C0-\u024F\u00b7]+)*/g, m, last = 0, wi = 0;
       while ((m = re.exec(shown))) {
         if (m.index > last) target.appendChild(doc.createTextNode(shown.slice(last, m.index)));
         var tag = posMap[String(wi)] || '';
@@ -1275,8 +2629,11 @@
     state.baseHtml = '';
     state.made = null;
     if (state.fileUrl) { try { URL.revokeObjectURL(state.fileUrl); } catch (_) {} state.fileUrl = ''; }
+    stopPreview();
     show('try', false);
     show('save', false);
+    show('download-worksheet', false);
+    show('download-bundle', false);
     show('after-save', false);
     show('live-preview', false);
     clearPaper();
@@ -1284,6 +2641,7 @@
     setText('file-problem', '');
   }
   function refreshFile() {
+    if (!$('f-text') || !$('f-title')) return;
     clearBuilt();
     if (state.making || state.rec) return;
     if (!state.sentences.length) {
@@ -1304,9 +2662,35 @@
     var bankReady = !!(win.AlloVocabBank && typeof win.AlloVocabBank.ready === 'function' && win.AlloVocabBank.ready());
     var dictReady = useDict() && bankReady;
     var picsReady = useDictPics() && !!(symbolBank || getPictureMatcher() || Object.keys(myPics).length);
+    var customSupportsPayload = activeCustomSupports().map(function (sup) {
+      var clip = supportClipOf(sup);
+      if (clip && clip.voice && voices.indexOf(clip.voice) < 0) voices.push(clip.voice);
+      return {
+        id: sup.id,
+        line: sup.line,
+        quote: sup.quote || '',
+        occ: sup.occ || 0,
+        text: sup.text,
+        imgUri: sup.imgUri || '',
+        alt: sup.alt || '',
+        imgSet: sup.imgSet || '',
+        imgCredit: sup.imgCredit || '',
+        audioUri: clip ? clip.uri : '',
+        audioSource: clip ? clip.source : '',
+      };
+    });
+    var glossaryAudioPayload = Object.create(null);
+    if (dictReady && useNarrateGlossary()) {
+      Object.keys(state.glossaryClips || {}).forEach(function (gk) {
+        var gClip = state.glossaryClips[gk];
+        if (!gClip || !gClip.uri) return;
+        glossaryAudioPayload[gk] = { uri: gClip.uri, source: gClip.source === 'teacher' ? 'teacher' : 'computer' };
+        if (gClip.voice && voices.indexOf(gClip.voice) < 0) voices.push(gClip.voice);
+      });
+    }
     var made, result;
     try {
-      made = builder.lessonFromReadAlong({ loader: loader, title: $('f-title').value, sentences: state.sentences, clips: clips, clipSources: clipSources, timings: timings, voice: voices.join(', '), lang: passageLang(), syllables: table ? syllablesOf : null, syllableSource: tableSource(), pageMode: pageMode(), partsOfSpeech: usePos(), posLookup: (usePos() && bankReady) ? posLookup : null, dictionary: dictReady ? dictLookup : null, pictures: picsReady ? picLookup : null, studentMic: useStudentMic(), deviceVoice: useDeviceVoice(), simpleBar: useSimpleBar() });
+      made = builder.lessonFromReadAlong({ loader: loader, title: $('f-title').value, sentences: state.sentences, clips: clips, clipSources: clipSources, timings: timings, customSupports: customSupportsPayload, glossaryAudio: glossaryAudioPayload, voice: voices.join(', '), lang: passageLang(), syllables: table ? syllablesOf : null, syllableSource: tableSource(), pageMode: pageMode(), partsOfSpeech: usePos(), posExtended: usePosExtended(), posScheme: posScheme(), posStyle: posStyle(), posPalette: posPalette(), defaultTools: defaultTools(), questions: (state.questions || []).slice(), posLookup: (usePos() && bankReady) ? posLookup : null, dictionary: dictReady ? dictLookup : null, pictures: picsReady ? picLookup : null, studentMic: useStudentMic(), deviceVoice: useDeviceVoice(), simpleBar: useSimpleBar() });
       result = builder.buildReadAlongPacket({ made: made, loader: loader });
     } catch (error) {
       setText('file-said', 'The file is not ready yet.');
@@ -1400,6 +2784,24 @@
     if ($('f-page-mode')) $('f-page-mode').value = back.pageMode || 'auto';
     if ($('f-lang')) $('f-lang').value = back.lang || 'en';
     if ($('f-pos')) $('f-pos').checked = !!back.partsOfSpeech;
+    if ($('f-pos-scheme')) $('f-pos-scheme').value = back.posScheme || 'default';
+    if ($('f-pos-style')) $('f-pos-style').value = back.posStyle || 'underline';
+    if ($('f-pos-extended')) $('f-pos-extended').checked = !!back.posExtended;
+    if (back.posPalette && typeof back.posPalette === 'object') {
+      if ($('f-pos-c-n') && back.posPalette.n) $('f-pos-c-n').value = back.posPalette.n;
+      if ($('f-pos-c-v') && back.posPalette.v) $('f-pos-c-v').value = back.posPalette.v;
+      if ($('f-pos-c-j') && back.posPalette.j) $('f-pos-c-j').value = back.posPalette.j;
+      if ($('f-pos-c-a') && back.posPalette.a) $('f-pos-c-a').value = back.posPalette.a;
+    }
+    var dt = back.defaultTools && typeof back.defaultTools === 'object' ? back.defaultTools : null;
+    if ($('f-def-focus')) $('f-def-focus').value = (dt && dt.focus != null) ? String(dt.focus) : '';
+    if ($('f-def-font')) $('f-def-font').value = (dt && dt.font != null) ? String(dt.font) : '';
+    if ($('f-def-spacing')) $('f-def-spacing').value = (dt && dt.spacing != null) ? String(dt.spacing) : '';
+    if ($('f-def-colors')) $('f-def-colors').value = (dt && dt.colors != null) ? String(dt.colors) : '';
+    state.questions = Array.isArray(back.questions) ? back.questions.slice(0, MAX_QUESTIONS) : [];
+    state.nextQSeq = state.questions.length + 1;
+    if (state.questions.length && $('check-questions-panel')) $('check-questions-panel').open = true;
+    drawQuestions();
     if ($('f-dict')) $('f-dict').checked = !!back.dictionary;
     if ($('f-dict-pics')) $('f-dict-pics').checked = !!back.pictures;
     if ($('f-simple-bar')) $('f-simple-bar').checked = !!back.simpleBar;
@@ -1413,23 +2815,65 @@
       }
     }
     state.clips = Object.create(null);
+    state.customSupports = [];
+    state.supportClips = Object.create(null);
+    state.glossaryClips = Object.create(null);
+    clearDraftSupportPic();
+    closeSupportPicPicker();
     state.hiddenPics = Object.create(null);
+    state.previewPage = 0;
     Object.keys(back.clips || {}).forEach(function (k) {
-      state.clips[k] = { uri: back.clips[k], ms: 0, voice: back.voice || '', source: (back.clipSources && back.clipSources[k]) || 'computer' };
+      var restoredTimings = back.timings && Object.prototype.hasOwnProperty.call(back.timings, k) && Array.isArray(back.timings[k]) && back.timings[k].length ? back.timings[k].slice() : null;
+      state.clips[k] = { uri: back.clips[k], ms: 0, voice: back.voice || '', source: (back.clipSources && back.clipSources[k]) || 'computer', timings: restoredTimings };
     });
+    var customQuoteKeys = Object.create(null);
+    (back.customSupports || []).forEach(function (sup, idx) {
+      var restored = {
+        id: sup.id || ('sup' + (idx + 1)),
+        line: sup.line,
+        quote: sup.quote || '',
+        occ: sup.occ || 0,
+        text: sup.text,
+        imgUri: sup.imgUri || '',
+        alt: sup.alt || '',
+      };
+      if (restored.quote) {
+        var qk = String(restored.quote).toLowerCase().replace(/\s+/g, ' ').trim();
+        if (qk) customQuoteKeys[qk] = true;
+      }
+      state.customSupports.push(restored);
+      if (sup.audioUri) {
+        state.supportClips[supportSpeechKey(restored)] = { uri: sup.audioUri, ms: 0, voice: back.voice || '', source: sup.audioSource || 'computer' };
+      }
+    });
+    if (back.dictionary && back.glossaryAudio && typeof back.glossaryAudio === 'object') {
+      Object.keys(back.glossaryAudio).forEach(function (gk) {
+        if (!gk || customQuoteKeys[gk]) return;
+        var ga = back.glossaryAudio[gk];
+        var gaUri = typeof ga === 'string' ? ga : (ga && typeof ga === 'object' ? ga.uri : '');
+        var gaSrc = ga && typeof ga === 'object' && ga.source === 'teacher' ? 'teacher' : 'computer';
+        if (typeof gaUri === 'string' && gaUri.length <= builder.MAX_CLIP_CHARS && AUDIO_CLIP_RE.test(gaUri)) {
+          state.glossaryClips[gk] = { uri: gaUri, ms: 0, voice: back.voice || '', source: gaSrc };
+        }
+      });
+    }
+    if ($('f-narrate-glossary')) $('f-narrate-glossary').checked = Boolean(back.dictionary && Object.keys(state.glossaryClips).length > 0);
+    state.nextSupSeq = state.customSupports.length + 1;
+    if (state.customSupports.length && $('custom-supports-panel')) $('custom-supports-panel').open = true;
     if ($('f-batch-names')) {
       $('f-batch-names').value = back.learner || '';
       if (back.learner && $('batch')) $('batch').open = true;
     }
     state.unsaved = false;
     syncLangUi();
+    syncSupportCards();
     readPassage();
     draw();
     if ((useDict() || usePos()) && !(win.AlloVocabBank && typeof win.AlloVocabBank.ready === 'function' && win.AlloVocabBank.ready())) {
-      ensureDictionary().then(function () { refreshFile(); });
+      ensureDictionary().then(function () { if (!$('line-rows')) return; draw(); refreshFile(); });
     }
     if (useDictPics()) {
-      ensurePictures().then(function () { refreshFile(); });
+      ensurePictures().then(function () { if (!$('f-text')) return; refreshFile(); });
     }
     refreshFile();
     reopenNote('Opened ' + (back.title || sourceName || 'the file') + '. ' + count(back.sentences.length, 'sentence') + ', '
@@ -1453,24 +2897,63 @@
     });
     $('f-title').addEventListener('input', refreshSoon);
     if ($('f-page-mode')) $('f-page-mode').addEventListener('change', function () { state.unsaved = true; readPassage(); draw(); refreshFile(); });
-    if ($('f-lang')) $('f-lang').addEventListener('change', function () { state.unsaved = true; syncLangUi(); refreshFile(); });
+    if ($('f-lang')) $('f-lang').addEventListener('change', function () { state.unsaved = true; syncLangUi(); syncSupportCards(); draw(); refreshFile(); });
     if ($('f-pos')) $('f-pos').addEventListener('change', function () {
       state.unsaved = true;
-      if (usePos()) { ensureDictionary().then(function () { refreshFile(); }); }
+      syncPosCustomizerUi();
+      syncSupportCards();
+      if (usePos()) { ensureDictionary().then(function () { if (!$('f-text')) return; refreshFile(); }); }
       refreshFile();
     });
+    if ($('f-pos-scheme')) $('f-pos-scheme').addEventListener('change', function () { state.unsaved = true; syncPosCustomizerUi(); refreshFile(); });
+    if ($('f-pos-style')) $('f-pos-style').addEventListener('change', function () { state.unsaved = true; refreshFile(); });
+    if ($('f-pos-extended')) $('f-pos-extended').addEventListener('change', function () { state.unsaved = true; refreshFile(); });
+    ['f-pos-c-n', 'f-pos-c-v', 'f-pos-c-j', 'f-pos-c-a'].forEach(function (cid) {
+      if ($(cid)) $(cid).addEventListener('input', function () { state.unsaved = true; refreshSoon(); });
+      if ($(cid)) $(cid).addEventListener('change', function () { state.unsaved = true; refreshFile(); });
+    });
+    ['f-def-focus', 'f-def-font', 'f-def-spacing', 'f-def-colors'].forEach(function (did) {
+      if ($(did)) $(did).addEventListener('change', function () { state.unsaved = true; refreshFile(); });
+    });
+    if ($('ra-preset-select')) $('ra-preset-select').addEventListener('change', function () {
+      var val = this.value;
+      if ($('ra-preset-delete')) $('ra-preset-delete').disabled = !val;
+      if (!val) return;
+      var found = loadLocalPresets().filter(function (p) { return p.name === val; })[0];
+      if (found) {
+        applyPresetData(found.data);
+        setText('ra-preset-said', 'Applied preset "' + found.name + '".');
+      }
+    });
+    if ($('ra-preset-save')) $('ra-preset-save').addEventListener('click', saveCurrentPreset);
+    if ($('ra-preset-delete')) $('ra-preset-delete').addEventListener('click', deleteSelectedPreset);
+    if ($('chk-kind')) $('chk-kind').addEventListener('change', syncCheckKindUi);
+    if ($('chk-add')) $('chk-add').addEventListener('click', addCheckQuestionFromForm);
     if ($('f-dict')) $('f-dict').addEventListener('change', function () {
       state.unsaved = true;
-      if (useDict()) { ensureDictionary().then(function () { refreshFile(); }); }
-      else { setText('dict-said', ''); refreshFile(); }
+      syncLangUi();
+      syncSupportCards();
+      if (useDict()) { ensureDictionary().then(function () { if (!$('line-rows')) return; draw(); refreshFile(); }); }
+      else { setText('dict-said', ''); draw(); refreshFile(); }
+    });
+    if ($('f-narrate-glossary')) $('f-narrate-glossary').addEventListener('change', function () {
+      state.unsaved = true;
+      syncSupportCards();
+      if (useNarrateGlossary()) { ensureDictionary().then(function () { if (!$('line-rows')) return; draw(); refreshFile(); }); }
+      else { draw(); refreshFile(); }
     });
     if ($('f-dict-pics')) $('f-dict-pics').addEventListener('change', function () {
       state.unsaved = true;
-      if (useDictPics()) { ensurePictures().then(function () { refreshFile(); }); }
+      syncSupportCards();
+      if (useDictPics()) { ensurePictures().then(function () { if (!$('f-text')) return; refreshFile(); }); }
       else { setText('pics-said', ''); refreshFile(); }
     });
-    if ($('f-simple-bar')) $('f-simple-bar').addEventListener('change', function () { state.unsaved = true; refreshFile(); });
+    if ($('f-simple-bar')) $('f-simple-bar').addEventListener('change', function () { state.unsaved = true; syncSupportCards(); refreshFile(); });
     if ($('preview-syl')) $('preview-syl').addEventListener('change', drawPreview);
+    if ($('preview-page')) $('preview-page').addEventListener('change', function () {
+      state.previewPage = Math.max(0, Math.floor(Number(this.value) || 0));
+      drawPreview();
+    });
     if ($('preview-card')) $('preview-card').addEventListener('click', function (ev) {
       var target = ev && ev.target && ev.target.closest ? ev.target.closest('button') : null;
       if (!target) return;
@@ -1492,16 +2975,79 @@
         refreshFile();
       }
     });
-    if ($('f-student-mic')) $('f-student-mic').addEventListener('change', function () { state.unsaved = true; refreshFile(); });
-    if ($('f-device-voice')) $('f-device-voice').addEventListener('change', function () { state.unsaved = true; refreshFile(); });
+    if ($('f-student-mic')) $('f-student-mic').addEventListener('change', function () { state.unsaved = true; syncSupportCards(); refreshFile(); });
+    if ($('f-device-voice')) $('f-device-voice').addEventListener('change', function () { state.unsaved = true; syncSupportCards(); refreshFile(); });
     $('get-voice').addEventListener('click', getVoice);
-    $('make-all').addEventListener('click', function () { makeSome(needing(), 0); });
+    if ($('hear-sample')) $('hear-sample').addEventListener('click', hearSample);
+    $('make-all').addEventListener('click', function () {
+      if (useNarrateGlossary() && !(win.AlloVocabBank && typeof win.AlloVocabBank.ready === 'function' && win.AlloVocabBank.ready())) {
+        ensureDictionary().then(function () { makeSome(needing(), 0, needingSupports(), needingGlossary()); });
+        return;
+      }
+      makeSome(needing(), 0, needingSupports(), needingGlossary());
+    });
+    if ($('sup-add')) $('sup-add').addEventListener('click', addCustomSupportFromForm);
+    if ($('sup-pic-offline')) $('sup-pic-offline').addEventListener('click', toggleSupportPicPicker);
+    if ($('sup-pic-picker-close')) $('sup-pic-picker-close').addEventListener('click', function () {
+      closeSupportPicPicker();
+      if ($('sup-pic-offline')) $('sup-pic-offline').focus();
+    });
+    if ($('sup-pic-search')) {
+      $('sup-pic-search').addEventListener('input', function () { searchOfflineSupportPics(this.value); });
+      $('sup-pic-search').addEventListener('keydown', function (ev) {
+        if (ev && ev.key === 'Escape') {
+          closeSupportPicPicker();
+          if ($('sup-pic-offline')) $('sup-pic-offline').focus();
+        }
+      });
+    }
+    if ($('sup-pic-choose') && $('sup-pic-file')) {
+      $('sup-pic-choose').addEventListener('click', function () { $('sup-pic-file').value = ''; $('sup-pic-file').click(); });
+      $('sup-pic-file').addEventListener('change', function () {
+        var file = this.files && this.files[0];
+        this.value = '';
+        if (!file) return;
+        setText('sup-problem', '');
+        var store = win.AlloPacketMyWords;
+        var hasResizer = !!(store && typeof store.resizeToDataUri === 'function');
+        var readUri = hasResizer
+          ? Promise.resolve().then(function () { return store.resizeToDataUri(file); })
+          : new Promise(function (resolve, reject) {
+              if (typeof win.FileReader !== 'function') { reject(new Error('no reader')); return; }
+              var r = new win.FileReader();
+              r.onload = function () { resolve(String(r.result || '')); };
+              r.onerror = function () { reject(new Error('read failed')); };
+              r.readAsDataURL(file);
+            });
+        readUri.then(function (uri) {
+          var cleanUri = normalizeDraftImageUri(uri);
+          if (!cleanUri) {
+            setText('sup-problem', 'Choose a smaller PNG, JPG, WebP, or SVG picture.');
+            return;
+          }
+          state.draftSupImg = cleanUri;
+          state.draftSupAlt = '';
+          state.draftSupSet = 'teacher';
+          state.draftSupCredit = '';
+          if ($('sup-pic-preview')) { $('sup-pic-preview').src = cleanUri; $('sup-pic-preview').alt = 'Support picture'; $('sup-pic-preview').hidden = false; }
+          if ($('sup-pic-credit')) { $('sup-pic-credit').textContent = ''; $('sup-pic-credit').hidden = true; }
+          if ($('sup-pic-clear')) $('sup-pic-clear').hidden = false;
+          closeSupportPicPicker();
+        }, function () {
+          setText('sup-problem', 'Could not read that picture file.');
+        });
+      });
+    }
+    if ($('sup-pic-clear')) $('sup-pic-clear').addEventListener('click', clearDraftSupportPic);
     $('stop').addEventListener('click', function () { if (state.stop) state.stop.abort(); });
     $('save').addEventListener('click', saveFile);
     if ($('print')) $('print').addEventListener('click', function () { drawPaper(); if (typeof win.print === 'function') win.print(); });
-    if ($('print-syl')) $('print-syl').addEventListener('change', drawPaper);
-    if ($('print-bold')) $('print-bold').addEventListener('change', drawPaper);
-    if ($('print-dict')) $('print-dict').addEventListener('change', drawPaper);
+    if ($('download-worksheet')) $('download-worksheet').addEventListener('click', downloadWorksheet);
+    if ($('download-bundle')) $('download-bundle').addEventListener('click', downloadClassroomBundle);
+    if ($('print-syl')) $('print-syl').addEventListener('change', function () { syncSupportCards(); drawPaper(); });
+    if ($('print-bold')) $('print-bold').addEventListener('change', function () { syncSupportCards(); drawPaper(); });
+    if ($('print-dict')) $('print-dict').addEventListener('change', function () { syncSupportCards(); drawPaper(); });
+    if ($('print-supports')) $('print-supports').addEventListener('change', function () { syncSupportCards(); drawPaper(); });
     if ($('passage-load') && $('passage-file')) {
       $('passage-load').addEventListener('click', function () { $('passage-file').value = ''; $('passage-file').click(); });
       $('passage-file').addEventListener('change', function () {
@@ -1526,25 +3072,53 @@
     }
     if (win.AlloPacketVerify && typeof win.AlloPacketVerify.readParts === 'function' && typeof win.FileReader === 'function') {
       show('reopen', true);
+      var readReopenFile = function (file) {
+        if (!file) return;
+        if (file.size > MAX_REOPEN_BYTES) { reopenNote('This file is too large to be a read-along file made here.'); return; }
+        var done = function (buf) {
+          var text = typeof win.TextDecoder === 'function' ? new win.TextDecoder('utf-8').decode(buf) : '';
+          reopen(text, file.name, buf);
+        };
+        if (typeof file.arrayBuffer === 'function') {
+          file.arrayBuffer().then(done, function () { reopenNote('This browser could not read the file.'); });
+        } else {
+          var reader = new win.FileReader();
+          reader.onload = function () { reopen(String(reader.result || ''), file.name); };
+          reader.onerror = function () { reopenNote('This browser could not read the file.'); };
+          reader.readAsText(file);
+        }
+      };
       if ($('reopen-choose') && $('reopen-file')) {
         $('reopen-choose').addEventListener('click', function () { $('reopen-file').value = ''; $('reopen-file').click(); });
         $('reopen-file').addEventListener('change', function () {
           var file = this.files && this.files[0];
           this.value = '';
+          readReopenFile(file);
+        });
+      }
+      if ($('reopen-close')) {
+        $('reopen-close').addEventListener('click', function () {
+          show('reopen-note', false);
+          reopenPending = null;
+          if ($('reopen-choose')) $('reopen-choose').focus();
+        });
+      }
+      var dropHost = doc.querySelector('main') || doc.body;
+      if (dropHost) {
+        var hasFiles = function (e) {
+          if (!e || !e.dataTransfer) return false;
+          if (e.dataTransfer.files && e.dataTransfer.files.length) return true;
+          return !!(e.dataTransfer.types && Array.prototype.indexOf.call(e.dataTransfer.types, 'Files') >= 0);
+        };
+        dropHost.addEventListener('dragover', function (e) { if (!hasFiles(e) || $('reopen').hidden) return; e.preventDefault(); $('reopen').classList.add('is-dropping'); });
+        dropHost.addEventListener('dragleave', function (e) { if (!e.relatedTarget || !dropHost.contains(e.relatedTarget)) $('reopen').classList.remove('is-dropping'); });
+        dropHost.addEventListener('drop', function (e) {
+          $('reopen').classList.remove('is-dropping');
+          if (!hasFiles(e) || $('reopen').hidden) return;
+          var file = e.dataTransfer.files && e.dataTransfer.files[0];
           if (!file) return;
-          if (file.size > MAX_REOPEN_BYTES) { reopenNote('This file is too large to be a read-along file made here.'); return; }
-          var done = function (buf) {
-            var text = typeof win.TextDecoder === 'function' ? new win.TextDecoder('utf-8').decode(buf) : '';
-            reopen(text, file.name, buf);
-          };
-          if (typeof file.arrayBuffer === 'function') {
-            file.arrayBuffer().then(done, function () { reopenNote('This browser could not read the file.'); });
-          } else {
-            var reader = new win.FileReader();
-            reader.onload = function () { reopen(String(reader.result || ''), file.name); };
-            reader.onerror = function () { reopenNote('This browser could not read the file.'); };
-            reader.readAsText(file);
-          }
+          e.preventDefault();
+          readReopenFile(file);
         });
       }
       if ($('reopen-page')) {
@@ -1560,16 +3134,123 @@
     }
     // The recordings exist only on this page: ask before they are lost.
     win.addEventListener('beforeunload', function (event) { cancelMic(); if (state.unsaved) { event.preventDefault(); event.returnValue = ''; } });
+    win.addEventListener('pagehide', stopPreview);
     syncLangUi();
+    syncPosCustomizerUi();
+    syncCheckKindUi();
+    renderPresetSelect('');
+    drawQuestions();
+    syncSupportCards();
     readPassage();
     draw();
     drawBatch();
     takeHanded();
   }
 
+  function importDraft(draft) {
+    if (!draft || typeof draft !== 'object' || draft.kind !== 'read_along') return false;
+    var rawText = typeof draft.text === 'string'
+      ? draft.text.replace(/^\uFEFF/, '').replace(/[\u200B-\u200D\uFEFF]/g, '').replace(/\r\n?/g, '\n').slice(0, builder.MAX_CHARS)
+      : '';
+    if (!rawText.trim()) return false;
+    cancelMic();
+    cancelMake();
+    if ($('f-title')) $('f-title').value = typeof draft.title === 'string' ? draft.title.replace(/\s+/g, ' ').trim().slice(0, 80) : '';
+    if ($('f-text')) $('f-text').value = rawText;
+    if (typeof draft.lang === 'string' && $('f-lang')) {
+      var cleanL = typeof builder.cleanLang === 'function' ? builder.cleanLang(draft.lang) : String(draft.lang).trim().toLowerCase();
+      var langOpts = $('f-lang').options || [];
+      for (var li = 0; li < langOpts.length; li++) {
+        if (langOpts[li].value === cleanL) { $('f-lang').value = cleanL; break; }
+      }
+    }
+    state.clips = Object.create(null);
+    state.customSupports = [];
+    state.supportClips = Object.create(null);
+    state.glossaryClips = Object.create(null);
+    clearDraftSupportPic();
+    closeSupportPicPicker();
+    state.hiddenPics = Object.create(null);
+    state.previewPage = 0;
+    syncLangUi();
+    readPassage();
+    if (draft.clips && typeof draft.clips === 'object' && !Array.isArray(draft.clips)) {
+      Object.keys(draft.clips).forEach(function (k) {
+        if (!k || k === '__proto__' || k === 'constructor' || k === 'prototype') return;
+        var normKey = builder.clipKey(k);
+        if (!normKey) return;
+        var raw = draft.clips[k];
+        var uri = typeof raw === 'string' ? raw : (raw && typeof raw === 'object' && typeof raw.uri === 'string' ? raw.uri : '');
+        if (!uri || uri.length > builder.MAX_CLIP_CHARS || !AUDIO_CLIP_RE.test(uri)) return;
+        var src = (raw && typeof raw === 'object' && raw.source === 'computer') ? 'computer' : 'teacher';
+        state.clips[normKey] = { uri: uri, ms: 0, voice: '', source: src, timings: null };
+      });
+    }
+    var supsIn = Array.isArray(draft.customSupports) ? draft.customSupports.slice(0, 120) : [];
+    supsIn.forEach(function (sup) {
+      if (!sup || typeof sup !== 'object' || Array.isArray(sup)) return;
+      var sText = builder.clipKey(sup.text).slice(0, 360);
+      if (!sText) return;
+      var sQuote = builder.clipKey(sup.quote || '').slice(0, 80);
+      var lineIdx = -1;
+      if (sup.line != null && sup.line !== '') {
+        var parsedLine = Math.floor(Number(sup.line));
+        if (isFinite(parsedLine) && parsedLine >= 0 && parsedLine < state.sentences.length) lineIdx = parsedLine;
+      }
+      if (lineIdx < 0 && sQuote) {
+        var needle = sQuote.toLowerCase();
+        for (var si = 0; si < state.sentences.length; si++) {
+          if (String(state.sentences[si].text || '').toLowerCase().indexOf(needle) >= 0) { lineIdx = si; break; }
+        }
+      }
+      if (lineIdx < 0) lineIdx = 0;
+      var imgUri = normalizeDraftImageUri(sup.imgUri);
+      var restored = {
+        id: 'sup' + (state.nextSupSeq++),
+        line: lineIdx,
+        quote: sQuote,
+        occ: 0,
+        text: sText,
+        imgUri: imgUri,
+        alt: builder.clipKey(sup.alt || sQuote || ('Note for sentence ' + (lineIdx + 1))).slice(0, 60),
+      };
+      state.customSupports.push(restored);
+      if (typeof sup.audioUri === 'string' && sup.audioUri.length <= builder.MAX_CLIP_CHARS && AUDIO_CLIP_RE.test(sup.audioUri)) {
+        var aSrc = sup.audioSource === 'computer' ? 'computer' : 'teacher';
+        state.supportClips[supportSpeechKey(restored)] = { uri: sup.audioUri, ms: 0, voice: '', source: aSrc };
+      }
+    });
+    if (state.customSupports.length && $('custom-supports-panel')) $('custom-supports-panel').open = true;
+    state.unsaved = true;
+    syncSupportCards();
+    draw();
+    refreshFile();
+    show('reopen', true);
+    reopenNote('Imported passage and supports from AlloFlow.');
+    return true;
+  }
+
   function takeHanded() {
     var handoff = win.AlloPacketHandoff;
-    if (!handoff || typeof handoff.take !== 'function' || !win.location || win.location.hash !== handoff.HASH) return Promise.resolve(false);
+    if (!handoff || !win.location) return Promise.resolve(false);
+    var hash = win.location.hash;
+    var draftHash = handoff.DRAFT_HASH || '#import-draft';
+    if (hash === draftHash && typeof handoff.takeDraft === 'function') {
+      try { if (win.history && typeof win.history.replaceState === 'function') win.history.replaceState(null, '', win.location.href.split('#')[0]); } catch (_) {}
+      return handoff.takeDraft().then(function (draft) {
+        if (!draft || typeof draft !== 'object' || draft.kind !== 'read_along') {
+          show('reopen', true);
+          reopenNote('The draft from AlloFlow is not here any more. Copy and paste your passage into step 1.');
+          return false;
+        }
+        return importDraft(draft);
+      }, function () {
+        show('reopen', true);
+        reopenNote('This browser could not bring the draft over. Copy and paste your passage into step 1.');
+        return false;
+      });
+    }
+    if (typeof handoff.take !== 'function' || hash !== handoff.HASH) return Promise.resolve(false);
     try { if (win.history && typeof win.history.replaceState === 'function') win.history.replaceState(null, '', win.location.href.split('#')[0]); } catch (_) {}
     return handoff.take().then(function (file) {
       if (!file) { reopenNote('The file is not here any more. Choose it with Open a file I made.'); return false; }
@@ -1578,6 +3259,7 @@
     }, function () { reopenNote('This browser could not hand the file over. Choose it with Open a file I made.'); return false; });
   }
 
-  win.AlloPacketReadAlongPage = { state: state, reopen: reopen, takeHanded: takeHanded };
+  win.AlloReadAlongWorksheet = { buildReadAlongWorksheetHtml: buildReadAlongWorksheetHtml };
+  win.AlloPacketReadAlongPage = { state: state, reopen: reopen, importDraft: importDraft, takeHanded: takeHanded };
   if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', start); else start();
 })();

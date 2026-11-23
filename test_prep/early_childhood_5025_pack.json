@@ -4441,7 +4441,7 @@
       "choices": [
         "Both expectations come from the federal government and are enforced through the same judicial process.",
         "Neither expectation can be revised after adoption, because changing a rule removes its authority.",
-        "The class agreement operates within the school community; the city rule is enacted under local governmental authority and carries legal consequences.",
+        "Class norms guide daily school participation; municipal ordinances carry local legal authority and penalties.",
         "The city rule has authority only if every resident supports it, but the class agreement requires no discussion."
       ],
       "answerIndex": 2,
@@ -7636,7 +7636,7 @@
       "prompt": "A child can identify rhyming words but cannot blend onset and rime. Which prompt directly assesses onset-rime blending?",
       "choices": [
         "“Do map and sun rhyme?”",
-        "“What word do /m/ and /ap/ make when you put them together?”",
+        "“What word do /m/ and /ap/ make?”",
         "“How many syllables are in map?”",
         "“What is the last phoneme in map?”"
       ],
@@ -13494,7 +13494,7 @@
       "qaReviewedAt": "2026-07-18",
       "choiceRationales": [
         "Correct. The candidate selected \"4 cups\". Choosing 4 cups finds the scale factor (20 ÷ 5 = 4) yet forgets to multiply that factor by 2 cups of blue paint. This feedback directly evaluates the selected response. \"8 cups\" remains the source-supported response. The ratio 2 to 5 must remain equivalent. Since 20 cups of white paint is four groups of 5, multiply the blue amount by four as well to obtain 8 cups.",
-        "Not the best answer. This option does not identify the response that the item asks the learner to evaluate. The selected response is \"4 cupsthe option stating The ratio 2 to 5 must remain equivalent.8 cups\" remains the option stating The ratio 2 to 5 must remain equivalent.. The ratio 2 to 5 must remain equivalent. Since 20 cups of white paint is four groups of 5, multiply the blue amount by four as well to obtain 8 cups.",
+        "Not the best answer. This option does not identify the response that the item asks the learner to evaluate. The selected response is \"4 cupsthe option stating The ratio 2 to 5 must remain equivalent8 cups\" remains the option stating The ratio 2 to 5 must remain equivalent. The ratio 2 to 5 must remain equivalent. Since 20 cups of white paint is four groups of 5, multiply the blue amount by four as well to obtain 8 cups.",
         "Not the best answer. This option does not identify the response that the item asks the learner to evaluate. The selected response is \"4 cupsthe option stating Selecting 10 cups misapplies the ratio by halving8 cups\" remains the option stating Selecting 10 cups misapplies the ratio by halving. The ratio 2 to 5 must remain equivalent. Since 20 cups of white paint is four groups of 5, multiply the blue amount by four as well to obtain 8 cups.",
         "Not the best answer. This option does not identify the response that the item asks the learner to evaluate. The selected response is \"4 cupsthe option stating Picking 17 cups uses an additive difference (208 cups\" remains the option stating Picking 17 cups uses an additive difference (20. The ratio 2 to 5 must remain equivalent. Since 20 cups of white paint is four groups of 5, multiply the blue amount by four as well to obtain 8 cups."
       ],
@@ -13690,7 +13690,7 @@
       "qaReviewedAt": "2026-07-18",
       "choiceRationales": [
         "Correct. The candidate selected \"13 feet\". Choosing 13 feet adds only one length and one width (9 + 4) instead of summing all four rectangular sides. This feedback directly evaluates the selected response. \"26 feet\" remains the source-supported response. Perimeter measures the total distance around the rectangle. Add all four sides or calculate 2(9 + 4) to obtain 26 feet. The response preserves disciplinary accuracy, appropriate scope, evidence, and a verifiable reasoning chain.",
-        "Not the best answer. This option does not identify the response that the item asks the learner to evaluate. The selected response is \"13 feetthe option stating Perimeter measures the total distance around the rectangle.26 feet\" remains the option stating Perimeter measures the total distance around the rectangle.. Perimeter measures the total distance around the rectangle. Add all four sides or calculate 2(9 + 4) to obtain 26 feet. The response preserves disciplinary accuracy, appropriate scope, evidence, and a verifiable reasoning chain.",
+        "Not the best answer. This option does not identify the response that the item asks the learner to evaluate. The selected response is \"13 feetthe option stating Perimeter measures the total distance around the rectangle26 feet\" remains the option stating Perimeter measures the total distance around the rectangle. Perimeter measures the total distance around the rectangle. Add all four sides or calculate 2(9 + 4) to obtain 26 feet. The response preserves disciplinary accuracy, appropriate scope, evidence, and a verifiable reasoning chain.",
         "Not the best answer. This option does not identify the response that the item asks the learner to evaluate. The selected response is \"13 feetthe option stating Selecting 36 feet calculates the rectangle’s area (926 feet\" remains the option stating Selecting 36 feet calculates the rectangle’s area (9. Perimeter measures the total distance around the rectangle. Add all four sides or calculate 2(9 + 4) to obtain 26 feet. The response preserves disciplinary accuracy, appropriate scope, evidence, and a verifiable reasoning chain.",
         "Not the best answer. This option does not identify the response that the item asks the learner to evaluate. The selected response is \"13 feetthe option stating Picking 72 feet doubles the area (2 ×26 feet\" remains the option stating Picking 72 feet doubles the area (2 ×. Perimeter measures the total distance around the rectangle. Add all four sides or calculate 2(9 + 4) to obtain 26 feet. The response preserves disciplinary accuracy, appropriate scope, evidence, and a verifiable reasoning chain."
       ],
@@ -13983,7 +13983,7 @@
       "qaStatus": "structural-qa-passed-guided-practice-only",
       "qaReviewedAt": "2026-07-18",
       "choiceRationales": [
-        "Not the best answer. This option does not identify the response that the item asks the learner to evaluate. The selected response is \"1/10the option stating Probability is favorable outcomes divided by total outcomes.1/5\" remains the option stating Probability is favorable outcomes divided by total outcomes.. Probability is favorable outcomes divided by total outcomes. Two of the ten tiles are green, so the probability is 2/10, which simplifies to 1/5.",
+        "Not the best answer. This option does not identify the response that the item asks the learner to evaluate. The selected response is \"1/10the option stating Probability is favorable outcomes divided by total outcomes1/5\" remains the option stating Probability is favorable outcomes divided by total outcomes. Probability is favorable outcomes divided by total outcomes. Two of the ten tiles are green, so the probability is 2/10, which simplifies to 1/5.",
         "Not the best answer. This option does not identify the response that the item asks the learner to evaluate. The selected response is \"1/10the option stating Choosing 1/2 matches the probability of drawing a1/5\" remains the option stating Choosing 1/2 matches the probability of drawing a. Probability is favorable outcomes divided by total outcomes. Two of the ten tiles are green, so the probability is 2/10, which simplifies to 1/5.",
         "Correct. The candidate selected \"1/10\". Selecting 1/10 places 1 in the numerator instead of 2 green tiles out of all 10 total tiles (2/10 = 1/5). This feedback directly evaluates the selected response. \"1/5\" remains the source-supported response. Probability is favorable outcomes divided by total outcomes. Two of the ten tiles are green, so the probability is 2/10, which simplifies to 1/5.",
         "Not the best answer. This option does not identify the response that the item asks the learner to evaluate. The selected response is \"1/10the option stating Picking 2/3 compares green tiles to red tiles1/5\" remains the option stating Picking 2/3 compares green tiles to red tiles. Probability is favorable outcomes divided by total outcomes. Two of the ten tiles are green, so the probability is 2/10, which simplifies to 1/5."
@@ -14032,7 +14032,7 @@
       "qaStatus": "structural-qa-passed-guided-practice-only",
       "qaReviewedAt": "2026-07-18",
       "choiceRationales": [
-        "Not the best answer. This option does not identify the response that the item asks the learner to evaluate. The selected response is \"3 notebooks\". the option stating The phrase how many more calls for subtraction.). The explanation should match the response under review. \"9 notebooks\" remains the option stating The phrase how many more calls for subtraction.. The phrase how many more calls for subtraction. Compare the two relevant entries: 27 notebooks on Thursday minus 18 on Monday equals 9 notebooks.",
+        "Not the best answer. This option does not identify the response that the item asks the learner to evaluate. The selected response is \"3 notebooks\". the option stating The phrase how many more calls for subtraction). The explanation should match the response under review. \"9 notebooks\" remains the option stating The phrase how many more calls for subtraction. The phrase how many more calls for subtraction. Compare the two relevant entries: 27 notebooks on Thursday minus 18 on Monday equals 9 notebooks.",
         "Not the best answer. This option does not identify the response that the item asks the learner to evaluate. The selected response is \"3 notebooks\". the option stating Selecting 6 notebooks compares Tuesday (24) with Monday). The explanation should match the response under review. \"9 notebooks\" remains the option stating Selecting 6 notebooks compares Tuesday (24) with Monday. The phrase how many more calls for subtraction. Compare the two relevant entries: 27 notebooks on Thursday minus 18 on Monday equals 9 notebooks.",
         "Not the best answer. This option does not identify the response that the item asks the learner to evaluate. The selected response is \"3 notebooks\". the option stating Picking 45 notebooks adds Monday’s and Thursday’s sales). The explanation should match the response under review. \"9 notebooks\" remains the option stating Picking 45 notebooks adds Monday’s and Thursday’s sales. The phrase how many more calls for subtraction. Compare the two relevant entries: 27 notebooks on Thursday minus 18 on Monday equals 9 notebooks.",
         "Correct. The candidate selected \"3 notebooks\". Choosing 3 notebooks compares Tuesday and Wednesday or Thursday and Tuesday rather than subtracting Monday (18) from Thursday (27). This feedback directly evaluates the selected response. \"9 notebooks\" remains the source-supported response. The phrase how many more calls for subtraction. Compare the two relevant entries: 27 notebooks on Thursday minus 18 on Monday equals 9 notebooks."
@@ -14130,7 +14130,7 @@
       "qaStatus": "structural-qa-passed-guided-practice-only",
       "qaReviewedAt": "2026-07-18",
       "choiceRationales": [
-        "Not the best answer. This option does not identify the response that the item asks the learner to evaluate. The selected response is \"27.5 centimeters\". the option stating Converting meters to centimeters requires multiplying by 100.. The explanation should match the response under review. \"275 centimeters\" remains the option stating Converting meters to centimeters requires multiplying by 100.. the option stating Converting meters to centimeters requires multiplying by 100..",
+        "Not the best answer. This option does not identify the response that the item asks the learner to evaluate. The selected response is \"27.5 centimeters\". the option stating Converting meters to centimeters requires multiplying by 100. The explanation should match the response under review. \"275 centimeters\" remains the option stating Converting meters to centimeters requires multiplying by 100. the option stating Converting meters to centimeters requires multiplying by 100.",
         "Correct. The candidate selected \"27.5 centimeters\". Choosing 27.5 centimeters multiplies by 10 instead of 100, confusing centimeters per meter with decimeters per meter. This feedback directly evaluates the selected response. \"275 centimeters\" remains the source-supported response. Converting meters to centimeters requires multiplying by 100. Moving the decimal two places right changes 2.75 meters to 275 centimeters.",
         "Not the best answer. This option does not identify the response that the item asks the learner to evaluate. The selected response is \"27.5 centimeters\". the option stating Selecting 2,750 centimeters multiplies by 1,000 instead of. The explanation should match the response under review. \"275 centimeters\" remains the option stating Selecting 2,750 centimeters multiplies by 1,000 instead of. Converting meters to centimeters requires multiplying by 100. Moving the decimal two places right changes 2.75 meters to 275 centimeters.",
         "Not the best answer. This option does not identify the response that the item asks the learner to evaluate. The selected response is \"27.5 centimeters\". the option stating Picking 0.0275 centimeters divides by 100 instead of. The explanation should match the response under review. \"275 centimeters\" remains the option stating Picking 0.0275 centimeters divides by 100 instead of. Converting meters to centimeters requires multiplying by 100. Moving the decimal two places right changes 2.75 meters to 275 centimeters."
@@ -16936,8 +16936,8 @@
       "qaStatus": "structural-qa-passed-guided-practice-only",
       "qaReviewedAt": "2026-07-18",
       "choiceRationales": [
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes the option stating \"5/7\" — The least common denominator is 12.. Pairing that same evidence with another response creates a mismatch. The least common denominator is 12. Convert 3/4 to 9/12 and 2/3 to 8/12, then add to obtain 17/12, which is the mixed number 1 5/12.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes the option stating \"5/12\" — The least common denominator is 12.. Pairing that same evidence with another response creates a mismatch. The least common denominator is 12. Convert 3/4 to 9/12 and 2/3 to 8/12, then add to obtain 17/12, which is the mixed number 1 5/12.",
+        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes the option stating \"5/7\" — The least common denominator is 12. Pairing that same evidence with another response creates a mismatch. The least common denominator is 12. Convert 3/4 to 9/12 and 2/3 to 8/12, then add to obtain 17/12, which is the mixed number 1 5/12.",
+        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes the option stating \"5/12\" — The least common denominator is 12. Pairing that same evidence with another response creates a mismatch. The least common denominator is 12. Convert 3/4 to 9/12 and 2/3 to 8/12, then add to obtain 17/12, which is the mixed number 1 5/12.",
         "Correct. The evidence statement accurately describes \"17/12, or 1 5/12\". Pairing that same evidence with another response creates a mismatch. The least common denominator is 12. Convert 3/4 to 9/12 and 2/3 to 8/12, then add to obtain 17/12, which is the mixed number 1 5/12.",
         "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes the option stating \"13/12, or 1 1/12\" — The least common. Pairing that same evidence with another response creates a mismatch. The least common denominator is 12. Convert 3/4 to 9/12 and 2/3 to 8/12, then add to obtain 17/12, which is the mixed number 1 5/12."
       ],
@@ -17185,9 +17185,9 @@
       "qaStatus": "structural-qa-passed-guided-practice-only",
       "qaReviewedAt": "2026-07-18",
       "choiceRationales": [
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"$36\". Pairing that same evidence with another response creates a mismatch. Find the discount by multiplying 48 by 0.25 to get 12. The sale price is the original 48 dollars minus the 12-dollar discount, which equals 36 dollars.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"$36\". Pairing that same evidence with another response creates a mismatch. Find the discount by multiplying 48 by 0.25 to get 12. The sale price is the original 48 dollars minus the 12-dollar discount, which equals 36 dollars.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"$36\". Pairing that same evidence with another response creates a mismatch. Find the discount by multiplying 48 by 0.25 to get 12. The sale price is the original 48 dollars minus the 12-dollar discount, which equals 36 dollars.",
+        "Not the best answer. Pairing the affirmative evidence with “$12” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"$36\". Pairing that same evidence with another response creates a mismatch. Find the discount by multiplying 48 by 0.25 to get 12. The sale price is the original 48 dollars minus the 12-dollar discount, which equals 36 dollars.",
+        "Not the best answer. Pairing the affirmative evidence with “$23” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"$36\". Pairing that same evidence with another response creates a mismatch. Find the discount by multiplying 48 by 0.25 to get 12. The sale price is the original 48 dollars minus the 12-dollar discount, which equals 36 dollars.",
+        "Not the best answer. Pairing the affirmative evidence with “$42” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"$36\". Pairing that same evidence with another response creates a mismatch. Find the discount by multiplying 48 by 0.25 to get 12. The sale price is the original 48 dollars minus the 12-dollar discount, which equals 36 dollars.",
         "Correct. The evidence statement accurately describes \"$36\". Pairing that same evidence with another response creates a mismatch. Find the discount by multiplying 48 by 0.25 to get 12. The sale price is the original 48 dollars minus the 12-dollar discount, which equals 36 dollars."
       ],
       "skillIds": [
@@ -17207,7 +17207,8 @@
       "assistantReviewStatus": "reviewed-guided-practice-only",
       "examItemStatus": "not-approved-as-independent-exam-item",
       "assistantReviewedAt": "2026-07-16",
-      "reviewMethod": "guided-practice-source-answer-key-option-feedback-distractor-editorial-and-structural-review-v1"
+      "reviewMethod": "guided-practice-source-answer-key-option-feedback-distractor-editorial-and-structural-review-v1",
+      "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
     },
     {
       "id": "ec5025-b2-057-exp4",
@@ -17433,9 +17434,9 @@
       "qaReviewedAt": "2026-07-18",
       "choiceRationales": [
         "Correct. The evidence statement accurately describes \"8 cups\". Pairing that same evidence with another response creates a mismatch. The ratio 2 to 5 must remain equivalent. Since 20 cups of white paint is four groups of 5, multiply the blue amount by four as well to obtain 8 cups.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"8 cups\". Pairing that same evidence with another response creates a mismatch. The ratio 2 to 5 must remain equivalent. Since 20 cups of white paint is four groups of 5, multiply the blue amount by four as well to obtain 8 cups.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"8 cups\". Pairing that same evidence with another response creates a mismatch. The ratio 2 to 5 must remain equivalent. Since 20 cups of white paint is four groups of 5, multiply the blue amount by four as well to obtain 8 cups.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"8 cups\". Pairing that same evidence with another response creates a mismatch. The ratio 2 to 5 must remain equivalent. Since 20 cups of white paint is four groups of 5, multiply the blue amount by four as well to obtain 8 cups."
+        "Not the best answer. Pairing the affirmative evidence with “4 cups” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"8 cups\". Pairing that same evidence with another response creates a mismatch. The ratio 2 to 5 must remain equivalent. Since 20 cups of white paint is four groups of 5, multiply the blue amount by four as well to obtain 8 cups.",
+        "Not the best answer. Pairing the affirmative evidence with “10 cups” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"8 cups\". Pairing that same evidence with another response creates a mismatch. The ratio 2 to 5 must remain equivalent. Since 20 cups of white paint is four groups of 5, multiply the blue amount by four as well to obtain 8 cups.",
+        "Not the best answer. Pairing the affirmative evidence with “17 cups” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"8 cups\". Pairing that same evidence with another response creates a mismatch. The ratio 2 to 5 must remain equivalent. Since 20 cups of white paint is four groups of 5, multiply the blue amount by four as well to obtain 8 cups."
       ],
       "skillIds": [
         "number-operations"
@@ -17455,7 +17456,8 @@
       "examItemStatus": "not-approved-as-independent-exam-item",
       "assistantReviewedAt": "2026-07-16",
       "reviewMethod": "guided-practice-source-answer-key-option-feedback-distractor-editorial-and-structural-review-v1",
-      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+      "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
     },
     {
       "id": "ec5025-b2-058-exp4",
@@ -17680,10 +17682,10 @@
       "qaStatus": "structural-qa-passed-guided-practice-only",
       "qaReviewedAt": "2026-07-18",
       "choiceRationales": [
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"0\". Pairing that same evidence with another response creates a mismatch. Evaluate from left to right: negative 7 plus 12 equals 5, and 5 minus 5 equals 0. The signs must be applied to each operation as written.",
+        "Not the best answer. Pairing the affirmative evidence with “-24” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"0\". Pairing that same evidence with another response creates a mismatch. Evaluate from left to right: negative 7 plus 12 equals 5, and 5 minus 5 equals 0. The signs must be applied to each operation as written.",
         "Correct. The evidence statement accurately describes \"0\". Pairing that same evidence with another response creates a mismatch. Evaluate from left to right: negative 7 plus 12 equals 5, and 5 minus 5 equals 0. The signs must be applied to each operation as written.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"0\". Pairing that same evidence with another response creates a mismatch. Evaluate from left to right: negative 7 plus 12 equals 5, and 5 minus 5 equals 0. The signs must be applied to each operation as written.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"0\". Pairing that same evidence with another response creates a mismatch. Evaluate from left to right: negative 7 plus 12 equals 5, and 5 minus 5 equals 0. The signs must be applied to each operation as written."
+        "Not the best answer. Pairing the affirmative evidence with “-10” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"0\". Pairing that same evidence with another response creates a mismatch. Evaluate from left to right: negative 7 plus 12 equals 5, and 5 minus 5 equals 0. The signs must be applied to each operation as written.",
+        "Not the best answer. Pairing the affirmative evidence with “10” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"0\". Pairing that same evidence with another response creates a mismatch. Evaluate from left to right: negative 7 plus 12 equals 5, and 5 minus 5 equals 0. The signs must be applied to each operation as written."
       ],
       "skillIds": [
         "number-operations"
@@ -17702,7 +17704,8 @@
       "assistantReviewStatus": "reviewed-guided-practice-only",
       "examItemStatus": "not-approved-as-independent-exam-item",
       "assistantReviewedAt": "2026-07-16",
-      "reviewMethod": "guided-practice-source-answer-key-option-feedback-distractor-editorial-and-structural-review-v1"
+      "reviewMethod": "guided-practice-source-answer-key-option-feedback-distractor-editorial-and-structural-review-v1",
+      "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
     },
     {
       "id": "ec5025-b2-005-exp4",
@@ -17776,10 +17779,10 @@
       "qaStatus": "structural-qa-passed-guided-practice-only",
       "qaReviewedAt": "2026-07-18",
       "choiceRationales": [
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"x = 7\". Pairing that same evidence with another response creates a mismatch. Undo the subtraction by adding 7 to each side, producing 4x = 28. Then divide both sides by 4 to isolate x, so x equals 7.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"x = 7\". Pairing that same evidence with another response creates a mismatch. Undo the subtraction by adding 7 to each side, producing 4x = 28. Then divide both sides by 4 to isolate x, so x equals 7.",
+        "Not the best answer. Pairing the affirmative evidence with “x = 3.5” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"x = 7\". Pairing that same evidence with another response creates a mismatch. Undo the subtraction by adding 7 to each side, producing 4x = 28. Then divide both sides by 4 to isolate x, so x equals 7.",
+        "Not the best answer. Pairing the affirmative evidence with “x = 5” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"x = 7\". Pairing that same evidence with another response creates a mismatch. Undo the subtraction by adding 7 to each side, producing 4x = 28. Then divide both sides by 4 to isolate x, so x equals 7.",
         "Correct. The evidence statement accurately describes \"x = 7\". Pairing that same evidence with another response creates a mismatch. Undo the subtraction by adding 7 to each side, producing 4x = 28. Then divide both sides by 4 to isolate x, so x equals 7.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"x = 7\". Pairing that same evidence with another response creates a mismatch. Undo the subtraction by adding 7 to each side, producing 4x = 28. Then divide both sides by 4 to isolate x, so x equals 7."
+        "Not the best answer. Pairing the affirmative evidence with “x = 28” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"x = 7\". Pairing that same evidence with another response creates a mismatch. Undo the subtraction by adding 7 to each side, producing 4x = 28. Then divide both sides by 4 to isolate x, so x equals 7."
       ],
       "skillIds": [
         "number-operations"
@@ -17799,7 +17802,8 @@
       "examItemStatus": "not-approved-as-independent-exam-item",
       "assistantReviewedAt": "2026-07-16",
       "reviewMethod": "guided-practice-source-answer-key-option-feedback-distractor-editorial-and-structural-review-v1",
-      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+      "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
     },
     {
       "id": "ec5025-b2-006-exp4",
@@ -17955,13 +17959,13 @@
       "difficulty": "analysis",
       "prompt": "Children compare a classroom agreement with a city rule. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
-        "\"Both expectations come from the federal government and are enforced through the same judicial process\" — This response identifies both the setting of a classroom agreement and the governmental source and legal force of a municipal requirement (in the context of city rule) in this case as presented",
-        "\"Neither expectation can be revised after adoption, because changing a rule removes its authority\" — This response identifies both the setting of a classroom agreement and the governmental source and legal force of a municipal requirement (in the context of city rule) as presented for this item",
-        "\"The class agreement operates within the school community; the city rule is enacted under local governmental authority and carries legal consequences\" — This response identifies both the setting of a classroom agreement and the governmental source and legal force of a municipal requirement.",
-        "\"The city rule has authority primarily if every resident supports it, but the class agreement requires no discussion\" — This response identifies both the setting of a classroom agreement and the governmental source and legal force of a municipal requirement in context under these facts as described"
+        "\"Both expectations come from the federal government and are enforced through the same judicial process\" — This response identifies both the setting of a classroom agreement and the governmental source and legal force of a municipal requirement in this case",
+        "\"Neither expectation can be revised after adoption, because changing a rule removes its authority\" — This response identifies both the setting of a classroom agreement and the governmental source and legal force of a municipal requirement as presented for this item",
+        "\"Class norms guide daily school participation; municipal ordinances carry local legal authority and penalties\" — This response identifies both the setting of a classroom agreement and the governmental source and legal force of a municipal requirement.",
+        "\"The city rule has authority primarily if every resident supports it, but the class agreement requires no discussion\" — This response identifies both the setting of a classroom agreement and the governmental source and legal force of a municipal requirement."
       ],
       "answerIndex": 2,
-      "rationale": "The evidence statement accurately describes \"The class agreement operates within the school community; the city rule is enacted under local governmental authority and carries legal consequences\". Pairing that same evidence with another response creates a mismatch. The two expectations differ in source and legal status. A classroom agreement guides participation within a school community, whereas a city ordinance is created through authorized local-government processes and can carry legal penalties.",
+      "rationale": "The evidence statement accurately describes \"Class norms guide daily school participation; municipal ordinances carry local legal authority and penalties\". Pairing that same evidence with another response creates a mismatch. The two expectations differ in source and legal status. A classroom agreement guides participation within a school community, whereas a city ordinance is created through authorized local-government processes and can carry legal penalties.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -17974,7 +17978,7 @@
       "choiceRationales": [
         "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes the option stating \"Both expectations come from the federal government and. Pairing that same evidence with another response creates a mismatch. The two expectations differ in source and legal status. A classroom agreement guides participation within a school community, whereas a city ordinance is created through authorized local-government processes and can carry legal penalties.",
         "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes the option stating \"Neither expectation can be revised after adoption, because. Pairing that same evidence with another response creates a mismatch. The two expectations differ in source and legal status. A classroom agreement guides participation within a school community, whereas a city ordinance is created through authorized local-government processes and can carry legal penalties.",
-        "Correct. The evidence statement accurately describes \"The class agreement operates within the school community; the city rule is enacted under local governmental authority and carries legal consequences\". Pairing that same evidence with another response creates a mismatch. The two expectations differ in source and legal status. A classroom agreement guides participation within a school community, whereas a city ordinance is created through authorized local-government processes and can carry legal penalties.",
+        "Correct. The evidence statement accurately describes \"Class norms guide daily school participation; municipal ordinances carry local legal authority and penalties\". Pairing that same evidence with another response creates a mismatch. The two expectations differ in source and legal status. A classroom agreement guides participation within a school community, whereas a city ordinance is created through authorized local-government processes and can carry legal penalties.",
         "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes the option stating \"The city rule has authority primarily if every. Pairing that same evidence with another response creates a mismatch. The two expectations differ in source and legal status. A classroom agreement guides participation within a school community, whereas a city ordinance is created through authorized local-government processes and can carry legal penalties."
       ],
       "skillIds": [
@@ -18172,9 +18176,9 @@
       "qaReviewedAt": "2026-07-18",
       "choiceRationales": [
         "Correct. The evidence statement accurately describes \"26 feet\". Pairing that same evidence with another response creates a mismatch. Perimeter measures the total distance around the rectangle. Add all four sides or calculate 2(9 + 4) to obtain 26 feet. The response preserves disciplinary accuracy, appropriate scope, evidence, and a verifiable reasoning chain.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"26 feet\". Pairing that same evidence with another response creates a mismatch. Perimeter measures the total distance around the rectangle. Add all four sides or calculate 2(9 + 4) to obtain 26 feet. The response preserves disciplinary accuracy, appropriate scope, evidence, and a verifiable reasoning chain.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"26 feet\". Pairing that same evidence with another response creates a mismatch. Perimeter measures the total distance around the rectangle. Add all four sides or calculate 2(9 + 4) to obtain 26 feet. The response preserves disciplinary accuracy, appropriate scope, evidence, and a verifiable reasoning chain.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"26 feet\". Pairing that same evidence with another response creates a mismatch. Perimeter measures the total distance around the rectangle. Add all four sides or calculate 2(9 + 4) to obtain 26 feet. The response preserves disciplinary accuracy, appropriate scope, evidence, and a verifiable reasoning chain."
+        "Not the best answer. Pairing the affirmative evidence with “13 feet” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"26 feet\". Pairing that same evidence with another response creates a mismatch. Perimeter measures the total distance around the rectangle. Add all four sides or calculate 2(9 + 4) to obtain 26 feet. The response preserves disciplinary accuracy, appropriate scope, evidence, and a verifiable reasoning chain.",
+        "Not the best answer. Pairing the affirmative evidence with “36 feet” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"26 feet\". Pairing that same evidence with another response creates a mismatch. Perimeter measures the total distance around the rectangle. Add all four sides or calculate 2(9 + 4) to obtain 26 feet. The response preserves disciplinary accuracy, appropriate scope, evidence, and a verifiable reasoning chain.",
+        "Not the best answer. Pairing the affirmative evidence with “72 feet” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"26 feet\". Pairing that same evidence with another response creates a mismatch. Perimeter measures the total distance around the rectangle. Add all four sides or calculate 2(9 + 4) to obtain 26 feet. The response preserves disciplinary accuracy, appropriate scope, evidence, and a verifiable reasoning chain."
       ],
       "skillIds": [
         "geometry-reasoning"
@@ -18193,7 +18197,8 @@
       "assistantReviewStatus": "reviewed-guided-practice-only",
       "examItemStatus": "not-approved-as-independent-exam-item",
       "assistantReviewedAt": "2026-07-16",
-      "reviewMethod": "guided-practice-source-answer-key-option-feedback-distractor-editorial-and-structural-review-v1"
+      "reviewMethod": "guided-practice-source-answer-key-option-feedback-distractor-editorial-and-structural-review-v1",
+      "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
     },
     {
       "id": "ec5025-b2-060-exp4",
@@ -18916,9 +18921,9 @@
       "qaStatus": "structural-qa-passed-guided-practice-only",
       "qaReviewedAt": "2026-07-18",
       "choiceRationales": [
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"6 units\". Pairing that same evidence with another response creates a mismatch. Because both points have x-coordinate 2, the segment is vertical. Its length is |5 - (-1)|, which equals |6| or 6 units.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"6 units\". Pairing that same evidence with another response creates a mismatch. Because both points have x-coordinate 2, the segment is vertical. Its length is |5 - (-1)|, which equals |6| or 6 units.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"6 units\". Pairing that same evidence with another response creates a mismatch. Because both points have x-coordinate 2, the segment is vertical. Its length is |5 - (-1)|, which equals |6| or 6 units.",
+        "Not the best answer. Pairing the affirmative evidence with “3 units” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"6 units\". Pairing that same evidence with another response creates a mismatch. Because both points have x-coordinate 2, the segment is vertical. Its length is |5 - (-1)|, which equals |6| or 6 units.",
+        "Not the best answer. Pairing the affirmative evidence with “4 units” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"6 units\". Pairing that same evidence with another response creates a mismatch. Because both points have x-coordinate 2, the segment is vertical. Its length is |5 - (-1)|, which equals |6| or 6 units.",
+        "Not the best answer. Pairing the affirmative evidence with “7 units” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"6 units\". Pairing that same evidence with another response creates a mismatch. Because both points have x-coordinate 2, the segment is vertical. Its length is |5 - (-1)|, which equals |6| or 6 units.",
         "Correct. The evidence statement accurately describes \"6 units\". Pairing that same evidence with another response creates a mismatch. Because both points have x-coordinate 2, the segment is vertical. Its length is |5 - (-1)|, which equals |6| or 6 units."
       ],
       "skillIds": [
@@ -18938,7 +18943,8 @@
       "assistantReviewStatus": "reviewed-guided-practice-only",
       "examItemStatus": "not-approved-as-independent-exam-item",
       "assistantReviewedAt": "2026-07-16",
-      "reviewMethod": "guided-practice-source-answer-key-option-feedback-distractor-editorial-and-structural-review-v1"
+      "reviewMethod": "guided-practice-source-answer-key-option-feedback-distractor-editorial-and-structural-review-v1",
+      "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
     },
     {
       "id": "ec5025-b2-063-exp4",
@@ -19164,9 +19170,9 @@
       "qaReviewedAt": "2026-07-18",
       "choiceRationales": [
         "Correct. The evidence statement accurately describes \"10\". Pairing that same evidence with another response creates a mismatch. Add the five values to get 50, then divide by the number of values, which is 5. The resulting arithmetic mean is 10. The response preserves disciplinary accuracy, appropriate scope, evidence, and a verifiable reasoning chain.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"10\". Pairing that same evidence with another response creates a mismatch. Add the five values to get 50, then divide by the number of values, which is 5. The resulting arithmetic mean is 10. The response preserves disciplinary accuracy, appropriate scope, evidence, and a verifiable reasoning chain.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"10\". Pairing that same evidence with another response creates a mismatch. Add the five values to get 50, then divide by the number of values, which is 5. The resulting arithmetic mean is 10. The response preserves disciplinary accuracy, appropriate scope, evidence, and a verifiable reasoning chain.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"10\". Pairing that same evidence with another response creates a mismatch. Add the five values to get 50, then divide by the number of values, which is 5. The resulting arithmetic mean is 10. The response preserves disciplinary accuracy, appropriate scope, evidence, and a verifiable reasoning chain."
+        "Not the best answer. Pairing the affirmative evidence with “9” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"10\". Pairing that same evidence with another response creates a mismatch. Add the five values to get 50, then divide by the number of values, which is 5. The resulting arithmetic mean is 10. The response preserves disciplinary accuracy, appropriate scope, evidence, and a verifiable reasoning chain.",
+        "Not the best answer. Pairing the affirmative evidence with “11” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"10\". Pairing that same evidence with another response creates a mismatch. Add the five values to get 50, then divide by the number of values, which is 5. The resulting arithmetic mean is 10. The response preserves disciplinary accuracy, appropriate scope, evidence, and a verifiable reasoning chain.",
+        "Not the best answer. Pairing the affirmative evidence with “12” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"10\". Pairing that same evidence with another response creates a mismatch. Add the five values to get 50, then divide by the number of values, which is 5. The resulting arithmetic mean is 10. The response preserves disciplinary accuracy, appropriate scope, evidence, and a verifiable reasoning chain."
       ],
       "skillIds": [
         "measurement-data"
@@ -19186,7 +19192,8 @@
       "examItemStatus": "not-approved-as-independent-exam-item",
       "assistantReviewedAt": "2026-07-16",
       "reviewMethod": "guided-practice-source-answer-key-option-feedback-distractor-editorial-and-structural-review-v1",
-      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+      "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
     },
     {
       "id": "ec5025-b2-064-exp4",
@@ -19411,10 +19418,10 @@
       "qaStatus": "structural-qa-passed-guided-practice-only",
       "qaReviewedAt": "2026-07-18",
       "choiceRationales": [
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"8.5\". Pairing that same evidence with another response creates a mismatch. An even number of observations has two middle values. The third and fourth values are 7 and 10, and their mean is 17/2, or 8.5.",
+        "Not the best answer. Pairing the affirmative evidence with “7” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"8.5\". Pairing that same evidence with another response creates a mismatch. An even number of observations has two middle values. The third and fourth values are 7 and 10, and their mean is 17/2, or 8.5.",
         "Correct. The evidence statement accurately describes \"8.5\". Pairing that same evidence with another response creates a mismatch. An even number of observations has two middle values. The third and fourth values are 7 and 10, and their mean is 17/2, or 8.5.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"8.5\". Pairing that same evidence with another response creates a mismatch. An even number of observations has two middle values. The third and fourth values are 7 and 10, and their mean is 17/2, or 8.5.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"8.5\". Pairing that same evidence with another response creates a mismatch. An even number of observations has two middle values. The third and fourth values are 7 and 10, and their mean is 17/2, or 8.5."
+        "Not the best answer. Pairing the affirmative evidence with “10” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"8.5\". Pairing that same evidence with another response creates a mismatch. An even number of observations has two middle values. The third and fourth values are 7 and 10, and their mean is 17/2, or 8.5.",
+        "Not the best answer. Pairing the affirmative evidence with “11.5” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"8.5\". Pairing that same evidence with another response creates a mismatch. An even number of observations has two middle values. The third and fourth values are 7 and 10, and their mean is 17/2, or 8.5."
       ],
       "skillIds": [
         "measurement-data"
@@ -19434,7 +19441,8 @@
       "examItemStatus": "not-approved-as-independent-exam-item",
       "assistantReviewedAt": "2026-07-16",
       "reviewMethod": "guided-practice-source-answer-key-option-feedback-distractor-editorial-and-structural-review-v1",
-      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+      "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
     },
     {
       "id": "ec5025-b2-065-exp4",
@@ -19659,10 +19667,10 @@
       "qaStatus": "structural-qa-passed-guided-practice-only",
       "qaReviewedAt": "2026-07-18",
       "choiceRationales": [
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"1/5\". Pairing that same evidence with another response creates a mismatch. Probability is favorable outcomes divided by total outcomes. Two of the ten tiles are green, so the probability is 2/10, which simplifies to 1/5.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"1/5\". Pairing that same evidence with another response creates a mismatch. Probability is favorable outcomes divided by total outcomes. Two of the ten tiles are green, so the probability is 2/10, which simplifies to 1/5.",
+        "Not the best answer. Pairing the affirmative evidence with “1/10” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"1/5\". Pairing that same evidence with another response creates a mismatch. Probability is favorable outcomes divided by total outcomes. Two of the ten tiles are green, so the probability is 2/10, which simplifies to 1/5.",
+        "Not the best answer. Pairing the affirmative evidence with “1/2” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"1/5\". Pairing that same evidence with another response creates a mismatch. Probability is favorable outcomes divided by total outcomes. Two of the ten tiles are green, so the probability is 2/10, which simplifies to 1/5.",
         "Correct. The evidence statement accurately describes \"1/5\". Pairing that same evidence with another response creates a mismatch. Probability is favorable outcomes divided by total outcomes. Two of the ten tiles are green, so the probability is 2/10, which simplifies to 1/5.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"1/5\". Pairing that same evidence with another response creates a mismatch. Probability is favorable outcomes divided by total outcomes. Two of the ten tiles are green, so the probability is 2/10, which simplifies to 1/5."
+        "Not the best answer. Pairing the affirmative evidence with “2/3” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"1/5\". Pairing that same evidence with another response creates a mismatch. Probability is favorable outcomes divided by total outcomes. Two of the ten tiles are green, so the probability is 2/10, which simplifies to 1/5."
       ],
       "skillIds": [
         "measurement-data"
@@ -19682,7 +19690,8 @@
       "examItemStatus": "not-approved-as-independent-exam-item",
       "assistantReviewedAt": "2026-07-16",
       "reviewMethod": "guided-practice-source-answer-key-option-feedback-distractor-editorial-and-structural-review-v1",
-      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+      "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
     },
     {
       "id": "ec5025-b2-066-exp4",
@@ -20157,9 +20166,9 @@
       "qaReviewedAt": "2026-07-18",
       "choiceRationales": [
         "Correct. The evidence statement accurately describes \"0.84\". Pairing that same evidence with another response creates a mismatch. Multiply 24 by 35 to get 840, then place three decimal digits because 2.4 has one and 0.35 has two. The product is 0.840, equal to 0.84.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"0.84\". Pairing that same evidence with another response creates a mismatch. Multiply 24 by 35 to get 840, then place three decimal digits because 2.4 has one and 0.35 has two. The product is 0.840, equal to 0.84.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"0.84\". Pairing that same evidence with another response creates a mismatch. Multiply 24 by 35 to get 840, then place three decimal digits because 2.4 has one and 0.35 has two. The product is 0.840, equal to 0.84.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"0.84\". Pairing that same evidence with another response creates a mismatch. Multiply 24 by 35 to get 840, then place three decimal digits because 2.4 has one and 0.35 has two. The product is 0.840, equal to 0.84."
+        "Not the best answer. Pairing the affirmative evidence with “0.084” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"0.84\". Pairing that same evidence with another response creates a mismatch. Multiply 24 by 35 to get 840, then place three decimal digits because 2.4 has one and 0.35 has two. The product is 0.840, equal to 0.84.",
+        "Not the best answer. Pairing the affirmative evidence with “8.4” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"0.84\". Pairing that same evidence with another response creates a mismatch. Multiply 24 by 35 to get 840, then place three decimal digits because 2.4 has one and 0.35 has two. The product is 0.840, equal to 0.84.",
+        "Not the best answer. Pairing the affirmative evidence with “84” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"0.84\". Pairing that same evidence with another response creates a mismatch. Multiply 24 by 35 to get 840, then place three decimal digits because 2.4 has one and 0.35 has two. The product is 0.840, equal to 0.84."
       ],
       "skillIds": [
         "number-operations"
@@ -20179,7 +20188,8 @@
       "examItemStatus": "not-approved-as-independent-exam-item",
       "assistantReviewedAt": "2026-07-16",
       "reviewMethod": "guided-practice-source-answer-key-option-feedback-distractor-editorial-and-structural-review-v1",
-      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+      "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
     },
     {
       "id": "ec5025-b2-068-exp4",
@@ -20653,10 +20663,10 @@
       "qaStatus": "structural-qa-passed-guided-practice-only",
       "qaReviewedAt": "2026-07-18",
       "choiceRationales": [
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"243\". Pairing that same evidence with another response creates a mismatch. Powers with the same base are multiplied by adding exponents. Two plus three equals five, and 3 to the fifth power is 243.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"243\". Pairing that same evidence with another response creates a mismatch. Powers with the same base are multiplied by adding exponents. Two plus three equals five, and 3 to the fifth power is 243.",
+        "Not the best answer. Pairing the affirmative evidence with “27” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"243\". Pairing that same evidence with another response creates a mismatch. Powers with the same base are multiplied by adding exponents. Two plus three equals five, and 3 to the fifth power is 243.",
+        "Not the best answer. Pairing the affirmative evidence with “81” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"243\". Pairing that same evidence with another response creates a mismatch. Powers with the same base are multiplied by adding exponents. Two plus three equals five, and 3 to the fifth power is 243.",
         "Correct. The evidence statement accurately describes \"243\". Pairing that same evidence with another response creates a mismatch. Powers with the same base are multiplied by adding exponents. Two plus three equals five, and 3 to the fifth power is 243.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"243\". Pairing that same evidence with another response creates a mismatch. Powers with the same base are multiplied by adding exponents. Two plus three equals five, and 3 to the fifth power is 243."
+        "Not the best answer. Pairing the affirmative evidence with “729” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"243\". Pairing that same evidence with another response creates a mismatch. Powers with the same base are multiplied by adding exponents. Two plus three equals five, and 3 to the fifth power is 243."
       ],
       "skillIds": [
         "number-operations"
@@ -20676,7 +20686,8 @@
       "examItemStatus": "not-approved-as-independent-exam-item",
       "assistantReviewedAt": "2026-07-16",
       "reviewMethod": "guided-practice-source-answer-key-option-feedback-distractor-editorial-and-structural-review-v1",
-      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+      "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
     },
     {
       "id": "ec5025-b2-098-exp4",
@@ -20801,9 +20812,9 @@
       "qaStatus": "structural-qa-passed-guided-practice-only",
       "qaReviewedAt": "2026-07-18",
       "choiceRationales": [
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"17\". Pairing that same evidence with another response creates a mismatch. Substitute the given values and apply exponents before multiplication: 4 squared is 16, so 2 times 16 is 32; then 32 minus 15 equals 17.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"17\". Pairing that same evidence with another response creates a mismatch. Substitute the given values and apply exponents before multiplication: 4 squared is 16, so 2 times 16 is 32; then 32 minus 15 equals 17.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"17\". Pairing that same evidence with another response creates a mismatch. Substitute the given values and apply exponents before multiplication: 4 squared is 16, so 2 times 16 is 32; then 32 minus 15 equals 17.",
+        "Not the best answer. Pairing the affirmative evidence with “1” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"17\". Pairing that same evidence with another response creates a mismatch. Substitute the given values and apply exponents before multiplication: 4 squared is 16, so 2 times 16 is 32; then 32 minus 15 equals 17.",
+        "Not the best answer. Pairing the affirmative evidence with “49” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"17\". Pairing that same evidence with another response creates a mismatch. Substitute the given values and apply exponents before multiplication: 4 squared is 16, so 2 times 16 is 32; then 32 minus 15 equals 17.",
+        "Not the best answer. Pairing the affirmative evidence with “145” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"17\". Pairing that same evidence with another response creates a mismatch. Substitute the given values and apply exponents before multiplication: 4 squared is 16, so 2 times 16 is 32; then 32 minus 15 equals 17.",
         "Correct. The evidence statement accurately describes \"17\". Pairing that same evidence with another response creates a mismatch. Substitute the given values and apply exponents before multiplication: 4 squared is 16, so 2 times 16 is 32; then 32 minus 15 equals 17."
       ],
       "skillIds": [
@@ -20824,7 +20835,8 @@
       "examItemStatus": "not-approved-as-independent-exam-item",
       "assistantReviewedAt": "2026-07-16",
       "reviewMethod": "guided-practice-source-answer-key-option-feedback-distractor-editorial-and-structural-review-v1",
-      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+      "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+      "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
     },
     {
       "id": "ec5025-b2-099-exp4",
@@ -20950,9 +20962,9 @@
       "qaReviewedAt": "2026-07-18",
       "choiceRationales": [
         "Correct. The evidence statement accurately describes \"$35\". Pairing that same evidence with another response creates a mismatch. Find the constant rate: 15 dollars for 6 notebooks is 2.50 dollars per notebook. Multiplying 2.50 by 14 gives a total cost of 35 dollars.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"$35\". Pairing that same evidence with another response creates a mismatch. Find the constant rate: 15 dollars for 6 notebooks is 2.50 dollars per notebook. Multiplying 2.50 by 14 gives a total cost of 35 dollars.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"$35\". Pairing that same evidence with another response creates a mismatch. Find the constant rate: 15 dollars for 6 notebooks is 2.50 dollars per notebook. Multiplying 2.50 by 14 gives a total cost of 35 dollars.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"$35\". Pairing that same evidence with another response creates a mismatch. Find the constant rate: 15 dollars for 6 notebooks is 2.50 dollars per notebook. Multiplying 2.50 by 14 gives a total cost of 35 dollars."
+        "Not the best answer. Pairing the affirmative evidence with “$21” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"$35\". Pairing that same evidence with another response creates a mismatch. Find the constant rate: 15 dollars for 6 notebooks is 2.50 dollars per notebook. Multiplying 2.50 by 14 gives a total cost of 35 dollars.",
+        "Not the best answer. Pairing the affirmative evidence with “$29” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"$35\". Pairing that same evidence with another response creates a mismatch. Find the constant rate: 15 dollars for 6 notebooks is 2.50 dollars per notebook. Multiplying 2.50 by 14 gives a total cost of 35 dollars.",
+        "Not the best answer. Pairing the affirmative evidence with “$90” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"$35\". Pairing that same evidence with another response creates a mismatch. Find the constant rate: 15 dollars for 6 notebooks is 2.50 dollars per notebook. Multiplying 2.50 by 14 gives a total cost of 35 dollars."
       ],
       "skillIds": [
         "number-operations"
@@ -20971,7 +20983,8 @@
       "assistantReviewStatus": "reviewed-guided-practice-only",
       "examItemStatus": "not-approved-as-independent-exam-item",
       "assistantReviewedAt": "2026-07-16",
-      "reviewMethod": "guided-practice-source-answer-key-option-feedback-distractor-editorial-and-structural-review-v1"
+      "reviewMethod": "guided-practice-source-answer-key-option-feedback-distractor-editorial-and-structural-review-v1",
+      "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
     },
     {
       "id": "ec5025-b2-100-exp4",
@@ -21194,10 +21207,10 @@
       "qaStatus": "structural-qa-passed-guided-practice-only",
       "qaReviewedAt": "2026-07-18",
       "choiceRationales": [
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"15%\". Pairing that same evidence with another response creates a mismatch. Percent increase compares the change with the original amount. Subtract to get 36, divide 36 by 240 to get 0.15, and convert to 15 percent.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"15%\". Pairing that same evidence with another response creates a mismatch. Percent increase compares the change with the original amount. Subtract to get 36, divide 36 by 240 to get 0.15, and convert to 15 percent.",
+        "Not the best answer. Pairing the affirmative evidence with “13%” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"15%\". Pairing that same evidence with another response creates a mismatch. Percent increase compares the change with the original amount. Subtract to get 36, divide 36 by 240 to get 0.15, and convert to 15 percent.",
+        "Not the best answer. Pairing the affirmative evidence with “36%” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"15%\". Pairing that same evidence with another response creates a mismatch. Percent increase compares the change with the original amount. Subtract to get 36, divide 36 by 240 to get 0.15, and convert to 15 percent.",
         "Correct. The evidence statement accurately describes \"15%\". Pairing that same evidence with another response creates a mismatch. Percent increase compares the change with the original amount. Subtract to get 36, divide 36 by 240 to get 0.15, and convert to 15 percent.",
-        "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"15%\". Pairing that same evidence with another response creates a mismatch. Percent increase compares the change with the original amount. Subtract to get 36, divide 36 by 240 to get 0.15, and convert to 15 percent."
+        "Not the best answer. Pairing the affirmative evidence with “85%” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"15%\". Pairing that same evidence with another response creates a mismatch. Percent increase compares the change with the original amount. Subtract to get 36, divide 36 by 240 to get 0.15, and convert to 15 percent."
       ],
       "skillIds": [
         "number-operations"
@@ -21216,7 +21229,8 @@
       "assistantReviewStatus": "reviewed-guided-practice-only",
       "examItemStatus": "not-approved-as-independent-exam-item",
       "assistantReviewedAt": "2026-07-16",
-      "reviewMethod": "guided-practice-source-answer-key-option-feedback-distractor-editorial-and-structural-review-v1"
+      "reviewMethod": "guided-practice-source-answer-key-option-feedback-distractor-editorial-and-structural-review-v1",
+      "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
     },
     {
       "id": "ec5025-b2-023-exp4",
@@ -21870,7 +21884,7 @@
           {
             "file": "early_childhood_5025_batch3.json",
             "algorithm": "sha256",
-            "sha256": "f402b93c72eb7a008bb2cacdb7e6230bffc54ce5023616374ba351f5a6ca543a",
+            "sha256": "1958aa613fec14c466bf4475ea72fae703d522e931b8e0e2ccc14256a625750c",
             "itemCount": 100
           }
         ]
@@ -21899,7 +21913,7 @@
             "file": "early_childhood_5025_batch3.json",
             "reviewReport": "early_childhood_5025_batch3.ci-2026-10-10.review.json",
             "itemCount": 100,
-            "sha256": "f402b93c72eb7a008bb2cacdb7e6230bffc54ce5023616374ba351f5a6ca543a"
+            "sha256": "1958aa613fec14c466bf4475ea72fae703d522e931b8e0e2ccc14256a625750c"
           }
         ]
       }

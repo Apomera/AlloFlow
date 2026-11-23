@@ -65,8 +65,8 @@ tbody th { font-weight: 600; }
 textarea { width: 100%; min-height: 180px; padding: 10px; font: .85rem/1.4 var(--data); color: var(--ink); background: var(--bg); border: 1px solid var(--muted); border-radius: 4px; }
 .alert { border-left: 4px solid var(--bad); padding: 10px 12px; background: var(--bad-bg); color: var(--ink); margin-top: 12px; border-radius: 0 4px 4px 0; }
 .note { color: var(--muted); font-size: .92rem; margin-top: 10px; }
-.skip-link { position: absolute; left: -9999px; top: 8px; z-index: 999; background: var(--accent); color: var(--accent-ink); padding: 10px 16px; border-radius: 6px; font-weight: 700; text-decoration: none; }
-.skip-link:focus { left: 12px; outline: 3px solid var(--ink); outline-offset: 2px; }
+.skip-link { position: absolute; inset-inline-start: 8px; top: 8px; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; pointer-events: none; z-index: 999; background: var(--accent); color: var(--accent-ink); padding: 10px 16px; border-radius: 6px; font-weight: 700; text-decoration: none; }
+.skip-link:focus { inset-inline-start: 12px; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; pointer-events: auto; outline: 3px solid var(--ink); outline-offset: 2px; }
 </style>
 </head>
 <body>

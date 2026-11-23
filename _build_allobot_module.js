@@ -80,9 +80,10 @@ const outputCode = `/**
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
-    if (document.getElementById('allo-live-allobot')) return;
+    if (typeof document === 'undefined' || !document.body || document.getElementById('allo-live-allobot')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-allobot';
     liveRegion.setAttribute('aria-live', 'polite');
@@ -112,14 +113,14 @@ const outputCode = `/**
   var useImperativeHandle = React.useImperativeHandle;
 
   // ── App dependencies from window ──
-  var LanguageContext = window.AlloLanguageContext;
+  var LanguageContext = window.AlloLanguageContext || (typeof React.createContext === 'function' ? React.createContext({ t: function(k) { return k; } }) : null);
   var _shared = window.__alloShared || {};
   var safeGetItem = _shared.safeGetItem || function(k) { try { return localStorage.getItem(k); } catch(e) { return null; } };
   var safeSetItem = _shared.safeSetItem || function(k,v) { try { localStorage.setItem(k,v); } catch(e) {} };
   var warnLog = _shared.warnLog || function() { console.warn.apply(console, arguments); };
   var debugLog = window.__alloDebugLog || function() {};
   var getGlobalAudioContext = window.getGlobalAudioContext || function() { return null; };
-  var isGlobalMuted = window.__alloIsGlobalMuted || function() { return false; };
+  var isGlobalMuted = window.__alloIsGlobalMuted || function() { return !!(typeof window !== 'undefined' && (window.__alloGlobalMute || window._alloGlobalMute)); };
 
   // ── Style constants (mirrored from host app) ──
   var STYLE_ANIMATION_DELAY_HALF = { animationDelay: '0.5s' };

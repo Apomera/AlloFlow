@@ -1082,7 +1082,7 @@ describe('the page as files', () => {
     expect(doc.querySelector('meta[name="viewport"]').getAttribute('content')).not.toMatch(/user-scalable|maximum-scale/);
     const said = doc.getElementById('said');
     expect([said.getAttribute('role'), said.getAttribute('aria-live'), said.className]).toEqual(['status', 'polite', 'sr-only']);
-    for (const node of doc.querySelectorAll('[tabindex="-1"]')) expect(node.matches('h2, h3')).toBe(true);
+    for (const node of doc.querySelectorAll('[tabindex="-1"]')) expect(node.matches('main, h2, h3')).toBe(true);
     // On first sight: one drop area, one primary button, the sample link, and nothing else to decide.
     expect(doc.getElementById('state-empty').hidden).toBe(false);
     expect(doc.getElementById('state-check').hidden && doc.getElementById('state-results').hidden).toBe(true);

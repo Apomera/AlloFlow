@@ -6,7 +6,7 @@ const { transformSync } = require('esbuild');
 const ROOT = __dirname;
 function buildPersonaWorkspaceModule(source) {
   const compiled = transformSync(source, { loader: 'jsx', jsxFactory: 'React.createElement', jsxFragment: 'React.Fragment', target: 'es2020' }).code;
-  return '/* AlloFlow - AGPL-3.0-only. Generated from view_persona_workspace_source.jsx. */\n(function() {\n"use strict";\nif (window.AlloModules && window.AlloModules.PersonaWorkspace) return;\nvar React = window.React;\n' + compiled + '\nwindow.AlloModules = window.AlloModules || {};\nwindow.AlloModules.PersonaWorkspace = { PersonaWorkspaceView };\n})();\n';
+  return '/* AlloFlow - AGPL-3.0-only. Generated from view_persona_workspace_source.jsx. */\n(function() {\n"use strict";\nif (typeof window === "undefined") return;\nif (window.AlloModules && window.AlloModules.PersonaWorkspace) return;\nvar React = window.React;\nif (!React) return;\n' + compiled + '\nwindow.AlloModules = window.AlloModules || {};\nwindow.AlloModules.PersonaWorkspace = { PersonaWorkspaceView };\n})();\n';
 }
 function build({ check = false } = {}) {
   const source = fs.readFileSync(path.join(ROOT, 'view_persona_workspace_source.jsx'), 'utf8');

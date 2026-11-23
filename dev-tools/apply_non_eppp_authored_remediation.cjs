@@ -42,7 +42,7 @@ function fileToPackStem(fileName) {
   return fileName.replace(/_batch\d+\.json$/, '');
 }
 
-function applyItemEdit(item, edit, label) {
+function applyItemEdit(item, edit, label, downstreamTargets = new Set()) {
   const next = {
     ...item,
     choices: item.choices.slice(),
@@ -68,7 +68,7 @@ function applyItemEdit(item, edit, label) {
           matched.add(origNorm);
           break;
         }
-        if (curNorm === replNorm) {
+        if (curNorm === replNorm || downstreamTargets.has(curNorm)) {
           matched.add(origNorm);
           break;
         }
@@ -170,33 +170,68 @@ function main() {
     console.log('No authored remediation directory found.');
     return;
   }
-  const modFiles = fs.readdirSync(remediationDir)
+  const allModFiles = fs.readdirSync(remediationDir)
     .filter((name) => name.endsWith('.cjs') && name !== 'index.cjs')
     .sort();
+  const primaryModFiles = allModFiles.filter((name) => !name.startsWith('length_balance_wave2_'));
+  const wave2ModFiles = allModFiles.filter((name) => name.startsWith('length_balance_wave2_'));
+
+  // Build ordered list of edits per authored JSON file: [ { sourceMod, edits }, ... ]
+  const stagesByJson = new Map();
+  for (const modName of primaryModFiles) {
+    const jsonName = modName.slice(0, -'.cjs'.length) + '.json';
+    if (!stagesByJson.has(jsonName)) stagesByJson.set(jsonName, []);
+    stagesByJson.get(jsonName).push({ modName, edits: require(path.join(remediationDir, modName)) });
+  }
+  for (const modName of wave2ModFiles) {
+    const nested = require(path.join(remediationDir, modName));
+    for (const [jsonName, edits] of Object.entries(nested || {})) {
+      if (!stagesByJson.has(jsonName)) stagesByJson.set(jsonName, []);
+      stagesByJson.get(jsonName).push({ modName, edits });
+    }
+  }
 
   const updatedByStem = new Map();
   const problems = [];
 
-  for (const modName of modFiles) {
-    const baseName = modName.slice(0, -'.cjs'.length);
-    const jsonName = baseName + '.json';
+  for (const [jsonName, stages] of [...stagesByJson.entries()].sort(([a], [b]) => a.localeCompare(b))) {
     const jsonPath = path.join(authoredDir, jsonName);
+    const modName = stages.map((s) => s.modName).join(' + ');
     if (!fs.existsSync(jsonPath)) {
       problems.push(modName + ': missing target ' + jsonName);
       continue;
     }
-    const edits = require(path.join(remediationDir, modName));
     const before = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
     const byId = new Map(before.map((it) => [it.id, it]));
-    for (const id of Object.keys(edits)) {
-      if (!byId.has(id)) problems.push(jsonName + '/' + id + ': item id not found');
+    const allEditedIds = new Set();
+    for (const stage of stages) {
+      for (const id of Object.keys(stage.edits)) {
+        if (!byId.has(id)) problems.push(jsonName + '/' + id + ': item id not found (' + stage.modName + ')');
+        allEditedIds.add(id);
+      }
     }
 
     let changedItems = 0;
     const after = before.map((item) => {
-      const edit = edits[item.id];
-      if (!edit) return item;
-      const next = applyItemEdit(item, edit, jsonName + '/' + item.id);
+      let next = item;
+      let touched = false;
+      for (let sIdx = 0; sIdx < stages.length; sIdx += 1) {
+        const stage = stages[sIdx];
+        const edit = stage.edits[item.id];
+        if (!edit) continue;
+        touched = true;
+        const downstreamTargets = new Set();
+        for (let dIdx = sIdx + 1; dIdx < stages.length; dIdx += 1) {
+          const dEdit = stages[dIdx].edits[item.id];
+          if (dEdit && dEdit.distractorReplacements) {
+            for (const repl of Object.values(dEdit.distractorReplacements)) {
+              downstreamTargets.add(normalizeLookup(repl));
+            }
+          }
+        }
+        next = applyItemEdit(next, edit, jsonName + '/' + item.id + ' (' + stage.modName + ')', downstreamTargets);
+      }
+      if (!touched) return item;
       if (JSON.stringify(next) !== JSON.stringify(item)) changedItems += 1;
       const codes = warningCodes(next);
       if (codes.length > 0) {
@@ -221,7 +256,7 @@ function main() {
     if (afterShare.longest > beforeShare.longest) {
       problems.push(jsonName + ': key-is-longest increased (' + beforeShare.longest + ' -> ' + afterShare.longest + ')');
     }
-    const editedItems = Object.keys(edits).map((id) => after.find((it) => it.id === id)).filter(Boolean);
+    const editedItems = [...allEditedIds].map((id) => after.find((it) => it.id === id)).filter(Boolean);
     if (editedItems.length >= 10) {
       const choiceFrame = topFrame(editedItems, (item) => item.choices.join('   '));
       if (choiceFrame.share > 0.20) {
@@ -231,7 +266,7 @@ function main() {
 
     console.log(
       jsonName.padEnd(40),
-      String(Object.keys(edits).length).padStart(3) + ' edits',
+      String(allEditedIds.size).padStart(3) + ' edits',
       String(changedItems).padStart(3) + ' changed',
       'warnings: ' + allWarnings,
       'keyLongest: ' + beforeShare.longest + '->' + afterShare.longest
@@ -246,7 +281,7 @@ function main() {
       before,
       after,
       changedItems,
-      editCount: Object.keys(edits).length,
+      editCount: allEditedIds.size,
       beforeShare,
       afterShare,
     });

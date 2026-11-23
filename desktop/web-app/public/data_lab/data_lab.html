@@ -109,10 +109,19 @@
   :focus-visible { outline: 3px solid #facc15 !important; outline-offset: 2px; }
   :root[data-theme="light"] :focus-visible { outline-color: #1d4ed8 !important; }
   button, a, input, select, textarea, summary { scroll-margin-top: 72px; }
-  .skip-link { position: absolute; left: -9999px; top: 8px; z-index: 9999; background: #1e293b; color: #f8fafc; padding: 8px 14px; border-radius: 8px; border: 2px solid #facc15; font-weight: 700; text-decoration: none; }
-  .skip-link:focus { left: 8px; }
+  .skip-link { position: absolute; inset-inline-start: 8px; top: 8px; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; pointer-events: none; z-index: 9999; background: #1e293b; color: #f8fafc; padding: 8px 14px; border-radius: 8px; border: 2px solid #facc15; font-weight: 700; text-decoration: none; }
+  .skip-link:focus { inset-inline-start: 8px; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; pointer-events: auto; }
   @media (forced-colors: active) {
+    :root, :root[data-theme="dark"], :root[data-theme="light"], :root[data-theme="contrast"] {
+      --bg: Canvas; --panel: Canvas; --panel2: Canvas; --stage: Canvas;
+      --line: CanvasText; --line2: CanvasText; --text: CanvasText; --dim: CanvasText;
+      --muted: CanvasText; --soft: CanvasText; --accent: Highlight; --accent2: Highlight;
+      --teal: CanvasText; --teal2: CanvasText; --sky: LinkText; --amber: CanvasText;
+      --red: CanvasText; --green: CanvasText; --violet: CanvasText; --ok: CanvasText; --warn: CanvasText;
+      --heading: CanvasText; --note-bg: Canvas; --bad: CanvasText;
+    }
     button, input, select, textarea, a { forced-color-adjust: auto; }
+    .skip-link:focus, :focus-visible { outline: 3px solid Highlight !important; outline-offset: 2px; }
   }
   @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; animation: none !important; } }
   * { box-sizing: border-box; }
@@ -287,9 +296,9 @@
               <div class="sub-body">
                 <p class="muted" data-i18n="paste_help">Paste rows copied from a spreadsheet or another AlloFlow tool. Put the column names on the first row.</p>
                 <label for="pasteTitle" data-i18n="paste_title_label">Name for this data</label>
-                <input type="text" id="pasteTitle" maxlength="80">
+                <input type="text" id="pasteTitle" maxlength="80" aria-label="Name for this data">
                 <label for="pasteData" data-i18n="paste_data_label">Table (columns separated by commas or tabs)</label>
-                <textarea id="pasteData" rows="4"></textarea>
+                <textarea id="pasteData" rows="4" aria-label="Table (columns separated by commas or tabs)"></textarea>
                 <div class="row"><button type="button" id="pasteBtn" data-i18n="paste_btn">Make a dataset and send it to CODAP</button></div>
                 <p id="pasteStatus" class="muted" role="status" aria-live="polite"></p>
               </div>
@@ -311,7 +320,7 @@
       <p id="workspaceStatusText">Loading the CODAP workspace…</p>
       <button type="button" id="retryWorkspace" data-i18n="ws_retry" hidden>Retry CODAP</button>
     </div>
-    <iframe id="codapFrame" title="CODAP — Common Online Data Analysis Platform" data-i18n-title="codap_frame_title" allow="clipboard-read; clipboard-write"></iframe>
+    <iframe id="codapFrame" title="CODAP — Common Online Data Analysis Platform" data-i18n-title="codap_frame_title" allow="clipboard-read; clipboard-write" inert></iframe>
   </main>
 </div>
 
@@ -943,6 +952,7 @@
     if (loadBtn) renderLoadGate();
     workspaceStatusText.textContent = message || '';
     workspaceStatus.hidden = !message;
+    if (codapFrame) codapFrame.inert = !workspaceStatus.hidden;
     retryWorkspace.hidden = !canRetry;
     codapRegion.setAttribute('aria-busy', isBusy ? 'true' : 'false');
   }
@@ -1008,7 +1018,7 @@
     workspaceTimer = null;
     workspaceLoaded = true;
     setWorkspaceStatus(S('ws_loaded'), false, false);
-    workspaceReadyTimer = setTimeout(function () { workspaceStatus.hidden = true; }, 900);
+    workspaceReadyTimer = setTimeout(function () { workspaceStatus.hidden = true; if (codapFrame) codapFrame.inert = false; }, 900);
     if (!pluginAlive) startPluginWait();
   });
   codapFrame.addEventListener('error', function () {

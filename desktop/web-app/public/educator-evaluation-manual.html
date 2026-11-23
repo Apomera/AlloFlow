@@ -197,10 +197,12 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
   a{color:#000;text-decoration:underline;}
   a[href^="http"]::after{content:" (" attr(href) ")";font-size:.8em;overflow-wrap:anywhere;}
 }
+.skip-link{position:absolute;inset-inline-start:8px;top:8px;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;pointer-events:none;z-index:9999;background:#1e293b;color:#f8fafc;padding:8px 14px;border-radius:8px;border:2px solid #facc15;font-weight:700;text-decoration:none;}
+.skip-link:focus,.skip-link:focus-visible{width:auto;height:auto;overflow:visible;clip-path:none;white-space:normal;pointer-events:auto;}
 </style>
 </head>
 <body>
-<a class="skip-link" href="#main" style="position:absolute;left:-9999px;top:8px;z-index:9999;background:#1e293b;color:#f8fafc;padding:8px 14px;border-radius:8px;border:2px solid #facc15;font-weight:700;text-decoration:none;" onfocus="this.style.left='8px'" onblur="this.style.left='-9999px'">Skip to main content</a>
+<a class="skip-link" href="#main">Skip to main content</a>
 <main id="main" tabindex="-1" class="wrap">
 <p class="manual-home"><a href="https://apomera.github.io/AlloFlow/manuals.html">← All manuals and guides</a></p>
 <div class="banner">🌱 <strong>Growth first.</strong> This tool makes educator evaluation transparent, strengths-forward, and clear. It supports three record paths: a <strong>private on-device workspace</strong>, a <strong>principal-managed Drive share helper</strong>, and a <strong>district-hosted portal</strong>. This manual covers all three.</div>

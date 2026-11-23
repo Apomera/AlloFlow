@@ -18,6 +18,7 @@
  */
 (function () {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.TimelineStudio) {
     console.log('[CDN] TimelineStudio already loaded, skipping');
     return;
@@ -117,14 +118,46 @@
   function isAiUsable(callGemini) {
     if (typeof callGemini !== 'function' || callGemini._alloQrBlocked === true) return false;
     if (typeof window !== 'undefined') {
+      var mp = window.ALLOFLOW_MANAGED_AI_POLICY;
+      if (mp && (mp.enabled === false || mp.allowAi === false || mp.aiEnabled === false || mp.disabled === true || mp.mode === 'disabled' || mp.mode === 'off' || (Array.isArray(mp.connections) && mp.connections.length === 0))) return false;
+      var sp = window.StudentPolicy;
+      if (sp && (sp.allowAi === false || sp.aiEnabled === false || sp.aiDisabled === true || (typeof sp.isAiEnabled === 'function' && sp.isAiEnabled() === false) || (typeof sp.isAiAllowed === 'function' && !sp.isAiAllowed('text')))) return false;
       var qrMode = window.__alloQrStudentMode;
-      var qrBlocked = qrMode === true || (qrMode && typeof qrMode === 'object' && (qrMode.aiDisabled === true || qrMode.aiPolicy === 'off'));
+      var qrBlocked = qrMode === true || (qrMode && typeof qrMode === 'object' && (qrMode.active === true || qrMode.aiDisabled === true || qrMode.aiPolicy === 'off' || (qrMode.aiEnabled !== true && qrMode.aiPolicy !== 'on')));
       if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true || qrBlocked) return false;
       if (typeof window.__alloAiUsable === 'function') {
         try { return !!window.__alloAiUsable('text', callGemini); } catch (_) { return false; }
       }
     }
     return true;
+  }
+
+  var _TS_CRISIS_RE = /\b(?:kill\s+my\s*self|suicid(?:e|al)|end\s+my\s+life|want\s+to\s+die|hurt\s+my\s*self|harm(?:ing)?\s+my\s*self|self[-\s]?harm|cut\s+my\s*self|overdose|shoot\s+up\s+(?:the\s+|my\s+)?school|bring\s+a\s+(?:gun|weapon|knife)\s+to\s+school)\b/i;
+  var _TS_CRISIS_MSG = 'We paused generating a timeline here. If you or someone you know is in crisis, please talk to a trusted adult, call or text 988 (Suicide & Crisis Lifeline), text HOME to 741741 (Crisis Text Line), or call 911 for immediate danger.';
+  function screenTimelineCrisis(raw, onSafetyFlag) {
+    var s = String(raw == null ? '' : raw);
+    if (!s.trim()) return false;
+    var flagged = null;
+    try {
+      if (typeof window !== 'undefined') {
+        var sc = (window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker;
+        if (sc && typeof sc.check === 'function') {
+          var r = sc.check(s, { surface: 'timeline_studio' });
+          if (Array.isArray(r) ? r.some(function (f) { return f && (f.category === 'self_harm' || f.severity === 'critical'); }) : (r && (r.action === 'block' || r.flagged === true || r.severity === 'critical' || r.blocked === true))) flagged = r;
+        }
+        if (!flagged && window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+          var sr = window.SelHub.safeRehearseCheck(s, { toolId: 'timeline_studio' });
+          if (sr && (sr.action === 'block' || sr.safe === false || sr.blocked === true)) flagged = sr;
+        }
+      }
+    } catch (_) {}
+    if (!flagged && _TS_CRISIS_RE.test(s)) flagged = { category: 'self_harm', severity: 'critical', matched: 'crisis_fallback' };
+    if (flagged) {
+      if (typeof onSafetyFlag === 'function') { try { onSafetyFlag({ tool: 'timeline_studio', severity: 'critical', category: 'self_harm', timestamp: Date.now() }); } catch (_) {} }
+      try { if (typeof window !== 'undefined' && window.SelHub && typeof window.SelHub.showCrisisModal === 'function') window.SelHub.showCrisisModal(); } catch (_) {}
+      return true;
+    }
+    return false;
   }
 
   function fenceUntrusted(tag, value, maxLen) {
@@ -153,15 +186,21 @@
     } catch (_) { return false; }
   }
 
-  // Attribute-safe URL: only allow http(s) without embedded credentials; anything else becomes '#'.
-  function safeUri(u) {
+  // Normalized raw http(s) URL without embedded credentials (for data storage before HTML escaping).
+  function normalizeHttpUri(u) {
     var s = String(u == null ? '' : u).trim();
-    if (!s || /[\u0000-\u001f\u007f\s]/.test(s)) return '#';
+    if (!s || /[\u0000-\u001f\u007f\s]/.test(s)) return '';
     try {
       var parsed = new URL(s);
-      if ((parsed.protocol !== 'https:' && parsed.protocol !== 'http:') || parsed.username || parsed.password) return '#';
-      return escapeHtml(parsed.href);
-    } catch (_) { return '#'; }
+      if ((parsed.protocol !== 'https:' && parsed.protocol !== 'http:') || parsed.username || parsed.password) return '';
+      return parsed.href;
+    } catch (_) { return ''; }
+  }
+
+  // Attribute-safe URL: only allow http(s) without embedded credentials; anything else becomes '#'.
+  function safeUri(u) {
+    var href = normalizeHttpUri(u);
+    return href ? escapeHtml(href) : '#';
   }
 
   // Grounded calls run with jsonMode OFF (the Gemini google_search tool is
@@ -266,7 +305,7 @@
         out.sources = e.sources.filter(function (src) {
           return src && typeof src === 'object' && isHttpUri(src.uri);
         }).slice(0, 10).map(function (src) {
-          var cleanUri = safeUri(src.uri);
+          var cleanUri = normalizeHttpUri(src.uri);
           return { title: String(src.title || cleanUri).slice(0, 200), uri: cleanUri };
         });
       }
@@ -511,9 +550,12 @@
       var text = escapeHtml((e.text && e.text.text) || '');
       if (bits.length) text += '<br>' + bits.join('<br>');
       var sd = (e.start_date && typeof e.start_date === 'object') ? e.start_date : {};
-      var cleanDate = { year: String(sd.year == null ? '' : sd.year).trim() };
-      if (sd.month != null && String(sd.month).trim() !== '') cleanDate.month = String(sd.month).trim();
-      if (sd.day != null && String(sd.day).trim() !== '') cleanDate.day = String(sd.day).trim();
+      var yStr = String(sd.year == null ? '' : sd.year).trim();
+      var cleanDate = { year: /^-?\d{1,6}$/.test(yStr) ? yStr : escapeHtml(yStr.slice(0, 20)) };
+      var mStr = sd.month != null ? String(sd.month).trim() : '';
+      var dStr = sd.day != null ? String(sd.day).trim() : '';
+      if (mStr !== '' && /^\d{1,2}$/.test(mStr)) cleanDate.month = mStr;
+      if (dStr !== '' && /^\d{1,2}$/.test(dStr)) cleanDate.day = dStr;
       return {
         start_date: cleanDate,
         text: { headline: escapeHtml((e.text && e.text.headline) || ''), text: text }
@@ -622,7 +664,7 @@
     }, []);
 
     function handleDialogKeyDown(e) {
-      if (e.isComposing || e.keyCode === 229) return;
+      if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.key === 'Escape') {
         e.preventDefault();
         e.stopPropagation();
@@ -632,7 +674,10 @@
       if (e.key !== 'Tab' || !dialogRef.current) return;
       var nodes = dialogRef.current.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [href], [tabindex]:not([tabindex="-1"])');
       var focusable = Array.prototype.filter.call(nodes, function (node) {
-        return node.getAttribute('aria-hidden') !== 'true' && node.offsetParent !== null;
+        if (node.getAttribute('aria-hidden') === 'true' || node.offsetParent === null) return false;
+        if (node.closest && node.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        var cs = (typeof window !== 'undefined' && window.getComputedStyle) ? window.getComputedStyle(node) : null;
+        return !cs || (cs.display !== 'none' && cs.visibility !== 'hidden');
       });
       if (!focusable.length) {
         e.preventDefault();
@@ -641,10 +686,10 @@
       }
       var first = focusable[0];
       var last = focusable[focusable.length - 1];
-      if (e.shiftKey && document.activeElement === first) {
+      if (e.shiftKey && (document.activeElement === first || document.activeElement === dialogRef.current || focusable.indexOf(document.activeElement) < 0)) {
         e.preventDefault();
         last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
+      } else if (!e.shiftKey && (document.activeElement === last || focusable.indexOf(document.activeElement) < 0)) {
         e.preventDefault();
         first.focus();
       }
@@ -719,10 +764,14 @@
         setStatus('needtext');
         return;
       }
+      if (screenTimelineCrisis(text, props.onSafetyFlag)) {
+        setStatus('safety');
+        if (typeof addToast === 'function') addToast(_TS_CRISIS_MSG, 'warning');
+        return;
+      }
       if (props.aiHintsEnabled === false || !isAiUsable(callGemini)) {
         dataRef.current = null;
-        setStatus('needsai');
-        openPopup();
+        if (openPopup()) setStatus('needsai');
         return;
       }
       dataRef.current = null;
@@ -765,10 +814,14 @@
         setStatus('needtopic');
         return;
       }
+      if (screenTimelineCrisis([topicText, period, mustInclude].join('\n'), props.onSafetyFlag)) {
+        setStatus('safety');
+        if (typeof addToast === 'function') addToast(_TS_CRISIS_MSG, 'warning');
+        return;
+      }
       if (props.aiHintsEnabled === false || !isAiUsable(callGemini)) {
         dataRef.current = null;
-        setStatus('needsai');
-        openPopup();
+        if (openPopup()) setStatus('needsai');
         return;
       }
       dataRef.current = null;
@@ -855,6 +908,7 @@
       if (status === 'needtopic') return h('p', { className: 'text-sm text-amber-700' }, tr(t, 'timeline_studio.needtopic', 'Type a topic first, like "the Apollo program" or "the French Revolution".'));
       if (status === 'noevents') return h('p', { className: 'text-sm text-amber-700' }, tr(t, 'timeline_studio.noevents', 'No clear dated events were found. Try a passage with years or dates.'));
       if (status === 'noevents_topic') return h('p', { className: 'text-sm text-amber-700' }, tr(t, 'timeline_studio.noevents_topic', 'The research pass could not build dated events for this topic. Timelines need datable events — for processes or cycles, try the Sequence Builder in Learning Hub instead.'));
+      if (status === 'safety') return h('p', { className: 'text-sm text-rose-700 font-medium' }, _TS_CRISIS_MSG);
       if (status === 'needsai') return h('p', { className: 'text-sm text-amber-700' }, tr(t, 'timeline_studio.needsai', 'AI is not available, so the manual timeline builder opened instead.'));
       if (status === 'blocked') return h('p', { className: 'text-sm text-amber-700' }, tr(t, 'timeline_studio.blocked', 'Pop-up blocked. Allow pop-ups for this page and try again.'));
       if (status === 'ready' || status === 'open' || status === 'opening') return h('p', { className: 'text-sm text-emerald-700' }, tr(t, 'timeline_studio.ready', 'Timeline Studio is open. Keep this window open to send it new timelines.'));

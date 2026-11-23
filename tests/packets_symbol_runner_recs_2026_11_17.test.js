@@ -455,7 +455,7 @@ describe('7. Wave 1 hardening, portability & student player fixes', () => {
     p.$('sr-title').value = 'Custom Changed Title';
     p.$('sr-clear-local').click();
     expect(p.$('sr-custom').value).toBe('');
-    expect(p.$('sr-title').value).toBe('Symbol Runner Practice');
+    expect(p.$('sr-title').value).toBe('Letters that look alike (b, d, p, q) practice');
     expect(p.$('sr-mode').value).toBe('confusable_letters');
   });
 

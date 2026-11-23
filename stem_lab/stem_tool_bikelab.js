@@ -1040,7 +1040,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             key: c.id, 'data-bikelab-card': c.id,
             onClick: function() { goto(c.id); },
             'aria-label': (mastered[c.id] ? __alloAriaFill(__alloT('stem.bikelab.a11y_mastered', '{title} (mastered)'), { title: c.title }) : (visited ? __alloAriaFill(__alloT('stem.bikelab.a11y_explored', '{title} (explored)'), { title: c.title }) : c.title + '')),
-            className: 'relative text-left bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all border-2 ' + (visited ? 'border-emerald-600' : 'border-slate-200') + ' hover:border-slate-400 overflow-hidden group focus:outline-none focus:ring-4 ' + c.ring
+            className: 'relative min-w-0 break-words text-left bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all border-2 ' + (visited ? 'border-emerald-600' : 'border-slate-200') + ' hover:border-slate-400 overflow-hidden group focus:outline-none focus:ring-4 ' + c.ring,
+            style: { overflowWrap: 'anywhere' }
           },
             visited && h('span', {
               'aria-hidden': true,
@@ -1091,13 +1092,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
 
         var fleetChartSvg = (function() {
           var maxCda = 0.85, maxCrr = 0.015;
-          var W = 640, H = 122, padL = 78, padR = 26, padT = 18, padB = 26;
+          var W = 640, H = 148, padL = 78, padR = 26, padT = 18, padB = 26;
           var plotW = W - padL - padR, plotH = H - padT - padB;
           var xOf = function(cda) { return +(padL + (cda / maxCda) * plotW).toFixed(1); };
           var yOf = function(crr) { return +(padT + plotH - (crr / maxCrr) * plotH).toFixed(1); };
           var dotColors = ['#38bdf8', '#10b981', '#f43f5e', '#f59e0b', '#a855f7', '#06b6d4', '#ec4899'];
+          // Per-bike label offsets prevent overlapping text/dots in clustered Cd·A/Crr regions
+          var labelPlacement = {
+            road:    { dx: 9,  dy: 4,  anchor: 'start' },
+            hybrid:  { dx: -9, dy: 4,  anchor: 'end' },
+            ebike:   { dx: 9,  dy: 5,  anchor: 'start' },
+            bmx:     { dx: -9, dy: 4,  anchor: 'end' },
+            mtb:     { dx: 9,  dy: 3,  anchor: 'start' },
+            cruiser: { dx: 9,  dy: 14, anchor: 'start' },
+            cargo:   { dx: 8,  dy: -7, anchor: 'start' }
+          };
           return h('svg', {
-            viewBox: '0 0 640 122', className: 'w-full h-auto block', 'aria-hidden': 'true', focusable: 'false'
+            viewBox: '0 0 640 148', className: 'w-full h-auto block', 'aria-hidden': 'true', focusable: 'false'
           },
             h('rect', { x: padL, y: padT, width: plotW, height: plotH, rx: 8, fill: isContrast ? '#000000' : '#0f172a', stroke: isContrast ? '#ffffff' : '#334155', strokeWidth: 1 }),
             [0.25, 0.5, 0.75].map(function(f, idx) {
@@ -1118,9 +1129,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               var cx = xOf(Math.min(maxCda - 0.04, b.cdA));
               var cy = yOf(Math.min(maxCrr - 0.001, b.crr));
               var col = isContrast ? '#00ff00' : dotColors[idx % dotColors.length];
-              var lblAnchor = cx > padL + plotW - 95 ? 'end' : 'start';
-              var lblX = lblAnchor === 'end' ? cx - 9 : cx + 9;
-              var lblY = cy < padT + 18 ? cy + 12 : cy + 4;
+              var pos = labelPlacement[b.id];
+              var lblAnchor = pos ? pos.anchor : (cx > padL + plotW - 95 ? 'end' : 'start');
+              var lblX = pos ? cx + pos.dx : (lblAnchor === 'end' ? cx - 9 : cx + 9);
+              var lblY = pos ? cy + pos.dy : (cy < padT + 18 ? cy + 12 : cy + 4);
               return h('g', { key: b.id },
                 h('circle', { cx: cx, cy: cy, r: 5.5, fill: col, stroke: '#ffffff', strokeWidth: 1.5 }),
                 h('text', { x: lblX, y: lblY, fill: '#f8fafc', fontSize: 10, fontWeight: 'bold', textAnchor: lblAnchor }, b.name.split(' ')[0])

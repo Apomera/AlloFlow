@@ -155,7 +155,12 @@
     "refine_go": "Proposer une réécriture",
     "refining": "Rédaction d'une proposition…",
     "made_from_version": "Créé à partir de la version {version} de votre matériel source",
-    "remake": "Recréer à partir de la version actuelle"
+    "remake": "Recréer à partir de la version actuelle",
+    "dictate": "Dicter",
+    "close_dictate": "Fermer la dictée",
+    "send_read_along": "Envoyer à la trousse de lecture suivie",
+    "upload_verify_banner": "Audio ou vidéo transcrit localement avec Whisper ({count} segments conservés en mémoire)",
+    "clear_audio": "Effacer l'audio"
   },
   "sel": {
     "peersupport": {
@@ -4432,7 +4437,8 @@
     "chunk_info": "L'audio est divisé en morceaux de 5 minutes pour le traitement",
     "chunk_progress": "Morceau {current} sur {total}",
     "audio_only_error": "Actuellement, seuls les fichiers audio (MP3, WAV, etc.) sont pris en charge pour la transcription par morceaux.",
-    "starting": "Démarrage..."
+    "starting": "Démarrage...",
+    "engine_legend": "Moteur de transcription"
   },
   "header": {
     "accessible": "Accessible",
@@ -4813,7 +4819,8 @@
       "analyzing_short": "Analyse en cours...",
       "generate_short": "Générer",
       "books_short": "Livres",
-      "books_hint": "Ouvrez des albums illustrés : n'importe quel livre peut devenir votre texte source"
+      "books_hint": "Ouvrez des albums illustrés : n'importe quel livre peut devenir votre texte source",
+      "dictate_hint": "Dictez votre texte source avec Whisper sur l'appareil et une vérification optionnelle par Gemini"
     },
     "status_generating": "Génération du texte source...",
     "success_long_form": "Texte long généré avec succès !",
@@ -4863,7 +4870,8 @@
     "empty_desc_teacher": "Ajoutez un texte, puis choisissez les outils qui l'adaptent pour vos élèves.",
     "empty_desc_family": "Ajoutez ce que votre enfant est en train de lire, puis choisissez comment vous voulez l'aider.",
     "reading_catalog": "Catalogue de lecture",
-    "find_online": "Trouver en ligne"
+    "find_online": "Trouver en ligne",
+    "dictate_or_record": "Dicter ou enregistrer"
   },
   "tour": {
     "skipped_unavailable": "Ignorées, non disponibles dans cette vue : {steps}",
@@ -5620,7 +5628,12 @@
     "paste_word_count": "{count} mots",
     "length_custom": "Personnalisée…",
     "length_custom_label": "Nombre de mots",
-    "length_custom_hint": "De 50 à 5 000 mots"
+    "length_custom_hint": "De 50 à 5 000 mots",
+    "dictate_desc": "Dictée vocale Whisper local et vérification optionnelle",
+    "dictate_title": "Dictez ou enregistrez votre texte source",
+    "dictate_helper": "Utilise par défaut la dictée privée Whisper sur l'appareil. Modifiez librement, nettoyez le texte au besoin ou vérifiez-le avec votre enregistrement à l'aide de Gemini.",
+    "dictate_loading": "Chargement du Studio de dictée (Whisper local)… Vous pouvez aussi taper ou modifier ci-dessous pendant le chargement.",
+    "words_dictated_unit": "mots dictés"
   },
   "toasts": {
     "copied": "Texte copié dans le presse-papiers !",
@@ -6576,7 +6589,10 @@
     "source_choice_ambiguous": "Choisissez une lecture dans Basé sur avant de générer. Plus d'une lecture est disponible.",
     "source_choices_load_failed": "Impossible de charger les choix de lecture. Veuillez réessayer.",
     "submission_tools_still_loading": "Les outils de remise sont encore en cours de chargement. Cliquez de nouveau sur Soumettre.",
-    "blank_created": "Ressource vierge créée : {title}. Remplissez-la avant de la partager."
+    "blank_created": "Ressource vierge créée : {title}. Remplissez-la avant de la partager.",
+    "sent_to_read_along": "Passage envoyé à la trousse de lecture suivie dans un nouvel onglet.",
+    "read_along_handoff_failed": "Impossible de transférer le brouillon à la trousse de lecture suivie.",
+    "read_along_no_text": "Ajoutez ou dictez un texte source avant de l'envoyer à la trousse de lecture suivie."
   },
   "word_sounds": {
     "voice_pack_ai_make": "Créer {label} avec une voix IA",
@@ -110989,5 +111005,68 @@
     "sc_findText": "Rechercher du texte dans la conception",
     "sc_commandPalette": "Ouvrir les actions rapides",
     "sc_help": "Afficher cette liste de raccourcis"
+  },
+  "dictation": {
+    "badge_desktop": "Whisper de bureau prêt",
+    "badge_download_needed": "Whisper local · Premier téléchargement",
+    "badge_local_ready": "Whisper local prêt · {name}",
+    "cleanup_apply": "Appliquer le nettoyage",
+    "cleanup_failed": "Impossible de nettoyer le texte en ce moment.",
+    "cleanup_fillers": "Réduire les mots de remplissage",
+    "cleanup_heading": "Nettoyage de texte par IA (optionnel)",
+    "cleanup_keep": "Garder l'original",
+    "cleanup_no_changes": "Aucun changement n'a été proposé pour ce brouillon.",
+    "cleanup_notes": "Mettre en forme comme notes de classe",
+    "cleanup_punctuation": "Corriger la ponctuation et la mise en forme",
+    "cleanup_review_title": "Nettoyage proposé prêt — votre brouillon n'a pas encore été modifié",
+    "cleanup_text_only": "texte seulement — aucun audio n'est transmis",
+    "cleanup_unavailable": "Le nettoyage de texte par IA n'est pas disponible pour le moment.",
+    "cleanup_undo": "Annuler le nettoyage",
+    "cleanup_working": "Nettoyage…",
+    "clear_audio": "Effacer l'audio enregistré ({mb} Mo)",
+    "crosscheck_all_resolved": "Tous les endroits signalés ont été vérifiés.",
+    "crosscheck_btn": "Vérifier avec l'audio grâce à Gemini",
+    "crosscheck_count": "{count} endroit(s) signalé(s) à réviser :",
+    "crosscheck_disabled_note": "Non disponible pour le moment (désactivé en mode hors ligne / mode IA élève désactivée ou sans clé Gemini). Votre dictée Whisper local continue de fonctionner entièrement hors ligne.",
+    "crosscheck_disclosure": "Ne s'exécute que si vous cliquez ci-dessous : envoie à Gemini vos segments audio gardés en mémoire et votre brouillon pour repérer d'éventuelles erreurs de mots.",
+    "crosscheck_failed": "La vérification audio avec Gemini ne s'est pas terminée. Votre transcription locale demeure intacte.",
+    "crosscheck_heading": "Vérification croisée avec l'audio par Gemini (sur activation)",
+    "crosscheck_none": "Aucune différence notable n'a été relevée entre Whisper local et Gemini Audio.",
+    "crosscheck_running": "Vérification avec l'audio…",
+    "crosscheck_unavailable": "La vérification croisée audio avec Gemini n'est pas disponible pour le moment.",
+    "download_now": "Télécharger Whisper local ({size} Mo)",
+    "download_warning": "Avis de téléchargement : Whisper local privilégie par défaut la reconnaissance vocale privée sur l'appareil. Télécharger le modèle {name} requiert ~{size} Mo une seule fois (~1 à 2 minutes selon votre connexion), se met en cache hors ligne dans votre navigateur et garde vos enregistrements vocaux sur cet appareil.",
+    "draft_label": "Brouillon de la transcription (modifiable)",
+    "draft_placeholder": "Cliquez sur Commencer la dictée ci-dessus, ou tapez et modifiez votre transcription directement ici…",
+    "guide_both_body": "Commencez en mode privé avec Whisper local pour profiter d'une dictée rapide et d'abord hors ligne. Si vous voulez un deuxième avis sur des termes ou des noms difficiles, activez la vérification croisée Gemini pour comparer deux modèles indépendants à votre audio et réécouter des extraits de 5 secondes à chaque endroit signalé.",
+    "guide_both_label": "Pourquoi utiliser les deux (vérification croisée) :",
+    "guide_gemini_body": "Aucun téléchargement de modèle requis. Plus solide pour le vocabulaire spécialisé, les noms propres, les accents variés, les classes bruyantes et la ponctuation — envoie les segments audio enregistrés à Gemini seulement si vous l'activez.",
+    "guide_gemini_title": "Gemini Audio (vérification optionnelle)",
+    "guide_summary": "Whisper local c. Gemini Audio — forces et pourquoi utiliser les deux",
+    "guide_whisper_body": "Privé et hors ligne après un téléchargement unique (~39 à 73 Mo). Aucun audio ne quitte votre appareil, aucune clé d'API ni quota n'est requis, et la dictée continue de longue durée fonctionne de façon fiable.",
+    "guide_whisper_title": "Whisper local (par défaut)",
+    "ios_canvas_blocked": "Whisper local est en pause sur iPhone/iPad dans Gemini Canvas. Tapez directement ci-dessous ou ouvrez AlloFlow dans un navigateur sur ordinateur.",
+    "ios_canvas_hint": "Vous pouvez taper directement ci-dessous, ouvrir AlloFlow dans un navigateur sur ordinateur pour Whisper local, ou utiliser Gemini Audio s'il est configuré.",
+    "ios_canvas_title": "Whisper sur l'appareil est en pause sur iPhone/iPad dans Gemini Canvas",
+    "listening_local": "Écoute locale avec Whisper… faites une courte pause ou continuez à parler pour ajouter du texte.",
+    "mic_start_failed": "Impossible de démarrer le microphone. Vérifiez les autorisations du navigateur.",
+    "model_size_label": "Taille du modèle Whisper local",
+    "pause_recording": "Mettre en pause",
+    "paused_note": "En pause. Vous pouvez modifier la transcription ci-dessous ou appuyer sur Reprendre pour continuer la dictée.",
+    "privacy_tag": "Privé · Hors ligne après le téléchargement · Aucune clé d'API nécessaire",
+    "resume_recording": "Reprendre",
+    "send_read_along": "Envoyer à la trousse de lecture suivie",
+    "speech_settings": "Paramètres de la voix",
+    "speed_badge_lesson": "Testé : {speed}x plus rapide que la parole · Bon pour les longues dictées",
+    "speed_badge_short": "Testé : {speed}x plus rapide que la parole · Idéal pour les courts extraits",
+    "speed_badge_slow": "Testé : {speed}x · Plus lent que le temps réel (prévoir des pauses)",
+    "speed_badge_upgrade": "Testé : {speed}x plus rapide que la parole · Bon pour les longues dictées (vous pouvez aussi essayer {name})",
+    "start_recording": "Commencer la dictée (Whisper local)",
+    "stop_recording": "Arrêter",
+    "studio_title": "Studio de dictée",
+    "test_mic": "Tester le micro (4 s)",
+    "upload_media": "Transcrire un fichier audio ou vidéo",
+    "use_text": "Utiliser le texte dicté",
+    "voice_unavailable": "L'enregistreur vocal est toujours en chargement. Veuillez réessayer dans un moment."
   }
 }

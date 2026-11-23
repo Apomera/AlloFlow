@@ -91,6 +91,16 @@
  */
 (function initResearchLaneEngineering(retriesLeft) {
   'use strict';
+  if (typeof window === 'undefined') return;
+  function _engLaneAiUsable(c) {
+    if (!c || typeof c.ask !== 'function') return false;
+    if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true) return false;
+    if (window.hideStudentAiFeatures === true || !!window.__alloQrStudentMode) return false;
+    if (window.StudentPolicy && typeof window.StudentPolicy.isAiDisabled === 'function' && window.StudentPolicy.isAiDisabled()) return false;
+    if (window.AlloModules && window.AlloModules.StudentPolicy && typeof window.AlloModules.StudentPolicy.isAiDisabled === 'function' && window.AlloModules.StudentPolicy.isAiDisabled()) return false;
+    try { if (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text')) return false; } catch (_) { return false; }
+    return true;
+  }
   // Loader visibility: the host's loadModule() checks window.AlloModules[name]
   // at script onload to decide SUCCESS vs FAILED. Stamp a key immediately
   // (upgraded to __tier 2 at registration) so a legitimate defer isn't
@@ -1022,7 +1032,7 @@
     var activeObj = STAGE_BY_KEY[activeStage] || STAGES[0];
     var pct = Math.round((startedCount / STAGES.length) * 100);
     function onTabKeyDown(e, idx) {
-      if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
+      if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       var nextIdx = null;
       if (e.key === 'ArrowRight') nextIdx = (idx + 1) % STAGES.length;
       else if (e.key === 'ArrowLeft') nextIdx = (idx - 1 + STAGES.length) % STAGES.length;
@@ -1572,10 +1582,9 @@
     var saneCheck = targetValid ? withinSaneRange(draft.source, targetNum) : true;
     var needsSaneAck = !saneCheck;
     var criterionValid = (draft.criterion || '').trim().length >= 8;
-    var canSave = criterionValid && targetValid && unitValid && !!draft.source && !!draft.tier
-                  && (saneCheck || saneAck);
-
     var tierDowngradeAttempted = lockedTierDown && existing && existing.tier === 'hard' && draft.tier !== 'hard';
+    var canSave = criterionValid && targetValid && unitValid && !!draft.source && !!draft.tier
+                  && (saneCheck || saneAck) && !tierDowngradeAttempted;
 
     return (
       <div style={{ padding: '10px', borderRadius: '10px',
@@ -2291,7 +2300,7 @@
           {t('engineering.tradeoff_rank') || 'How strongly I chose this'} (1 = reluctantly accepted, 5 = strongly chose)
           <input type="range" min="1" max="5" value={rank}
             aria-valuetext={rank + ' of 5 (' + (rank <= 1 ? 'reluctantly accepted' : rank >= 5 ? 'strongly chose' : 'moderate preference') + ')'}
-            onChange={function (e) { setRank(parseInt(e.target.value, 10)); }}
+            onChange={function (e) { var v = parseInt(e.target.value, 10); if (Number.isFinite(v)) setRank(Math.max(1, Math.min(5, v))); }}
             style={{ width: '100%', marginTop: '4px' }} />
           <div style={{ fontSize: '11px', color: '#475569', textAlign: 'center', fontWeight: 700 }}>{rank} / 5</div>
         </label>
@@ -2454,10 +2463,17 @@
       });
     };
 
+    var _engMounted1 = useRef(true);
+    useEffect(function () { _engMounted1.current = true; return function () { _engMounted1.current = false; }; }, []);
     var askConstraintExcavator = async function () {
+      if (!_engLaneAiUsable(ctx)) { setAiResult({ ok: false, error: 'AI helper is unavailable right now.' }); return; }
       setBusy(true); setAiResult(null);
-      try { var res = await ctx.ask(TOUCHPOINTS.constraint_excavator, ctx); setAiResult(res); }
-      finally { setBusy(false); }
+      try {
+        var res = await Promise.resolve(ctx.ask(TOUCHPOINTS.constraint_excavator, ctx));
+        if (_engMounted1.current) setAiResult(res);
+      } catch (_) {
+        if (_engMounted1.current) setAiResult({ ok: false, error: 'Could not reach the AI helper. Try again.' });
+      } finally { if (_engMounted1.current) setBusy(false); }
     };
 
     return (
@@ -2647,10 +2663,17 @@
       });
     };
 
+    var _engMounted2 = useRef(true);
+    useEffect(function () { _engMounted2.current = true; return function () { _engMounted2.current = false; }; }, []);
     var askDominanceFinder = async function () {
+      if (!_engLaneAiUsable(ctx)) { setAiResult({ ok: false, error: 'AI helper is unavailable right now.' }); return; }
       setBusy(true); setAiResult(null);
-      try { var res = await ctx.ask(TOUCHPOINTS.dominated_solution_finder, ctx); setAiResult(res); }
-      finally { setBusy(false); }
+      try {
+        var res = await Promise.resolve(ctx.ask(TOUCHPOINTS.dominated_solution_finder, ctx));
+        if (_engMounted2.current) setAiResult(res);
+      } catch (_) {
+        if (_engMounted2.current) setAiResult({ ok: false, error: 'Could not reach the AI helper. Try again.' });
+      } finally { if (_engMounted2.current) setBusy(false); }
     };
 
     var matrixComplete = concepts.length > 0 && crits.length > 0 &&
@@ -2831,6 +2854,8 @@
         return next;
       });
     };
+    var _engMounted3 = useRef(true);
+    useEffect(function () { _engMounted3.current = true; return function () { _engMounted3.current = false; }; }, []);
     var updateProtocol = function (id, patch) {
       setJournal(function (prev) {
         var next = Object.assign({}, prev);
@@ -3007,9 +3032,14 @@
           </p>
           <button type="button" disabled={invBusy}
             onClick={async function () {
+              if (!_engLaneAiUsable(ctx)) { setInvResult({ ok: false, error: 'AI helper is unavailable right now.' }); return; }
               setInvBusy(true); setInvResult(null);
-              try { var res = await ctx.ask(TOUCHPOINTS.tradeoff_inverter, ctx); setInvResult(res); }
-              finally { setInvBusy(false); }
+              try {
+                var res = await Promise.resolve(ctx.ask(TOUCHPOINTS.tradeoff_inverter, ctx));
+                if (_engMounted3.current) setInvResult(res);
+              } catch (_) {
+                if (_engMounted3.current) setInvResult({ ok: false, error: 'Could not reach the AI helper. Try again.' });
+              } finally { if (_engMounted3.current) setInvBusy(false); }
             }}
             style={{ alignSelf: 'flex-start',
               padding: '10px 16px', minHeight: '44px', borderRadius: '999px',
@@ -3395,10 +3425,17 @@
       });
     };
 
+    var _engMounted4 = useRef(true);
+    useEffect(function () { _engMounted4.current = true; return function () { _engMounted4.current = false; }; }, []);
     var askFailureCritic = async function () {
+      if (!_engLaneAiUsable(ctx)) { setAiResult({ ok: false, error: 'AI helper is unavailable right now.' }); return; }
       setBusy(true); setAiResult(null);
-      try { var res = await ctx.ask(TOUCHPOINTS.failure_mode_critic, ctx); setAiResult(res); }
-      finally { setBusy(false); }
+      try {
+        var res = await Promise.resolve(ctx.ask(TOUCHPOINTS.failure_mode_critic, ctx));
+        if (_engMounted4.current) setAiResult(res);
+      } catch (_) {
+        if (_engMounted4.current) setAiResult({ ok: false, error: 'Could not reach the AI helper. Try again.' });
+      } finally { if (_engMounted4.current) setBusy(false); }
     };
 
     return (
@@ -3647,10 +3684,17 @@
       });
     };
 
+    var _engMounted5 = useRef(true);
+    useEffect(function () { _engMounted5.current = true; return function () { _engMounted5.current = false; }; }, []);
     var askStakeTranslate = async function () {
+      if (!_engLaneAiUsable(ctx)) { setAiResult({ ok: false, error: 'AI helper is unavailable right now.' }); return; }
       setBusy(true); setAiResult(null);
-      try { var res = await ctx.ask(TOUCHPOINTS.stakeholder_translator, ctx); setAiResult(res); }
-      finally { setBusy(false); }
+      try {
+        var res = await Promise.resolve(ctx.ask(TOUCHPOINTS.stakeholder_translator, ctx));
+        if (_engMounted5.current) setAiResult(res);
+      } catch (_) {
+        if (_engMounted5.current) setAiResult({ ok: false, error: 'Could not reach the AI helper. Try again.' });
+      } finally { if (_engMounted5.current) setBusy(false); }
     };
 
     return (

@@ -556,6 +556,7 @@ function getGlossaryImageAlt(item) {
   var AlertCircle = _lazyIcon('AlertCircle');
   var ChevronDown = _lazyIcon('ChevronDown');
   var Download = _lazyIcon('Download');
+  var ExternalLink = _lazyIcon('ExternalLink');
   var Eye = _lazyIcon('Eye');
   var GalleryHorizontal = _lazyIcon('GalleryHorizontal');
   var Gamepad2 = _lazyIcon('Gamepad2');
@@ -711,6 +712,152 @@ function getGlossaryImageAlt(item) {
   // Host "Needs AI setup" doorway for teacher AI actions; null on old hosts.
   function _glossaryViewAiDoor(kind, t) {
     try { return typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway(kind, t) : null; } catch (_) { return null; }
+  }
+
+  function glossarySafeImageDataUri(raw) {
+    var s = String(raw || '').trim();
+    if (/^data:image\/(png|jpeg|jpg|webp|gif|svg\+xml)/i.test(s)) return s;
+    if (/^<svg[\s>]/i.test(s)) return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s);
+    return '';
+  }
+
+  function buildGlossaryVocabEntries(items) {
+    var list = Array.isArray(items) ? items : [];
+    var out = [];
+    var seen = new Set();
+    for (var i = 0; i < list.length && out.length < 60; i++) {
+      var item = list[i];
+      if (!item || typeof item !== 'object' || item.isSelected === false) continue;
+      var word = String(item.term || item.word || '').trim().slice(0, 80);
+      if (!word) continue;
+      var key = word.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      var meaning = String(item.def || item.definition || item.meaning || '').trim().slice(0, 400);
+      var example = String(item.example || item.contextSentence || item.exampleSentence || item.sentence || '').trim().slice(0, 400);
+      var pos = String(item.pos || item.partOfSpeech || '').trim().slice(0, 40);
+      var tier = String(item.tier || '').trim().slice(0, 40);
+      var rawImg = item.imgUri || item.image || item.imageUrl || item.pictureUri || item.svg || '';
+      var imgUri = glossarySafeImageDataUri(rawImg);
+      var alt = String(getGlossaryImageAlt(item) || item.alt || item.imageAlt || '').trim().slice(0, 160);
+      out.push({ word: word, meaning: meaning, example: example, pos: pos, tier: tier, imgUri: imgUri, alt: alt });
+    }
+    return out;
+  }
+
+  function glossaryWsEscapeHtml(str) {
+    return String(str == null ? '' : str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function buildFallbackVocabWorksheetHtml(title, entries) {
+    var safeTitle = String(title || 'Vocabulary Worksheet').trim() || 'Vocabulary Worksheet';
+    var items = Array.isArray(entries) ? entries : [];
+    var words = items.map(function (e) { return e.word; });
+    var matchItems = items.filter(function (e) { return !!e.meaning; });
+    var rotatedDefs = matchItems.length >= 2
+      ? matchItems.slice(1).concat(matchItems.slice(0, 1))
+      : matchItems.slice();
+    var letterOf = function (idx) {
+      var n = idx;
+      var s = '';
+      do { s = String.fromCharCode(65 + (n % 26)) + s; n = Math.floor(n / 26) - 1; } while (n >= 0);
+      return s;
+    };
+    var answerLetterByWord = {};
+    rotatedDefs.forEach(function (entry, idx) {
+      answerLetterByWord[entry.word.toLowerCase()] = letterOf(idx);
+    });
+    var picItems = items.filter(function (e) { return !!e.imgUri; });
+    var wordBankHtml = words.length
+      ? '<div class="bank" data-vocab-word-bank="true"><strong>Word Bank:</strong> '
+        + words.slice().sort(function (a, b) { return a.localeCompare(b); }).map(function (w) {
+          return '<span class="chip">' + glossaryWsEscapeHtml(w) + '</span>';
+        }).join(' ')
+        + '</div>'
+      : '';
+    var part1Html = '';
+    var key1Lines = [];
+    if (matchItems.length) {
+      part1Html = '<section class="sec" data-vocab-part="matching"><h2>Part 1 &#8212; Match the Word to Its Meaning</h2>'
+        + '<p class="dir">Write the letter of the matching meaning on the line next to each word.</p>'
+        + '<div class="match-grid"><ol class="col">'
+        + matchItems.map(function (e, i) {
+          return '<li><span class="blank-letter"></span> <strong>' + glossaryWsEscapeHtml(e.word) + '</strong></li>';
+        }).join('')
+        + '</ol><ol class="col defs" type="A">'
+        + rotatedDefs.map(function (e, i) {
+          return '<li><span class="def-letter">' + glossaryWsEscapeHtml(letterOf(i)) + '.</span> ' + glossaryWsEscapeHtml(e.meaning) + '</li>';
+        }).join('')
+        + '</ol></div></section>';
+      key1Lines = matchItems.map(function (e) {
+        return e.word + ' — ' + (answerLetterByWord[e.word.toLowerCase()] || '') + ' (' + e.meaning + ')';
+      });
+    }
+    var key2Lines = [];
+    var clozeHtml = items.length
+      ? '<section class="sec" data-vocab-part="cloze"><h2>Part 2 &#8212; Fill in the Blank</h2>'
+        + '<p class="dir">Choose a word from the Word Bank to complete each sentence, or write a sentence using the word.</p><ol class="list">'
+        + items.map(function (e) {
+          var ex = String(e.example || '').trim();
+          var escWord = e.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          var re = new RegExp('\\b' + escWord + '\\b', 'i');
+          if (ex && re.test(ex)) {
+            var idx = ex.search(re);
+            var matched = ex.match(re)[0];
+            var before = ex.slice(0, idx);
+            var after = ex.slice(idx + matched.length);
+            key2Lines.push(e.word + ' — "' + ex + '"');
+            return '<li>' + glossaryWsEscapeHtml(before) + '<span class="blank-word"></span>' + glossaryWsEscapeHtml(after) + '</li>';
+          }
+          key2Lines.push(e.word + ' — Answers will vary (sentence using "' + e.word + '").');
+          return '<li>Write a sentence using <strong>' + glossaryWsEscapeHtml(e.word) + '</strong>:<div class="write-line"></div></li>';
+        }).join('')
+        + '</ol></section>'
+      : '';
+    var key3Lines = [];
+    var picHtml = picItems.length
+      ? '<section class="sec" data-vocab-part="pictures"><h2>Part 3 &#8212; Name the Picture</h2>'
+        + '<p class="dir">Write the matching vocabulary word on the line under each picture.</p><div class="pic-grid">'
+        + picItems.map(function (e, i) {
+          key3Lines.push((i + 1) + '. ' + e.word);
+          return '<figure class="pic-card"><div class="pic-num">' + (i + 1) + '.</div><img src="' + glossaryWsEscapeHtml(e.imgUri) + '" alt="' + glossaryWsEscapeHtml(e.alt || 'Vocabulary picture ' + (i + 1)) + '" /><div class="write-line"></div></figure>';
+        }).join('')
+        + '</div></section>'
+      : '';
+    var keySection = '<section class="answer-key" data-vocab-answer-key="true">'
+      + '<h1>' + glossaryWsEscapeHtml(safeTitle) + ' &#8212; Teacher Answer Key</h1>'
+      + (key1Lines.length ? '<h2>Part 1 &#8212; Match the Word to Its Meaning</h2><ol>' + key1Lines.map(function (l) { return '<li>' + glossaryWsEscapeHtml(l) + '</li>'; }).join('') + '</ol>' : '')
+      + (key2Lines.length ? '<h2>Part 2 &#8212; Fill in the Blank</h2><ol>' + key2Lines.map(function (l) { return '<li>' + glossaryWsEscapeHtml(l) + '</li>'; }).join('') + '</ol>' : '')
+      + (key3Lines.length ? '<h2>Part 3 &#8212; Name the Picture</h2><ol>' + key3Lines.map(function (l) { return '<li>' + glossaryWsEscapeHtml(l) + '</li>'; }).join('') + '</ol>' : '')
+      + '</section>';
+    return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">'
+      + '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; img-src data:; font-src \'self\' data:; script-src \'none\'">'
+      + '<meta name="viewport" content="width=device-width,initial-scale=1">'
+      + '<title>' + glossaryWsEscapeHtml(safeTitle) + ' — Vocabulary Worksheet</title>'
+      + '<style>'
+      + '@page{margin:0.6in;}*{box-sizing:border-box;}body{margin:0;padding:24px;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#111;background:#fff;line-height:1.45;}'
+      + 'main{max-width:8.2in;margin:0 auto;}header{border-bottom:2px solid #111;padding-bottom:10px;margin-bottom:16px;}'
+      + 'h1{font-size:20px;margin:0 0 8px;}h2{font-size:15px;margin:16px 0 6px;border-bottom:1px solid #333;padding-bottom:3px;}'
+      + '.meta{display:flex;gap:24px;font-size:13px;}.meta span{flex:1;border-bottom:1px solid #111;padding-bottom:2px;}'
+      + '.bank{border:1.5px solid #111;padding:10px 12px;margin:12px 0;font-size:13px;}.chip{display:inline-block;border:1px solid #333;padding:2px 8px;margin:2px 4px 2px 0;font-weight:600;}'
+      + '.dir{margin:0 0 10px;font-size:13px;font-style:italic;}.sec{margin-bottom:18px;}'
+      + '.match-grid{display:grid;grid-template-columns:1fr 1.5fr;gap:18px;}.col{margin:0;padding-left:20px;}.defs{list-style:none;padding-left:0;}.def-letter{font-weight:700;margin-right:4px;}'
+      + '.col li,.list li{margin-bottom:8px;font-size:13.5px;}.blank-letter{display:inline-block;width:28px;border-bottom:1.5px solid #111;margin-right:6px;}'
+      + '.blank-word{display:inline-block;width:130px;border-bottom:1.5px solid #111;margin:0 4px;}.write-line{border-bottom:1.5px solid #111;height:24px;margin-top:4px;}'
+      + '.pic-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}.pic-card{margin:0;border:1px solid #333;padding:10px;text-align:center;break-inside:avoid;}'
+      + '.pic-num{text-align:left;font-weight:700;font-size:12px;}.pic-card img{max-width:100%;max-height:110px;object-fit:contain;filter:grayscale(100%);}'
+      + '.answer-key{page-break-before:always;break-before:page;border-top:2px dashed #111;padding-top:16px;margin-top:28px;}'
+      + '@media print{body{padding:0;}.answer-key{border-top:none;margin-top:0;padding-top:0;}}'
+      + '</style></head><body><main>'
+      + '<header><h1>' + glossaryWsEscapeHtml(safeTitle) + '</h1>'
+      + '<div class="meta"><span>Name:</span><span>Date:</span></div></header>'
+      + wordBankHtml + part1Html + clozeHtml + picHtml + keySection
+      + '</main></body></html>';
   }
 
   function GlossaryView(props) {
@@ -1238,6 +1385,88 @@ var handleAddGlossaryTermAsTyped = props.handleAddGlossaryTermAsTyped;
     var glossaryToolsOpen = glossaryToolsState[0];
     var setGlossaryToolsOpen = glossaryToolsState[1];
     var [isGlossaryExportsOpen, setIsGlossaryExportsOpen] = React.useState(false);
+    var [vocabPacketNotice, setVocabPacketNotice] = React.useState('');
+    var [vocabWorksheetNotice, setVocabWorksheetNotice] = React.useState('');
+    var sendGlossaryToVocabPacket = async function () {
+      if (!isTeacherMode || !activityWords.length) return;
+      setVocabPacketNotice('');
+      var entries = buildGlossaryVocabEntries(activityWords);
+      if (!entries.length) {
+        setVocabPacketNotice('No vocabulary words are available to send.');
+        return;
+      }
+      var sendFn = (typeof props.onSendToVocabPacket === 'function')
+        ? props.onSendToVocabPacket
+        : (typeof window !== 'undefined' && typeof window.__alloSendToVocabPacket === 'function' ? window.__alloSendToVocabPacket : null);
+      if (typeof sendFn !== 'function') {
+        setVocabPacketNotice('Vocabulary Packet handoff is unavailable in this view.');
+        return;
+      }
+      try {
+        var ok = await sendFn({
+          title: (generatedContent && generatedContent.title) || 'Vocabulary',
+          lang: glossaryBaseLanguage || leveledTextLanguage || currentUiLanguage || 'English',
+          entries: entries
+        });
+        if (glossaryMountedRef.current) {
+          setVocabPacketNotice(ok === false ? 'Could not hand off draft to Vocabulary Packet.' : 'Sent vocabulary list to Vocabulary Packet in a new tab.');
+        }
+      } catch (_) {
+        if (glossaryMountedRef.current) setVocabPacketNotice('Could not hand off draft to Vocabulary Packet.');
+      }
+    };
+    var downloadGlossaryVocabWorksheet = function () {
+      if (!isTeacherMode || !activityWords.length) return;
+      setVocabWorksheetNotice('');
+      try {
+        var entries = buildGlossaryVocabEntries(activityWords);
+        if (!entries.length) {
+          setVocabWorksheetNotice('No vocabulary words are available for the worksheet.');
+          return;
+        }
+        var wsTitle = (generatedContent && generatedContent.title) || 'Vocabulary Worksheet';
+        var html = '';
+        if (typeof window !== 'undefined' && window.AlloPacketPrintCards && typeof window.AlloPacketPrintCards.buildVocabWorksheetHtml === 'function') {
+          html = window.AlloPacketPrintCards.buildVocabWorksheetHtml(
+            {
+              title: wsTitle,
+              entries: entries.map(function (e) {
+                return {
+                  word: e.word,
+                  meaning: e.meaning,
+                  example: e.example,
+                  picture: e.imgUri || '',
+                  pictureUri: e.imgUri || ''
+                };
+              })
+            },
+            { wordBank: true, pictures: true, answerKey: true }
+          );
+        }
+        if (!html || typeof html !== 'string') {
+          html = buildFallbackVocabWorksheetHtml(wsTitle, entries);
+        }
+        var slug = String(wsTitle || 'vocabulary').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'vocabulary';
+        var fname = slug + '-vocabulary-worksheet.html';
+        if (typeof window !== 'undefined' && typeof window.Blob === 'function' && window.URL && typeof window.URL.createObjectURL === 'function' && typeof document !== 'undefined' && document.body) {
+          var blob = new window.Blob([html], { type: 'text/html;charset=utf-8' });
+          var url = window.URL.createObjectURL(blob);
+          var link = document.createElement('a');
+          link.href = url;
+          link.download = fname;
+          link.hidden = true;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setTimeout(function () { try { window.URL.revokeObjectURL(url); } catch (_) {} }, 15000);
+        }
+        if (glossaryMountedRef.current) {
+          setVocabWorksheetNotice('Downloaded ' + fname + '. Open it in any browser to print.');
+        }
+      } catch (_) {
+        if (glossaryMountedRef.current) setVocabWorksheetNotice('The vocabulary worksheet could not be prepared. Please try again.');
+      }
+    };
     var [showGlossaryContext, setShowGlossaryContext] = React.useState(() => {
       try { return window.localStorage.getItem('allo_glossary_show_context_sentences') === 'on'; } catch (_) { return false; }
     });
@@ -1251,7 +1480,7 @@ var handleAddGlossaryTermAsTyped = props.handleAddGlossaryTermAsTyped;
         }} className="h-4 w-4 rounded accent-indigo-700" />{glossaryText('glossary.show_context_sentences', 'Show source sentences')}
       </label>;
     }
-    React.useEffect(function () { setIsGlossaryExportsOpen(false); }, [activityResourceKey, isTeacherMode]);
+    React.useEffect(function () { setIsGlossaryExportsOpen(false); setVocabPacketNotice(''); setVocabWorksheetNotice(''); }, [activityResourceKey, isTeacherMode]);
     var glossaryAudioState = React.useState({ busy: false, done: 0, total: 0, message: '' });
     var glossaryAudioPrep = glossaryAudioState[0];
     var setGlossaryAudioPrep = glossaryAudioState[1];
@@ -2684,7 +2913,11 @@ var handleAddGlossaryTermAsTyped = props.handleAddGlossaryTermAsTyped;
           <button type="button" data-help-key="glossary_export_standard" onClick={() => handleExportFlashcards('standard')} className={exportAction}><GalleryHorizontal size={16} aria-hidden="true" /> {t('flashcards.export_standard')}</button>
           {glossaryLanguages.length > 0 && <button type="button" data-help-key="glossary_export_language" onClick={() => handleExportFlashcards('language')} className={exportAction}><Languages size={16} aria-hidden="true" /> {t('flashcards.export_language')}</button>}
           {typeof props.handleExportGlossaryFile === 'function' && <button type="button" data-glossary-export-word-list aria-haspopup="dialog" onClick={e => props.handleExportGlossaryFile('chooser', { opener: e.currentTarget })} className={exportAction}><Download size={16} aria-hidden="true" /> {glossaryText('glossary.export_word_list', 'Export word list…')}</button>}
+          {activityWords.length > 0 && <button type="button" data-testid="glossary-send-vocab-packet" onClick={sendGlossaryToVocabPacket} className={exportAction}><ExternalLink size={16} aria-hidden="true" /> Send to Vocabulary Packet</button>}
+          {activityWords.length > 0 && <button type="button" data-testid="glossary-download-worksheet" onClick={downloadGlossaryVocabWorksheet} className={exportAction}><Download size={16} aria-hidden="true" /> Download Vocabulary Worksheet</button>}
             </div>
+            {vocabPacketNotice && <p role="status" aria-live="polite" className="mt-2 text-xs text-indigo-900">{vocabPacketNotice}</p>}
+            {vocabWorksheetNotice && <p role="status" aria-live="polite" className="mt-2 text-xs text-indigo-900">{vocabWorksheetNotice}</p>}
           </div>
         </div>}
         <div id="glossary-toolbar-tools" hidden={!glossaryToolbarToolsOpen} style={{ display: glossaryToolbarToolsOpen ? undefined : 'none' }} className="space-y-3">

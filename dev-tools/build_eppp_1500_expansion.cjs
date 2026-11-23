@@ -24,7 +24,7 @@ const ensure=(v,min,fallback)=>{let s=String(v||'').replace(/\s+/g,' ').trim();i
 const stableProfessional=x=>x.domainId===8&&/APA (?:Ethics Code|Standard|General Principle)/i.test(x.rationale||'')&&!/Tarasoff|HIPAA|state law|licens|court|subpoena|mandated|abuse|legal|Goldwater/i.test((x.prompt||'')+' '+(x.rationale||''));
 const hasFlag=(x,code)=>Array.isArray(x.flags)&&x.flags.some(f=>f.code===code);
 const parseReasons=raw=>{const out={};String(raw||'').replace(/\r/g,'').split('\n').forEach(line=>{const m=line.match(/^\s*\(?([A-D])\)?\s*(?:[).:\-]|→)\s*(.+)$/i);if(m)out[m[1].toUpperCase().charCodeAt(0)-65]=m[2].trim();});return out;};
-const sourceFromLegacy=x=>{const approved=new Set(['apa.org','www.apa.org','cdc.gov','www.cdc.gov','hhs.gov','www.hhs.gov','www.itl.nist.gov','openstax.org','doi.org','ncbi.nlm.nih.gov','www.ncbi.nlm.nih.gov','pmc.ncbi.nlm.nih.gov','pubmed.ncbi.nlm.nih.gov','nimh.nih.gov','www.nimh.nih.gov','nist.gov','www.nist.gov','who.int','www.who.int','medlineplus.gov','training.cochrane.org','www.testingstandards.net','testingstandards.net']);const refs=[];for(const citation of Array.isArray(x.references)?x.references:[]){const urls=String(citation).match(/https:\/\/[^\s)]+/g)||[];for(let url of urls){url=url.replace(/[.,;]+$/,'');let host='';try{host=new URL(url).hostname.toLowerCase();}catch{}if(!approved.has(host))continue;const title=String(citation).replace(url,'').replace(/\s+/g,' ').replace(/[.,;:\s]+$/,'').trim();refs.push({url,title:title.length>=12?title:'Scholarly source for '+x.prompt,credibility:(host==='doi.org'||host.includes('ncbi.nlm.nih.gov')||host.includes('pubmed'))?'This is a traceable scholarly publication indexed through a DOI or the U.S. National Library of Medicine; the cited work directly addresses the tested concept.':'This is an official governmental, professional, standards, or openly peer-reviewed educational source that directly addresses the tested concept.'});}}return refs;};
+const sourceFromLegacy=x=>{const approved=new Set(['apa.org','www.apa.org','cdc.gov','www.cdc.gov','hhs.gov','www.hhs.gov','www.itl.nist.gov','openstax.org','doi.org','ncbi.nlm.nih.gov','www.ncbi.nlm.nih.gov','pmc.ncbi.nlm.nih.gov','pubmed.ncbi.nlm.nih.gov','nimh.nih.gov','www.nimh.nih.gov','nist.gov','www.nist.gov','who.int','www.who.int','medlineplus.gov','training.cochrane.org','www.testingstandards.net','testingstandards.net']);const refs=[];for(const citation of Array.isArray(x.references)?x.references:[]){const urls=String(citation).match(/https:\/\/\S+/g)||[];for(let url of urls){url=url.replace(/[.,;]+$/,'');while(url.endsWith(')')&&url.split(')').length>url.split('(').length)url=url.slice(0,-1);let host='';try{host=new URL(url).hostname.toLowerCase();}catch{}if(!approved.has(host))continue;const title=String(citation).replace(url,'').replace(/\s+/g,' ').replace(/[.,;:\s]+$/,'').trim();refs.push({url,title:title.length>=12?title:'Scholarly source for '+x.prompt,credibility:(host==='doi.org'||host.includes('ncbi.nlm.nih.gov')||host.includes('pubmed'))?'This is a traceable scholarly publication indexed through a DOI or the U.S. National Library of Medicine; the cited work directly addresses the tested concept.':'This is an official governmental, professional, standards, or openly peer-reviewed educational source that directly addresses the tested concept.'});}}return refs;};
 const runReplayScript=scriptPath=>{
   const resolved=require.resolve(scriptPath);
   delete require.cache[resolved];
@@ -33,8 +33,17 @@ const runReplayScript=scriptPath=>{
 const runDistractorHalvingCampaign=()=>runReplayScript('./repair_eppp_distractor_halving_campaign.cjs').run({apply:true});
 const runFeedbackHalvingCampaign=()=>runReplayScript('./repair_eppp_feedback_halving_campaign.cjs').runCampaign(root,{write:true});
 const runCurrentQualityReplay=()=>{
+  if (existingBank.some((item) => item.lengthBalanceWave === 'eppp-length-balance-wave-56')) {
+    runReplayScript('./repair_eppp_length_balance_wave_56.cjs');
+    runReplayScript('./normalize_eppp_native_unicode.cjs').run({write:true});
+    runReplayScript('./audit_eppp_distractor_quality.cjs');
+    runReplayScript('./audit_eppp_option_feedback.cjs');
+    runReplayScript('./build_eppp_distractor_action_docket.cjs');
+    return;
+  }
   if (existingBank.some((item) => item.lengthBalanceWave === 'eppp-length-balance-wave-55')) {
     runReplayScript('./repair_eppp_length_balance_wave_55.cjs');
+    runReplayScript('./repair_eppp_length_balance_wave_56.cjs');
     runReplayScript('./normalize_eppp_native_unicode.cjs').run({write:true});
     runReplayScript('./audit_eppp_distractor_quality.cjs');
     runReplayScript('./audit_eppp_option_feedback.cjs');
@@ -44,6 +53,7 @@ const runCurrentQualityReplay=()=>{
   if (existingBank.some((item) => item.lengthBalanceWave === 'eppp-length-balance-wave-54')) {
     runReplayScript('./repair_eppp_length_balance_wave_54.cjs');
     runReplayScript('./repair_eppp_length_balance_wave_55.cjs');
+    runReplayScript('./repair_eppp_length_balance_wave_56.cjs');
     runReplayScript('./normalize_eppp_native_unicode.cjs').run({write:true});
     runReplayScript('./audit_eppp_distractor_quality.cjs');
     runReplayScript('./audit_eppp_option_feedback.cjs');
@@ -54,6 +64,7 @@ const runCurrentQualityReplay=()=>{
     runReplayScript('./repair_eppp_application_rewrite_wave_53.cjs');
     runReplayScript('./repair_eppp_length_balance_wave_54.cjs');
     runReplayScript('./repair_eppp_length_balance_wave_55.cjs');
+    runReplayScript('./repair_eppp_length_balance_wave_56.cjs');
     runReplayScript('./normalize_eppp_native_unicode.cjs').run({write:true});
     runReplayScript('./audit_eppp_distractor_quality.cjs');
     runReplayScript('./audit_eppp_option_feedback.cjs');
@@ -65,6 +76,7 @@ const runCurrentQualityReplay=()=>{
     runReplayScript('./repair_eppp_application_rewrite_wave_53.cjs');
     runReplayScript('./repair_eppp_length_balance_wave_54.cjs');
     runReplayScript('./repair_eppp_length_balance_wave_55.cjs');
+    runReplayScript('./repair_eppp_length_balance_wave_56.cjs');
     runReplayScript('./normalize_eppp_native_unicode.cjs').run({write:true});
     runReplayScript('./audit_eppp_distractor_quality.cjs');
     runReplayScript('./audit_eppp_option_feedback.cjs');
@@ -78,13 +90,15 @@ const runCurrentQualityReplay=()=>{
   runReplayScript('./repair_eppp_application_rewrite_wave_53.cjs');
   runReplayScript('./repair_eppp_length_balance_wave_54.cjs');
   runReplayScript('./repair_eppp_length_balance_wave_55.cjs');
+  runReplayScript('./repair_eppp_length_balance_wave_56.cjs');
   runReplayScript('./normalize_eppp_native_unicode.cjs').run({write:true});
   runReplayScript('./audit_eppp_distractor_quality.cjs');
   runReplayScript('./audit_eppp_option_feedback.cjs');
   runReplayScript('./build_eppp_distractor_action_docket.cjs');
 };
 const runLatestEditorialReplay=()=>{
-  if (existingBank.some((item) => item.lengthBalanceWave === 'eppp-length-balance-wave-55')
+  if (existingBank.some((item) => item.lengthBalanceWave === 'eppp-length-balance-wave-56')
+    || existingBank.some((item) => item.lengthBalanceWave === 'eppp-length-balance-wave-55')
     || existingBank.some((item) => item.lengthBalanceWave === 'eppp-length-balance-wave-54')
     || existingBank.some((item) => item.applicationRewriteWave === 'eppp-application-rewrite-wave-53')
     || existingBank.some((item) => item.applicationRewriteWave === 'eppp-application-rewrite-wave-52')) {
@@ -149,6 +163,7 @@ const runLatestEditorialReplay=()=>{
   runReplayScript('./repair_eppp_application_rewrite_wave_53.cjs');
   runReplayScript('./repair_eppp_length_balance_wave_54.cjs');
   runReplayScript('./repair_eppp_length_balance_wave_55.cjs');
+  runReplayScript('./repair_eppp_length_balance_wave_56.cjs');
   runReplayScript('./normalize_eppp_native_unicode.cjs').run({write:true});
   runReplayScript('./audit_eppp_distractor_quality.cjs');
   runReplayScript('./audit_eppp_option_feedback.cjs');

@@ -44,14 +44,17 @@ try { fs.unlinkSync(TMP_COMPILED); } catch (_) {}
 
 const outputCode = `(function() {
 'use strict';
+if (typeof window === 'undefined') return;
 if (window.AlloModules && window.AlloModules.PhaseNHelpersModule) { console.log('[CDN] PhaseNHelpersModule already loaded, skipping'); return; }
-var useState = React.useState;
-var useEffect = React.useEffect;
-var useRef = React.useRef;
-var useMemo = React.useMemo;
-var useCallback = React.useCallback;
-var Fragment = React.Fragment;
+var React = window.React || (typeof globalThis !== 'undefined' ? globalThis.React : null);
+var useState = React ? React.useState : undefined;
+var useEffect = React ? React.useEffect : undefined;
+var useRef = React ? React.useRef : undefined;
+var useMemo = React ? React.useMemo : undefined;
+var useCallback = React ? React.useCallback : undefined;
+var Fragment = React ? React.Fragment : undefined;
 ${compiled}
+window.AlloModules = window.AlloModules || {};
 window.AlloModules.PhaseNHelpersModule = true;
 console.log('[PhaseNHelpers] 6 helpers registered');
 })();

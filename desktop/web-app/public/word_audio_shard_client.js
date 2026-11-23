@@ -172,10 +172,23 @@
     return /(?:^|\.)(?:googleusercontent\.com|gstatic\.com|gemini\.google\.com)$/i.test(hostname);
   }
 
+  function isSafeHttpBaseUrl(rawUrl, allowLocalHttp) {
+    if (typeof rawUrl !== 'string') return false;
+    try {
+      var parsed = new URL(rawUrl);
+      if (parsed.username || parsed.password) return false;
+      if (parsed.protocol === 'https:') return true;
+      if (allowLocalHttp && parsed.protocol === 'http:' && (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1')) return true;
+      return false;
+    } catch (_) {
+      return false;
+    }
+  }
+
   function deriveCdnShardBase(rawOverride) {
     if (typeof rawOverride !== 'string') return '';
     var trimmed = rawOverride.trim();
-    if (!trimmed || !/^(?:https:\/\/|http:\/\/(?:localhost|127\.0\.0\.1)(?:[:/]|$))/i.test(trimmed)) return '';
+    if (!trimmed || !isSafeHttpBaseUrl(trimmed, true)) return '';
     var base = ensureTrailingSlash(trimmed);
     if (!base) return '';
     if (/\/word_audio_shards\/$/i.test(base)) return base;
@@ -205,7 +218,12 @@
 
     function pushBase(raw) {
       var normalized = ensureTrailingSlash(raw);
-      if (normalized && !seen[normalized]) {
+      if (!normalized) return;
+      if (/^(?:javascript|vbscript|data|file):/i.test(normalized)) return;
+      if (/^(?:https?:)?\/\//i.test(normalized)) {
+        if (!isSafeHttpBaseUrl(normalized.indexOf('//') === 0 ? ('https:' + normalized) : normalized, true)) return;
+      }
+      if (!seen[normalized]) {
         seen[normalized] = true;
         out.push(normalized);
       }
@@ -317,8 +335,10 @@
       : 0;
     var channels = [];
     for (var ch = 0; ch < numChannels; ch++) {
-      channels.push(audioBuffer.getChannelData(ch));
+      var chData = audioBuffer.getChannelData(ch);
+      if (chData && typeof chData.length === 'number') channels.push(chData);
     }
+    var activeChannels = channels.length;
 
     var dataBytes = length * 2;
     var buf = new ArrayBuffer(44 + dataBytes);
@@ -340,10 +360,10 @@
     var pos = 44;
     for (var i = 0; i < length; i++) {
       var sum = 0;
-      for (var c = 0; c < numChannels; c++) {
+      for (var c = 0; c < activeChannels; c++) {
         sum += channels[c][i] || 0;
       }
-      var sample = Math.max(-1, Math.min(1, sum / numChannels));
+      var sample = activeChannels > 0 ? Math.max(-1, Math.min(1, sum / activeChannels)) : 0;
       view.setInt16(pos, sample < 0 ? Math.round(sample * 0x8000) : Math.round(sample * 0x7fff), true);
       pos += 2;
     }
@@ -432,7 +452,7 @@
   function createWordAudioShardClient(defaultOptions) {
     var defaults = defaultOptions || {};
     var envRoot = defaults.envRoot || root;
-    var failCooldownMs = typeof defaults.failCooldownMs === 'number' && defaults.failCooldownMs >= 0
+    var failCooldownMs = typeof defaults.failCooldownMs === 'number' && Number.isFinite(defaults.failCooldownMs) && defaults.failCooldownMs >= 0
       ? defaults.failCooldownMs
       : DEFAULT_FAIL_COOLDOWN_MS;
 
@@ -479,10 +499,10 @@
       var out = {};
       var k;
       for (k in defaults) {
-        if (own(defaults, k)) out[k] = defaults[k];
+        if (k !== '__proto__' && own(defaults, k)) out[k] = defaults[k];
       }
       for (k in options) {
-        if (own(options, k)) out[k] = options[k];
+        if (k !== '__proto__' && own(options, k)) out[k] = options[k];
       }
       return out;
     }
@@ -497,24 +517,35 @@
 
     async function fetchJsonAcrossBases(relPath, bases, opts, validator, signal) {
       var fetchImpl = getFetch(opts);
+      var timeoutMs = typeof opts.timeoutMs === 'number' && Number.isFinite(opts.timeoutMs) && opts.timeoutMs > 0 ? opts.timeoutMs : 15000;
       var lastErr = null;
       for (var i = 0; i < bases.length; i++) {
         checkNotAborted(signal);
         var url = bases[i] + relPath;
+        var baseCtrl = typeof AbortController === 'function' ? new AbortController() : null;
+        var timedOut = false;
+        var onCallerAbort = function () { if (baseCtrl) try { baseCtrl.abort(); } catch (_) {} };
+        if (signal && baseCtrl) {
+          if (signal.aborted) throw makeAbortError();
+          try { signal.addEventListener('abort', onCallerAbort, { once: true }); } catch (_) {}
+        }
+        var timer = baseCtrl ? setTimeout(function () { timedOut = true; try { baseCtrl.abort(); } catch (_) {} }, timeoutMs) : null;
         try {
           var init = { credentials: 'omit', referrerPolicy: 'no-referrer' };
-          if (signal) init.signal = signal;
-          var res = await raceWithSignal(fetchImpl(url, init), signal);
+          if (baseCtrl) init.signal = baseCtrl.signal;
+          else if (signal) init.signal = signal;
+          var res = await raceWithSignal(fetchImpl(url, init), baseCtrl ? baseCtrl.signal : signal);
           if (!res || !res.ok) {
             lastErr = new Error('HTTP ' + (res ? res.status : 'error') + ' fetching ' + url);
             continue;
           }
           var parsed;
           if (typeof res.text === 'function') {
-            var rawText = await raceWithSignal(res.text(), signal);
+            var rawText = await raceWithSignal(res.text(), baseCtrl ? baseCtrl.signal : signal);
             parsed = safeJsonParse(rawText);
           } else {
-            parsed = await raceWithSignal(res.json(), signal);
+            var rawObj = await raceWithSignal(res.json(), baseCtrl ? baseCtrl.signal : signal);
+            parsed = safeJsonParse(JSON.stringify(rawObj));
           }
           if (typeof validator === 'function' && !validator(parsed)) {
             lastErr = new Error('Invalid payload schema from ' + url);
@@ -522,8 +553,14 @@
           }
           return { data: parsed, base: bases[i] };
         } catch (err) {
-          if (err && err.name === 'AbortError') throw err;
-          lastErr = err;
+          if (signal && signal.aborted) throw makeAbortError();
+          if (err && err.name === 'AbortError' && !timedOut) throw err;
+          lastErr = timedOut ? new Error('Timeout fetching ' + url) : err;
+        } finally {
+          if (timer !== null) clearTimeout(timer);
+          if (signal && typeof signal.removeEventListener === 'function') {
+            try { signal.removeEventListener('abort', onCallerAbort); } catch (_) {}
+          }
         }
       }
       throw lastErr || new Error('No base URLs available for ' + relPath);
@@ -725,6 +762,11 @@
       blobUrlCache.set(cacheKey, blobUrl);
       if (!blobUrlCache.has(cacheKey)) {
         uncachedBlobUrls.add(blobUrl);
+        if (uncachedBlobUrls.size > 64) {
+          var oldestUrl = uncachedBlobUrls.values().next().value;
+          uncachedBlobUrls.delete(oldestUrl);
+          revokeBlobUrl(null, oldestUrl);
+        }
       }
       return blobUrl;
     }
@@ -782,7 +824,7 @@
 
       var list = Array.isArray(words)
         ? words
-        : (words && typeof words[Symbol.iterator] === 'function' ? Array.from(words) : []);
+        : (words && typeof words !== 'string' && typeof words[Symbol.iterator] === 'function' ? Array.from(words) : []);
       var idx = await loadIndex(opts);
       if (!idx) {
         return { loaded: 0, missing: list.length, shardsFetched: 0, ok: false };
@@ -814,9 +856,9 @@
         while (cursor < files.length) {
           checkNotAborted(signal);
           var file = files[cursor++];
-          var fetchesBefore = counters.shardFetches;
+          var needsFetch = !shardCache.has(file) && !inFlightShards.has(file);
           var shard = await loadShard(file, opts);
-          if (counters.shardFetches > fetchesBefore && shard) shardsFetched += 1;
+          if (needsFetch && shard) shardsFetched += 1;
           var targetWords = byShard.get(file);
           for (var j = 0; j < targetWords.length; j++) {
             var w = targetWords[j];

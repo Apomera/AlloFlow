@@ -10,13 +10,13 @@
     "manualNavigationPauses": true,
     "nativeSliderIndependent": true,
     "previousButton": {
-      "x": 110.859375,
+      "x": 17.75,
       "y": 780,
       "width": 90.453125,
       "height": 44
     },
     "nextButton": {
-      "x": 213.3125,
+      "x": 203.59375,
       "y": 780,
       "width": 65.828125,
       "height": 44
@@ -35,13 +35,13 @@
     "manualNavigationPauses": true,
     "nativeSliderIndependent": true,
     "previousButton": {
-      "x": 555.859375,
+      "x": 462.75,
       "y": 786,
       "width": 90.453125,
       "height": 44
     },
     "nextButton": {
-      "x": 658.3125,
+      "x": 648.59375,
       "y": 786,
       "width": 65.828125,
       "height": 44

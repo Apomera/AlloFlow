@@ -1,6 +1,14 @@
-# LTI 1.3 Deploy Checklist
+# LTI 1.3 Deploy Checklist (Retired / Historical Reference)
 
-Step-by-step for shipping LTI 1.3 LMS integration. Skip this entire document until you have a real district pilot lined up — Gemini Canvas distribution doesn't use any of this.
+> **Status: RETIRED & FAIL-CLOSED (Not Deployable).**
+> `desktop/web-app/functions/index.js` intentionally exports **only** `searchProxy` and `sourceFetchProxy` (deployed opt-in via `desktop/web-app/firebase.functions.json`; default `firebase.json` is hosting-only).
+>
+> The LTI 1.3 endpoints (`ltiLogin`, `ltiLaunch`, `ltiSession`) and the other 8 institutional endpoints (`lmsAuth`, `lmsScan`, `triggerLmsScan`, `scanResults`, `storeRemediated`, `accessible`, `dashboardData`, `logRemediation`) are retired and banned by `dev-tools/check_lti_surface.cjs` and `dev-tools/check_firebase_security.cjs` until verified district identity, tenant/course isolation, durable one-time protocol/session state, and emulator-backed authorization tests exist.
+>
+> - **Active LMS workflow:** Client-side `lms_bookmarklet.js` (see [LMS_INTEGRATION.md](../../../LMS_INTEGRATION.md)).
+> - **Current Firebase self-deployment guide:** [DEPLOY_YOUR_OWN.md](../../../DEPLOY_YOUR_OWN.md).
+>
+> The steps below are preserved strictly as historical reference for a future verified re-implementation. Do not deploy them against the current codebase.
 
 ## 0. Prerequisites
 
@@ -104,4 +112,4 @@ The fix uses `jose.jwtVerify()` with the platform's published JWK Set, validatin
 - Nonce (matches the one stored at login — prevents replay)
 - Message type (must be `LtiResourceLinkRequest`)
 
-The static check `dev-tools/check_lti_surface.cjs` verifies all these are present in source.
+The static checks `dev-tools/check_lti_surface.cjs` and `dev-tools/check_firebase_security.cjs` now enforce the fail-closed boundary: they verify that `ltiLogin`, `ltiLaunch`, and `ltiSession` (and the other retired institutional endpoints) remain **absent** from `desktop/web-app/functions/index.js` and `desktop/web-app/firebase.functions.json`, and that the client does not trust URL LTI tokens or roles.

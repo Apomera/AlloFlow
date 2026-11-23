@@ -88,6 +88,8 @@
         var area = document.createElement('textarea');
         area.value = text;
         area.setAttribute('readonly', '');
+        area.setAttribute('aria-hidden', 'true');
+        area.tabIndex = -1;
         area.style.position = 'fixed';
         area.style.left = '-9999px';
         area.style.top = '0';

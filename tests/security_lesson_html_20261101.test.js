@@ -58,7 +58,7 @@ describe('lesson HTML encodes imported text at its actual output boundary', () =
       { id: hostileId, type: 'simplified', title: marker, meta: marker, data: 'A safe passage.' },
       { id: 'ordinary', type: 'simplified', title: 'Fish & "chips"', data: '**Bold** and *italic*.' }
     ];
-    const doc = parse(pipeline.generateFullPackHTML(items, 'Topic', worksheet, {}, { includeTeacherKey: false, annotations: [] }));
+    const doc = parse(pipeline.generateFullPackHTML(items, 'Topic', worksheet, {}, { includeTeacherKey: false, includeTOC: true, annotations: [] }));
     assertNoInjectedMarkup(doc);
     expect(doc.querySelector('.alloflow-toc a').textContent).toBe(marker);
     expect(doc.querySelector('.alloflow-toc a').getAttribute('href')).toBe('#' + hostileId);

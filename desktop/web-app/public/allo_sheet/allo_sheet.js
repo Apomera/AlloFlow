@@ -3523,6 +3523,14 @@
       'analysisMeasureColumn', 'analysisCalculation', 'analysisRepresentation']
       .forEach(function (id) { byId(id).addEventListener('change', markAnalysisStale); });
     byId('analysisFilterValue').addEventListener('input', markAnalysisStale);
+    byId('analysisFilterValue').addEventListener('keydown', function (event) {
+      if (event.isComposing || event.keyCode === 229) return;
+      if (event.key === 'Escape' && this.value) {
+        event.preventDefault();
+        this.value = '';
+        markAnalysisStale();
+      }
+    });
     byId('canvasCsvInput').addEventListener('change', importCanvasCsv);
     byId('workspaceFileInput').addEventListener('change', importAlloSheetWorkspace);
     byId('downloadWorkspaceButton').addEventListener('click', downloadAllTableWorkspace);
@@ -3530,6 +3538,14 @@
       setNewSheetFormOpen(byId('newSheetForm').hidden);
     });
     byId('newSheetForm').addEventListener('submit', createBlankSheet);
+    byId('newSheetForm').addEventListener('keydown', function (event) {
+      if (event.isComposing || event.keyCode === 229) return;
+      if (event.key === 'Escape' && !this.hidden) {
+        event.preventDefault();
+        setNewSheetFormOpen(false);
+        byId('showNewSheetButton').focus();
+      }
+    });
     byId('cancelNewSheetButton').addEventListener('click', function () {
       setNewSheetFormOpen(false);
       byId('showNewSheetButton').focus();

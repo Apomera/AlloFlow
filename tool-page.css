@@ -31,8 +31,14 @@
 }
 .skip-link {
     position: fixed;
-    left: -9999px;
+    inset-inline-start: 0;
     top: 0;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    pointer-events: none;
     z-index: 1000;
     padding: 12px 18px;
     background: #fff;
@@ -41,7 +47,13 @@
     border-radius: 0 0 8px 0;
 }
 .skip-link:focus {
-    left: 0;
+    inset-inline-start: 0;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+    pointer-events: auto;
     transform: none;
 }
 

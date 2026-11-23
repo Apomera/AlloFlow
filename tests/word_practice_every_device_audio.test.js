@@ -108,8 +108,9 @@ describe('Word Practice sounds that play on every device', () => {
 
   it('the Download HTML button converts before building, and says how many could not be converted', () => {
     const handler = uiSource.slice(uiSource.indexOf("tx('word_practice.download_html', 'Download HTML')"), uiSource.indexOf("tx('word_practice.download_pptx'"));
-    expect(handler.indexOf('media.everyDeviceAudio(current)')).toBeGreaterThan(-1);
-    expect(handler.indexOf('media.everyDeviceAudio(current)')).toBeLessThan(handler.indexOf('buildHtml(fileInput'));
+    const callIdx = handler.search(/media\.everyDeviceAudio\(\s*current\b/);
+    expect(callIdx).toBeGreaterThan(-1);
+    expect(callIdx).toBeLessThan(handler.indexOf('buildHtml(fileInput'));
     expect(handler).toContain("word_practice.audio_not_converted");
   });
 });

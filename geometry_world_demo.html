@@ -9,8 +9,8 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{overflow:hidden;background:#000;font-family:'Inter',system-ui,sans-serif;color:#fff}
-.skip-link{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:1000}
-.skip-link:focus{position:fixed;left:8px;top:8px;width:auto;height:auto;padding:10px 18px;background:#1e293b;color:#fff;font-weight:700;border-radius:8px;outline:3px solid #facc15;text-decoration:none}
+.skip-link{position:absolute;inset-inline-start:8px;top:8px;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;z-index:1000}
+.skip-link:focus{position:fixed;inset-inline-start:8px;top:8px;width:auto;height:auto;overflow:visible;clip-path:none;white-space:normal;padding:10px 18px;background:#1e293b;color:#fff;font-weight:700;border-radius:8px;outline:3px solid #facc15;text-decoration:none}
 :focus-visible{outline:3px solid #facc15;outline-offset:2px}
 #blocker{position:fixed;inset:0;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;z-index:100;flex-direction:column;gap:20px;padding:24px;text-align:center}
 #blocker h1{font-size:28px;font-weight:800;color:#e0e7ff}
@@ -68,10 +68,10 @@ body{overflow:hidden;background:#000;font-family:'Inter',system-ui,sans-serif;co
 </div>
 
 <!-- Block toolbar -->
-<div id="toolbar" role="toolbar" aria-label="Block palette"></div>
+<div id="toolbar" role="toolbar" aria-label="Block palette" inert></div>
 
 <!-- NPC Dialog -->
-<div id="npc-dialog" role="dialog" aria-modal="false" aria-labelledby="dialog-name">
+<div id="npc-dialog" role="dialog" aria-modal="false" aria-labelledby="dialog-name" inert>
   <button type="button" class="close-btn" aria-label="Close dialog" onclick="closeDialog()">×</button>
   <div class="npc-name" id="dialog-name"></div>
   <div class="npc-text" id="dialog-text"></div>
@@ -91,7 +91,7 @@ body{overflow:hidden;background:#000;font-family:'Inter',system-ui,sans-serif;co
 </div>
 
 <!-- VR button -->
-<button type="button" id="vr-btn" onclick="enterVR()"><span aria-hidden="true">🥽</span> Enter VR</button>
+<button type="button" id="vr-btn" onclick="enterVR()" inert><span aria-hidden="true">🥽</span> Enter VR</button>
 </main>
 
 <!-- Three.js bundled locally -->
@@ -292,6 +292,10 @@ function init() {
   // Start button
   document.getElementById('start-btn').addEventListener('click', function() {
     document.getElementById('blocker').style.display = 'none';
+    ['toolbar', 'npc-dialog', 'vr-btn'].forEach(function(id) {
+      var node = document.getElementById(id);
+      if (node) node.inert = false;
+    });
     renderer.domElement.requestPointerLock();
   });
 

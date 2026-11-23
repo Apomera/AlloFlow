@@ -15122,10 +15122,10 @@
     "qaStatus": "structural-qa-passed-guided-practice-only",
     "qaReviewedAt": "2026-07-14",
     "choiceRationales": [
-      "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"Aphasia\". Pairing that same evidence with another response creates a mismatch. Aphasia is an acquired language disorder that can affect speaking, listening, reading, and writing in varying patterns and severities.",
+      "Not the best answer. Pairing the affirmative evidence with “Developmental phonological disorder” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"Aphasia\". Pairing that same evidence with another response creates a mismatch. Aphasia is an acquired language disorder that can affect speaking, listening, reading, and writing in varying patterns and severities.",
       "Correct. The evidence statement accurately describes \"Aphasia\". Pairing that same evidence with another response creates a mismatch. Aphasia is an acquired language disorder that can affect speaking, listening, reading, and writing in varying patterns and severities.",
-      "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"Aphasia\". Pairing that same evidence with another response creates a mismatch. Aphasia is an acquired language disorder that can affect speaking, listening, reading, and writing in varying patterns and severities.",
-      "Not the best answer. This pairing assigns the affirmative evidence to a response that the evidence statement does not describe. The evidence statement accurately describes \"Aphasia\". Pairing that same evidence with another response creates a mismatch. Aphasia is an acquired language disorder that can affect speaking, listening, reading, and writing in varying patterns and severities."
+      "Not the best answer. Pairing the affirmative evidence with “Isolated conductive hearing loss” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"Aphasia\". Pairing that same evidence with another response creates a mismatch. Aphasia is an acquired language disorder that can affect speaking, listening, reading, and writing in varying patterns and severities.",
+      "Not the best answer. Pairing the affirmative evidence with “Velopharyngeal insufficiency” assigns it to a response that the evidence statement does not describe. The evidence statement accurately describes \"Aphasia\". Pairing that same evidence with another response creates a mismatch. Aphasia is an acquired language disorder that can affect speaking, listening, reading, and writing in varying patterns and severities."
     ],
     "skillIds": [
       "disorders-characteristics-etiology"
@@ -15145,7 +15145,8 @@
     "examItemStatus": "not-approved-as-independent-exam-item",
     "assistantReviewedAt": "2026-07-16",
     "reviewMethod": "guided-practice-source-answer-key-option-feedback-distractor-editorial-and-structural-review-v1",
-    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "slp5331-b2-031-exp4",
@@ -20559,10 +20560,10 @@
     "qaStatus": "structural-qa-passed-guided-practice-only",
     "qaReviewedAt": "2026-07-14",
     "choiceRationales": [
-      "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to \"Aphasia\" and the item-specific limitation to \"Developmental phonological disorder\". Aphasia is an acquired language disorder that can affect speaking, listening, reading, and writing in varying patterns and severities.",
+      "Not the best answer. Comparing “Developmental phonological disorder” as better supported misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to \"Aphasia\" and the item-specific limitation to \"Developmental phonological disorder\". Aphasia is an acquired language disorder that can affect speaking, listening, reading, and writing in varying patterns and severities.",
       "Correct. The accurate comparison assigns the affirmative source feedback to \"Aphasia\" and the item-specific limitation to \"Developmental phonological disorder\". Aphasia is an acquired language disorder that can affect speaking, listening, reading, and writing in varying patterns and severities.",
-      "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to \"Aphasia\" and the item-specific limitation to \"Developmental phonological disorder\". Aphasia is an acquired language disorder that can affect speaking, listening, reading, and writing in varying patterns and severities.",
-      "Not the best answer. This comparison misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to \"Aphasia\" and the item-specific limitation to \"Developmental phonological disorder\". Aphasia is an acquired language disorder that can affect speaking, listening, reading, and writing in varying patterns and severities."
+      "Not the best answer. Comparing “Isolated conductive hearing loss” as better supported misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to \"Aphasia\" and the item-specific limitation to \"Developmental phonological disorder\". Aphasia is an acquired language disorder that can affect speaking, listening, reading, and writing in varying patterns and severities.",
+      "Not the best answer. Comparing “Velopharyngeal insufficiency” as better supported misassigns the source evidence to a response that the item-specific feedback does not support. The accurate comparison assigns the affirmative source feedback to \"Aphasia\" and the item-specific limitation to \"Developmental phonological disorder\". Aphasia is an acquired language disorder that can affect speaking, listening, reading, and writing in varying patterns and severities."
     ],
     "skillIds": [
       "disorders-characteristics-etiology"
@@ -20582,7 +20583,8 @@
     "examItemStatus": "not-approved-as-independent-exam-item",
     "assistantReviewedAt": "2026-07-16",
     "reviewMethod": "guided-practice-source-answer-key-option-feedback-distractor-editorial-and-structural-review-v1",
-    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1"
+    "answerChoiceClueNormalizationVersion": "answer-choice-clue-normalization-v1",
+    "feedbackQualityNormalizationVersion": "feedback-quality-normalization-v1"
   },
   {
     "id": "slp5331-b1-031-exp5",

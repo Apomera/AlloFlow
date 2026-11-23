@@ -1,5 +1,19 @@
 (function initResearchLaneHumanities(retriesLeft) {
   "use strict";
+  if (typeof window === "undefined") return;
+  function _humLaneAiUsable(c) {
+    if (!c || typeof c.ask !== "function") return false;
+    if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true) return false;
+    if (window.hideStudentAiFeatures === true || !!window.__alloQrStudentMode) return false;
+    if (window.StudentPolicy && typeof window.StudentPolicy.isAiDisabled === "function" && window.StudentPolicy.isAiDisabled()) return false;
+    if (window.AlloModules && window.AlloModules.StudentPolicy && typeof window.AlloModules.StudentPolicy.isAiDisabled === "function" && window.AlloModules.StudentPolicy.isAiDisabled()) return false;
+    try {
+      if (typeof window.__alloAiUsable === "function" && !window.__alloAiUsable("text")) return false;
+    } catch (_) {
+      return false;
+    }
+    return true;
+  }
   window.AlloModules = window.AlloModules || {};
   if (!window.AlloModules.ResearchLaneHumanities) window.AlloModules.ResearchLaneHumanities = { __pending: true };
   if (window.ResearchHub && window.ResearchHub._lanes && window.ResearchHub._lanes.humanities && window.ResearchHub._lanes.humanities.__tier >= 2) {
@@ -1409,7 +1423,7 @@
     var activeObj = STAGE_BY_KEY[activeStage] || STAGES[0];
     var pct = Math.round(startedCount / STAGES.length * 100);
     function onTabKeyDown(e, idx) {
-      if (e.isComposing || e.nativeEvent && e.nativeEvent.isComposing || e.keyCode === 229) return;
+      if (e.isComposing || e.nativeEvent && e.nativeEvent.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       var nextIdx = null;
       if (e.key === "ArrowRight") nextIdx = (idx + 1) % STAGES.length;
       else if (e.key === "ArrowLeft") nextIdx = (idx - 1 + STAGES.length) % STAGES.length;
@@ -2164,10 +2178,13 @@
       var next = JSON.parse(JSON.stringify(sift));
       (entries || []).forEach(function(pair) {
         var path = pair[0], value = pair[1];
-        var keys = path.split(".");
+        var keys = String(path || "").split(".");
+        if (!keys.length || keys.some(function(k) {
+          return !k || k === "__proto__" || k === "constructor" || k === "prototype";
+        })) return;
         var ref = next;
         for (var i = 0; i < keys.length - 1; i++) {
-          if (!ref[keys[i]]) ref[keys[i]] = {};
+          if (!Object.prototype.hasOwnProperty.call(ref, keys[i]) || !ref[keys[i]] || typeof ref[keys[i]] !== "object") ref[keys[i]] = {};
           ref = ref[keys[i]];
         }
         ref[keys[keys.length - 1]] = value;
@@ -2978,14 +2995,27 @@
         return next;
       });
     };
+    var _hmMounted1 = useRef(true);
+    useEffect(function() {
+      _hmMounted1.current = true;
+      return function() {
+        _hmMounted1.current = false;
+      };
+    }, []);
     var askContestability = async function() {
+      if (!_humLaneAiUsable(ctx)) {
+        setAiResult({ ok: false, error: "AI helper is unavailable right now." });
+        return;
+      }
       setBusy(true);
       setAiResult(null);
       try {
-        var res = await ctx.ask(TOUCHPOINTS.contestability_probe, ctx);
-        setAiResult(res);
+        var res = await Promise.resolve(ctx.ask(TOUCHPOINTS.contestability_probe, ctx));
+        if (_hmMounted1.current) setAiResult(res);
+      } catch (_) {
+        if (_hmMounted1.current) setAiResult({ ok: false, error: "Could not reach the AI helper. Try again." });
       } finally {
-        setBusy(false);
+        if (_hmMounted1.current) setBusy(false);
       }
     };
     return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: "12px" } }, /* @__PURE__ */ React.createElement(
@@ -3482,15 +3512,28 @@
         return next;
       });
     };
+    var _hmMounted2 = useRef(true);
+    useEffect(function() {
+      _hmMounted2.current = true;
+      return function() {
+        _hmMounted2.current = false;
+      };
+    }, []);
     var askLateralProbe = async function(sourceId) {
+      if (!_humLaneAiUsable(ctx)) {
+        setAiResult({ ok: false, error: "AI helper is unavailable right now." });
+        return;
+      }
       setTargetId(sourceId);
       setBusy(true);
       setAiResult(null);
       try {
-        var res = await ctx.ask(TOUCHPOINTS.source_lateral_probe, Object.assign({}, ctx, { targetSourceId: sourceId }));
-        setAiResult(res);
+        var res = await Promise.resolve(ctx.ask(TOUCHPOINTS.source_lateral_probe, Object.assign({}, ctx, { targetSourceId: sourceId })));
+        if (_hmMounted2.current) setAiResult(res);
+      } catch (_) {
+        if (_hmMounted2.current) setAiResult({ ok: false, error: "Could not reach the AI helper. Try again." });
       } finally {
-        setBusy(false);
+        if (_hmMounted2.current) setBusy(false);
       }
     };
     var vettedCount = sources.filter(siftPromoted).length;
@@ -3754,14 +3797,27 @@
         return next;
       });
     };
+    var _hmMounted3 = useRef(true);
+    useEffect(function() {
+      _hmMounted3.current = true;
+      return function() {
+        _hmMounted3.current = false;
+      };
+    }, []);
     var askVoicer = async function() {
+      if (!_humLaneAiUsable(ctx)) {
+        setAiResult({ ok: false, error: "AI helper is unavailable right now." });
+        return;
+      }
       setBusy(true);
       setAiResult(null);
       try {
-        var res = await ctx.ask(TOUCHPOINTS.counter_framing_voicer, ctx);
-        setAiResult(res);
+        var res = await Promise.resolve(ctx.ask(TOUCHPOINTS.counter_framing_voicer, ctx));
+        if (_hmMounted3.current) setAiResult(res);
+      } catch (_) {
+        if (_hmMounted3.current) setAiResult({ ok: false, error: "Could not reach the AI helper. Try again." });
       } finally {
-        setBusy(false);
+        if (_hmMounted3.current) setBusy(false);
       }
     };
     var usedChips = new Set(framings.map(function(f) {
@@ -4146,15 +4202,28 @@
         return next;
       });
     };
+    var _hmMounted4 = useRef(true);
+    useEffect(function() {
+      _hmMounted4.current = true;
+      return function() {
+        _hmMounted4.current = false;
+      };
+    }, []);
     var askQuestioner = async function(linkId) {
+      if (!_humLaneAiUsable(ctx)) {
+        setAiResult({ ok: false, error: "AI helper is unavailable right now." });
+        return;
+      }
       setTargetLinkId(linkId);
       setBusy(true);
       setAiResult(null);
       try {
-        var res = await ctx.ask(TOUCHPOINTS.warrant_questioner, Object.assign({}, ctx, { targetLinkId: linkId }));
-        setAiResult(res);
+        var res = await Promise.resolve(ctx.ask(TOUCHPOINTS.warrant_questioner, Object.assign({}, ctx, { targetLinkId: linkId })));
+        if (_hmMounted4.current) setAiResult(res);
+      } catch (_) {
+        if (_hmMounted4.current) setAiResult({ ok: false, error: "Could not reach the AI helper. Try again." });
       } finally {
-        setBusy(false);
+        if (_hmMounted4.current) setBusy(false);
       }
     };
     return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: "12px" } }, /* @__PURE__ */ React.createElement(
@@ -5041,14 +5110,27 @@
         return next;
       });
     };
+    var _hmMounted5 = useRef(true);
+    useEffect(function() {
+      _hmMounted5.current = true;
+      return function() {
+        _hmMounted5.current = false;
+      };
+    }, []);
     var askMirror = async function() {
+      if (!_humLaneAiUsable(ctx)) {
+        setAiResult({ ok: false, error: "AI helper is unavailable right now." });
+        return;
+      }
       setBusy(true);
       setAiResult(null);
       try {
-        var res = await ctx.ask(TOUCHPOINTS.standpoint_mirror, ctx);
-        setAiResult(res);
+        var res = await Promise.resolve(ctx.ask(TOUCHPOINTS.standpoint_mirror, ctx));
+        if (_hmMounted5.current) setAiResult(res);
+      } catch (_) {
+        if (_hmMounted5.current) setAiResult({ ok: false, error: "Could not reach the AI helper. Try again." });
       } finally {
-        setBusy(false);
+        if (_hmMounted5.current) setBusy(false);
       }
     };
     var _egress = useState(null);

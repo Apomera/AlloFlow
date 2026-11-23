@@ -900,6 +900,15 @@
       selA11yStyle.textContent = [
         '@media (prefers-reduced-motion: reduce) { .fixed.inset-0 *, .fixed.inset-0 *::before, .fixed.inset-0 *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }',
         '.fixed.inset-0 button:focus-visible, .fixed.inset-0 input:focus-visible, .fixed.inset-0 textarea:focus-visible, .fixed.inset-0 select:focus-visible, .fixed.inset-0 [tabindex]:focus-visible { outline: 2px solid #8b5cf6 !important; outline-offset: 2px !important; border-radius: 4px; }',
+        '@media (forced-colors: active) {',
+        '  [role="dialog"][aria-label="SEL Hub"], [role="dialog"][aria-label="SEL Hub"] :not(svg):not(svg *):not(canvas):not(img) { background: Canvas !important; color: CanvasText !important; border-color: CanvasText !important; box-shadow: none !important; text-shadow: none !important; }',
+        '  [role="dialog"][aria-label="SEL Hub"] button, [role="dialog"][aria-label="SEL Hub"] [role="tab"] { background: ButtonFace !important; color: ButtonText !important; border-color: ButtonText !important; forced-color-adjust: auto; }',
+        '  [role="dialog"][aria-label="SEL Hub"] button *, [role="dialog"][aria-label="SEL Hub"] [role="tab"] * { background: transparent !important; color: inherit !important; }',
+        '  [role="dialog"][aria-label="SEL Hub"] button[aria-pressed="true"], [role="dialog"][aria-label="SEL Hub"] [role="tab"][aria-selected="true"] { background: Highlight !important; color: HighlightText !important; border-color: Highlight !important; }',
+        '  [role="dialog"][aria-label="SEL Hub"] input, [role="dialog"][aria-label="SEL Hub"] select, [role="dialog"][aria-label="SEL Hub"] textarea { background: Field !important; color: FieldText !important; border-color: CanvasText !important; forced-color-adjust: auto; }',
+        '  [role="dialog"][aria-label="SEL Hub"] a { color: LinkText !important; forced-color-adjust: auto; }',
+        '  [role="dialog"][aria-label="SEL Hub"] :focus-visible { outline: 3px solid Highlight !important; outline-offset: 2px !important; }',
+        '}',
       ].join('\n');
       document.head.appendChild(selA11yStyle);
     }

@@ -33,6 +33,7 @@ module.exports = {
     missing_letter_word_is: 'The word is {word}.',
     missing_letter_correct: 'Yes! The missing letter is {letter}.',
     missing_letter_missed: 'The missing letter is {letter}. Listen to the word.',
+    missing_letter_answer_mark: '(the answer)',
   },
   prepare: function (w, env) {
     var board = w.activityItems && w.activityItems.missing_letter;
@@ -73,7 +74,7 @@ module.exports = {
     var wordText = item.letters.map(function (l, i) { return i === item.hiddenIndex ? cased(item.target) : l; }).join('');
     var slots = item.letters.map(function (l, i) {
       if (i !== item.hiddenIndex && fixed(l)) return ctx.el('li', { 'data-fixed': '', style: 'display:flex;align-items:center;font-size:1.4rem;font-weight:700' }, [l === ' ' ? ' ' : l]);
-      return ctx.el('li', { class: 'slot', style: i === item.hiddenIndex ? 'border-style:dashed;border-color:var(--accent)' : 'border-style:solid' },
+      return ctx.el('li', { class: 'slot', style: (i === item.hiddenIndex ? 'border-style:dashed;border-color:var(--accent);' : 'border-style:solid;') + 'min-width:clamp(36px,11vw,56px);min-height:clamp(44px,12vw,60px)' },
         [i === item.hiddenIndex ? '?' : l]);
     });
     var srWord = ctx.el('p', { class: 'sr' });
@@ -112,7 +113,14 @@ module.exports = {
             c.button.setAttribute('aria-disabled', 'true');
           }
         });
+        var wasOnCheck = !!(doc && doc.activeElement === check);
         select('');
+        if (wasOnCheck && !ctx.noFocus) {
+          var nextChoice = cards.filter(function (c) { return !c.tried; })[0];
+          if (nextChoice && nextChoice.button && typeof nextChoice.button.focus === 'function') {
+            try { nextChoice.button.focus(); } catch (_) {}
+          }
+        }
       }
     } }, text: ctx.L.missing_letter_check });
     var select = function (letter) {
@@ -137,6 +145,11 @@ module.exports = {
       ctx.keys(function (key) {
         if (ctx.isDone()) return false;
         var k = String(key == null ? '' : key);
+        if (k === 'Backspace' || k === 'Escape' || k === 'Esc') {
+          if (!selected) return false;
+          select('');
+          return true;
+        }
         if (k === 'Enter') {
           var ae = doc && doc.activeElement;
           var onSelectedChoice = cards.some(function (c) { return c.button === ae && c.letter === selected; });
@@ -171,7 +184,13 @@ module.exports = {
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [check]));
     return {
       reveal: function () {
-        cards.forEach(function (c) { c.button.setAttribute('aria-disabled', 'true'); if (c.letter === item.target) c.box.classList.add('right'); });
+        cards.forEach(function (c) {
+          c.button.setAttribute('aria-disabled', 'true');
+          if (c.letter === item.target && !c.box.classList.contains('right')) {
+            c.box.classList.add('right');
+            c.button.setAttribute('aria-label', c.button.getAttribute('aria-label') + ' ' + (ctx.L.missing_letter_answer_mark || '(the answer)'));
+          }
+        });
         check.setAttribute('aria-disabled', 'true');
         showButton.setAttribute('aria-disabled', 'true');
         updateWord(item.target);

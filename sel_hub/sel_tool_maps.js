@@ -35,6 +35,23 @@
     document.body.appendChild(liveRegion);
   })();
 
+  (function() {
+    if (typeof document === 'undefined' || !document.head) return;
+    if (document.getElementById('allo-maps-a11y-css')) return;
+    var s = document.createElement('style');
+    s.id = 'allo-maps-a11y-css';
+    s.textContent =
+      '.selh-maps button:focus-visible,.selh-maps a:focus-visible,.selh-maps input:focus-visible,.selh-maps textarea:focus-visible,.selh-maps [tabindex]:focus-visible{outline:3px solid #818cf8;outline-offset:2px;}' +
+      '.selh-maps button{transition:background-color 140ms ease,border-color 140ms ease,color 140ms ease;}' +
+      '@media (prefers-reduced-motion: reduce){.selh-maps,.selh-maps *{transition:none !important;animation:none !important;}}' +
+      '@media (forced-colors: active){.selh-maps button:focus-visible,.selh-maps a:focus-visible,.selh-maps input:focus-visible,.selh-maps textarea:focus-visible{outline:2px solid Highlight !important;}.selh-maps button,.selh-maps [role="tab"]{forced-color-adjust:auto;}}';
+    document.head.appendChild(s);
+  })();
+
+  function isImeComposing(e) {
+    return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+  }
+
   // The eight MAPS prompts. The order matters; this is the original
   // Inclusion Press sequence.
   var PROMPTS = [
@@ -108,6 +125,17 @@
       var announceToSR = ctx.announceToSR;
       var onSafetyFlag = ctx.onSafetyFlag || null;
       var _mpBand = (ctx && ctx.gradeBand) || 'high';
+      function announceMP(msg) {
+        if (!msg) return;
+        if (typeof announceToSR === 'function') { try { announceToSR(msg); return; } catch (_) {} }
+        if (typeof document !== 'undefined') {
+          var live = document.getElementById('allo-live-maps');
+          if (live) {
+            live.textContent = '';
+            setTimeout(function() { live.textContent = msg; }, 20);
+          }
+        }
+      }
 
       function safeObj(v) { return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {}; }
       function safeStr(v) { return typeof v === 'string' ? v : ''; }
@@ -161,7 +189,7 @@
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { type: 'button', onClick: function() { if (typeof setSelHubTool === 'function') setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: _mpSoftBg('rgba(255,255,255,0.05)', '#f1f5f9'), border: '1px solid ' + _mpBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _mpFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+            style: { background: _mpSoftBg('rgba(255,255,255,0.05)', '#f1f5f9'), border: '1px solid ' + _mpBd('#334155'), borderRadius: 8, padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', color: _mpFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _mpFg('#a5b4fc'), fontSize: 22, fontWeight: 900 } }, '🗺️ MAPS'),
             h('div', { style: { fontSize: 12, color: _mpFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'Making Action Plans: a person-centered planning visual.')
@@ -176,11 +204,12 @@
           { id: 'print', label: 'Print view', icon: '🖨' },
           { id: 'about', label: 'About', icon: 'ℹ' }
         ];
-        function selectTab(nextId) {
-          goto(nextId);
+        function selectTab(nextTab) {
+          goto(nextTab.id);
+          announceMP('Switched to ' + nextTab.label + '.');
           if (typeof document !== 'undefined') {
             setTimeout(function() {
-              var el = document.getElementById('maps-tab-' + nextId);
+              var el = document.getElementById('maps-tab-' + nextTab.id);
               if (el && typeof el.focus === 'function') el.focus();
             }, 0);
           }
@@ -189,15 +218,16 @@
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
           tabs.map(function(t, ti) {
             var active = view === t.id;
-            return h('button', { key: t.id, id: 'maps-tab-' + t.id, type: 'button', onClick: function() { goto(t.id); },
+            return h('button', { key: t.id, id: 'maps-tab-' + t.id, type: 'button', onClick: function() { goto(t.id); announceMP('Switched to ' + t.label + '.'); },
               role: 'tab', 'aria-selected': active, 'aria-controls': 'maps-panel-' + t.id, tabIndex: active ? 0 : -1,
               onKeyDown: function(e) {
-                if (e.key === 'ArrowRight') { e.preventDefault(); selectTab(tabs[(ti + 1) % tabs.length].id); }
-                else if (e.key === 'ArrowLeft') { e.preventDefault(); selectTab(tabs[(ti - 1 + tabs.length) % tabs.length].id); }
-                else if (e.key === 'Home') { e.preventDefault(); selectTab(tabs[0].id); }
-                else if (e.key === 'End') { e.preventDefault(); selectTab(tabs[tabs.length - 1].id); }
+                if (isImeComposing(e)) return;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); selectTab(tabs[(ti + 1) % tabs.length]); }
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); selectTab(tabs[(ti - 1 + tabs.length) % tabs.length]); }
+                else if (e.key === 'Home') { e.preventDefault(); selectTab(tabs[0]); }
+                else if (e.key === 'End') { e.preventDefault(); selectTab(tabs[tabs.length - 1]); }
               },
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + _mpBd(active ? '#818cf8' : '#334155'),
+              style: { padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + _mpBd(active ? '#818cf8' : '#334155'),
                 background: active ? _mpSoftBg('rgba(129,140,248,0.18)', '#eef2ff') : _mpBg('#1e293b'),
                 color: active ? _mpFg('#e0e7ff') : _mpFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
@@ -230,21 +260,22 @@
         var responses = safeObj(d.responses);
         var nameStr = safeStr(d.name);
         var updatedStr = safeStr(d.lastUpdated);
-        var pct = Math.round((completedCount() / PROMPTS.length) * 100);
+        var doneCount = completedCount();
+        var pct = Math.round((doneCount / PROMPTS.length) * 100);
         return h('div', null,
           h('div', { style: { padding: 14, borderRadius: 12, background: _mpSoftBg('linear-gradient(135deg, rgba(129,140,248,0.16) 0%, rgba(15,23,42,0.4) 60%)', '#eef2ff'), border: '1px solid ' + _mpBd('#818cf8'), marginBottom: 14 } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' } },
               h('div', { style: { flex: 1, minWidth: 200 } },
                 h('div', { style: { fontSize: 22, fontWeight: 900, color: _mpFg('#e0e7ff') } }, nameStr.trim() ? (nameStr + '’s MAP') : 'My MAP'),
                 h('div', { style: { fontSize: 12, color: _mpFg('#94a3b8'), marginTop: 4 } },
-                  completedCount() + ' of ' + PROMPTS.length + ' sections filled',
+                  doneCount + ' of ' + PROMPTS.length + ' sections filled',
                   updatedStr ? ' · updated ' + updatedStr : ''
                 )
               ),
-              h('button', { type: 'button', onClick: function() { goto('edit'); }, style: { padding: '8px 16px', borderRadius: 8, border: '1px solid ' + _mpBd('#818cf8'), background: _mpSoftBg('rgba(129,140,248,0.18)', '#e0e7ff'), color: _mpFg('#e0e7ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '✏️ Work on it')
+              h('button', { type: 'button', onClick: function() { goto('edit'); }, style: { padding: '10px 16px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + _mpBd('#818cf8'), background: _mpSoftBg('rgba(129,140,248,0.18)', '#e0e7ff'), color: _mpFg('#e0e7ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '✏️ Work on it')
             ),
             // Progress bar
-            h('div', { style: { marginTop: 12, height: 8, borderRadius: 4, background: _mpBg('#1e293b'), border: _mpHC ? '1px solid #ffff00' : 'none', overflow: 'hidden' }, role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pct, 'aria-label': 'MAP completion' },
+            h('div', { style: { marginTop: 12, height: 8, borderRadius: 4, background: _mpBg('#1e293b'), border: _mpHC ? '1px solid #ffff00' : 'none', overflow: 'hidden' }, role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pct, 'aria-valuetext': doneCount + ' of ' + PROMPTS.length + ' sections filled (' + pct + '%)', 'aria-label': 'MAP completion' },
               h('div', { style: { height: '100%', width: pct + '%', background: _mpHC ? '#ffff00' : 'linear-gradient(90deg, #4f46e5, #818cf8)', transition: 'width 240ms ease' } })
             )
           ),
@@ -254,10 +285,11 @@
             PROMPTS.map(function(p) {
               var v = safeStr(responses[p.key]);
               var done = v.trim().length > 0;
+              var cardEdge = '1px solid ' + (_mpHC ? '#ffff00' : (done ? p.color + 'aa' : _mpBd('#334155')));
               return h('button', { key: p.key, type: 'button',
                 onClick: function() { setMAPS({ activeKey: p.key, view: 'edit' }); },
                 'aria-label': p.label + (done ? ' (filled in)' : ' (empty)'),
-                style: { textAlign: 'left', padding: 14, borderRadius: 10, border: '1px solid ' + (_mpHC ? '#ffff00' : (done ? p.color + 'aa' : _mpBd('#334155'))), borderLeft: '4px solid ' + _mpBd(p.color), background: _mpHC ? '#000000' : (done ? p.color + '14' : _mpBg('#0f172a')), cursor: 'pointer', color: _mpFg('#e2e8f0') } },
+                style: { textAlign: 'left', padding: 14, minHeight: 44, borderRadius: 10, borderTop: cardEdge, borderRight: cardEdge, borderBottom: cardEdge, borderLeft: '4px solid ' + _mpBd(p.color), background: _mpHC ? '#000000' : (done ? p.color + '14' : _mpBg('#0f172a')), cursor: 'pointer', color: _mpFg('#e2e8f0') } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                   h('span', { style: { fontSize: 22 }, 'aria-hidden': true }, p.icon),
                   h('span', { style: { fontSize: 14, fontWeight: 800, color: done ? _mpInk(p.color) : _mpFg('#e0e7ff') } }, p.label),
@@ -272,7 +304,7 @@
 
           h('div', { style: { display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' } },
             h('button', { type: 'button', onClick: function() { goto('print'); }, 'aria-label': 'Print my MAP',
-              style: { padding: '10px 20px', borderRadius: 10, border: _mpBtnBd(), cursor: 'pointer', background: _mpGradBtn('linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)'), color: _mpFg('#fff'), fontWeight: 800, fontSize: 14 } },
+              style: { padding: '10px 20px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 10, border: _mpBtnBd(), cursor: 'pointer', background: _mpGradBtn('linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)'), color: _mpFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '🖨 Print my MAP')
           ),
           softPointer()
@@ -297,21 +329,31 @@
             return { responses: nextResponses };
           });
         }
-        function selectPrompt(nextKey) {
-          setMAPS({ activeKey: nextKey });
+        function selectPrompt(nextPrompt) {
+          setMAPS({ activeKey: nextPrompt.key });
+          announceMP('Moved to ' + nextPrompt.label + '.');
           if (typeof document !== 'undefined') {
             setTimeout(function() {
-              var el = document.getElementById('maps-prompt-tab-' + nextKey);
+              var el = document.getElementById('maps-prompt-tab-' + nextPrompt.key);
               if (el && typeof el.focus === 'function') el.focus();
             }, 0);
           }
         }
         function goPrev() {
-          if (activeIdx > 0) setMAPS({ activeKey: PROMPTS[activeIdx - 1].key });
+          if (activeIdx > 0) {
+            var prevP = PROMPTS[activeIdx - 1];
+            setMAPS({ activeKey: prevP.key });
+            announceMP('Moved to ' + prevP.label + '.');
+          }
         }
         function goNext() {
-          if (activeIdx < PROMPTS.length - 1) setMAPS({ activeKey: PROMPTS[activeIdx + 1].key });
+          if (activeIdx < PROMPTS.length - 1) {
+            var nextP = PROMPTS[activeIdx + 1];
+            setMAPS({ activeKey: nextP.key });
+            announceMP('Moved to ' + nextP.label + '.');
+          }
         }
+        var panelEdge = '1px solid ' + (_mpHC ? '#ffff00' : active.color + '66');
 
         return h('div', null,
           // Name field once at top
@@ -320,8 +362,16 @@
             h('input', { id: 'maps-name', type: 'text', value: safeStr(d.name),
               placeholder: 'Your name',
               onChange: function(e) { setMAPS({ name: e.target.value }); },
+              onKeyDown: function(e) {
+                if (isImeComposing(e)) return;
+                if (e.key === 'Escape' && safeStr(d.name)) {
+                  e.preventDefault();
+                  setMAPS({ name: '' });
+                  announceMP('Cleared name.');
+                }
+              },
               onBlur: function(e) { scanMapsText(e.target.value); },
-              style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _mpBd('#334155'), background: _mpBg('#1e293b'), color: _mpFg('#e2e8f0'), fontSize: 13 } })
+              style: { width: '100%', minHeight: 44, padding: '8px 10px', boxSizing: 'border-box', borderRadius: 6, border: '1px solid ' + _mpBd('#334155'), background: _mpBg('#1e293b'), color: _mpFg('#e2e8f0'), fontSize: 13 } })
           ),
 
           // Step navigator
@@ -330,21 +380,22 @@
               var act = p.key === active.key;
               var done = safeStr(responses[p.key]).trim().length > 0;
               return h('button', { key: p.key, id: 'maps-prompt-tab-' + p.key, type: 'button', role: 'tab', 'aria-selected': act, 'aria-controls': 'maps-prompt-panel', tabIndex: act ? 0 : -1,
-                onClick: function() { setMAPS({ activeKey: p.key }); },
+                onClick: function() { setMAPS({ activeKey: p.key }); announceMP('Moved to ' + p.label + '.'); },
                 onKeyDown: function(e) {
-                  if (e.key === 'ArrowRight') { e.preventDefault(); selectPrompt(PROMPTS[(i + 1) % PROMPTS.length].key); }
-                  else if (e.key === 'ArrowLeft') { e.preventDefault(); selectPrompt(PROMPTS[(i - 1 + PROMPTS.length) % PROMPTS.length].key); }
-                  else if (e.key === 'Home') { e.preventDefault(); selectPrompt(PROMPTS[0].key); }
-                  else if (e.key === 'End') { e.preventDefault(); selectPrompt(PROMPTS[PROMPTS.length - 1].key); }
+                  if (isImeComposing(e)) return;
+                  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); selectPrompt(PROMPTS[(i + 1) % PROMPTS.length]); }
+                  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); selectPrompt(PROMPTS[(i - 1 + PROMPTS.length) % PROMPTS.length]); }
+                  else if (e.key === 'Home') { e.preventDefault(); selectPrompt(PROMPTS[0]); }
+                  else if (e.key === 'End') { e.preventDefault(); selectPrompt(PROMPTS[PROMPTS.length - 1]); }
                 },
-                style: { padding: '6px 10px', borderRadius: 6, border: '1px solid ' + _mpBd(act ? p.color : '#334155'), background: act ? _mpSoftBg(p.color + '22', '#eef2ff') : _mpBg('#1e293b'), color: act ? _mpInk(p.color) : (done ? _mpFg('#cbd5e1') : _mpFg('#94a3b8')), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                style: { padding: '8px 12px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 6, border: '1px solid ' + _mpBd(act ? p.color : '#334155'), background: act ? _mpSoftBg(p.color + '22', '#eef2ff') : _mpBg('#1e293b'), color: act ? _mpInk(p.color) : (done ? _mpFg('#cbd5e1') : _mpFg('#94a3b8')), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
                 (done ? '✓' : (i + 1)) + ' · ' + p.label
               );
             })
           ),
 
           // Active prompt
-          h('div', { role: 'tabpanel', id: 'maps-prompt-panel', 'aria-labelledby': 'maps-prompt-tab-' + active.key, style: { padding: 18, borderRadius: 12, background: _mpSoftBg('linear-gradient(135deg, ' + active.color + '14 0%, rgba(15,23,42,0.4) 60%)', '#f8fafc'), border: '1px solid ' + (_mpHC ? '#ffff00' : active.color + '66'), borderLeft: '4px solid ' + _mpBd(active.color), marginBottom: 12 } },
+          h('div', { role: 'tabpanel', id: 'maps-prompt-panel', 'aria-labelledby': 'maps-prompt-tab-' + active.key, style: { padding: 18, borderRadius: 12, background: _mpSoftBg('linear-gradient(135deg, ' + active.color + '14 0%, rgba(15,23,42,0.4) 60%)', '#f8fafc'), borderTop: panelEdge, borderRight: panelEdge, borderBottom: panelEdge, borderLeft: '4px solid ' + _mpBd(active.color), marginBottom: 12 } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
               h('span', { style: { fontSize: 32 }, 'aria-hidden': true }, active.icon),
               h('h3', { style: { margin: 0, color: _mpInk(active.color), fontSize: 20, fontWeight: 900 } }, active.label)
@@ -356,17 +407,17 @@
               onChange: function(e) { setActiveResponse(e.target.value); },
               onBlur: function(e) { scanMapsText(e.target.value); },
               placeholder: 'Write here. Take as much room as you need.',
-              style: { width: '100%', minHeight: 180, padding: 12, borderRadius: 8, border: '1px solid ' + _mpBd('#334155'), background: _mpBg('#1e293b'), color: _mpFg('#e2e8f0'), fontSize: 14, fontFamily: 'inherit', lineHeight: 1.7, resize: 'vertical' } })
+              style: { width: '100%', minHeight: 180, padding: 12, boxSizing: 'border-box', borderRadius: 8, border: '1px solid ' + _mpBd('#334155'), background: _mpBg('#1e293b'), color: _mpFg('#e2e8f0'), fontSize: 14, fontFamily: 'inherit', lineHeight: 1.7, resize: 'vertical' } })
           ),
 
           // Step prev / next
           h('div', { style: { display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' } },
             h('button', { type: 'button', onClick: goPrev, disabled: activeIdx === 0, 'aria-label': 'Previous prompt',
-              style: { padding: '8px 14px', borderRadius: 8, border: '1px solid ' + _mpBd('#475569'), background: _mpBg('#1e293b'), color: activeIdx === 0 ? _mpFg('#475569') : _mpFg('#cbd5e1'), cursor: activeIdx === 0 ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: 13 } }, '← Previous'),
+              style: { padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + _mpBd('#475569'), background: _mpBg('#1e293b'), color: activeIdx === 0 ? _mpFg('#475569') : _mpFg('#cbd5e1'), cursor: activeIdx === 0 ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: 13 } }, '← Previous'),
             h('div', { style: { flex: 1 } }),
-            h('button', { type: 'button', onClick: function() { goto('overview'); }, style: { padding: '8px 14px', borderRadius: 8, border: '1px solid ' + _mpBd('#475569'), background: _mpBg('#1e293b'), color: _mpFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '✓ Done for now'),
+            h('button', { type: 'button', onClick: function() { goto('overview'); }, style: { padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + _mpBd('#475569'), background: _mpBg('#1e293b'), color: _mpFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '✓ Done for now'),
             h('button', { type: 'button', onClick: goNext, disabled: activeIdx === PROMPTS.length - 1, 'aria-label': 'Next prompt',
-              style: { padding: '8px 14px', borderRadius: 8, border: _mpBtnBd(), background: activeIdx === PROMPTS.length - 1 ? _mpBg('#1e293b') : _mpSolid(active.color), color: activeIdx === PROMPTS.length - 1 ? _mpFg('#475569') : _mpFg('#fff'), cursor: activeIdx === PROMPTS.length - 1 ? 'not-allowed' : 'pointer', fontWeight: 800, fontSize: 13 } }, 'Next →')
+              style: { padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: _mpBtnBd(), background: activeIdx === PROMPTS.length - 1 ? _mpBg('#1e293b') : _mpSolid(active.color), color: activeIdx === PROMPTS.length - 1 ? _mpFg('#475569') : _mpFg('#fff'), cursor: activeIdx === PROMPTS.length - 1 ? 'not-allowed' : 'pointer', fontWeight: 800, fontSize: 13 } }, 'Next →')
           ),
 
           softPointer()
@@ -386,9 +437,9 @@
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'
             ),
-            h('button', { type: 'button', onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _mpBtnBd(), cursor: 'pointer', background: _mpGradBtn('linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)'), color: _mpFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { type: 'button', onClick: printNow, style: { padding: '10px 18px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: _mpBtnBd(), cursor: 'pointer', background: _mpGradBtn('linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)'), color: _mpFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { type: 'button', onClick: function() { goto('overview'); }, 'aria-label': 'Back to overview',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _mpBd('#475569'), background: _mpBg('#1e293b'), color: _mpFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+              style: { padding: '10px 18px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + _mpBd('#475569'), background: _mpBg('#1e293b'), color: _mpFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
@@ -405,7 +456,7 @@
 
             // Header
             h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid ' + _mpBd('#4f46e5') } },
-              h('div', { style: { fontSize: 12, color: _mpFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'MAPS · Making Action Plans'),
+              h('div', { style: { fontSize: 12, color: _mpHC ? '#ffff00' : '#475569', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'MAPS · Making Action Plans'),
               h('h1', { style: { margin: 0, fontSize: 28, fontWeight: 900 } }, nameStr.trim() ? (nameStr + '’s MAP') : 'My MAP'),
               updatedStr ? h('div', { style: { fontSize: 12, color: _mpFg('#475569'), marginTop: 4 } }, 'Updated ' + updatedStr) : null
             ),
@@ -492,7 +543,7 @@
           h('div', { style: { fontSize: 12, color: _mpFg('#a5b4fc'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: _mpFg('#e0e7ff'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+                style: { fontSize: 13, color: _mpFg('#e0e7ff'), fontWeight: 700, textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', minHeight: 44, marginBottom: 4 } }, title + ' ↗')
             : h('div', { style: { fontSize: 13, color: _mpFg('#e0e7ff'), fontWeight: 700, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _mpFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );
@@ -504,7 +555,7 @@
       else if (view === 'about') body = renderAbout();
       else body = renderOverview();
 
-      return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'MAPS' },
+      return h('div', { className: 'selh-maps', style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'MAPS' },
         header(),
         navTabs(),
         (d._crisisTier >= 3 && typeof window !== 'undefined' && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')

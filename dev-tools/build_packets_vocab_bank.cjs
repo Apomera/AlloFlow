@@ -40,8 +40,11 @@ const CURATION = path.join(ROOT, 'data/packets_vocab_curation_en.json');
 const INDEX_FILE = path.join(ROOT, 'packets_vocab_bank_en.js');
 const SHARD_DIR = path.join(ROOT, 'packets_vocab');
 const SHARD_URL = 'packets_vocab/en-';
+const EXT_DIR = path.join(ROOT, 'packets_vocab_ext');
+const EXT_URL = 'packets_vocab_ext/';
 const SHARD_LIMIT = 990 * 1024;
 const BANK_VERSION = 1;
+const JS_PROTO_KEYS = new Set(['__proto__', 'constructor', 'prototype', 'tostring', 'valueof', 'hasownproperty']);
 const MAX_HEADWORDS = 10000;
 // all shards together, uncompressed. Unit, NAWL and built-in Word Sounds words are always kept; the other
 // common words are added while the bank stays within this.
@@ -767,6 +770,244 @@ function usSpell(text) {
   });
 }
 
+// True when a sense's meaning is corroborated by at least one independent open dictionary source.
+function isCrossVerified(word, p, defText, source, overlap) {
+  if (source !== 'wordnet' && overlap >= 1) return true;
+  const { simple, enw, wn } = inputs();
+  const ds = contentStems(defText || '');
+  if (!ds.size) return false;
+  const sharesStem = (text) => {
+    for (const st of contentStems(text || '')) if (ds.has(st)) return true;
+    return false;
+  };
+  if (source !== 'wordnet') {
+    for (const sid of wnSynsets(word, p)) {
+      const syn = wn.synsets[sid];
+      if (syn && sharesStem(syn.d)) return true;
+    }
+  }
+  if (source !== 'simple') {
+    for (const e of simple[word] || []) {
+      if (P1[e.pos] !== p || isFormEntry(e)) continue;
+      for (const s of e.senses || []) if (s.g && sharesStem(s.g)) return true;
+    }
+  }
+  if (source !== 'wiktionary') {
+    for (const e of enw[word] || []) {
+      if (P1[e.pos] !== p) continue;
+      for (const s of e.senses || []) if (s.g && sharesStem(s.g)) return true;
+    }
+  }
+  return false;
+}
+
+// Curated K-12 curriculum multi-word phrases guaranteed in packets_vocab_ext/phrases.json.
+const CURATED_K12_PHRASES = [
+  ['absolute value', 'n', 'The distance of a number from zero on a number line, always zero or positive.'],
+  ['cause and effect', 'n', 'A relationship where one event makes another event happen.'],
+  ['cell membrane', 'n', 'The thin outer covering that controls what enters and leaves a living cell.'],
+  ['cell wall', 'n', 'A stiff outer layer that surrounds and protects a plant cell.'],
+  ['character trait', 'n', 'A quality that describes how a person or story character thinks, feels, or acts.'],
+  ['checks and balances', 'n', 'A system where each branch of government can limit the power of the other branches.'],
+  ['chemical reaction', 'n', 'A process in which substances change into one or more new substances.'],
+  ['circulatory system', 'n', 'The heart and blood vessels that move blood, oxygen, and nutrients through the body.'],
+  ['civil rights', 'n', 'Rights that guarantee fair and equal treatment under the law for all people.'],
+  ['climate change', 'n', 'A long-term shift in Earth\'s average temperatures and weather patterns.'],
+  ['common noun', 'n', 'A general name for a person, place, thing, or idea, not capitalized unless starting a sentence.'],
+  ['context clues', 'n', 'Hints in nearby words or sentences that help you figure out an unfamiliar word.'],
+  ['coordinate plane', 'n', 'A flat grid formed by a horizontal x-axis and a vertical y-axis used to plot points.'],
+  ['digestive system', 'n', 'The organs that break down food into nutrients the body can absorb and use.'],
+  ['electric circuit', 'n', 'A closed path through which electric current can flow.'],
+  ['figure of speech', 'n', 'An expression whose meaning is different from the literal meanings of its words.'],
+  ['food chain', 'n', 'A path showing how energy passes from one living thing to another as food.'],
+  ['food web', 'n', 'A network of connected food chains in an ecosystem.'],
+  ['fossil fuel', 'n', 'An energy source such as coal, oil, or natural gas formed from ancient living things.'],
+  ['greenhouse effect', 'n', 'The trapping of heat in Earth\'s atmosphere by gases such as carbon dioxide.'],
+  ['human rights', 'n', 'Basic freedoms and protections that belong to every person.'],
+  ['inclined plane', 'n', 'A flat, slanted surface that makes it easier to move a heavy object upward.'],
+  ['industrial revolution', 'n', 'A historic period of rapid shift from hand-made goods to factory machines.'],
+  ['kinetic energy', 'n', 'The energy an object has because it is moving.'],
+  ['life cycle', 'n', 'The series of stages a living thing goes through from birth to adulthood and reproduction.'],
+  ['line of symmetry', 'n', 'A line that divides a shape into two matching mirror-image halves.'],
+  ['magnetic field', 'n', 'The invisible region around a magnet where its pushing or pulling force acts.'],
+  ['main idea', 'n', 'The most important point or message an author wants readers to understand.'],
+  ['market economy', 'n', 'An economic system where prices and production are guided by buyers and sellers.'],
+  ['natural resource', 'n', 'A material found in nature, such as water, trees, or minerals, that people use.'],
+  ['natural selection', 'n', 'The process by which living things with helpful traits are more likely to survive and pass them on.'],
+  ['nervous system', 'n', 'The brain, spinal cord, and nerves that send messages throughout the body.'],
+  ['number line', 'n', 'A straight line with numbers placed in order at equal intervals.'],
+  ['order of operations', 'n', 'The agreed rules for which math steps to calculate first in an expression.'],
+  ['periodic table', 'n', 'A chart that organizes all known chemical elements by their atomic number and properties.'],
+  ['place value', 'n', 'The value of a digit based on its position in a number, such as ones, tens, or hundreds.'],
+  ['plate tectonics', 'n', 'The theory that Earth\'s outer shell is divided into large slabs that slowly move over time.'],
+  ['point of view', 'n', 'The perspective from which a story is told or an opinion is formed.'],
+  ['potential energy', 'n', 'Stored energy an object has because of its position or condition.'],
+  ['primary source', 'n', 'An original document, object, or firsthand account created during the time being studied.'],
+  ['prime number', 'n', 'A whole number greater than 1 that has only two factors: 1 and itself.'],
+  ['proper noun', 'n', 'The specific capitalized name of a particular person, place, organization, or thing.'],
+  ['renewable energy', 'n', 'Energy from sources that naturally replenish, such as sunlight, wind, or flowing water.'],
+  ['respiratory system', 'n', 'The lungs and airways that bring oxygen into the body and remove carbon dioxide.'],
+  ['right angle', 'n', 'An angle that measures exactly 90 degrees, like the corner of a square.'],
+  ['rock cycle', 'n', 'The continuous process by which rocks change among igneous, sedimentary, and metamorphic forms.'],
+  ['secondary source', 'n', 'An account or summary created later by someone who did not directly experience the event.'],
+  ['simple machine', 'n', 'A basic mechanical device, such as a lever, pulley, or ramp, that changes the force needed for work.'],
+  ['solar system', 'n', 'The sun and all the planets, moons, asteroids, and comets that orbit around it.'],
+  ['sound wave', 'n', 'A vibration that travels through air, water, or solids and can be heard by the ear.'],
+  ['square root', 'n', 'A number that produces a given number when multiplied by itself.'],
+  ['states of matter', 'n', 'The distinct physical forms matter can take, most commonly solid, liquid, and gas.'],
+  ['supply and demand', 'n', 'The relationship between how much of a good is available and how much people want to buy it.'],
+  ['supporting detail', 'n', 'A fact, example, or explanation that helps prove or explain the main idea.'],
+  ['surface area', 'n', 'The total area covering the outside faces of a three-dimensional shape.'],
+  ['text evidence', 'n', 'Specific words, facts, or details taken directly from a reading to support an answer.'],
+  ['thermal energy', 'n', 'Energy related to the temperature and motion of particles inside matter.'],
+  ['thesis statement', 'n', 'A clear sentence that states the main claim or argument of an essay.'],
+  ['topic sentence', 'n', 'A sentence that introduces the main idea of a paragraph.'],
+  ['unit rate', 'n', 'A comparison of two measurements where the second quantity is equal to one unit.'],
+  ['water cycle', 'n', 'The continuous movement of water on, above, and below Earth through evaporation, condensation, and precipitation.'],
+  ['water table', 'n', 'The upper surface underground below which soil and rock are filled with water.'],
+  ['wheel and axle', 'n', 'A simple machine made of a large wheel attached to a smaller rod that turns together with it.'],
+];
+
+function buildExtended(made, coreKeptWords) {
+  const I = inputs();
+  const { simple, enw, wn, lists, curation, formBase } = I;
+  const blocked = new Set(lists.blocked);
+  const cur = curation.words || {};
+  const byLetter = new Map();
+  for (let c = 97; c <= 122; c++) byLetter.set(String.fromCharCode(c), []);
+
+  // Gather candidate headwords not in coreKeptWords:
+  // 1) Trimmed entries from build() (already cleaned & curated!)
+  // 2) All remaining clean lemmas in simple_wiktionary_en, wiktionary_en, wordnet_en
+  const extWords = new Map(); // word -> { w, senses: [{ id, p, def, example, source, flags }] }
+  const canAdd = (w) => {
+    if (!w || coreKeptWords.has(w) || extWords.has(w) || JS_PROTO_KEYS.has(w)) return false;
+    if (!/^[a-z]{2,28}(?:-[a-z]{2,20})?$/.test(w)) return false;
+    if (blocked.has(w) || HARD.test(w.replace(/-/g, ' '))) return false;
+    return true;
+  };
+
+  // First take any trimmed entries from made.allEntries (before fitBudget trimmed them)
+  for (const e of made.allEntries || []) {
+    if (!canAdd(e.w)) continue;
+    const rows = e.senses.slice(0, 3).map((s) => {
+      const n = s.id.split('|')[2];
+      const cross = !s.checked && isCrossVerified(e.w, s.p, s.def, s.source, s.overlap || 0);
+      const flags = (s.edited ? 1 : 0) + (s.checked === 'good' ? 2 : s.checked === 'fixed' ? 4 : 0) + (cross ? 8 : 0);
+      const us = usSpell(e.w) === e.w ? usSpell : (x) => x;
+      return [s.p + n, us(s.def), us(s.example || ''), SRC[s.source], flags];
+    });
+    if (rows.length) extWords.set(e.w, rows);
+  }
+
+  // Next scan all remaining lemmas in simple, enw, and wn.lemmas
+  const pool = new Set([
+    ...Object.keys(simple),
+    ...Object.keys(enw),
+    ...Object.keys(wn.lemmas || {}),
+  ]);
+  for (const rawW of [...pool].sort()) {
+    const w = String(rawW || '').trim().toLowerCase();
+    if (!canAdd(w)) continue;
+    // Skip pure inflected-form entries (e.g. "abandoned" if only form_of "abandon", unless it has genuine adjective/noun senses)
+    const hasSimpleDirect = (simple[w] || []).some((e) => !isFormEntry(e));
+    const hasEnwDirect = (enw[w] || []).some((e) => !isFormEntry(e) && (e.senses || []).some((s) => s.g));
+    const hasWnDirect = !!(wn.lemmas && wn.lemmas[w]);
+    if (!hasSimpleDirect && !hasEnwDirect && !hasWnDirect) continue;
+    // If word is an attested regular/irregular form of a core word AND lacks its own distinct POS/meaning in simple/wn, skip
+    const fb = formBase.get(w);
+    if (fb && (coreKeptWords.has(fb) || extWords.has(fb)) && !hasSimpleDirect && !hasWnDirect) continue;
+
+    let ss = senseCandidates(w, []);
+    if (!ss.length) continue;
+    const pord = [];
+    for (const s of ss) if (!pord.includes(s.p)) pord.push(s.p);
+    ss = pord.flatMap((p) => [...ss.filter((s) => s.p === p && !s.soft), ...ss.filter((s) => s.p === p && s.soft)]);
+    const per = {};
+    ss = ss.filter((s) => { per[s.p] = (per[s.p] || 0) + 1; return per[s.p] <= 2; }).slice(0, 3);
+    const C = cur[w];
+    const us = usSpell(w) === w ? usSpell : (x) => x;
+    const rows = ss.map((s, idx) => {
+      const al = s.synset ? { id: s.synset, overlap: 1 } : alignSynset(w, s.p, s.def);
+      s.synset0 = al ? al.id : null;
+      const cross = isCrossVerified(w, s.p, s.def, s.source, al ? al.overlap : 0);
+      const humanRev = !!(C && C.senses && C.senses[s.id] && C.senses[s.id].humanReviewed);
+      const flags = (cross ? 8 : 0) + (humanRev ? 16 : 0);
+      const ex = idx === 0 ? exampleFor(s) : null;
+      const n = s.id.split('|')[2];
+      return [s.p + n, us(s.def), us(ex ? ex.text : ''), SRC[s.source], flags];
+    });
+    if (rows.length) extWords.set(w, rows);
+  }
+
+  // Group extended words by first letter a-z
+  for (const w of [...extWords.keys()].sort()) {
+    const ch = w.charAt(0);
+    if (byLetter.has(ch)) byLetter.get(ch).push([w, extWords.get(w)]);
+  }
+
+  // Gather extended irregular/inflected forms pointing to extended headwords (or core headwords not already in core forms)
+  const allKept = new Set([...coreKeptWords, ...extWords.keys()]);
+  const extFormsByLetter = new Map();
+  for (let c = 97; c <= 122; c++) extFormsByLetter.set(String.fromCharCode(c), []);
+  for (const [f, b] of [...formBase.entries()].sort(byKey((x) => x[0]))) {
+    if (allKept.has(f) || !extWords.has(b) || JS_PROTO_KEYS.has(f)) continue;
+    const rb = ruleBases(f).find((x) => allKept.has(x));
+    if (rb === b) continue;
+    const ch = f.charAt(0);
+    if (extFormsByLetter.has(ch)) extFormsByLetter.get(ch).push(f + ' ' + b);
+  }
+
+  const extFiles = {};
+  let extTotalWords = 0, extTotalSenses = 0;
+  for (const [ch, rs] of byLetter.entries()) {
+    const fList = extFormsByLetter.get(ch) || [];
+    if (!rs.length && !fList.length) continue;
+    const payload = { about: ABOUT, version: BANK_VERSION, key: ch, words: rs };
+    if (fList.length) payload.forms = fList.join(',');
+    const t = JSON.stringify(payload) + '\n';
+    const senses = rs.reduce((a, r) => a + r[1].length, 0);
+    extTotalWords += rs.length;
+    extTotalSenses += senses;
+    extFiles[ch] = { key: ch, url: EXT_URL + ch + '.json', text: t, bytes: Buffer.byteLength(t), sha256: sha256(t), words: rs.length, senses };
+  }
+
+  // Multi-word K-12 phrases shard (packets_vocab_ext/phrases.json)
+  const phraseMap = new Map();
+  for (const [ph, p, def] of CURATED_K12_PHRASES) {
+    phraseMap.set(ph, [[p + '1', def, '', SRC.alloflow, 16]]);
+  }
+  for (const sid of Object.keys(wn.synsets).sort()) {
+    const syn = wn.synsets[sid];
+    if (!syn || !syn.d || !['n', 'v', 'a', 'r'].includes(syn.p)) continue;
+    if (safety(syn.d)) continue;
+    for (const rawM of syn.m || []) {
+      const ph = String(rawM || '').trim().toLowerCase().replace(/_/g, ' ').replace(/\s+/g, ' ');
+      if (phraseMap.has(ph) || !/^[a-z]{2,16}(?: [a-z]{2,16}){1,2}$/.test(ph)) continue;
+      if (HARD.test(ph) || SOFT.test(ph)) continue;
+      const c = cleanGloss(ph, syn.p, syn.d);
+      if (c.reject || safety(c.text)) continue;
+      phraseMap.set(ph, [[syn.p + 'w1', usSpell(c.text), '', SRC.wordnet, 0]]);
+    }
+  }
+  const phraseRows = [...phraseMap.entries()].sort(byKey((x) => x[0]));
+  const phraseText = JSON.stringify({ about: ABOUT, version: BANK_VERSION, key: 'phrases', words: phraseRows }) + '\n';
+  const phraseSenses = phraseRows.reduce((a, r) => a + r[1].length, 0);
+  extFiles.phrases = {
+    key: 'phrases',
+    url: EXT_URL + 'phrases.json',
+    text: phraseText,
+    bytes: Buffer.byteLength(phraseText),
+    sha256: sha256(phraseText),
+    words: phraseRows.length,
+    senses: phraseSenses,
+  };
+  extTotalWords += phraseRows.length;
+  extTotalSenses += phraseSenses;
+
+  return { extFiles, extTotalWords, extTotalSenses, extWordCount: extWords.size, phraseCount: phraseRows.length };
+}
+
 function encode(made) {
   const { entries } = made;
   const keptWords = new Set(entries.map((e) => e.w));
@@ -790,7 +1031,8 @@ function encode(made) {
   }
   const rows = entries.map((e) => [e.w, e.senses.map((s) => {
     const n = s.id.split('|')[2];
-    const flags = (s.edited ? 1 : 0) + (s.checked === 'good' ? 2 : s.checked === 'fixed' ? 4 : 0);
+    const cross = !s.checked && isCrossVerified(e.w, s.p, s.def, s.source, s.overlap || 0);
+    const flags = (s.edited ? 1 : 0) + (s.checked === 'good' ? 2 : s.checked === 'fixed' ? 4 : 0) + (cross ? 8 : 0);
     const us = usSpell(e.w) === e.w ? usSpell : (x) => x;
     const row = [s.p + n, us(s.def), us(s.example), SRC[s.source], flags, s.distractors.map((id) => num.get(id).toString(36)).join(' ')];
     if (s.blanks.length) row.push(s.blanks.map((b) => us(b)).join(' '));
@@ -814,53 +1056,91 @@ function encode(made) {
   return { files, forms: forms.length, senses: k };
 }
 
-function indexText(enc) {
+function indexText(enc, ext) {
   const bytes = enc.files.reduce((a, f) => a + f.bytes, 0);
+  const extFiles = (ext && ext.extFiles) || {};
+  const extMeta = {};
+  let extBytes = 0;
+  for (const k of Object.keys(extFiles).sort()) {
+    const f = extFiles[k];
+    extMeta[k] = { url: f.url, bytes: f.bytes, sha256: f.sha256, words: f.words, senses: f.senses };
+    extBytes += f.bytes;
+  }
   return [
     '// Generated by dev-tools/build_packets_vocab_bank.cjs. Do not edit.',
     '// The offline definition bank for the vocabulary activities of AlloFlow Packets: what each word means,',
     '// an example sentence, and ranked wrong answers that fit no meaning of the word. The words and meanings',
     '// are from Simple English Wiktionary and English Wiktionary (CC BY-SA 4.0) and Open English WordNet',
     '// (CC BY 4.0, from Princeton WordNet); they stay under CC BY-SA 4.0 (credits below). This file has no',
-    '// data of its own: load() fetches packets_vocab/en-<n>.json once. Inputs: data/vendor/vocab/.',
+    '// data of its own: load() fetches packets_vocab/en-<n>.json once, and loadLetter()/ensureForWords()',
+    '// lazily fetch packets_vocab_ext/<a-z>.json and phrases.json on demand. Inputs: data/vendor/vocab/.',
     '(function (root) {',
     "  'use strict';",
     '  var shards = ' + JSON.stringify(enc.files.map((f) => ({ url: f.url, bytes: f.bytes, sha256: f.sha256, words: f.words, senses: f.senses }))) + ';',
+    '  var extShards = Object.freeze(' + JSON.stringify(extMeta) + ');',
     '  var credits = ' + JSON.stringify(CREDITS) + ';',
     "  var POS = { n: 'noun', v: 'verb', a: 'adjective', r: 'adverb' }, SRC = { s: 'simple', w: 'wiktionary', n: 'wordnet', a: 'alloflow' };",
-    '  var heads = null, all = [], byId = null, forms = {}, pending = null, got = {};',
+    '  var heads = null, all = [], byId = null, forms = Object.create(null), pending = null, got = Object.create(null);',
+    '  var extHeads = Object.create(null), extForms = Object.create(null), phraseHeads = Object.create(null), extGot = Object.create(null), extPending = Object.create(null);',
     "  function key(w) { return String(w == null ? '' : w).trim().toLowerCase(); }",
     '  var own = Object.prototype.hasOwnProperty;',
+    "  function provenanceOf(flags) { return (flags & 16) ? 'human-reviewed' : ((flags & 2) || (flags & 4)) ? 'ai-curated' : (flags & 8) ? 'cross-verified' : 'open-dict'; }",
+    '  function makeSense(w, r, j, isExt) {',
+    "    var p = r[0].charAt(0), flags = r[4] || 0;",
+    "    var s = { id: w + '|' + p + '|' + r[0].slice(1), word: w, pos: POS[p], def: r[1], example: r[2] || '', source: SRC[r[3]],",
+    "      edited: !!(flags & 1), checked: flags & 2 ? 'good' : flags & 4 ? 'fixed' : '', provenance: provenanceOf(flags), common: j + 1,",
+    "      distractors: isExt ? [] : r[5], blanks: (!isExt && r[6]) ? r[6].split(' ') : [] };",
+    '    if (isExt) { Object.freeze(s.distractors); Object.freeze(s.blanks); Object.freeze(s); }',
+    '    return s;',
+    '  }',
     '  // one data file, as parsed JSON (load() calls this; a test or a tool may call it with a file it read)',
     '  function add(data, part) {',
-    '    if (!data || !data.words || data.version !== ' + BANK_VERSION + ') return 0;',
-    '    var i = (part || data.part) - 1; if (got[i]) return 0; got[i] = data;',
+    '    if (!data || !Array.isArray(data.words) || data.version !== ' + BANK_VERSION + ') return 0;',
+    '    var i = Number(part != null ? part : data.part) - 1;',
+    '    if (!Number.isInteger(i) || i < 0 || i >= shards.length || own.call(got, i)) return 0;',
+    '    got[i] = data;',
     '    if (Object.keys(got).length === shards.length) finish();',
     '    return data.words.length;',
     '  }',
+    '  function addExt(data, shardKey) {',
+    '    if (!data || !Array.isArray(data.words) || data.version !== ' + BANK_VERSION + ') return 0;',
+    "    var k = String(shardKey != null ? shardKey : data.key || '').trim().toLowerCase();",
+    '    if (!k || !own.call(extShards, k) || extGot[k]) return 0;',
+    '    extGot[k] = true;',
+    "    var target = k === 'phrases' ? phraseHeads : extHeads;",
+    '    data.words.forEach(function (row) {',
+    "      if (!Array.isArray(row) || typeof row[0] !== 'string' || !Array.isArray(row[1])) return;",
+    '      var w = row[0], list = [];',
+    '      row[1].forEach(function (r, j) {',
+    '        var s = makeSense(w, r, j, true);',
+    '        list.push(s);',
+    '        if (byId && !own.call(byId, s.id)) byId[s.id] = s;',
+    '      });',
+    '      target[w] = Object.freeze(list);',
+    '    });',
+    "    if (typeof data.forms === 'string' && data.forms) {",
+    "      data.forms.split(',').forEach(function (x) { var q = x.split(' '); if (q[0] && q[1] && !own.call(extForms, q[0])) extForms[q[0]] = q[1]; });",
+    '    }',
+    '    return data.words.length;',
+    '  }',
     '  function finish() {',
-    '    heads = {}; all = []; byId = {}; forms = {};',
+    '    heads = Object.create(null); all = []; byId = Object.create(null); forms = Object.create(null);',
     '    for (var i = 0; i < shards.length; i++) {',
     '      var d = got[i];',
     '      d.words.forEach(function (row) {',
     '        var w = row[0], list = [];',
     '        row[1].forEach(function (r, j) {',
-    "          var p = r[0].charAt(0), s = { id: w + '|' + p + '|' + r[0].slice(1), word: w, pos: POS[p], def: r[1], example: r[2], source: SRC[r[3]],",
-    "            edited: !!(r[4] & 1), checked: r[4] & 2 ? 'good' : r[4] & 4 ? 'fixed' : '', common: j + 1, distractors: r[5], blanks: r[6] ? r[6].split(' ') : [] };",
+    '          var s = makeSense(w, r, j, false);',
     '          list.push(s); all.push(s); byId[s.id] = s;',
     '        });',
     '        heads[w] = list;',
     '      });',
-    "      if (d.forms) d.forms.split(',').forEach(function (x) { var q = x.split(' '); forms[q[0]] = q[1]; });",
+    "      if (d.forms) d.forms.split(',').forEach(function (x) { var q = x.split(' '); if (q[0] && q[1]) forms[q[0]] = q[1]; });",
     '    }',
     "    all.forEach(function (s) { s.distractors = s.distractors ? s.distractors.split(' ').map(function (n) { return all[parseInt(n, 36)].id; }) : []; Object.freeze(s.distractors); Object.freeze(s.blanks); Object.freeze(s); });",
     '    for (var w in heads) Object.freeze(heads[w]);',
     '  }',
-    '  // the headword for a word as typed: itself, an irregular form (ran: run), or a regular one (cats: cat)',
-    '  function head(word) {',
-    '    var k = key(word); if (!heads || !k) return null;',
-    '    if (own.call(heads, k)) return k;',
-    '    if (own.call(forms, k) && own.call(heads, forms[k])) return forms[k];',
+    '  function ruleCandidates(k) {',
     '    var c = [];',
     "    if (/ies$/.test(k)) c.push(k.slice(0, -3) + 'y');",
     '    if (/(s|x|z|ch|sh|o)es$/.test(k)) c.push(k.slice(0, -2));',
@@ -868,40 +1148,169 @@ function indexText(enc) {
     "    if (/ied$/.test(k)) c.push(k.slice(0, -3) + 'y');",
     '    if (/ed$/.test(k)) { c.push(k.slice(0, -2), k.slice(0, -1)); if (/([bdgklmnprt])\\1ed$/.test(k)) c.push(k.slice(0, -3)); }',
     "    if (/ing$/.test(k)) { c.push(k.slice(0, -3), k.slice(0, -3) + 'e'); if (/([bdgklmnprt])\\1ing$/.test(k)) c.push(k.slice(0, -4)); }",
-    '    for (var i = 0; i < c.length; i++) if (c[i].length >= 2 && own.call(heads, c[i])) return c[i];',
+    '    return c;',
+    '  }',
+    '  function headIn(map, formMap, k) {',
+    '    if (!map || !k) return null;',
+    '    if (own.call(map, k)) return k;',
+    '    if (formMap && own.call(formMap, k) && own.call(map, formMap[k])) return formMap[k];',
+    '    var c = ruleCandidates(k);',
+    '    for (var i = 0; i < c.length; i++) if (c[i].length >= 2 && own.call(map, c[i])) return c[i];',
+    '    return null;',
+    '  }',
+    '  // the headword for a word as typed: itself, an irregular form (ran: run), or a regular one (cats: cat)',
+    '  // checks the core curated bank first, then any lazily loaded extended letter shards.',
+    '  function head(word) {',
+    '    var k = key(word); if (!k) return null;',
+    '    if (heads) {',
+    '      var core = headIn(heads, forms, k);',
+    '      if (core) return core;',
+    '    }',
+    '    var ext = headIn(extHeads, extForms, k);',
+    '    if (ext) return ext;',
+    '    if (heads && own.call(extForms, k) && own.call(heads, extForms[k])) return extForms[k];',
     '    return null;',
     '  }',
     "  var base = '';",
     "  try { var cs = root && root.document && root.document.currentScript; if (cs && cs.src) base = cs.src.replace(/[^/]*$/, ''); } catch (e) { base = ''; }",
-    '  // fetches the data files once; options.base (a folder URL) and options.fetch (a fetch function) are optional',
+    '  function fetchJsonFile(url, options) {',
+    '    var o = options || {}, f = o.fetch || (root && root.fetch && root.fetch.bind(root));',
+    "    if (!f) return Promise.reject(new Error('AlloVocabBank needs fetch'));",
+    '    var b = o.base != null ? o.base : base;',
+    '    var ms = o.timeoutMs > 0 ? o.timeoutMs : 15000;',
+    "    var AC = (root && typeof root.AbortController === 'function') ? root.AbortController : (typeof AbortController === 'function' ? AbortController : null);",
+    '    var startTimer = function (fn, delay) {',
+    "      if (root && typeof root.setTimeout === 'function') return root.setTimeout(fn, delay);",
+    "      return typeof setTimeout === 'function' ? setTimeout(fn, delay) : null;",
+    '    };',
+    '    var stopTimer = function (id) {',
+    '      if (id == null) return;',
+    "      if (root && typeof root.clearTimeout === 'function') { root.clearTimeout(id); return; }",
+    "      if (typeof clearTimeout === 'function') clearTimeout(id);",
+    '    };',
+    '    var ctrl = AC ? new AC() : null, timer = null;',
+    '    return new Promise(function (resolve, reject) {',
+    '      timer = startTimer(function () {',
+    '        if (ctrl) { try { ctrl.abort(); } catch (_) {} }',
+    "        reject(new Error('AlloVocabBank: ' + url + ' timed out'));",
+    '      }, ms);',
+    '      Promise.resolve().then(function () {',
+    '        return ctrl ? f(b + url, { signal: ctrl.signal }) : f(b + url);',
+    '      }).then(function (r) {',
+    "        if (!r || !r.ok) throw new Error('AlloVocabBank: ' + url + ' ' + (r ? r.status : 0));",
+    "        if (typeof r.text === 'function') return r.text().then(function (t) { return JSON.parse(t.charCodeAt(0) === 0xFEFF ? t.slice(1) : t); });",
+    '        return r.json();',
+    '      }).then(function (j) {',
+    '        stopTimer(timer);',
+    '        resolve(j);',
+    '      }, function (err) {',
+    '        stopTimer(timer);',
+    '        reject(err);',
+    '      });',
+    '    });',
+    '  }',
+    '  // fetches the core data files once; options.base (a folder URL) and options.fetch (a fetch function) are optional',
     '  function load(options) {',
     '    if (heads) return Promise.resolve(api);',
     '    if (pending) return pending;',
     '    var o = options || {}, f = o.fetch || (root && root.fetch && root.fetch.bind(root));',
     "    if (!f) return Promise.reject(new Error('AlloVocabBank.load needs fetch'));",
-    '    var b = o.base != null ? o.base : base;',
     '    pending = Promise.all(shards.map(function (s, i) {',
-    '      return f(b + s.url).then(function (r) {',
-    "        if (!r.ok) throw new Error('AlloVocabBank: ' + s.url + ' ' + r.status);",
-    '        return r.json();',
-    '      }).then(function (j) { add(j, i + 1); });',
+    '      return fetchJsonFile(s.url, o).then(function (j) { add(j, i + 1); });',
     "    })).then(function () { if (!heads) throw new Error('AlloVocabBank: data incomplete'); return api; }, function (e) { pending = null; throw e; });",
     '    return pending;',
+    '  }',
+    '  function extReady(shardKey) {',
+    "    var k = String(shardKey == null ? '' : shardKey).trim().toLowerCase();",
+    "    if (k !== 'phrases') k = k.charAt(0);",
+    '    if (!own.call(extShards, k)) return true;',
+    '    return !!extGot[k];',
+    '  }',
+    '  function loadExtKey(k, options) {',
+    '    if (!own.call(extShards, k) || extGot[k]) return Promise.resolve(true);',
+    '    if (extPending[k]) return extPending[k];',
+    '    extPending[k] = fetchJsonFile(extShards[k].url, options).then(function (j) {',
+    '      addExt(j, k);',
+    '      delete extPending[k];',
+    '      return true;',
+    '    }, function () {',
+    '      delete extPending[k];',
+    '      return false;',
+    '    });',
+    '    return extPending[k];',
+    '  }',
+    '  function loadLetter(ch, options) {',
+    "    var k = String(ch == null ? '' : ch).trim().toLowerCase().charAt(0);",
+    '    if (!/^[a-z]$/.test(k)) return Promise.resolve(false);',
+    '    return loadExtKey(k, options);',
+    '  }',
+    '  function loadPhrases(options) {',
+    "    return loadExtKey('phrases', options);",
+    '  }',
+    '  function loadExtBatch(keys, options) {',
+    '    var todo = keys.filter(function (k) { return own.call(extShards, k) && !extGot[k]; });',
+    '    if (!todo.length) return Promise.resolve(true);',
+    '    var cursor = 0, limit = Math.min(6, todo.length);',
+    '    var workers = Array.from({ length: limit }, function () {',
+    '      return (function next() {',
+    '        if (cursor >= todo.length) return Promise.resolve();',
+    '        var k = todo[cursor++];',
+    '        return loadExtKey(k, options).then(next);',
+    '      })();',
+    '    });',
+    '    return Promise.all(workers).then(function () { return true; });',
+    '  }',
+    '  function ensureForWords(wordList, options) {',
+    '    var needed = Object.create(null);',
+    '    (Array.isArray(wordList) ? wordList : []).forEach(function (raw) {',
+    '      var k = key(raw);',
+    '      if (!k) return;',
+    "      if (k.indexOf(' ') >= 0) { needed.phrases = true; return; }",
+    '      if (heads && headIn(heads, forms, k)) return;',
+    '      var ch = k.charAt(0);',
+    '      if (/^[a-z]$/.test(ch)) needed[ch] = true;',
+    '    });',
+    '    return loadExtBatch(Object.keys(needed), options);',
+    '  }',
+    '  function loadAllExtended(options) {',
+    '    return loadExtBatch(Object.keys(extShards), options);',
+    '  }',
+    '  function sensesOf(word) {',
+    '    var h = head(word);',
+    '    if (!h) return [];',
+    '    if (heads && own.call(heads, h)) return heads[h].slice();',
+    '    if (own.call(extHeads, h)) return extHeads[h].slice();',
+    '    return [];',
+    '  }',
+    '  function phraseSenses(phrase) {',
+    "    var k = key(phrase).replace(/[-_]+/g, ' ').replace(/\\s+/g, ' ');",
+    '    return (k && own.call(phraseHeads, k)) ? phraseHeads[k].slice() : [];',
     '  }',
     '  var api = {',
     '    version: ' + BANK_VERSION + ',',
     '    bytes: ' + bytes + ',',
+    '    extBytes: ' + extBytes + ',',
+    '    extTotalWords: ' + ((ext && ext.extTotalWords) || 0) + ',',
     '    credits: credits,',
     '    checking: ' + JSON.stringify(CHECKING) + ',',
     '    shards: shards,',
+    '    extShards: extShards,',
     '    load: load,',
     '    add: add,',
+    '    addExt: addExt,',
+    '    extReady: extReady,',
+    '    loadLetter: loadLetter,',
+    '    loadPhrases: loadPhrases,',
+    '    ensureForWords: ensureForWords,',
+    '    loadAllExtended: loadAllExtended,',
+    '    phraseSenses: phraseSenses,',
     '    ready: function () { return !!heads; },',
     '    has: function (word) { return head(word) != null; },',
     '    head: head,',
-    '    senses: function (word) { var h = head(word); return h ? heads[h].slice() : []; },',
+    '    senses: sensesOf,',
     '    sense: function (id) { return byId && own.call(byId, id) ? byId[id] : null; },',
-    '    words: function () { return heads ? Object.keys(heads) : []; }',
+    '    words: function () { return heads ? Object.keys(heads) : []; },',
+    '    allWords: function () { var a = heads ? Object.keys(heads) : []; var b = Object.keys(extHeads); return b.length ? a.concat(b) : a; }',
     '  };',
     '  if (root) root.AlloVocabBank = api;',
     "  if (typeof module !== 'undefined' && module.exports) module.exports = api;",
@@ -913,6 +1322,7 @@ function indexText(enc) {
 // trims whole headwords (lowest priority first) until the shards fit the budget; distractors that pointed
 // at a dropped sense are re-filled from the auto list
 function fitBudget(made) {
+  made.allEntries = made.entries.slice();
   let enc = encode(made);
   const total = () => enc.files.reduce((a, f) => a + f.bytes, 0);
   if (total() <= SIZE_BUDGET || process.env.VOCAB_NO_TRIM) return enc;
@@ -956,7 +1366,9 @@ function fitBudget(made) {
 function outputs(opts) {
   const made = build(opts);
   const enc = fitBudget(made);
-  return { made, enc, index: indexText(enc) };
+  const coreKeptWords = new Set(made.entries.map((e) => e.w));
+  const ext = buildExtended(made, coreKeptWords);
+  return { made, enc, ext, index: indexText(enc, ext) };
 }
 
 // ---- the curation view (what a checker reads) ---------------------------------------------------
@@ -979,21 +1391,46 @@ function main(argv) {
     if (val('--out')) fs.writeFileSync(val('--out'), t); else process.stdout.write(t + '\n');
     return;
   }
-  const { made, enc, index } = outputs({ noAdjExtras: flag('--no-adj-extras') });
+  const { made, enc, ext, index } = outputs({ noAdjExtras: flag('--no-adj-extras') });
   const total = enc.files.reduce((a, f) => a + f.bytes, 0);
-  const summary = { headwords: made.entries.length, senses: enc.senses, shards: enc.files.length, bytes: total, indexBytes: Buffer.byteLength(index), irregularForms: enc.forms, ...made.stats, distractors: made.dstats };
+  const extFilesList = Object.values(ext.extFiles);
+  const extBytes = extFilesList.reduce((a, f) => a + f.bytes, 0);
+  const summary = {
+    headwords: made.entries.length,
+    senses: enc.senses,
+    shards: enc.files.length,
+    bytes: total,
+    extWords: ext.extWordCount,
+    extPhrases: ext.phraseCount,
+    extTotalWords: ext.extTotalWords,
+    extSenses: ext.extTotalSenses,
+    extShards: extFilesList.length,
+    extBytes,
+    totalOfflineHeadwords: made.entries.length + ext.extWordCount,
+    indexBytes: Buffer.byteLength(index),
+    irregularForms: enc.forms,
+    ...made.stats,
+    distractors: made.dstats,
+  };
   if (flag('--report')) { console.log(JSON.stringify(summary, null, 1)); return; }
-  const want = new Map([[INDEX_FILE, index], ...enc.files.map((f) => [path.join(ROOT, f.url), f.text])]);
+  const want = new Map([
+    [INDEX_FILE, index],
+    ...enc.files.map((f) => [path.join(ROOT, f.url), f.text]),
+    ...extFilesList.map((f) => [path.join(ROOT, f.url), f.text]),
+  ]);
   if (flag('--check')) {
     const stale = [];
     for (const [f, t] of want) if (!fs.existsSync(f) || fs.readFileSync(f, 'utf8') !== t) stale.push(path.relative(ROOT, f));
     if (fs.existsSync(SHARD_DIR)) for (const n of fs.readdirSync(SHARD_DIR)) if (/^en-\d+\.json$/.test(n) && !want.has(path.join(SHARD_DIR, n))) stale.push('packets_vocab/' + n + ' (extra)');
+    if (fs.existsSync(EXT_DIR)) for (const n of fs.readdirSync(EXT_DIR)) if (/^(?:[a-z]|phrases)\.json$/.test(n) && !want.has(path.join(EXT_DIR, n))) stale.push('packets_vocab_ext/' + n + ' (extra)');
     if (stale.length) { console.error('Packets vocabulary bank is stale: ' + stale.join(', ')); process.exitCode = 1; return; }
-    console.log('Packets vocabulary bank is up to date (' + summary.headwords + ' words, ' + summary.senses + ' senses, ' + total + ' bytes).');
+    console.log('Packets vocabulary bank is up to date (' + summary.headwords + ' core + ' + summary.extWords + ' ext words + ' + summary.extPhrases + ' phrases, ' + total + ' core bytes, ' + extBytes + ' ext bytes).');
     return;
   }
   fs.mkdirSync(SHARD_DIR, { recursive: true });
+  fs.mkdirSync(EXT_DIR, { recursive: true });
   for (const n of fs.readdirSync(SHARD_DIR)) if (/^en-\d+\.json$/.test(n) && !want.has(path.join(SHARD_DIR, n))) fs.unlinkSync(path.join(SHARD_DIR, n));
+  for (const n of fs.readdirSync(EXT_DIR)) if (/^(?:[a-z]|phrases)\.json$/.test(n) && !want.has(path.join(EXT_DIR, n))) fs.unlinkSync(path.join(EXT_DIR, n));
   for (const [f, t] of want) { const tmp = f + '.tmp'; fs.writeFileSync(tmp, t); fs.renameSync(tmp, f); }
   console.log(JSON.stringify(summary, null, 1));
 }

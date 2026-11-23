@@ -36,13 +36,23 @@
   var u32 = function (v) { return [v & 255, (v >>> 8) & 255, (v >>> 16) & 255, (v >>> 24) & 255]; };
   var UTF8_NAMES = 0x0800, DOS_DATE = 0x21; // 1980-01-01, 00:00
 
+  var WIN_RESERVED = /^(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i;
+  function toBytes(data) {
+    if (data instanceof Uint8Array) return data;
+    if (ArrayBuffer.isView(data)) return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+    return new Uint8Array(data || 0);
+  }
+
   function uniqueName(raw, seen) {
     var clean = String(raw || 'file').replace(/[\x00-\x1f\x7f]/g, '').replace(/[\\]/g, '/').replace(/^\/+/, '');
     var parts = clean.split('/').map(function (seg) {
-      return seg.replace(/[:*?"<>|]/g, '-').trim();
-    }).filter(function (seg) {
-      return seg && seg !== '.' && seg !== '..';
-    });
+      var s = seg.replace(/[:*?"<>|]/g, '-').trim().replace(/[. ]+$/, '');
+      if (!s || s === '.' || s === '..') return '';
+      var dot = s.indexOf('.');
+      var head = dot >= 0 ? s.slice(0, dot) : s;
+      if (WIN_RESERVED.test(head)) s = '_' + s;
+      return s;
+    }).filter(Boolean);
     var basePath = parts.join('/') || 'file';
     var key = basePath.toLowerCase();
     if (!seen[key]) { seen[key] = true; return basePath; }
@@ -68,7 +78,7 @@
         if (done) throw new Error('The zip file is already finished.');
         var nameBytes = utf8(uniqueName(name || ('file' + central.length), seen));
         if (nameBytes.length > 0xFFFF) throw new Error('File name is too long for a zip file.');
-        var body = typeof data === 'string' ? utf8(data) : data instanceof Uint8Array ? data : new Uint8Array(data || 0);
+        var body = typeof data === 'string' ? utf8(data) : toBytes(data);
         if (central.length >= 65535 || offset + 30 + nameBytes.length + body.length > 0xFFFFFFFF || centralBytes + 46 + nameBytes.length > 0xFFFFFFFF) throw new Error('Too many files for one zip file.');
         var crc = crc32(body);
         var head = new Uint8Array([].concat(u32(0x04034b50), u16(20), u16(UTF8_NAMES), u16(0), u16(0), u16(DOS_DATE), u32(crc), u32(body.length), u32(body.length), u16(nameBytes.length), u16(0)));
@@ -99,7 +109,7 @@
 
   // The files back out of a .zip this writer made (store only), for tests and checks: [{ name, bytes, crcOk }].
   function readZip(bytes) {
-    var b = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+    var b = toBytes(bytes);
     if (b.length < 22) return [];
     var r16 = function (p) { return b[p] | (b[p + 1] << 8); };
     var r32 = function (p) { return (b[p] | (b[p + 1] << 8) | (b[p + 2] << 16) | (b[p + 3] << 24)) >>> 0; };

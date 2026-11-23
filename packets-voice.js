@@ -20,7 +20,7 @@
   function rowOf(word) { try { return wordlist ? wordlist.get(word) : null; } catch (_) { return null; } }
   function builtIn(word) { var row = rowOf(word); return !!(row && (row.kokoro || row.shards)); }
   function notUsed(word) { var row = rowOf(word); return !!(row && row.blocked); }
-  var state = { words: [], entries: Object.create(null), ready: false, getting: false, making: false, stop: null, makeRun: 0, refreshRun: 0, storage: true, playing: null };
+  var state = { words: [], entries: Object.create(null), ready: false, getting: false, making: false, sampling: false, stop: null, makeRun: 0, refreshRun: 0, storage: true, playing: null };
   function makeController() {
     if (typeof win.AbortController === 'function') return new win.AbortController();
     var ctrl = { signal: { aborted: false }, abort: function () { ctrl.signal.aborted = true; } };
@@ -129,11 +129,17 @@
       list.appendChild(row);
     });
     var need = needing().length;
-    $('make-all').disabled = !state.ready || state.making || !state.storage || !need;
-    $('make-all').textContent = need ? 'Make recordings for the ' + count(need, 'word') + ' that ' + (need === 1 ? 'has' : 'have') + ' none' : 'Make recordings for the words that have none';
+    var makeAllBtn = $('make-all');
+    makeAllBtn.disabled = !state.ready || state.making || !state.storage || !need;
+    makeAllBtn.setAttribute('aria-busy', state.making ? 'true' : 'false');
+    makeAllBtn.textContent = need ? 'Make recordings for the ' + count(need, 'word') + ' that ' + (need === 1 ? 'has' : 'have') + ' none' : 'Make recordings for the words that have none';
     show('stop', state.making);
-    $('get-voice').disabled = state.getting || state.ready;
-    if (state.ready) $('get-voice').textContent = 'The voice is ready';
+    var getVoiceBtn = $('get-voice');
+    getVoiceBtn.disabled = state.getting || state.ready;
+    getVoiceBtn.setAttribute('aria-busy', state.getting ? 'true' : 'false');
+    if (state.ready) getVoiceBtn.textContent = 'The voice is ready';
+    var sampleBtn = $('hear-sample');
+    if (sampleBtn) sampleBtn.disabled = !state.ready || state.making || state.sampling;
   }
 
   function redraw() { return refreshEntries().then(draw); }
@@ -144,16 +150,38 @@
     try { if (state.playing) state.playing.pause(); } catch (_) {}
     var audio = new win.Audio(clip.dataUri);
     state.playing = audio;
-    audio.play().catch(function () { setText('make-problem', 'This browser could not play the recording of ' + word + '.'); });
+    audio.play().catch(function () { setText('rows-said', 'This browser could not play the recording of ' + word + '.'); });
   }
 
   function removeClip(word) {
     if (!myWords) return;
     myWords.put(word, { clip: null }).then(function () {
-      setText('make-said', 'The computer-voice recording of ' + word + ' is removed.');
+      setText('rows-said', 'The computer-voice recording of ' + word + ' is removed.');
       return redraw();
-    }, function (error) { setText('make-problem', (error && error.message) || 'The recording could not be removed.'); })
+    }, function (error) { setText('rows-said', (error && error.message) || 'The recording could not be removed.'); })
       .then(function () { var again = doc.querySelector('[data-make="' + word + '"]'); if (again) again.focus(); });
+  }
+
+  function hearSample() {
+    if (!state.ready || state.making || state.sampling || !engine) return;
+    var voice = ($('f-voice') && $('f-voice').value) || 'af_heart';
+    state.sampling = true;
+    setText('sample-said', 'Making a short sample...');
+    draw();
+    engine.speak('The quick fox jumped over the brown log.', voice, {}).then(function (wav) {
+      state.sampling = false;
+      draw();
+      var uri = engine.toDataUri(wav, 'audio/wav');
+      try { if (state.playing) state.playing.pause(); } catch (_) {}
+      var audio = new win.Audio(uri);
+      state.playing = audio;
+      setText('sample-said', 'Playing sample.');
+      audio.play().catch(function () { setText('sample-said', 'This browser could not play the sample.'); });
+    }, function () {
+      state.sampling = false;
+      draw();
+      setText('sample-said', 'The voice could not make a sample just now.');
+    });
   }
 
   // ---------------------------------------------------------------------------
@@ -161,9 +189,15 @@
   // ---------------------------------------------------------------------------
   function progress(info) {
     var pct = info && typeof info.pct === 'number' ? Math.max(0, Math.min(1, info.pct)) : 0;
+    var pctWhole = Math.round(pct * 100);
+    var label = (info && info.stage ? String(info.stage).slice(0, 120) : 'Getting the voice') + (pct ? ': ' + pctWhole + ' percent' : '');
     show('voice-making', true);
-    $('voice-bar').value = Math.round(pct * 100);
-    setText('voice-line', (info && info.stage ? String(info.stage).slice(0, 120) : 'Getting the voice') + (pct ? ': ' + Math.round(pct * 100) + ' percent' : ''));
+    var bar = $('voice-bar');
+    if (bar) {
+      bar.value = pctWhole;
+      bar.setAttribute('aria-valuetext', label);
+    }
+    setText('voice-line', label);
   }
   function getVoice() {
     if (state.getting || state.ready) return;
@@ -229,6 +263,7 @@
     state.making = true;
     state.stop = stop;
     setText('make-problem', '');
+    setText('rows-said', '');
     draw();
     var done = 0, failed = [], stopped = false;
     var step = function (index) {
@@ -236,7 +271,10 @@
       if (index >= list.length) return Promise.resolve();
       var word = list[index];
       setText('make-said', 'Making ' + (index + 1) + ' of ' + list.length + ': ' + word + '.');
-      return makeOne(word, stop.signal).then(function () { done += 1; }, function (error) {
+      return makeOne(word, stop.signal).then(function () {
+        done += 1;
+        return run === state.makeRun ? redraw() : null;
+      }, function (error) {
         if (run !== state.makeRun || stop.signal.aborted || (error && error.name === 'AbortError')) { stopped = true; return; }
         failed.push(word + ((error && error.code === 'storage_full') ? ' (this browser is out of room)' : ''));
       }).then(function () { return (stopped || run !== state.makeRun) ? null : step(index + 1); });
@@ -262,12 +300,21 @@
     var timer = 0;
     $('f-words').addEventListener('input', function () {
       if (state.making) { cancelMake(); setText('make-said', 'Stopped because the word list changed.'); }
+      setText('rows-said', '');
       win.clearTimeout(timer);
       timer = win.setTimeout(function () { readWords(); redraw(); }, 250);
     });
     $('get-voice').addEventListener('click', getVoice);
+    if ($('hear-sample')) $('hear-sample').addEventListener('click', hearSample);
     $('make-all').addEventListener('click', function () { makeSome(needing(), false); });
     $('stop').addEventListener('click', function () { if (state.stop) state.stop.abort(); });
+    doc.addEventListener('keydown', function (ev) {
+      if (ev.isComposing || ev.keyCode === 229) return;
+      if (ev.key === 'Escape' && state.making && state.stop) {
+        ev.preventDefault();
+        state.stop.abort();
+      }
+    });
     var ready = myWords && typeof myWords.available === 'function' ? myWords.available() : Promise.resolve(false);
     ready.then(function (ok) { state.storage = !!ok; }, function () { state.storage = false; }).then(function () {
       show('no-storage', !state.storage);

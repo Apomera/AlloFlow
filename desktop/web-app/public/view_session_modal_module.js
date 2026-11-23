@@ -6,6 +6,7 @@
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.SessionModal) {
     console.log('[CDN] SessionModal already loaded, skipping');
     return;
@@ -13,6 +14,46 @@
   var React = window.React;
   if (!React) { console.error('[SessionModal] React not found on window'); return; }
 
+const _smBlockedKey = (key) => key === "__proto__" || key === "constructor" || key === "prototype";
+const _smHasOwn = (obj, key) => !!obj && typeof obj === "object" && !_smBlockedKey(key) && Object.prototype.hasOwnProperty.call(obj, key);
+const _smSafeJoinUrl = (raw) => {
+  if (typeof raw !== "string") return "";
+  const trimmed = raw.trim();
+  if (!trimmed || /[\u0000-\u001f\u007f]/.test(trimmed)) return "";
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:" || parsed.username || parsed.password) return "";
+    return parsed.href;
+  } catch (_) {
+    return "";
+  }
+};
+const _smSanitizeQrSvg = (raw) => {
+  if (typeof raw !== "string" || !raw.trim()) return "";
+  if (typeof window !== "undefined" && typeof window.sanitizeSvgGraph === "function") {
+    try {
+      const cleaned = window.sanitizeSvgGraph(raw);
+      return typeof cleaned === "string" && cleaned.trim() ? cleaned : "";
+    } catch (_) {
+      return "";
+    }
+  }
+  const trimmed = raw.trim();
+  if (!/^<svg[\s>]/i.test(trimmed)) return "";
+  if (/<\s*(?:script|foreignObject|iframe|object|embed)\b|\bon[a-z]+\s*=|javascript:|data\s*:\s*text\/html/i.test(trimmed)) return "";
+  return trimmed;
+};
+const _smManagedAiBlocked = () => {
+  if (typeof window === "undefined") return false;
+  try {
+    if (window.__alloOfflineOnly === true || window.__alloAiSecretsLocked === true) return true;
+    const managed = window.ALLOFLOW_MANAGED_AI_POLICY;
+    if (managed && typeof managed === "object" && (managed.aiEnabled === false || managed.aiDisabled === true || managed.mode === "off" || managed.locked === true)) return true;
+    return false;
+  } catch (_) {
+    return true;
+  }
+};
 const normalizeRosterSessionCodename = (value) => String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
 const countValidRosterQuizResponses = (responseMap) => Object.entries(
   responseMap && typeof responseMap === "object" && !Array.isArray(responseMap) ? responseMap : {}
@@ -26,7 +67,7 @@ const summarizeRosterLiveActivities = (activitySnapshots, liveRoster, rosterByNo
   const allowedPhases = /* @__PURE__ */ new Set(["collecting", "paused", "review", "revealed", "closed"]);
   const roster = liveRoster && typeof liveRoster === "object" ? liveRoster : {};
   const byName = rosterByNormalizedName && typeof rosterByNormalizedName === "object" ? rosterByNormalizedName : {};
-  const participantTotals = {};
+  const participantTotals = /* @__PURE__ */ Object.create(null);
   const activities = [];
   const clampCount = (value, max = 1e4) => {
     const parsed = Number(value);
@@ -39,12 +80,14 @@ const summarizeRosterLiveActivities = (activitySnapshots, liveRoster, rosterByNo
     let submitted = 0;
     let revised = 0;
     audienceUids.forEach((uid) => {
-      const status = statuses[uid] === "revised" ? "revised" : statuses[uid] === "submitted" ? "submitted" : statuses[uid] === "working" ? "working" : "waiting";
+      const rawStatus = _smHasOwn(statuses, uid) ? statuses[uid] : "";
+      const status = rawStatus === "revised" ? "revised" : rawStatus === "submitted" ? "submitted" : rawStatus === "working" ? "working" : "waiting";
       if (status === "submitted" || status === "revised") submitted += 1;
       if (status === "revised") revised += 1;
-      const liveName = String(roster[uid]?.name || "").trim();
-      const rosterName = byName[normalizeRosterSessionCodename(liveName)];
-      if (!rosterName) return;
+      const liveName = String((_smHasOwn(roster, uid) ? roster[uid]?.name : "") || "").trim();
+      const norm = normalizeRosterSessionCodename(liveName);
+      const rosterName = _smHasOwn(byName, norm) ? byName[norm] : "";
+      if (!rosterName || _smBlockedKey(rosterName)) return;
       const current = participantTotals[rosterName] || { liveActivityCount: 0, liveSubmissionCount: 0, liveRevisionCount: 0 };
       current.liveActivityCount += 1;
       if (status === "submitted" || status === "revised") current.liveSubmissionCount += 1;
@@ -217,7 +260,7 @@ const buildRosterSessionSummary = ({ sessionCode, sessionData, rosterKey, mode, 
   }
   const organizerStatusCounts = { waiting: 0, loading: 0, ready: 0, failed: 0, working: 0, attempted: 0, complete: 0 };
   const organizerFollowUpCodenames = [];
-  const participants = {};
+  const participants = /* @__PURE__ */ Object.create(null);
   const unmatchedCodenames = [];
   const addUnmatchedCodename = (value) => {
     if (unmatchedCodenames.length >= 250) return;
@@ -227,13 +270,15 @@ const buildRosterSessionSummary = ({ sessionCode, sessionData, rosterKey, mode, 
     unmatchedCodenames.push(codename);
   };
   Object.entries(liveRoster).forEach(([uid, liveStudent]) => {
+    if (_smBlockedKey(uid)) return;
     const rawName = String(liveStudent?.name || "").trim();
-    const rosterName = evidenceRosterByNormalizedName[normalizeRosterSessionCodename(rawName)];
-    if (!rosterName) {
+    const norm = normalizeRosterSessionCodename(rawName);
+    const rosterName = _smHasOwn(evidenceRosterByNormalizedName, norm) ? evidenceRosterByNormalizedName[norm] : "";
+    if (!rosterName || _smBlockedKey(rosterName)) {
       addUnmatchedCodename(rawName);
       return;
     }
-    const responseMap = allResponses[uid] && typeof allResponses[uid] === "object" ? allResponses[uid] : {};
+    const responseMap = _smHasOwn(allResponses, uid) && allResponses[uid] && typeof allResponses[uid] === "object" ? allResponses[uid] : {};
     const organizerReceipt = readOrganizerReceipt(liveStudent?.organizerProgress);
     const organizerMatches = !!(organizerActivityId && organizerReceipt?.activityId === organizerActivityId);
     const organizerStatus = organizerMatches ? organizerReceipt.status : activeOrganizer && organizerActivityId ? "waiting" : "";
@@ -249,14 +294,16 @@ const buildRosterSessionSummary = ({ sessionCode, sessionData, rosterKey, mode, 
       organizerStatusCounts[organizer.status] += 1;
       if (organizer.status === "waiting" || organizer.status === "failed") organizerFollowUpCodenames.push(rosterName);
     }
-    participants[rosterName] = { groupId: liveStudent?.groupId || rosterStudents[rosterName] || null, joinedAt: typeof liveStudent?.joinedAt === "string" ? liveStudent.joinedAt : null, responseCount: Math.max(countValidRosterQuizResponses(responseMap), Number(quizResponseCountsByUid[uid]) || 0), resourcesOpened: liveStudent?.viewingResourceId ? 1 : 0, ...organizer ? { organizer } : {} };
+    const rosterGroup = _smHasOwn(rosterStudents, rosterName) ? rosterStudents[rosterName] : null;
+    const uidQuizCount = _smHasOwn(quizResponseCountsByUid, uid) ? Number(quizResponseCountsByUid[uid]) || 0 : 0;
+    participants[rosterName] = { groupId: liveStudent?.groupId || rosterGroup || null, joinedAt: typeof liveStudent?.joinedAt === "string" ? liveStudent.joinedAt : null, responseCount: Math.max(countValidRosterQuizResponses(responseMap), uidQuizCount), resourcesOpened: liveStudent?.viewingResourceId ? 1 : 0, ...organizer ? { organizer } : {} };
   });
   const createdAt = typeof sessionData?.createdAt === "string" ? sessionData.createdAt : null;
   const startMs = createdAt ? Date.parse(createdAt) : NaN;
   const endMs = Date.parse(endedAt);
   const durationMinutes = Number.isFinite(startMs) && Number.isFinite(endMs) && endMs >= startMs ? Math.max(0, Math.round((endMs - startMs) / 6e4)) : null;
   const resourceTitles = Array.isArray(sessionData?.resources) ? Array.from(new Set(sessionData.resources.map((item) => String(item?.title || "").trim()).filter(Boolean))).slice(0, 20) : [];
-  const absentCodenames = Object.keys(rosterStudents).filter((name) => !participants[name]);
+  const absentCodenames = Object.keys(rosterStudents).filter((name) => !_smBlockedKey(name) && !participants[name]);
   const classGoals = (Array.isArray(rosterKey?.classGoalLog) ? rosterKey.classGoalLog : []).filter((entry) => entry && sessionCode && entry.sessionCode === sessionCode).slice(0, 40).map((entry) => ({
     label: String(entry.label || "").slice(0, 80),
     mode: entry.mode === "independent" ? "independent" : "interdependent",
@@ -266,7 +313,7 @@ const buildRosterSessionSummary = ({ sessionCode, sessionData, rosterKey, mode, 
   }));
   const liveActivityEvidence = summarizeRosterLiveActivities(activitySnapshots, liveRoster, evidenceRosterByNormalizedName);
   Object.entries(liveActivityEvidence.participantTotals).forEach(([rosterName, totals]) => {
-    if (!participants[rosterName]) return;
+    if (_smBlockedKey(rosterName) || !participants[rosterName]) return;
     participants[rosterName] = {
       ...participants[rosterName],
       liveActivityCount: totals.liveActivityCount,
@@ -274,6 +321,7 @@ const buildRosterSessionSummary = ({ sessionCode, sessionData, rosterKey, mode, 
       liveRevisionCount: totals.liveRevisionCount
     };
   });
+  const safeParticipants = Object.assign({}, participants);
   const organizerParticipantCount = Object.values(organizerStatusCounts).reduce((sum, count) => sum + count, 0);
   const organizerActivity = organizerActivityId && organizerParticipantCount > 0 ? {
     type: organizerType,
@@ -282,7 +330,7 @@ const buildRosterSessionSummary = ({ sessionCode, sessionData, rosterKey, mode, 
     statusCounts: organizerStatusCounts,
     followUpCodenames: organizerFollowUpCodenames.slice(0, 250)
   } : null;
-  const summary = { schemaVersion: 2, id: String(sessionCode || "session-" + endMs), startedAt: createdAt, endedAt, durationMinutes, mode: mode === "mailbox" ? "mailbox" : "firebase", resourceTitles, participants, unmatchedCodenames, absentCodenames, classGoals, liveActivities: liveActivityEvidence.activities, ...organizerActivity ? { organizerActivity } : {} };
+  const summary = { schemaVersion: 2, id: String(sessionCode || "session-" + endMs), startedAt: createdAt, endedAt, durationMinutes, mode: mode === "mailbox" ? "mailbox" : "firebase", resourceTitles, participants: safeParticipants, unmatchedCodenames, absentCodenames, classGoals, liveActivities: liveActivityEvidence.activities, ...organizerActivity ? { organizerActivity } : {} };
   return { ...summary, insightBrief: buildRosterSessionInsightBrief(summary) };
 };
 const shouldSaveRosterSessionSummary = (summary, note = "") => Boolean(summary && (String(note || "").trim() || Array.isArray(summary.resourceTitles) && summary.resourceTitles.length > 0 || summary.participants && Object.keys(summary.participants).length > 0 || Array.isArray(summary.unmatchedCodenames) && summary.unmatchedCodenames.length > 0 || Array.isArray(summary.classGoals) && summary.classGoals.length > 0 || Array.isArray(summary.liveActivities) && summary.liveActivities.length > 0 || !!summary.organizerActivity));
@@ -302,14 +350,21 @@ const sanitizeRosterSessionForStorage = (summary) => {
 };
 const saveRosterSessionSummary = (rosterKey, summary, note = "", retentionLimit = 30) => {
   if (!rosterKey || !summary?.id) return rosterKey;
+  const safeRetention = Math.max(1, Math.min(500, Math.floor(Number.isFinite(Number(retentionLimit)) ? Number(retentionLimit) : 30)));
   const cleanNote = String(note || "").trim().slice(0, 500);
   const storageSafeSummary = sanitizeRosterSessionForStorage(summary);
   const savedSummary = cleanNote ? { ...storageSafeSummary, teacherNote: cleanNote } : storageSafeSummary;
   const existing = Array.isArray(rosterKey.sessionHistory) ? rosterKey.sessionHistory : [];
   if (!shouldSaveRosterSessionSummary(summary, cleanNote)) return rosterKey;
-  const sessionHistory = [...existing.filter((item) => item?.id !== savedSummary.id), savedSummary].slice(-Math.max(1, retentionLimit));
-  const progressHistory = { ...rosterKey.progressHistory || {} };
+  const sessionHistory = [...existing.filter((item) => item?.id !== savedSummary.id), savedSummary].slice(-safeRetention);
+  const progressHistory = /* @__PURE__ */ Object.create(null);
+  if (rosterKey.progressHistory && typeof rosterKey.progressHistory === "object") {
+    Object.entries(rosterKey.progressHistory).forEach(([k, v]) => {
+      if (!_smBlockedKey(k)) progressHistory[k] = v;
+    });
+  }
   Object.entries(savedSummary.participants || {}).forEach(([codename, participant]) => {
+    if (_smBlockedKey(codename) || !participant || typeof participant !== "object") return;
     const previous = Array.isArray(progressHistory[codename]) ? progressHistory[codename] : [];
     const entry = {
       sessionId: savedSummary.id,
@@ -322,9 +377,9 @@ const saveRosterSessionSummary = (rosterKey, summary, note = "", retentionLimit 
       liveRevisionCount: participant.liveRevisionCount || 0,
       ...participant.organizer ? { organizer: { ...participant.organizer } } : {}
     };
-    progressHistory[codename] = [...previous.filter((item) => item?.sessionId !== savedSummary.id), entry].slice(-Math.max(1, retentionLimit));
+    progressHistory[codename] = [...previous.filter((item) => item?.sessionId !== savedSummary.id), entry].slice(-safeRetention);
   });
-  return { ...rosterKey, sessionHistory, progressHistory };
+  return { ...rosterKey, sessionHistory, progressHistory: Object.assign({}, progressHistory) };
 };
 function SessionModal({
   activeSessionAppId,
@@ -353,17 +408,24 @@ function SessionModal({
 }) {
   const appId = activeSessionAppId || rawAppId;
   const noop = () => null;
-  const Wifi = window.Wifi || noop;
-  const X = window.X || noop;
-  const Copy = window.Copy || noop;
-  const Users = window.Users || noop;
-  const ChevronRight = window.ChevronRight || noop;
-  const XCircle = window.XCircle || noop;
-  const ExternalLink = window.ExternalLink || noop;
-  const Printer = window.Printer || noop;
-  const Maximize = window.Maximize || noop;
-  const Minimize = window.Minimize || noop;
-  const CheckCircle2 = window.CheckCircle2 || noop;
+  const win = typeof window !== "undefined" ? window : null;
+  const Wifi = win && win.Wifi || noop;
+  const X = win && win.X || noop;
+  const Copy = win && win.Copy || noop;
+  const Users = win && win.Users || noop;
+  const ChevronRight = win && win.ChevronRight || noop;
+  const XCircle = win && win.XCircle || noop;
+  const ExternalLink = win && win.ExternalLink || noop;
+  const Printer = win && win.Printer || noop;
+  const Maximize = win && win.Maximize || noop;
+  const Minimize = win && win.Minimize || noop;
+  const CheckCircle2 = win && win.CheckCircle2 || noop;
+  const notify = React.useCallback((msg, kind) => {
+    if (typeof addToast === "function") addToast(msg, kind);
+  }, [addToast]);
+  const closeModal = React.useCallback(() => {
+    if (typeof handleSetShowSessionModalToFalse === "function") handleSetShowSessionModalToFalse();
+  }, [handleSetShowSessionModalToFalse]);
   const tr = React.useCallback((key, fallback, params) => {
     try {
       const translated = typeof t === "function" ? t(key, params) : "";
@@ -379,12 +441,14 @@ function SessionModal({
   const [isProjectionMode, setIsProjectionMode] = React.useState(false);
   const [copiedTarget, setCopiedTarget] = React.useState("");
   const copiedTimerRef = React.useRef(null);
+  const printTimerRef = React.useRef(null);
   const modalMountedRef = React.useRef(true);
   React.useEffect(() => {
     modalMountedRef.current = true;
     return () => {
       modalMountedRef.current = false;
       if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
+      if (printTimerRef.current) clearTimeout(printTimerRef.current);
     };
   }, []);
   const handleCopyValue = React.useCallback((targetKey, value) => {
@@ -404,10 +468,11 @@ function SessionModal({
   const [liveQrSvg, setLiveQrSvg] = React.useState("");
   const [liveQrError, setLiveQrError] = React.useState(false);
   const qrStatusText = liveQrSvg ? "QR validated" : liveQrError ? "QR unavailable" : "QR loading";
-  const studentAiLabel = studentAiPolicy === "student-byok" ? "Personal AI optional" : "AI tools off";
+  const effectiveAiPolicy = _smManagedAiBlocked() ? "off" : studentAiPolicy;
+  const studentAiLabel = effectiveAiPolicy === "student-byok" ? "Personal AI optional" : "AI tools off";
   const dialogRef = React.useRef(null);
-  const closeHandlerRef = React.useRef(handleSetShowSessionModalToFalse);
-  closeHandlerRef.current = handleSetShowSessionModalToFalse;
+  const closeHandlerRef = React.useRef(closeModal);
+  closeHandlerRef.current = closeModal;
   React.useEffect(function() {
     const dialog = dialogRef.current;
     if (!dialog) return void 0;
@@ -481,7 +546,7 @@ function SessionModal({
       if (!isTopTrap()) return;
       if (!dialog.isConnected) return;
       if (event.key === "Escape") {
-        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+        if (event.defaultPrevented || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.nativeEvent?.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
         event.preventDefault();
         event.stopPropagation();
         closeHandlerRef.current && closeHandlerRef.current();
@@ -555,16 +620,17 @@ function SessionModal({
     };
   }, []);
   const liveJoinUrl = React.useMemo(() => {
-    if (mailboxJoinUrl) return mailboxJoinUrl;
+    if (mailboxJoinUrl) return _smSafeJoinUrl(mailboxJoinUrl);
     if (isLocalOnly || !activeSessionCode || typeof window === "undefined") return "";
     const params = {
       allo_join: activeSessionCode,
       allo_host: activeSessionAppId || appId,
-      allo_ai: studentAiPolicy === "student-byok" ? "byok" : "off"
+      allo_ai: effectiveAiPolicy === "student-byok" ? "byok" : "off"
     };
     if (typeof window.__alloBuildShareUrl === "function") {
       try {
-        return window.__alloBuildShareUrl(params);
+        const built = window.__alloBuildShareUrl(params);
+        if (built) return _smSafeJoinUrl(built);
       } catch (_) {
       }
     }
@@ -578,11 +644,11 @@ function SessionModal({
       url.search = "";
       url.hash = "";
       Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, String(value)));
-      return url.toString();
+      return _smSafeJoinUrl(url.toString());
     } catch (_) {
       return "";
     }
-  }, [activeSessionAppId, activeSessionCode, appId, isLocalOnly, mailboxJoinUrl, studentAiPolicy]);
+  }, [activeSessionAppId, activeSessionCode, appId, isLocalOnly, mailboxJoinUrl, effectiveAiPolicy]);
   React.useEffect(() => {
     let cancelled = false;
     if (!liveJoinUrl || typeof window === "undefined") {
@@ -603,7 +669,14 @@ function SessionModal({
       return qr.createSvgTag({ cellSize: 5, margin: 20, scalable: true, title: "AlloFlow student join QR" });
     };
     makeQrSvg().then((svg) => {
-      if (!cancelled) setLiveQrSvg(svg);
+      if (cancelled) return;
+      const safeSvg = _smSanitizeQrSvg(svg);
+      if (safeSvg) {
+        setLiveQrSvg(safeSvg);
+      } else {
+        setLiveQrSvg("");
+        setLiveQrError(true);
+      }
     }).catch(() => {
       if (!cancelled) {
         setLiveQrSvg("");
@@ -615,44 +688,55 @@ function SessionModal({
     };
   }, [liveJoinUrl]);
   const testStudentJoin = React.useCallback(() => {
-    if (!liveJoinUrl || typeof window === "undefined") return;
-    const preview = window.open(liveJoinUrl, "_blank", "noopener,noreferrer");
+    const safeUrl = _smSafeJoinUrl(liveJoinUrl);
+    if (!safeUrl || typeof window === "undefined") return;
+    const preview = window.open(safeUrl, "_blank", "noopener,noreferrer");
     if (preview) {
       try {
         preview.opener = null;
       } catch (_) {
       }
     } else {
-      addToast(tr("session.allow_popups_test_link", "Allow pop-ups to test this student join link."), "info");
+      notify(tr("session.allow_popups_test_link", "Allow pop-ups to test this student join link."), "info");
     }
-  }, [addToast, liveJoinUrl, tr]);
+  }, [notify, liveJoinUrl, tr]);
   const printLiveQr = React.useCallback(() => {
-    if (!liveQrSvg || typeof window === "undefined") {
-      addToast(tr("session.wait_qr_load", "Wait for the QR code to finish loading before printing."), "info");
+    const safeSvg = _smSanitizeQrSvg(liveQrSvg);
+    if (!safeSvg || typeof window === "undefined" || typeof document === "undefined") {
+      notify(tr("session.wait_qr_load", "Wait for the QR code to finish loading before printing."), "info");
       return;
     }
     const popup = window.open("", "_blank", "width=720,height=900");
     if (!popup) {
-      addToast(tr("session.allow_popups_print_qr", "Allow pop-ups to print this QR code."), "info");
+      notify(tr("session.allow_popups_print_qr", "Allow pop-ups to print this QR code."), "info");
       return;
     }
     try {
       popup.opener = null;
     } catch (_) {
     }
+    const escapeHtml = (v) => String(v == null ? "" : v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const sanitizeSvgGraph = (svg) => _smSanitizeQrSvg(svg);
     const safeCode = String(activeSessionCode || "").replace(/[^A-Z0-9-]/gi, "");
-    popup.document.open();
-    popup.document.write(`<!doctype html><html lang="${String(document.documentElement.lang || "en").replace(/[^\w-]/g, "")}"${document.documentElement.dir === "rtl" ? ' dir="rtl"' : ""}><head><meta charset="utf-8"><title>AlloFlow live session ${safeCode}</title><style>body{font-family:Arial,sans-serif;color:#172033;text-align:center;padding:40px}h1{font-size:28px;margin:0 0 8px}.mode{font-weight:700;color:#0e7490;margin-bottom:24px}.qr{width:360px;height:360px;margin:0 auto 24px}.qr svg{width:100%;height:100%}.code{font:900 54px/1.1 monospace;letter-spacing:.18em;margin:12px 0}.note{font-size:15px;color:#475569;margin-top:18px}@media print{body{padding:20px}}</style></head><body><h1>AlloFlow live session</h1><div class="mode">${isMailboxSession ? "Class Mailbox QR join" : "Student QR join"} \xB7 ${studentAiLabel}</div><div class="qr">${liveQrSvg}</div><div>Fallback class code</div><div class="code">${safeCode}</div><div class="note">Scan the QR code to join. This invitation works only while the teacher session is active.</div></body></html>`);
-    popup.document.close();
-    setTimeout(() => {
+    const lang = String(document.documentElement?.lang || "en").replace(/[^\w-]/g, "") || "en";
+    try {
+      popup.document.open();
+      popup.document.write(`<!doctype html><html lang="${escapeHtml(lang)}"${document.documentElement?.dir === "rtl" ? ' dir="rtl"' : ""}><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none';"><title>AlloFlow live session ${escapeHtml(safeCode)}</title><style>body{font-family:Arial,sans-serif;color:#172033;text-align:center;padding:40px}h1{font-size:28px;margin:0 0 8px}.mode{font-weight:700;color:#0e7490;margin-bottom:24px}.qr{width:360px;height:360px;margin:0 auto 24px}.qr svg{width:100%;height:100%}.code{font:900 54px/1.1 monospace;letter-spacing:.18em;margin:12px 0}.note{font-size:15px;color:#475569;margin-top:18px}@media print{body{padding:20px}}</style></head><body><h1>AlloFlow live session</h1><div class="mode">${isMailboxSession ? "Class Mailbox QR join" : "Student QR join"} \xB7 ${escapeHtml(studentAiLabel)}</div><div class="qr">${sanitizeSvgGraph(safeSvg)}</div><div>Fallback class code</div><div class="code">${escapeHtml(safeCode)}</div><div class="note">Scan the QR code to join. This invitation works only while the teacher session is active.</div></body></html>`);
+      popup.document.close();
+    } catch (_) {
+      return;
+    }
+    if (printTimerRef.current) clearTimeout(printTimerRef.current);
+    printTimerRef.current = setTimeout(() => {
+      printTimerRef.current = null;
       try {
         popup.focus();
         popup.print();
       } catch (_) {
       }
     }, 250);
-  }, [activeSessionCode, addToast, isMailboxSession, liveQrSvg, studentAiLabel, tr]);
-  return /* @__PURE__ */ React.createElement("div", { className: `fixed inset-0 bg-black/80 z-[260] flex items-center justify-center animate-in fade-in duration-200 motion-reduce:animate-none ${isProjectionMode ? "p-0" : "p-4"}`, role: "presentation", onClick: handleSetShowSessionModalToFalse }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, className: `allo-docsuite bg-white shadow-2xl text-center w-full overflow-y-auto relative animate-in zoom-in-95 duration-200 motion-reduce:animate-none ${isProjectionMode ? "h-screen max-w-none rounded-none p-6 sm:p-10" : "max-h-[90vh] max-w-md rounded-2xl p-5 sm:p-8"}`, onClick: (e) => e.stopPropagation(), role: "dialog", "aria-modal": "true", "aria-labelledby": "alloflow-session-modal-title", "aria-describedby": "alloflow-session-modal-description" }, !isLocalOnly && liveJoinUrl && !isCanvasManagedBackend && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setIsProjectionMode((value) => !value), className: "absolute top-4 left-4 z-10 min-h-11 flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-800 shadow-sm hover:border-indigo-400", "aria-label": isProjectionMode ? "Exit projection mode" : "Open projection mode" }, isProjectionMode ? /* @__PURE__ */ React.createElement(Minimize, { size: 16, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Maximize, { size: 16, "aria-hidden": "true" }), " ", /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline" }, isProjectionMode ? "Exit projection mode" : "Open projection mode")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetShowSessionModalToFalse, className: "absolute top-4 right-4 min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors motion-reduce:transition-none", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-green-100 p-4 rounded-full shadow-inner", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Wifi, { size: 48, className: "text-green-600 animate-pulse motion-reduce:animate-none" }))), /* @__PURE__ */ React.createElement("h2", { id: "alloflow-session-modal-title", className: "text-2xl font-black text-slate-800 mb-2" }, isLocalOnly ? "Local preview" : isMailboxSession ? "Class Mailbox live session" : t("session.live_title")), isProjectionMode && /* @__PURE__ */ React.createElement("div", { "data-session-projection-count": "true", role: "status", "aria-live": "polite", "aria-atomic": "true", className: "mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-300 bg-emerald-50 px-4 py-1.5 text-sm font-black text-emerald-900" }, /* @__PURE__ */ React.createElement(Users, { size: 16, "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", null, connectedStudentCount === 1 ? tr("session.projection_one_joined", "1 student joined") : tr("session.projection_many_joined", "{count} students joined", { count: connectedStudentCount }))), /* @__PURE__ */ React.createElement("p", { id: "alloflow-session-modal-description", className: "text-slate-600 mb-6 font-medium" }, isLocalOnly ? "Firebase did not create a shareable session. This preview stays on the teacher device." : isMailboxSession ? "Students join through your Class Mailbox without accounts." : t("session.live_instruction")), /* @__PURE__ */ React.createElement(
+  }, [activeSessionCode, notify, isMailboxSession, liveQrSvg, studentAiLabel, tr]);
+  return /* @__PURE__ */ React.createElement("div", { className: `fixed inset-0 bg-black/80 z-[260] flex items-center justify-center animate-in fade-in duration-200 motion-reduce:animate-none ${isProjectionMode ? "p-0" : "p-4"}`, role: "presentation", onClick: handleSetShowSessionModalToFalse }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, className: `allo-docsuite bg-white shadow-2xl text-center w-full overflow-y-auto relative animate-in zoom-in-95 duration-200 motion-reduce:animate-none ${isProjectionMode ? "h-screen max-w-none rounded-none p-6 sm:p-10" : "max-h-[90vh] max-w-md rounded-2xl p-5 sm:p-8"}`, onClick: (e) => e.stopPropagation(), role: "dialog", "aria-modal": "true", "aria-labelledby": "alloflow-session-modal-title", "aria-describedby": "alloflow-session-modal-description" }, !isLocalOnly && liveJoinUrl && !isCanvasManagedBackend && /* @__PURE__ */ React.createElement("button", { type: "button", "aria-pressed": isProjectionMode, onClick: () => setIsProjectionMode((value) => !value), className: "absolute top-4 left-4 z-10 min-h-11 flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-800 shadow-sm hover:border-indigo-400", "aria-label": isProjectionMode ? "Exit projection mode" : "Open projection mode" }, isProjectionMode ? /* @__PURE__ */ React.createElement(Minimize, { size: 16, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Maximize, { size: 16, "aria-hidden": "true" }), " ", /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline" }, isProjectionMode ? "Exit projection mode" : "Open projection mode")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: closeModal, className: "absolute top-4 right-4 min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors motion-reduce:transition-none", "aria-label": tr("common.close", "Close") }, /* @__PURE__ */ React.createElement(X, { size: 24, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-green-100 p-4 rounded-full shadow-inner", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Wifi, { size: 48, className: "text-green-600 animate-pulse motion-reduce:animate-none" }))), /* @__PURE__ */ React.createElement("h2", { id: "alloflow-session-modal-title", className: "text-2xl font-black text-slate-800 mb-2" }, isLocalOnly ? "Local preview" : isMailboxSession ? "Class Mailbox live session" : tr("session.live_title", "Live Session")), isProjectionMode && /* @__PURE__ */ React.createElement("div", { "data-session-projection-count": "true", role: "status", "aria-live": "polite", "aria-atomic": "true", className: "mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-300 bg-emerald-50 px-4 py-1.5 text-sm font-black text-emerald-900" }, /* @__PURE__ */ React.createElement(Users, { size: 16, "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", null, connectedStudentCount === 1 ? tr("session.projection_one_joined", "1 student joined") : tr("session.projection_many_joined", "{count} students joined", { count: connectedStudentCount }))), /* @__PURE__ */ React.createElement("p", { id: "alloflow-session-modal-description", className: "text-slate-600 mb-6 font-medium" }, isLocalOnly ? "Firebase did not create a shareable session. This preview stays on the teacher device." : isMailboxSession ? "Students join through your Class Mailbox without accounts." : tr("session.live_instruction", "Share this code with students to join.")), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -660,10 +744,10 @@ function SessionModal({
       "aria-label": `${activeSessionCode}. ${t("session.click_to_copy")}`,
       className: `w-full bg-indigo-50 border-4 border-indigo-100 rounded-2xl cursor-pointer hover:bg-indigo-100 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 transition-colors group relative ${isProjectionMode ? "mx-auto max-w-4xl p-4 mb-4" : "p-4 sm:p-6 mb-6"}`,
       onClick: () => handleCopyValue("code", activeSessionCode),
-      title: t("common.click_to_copy")
+      title: tr("common.click_to_copy", "Click to copy")
     },
     /* @__PURE__ */ React.createElement("div", { className: `font-black text-indigo-600 tracking-[0.16em] sm:tracking-widest font-mono ${isProjectionMode ? "text-6xl sm:text-8xl" : "text-5xl sm:text-7xl"}` }, activeSessionCode),
-    /* @__PURE__ */ React.createElement("div", { className: `absolute bottom-2 left-1/2 -translate-x-1/2 text-xs font-bold uppercase tracking-widest transition-opacity flex items-center gap-1 ${copiedTarget === "code" ? "opacity-100 text-emerald-800" : "opacity-0 text-indigo-600 group-hover:opacity-100 group-focus-within:opacity-100"}` }, copiedTarget === "code" ? /* @__PURE__ */ React.createElement(React.Fragment, null, "\u2713 ", tr("common.copied", "Copied!")) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Copy, { size: 10, "aria-hidden": "true" }), " ", t("session.click_to_copy")))
+    /* @__PURE__ */ React.createElement("div", { className: `absolute bottom-2 left-1/2 -translate-x-1/2 text-xs font-bold uppercase tracking-widest transition-opacity flex items-center gap-1 ${copiedTarget === "code" ? "opacity-100 text-emerald-800" : "opacity-0 text-indigo-600 group-hover:opacity-100 group-focus-within:opacity-100"}` }, copiedTarget === "code" ? /* @__PURE__ */ React.createElement(React.Fragment, null, "\u2713 ", tr("common.copied", "Copied!")) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Copy, { size: 10, "aria-hidden": "true" }), " ", tr("session.click_to_copy", "Click to copy")))
   ), liveJoinUrl && !isCanvasManagedBackend && /* @__PURE__ */ React.createElement("div", { className: `bg-cyan-50 rounded-xl border border-cyan-200 text-left ${isProjectionMode ? "mx-auto max-w-5xl p-5 mb-3" : "p-4 mb-6"}` }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-cyan-700 font-bold uppercase tracking-wider mb-2 text-center" }, isMailboxSession ? "Class Mailbox QR join" : "Student QR join"), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-3" }, /* @__PURE__ */ React.createElement("div", { className: `bg-white border border-cyan-200 rounded-lg p-2 flex items-center justify-center shadow-sm ${isProjectionMode ? "w-[min(52vh,72vw)] h-[min(52vh,72vw)]" : "w-40 h-40"}` }, liveQrSvg ? /* @__PURE__ */ React.createElement("div", { className: "w-full h-full [&_svg]:w-full [&_svg]:h-full", role: "img", "aria-label": "AlloFlow student join QR", dangerouslySetInnerHTML: { __html: liveQrSvg } }) : /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-cyan-700 text-center" }, liveQrError ? "Copy link below" : qrStatusText))), /* @__PURE__ */ React.createElement("ul", { className: "mb-3 grid grid-cols-1 gap-2 text-xs sm:grid-cols-3", "aria-label": "Live session readiness" }, /* @__PURE__ */ React.createElement("li", { className: "flex items-center justify-center gap-1.5 rounded-lg bg-white px-2 py-2 font-bold text-emerald-800" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 14, "aria-hidden": "true" }), " Session active"), /* @__PURE__ */ React.createElement("li", { className: "flex items-center justify-center gap-1.5 rounded-lg bg-white px-2 py-2 font-bold text-emerald-800" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 14, "aria-hidden": "true" }), " Student link ready"), /* @__PURE__ */ React.createElement("li", { className: "flex items-center justify-center gap-1.5 rounded-lg bg-white px-2 py-2 font-bold text-emerald-800" }, liveQrSvg && /* @__PURE__ */ React.createElement(CheckCircle2, { size: 14, "aria-hidden": "true" }), " ", /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", "aria-atomic": "true" }, qrStatusText))), /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -673,7 +757,7 @@ function SessionModal({
       className: `w-full min-h-11 flex items-center justify-center gap-2 text-xs font-bold rounded-lg p-2 transition-all motion-reduce:transition-none break-all focus-visible:ring-2 focus-visible:ring-cyan-600 border ${copiedTarget === "join" ? "border-emerald-400 bg-emerald-50 text-emerald-900" : "text-cyan-800 hover:text-cyan-900 bg-white border-cyan-300 hover:border-cyan-400"}`
     },
     copiedTarget === "join" ? /* @__PURE__ */ React.createElement(React.Fragment, null, "\u2713 ", tr("session.join_link_copied", "Student join link copied")) : /* @__PURE__ */ React.createElement(React.Fragment, null, "Copy student join link ", /* @__PURE__ */ React.createElement(Copy, { size: 12, "aria-hidden": "true" }))
-  ), /* @__PURE__ */ React.createElement("input", { "aria-label": "Selectable student join link", readOnly: true, value: liveJoinUrl, onFocus: (event) => event.target.select(), className: "mt-2 min-h-11 w-full rounded-lg border border-cyan-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-cyan-500" }), /* @__PURE__ */ React.createElement("div", { className: `mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 ${isProjectionMode ? "hidden" : ""}` }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: testStudentJoin, className: "flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-2 py-2 text-xs font-bold text-emerald-900 hover:border-emerald-500" }, "Test as student ", /* @__PURE__ */ React.createElement(ExternalLink, { size: 12, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: printLiveQr, disabled: !liveQrSvg, className: "flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2 py-2 text-xs font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50" }, "Print QR ", /* @__PURE__ */ React.createElement(Printer, { size: 12, "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-cyan-800 mt-2 text-center" }, /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", "aria-atomic": "true" }, connectedStudentCount > 0 ? connectedStudentCount + " student" + (connectedStudentCount === 1 ? "" : "s") + " connected. " : ""), isMailboxSession ? `Ready to scan. This QR uses the mailbox session secret, requires no Firebase sign-in, and expires when the teacher ends the session. ${studentAiLabel}.` : `Ready to scan. ${studentAiPolicy === "student-byok" ? "Students may connect their own AI provider for this tab." : "AI generation stays off."} The link stops working when the session ends.`)), !liveJoinUrl && !isCanvasManagedBackend && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-amber-50 p-3 rounded-xl border border-amber-200 text-left" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-800 font-bold uppercase tracking-wider mb-1 text-center" }, isLocalOnly ? "Local preview only" : "Student QR unavailable"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-900 text-center" }, isLocalOnly ? "This code was not saved to Firebase, so students cannot join it. Reload, start a new live session, and share only when a QR appears." : "This host is not configured as a student join path. Use the class code, local network link, or a student app URL.")), isCanvasManagedBackend && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-amber-50 p-3 rounded-xl border border-amber-200 text-left" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-800 font-bold uppercase tracking-wider mb-1 text-center" }, "Scanned QR will not work from this backend"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-900" }, "This session runs on the Firebase project Gemini Canvas provides. Its rules refuse student devices that are not already signed in to Canvas, so a scanned QR would fail on the phone even though the session started correctly here. Two paths do work:"), /* @__PURE__ */ React.createElement("ul", { className: "mt-2 space-y-1.5 text-xs text-amber-900" }, /* @__PURE__ */ React.createElement("li", null, /* @__PURE__ */ React.createElement("b", null, "No student accounts:"), " end this session and start a ", /* @__PURE__ */ React.createElement("b", null, "Class Mailbox QR session"), " instead. Students scan and join with no accounts at all."), /* @__PURE__ */ React.createElement("li", null, /* @__PURE__ */ React.createElement("b", null, "Students who have Gemini access:"), " share your Canvas link as usual, and give them the class code above to join from inside Canvas.")), liveJoinUrl && /* @__PURE__ */ React.createElement("details", { className: "mt-2" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-bold text-amber-800" }, "Show the standard join link anyway (for troubleshooting)"), /* @__PURE__ */ React.createElement("input", { "aria-label": "Selectable standard join link", readOnly: true, value: liveJoinUrl, onFocus: (event) => event.target.select(), className: "mt-2 min-h-11 w-full rounded-lg border border-amber-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-amber-500" }), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-amber-800" }, "Expect a permission error on the student device. If it joins successfully, the managed rules have changed \u2014 worth reporting."))), !isProjectionMode && lanJoinUrl && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-emerald-50 p-3 rounded-xl border border-emerald-200" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-emerald-700 font-bold uppercase tracking-wider mb-1" }, "Local network join link"), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("input", { "aria-label": "Selectable student join link", readOnly: true, value: liveJoinUrl, onFocus: (event) => event.target.select(), className: "mt-2 min-h-11 w-full rounded-lg border border-cyan-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-cyan-500" }), /* @__PURE__ */ React.createElement("div", { className: `mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 ${isProjectionMode ? "hidden" : ""}` }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: testStudentJoin, className: "flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-2 py-2 text-xs font-bold text-emerald-900 hover:border-emerald-500" }, "Test as student ", /* @__PURE__ */ React.createElement(ExternalLink, { size: 12, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: printLiveQr, disabled: !liveQrSvg, className: "flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2 py-2 text-xs font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50" }, "Print QR ", /* @__PURE__ */ React.createElement(Printer, { size: 12, "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-cyan-800 mt-2 text-center" }, /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", "aria-atomic": "true" }, connectedStudentCount > 0 ? connectedStudentCount + " student" + (connectedStudentCount === 1 ? "" : "s") + " connected. " : ""), isMailboxSession ? `Ready to scan. This QR uses the mailbox session secret, requires no Firebase sign-in, and expires when the teacher ends the session. ${studentAiLabel}.` : `Ready to scan. ${effectiveAiPolicy === "student-byok" ? "Students may connect their own AI provider for this tab." : "AI generation stays off."} The link stops working when the session ends.`)), !liveJoinUrl && !isCanvasManagedBackend && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-amber-50 p-3 rounded-xl border border-amber-200 text-left" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-800 font-bold uppercase tracking-wider mb-1 text-center" }, isLocalOnly ? "Local preview only" : "Student QR unavailable"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-900 text-center" }, isLocalOnly ? "This code was not saved to Firebase, so students cannot join it. Reload, start a new live session, and share only when a QR appears." : "This host is not configured as a student join path. Use the class code, local network link, or a student app URL.")), isCanvasManagedBackend && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-amber-50 p-3 rounded-xl border border-amber-200 text-left" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-800 font-bold uppercase tracking-wider mb-1 text-center" }, "Scanned QR will not work from this backend"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-900" }, "This session runs on the Firebase project Gemini Canvas provides. Its rules refuse student devices that are not already signed in to Canvas, so a scanned QR would fail on the phone even though the session started correctly here. Two paths do work:"), /* @__PURE__ */ React.createElement("ul", { className: "mt-2 space-y-1.5 text-xs text-amber-900" }, /* @__PURE__ */ React.createElement("li", null, /* @__PURE__ */ React.createElement("b", null, "No student accounts:"), " end this session and start a ", /* @__PURE__ */ React.createElement("b", null, "Class Mailbox QR session"), " instead. Students scan and join with no accounts at all."), /* @__PURE__ */ React.createElement("li", null, /* @__PURE__ */ React.createElement("b", null, "Students who have Gemini access:"), " share your Canvas link as usual, and give them the class code above to join from inside Canvas.")), liveJoinUrl && /* @__PURE__ */ React.createElement("details", { className: "mt-2" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-bold text-amber-800" }, "Show the standard join link anyway (for troubleshooting)"), /* @__PURE__ */ React.createElement("input", { "aria-label": "Selectable standard join link", readOnly: true, value: liveJoinUrl, onFocus: (event) => event.target.select(), className: "mt-2 min-h-11 w-full rounded-lg border border-amber-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-amber-500" }), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-amber-800" }, "Expect a permission error on the student device. If it joins successfully, the managed rules have changed \u2014 worth reporting."))), !isProjectionMode && lanJoinUrl && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-emerald-50 p-3 rounded-xl border border-emerald-200" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-emerald-700 font-bold uppercase tracking-wider mb-1" }, "Local network join link"), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -685,7 +769,7 @@ function SessionModal({
     lanJoinUrl,
     " ",
     copiedTarget === "lan" ? /* @__PURE__ */ React.createElement("span", { className: "font-sans text-emerald-900" }, "\u2713 ", tr("common.copied", "Copied")) : /* @__PURE__ */ React.createElement(Copy, { size: 12, "aria-hidden": "true" })
-  )), !isProjectionMode && !isMailboxSession && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 font-bold uppercase tracking-wider mb-1" }, t("session.host_id_share")), /* @__PURE__ */ React.createElement(
+  )), !isProjectionMode && !isMailboxSession && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 font-bold uppercase tracking-wider mb-1" }, tr("session.host_id_share", "Host ID")), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -701,11 +785,13 @@ function SessionModal({
     "button",
     {
       type: "button",
-      onClick: handleSetShowGroupModalToTrue,
+      onClick: () => {
+        if (typeof handleSetShowGroupModalToTrue === "function") handleSetShowGroupModalToTrue();
+      },
       className: "w-full bg-gradient-to-r from-violet-700 to-purple-700 hover:from-violet-800 hover:to-purple-700 text-white px-6 py-4 rounded-xl font-bold text-sm transition-all shadow-lg shadow-purple-200 flex items-center justify-center gap-3"
     },
     /* @__PURE__ */ React.createElement(Users, { size: 20, "aria-hidden": "true" }),
-    /* @__PURE__ */ React.createElement("div", { className: "text-left" }, /* @__PURE__ */ React.createElement("span", { className: "block" }, t("groups.manage_button")), /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-normal opacity-80" }, t("groups.manage_button_desc"))),
+    /* @__PURE__ */ React.createElement("div", { className: "text-left" }, /* @__PURE__ */ React.createElement("span", { className: "block" }, tr("groups.manage_button", "Manage Groups")), /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-normal opacity-80" }, tr("groups.manage_button_desc", "Organize students into learning groups"))),
     /* @__PURE__ */ React.createElement(ChevronRight, { size: 18, className: "opacity-60", "aria-hidden": "true" })
   )), !isProjectionMode && sessionData && /* @__PURE__ */ React.createElement("div", { className: "mb-8 flex justify-center" }, /* @__PURE__ */ React.createElement(
     "button",
@@ -713,36 +799,38 @@ function SessionModal({
       type: "button",
       role: "switch",
       "aria-checked": sessionData.mode === "sync",
-      onClick: toggleSessionMode,
+      onClick: () => {
+        if (typeof toggleSessionMode === "function") toggleSessionMode();
+      },
       className: `flex items-center gap-3 px-4 py-2 rounded-full border-2 transition-all w-full justify-center ${sessionData.mode === "sync" ? "bg-indigo-50 border-indigo-500 text-indigo-700" : "bg-white border-slate-200 text-slate-600 hover:border-indigo-300"}`
     },
     /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: `w-10 h-5 rounded-full relative transition-colors ${sessionData.mode === "sync" ? "bg-indigo-500" : "bg-slate-300"}` }, /* @__PURE__ */ React.createElement("div", { className: `absolute top-1 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-300 motion-reduce:transition-none ${sessionData.mode === "sync" ? "left-6" : "left-1"}` })),
-    /* @__PURE__ */ React.createElement("div", { className: "text-left" }, /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-bold uppercase tracking-wider" }, sessionData.mode === "sync" ? t("session.teacher_paced") : t("session.student_paced")), /* @__PURE__ */ React.createElement("span", { className: "block text-xs opacity-70 font-normal" }, sessionData.mode === "sync" ? t("session.teacher_paced_desc") : t("session.student_paced_desc")))
+    /* @__PURE__ */ React.createElement("div", { className: "text-left" }, /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-bold uppercase tracking-wider" }, sessionData.mode === "sync" ? tr("session.teacher_paced", "Teacher-paced") : tr("session.student_paced", "Student-paced")), /* @__PURE__ */ React.createElement("span", { className: "block text-xs opacity-70 font-normal" }, sessionData.mode === "sync" ? tr("session.teacher_paced_desc", "Students follow your screen") : tr("session.student_paced_desc", "Students move at their own pace")))
   )), /* @__PURE__ */ React.createElement("div", { className: `flex flex-col sm:flex-row gap-3 justify-center ${isProjectionMode ? "hidden" : ""}` }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
-      onClick: handleSetShowSessionModalToFalse,
+      onClick: closeModal,
       className: "min-h-11 w-full sm:w-auto px-8 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-full transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600"
     },
-    t("session.action_close")
+    tr("session.action_close", "Close")
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       onClick: () => {
         if (typeof onRequestEndSession === "function") onRequestEndSession();
-        else setConfirmDialog({ message: t("session.end_confirm") || "Are you sure you want to end this session?", onConfirm: () => {
-          setActiveSessionCode(null);
-          setSessionData(null);
-          setShowSessionModal(false);
+        else if (typeof setConfirmDialog === "function") setConfirmDialog({ message: tr("session.end_confirm", "Are you sure you want to end this session?"), onConfirm: () => {
+          if (typeof setActiveSessionCode === "function") setActiveSessionCode(null);
+          if (typeof setSessionData === "function") setSessionData(null);
+          if (typeof setShowSessionModal === "function") setShowSessionModal(false);
         } });
       },
       className: "min-h-11 w-full sm:w-auto px-8 py-3 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 font-bold rounded-full transition-colors motion-reduce:transition-none flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-red-600"
     },
     /* @__PURE__ */ React.createElement(XCircle, { size: 18, "aria-hidden": "true" }),
     " ",
-    t("session.action_end")
+    tr("session.action_end", "End Session")
   ))));
 }
 

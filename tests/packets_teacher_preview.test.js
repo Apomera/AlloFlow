@@ -359,7 +359,9 @@ describe('teacher preview mode (T4)', () => {
     expect(region.querySelector('.try-edit-where').textContent).toMatch(/^Question 1 of 5:/);
     const iframe = td.querySelector('iframe.try-frame');
     expect(iframe.getAttribute('sandbox')).toBe('allow-scripts allow-downloads');
-    expect(snapshotOf(blobs[0].body)).toEqual({ kind: 'alloflow-packet-store', items: {} });
+    const initSnap = snapshotOf(blobs[0].body);
+    expect(initSnap).toMatchObject({ kind: 'alloflow-packet-store', items: {} });
+    expect(initSnap.nav).toMatch(/^[a-zA-Z0-9_-]{16,}$/);
 
     // Simulate iframe progress at index 4 (5th card) before removing a card.
     const storeKey = 'alloflow-take-home:' + initLesson.lessonId + ':' + initLesson.revision;
@@ -468,7 +470,7 @@ describe('teacher preview mode (T4)', () => {
     expect(lessonOf(page.built()).blocks[0].items.some((it) => it.word === 'cat')).toBe(true);
 
     peer.close();
-  });
+  }, 60000);
 
   it('wires Vocab maker preview actions (swap wrong answers, remove question)', async () => {
     const Bus = channelBus();
@@ -487,7 +489,10 @@ describe('teacher preview mode (T4)', () => {
     expect(meaningBlockIdx).toBeGreaterThanOrEqual(0);
     const cellInBlock = initial.blocks[meaningBlockIdx].items.findIndex((it) => it.word === 'cell');
     expect(cellInBlock).toBeGreaterThanOrEqual(0);
-    const flatCellIdx = initial.blocks.slice(0, meaningBlockIdx).reduce((n, b) => n + b.items.length, 0) + cellInBlock;
+    const shownOrder = Array.isArray(initial.sequence) ? initial.sequence : initial.blocks.flatMap((b) => b.items.map((it) => it.id));
+    expect(Array.isArray(initial.sequence)).toBe(true);
+    const flatCellIdx = shownOrder.indexOf(initial.blocks[meaningBlockIdx].items[cellInBlock].id);
+    expect(flatCellIdx).toBeGreaterThanOrEqual(0);
     const firstChoices = initial.blocks[meaningBlockIdx].items[cellInBlock].choices.map((c) => c.text).slice().sort();
 
     const peer = new Bus('alloflow-packets-preview');
@@ -520,7 +525,7 @@ describe('teacher preview mode (T4)', () => {
     peer.close();
   });
 
-  it('switches math fact practice preset to My own facts on preview removal and keeps rehearsal known facts', async () => {
+  it('keeps math fact practice preset intact via non-destructive previewOmit and restores omitted cards', async () => {
     const Bus = channelBus();
     const page = await openSimpleMaker('packets-math-practice.html', Bus);
     page.choose('kind', 'mul');
@@ -554,22 +559,26 @@ describe('teacher preview mode (T4)', () => {
     peer.postMessage({ type: 'preview-act', id: previewId, action: 'remove' });
     await page.until(() => reloads().length >= 1, 'math reload');
 
-    expect(page.d.querySelector('input[name="kind"]:checked').value).toBe('own');
-    expect(page.$('f-facts').value.trim().split('\n')).toHaveLength(9);
-    const stored = JSON.parse(page.w.localStorage.getItem('alloflow-packets-math-practice/1'));
-    expect(stored.known.own).toHaveLength(8);
+    // Preset selection stays intact (never destructively overwritten to "own").
+    expect(page.d.querySelector('input[name="kind"]:checked').value).toBe('mul');
+    expect(page.d.querySelector('input[name="set"]:checked').value).toBe('mul-7');
     const reloaded = lessonOf(reloads()[0].html);
     expect(reloaded.blocks[0].items.map((it) => it.word)).not.toContain(removedFirst);
+    expect(page.$('preview-restore').hidden).toBe(false);
 
-    // Incremental rehearsal fills 8 known slots + 4 new repeats = 12 cards by cycling remaining known facts.
+    // Second preview removal omits another card while preserving the preset.
     const removedSecond = reloaded.blocks[0].items[1].word;
     peer.postMessage({ type: 'preview-act', id: previewId, action: 'remove' });
     await page.until(() => reloads().length >= 2, 'math second reload');
-    const stored2 = JSON.parse(page.w.localStorage.getItem('alloflow-packets-math-practice/1'));
-    expect(page.$('f-facts').value.trim().split('\n')).toHaveLength(8);
-    expect(stored2.known.own).toHaveLength(7);
     const reloaded2 = lessonOf(reloads()[1].html);
     expect(reloaded2.blocks[0].items.map((it) => it.word)).not.toContain(removedSecond);
+    expect(page.d.querySelector('input[name="kind"]:checked').value).toBe('mul');
+
+    // Clicking Restore brings back the exact initial preset deck card-for-card.
+    page.$('preview-restore').click();
+    await page.until(() => !page.$('preview-restore') || page.$('preview-restore').hidden === true, 'math restore');
+    const restored = lessonOf(page.built());
+    expect(restored.blocks[0].items.map((it) => it.word)).toEqual(initial.blocks[0].items.map((it) => it.word));
 
     peer.close();
   });

@@ -12,12 +12,26 @@
 
 ---
 
-## Full Integration: LTI 1.3 (Firebase Deployment)
+## Current Status: Bookmarklet Active; LTI 1.3 & Institutional Firebase Functions Retired
 
-### Prerequisites
+> **Fail-closed backend boundary:** Only the browser bookmarklet (`lms_bookmarklet.js`) above is currently active for LMS workflows.
+>
+> In `desktop/web-app/functions/index.js`, AlloFlow intentionally exports **only two optional, authenticated, POST-only proxies**: `searchProxy` and `sourceFetchProxy` (deployed only via the explicit `desktop/web-app/firebase.functions.json` config; default `desktop/web-app/firebase.json` is hosting-only).
+>
+> All 11 prior experimental institutional/LTI endpoints (`ltiLogin`, `ltiLaunch`, `ltiSession`, `lmsAuth`, `lmsScan`, `triggerLmsScan`, `scanResults`, `storeRemediated`, `accessible`, `dashboardData`, `logRemediation`) are **retired and actively banned** by `dev-tools/check_firebase_security.cjs` and `dev-tools/check_lti_surface.cjs` until verified district identity, tenant/course isolation, durable one-time protocol/session state, and emulator-backed authorization tests are implemented.
+>
+> For current hosting-only and optional 2-function self-deployment instructions, see [DEPLOY_YOUR_OWN.md](DEPLOY_YOUR_OWN.md).
+
+---
+
+## Historical / Deferred Reference: LTI 1.3 & Institutional Functions (Not Deployable)
+
+*The sections below document the retired experimental LTI 1.3 and institutional LMS architecture for future reference only. Do **not** follow these steps against the current codebase — those endpoints are not exported and cannot be deployed.*
+
+### Historical Prerequisites
 - Your own Firebase project (free tier works)
 - Firebase CLI installed (`npm install -g firebase-tools`)
-- Node.js 20+
+- Node.js 22+ (required for current optional Firebase Functions)
 
 ### Step 1: Deploy AlloFlow to Your Firebase
 
@@ -174,12 +188,14 @@ After any remediation, the accessible version can be stored and shared:
 
 ---
 
-## Architecture
+## Historical Architecture Reference (Retired — Not Exported in Current Code)
+
+*Current `desktop/web-app/functions/index.js` exports only `searchProxy` and `sourceFetchProxy` (POST-only, Firebase ID token + App Check + strict origin allowlist). The diagram below shows the retired institutional design that remains disabled until verified district identity, tenant isolation, and durable session state exist.*
 
 ```
 ┌─────────────────┐     ┌──────────────────────────┐     ┌─────────────┐
 │   LMS           │     │   Firebase Cloud          │     │  AlloFlow   │
-│  (Brightspace,  │────>│   Functions               │     │  Web App    │
+│  (Brightspace,  │────>│   Functions (RETIRED)     │     │  Web App    │
 │   Canvas, etc.) │     │                           │     │  (static)   │
 │                 │     │  Auth:                    │     │             │
 │  Students see   │     │    ltiLogin               │────>│  Remediation│

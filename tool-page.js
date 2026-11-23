@@ -48,7 +48,7 @@
         btn.type = 'button';
         btn.className = 'tool-page-copy-btn';
         btn.textContent = 'Copy Cloudflare link';
-        btn.setAttribute('aria-label', 'Copy Cloudflare direct link for ' + toolName);
+        btn.setAttribute('aria-label', 'Copy Cloudflare link for ' + toolName);
 
         var status = document.createElement('span');
         status.className = 'tool-page-copy-status';

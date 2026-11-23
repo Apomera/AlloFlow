@@ -44,6 +44,7 @@ const outputCode = `/**
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.SessionModal) {
     console.log('[CDN] SessionModal already loaded, skipping');
     return;

@@ -40,7 +40,8 @@ describe('M9 — parseMarkdownToHTML escapes + anchors emphasis', () => {
     expect(src).toContain('escape the raw text BEFORE the inline-markdown transforms');
   });
   it('anchors the emphasis regex to non-space-bordered runs', () => {
-    expect(src).toContain('Anchor emphasis to non-space-bordered runs');
+    expect(src).toContain(String.raw`/\*\*(\S(?:.*?\S)?)\*\*/g`);
+    expect(src).toContain(String.raw`/\*(\S(?:.*?\S)?)\*/g`);
   });
   it('mirror: < & > are escaped', () => {
     expect(mdInline('Cool to < 100C & rising')).toBe('Cool to &lt; 100C &amp; rising');

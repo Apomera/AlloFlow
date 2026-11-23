@@ -19,7 +19,7 @@
 // ═══════════════════════════════════════════
 
 function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
-window.StemLab = window.StemLab || {
+if (typeof window !== 'undefined') window.StemLab = window.StemLab || {
   _registry: {}, _order: [],
   registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); console.log('[StemLab] Registered tool: ' + id); },
   isRegistered: function(id) { return !!this._registry[id]; },
@@ -27,9 +27,33 @@ window.StemLab = window.StemLab || {
   renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; } }
 };
 
-if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
+if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
 
 (function() {
+  var _EVO_CRISIS_RE = /\b(?:kill\s+myself|end\s+my\s+life|commit\s+suicide|suicid(?:e|al)|want\s+to\s+die|hurt\s+myself|self[\s-]?harm|cut\s+myself|overdose\s+on)\b/i;
+  function _evoScreenCrisis(text) {
+    var sample = String(text || '').trim();
+    if (!sample) return false;
+    try {
+      if (typeof window !== 'undefined' && window.SafetyContentChecker && typeof window.SafetyContentChecker.checkSelfHarm === 'function') {
+        var res = window.SafetyContentChecker.checkSelfHarm(sample);
+        if (res && (res.flagged || res.isSelfHarm || res.detected || res.matched || res.crisis)) return true;
+      }
+    } catch (_) {}
+    return _EVO_CRISIS_RE.test(sample);
+  }
+  function _evoCrisisBanner(h) {
+    return h('div', {
+      role: 'alert',
+      className: 'mt-2 rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-xs leading-relaxed text-rose-900'
+    }, 'You matter, and help is available right now. Please talk with a trusted adult, teacher, or counselor. Call or text 988 (Suicide & Crisis Lifeline), text HOME to 741741 (Crisis Text Line), or call 911.');
+  }
+  function _evoSafeJsonParse(text) {
+    return JSON.parse(text, function(k, v) {
+      if (k === '__proto__' || k === 'constructor' || k === 'prototype') return undefined;
+      return v;
+    });
+  }
   // Translator reachable from module scope, IIFE-private so it is not a global.
   // Installed because this tool had no fallback-aware helper: labels built in
   // helpers defined above render() could not see a render-scoped one, and a
@@ -83,7 +107,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
     document.head.appendChild(st);
   })();
   (function() {
-    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-stem-motion-reduce-css';
     st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
@@ -293,7 +317,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
 
   // ── Accessibility live region (WCAG 4.1.3) ──
   (function() {
-    if (document.getElementById('allo-live-evolab')) return;
+    if (typeof document === 'undefined' || !document.body || document.getElementById('allo-live-evolab')) return;
     var lr = document.createElement('div');
     lr.id = 'allo-live-evolab';
     lr.setAttribute('aria-live', 'polite');
@@ -302,7 +326,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
     document.body.appendChild(lr);
   })();
   var announce = function(msg) {
-    try { var lr = document.getElementById('allo-live-evolab'); if (lr) lr.textContent = msg; } catch (_) {}
+    try { if (typeof document === 'undefined') return; var lr = document.getElementById('allo-live-evolab'); if (lr) lr.textContent = msg; } catch (_) {}
   };
   // Label ink for an hsl(38 28% L%) map marker: black or white, whichever reaches 4.5:1 (WCAG 1.4.3).
   function eiMarkerInk(lightness) {
@@ -313,7 +337,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
 
   // ── localStorage helpers (versioned keys, wrapped in try/catch for file://
   // and privacy-mode contexts that disable storage) ──
-  function lsGet(key, fallback) { try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch(e) { return fallback; } }
+  function lsGet(key, fallback) { try { var v = localStorage.getItem(key); return v ? _evoSafeJsonParse(v) : fallback; } catch(e) { return fallback; } }
   function lsSet(key, val)      { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {} }
 
   // ── Tiny math helpers ──
@@ -6465,7 +6489,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       var speakText = function(text, onDevice) {
         var s = String(text == null ? '' : text).replace(/\s+/g, ' ').trim();
         if (!s) return;
-        var quiet = function() { try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true; } catch (e) {} return !!window._alloGlobalMute; };
+        var quiet = function() {
+          try { if (typeof window !== 'undefined' && typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true; } catch (e) {}
+          if (typeof window !== 'undefined' && (window._alloGlobalMute || window.__alloGlobalMuted === true || window.__alloSoundMuted === true)) return true;
+          try { if (typeof window !== 'undefined' && window.localStorage && window.localStorage.getItem('allo_global_muted') === '1') return true; } catch (_) {}
+          return false;
+        };
+        if (quiet()) return;
         if (callTTS && !onDevice) {
           var req = null;
           // A speak button: force past the header narration switch (it gates automatic narration).
@@ -6474,9 +6504,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           Promise.resolve(req).then(function(url) { if (!url) fallBack(); }, fallBack);
           return;
         }
-        if (quiet()) return;
         try {
-          if (window.speechSynthesis && typeof SpeechSynthesisUtterance !== 'undefined') {
+          if (typeof window !== 'undefined' && window.speechSynthesis && typeof SpeechSynthesisUtterance !== 'undefined') {
             var u = new SpeechSynthesisUtterance(s);
             u.rate = 0.95;
             window.speechSynthesis.cancel();
@@ -6484,6 +6513,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           }
         } catch (e) {}
       };
+      useEffect(function() {
+        var onMuteChanged = function() {
+          try {
+            if (typeof window !== 'undefined' && (window.__alloGlobalMuted === true || window.__alloSoundMuted === true || window._alloGlobalMute) && window.speechSynthesis) {
+              window.speechSynthesis.cancel();
+            }
+          } catch (_) {}
+        };
+        if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+          window.addEventListener('alloflow-mute-changed', onMuteChanged);
+        }
+        return function() {
+          if (typeof window !== 'undefined' && typeof window.removeEventListener === 'function') {
+            window.removeEventListener('alloflow-mute-changed', onMuteChanged);
+          }
+          try { if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel(); } catch (_) {}
+        };
+      }, []);
 
 
       // Copy plain text for the student or teacher to paste elsewhere. Routed
@@ -7276,6 +7323,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 className: 'w-full rounded-lg border border-slate-500 p-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-400'
               }));
           })),
+          (mode === 'free' ? _evoScreenCrisis(draft) : CER_FIELDS.some(function(f) { return _evoScreenCrisis(cer[f.key]); })) ? _evoCrisisBanner(h) : null,
           h('div', { className: 'mt-2 flex flex-wrap items-center justify-between gap-2 text-xs' },
             h('span', { className: 'text-slate-600' }, mode === 'cer' ? __alloFill(__alloT('stem.evolab.cer_parts_done', '{value1} of 3 parts written'), { value1: CER_FIELDS.filter(function(f) { return String(cer[f.key] || '').trim(); }).length }) : draft.length + ' / 2000'),
             h('div', { className: 'flex items-center gap-2' },
@@ -9007,7 +9055,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       };
       var parseJournalDump = function(text) {
         var out = { journals: [], unreadable: 0, duplicates: 0 };
-        var seen = {};
+        var seen = Object.create(null);
         var src = String(text || '');
         var idx = 0;
         while (true) {
@@ -9019,7 +9067,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           idx = end + 1;
           try {
             var json = decodeURIComponent(escape(atob(raw)));
-            var obj = JSON.parse(json);
+            var obj = _evoSafeJsonParse(json);
             if (obj && typeof obj === 'object' && obj.v === 1) {
               // Same payload twice = the same journal pasted twice, not two students.
               if (seen[raw]) out.duplicates++; else { seen[raw] = true; out.journals.push(obj); }
@@ -9092,24 +9140,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var parsed = parseJournalDump(pasted);
         var journals = parsed.journals;
         var N = journals.length;
-        var titleOf = function(id) { var base = String(id).split(':')[0]; return MODULE_TITLES[base] || base; };
+        var titleOf = function(id) { var base = String(id).split(':')[0]; return Object.prototype.hasOwnProperty.call(MODULE_TITLES, base) ? MODULE_TITLES[base] : base; };
         var pct = function(a, b) { return b ? Math.round((a / b) * 100) + '%' : '—'; };
         // aggregates
-        var completedBy = {};
+        var completedBy = Object.create(null);
         BADGE_IDS.forEach(function(id) { completedBy[id] = 0; });
-        var predStats = {};   // module -> { made, judged, held }
-        var checkStats = {};  // key -> { answered, solved, firstWrong: { label: count } }
-        var challengeCounts = {};
-        var notesBy = {};
-        var ticketsBy = {};   // day -> [{ name, text, conf }]
+        var predStats = Object.create(null);   // module -> { made, judged, held }
+        var checkStats = Object.create(null);  // key -> { answered, solved, firstWrong: { label: count } }
+        var challengeCounts = Object.create(null);
+        var notesBy = Object.create(null);
+        var ticketsBy = Object.create(null);   // day -> [{ name, text, conf }]
         // Misconceptions quiz: who missed what on the first pass, and what survived a second pass.
         var quizStats = { students: 0, twoPass: 0, firstMiss: MISCONCEPTION_LABELS.map(function() { return 0; }), stillMiss: MISCONCEPTION_LABELS.map(function() { return 0; }), started: 0, shed: 0 };
         var roster = journals.map(function(j, i) {
           var name = (j.name && String(j.name).trim()) || __alloFill(__alloT('stem.evolab.student_n', 'Student {value1}'), { value1: i + 1 });
-          var completed = Array.isArray(j.completed) ? j.completed.filter(function(id) { return completedBy.hasOwnProperty(id); }) : [];
+          var completed = Array.isArray(j.completed) ? j.completed.filter(function(id) { return Object.prototype.hasOwnProperty.call(completedBy, id); }) : [];
           completed.forEach(function(id) { completedBy[id]++; });
           var held = 0, judged = 0, made = 0;
           Object.keys(j.predictions || {}).forEach(function(m) {
+            if (m === '__proto__' || m === 'constructor' || m === 'prototype') return;
             var r = j.predictions[m] || {};
             var ps = predStats[m] = predStats[m] || { made: 0, judged: 0, held: 0 };
             ps.made++; made++;
@@ -9117,14 +9166,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           });
           var solved = 0, answered = 0;
           Object.keys(j.checks || {}).forEach(function(k) {
+            if (k === '__proto__' || k === 'constructor' || k === 'prototype') return;
             var r = j.checks[k] || {};
-            var cs = checkStats[k] = checkStats[k] || { answered: 0, solved: 0, firstWrong: {}, question: '' };
+            var cs = checkStats[k] = checkStats[k] || { answered: 0, solved: 0, firstWrong: Object.create(null), question: '' };
             cs.answered++; answered++;
             if (r.q && !cs.question) cs.question = r.q;
             if (r.ok) { cs.solved++; solved++; }
             if (r.firstWrong) { var fwKey = r.firstLabel || r.first || '?'; cs.firstWrong[fwKey] = (cs.firstWrong[fwKey] || 0) + 1; }
           });
-          (Array.isArray(j.challenges) ? j.challenges : []).forEach(function(c) { challengeCounts[c] = (challengeCounts[c] || 0) + 1; });
+          (Array.isArray(j.challenges) ? j.challenges : []).forEach(function(c) { if (c === '__proto__' || c === 'constructor' || c === 'prototype') return; challengeCounts[c] = (challengeCounts[c] || 0) + 1; });
           var qz = j.quiz && typeof j.quiz === 'object' ? j.quiz : null;
           if (qz && qz.f && Array.isArray(qz.f.m)) {
             quizStats.students++;
@@ -9135,9 +9185,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             }
           }
           var noteCount = 0;
-          Object.keys(j.notes || {}).forEach(function(m) { var txt = String(j.notes[m] || '').trim(); if (!txt) return; noteCount++; (notesBy[m] = notesBy[m] || []).push({ name: name, text: txt }); });
+          Object.keys(j.notes || {}).forEach(function(m) { if (m === '__proto__' || m === 'constructor' || m === 'prototype') return; var txt = String(j.notes[m] || '').trim(); if (!txt) return; noteCount++; (notesBy[m] = notesBy[m] || []).push({ name: name, text: txt }); });
           var ticketCount = 0;
-          Object.keys(j.tickets || {}).forEach(function(dk) { var r = j.tickets[dk] || {}; var txt = String(r.t || '').trim(); if (!txt && !r.c) return; ticketCount++; (ticketsBy[dk] = ticketsBy[dk] || []).push({ name: name, text: txt, conf: r.c || '' }); });
+          Object.keys(j.tickets || {}).forEach(function(dk) { if (dk === '__proto__' || dk === 'constructor' || dk === 'prototype') return; var r = j.tickets[dk] || {}; var txt = String(r.t || '').trim(); if (!txt && !r.c) return; ticketCount++; (ticketsBy[dk] = ticketsBy[dk] || []).push({ name: name, text: txt, conf: r.c || '' }); });
           return { name: name, date: j.date || '', completed: completed.length, held: held, judged: judged, made: made, solved: solved, answered: answered, notes: noteCount, tickets: ticketCount, experiments: j.expCount || 0, challenges: (j.challenges || []).length, raw: j };
         });
         var challengeTitle = function(key) { var parts = key.split(':'); var c = CHALLENGE_INDEX.filter(function(x) { return x.moduleId === parts[0] && x.id === parts[1]; })[0]; return (c ? c.title : key) + ' (' + titleOf(parts[0]) + ')'; };
@@ -9189,7 +9239,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               Object.keys(checkStats).forEach(function(k) {
                 var cs = checkStats[k];
                 var wrongFirst = Object.keys(cs.firstWrong).reduce(function(sum, key) { return sum + cs.firstWrong[key]; }, 0);
-                if (cs.answered >= 2 && wrongFirst / cs.answered >= 0.34) moves.push({ score: wrongFirst / cs.answered, count: wrongFirst, title: __alloFill(t('stem.evolab.move_title_check', '{value1} of {value2} first answered "{value3}" ({value4})'), { value1: wrongFirst, value2: cs.answered, value3: topWrong(cs.firstWrong).replace(/ \(\d+\)$/, ''), value4: titleOf(k) }), body: MOVES[k] || t('stem.evolab.move_generic', 'Reopen the check as a class and argue the wrong answer out loud before revealing the feedback.') });
+                if (cs.answered >= 2 && wrongFirst / cs.answered >= 0.34) moves.push({ score: wrongFirst / cs.answered, count: wrongFirst, title: __alloFill(t('stem.evolab.move_title_check', '{value1} of {value2} first answered "{value3}" ({value4})'), { value1: wrongFirst, value2: cs.answered, value3: topWrong(cs.firstWrong).replace(/ \(\d+\)$/, ''), value4: titleOf(k) }), body: (Object.prototype.hasOwnProperty.call(MOVES, k) ? MOVES[k] : '') || t('stem.evolab.move_generic', 'Reopen the check as a class and argue the wrong answer out loud before revealing the feedback.') });
               });
               Object.keys(predStats).forEach(function(m) {
                 var ps = predStats[m];
@@ -10963,6 +11013,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           if (!ctx) return; // no 2D context (headless/jsdom): skip the draw loop
           var lastT = performance.now();
           var loop = function(now) {
+            if (typeof document !== 'undefined' && document.hidden) {
+              lastT = now;
+              rafRef.current = requestAnimationFrame(loop);
+              return;
+            }
             var dt = Math.min(0.05, (now - lastT) / 1000);
             lastT = now;
             // Update creature positions (skip if reduced motion preferred).
@@ -13913,6 +13968,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           if (!ctx) return; // no 2D context (headless/jsdom): skip the draw loop
           var lastT = performance.now();
           var loop = function(now) {
+            if (typeof document !== 'undefined' && document.hidden) {
+              lastT = now;
+              rafRef.current = requestAnimationFrame(loop);
+              return;
+            }
             var dt = Math.min(0.05, (now - lastT) / 1000);
             lastT = now;
             if (!_prefersReducedMotion) {
@@ -14675,6 +14735,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           if (!ctx) return; // no 2D context (headless/jsdom): skip the draw loop
           var lastT = performance.now();
           var loop = function(now) {
+            if (typeof document !== 'undefined' && document.hidden) {
+              lastT = now;
+              rafRef.current = requestAnimationFrame(loop);
+              return;
+            }
             var dt = Math.min(0.05, (now - lastT) / 1000);
             lastT = now;
             if (!_prefersReducedMotion) {
@@ -15340,6 +15405,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           if (!ctx) return; // no 2D context (headless/jsdom): skip the draw loop
           var lastT = performance.now();
           var loop = function(now) {
+            if (typeof document !== 'undefined' && document.hidden) {
+              lastT = now;
+              rafRef.current = requestAnimationFrame(loop);
+              return;
+            }
             var dt = Math.min(0.05, (now - lastT) / 1000);
             lastT = now;
             if (!_prefersReducedMotion) {
@@ -16335,6 +16405,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           if (!ctx) return; // no 2D context (headless/jsdom): skip the draw loop
           var lastT = performance.now();
           var loop = function(now) {
+            if (typeof document !== 'undefined' && document.hidden) {
+              lastT = now;
+              rafRef.current = requestAnimationFrame(loop);
+              return;
+            }
             var dt = Math.min(0.05, (now - lastT) / 1000);
             lastT = now;
             if (!_prefersReducedMotion && !extinctRef.current) {
@@ -17650,6 +17725,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           if (!ctx) return; // no 2D context (headless/jsdom): skip the draw loop
           var lastT = performance.now();
           var loop = function(now) {
+            if (typeof document !== 'undefined' && document.hidden) {
+              lastT = now;
+              rafRef.current = requestAnimationFrame(loop);
+              return;
+            }
             var dt = Math.min(0.05, (now - lastT) / 1000);
             lastT = now;
             if (!_prefersReducedMotion && phaseRef.current === 'hunting') {

@@ -6,8 +6,8 @@
   "status": "reviewed-target-not-met",
   "snapshot": {
     "algorithm": "sha256",
-    "generatedAt": "2026-11-21T23:07:11.380Z",
-    "hash": "f89666d198164eb82b4d1f27032a7e08a29d0dfacbef5cf63f0fa6a168ec2efc"
+    "generatedAt": "2026-11-23T03:02:10.419Z",
+    "hash": "c5eb268caabe3b755683f0f05084671bbec2e89bfedad742fa9b778220e1b453"
   },
   "standard": {
     "target": "500 genuinely distinct exam-style questions per non-EPPP pack",
@@ -129,8 +129,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 248,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "1376fec0e578b070743baebabf73fa4aa98e0575c7a73cf68fad84ab45959be1",
-      "itemsSha256": "25c492acd6d1149d6473965af888bff2825ce7a892e12fea92f1ba94f5e29113"
+      "packSha256": "0b23dbeca0d6110fe22b4db5ef8f153b63a387692fb773714bb02d954df5d8de",
+      "itemsSha256": "2b8dfad4e536db999d15f2ccfbcfff7c2d3368fda527c81fde1526c994a4e0b5"
     },
     {
       "stem": "early_childhood_5025",
@@ -148,8 +148,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 278,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "a85165b8deb8519387c96bd6c905426f438e9f8e3ce95d19b96af51a5c579152",
-      "itemsSha256": "b5f073fde722b921e356dfd0db1d507f6d15420cecec69bf6ccaec8b1a1bd035"
+      "packSha256": "c4632ce90b7f1f96a4a3ede6050ba35dbf34d63e1aeac40c2dd2ed533f6c1257",
+      "itemsSha256": "b2ee4cdeb47ab0965e976fd7dcded1f536d2937d2ed3f3c1b0cc3236388e0004"
     },
     {
       "stem": "educational_leadership_5412",
@@ -167,8 +167,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 271,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "86684794ae51bd01877201881faf03c15b1c54593984702f609519e5048d7e98",
-      "itemsSha256": "7c68fa55894d143fb671e12c4b6833458093a1a67530b4726eb66f34a9618be5"
+      "packSha256": "16ede28be04abb2b2749ab351584262017fee844ade9b2a6108d6350bb9e3fcf",
+      "itemsSha256": "c069830df709cf2ac19d8395e028b6759f1c631242734c40e2bd811dcff8942c"
     },
     {
       "stem": "esol_5362",
@@ -205,8 +205,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 0,
       "verdict": "reviewed-target-met",
-      "packSha256": "1afde5872b3c8e8abf597b69988d584e4cf877ccf91fe1f7843fdd6c41b184b1",
-      "itemsSha256": "608083015760fa1dbb0f939eea1f6c3fd3eddda419d54dc9afff022287a98857"
+      "packSha256": "bb97db7e2b5bef0ec9a9d9215e13422d45f528837ef57659b85600ee9d2abdcc",
+      "itemsSha256": "c398a5da24dbe50d7605bfe0d278a4f06a1007efa43519556d7cb1d577f54d63"
     },
     {
       "stem": "plt_5_9_5623",
@@ -300,8 +300,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 373,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "70a9f9fcf286db16be5402a02edfe65b18e6e6bc24977e257e4463ba6e72f0fe",
-      "itemsSha256": "3d9b8bdde4c8512caabab27a6c16322f0e64d368033f3b3e4cb2443df88bb7a2"
+      "packSha256": "5c94dff2267c0728f7d866d0f6509086b4b6ce5ac7080cdc50326bee16d94bea",
+      "itemsSha256": "89602f5bd2c954bb26a8780514d300aa28bc5a53351e094e5e52263772dadd8c"
     },
     {
       "stem": "reading_specialist_5302",
@@ -319,8 +319,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 362,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "c1bee975c95a44f1ce47581cd5be17be4f6a39eab1646bb181a9e9ce5264053f",
-      "itemsSha256": "8d1fb1cb0c882c99bc92b02a355a12530ee3b90f96763dc852900ef80bfd2108"
+      "packSha256": "0e12a4ab507269656207042d37703431051457261c06455b93734d7c21e3be77",
+      "itemsSha256": "07b0b91979b73ea3e44c24736f69cecee0dc60a09e6163692183fdc681f90921"
     },
     {
       "stem": "school_counselor_5422",
@@ -338,8 +338,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 294,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "77b4b2ab15e2691ab8e68bb7eb084989e6ba29065e032dfb0faf814994301339",
-      "itemsSha256": "82f914f9e5e1f333355cfc59bc0e9bf727cdcd7635b9632f836893ab5571b7c4"
+      "packSha256": "4fa010fa4873dcc4810eae21bf795a02ab264059d996f222201d9bda842c47ab",
+      "itemsSha256": "9f74c578b2d87a5f7b514b851b85ac51715147d657f96aeb050a094bf895e3fb"
     },
     {
       "stem": "school_librarian_5312",
@@ -357,8 +357,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 357,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "bfe15393b6f8400593e5df2b058cbababb206cafb37a87736266418c44ab4e5c",
-      "itemsSha256": "027c4667b525c4a23a7b8777e04a8bcecd0bdfdddb5c2c5ee99ecc72cf3990b9"
+      "packSha256": "04fee73734c7447d304c056f9d6f5c5956a89417caa89ccbc9a0ffdcabc862e7",
+      "itemsSha256": "c460106ae6f8c3a11a5fd91c211a97632dcb6f8ba89b9ad33abd7b57f0d301d5"
     },
     {
       "stem": "school_psychologist_5403",
@@ -395,8 +395,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 391,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "c135a3db01ece45273f2e3b868f901e65d2a5185dccdd412f3549c80acbe7628",
-      "itemsSha256": "d405c8a53b1191622f19f8bf61389fd8814e980cb503a73a2f9f1d23fa8f74d2"
+      "packSha256": "e8d7f5667358903a47896e7bb5e1ff234502e04c3c4833e32222a88766407c22",
+      "itemsSha256": "7b3e906fb12616f112353be805a6cd07e5210052b7fc2004cea5781c26d88a72"
     },
     {
       "stem": "special_education_behavior_emotional_5372",
@@ -414,8 +414,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 385,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "0735ad7e9cf0a8ed8b6a6d1ee8c8f3a54f8196ce7c85e808af25b52bf8dde554",
-      "itemsSha256": "e7bee3b6631acb243e4d47d37a1678ac67986cd69cd2fd2dea02515607dd9acb"
+      "packSha256": "8b9c7e5e041eaa645c3c51e4cf49193fa0727b8ffcb7019bd988984946694467",
+      "itemsSha256": "03c625cd0539406c5ffcb81c85b7c9a40f9512ecdcf96313c027b67c1abd3173"
     },
     {
       "stem": "special_education_early_childhood_5692",
@@ -433,8 +433,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 366,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "4525ec5ba448cd47431fb048e5f858ae820ded2530f6ed7382de6e7e94740c27",
-      "itemsSha256": "abc9d3d3537f87bad1290081211d25c8da058960cde0d2861f5e24e3ce9dd4f4"
+      "packSha256": "fd91c98c0e1050ca294b29822f791723e8762a590a60c525ccd9b05cd67e8e74",
+      "itemsSha256": "2ab9f70e697ef5d96e86fcf20229557672aae949ba6d36970b29f507aa76a96e"
     },
     {
       "stem": "special_education_intellectual_disabilities_5322",
@@ -452,8 +452,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 399,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "df3a7cde047522d5985505650e9d6d7ec178ee5dcd00698fc4b2349f7fb4722d",
-      "itemsSha256": "3a0fa35ff224eeed39ac91335ae02403a16d3294a9bbf6f6d113b28d1c7c838d"
+      "packSha256": "1996699c2876237d0c5d84f71bdefbc803c3fcf39a4287c3fad8ec41a3586bf3",
+      "itemsSha256": "066dbd39212be8b098dab47cef125f63fcf533bd7c4dfad4298e0ea9f1fe9b87"
     },
     {
       "stem": "special_education_learning_disabilities_5383",
@@ -471,8 +471,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 387,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "19861eeeb1848be82751a259440134441aad183adf2990965f5c811b23a280f5",
-      "itemsSha256": "4737c01903d825afd6785e86f8b90a8695cbf2335f6ad574b8f02ef544fa433b"
+      "packSha256": "f56e2ac356750049e2acb5ba571e05663f4144e816541591849708f64045ccf0",
+      "itemsSha256": "18456577a71b0018d34c6102b033cb8add1574e2709927056ddf3e11625f3f8e"
     },
     {
       "stem": "special_education_severe_profound_5547",
@@ -490,8 +490,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 370,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "1f4c7b37bd50b0950c3230df53d10102382c07ce4c61ab58aa5b2b4aae5df138",
-      "itemsSha256": "c79f1d6de76ea674d62a1e18815adfb379cf18ccdd5fef84f0259da8bca3c306"
+      "packSha256": "833815f187f95f3473b2d9afac44eb1a490c4b4f68c7ef201aab41c88b446fd2",
+      "itemsSha256": "da908b1fb16ab7d5216516ac071572c51eaaabfd816e67eef824334a062e1d62"
     },
     {
       "stem": "speech_language_pathology_5331",
@@ -509,8 +509,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 390,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "5947a2287f055c8e2f6cc986df2fa613ee2d5eae22d1a7e40ad11ee9321ad2d8",
-      "itemsSha256": "fe1c76d825c24e5f5f2597f0cb0e20000cdb9f4d6cc4b64366b086dfb9cbb211"
+      "packSha256": "dc72fbf2c3406d6788ad6ebac0eb66fef9e5daa49be35107a8e469e101a90a5d",
+      "itemsSha256": "9e1adb36c996855f337c2d31c74334189fd95833cd011ba2f56a46cd5d70eb07"
     },
     {
       "stem": "teaching_reading_5205",

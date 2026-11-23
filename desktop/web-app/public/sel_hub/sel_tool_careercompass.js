@@ -180,7 +180,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
       var _carT = (ctx && ctx.theme) || {};
       var _carHC = !!_carT.isContrast, _carL = !_carHC && !_carT.isDark;
       var _car_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _car_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#fff':'#000000','#f8fafc':'#000000'};
-      var _car_FGL = {'#cbd5e1':'#334155','#a5b4fc':'#3730a3','#94a3b8':'#64748b','#e0e7ff':'#3730a3','#bfdbfe':'#1e40af','#e2e8f0':'#1e293b','#fde68a':'#92400e','#818cf8':'#4338ca','#fecaca':'#b91c1c','#bbf7d0':'#166534','#86efac':'#166534','#fcd34d':'#78350f','#22c55e':'#15803d','#ef4444':'#b91c1c'}, _car_FGH = {'#cbd5e1':'#ffff00','#a5b4fc':'#ffff00','#94a3b8':'#ffff00','#e0e7ff':'#ffff00','#bfdbfe':'#ffff00','#e2e8f0':'#ffff00','#22c55e':'#ffff00','#ef4444':'#ffff00','#fff':'#ffff00','#fde68a':'#ffff00','#818cf8':'#ffff00','#fecaca':'#ffff00','#bbf7d0':'#ffff00','#86efac':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00'};
+      var _car_FGL = {'#cbd5e1':'#334155','#a5b4fc':'#3730a3','#94a3b8':'#475569','#64748b':'#475569','#e0e7ff':'#3730a3','#bfdbfe':'#1e40af','#e2e8f0':'#1e293b','#fde68a':'#92400e','#818cf8':'#4338ca','#fecaca':'#b91c1c','#bbf7d0':'#166534','#86efac':'#166534','#fcd34d':'#78350f','#22c55e':'#15803d','#ef4444':'#b91c1c'}, _car_FGH = {'#cbd5e1':'#ffff00','#a5b4fc':'#ffff00','#94a3b8':'#ffff00','#e0e7ff':'#ffff00','#bfdbfe':'#ffff00','#e2e8f0':'#ffff00','#22c55e':'#ffff00','#ef4444':'#ffff00','#fff':'#ffff00','#fde68a':'#ffff00','#818cf8':'#ffff00','#fecaca':'#ffff00','#bbf7d0':'#ffff00','#86efac':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00'};
       var _car_BDL = {'#334155':'#cbd5e1','#1e293b':'#e2e8f0','#475569':'#cbd5e1'}, _car_BDH = {'#334155':'#ffff00','#818cf8':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#f59e0b':'#ffff00','#ef4444':'#ffff00','#22c55e':'#ffff00','#cbd5e1':'#ffff00','#4f46e5':'#ffff00'};
       var _carBg = function(h){ return _carHC ? (_car_BGH[h]||h) : (_carL ? (_car_BGL[h]||h) : h); };
       var _carFg = function(h){ return _carHC ? (_car_FGH[h]||h) : (_carL ? (_car_FGL[h]||h) : h); };
@@ -199,6 +199,20 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
       var setSelHubTool = ctx.setSelHubTool;
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
+      var _carReduceMotion = false;
+      try { _carReduceMotion = !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (_) {}
+      function isImeComposing(e) {
+        return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+      }
+      function announceCC(msg) {
+        if (typeof announceToSR === 'function') { try { announceToSR(msg); } catch (_) {} }
+        try {
+          var lr = document.getElementById('allo-live-careercompass');
+          if (!lr) return;
+          lr.textContent = '';
+          setTimeout(function() { lr.textContent = String(msg || ''); }, 30);
+        } catch (_) {}
+      }
 
       var d = labToolData.careerCompass || defaultState();
       function setCC(patch) {
@@ -221,8 +235,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
-          h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: _carHC ? '#000000' : (_carL ? '#f1f5f9' : 'rgba(255,255,255,0.05)'), border: '1px solid ' + _carBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _carFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+          h('button', { type: 'button', onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
+            style: { background: _carHC ? '#000000' : (_carL ? '#f1f5f9' : 'rgba(255,255,255,0.05)'), border: '1px solid ' + _carBd('#334155'), borderRadius: 8, padding: '10px 14px', minHeight: 44, cursor: 'pointer', color: _carFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _carFg('#a5b4fc'), fontSize: 22, fontWeight: 900 } }, '🧭 Career Compass'),
             h('div', { style: { fontSize: 12, color: _carFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'Explore careers through your interests. Holland\'s RIASEC framework.')
@@ -243,11 +257,26 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
         ];
         return h('div', { className: 'no-print', role: 'tablist', 'aria-label': 'Career Compass sections',
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
-          tabs.map(function(t) {
+          tabs.map(function(t, idx) {
             var active = view === t.id;
-            return h('button', { key: t.id, id: 'cc-tab-' + t.id, onClick: function() { goto(t.id); },
+            return h('button', { key: t.id, type: 'button', id: 'cc-tab-' + t.id, onClick: function() { goto(t.id); },
+              onKeyDown: function(ev) {
+                if (isImeComposing(ev)) return;
+                var nextIdx = idx;
+                if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') nextIdx = (idx + 1) % tabs.length;
+                else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') nextIdx = (idx - 1 + tabs.length) % tabs.length;
+                else if (ev.key === 'Home') nextIdx = 0;
+                else if (ev.key === 'End') nextIdx = tabs.length - 1;
+                else return;
+                ev.preventDefault();
+                goto(tabs[nextIdx].id);
+                setTimeout(function() {
+                  var nextBtn = document.getElementById('cc-tab-' + tabs[nextIdx].id);
+                  if (nextBtn) nextBtn.focus();
+                }, 0);
+              },
               role: 'tab', 'aria-selected': active, 'aria-controls': 'cc-panel-' + t.id, tabIndex: active ? 0 : -1,
-              style: { padding: '6px 12px', borderRadius: 8, border: (_carHC ? '2px' : '1px') + ' solid ' + _carBd(active ? '#818cf8' : '#334155'),
+              style: { padding: '10px 14px', minHeight: 44, borderRadius: 8, border: (_carHC ? '2px' : '1px') + ' solid ' + _carBd(active ? '#818cf8' : '#334155'),
                 background: active ? (_carHC ? '#000000' : (_carL ? '#e0e7ff' : 'rgba(129,140,248,0.18)')) : _carBg('#1e293b'),
                 color: active ? _carFg('#e0e7ff') : _carFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
@@ -302,8 +331,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
       }
 
       function stepCard(stepNum, title, blurb, status, onClick, color) {
-        return h('button', { onClick: onClick, 'aria-label': 'Step ' + stepNum + ': ' + title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid ' + _carBd('#1e293b'), borderRight: '1px solid ' + _carBd('#1e293b'), borderBottom: '1px solid ' + _carBd('#1e293b'), borderLeft: '4px solid ' + _carBd(color), background: _carBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _carFg('#e2e8f0') } },
+        return h('button', { type: 'button', onClick: onClick, 'aria-label': 'Step ' + stepNum + ': ' + title,
+          style: { width: '100%', minHeight: 44, textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid ' + _carBd('#1e293b'), borderRight: '1px solid ' + _carBd('#1e293b'), borderBottom: '1px solid ' + _carBd('#1e293b'), borderLeft: '4px solid ' + _carBd(color), background: _carBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _carFg('#e2e8f0') } },
           h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
             h('span', { style: { fontSize: 14, fontWeight: 800, color: _carInk(color), flex: 1 } }, title),
             h('span', { style: { fontSize: 11, color: _carInk(color), fontWeight: 700 } }, status)
@@ -317,16 +346,23 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
       // ═══════════════════════════════════════════════════════════
       function renderScreener() {
         function setRating(itemId, val) {
+          var wasComplete = isComplete(d.ratings);
+          var nextRatings = Object.assign({}, d.ratings || {});
+          nextRatings[itemId] = val;
           setLabToolData(function(prev) {
             var prior = (prev && prev.careerCompass) || defaultState();
             var r = Object.assign({}, prior.ratings || {});
             r[itemId] = val;
             return Object.assign({}, prev, { careerCompass: Object.assign({}, prior, { ratings: r, lastUpdated: todayISO() }) });
           });
+          if (!wasComplete && isComplete(nextRatings)) {
+            announceCC('All 36 items rated. Your Holland code is ready.');
+          }
         }
         function clearAll() {
           setCC({ ratings: {} });
           if (addToast) addToast('Cleared. Start fresh.', 'info');
+          announceCC('All ratings cleared.');
         }
 
         var ratingsMap = d.ratings || {};
@@ -340,6 +376,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
           typed[item.type].push(item);
         });
 
+        var radioVals = [-1, 0, 1];
+
         return h('div', null,
           h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', borderTop: '1px solid rgba(129,140,248,0.3)', borderRight: '1px solid rgba(129,140,248,0.3)', borderBottom: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', marginBottom: 14, fontSize: 12.5, color: _carFg('#e0e7ff'), lineHeight: 1.65 } },
             h('strong', null, '✏️ How to do this: '),
@@ -352,13 +390,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
 
           // Progress
           h('div', { style: { marginBottom: 14 } },
-            h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' } },
               h('span', { style: { fontSize: 12, color: _carFg('#94a3b8') } }, ratedCount + ' of ' + ITEMS.length + ' rated'),
-              ratedCount > 0 ? h('button', { onClick: clearAll, 'aria-label': 'Clear all ratings',
-                style: { marginLeft: 'auto', background: 'transparent', border: '1px solid #475569', color: _carFg('#94a3b8'), borderRadius: 6, padding: '2px 8px', cursor: 'pointer', fontSize: 11 } }, 'Clear all') : null
+              ratedCount > 0 ? h('button', { type: 'button', onClick: clearAll, 'aria-label': 'Clear all ratings',
+                style: { marginLeft: 'auto', minHeight: 44, background: 'transparent', border: '1px solid #475569', color: _carFg('#94a3b8'), borderRadius: 6, padding: '8px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, 'Clear all') : null
             ),
-            h('div', { style: { height: 6, borderRadius: 3, background: _carBg('#1e293b'), overflow: 'hidden' }, role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pct, 'aria-label': 'Self-check progress' },
-              h('div', { style: { height: '100%', width: pct + '%', background: 'linear-gradient(90deg, #4f46e5, #818cf8)', transition: 'width 240ms ease' } })
+            h('div', { style: { height: 6, borderRadius: 3, background: _carBg('#1e293b'), overflow: 'hidden' }, role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pct, 'aria-valuetext': ratedCount + ' of ' + ITEMS.length + ' items rated (' + pct + '%)', 'aria-label': 'Self-check progress' },
+              h('div', { style: { height: '100%', width: pct + '%', background: 'linear-gradient(90deg, #4f46e5, #818cf8)', transition: _carReduceMotion ? 'none' : 'width 240ms ease' } })
             )
           ),
 
@@ -368,20 +406,34 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
             var items = typed[typeId] || [];
             return h('div', { key: typeId, style: { padding: 12, borderRadius: 10, background: _carBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + type.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
-                h('span', { style: { fontSize: 18 } }, type.icon),
+                h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, type.icon),
                 h('span', { style: { fontSize: 11, color: _carInk(type.color), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, type.label + ' · ' + type.shortName)
               ),
               items.map(function(item) {
                 var current = (d.ratings || {})[item.id];
+                var onRadioKeyDown = function(rIdx, ev) {
+                  if (isImeComposing(ev)) return;
+                  var nextR = rIdx;
+                  if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') nextR = (rIdx + 1) % radioVals.length;
+                  else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') nextR = (rIdx - 1 + radioVals.length) % radioVals.length;
+                  else return;
+                  ev.preventDefault();
+                  var nextVal = radioVals[nextR];
+                  setRating(item.id, nextVal);
+                  setTimeout(function() {
+                    var el = document.getElementById('cc-rate-' + item.id + '-' + nextVal);
+                    if (el) el.focus();
+                  }, 0);
+                };
                 return h('div', { key: item.id, style: { padding: 8, borderRadius: 6, background: _carBg('#1e293b'), marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
                   h('div', { style: { flex: 1, minWidth: 200, fontSize: 13, color: _carFg('#e2e8f0'), lineHeight: 1.5 } }, item.text),
-                  h('div', { style: { display: 'flex', gap: 4 }, role: 'radiogroup', 'aria-label': 'Rate: ' + item.text },
-                    h('button', { onClick: function() { setRating(item.id, -1); }, role: 'radio', 'aria-checked': current === -1, 'aria-label': 'Don\'t like',
-                      style: { padding: '4px 10px', borderRadius: 4, border: (_carHC ? '2px' : '1px') + ' solid ' + (current === -1 ? (_carHC ? '#ffff00' : '#dc2626') : _carBd('#475569')), background: current === -1 ? (_carHC ? '#ffff00' : '#dc2626') : 'transparent', color: current === -1 ? (_carHC ? '#000000' : '#ffffff') : _carInk('#ef4444'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '✕'),
-                    h('button', { onClick: function() { setRating(item.id, 0); }, role: 'radio', 'aria-checked': current === 0, 'aria-label': 'Not sure',
-                      style: { padding: '4px 10px', borderRadius: 4, border: (_carHC ? '2px' : '1px') + ' solid ' + (current === 0 ? (_carHC ? '#ffff00' : '#94a3b8') : _carBd('#475569')), background: current === 0 ? (_carHC ? '#ffff00' : '#475569') : 'transparent', color: current === 0 ? (_carHC ? '#000000' : '#ffffff') : _carFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '?'),
-                    h('button', { onClick: function() { setRating(item.id, 1); }, role: 'radio', 'aria-checked': current === 1, 'aria-label': 'Like',
-                      style: { padding: '4px 10px', borderRadius: 4, border: (_carHC ? '2px' : '1px') + ' solid ' + (current === 1 ? (_carHC ? '#ffff00' : '#15803d') : _carBd('#475569')), background: current === 1 ? (_carHC ? '#ffff00' : '#15803d') : 'transparent', color: current === 1 ? (_carHC ? '#000000' : '#ffffff') : _carInk('#22c55e'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '✓')
+                  h('div', { style: { display: 'flex', gap: 6 }, role: 'radiogroup', 'aria-label': 'Rate: ' + item.text },
+                    h('button', { type: 'button', id: 'cc-rate-' + item.id + '--1', onClick: function() { setRating(item.id, -1); }, onKeyDown: function(ev) { onRadioKeyDown(0, ev); }, role: 'radio', 'aria-checked': current === -1, tabIndex: (current === -1 || current === undefined || current === null) ? 0 : -1, 'aria-label': 'Don\'t like',
+                      style: { minWidth: 44, minHeight: 44, padding: '8px 12px', borderRadius: 6, border: (_carHC ? '2px' : '1px') + ' solid ' + (current === -1 ? (_carHC ? '#ffff00' : '#dc2626') : _carBd('#475569')), background: current === -1 ? (_carHC ? '#ffff00' : '#dc2626') : 'transparent', color: current === -1 ? (_carHC ? '#000000' : '#ffffff') : _carInk('#ef4444'), cursor: 'pointer', fontSize: 13, fontWeight: 700 } }, '✕'),
+                    h('button', { type: 'button', id: 'cc-rate-' + item.id + '-0', onClick: function() { setRating(item.id, 0); }, onKeyDown: function(ev) { onRadioKeyDown(1, ev); }, role: 'radio', 'aria-checked': current === 0, tabIndex: current === 0 ? 0 : -1, 'aria-label': 'Not sure',
+                      style: { minWidth: 44, minHeight: 44, padding: '8px 12px', borderRadius: 6, border: (_carHC ? '2px' : '1px') + ' solid ' + (current === 0 ? (_carHC ? '#ffff00' : '#94a3b8') : _carBd('#475569')), background: current === 0 ? (_carHC ? '#ffff00' : '#475569') : 'transparent', color: current === 0 ? (_carHC ? '#000000' : '#ffffff') : _carFg('#cbd5e1'), cursor: 'pointer', fontSize: 13, fontWeight: 700 } }, '?'),
+                    h('button', { type: 'button', id: 'cc-rate-' + item.id + '-1', onClick: function() { setRating(item.id, 1); }, onKeyDown: function(ev) { onRadioKeyDown(2, ev); }, role: 'radio', 'aria-checked': current === 1, tabIndex: current === 1 ? 0 : -1, 'aria-label': 'Like',
+                      style: { minWidth: 44, minHeight: 44, padding: '8px 12px', borderRadius: 6, border: (_carHC ? '2px' : '1px') + ' solid ' + (current === 1 ? (_carHC ? '#ffff00' : '#15803d') : _carBd('#475569')), background: current === 1 ? (_carHC ? '#ffff00' : '#15803d') : 'transparent', color: current === 1 ? (_carHC ? '#000000' : '#ffffff') : _carInk('#22c55e'), cursor: 'pointer', fontSize: 13, fontWeight: 700 } }, '✓')
                   )
                 );
               })
@@ -390,8 +442,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
 
           // See results button when complete
           complete ? h('div', { style: { display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' } },
-            h('button', { onClick: function() { goto('results'); }, 'aria-label': 'See my Holland code',
-              style: { padding: '12px 24px', borderRadius: 10, border: _carHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _carHC ? '#000000' : 'linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)', color: _carHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 14 } },
+            h('button', { type: 'button', onClick: function() { goto('results'); }, 'aria-label': 'See my Holland code',
+              style: { minHeight: 44, padding: '12px 24px', borderRadius: 10, border: _carHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _carHC ? '#000000' : 'linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)', color: _carHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 14 } },
               '⭐ See my Holland code')
           ) : null,
 
@@ -406,10 +458,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
         if (!complete) {
           return h('div', null,
             h('div', { style: { padding: 20, borderRadius: 12, background: _carBg('#0f172a'), border: '1px solid ' + _carBd('#1e293b'), textAlign: 'center' } },
-              h('div', { style: { fontSize: 36, marginBottom: 8 } }, '✏️'),
+              h('div', { 'aria-hidden': 'true', style: { fontSize: 36, marginBottom: 8 } }, '✏️'),
               h('div', { style: { color: _carFg('#cbd5e1'), fontSize: 14, marginBottom: 4 } }, 'Take the self-check first'),
               h('div', { style: { color: _carFg('#94a3b8'), fontSize: 12, marginBottom: 12 } }, 'Rate all 36 items to see your Holland code.'),
-              h('button', { onClick: function() { goto('screener'); }, style: { padding: '8px 16px', borderRadius: 8, border: '1px solid ' + _carBd('#818cf8'), background: _carHC ? '#000000' : (_carL ? '#e0e7ff' : 'rgba(129,140,248,0.18)'), color: _carFg('#e0e7ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Take the self-check')
+              h('button', { type: 'button', onClick: function() { goto('screener'); }, style: { minHeight: 44, padding: '10px 16px', borderRadius: 8, border: '1px solid ' + _carBd('#818cf8'), background: _carHC ? '#000000' : (_carL ? '#e0e7ff' : 'rgba(129,140,248,0.18)'), color: _carFg('#e0e7ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Take the self-check')
             )
           );
         }
@@ -425,7 +477,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
                 var type = TYPES[t];
                 return h('div', { key: t, style: { padding: 14, borderRadius: 12, background: _carHC ? '#000000' : type.color + '22', border: '2px solid ' + _carBd(type.color), minWidth: 100 } },
                   h('div', { style: { fontSize: 10, color: _carFg('#94a3b8'), fontWeight: 700, marginBottom: 2 } }, '#' + (i + 1)),
-                  h('div', { style: { fontSize: 36, marginBottom: 2 } }, type.icon),
+                  h('div', { 'aria-hidden': 'true', style: { fontSize: 36, marginBottom: 2 } }, type.icon),
                   h('div', { style: { fontSize: 24, fontWeight: 900, color: _carInk(type.color), fontFamily: 'ui-monospace, monospace' } }, t),
                   h('div', { style: { fontSize: 11, color: _carFg('#e2e8f0'), fontWeight: 700 } }, type.label),
                   h('div', { style: { fontSize: 10, color: _carFg('#94a3b8') } }, type.shortName)
@@ -434,7 +486,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
             ),
             h('div', { style: { fontSize: 32, fontWeight: 900, color: _carFg('#e0e7ff'), fontFamily: 'ui-monospace, monospace', letterSpacing: 4 } }, codeString),
             h('div', { style: { fontSize: 12, color: _carFg('#94a3b8'), marginTop: 6 } }, 'Read this on O*NET as: ',
-              h('a', { href: 'https://www.mynextmove.org/explore/ip', target: '_blank', rel: 'noopener noreferrer', style: { color: _carFg('#bfdbfe'), textDecoration: 'underline' } }, codeString + ' on My Next Move ↗')
+              h('a', { href: 'https://www.mynextmove.org/explore/ip', target: '_blank', rel: 'noopener noreferrer', style: { color: _carFg('#bfdbfe'), textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', minHeight: 44 } }, codeString + ' on My Next Move ↗')
             )
           ),
 
@@ -443,7 +495,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
             var type = TYPES[t];
             return h('div', { key: t, style: { padding: 14, borderRadius: 10, background: _carBg('#0f172a'), borderTop: '1px solid ' + _carBd('#1e293b'), borderRight: '1px solid ' + _carBd('#1e293b'), borderBottom: '1px solid ' + _carBd('#1e293b'), borderLeft: '4px solid ' + _carBd(type.color), marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
-                h('span', { style: { fontSize: 30 } }, type.icon),
+                h('span', { 'aria-hidden': 'true', style: { fontSize: 30 } }, type.icon),
                 h('div', null,
                   h('div', { style: { fontSize: 10, color: _carFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, '#' + (i + 1) + ' · ' + t),
                   h('div', { style: { fontSize: 18, fontWeight: 800, color: _carInk(type.color) } }, type.label + ' — ' + type.shortName)
@@ -464,7 +516,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
               return h('div', { key: t, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                 h('span', { style: { fontSize: 14, fontWeight: 800, color: _carInk(type.color), fontFamily: 'ui-monospace, monospace', minWidth: 20 } }, t),
                 h('span', { style: { fontSize: 12, color: _carFg('#cbd5e1'), minWidth: 100 } }, type.label),
-                h('div', { style: { flex: 1, height: 8, borderRadius: 4, background: _carBg('#1e293b'), border: _carHC ? '1px solid #ffff00' : 'none', overflow: 'hidden' }, role: 'meter', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pct, 'aria-label': type.label + ' score' },
+                h('div', { style: { flex: 1, height: 8, borderRadius: 4, background: _carBg('#1e293b'), border: _carHC ? '1px solid #ffff00' : 'none', overflow: 'hidden' }, role: 'meter', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pct, 'aria-valuetext': type.label + ' ' + (s > 0 ? '+' : '') + s + ' (' + pct + '%)', 'aria-label': type.label + ' score' },
                   h('div', { style: { height: '100%', width: pct + '%', background: _carHC ? '#ffff00' : type.color } })
                 ),
                 h('span', { style: { fontSize: 11, color: _carFg('#94a3b8'), minWidth: 30, textAlign: 'right' } }, (s > 0 ? '+' : '') + s)
@@ -473,13 +525,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
           ),
 
           h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
-            h('button', { onClick: function() { goto('careers'); }, 'aria-label': 'Browse careers',
-              style: { padding: '10px 20px', borderRadius: 10, border: _carHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _carHC ? '#000000' : 'linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)', color: _carHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 14 } },
+            h('button', { type: 'button', onClick: function() { goto('careers'); }, 'aria-label': 'Browse careers',
+              style: { minHeight: 44, padding: '10px 20px', borderRadius: 10, border: _carHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _carHC ? '#000000' : 'linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)', color: _carHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 14 } },
               '💼 Browse careers'),
-            h('button', { onClick: function() { goto('nextsteps'); }, 'aria-label': 'Next steps',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _carBd('#475569'), background: _carBg('#1e293b'), color: _carFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🚶 Next steps'),
-            h('button', { onClick: function() { goto('print'); }, 'aria-label': 'Print',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _carBd('#475569'), background: _carBg('#1e293b'), color: _carFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
+            h('button', { type: 'button', onClick: function() { goto('nextsteps'); }, 'aria-label': 'Next steps',
+              style: { minHeight: 44, padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _carBd('#475569'), background: _carBg('#1e293b'), color: _carFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🚶 Next steps'),
+            h('button', { type: 'button', onClick: function() { goto('print'); }, 'aria-label': 'Print',
+              style: { minHeight: 44, padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _carBd('#475569'), background: _carBg('#1e293b'), color: _carFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
           ),
 
           softPointer()
@@ -503,13 +555,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
           orderedTypes.map(function(t, idx) {
             var type = TYPES[t];
             var isTop = complete && topThree.indexOf(t) !== -1;
-            return h('div', { key: t, style: { padding: 14, borderRadius: 10, background: _carBg('#0f172a'), border: '1px solid ' + _carBd(isTop ? type.color : '#1e293b'), borderLeft: '4px solid ' + _carBd(type.color), marginBottom: 10 } },
+            var cardBorder = '1px solid ' + _carBd(isTop ? type.color : '#1e293b');
+            return h('div', { key: t, style: { padding: 14, borderRadius: 10, background: _carBg('#0f172a'), borderTop: cardBorder, borderRight: cardBorder, borderBottom: cardBorder, borderLeft: '4px solid ' + _carBd(type.color), marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
-                h('span', { style: { fontSize: 22 } }, type.icon),
+                h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, type.icon),
                 h('span', { style: { fontSize: 15, fontWeight: 800, color: _carInk(type.color), flex: 1 } }, type.label + ' (' + t + ') — ' + type.shortName),
                 isTop ? h('span', { style: { fontSize: 10, padding: '2px 8px', borderRadius: 4, background: _carHC ? '#000000' : '#312e81', border: '1px solid ' + _carBd(type.color), color: _carHC ? '#ffff00' : '#ffffff', fontWeight: 800, letterSpacing: 0.5 } }, '★ YOUR CODE') : null,
                 h('a', { href: 'https://www.onetonline.org/find/quick?s=' + t, target: '_blank', rel: 'noopener noreferrer',
-                  style: { fontSize: 11, color: _carInk(type.color), textDecoration: 'underline', fontWeight: 700 } }, 'O*NET careers ↗')
+                  style: { fontSize: 12, color: _carInk(type.color), textDecoration: 'underline', fontWeight: 700, display: 'inline-flex', alignItems: 'center', minHeight: 44, padding: '0 6px' } }, 'O*NET careers ↗')
               ),
               h('div', { style: { fontSize: 11, color: _carFg('#94a3b8'), marginBottom: 8, fontStyle: 'italic', lineHeight: 1.55 } }, type.summary),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
@@ -518,7 +571,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
                     href: 'https://www.onetonline.org/find/quick?s=' + encodeURIComponent(c),
                     target: '_blank', rel: 'noopener noreferrer',
                     'aria-label': 'Look up ' + c + ' on O*NET',
-                    style: { padding: '4px 10px', borderRadius: 14, border: '1px solid ' + (_carHC ? '#ffff00' : type.color + '66'), background: _carBg('#0f172a'), color: _carFg('#cbd5e1'), textDecoration: 'none', fontSize: 12 } }, c + ' ↗');
+                    style: { display: 'inline-flex', alignItems: 'center', minHeight: 44, padding: '8px 12px', borderRadius: 22, border: '1px solid ' + (_carHC ? '#ffff00' : type.color + '66'), background: _carBg('#0f172a'), color: _carFg('#cbd5e1'), textDecoration: 'none', fontSize: 12 } }, c + ' ↗');
                 })
               )
             );
@@ -651,9 +704,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _carFg('#e0e7ff'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _carHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _carHC ? '#000000' : 'linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)', color: _carHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
-            h('button', { onClick: function() { goto('home'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _carBd('#475569'), background: _carBg('#1e293b'), color: _carFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+            h('button', { type: 'button', onClick: printNow, style: { minHeight: 44, padding: '10px 18px', borderRadius: 8, border: _carHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _carHC ? '#000000' : 'linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)', color: _carHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { type: 'button', onClick: function() { goto('home'); }, 'aria-label': 'Back',
+              style: { minHeight: 44, padding: '10px 18px', borderRadius: 8, border: '1px solid ' + _carBd('#475569'), background: _carBg('#1e293b'), color: _carFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
@@ -799,7 +852,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
           h('div', { style: { fontSize: 11, color: _carFg('#a5b4fc'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: _carFg('#e0e7ff'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+                style: { fontSize: 13, color: _carFg('#e0e7ff'), fontWeight: 700, textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', minHeight: 44, marginBottom: 4 } }, title + ' ↗')
             : h('div', { style: { fontSize: 13, color: _carFg('#e0e7ff'), fontWeight: 700, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _carFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );

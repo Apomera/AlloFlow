@@ -29709,7 +29709,26 @@
             "How does a reference frame change a measured velocity?"
           ],
           "transferMove": "Choose axes first, then translate between a graph, equation, vector, and verbal claim.",
-          "contentEnhancementVersion": "ap-physics-1-foundation-v12"
+          "contentEnhancementVersion": "ap-physics-1-foundation-v12",
+          "workedExample": {
+            "prompt": "A cart starts at x0 = +4.0 m with velocity v0 = +12 m/s and constant acceleration a = -3.0 m/s^2. Find its velocity and position at t = 6.0 s, and state whether it is speeding up or slowing down.",
+            "steps": [
+              "Step 1: Define +x to the right with x0 = +4.0 m, v0 = +12 m/s, and constant a = -3.0 m/s^2, so v(t) = v0 + a*t and x(t) = x0 + v0*t + 0.5*a*t^2 apply.",
+              "Step 2: Evaluate at t = 6.0 s: v(6.0) = 12 + (-3.0)(6.0) = -6.0 m/s, and x(6.0) = 4.0 + 12(6.0) + 0.5(-3.0)(6.0)^2 = 4.0 + 72.0 - 54.0 = +22.0 m.",
+              "Step 3: At t = 6.0 s, the cart is at x = +22.0 m moving in the -x direction at 6.0 m/s; because velocity (-6.0 m/s) and acceleration (-3.0 m/s^2) share the same sign, it is speeding up after reversing at t = 4.0 s."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students assume negative acceleration always means an object is slowing down, regardless of the direction of its velocity.",
+              "repair": "Compare the signs of velocity and acceleration: an object speeds up whenever both vectors have the same sign and slows down only when their signs are opposite."
+            },
+            {
+              "misconception": "Students conclude that an object whose velocity momentarily equals zero at a turning point must also have zero acceleration.",
+              "repair": "Distinguish velocity from its rate of change: at a turning point velocity crosses zero while acceleration remains nonzero so the velocity can reverse direction."
+            }
+          ]
         },
         {
           "id": "ap-physics-1-ch-01-section-02",
@@ -30049,7 +30068,26 @@
             "Which initial condition checks an equation?"
           ],
           "transferMove": "Write the representation in words, identify its slope or area, then use the matching relation.",
-          "contentEnhancementVersion": "ap-physics-1-foundation-v12"
+          "contentEnhancementVersion": "ap-physics-1-foundation-v12",
+          "workedExample": {
+            "prompt": "On a velocity-time graph, a runner starts at +6.0 m/s at t = 0 s, decreases linearly to -2.0 m/s at t = 4.0 s, then stays at -2.0 m/s until t = 7.0 s. Find the acceleration over 0-4 s and net displacement over 0-7 s.",
+            "steps": [
+              "Step 1: Use the v-t slope for constant acceleration on 0-4 s and split the signed area into triangles and a rectangle by finding where v crosses zero.",
+              "Step 2: Slope a = (-2.0 - 6.0) / (4.0 - 0) = -2.0 m/s^2, so v = 0 at t = 3.0 s. Signed areas are +0.5(3.0)(6.0) = +9.0 m, 0.5(1.0)(-2.0) = -1.0 m, and (3.0)(-2.0) = -6.0 m.",
+              "Step 3: Summing signed areas gives net displacement Delta x = +9.0 - 1.0 - 6.0 = +2.0 m in the +x direction (whereas total distance traveled is 9.0 + 1.0 + 6.0 = 16.0 m)."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students add every geometric area between a velocity-time curve and the time axis as positive when asked for net displacement.",
+              "repair": "Keep area below the time axis negative for displacement so reverse motion subtracts from forward motion; sum absolute magnitudes only when asked for total distance."
+            },
+            {
+              "misconception": "Students read the vertical value on a position-time graph as velocity instead of measuring the slope of the curve.",
+              "repair": "Map each graph operation cleanly: height on x-t gives position, slope of x-t gives velocity, slope of v-t gives acceleration, and signed area under v-t gives displacement."
+            }
+          ]
         },
         {
           "id": "ap-physics-1-ch-01-section-03",
@@ -30389,7 +30427,26 @@
             "How can a limiting case expose a sign error?"
           ],
           "transferMove": "State the assumption, predict the observable consequence, and identify evidence that could challenge it.",
-          "contentEnhancementVersion": "ap-physics-1-foundation-v12"
+          "contentEnhancementVersion": "ap-physics-1-foundation-v12",
+          "workedExample": {
+            "prompt": "A ball launches horizontally at v0 = 8.0 m/s from a 5.0 m cliff (g = 10 m/s^2). Five trials average 7.4 +/- 0.1 m. Compute the ideal range R, the residual, and the limiting case as v0 approaches zero.",
+            "steps": [
+              "Step 1: Model ideal projectile motion with zero air drag and decoupled axes: y = 0.5*g*t^2 sets fall time and R = v0*t sets horizontal range.",
+              "Step 2: Solve 5.0 = 0.5(10)t^2 to get t = 1.0 s and ideal R = (8.0 m/s)(1.0 s) = 8.0 m. The residual (measured minus predicted) is 7.4 - 8.0 = -0.6 m.",
+              "Step 3: Because the -0.6 m shortfall is six times the 0.1 m uncertainty, it signals systematic air drag rather than random noise; as v0 -> 0, R = v0*sqrt(2h/g) -> 0 m, matching a vertical drop."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students dismiss a consistent one-sided residual well outside measurement uncertainty as ordinary random experimental error.",
+              "repair": "Compare residual size and sign against uncertainty: a persistent bias several uncertainties away from zero indicates a violated model assumption such as neglected drag."
+            },
+            {
+              "misconception": "Students apply constant-acceleration kinematic equations as exact predictors even when speed-dependent air resistance acts on the projectile.",
+              "repair": "Verify whether net acceleration is constant before using constant-a formulas; when drag grows with speed, acceleration varies and constant-a results are only ideal upper bounds."
+            }
+          ]
         }
       ],
       "studyRoute": [
@@ -30864,7 +30921,26 @@
             "What force balance defines terminal speed?"
           ],
           "transferMove": "State the system, draw interactions, choose signs, and then apply Newton second law.",
-          "contentEnhancementVersion": "ap-physics-1-foundation-v12"
+          "contentEnhancementVersion": "ap-physics-1-foundation-v12",
+          "workedExample": {
+            "prompt": "A 5.0 kg box rests on the floor of an elevator accelerating upward at 2.0 m/s^2 (use g = 10 m/s^2). Calculate the normal force exerted by the floor on the box and identify its Newton third-law pair.",
+            "steps": [
+              "Step 1: Choose the 5.0 kg box as the system with +y upward. Its free-body diagram has upward normal force F_N from the floor and downward weight m*g from Earth.",
+              "Step 2: Apply Newton second law: F_N - m*g = m*a, so F_N = m*(g + a) = (5.0 kg)(10 + 2.0 m/s^2) = 60 N upward.",
+              "Step 3: The floor pushes upward on the box with 60 N (exceeding its 50 N weight); its third-law pair is the 60 N downward contact force exerted by the box on the floor, not gravity."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students assume the normal force always equals m*g and acts as the Newton third-law reaction force to Earth gravity on the object.",
+              "repair": "Third-law pairs always act on two different objects via the same interaction; normal force adjusts to prevent surface penetration and pairs with the box pushing down on the floor."
+            },
+            {
+              "misconception": "Students think an object moving upward must experience a net upward force even while moving at constant speed or slowing down.",
+              "repair": "Link net force to acceleration rather than velocity: an upward-moving elevator has zero net force at constant speed and a downward net force when slowing down."
+            }
+          ]
         },
         {
           "id": "ap-physics-1-ch-02-section-02",
@@ -31204,7 +31280,26 @@
             "When is a component equation preferable to a full-vector equation?"
           ],
           "transferMove": "Boundary first, interactions second, axes third, signed Newton equation last.",
-          "contentEnhancementVersion": "ap-physics-1-foundation-v12"
+          "contentEnhancementVersion": "ap-physics-1-foundation-v12",
+          "workedExample": {
+            "prompt": "A 4.0 kg block on a frictionless 30-degree incline connects via an ideal string over a massless pulley to a hanging 6.0 kg block (g = 10 m/s^2). Find the system acceleration and string tension.",
+            "steps": [
+              "Step 1: Define the two-block system along the path of motion (6.0 kg downward, 4.0 kg up the ramp) so internal tension cancels and only external gravity components remain.",
+              "Step 2: Net external force F_net = m2*g - m1*g*sin(30 deg) = 60 - 40(0.5) = 40 N over total mass 10.0 kg, giving a = 40 / 10.0 = 4.0 m/s^2.",
+              "Step 3: Isolate the hanging 6.0 kg block: m2*g - T = m2*a gives 60 - T = 6.0(4.0) = 24 N, so T = 36 N (verified on the ramp block: 36 - 20 = 16 N = 4.0*4.0)."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students set string tension equal to the hanging block weight m2*g even while the hanging block accelerates downward.",
+              "repair": "Draw an isolated free-body diagram for the accelerating hanging block: downward acceleration requires m2*g > T, so T = m2*(g - a) is strictly smaller than weight."
+            },
+            {
+              "misconception": "Students draw an extra force arrow labeled ma on a free-body diagram in addition to the actual contact and gravitational forces.",
+              "repair": "Include only physical interactions exerted by external agents on the free-body diagram; m*a is the result of summing those forces, never a separate force arrow."
+            }
+          ]
         },
         {
           "id": "ap-physics-1-ch-02-section-03",
@@ -31544,7 +31639,26 @@
             "Which direction is centripetal acceleration at every point?"
           ],
           "transferMove": "Name the regime, identify the controlling variables, and test the model with a measurable net effect.",
-          "contentEnhancementVersion": "ap-physics-1-foundation-v12"
+          "contentEnhancementVersion": "ap-physics-1-foundation-v12",
+          "workedExample": {
+            "prompt": "A 1200 kg car rounds a flat circular turn of radius 50 m at constant speed 15 m/s without skidding (g = 10 m/s^2, mu_s = 0.60). Find the actual static friction force and verify the car stays in the static regime.",
+            "steps": [
+              "Step 1: Choose the car as the system with inward radial axis +r; vertical equilibrium gives F_N = m*g = 12,000 N, and inward static friction supplies the centripetal force.",
+              "Step 2: Required static friction f_s = m*v^2 / r = (1200)(15)^2 / 50 = 1200(4.5) = 5400 N inward, while maximum static friction is f_s,max = mu_s*F_N = 0.60(12,000) = 7200 N.",
+              "Step 3: Since 5400 N <= 7200 N, the tires do not slip and remain in the static regime; the actual static friction force is 5400 N inward toward the center, not 7200 N."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students plug mu_s*F_N directly as the static friction force in every problem rather than treating it as only the maximum possible limit.",
+              "repair": "Remember f_s <= mu_s*F_N: solve for the static friction required by Newton second law first, then compare that value against mu_s*F_N to test whether slipping begins."
+            },
+            {
+              "misconception": "Students label centripetal force as an extra outward or inward mystery force on a free-body diagram for circular motion.",
+              "repair": "Never draw centripetal force as a standalone interaction; instead identify which real forces (friction, tension, normal, or gravity) sum radially inward to equal m*v^2/r."
+            }
+          ]
         }
       ],
       "studyRoute": [
@@ -32017,7 +32131,26 @@
             "Why does doubling speed quadruple kinetic energy?"
           ],
           "transferMove": "Use a system energy chart before deciding whether a force law or conservation law is more efficient.",
-          "contentEnhancementVersion": "ap-physics-1-foundation-v12"
+          "contentEnhancementVersion": "ap-physics-1-foundation-v12",
+          "workedExample": {
+            "prompt": "A 2.0 kg block starts from rest and is pushed 2.0 m along a frictionless horizontal track by a constant 16 N force angled 60 degrees above horizontal. Find the work done on the block and its final speed.",
+            "steps": [
+              "Step 1: Take the block alone as the system so the applied force does external work W = F*d*cos(theta), while vertical gravity and normal force are perpendicular to horizontal motion.",
+              "Step 2: Compute W = (16 N)(2.0 m)*cos(60 deg) = (32)(0.5) = +16 J. By the work-energy theorem from rest, K_f = 0.5*m*v_f^2 = 16 J, so 0.5(2.0)v_f^2 = 16.",
+              "Step 3: Solving gives v_f = 4.0 m/s along the track; positive work transferred 16 J into the block kinetic energy store because a force component acted parallel to displacement."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students multiply the entire force magnitude by displacement without including cos(theta) for forces angled away from the motion.",
+              "repair": "Project the force onto the displacement direction using W = F*d*cos(theta); only the component parallel (or antiparallel) to displacement transfers mechanical energy."
+            },
+            {
+              "misconception": "Students think the normal force or weight still performs work on a block sliding horizontally because the block is moving while those forces act.",
+              "repair": "Check the angle between each force and displacement: when theta = 90 degrees, cos(90) = 0, so perpendicular forces do zero work regardless of how far the object moves."
+            }
+          ]
         },
         {
           "id": "ap-physics-1-ch-03-section-02",
@@ -32357,7 +32490,26 @@
             "How does a system boundary change the energy description?"
           ],
           "transferMove": "Draw the system energy account first, then select the shortest defensible equation.",
-          "contentEnhancementVersion": "ap-physics-1-foundation-v12"
+          "contentEnhancementVersion": "ap-physics-1-foundation-v12",
+          "workedExample": {
+            "prompt": "A 0.50 kg cart compresses a horizontal spring (k = 200 N/m) by 0.30 m and launches across a 2.0 m rough patch with kinetic friction 2.5 N. Using the cart-spring-track system, find its speed leaving the rough patch.",
+            "steps": [
+              "Step 1: Define the closed cart-spring-track system so initial elastic energy U_s,i converts into final kinetic energy K_f plus internal thermal energy Delta E_th = f_k*d.",
+              "Step 2: Calculate U_s,i = 0.5*k*x^2 = 0.5(200)(0.30)^2 = 9.0 J and Delta E_th = (2.5 N)(2.0 m) = 5.0 J, leaving K_f = 9.0 - 5.0 = 4.0 J.",
+              "Step 3: Set 0.5(0.50 kg)v_f^2 = 4.0 J to get v_f^2 = 16 and v_f = 4.0 m/s; total system energy remains 9.0 J while mechanical energy drops by 5.0 J due to friction."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students count a spring or gravitational interaction twice by including both potential energy U and external work W in the same energy equation.",
+              "repair": "Fix the system boundary first: if the spring or Earth is inside the system, use internal potential energy; if outside, include its external work instead, never both."
+            },
+            {
+              "misconception": "Students treat potential energy as stored inside a single isolated block rather than in the configuration of interacting objects.",
+              "repair": "Explicitly name the interacting partner (Earth for U_g, spring for U_s); a single-object system can hold only kinetic energy, so external work must represent field or spring forces."
+            }
+          ]
         },
         {
           "id": "ap-physics-1-ch-03-section-03",
@@ -32697,7 +32849,26 @@
             "What does a systematic energy residual suggest?"
           ],
           "transferMove": "Align the interval, convert all quantities to energy, then compare useful transfer with total input.",
-          "contentEnhancementVersion": "ap-physics-1-foundation-v12"
+          "contentEnhancementVersion": "ap-physics-1-foundation-v12",
+          "workedExample": {
+            "prompt": "An electric winch lifts a 40 kg crate vertically 6.0 m at constant speed in 8.0 s while drawing 400 W of electrical input power (g = 10 m/s^2). Calculate the useful mechanical output power and winch efficiency.",
+            "steps": [
+              "Step 1: At constant speed, kinetic energy does not change, so useful output work equals the increase in crate-Earth gravitational potential energy: W_out = m*g*h and P_out = W_out / Delta t.",
+              "Step 2: Compute W_out = (40 kg)(10 m/s^2)(6.0 m) = 2400 J, giving P_out = 2400 J / 8.0 s = 300 W. Efficiency is eta = P_out / P_in = 300 W / 400 W = 0.75 (75%).",
+              "Step 3: The winch delivers 300 W of useful lifting power at 75% efficiency; the remaining 100 W (800 J over 8.0 s) dissipates as thermal energy in motor resistance and gear friction."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students equate doing a large amount of work with generating high power while ignoring how long the energy transfer takes.",
+              "repair": "Separate total energy transferred (joules) from transfer rate (watts = J/s): lifting the same crate twice as fast does the same work but requires twice the average power."
+            },
+            {
+              "misconception": "Students interpret an efficiency under 100% as evidence that total energy was destroyed or not conserved in the real device.",
+              "repair": "Recognize that efficiency measures only the useful fraction of input energy; energy conservation still holds exactly once thermal and acoustic losses are included."
+            }
+          ]
         }
       ],
       "studyRoute": [
@@ -33170,7 +33341,26 @@
             "Why does a rebound create a larger momentum change than a stop?"
           ],
           "transferMove": "Write signed momentum terms first, then decide whether kinetic energy is also conserved.",
-          "contentEnhancementVersion": "ap-physics-1-foundation-v12"
+          "contentEnhancementVersion": "ap-physics-1-foundation-v12",
+          "workedExample": {
+            "prompt": "On a frictionless track, a 2.0 kg cart moving at +5.0 m/s collides and sticks to a 3.0 kg cart moving at -1.0 m/s. Find the final velocity of the coupled carts and the system center-of-mass velocity before and after impact.",
+            "steps": [
+              "Step 1: Choose the two-cart system with +x to the right. Because net external horizontal force is zero, total momentum p and center-of-mass velocity v_cm are conserved.",
+              "Step 2: Total initial momentum p_i = (2.0)(+5.0) + (3.0)(-1.0) = +10.0 - 3.0 = +7.0 kg*m/s over total mass M = 5.0 kg, so v_f = +7.0 / 5.0 = +1.4 m/s.",
+              "Step 3: The stuck carts move together at +1.4 m/s to the right; v_cm = p_i / M = +1.4 m/s both before and after impact because internal collision forces cancel in pairs."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students add cart speeds as positive scalars in head-on collisions instead of assigning opposite signs to opposite velocity vectors.",
+              "repair": "Establish a coordinate axis before writing momentum terms so opposing velocities carry opposite signs; momentum is a vector sum, never a sum of speeds."
+            },
+            {
+              "misconception": "Students believe the center-of-mass velocity of an isolated two-cart system drops when the carts collide and stick together.",
+              "repair": "Remember that internal collision forces cannot accelerate the system center of mass: v_cm = p_total / M_total stays constant whenever net external force is zero."
+            }
+          ]
         },
         {
           "id": "ap-physics-1-ch-04-section-02",
@@ -33510,7 +33700,26 @@
             "Why does a rebound create a large momentum change?"
           ],
           "transferMove": "Set the axis, draw the system, integrate the force pulse, and compare total signed momentum.",
-          "contentEnhancementVersion": "ap-physics-1-foundation-v12"
+          "contentEnhancementVersion": "ap-physics-1-foundation-v12",
+          "workedExample": {
+            "prompt": "A 0.20 kg rubber ball hits a rigid wall horizontally at +10 m/s and rebounds at -8.0 m/s over a 0.040 s contact interval with a triangular force-time pulse. Find the impulse on the ball and the peak wall force.",
+            "steps": [
+              "Step 1: Define +x toward the wall and apply the impulse-momentum theorem J = Delta p = m*(v_f - v_i), equating J to the triangular area 0.5*F_peak*Delta t under the F-t graph.",
+              "Step 2: Compute J = (0.20 kg)(-8.0 - 10.0 m/s) = (0.20)(-18.0) = -3.6 N*s. From -3.6 = 0.5*F_peak*(0.040 s) = 0.020*F_peak, obtain F_peak = -180 N.",
+              "Step 3: The wall delivers an impulse of -3.6 N*s (3.6 N*s away from the wall) with an average force of -90 N and a peak force magnitude of 180 N."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students subtract speed magnitudes (10 - 8 = 2 m/s) during a rebound instead of computing the signed vector change (-8 - 10 = -18 m/s).",
+              "repair": "Always keep directional signs in Delta v = v_f - v_i: reversing direction requires stopping the ball first and then accelerating it backward, producing a much larger impulse."
+            },
+            {
+              "misconception": "Students set the peak force of a triangular impact pulse equal to J / Delta t instead of twice the average force.",
+              "repair": "Match impulse to the exact geometric area under the F-t curve: for a triangle, area is 0.5*F_peak*Delta t, making F_peak equal to 2*F_avg."
+            }
+          ]
         },
         {
           "id": "ap-physics-1-ch-04-section-03",
@@ -33850,7 +34059,26 @@
             "What must be held fixed in a barrier comparison?"
           ],
           "transferMove": "State the conservation law, state its conditions, and name the measurement that tests those conditions.",
-          "contentEnhancementVersion": "ap-physics-1-foundation-v12"
+          "contentEnhancementVersion": "ap-physics-1-foundation-v12",
+          "workedExample": {
+            "prompt": "On a level air track, glider 1 (1.0 kg at +6.0 m/s) hits stationary glider 2 (2.0 kg). Sensors measure v1_f = -1.0 m/s and v2_f = +3.5 m/s. Check momentum conservation and determine whether the collision is elastic.",
+            "steps": [
+              "Step 1: Compare total horizontal momentum p = m1*v1 + m2*v2 before and after impact to test isolation, then compare total kinetic energy K = 0.5*m1*v1^2 + 0.5*m2*v2^2 to test elasticity.",
+              "Step 2: Momentum: p_i = 1.0(6.0) + 0 = +6.0 kg*m/s and p_f = 1.0(-1.0) + 2.0(+3.5) = +6.0 kg*m/s. Kinetic energy: K_i = 0.5(1.0)(36) = 18.0 J, while K_f = 0.5(1.0)(1.0) + 0.5(2.0)(12.25) = 12.75 J.",
+              "Step 3: Equal initial and final momentum (+6.0 kg*m/s) confirms an isolated horizontal system, but Delta K = -5.25 J proves the collision is inelastic despite the gliders bouncing apart."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students classify any collision where objects bounce apart without sticking together as an elastic collision.",
+              "repair": "Test elasticity quantitatively by comparing total K_i and K_f: bouncing objects still form an inelastic collision whenever deformation, heat, or sound reduces total kinetic energy."
+            },
+            {
+              "misconception": "Students conclude linear momentum is not conserved whenever a collision loses kinetic energy to sound or permanent deformation.",
+              "repair": "Separate momentum conservation from kinetic energy conservation: momentum depends only on zero net external impulse, so it remains conserved even in strongly inelastic impacts."
+            }
+          ]
         }
       ],
       "studyRoute": [
@@ -34323,7 +34551,26 @@
             "What condition establishes rotational equilibrium?"
           ],
           "transferMove": "Draw the lever arm, choose a pivot, and keep angular signs consistent.",
-          "contentEnhancementVersion": "ap-physics-1-foundation-v12"
+          "contentEnhancementVersion": "ap-physics-1-foundation-v12",
+          "workedExample": {
+            "prompt": "A uniform solid disk of mass 4.0 kg and radius 0.50 m (I = 0.5*M*R^2) starts from rest on a frictionless axle. A tangential 12 N rim force pulls for 3.0 s. Find the net torque, angular acceleration, and final angular velocity.",
+            "steps": [
+              "Step 1: Use the axle as the rotation axis with tangential angle 90 degrees so tau = R*F*sin(90 deg), alpha = tau / I, and omega = omega0 + alpha*t for constant torque.",
+              "Step 2: Calculate I = 0.5(4.0)(0.50)^2 = 0.50 kg*m^2 and tau = (0.50 m)(12 N) = 6.0 N*m, giving alpha = 6.0 / 0.50 = 12 rad/s^2 and omega = 0 + (12)(3.0) = 36 rad/s.",
+              "Step 3: After 3.0 s, the disk rotates at 36 rad/s in the direction of the 6.0 N*m torque; the axle supplies an opposing force so the center of mass stays fixed while the disk accelerates angularly."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students multiply total force by distance from the pivot without accounting for the angle between the force and position vectors.",
+              "repair": "Apply tau = r*F*sin(theta) or use the perpendicular lever arm r_perp: a force pointing directly through the pivot has sin(theta) = 0 and produces zero torque."
+            },
+            {
+              "misconception": "Students assume that zero net torque automatically implies zero net force, or that zero net force implies zero net torque.",
+              "repair": "Check translational and rotational conditions independently: two equal, opposite, offset forces yield zero net force yet create a nonzero couple torque that causes angular acceleration."
+            }
+          ]
         },
         {
           "id": "ap-physics-1-ch-05-section-02",
@@ -34663,7 +34910,26 @@
             "Which condition prevents translational acceleration?"
           ],
           "transferMove": "Mark the pivot, draw the perpendicular lever arm, choose signs, and check both equilibrium equations.",
-          "contentEnhancementVersion": "ap-physics-1-foundation-v12"
+          "contentEnhancementVersion": "ap-physics-1-foundation-v12",
+          "workedExample": {
+            "prompt": "A uniform 2.0 m beam of mass 6.0 kg is hinged at its left end and held horizontal by a vertical cable attached 1.5 m from the hinge (g = 10 m/s^2). Calculate the cable tension and the vertical hinge force.",
+            "steps": [
+              "Step 1: Choose the beam as the system and place the pivot at the hinge (x = 0) so the unknown hinge force has zero lever arm. Uniform beam weight W = 60 N acts downward at midpoint x = 1.0 m.",
+              "Step 2: Rotational equilibrium (CCW positive): T(1.5 m) - (60 N)(1.0 m) = 0 yields T = 40 N upward. Vertical force equilibrium: F_hinge,y + 40 N - 60 N = 0 gives F_hinge,y = +20 N upward.",
+              "Step 3: The cable supplies 40 N upward and the hinge supplies 20 N upward; checking torque about the cable attachment (-20*1.5 + 60*0.5 = 0) confirms static equilibrium."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students conclude that a hinge exerts zero force simply because placing the pivot at the hinge removes it from the torque equation.",
+              "repair": "Remember that choosing a pivot only eliminates an unknown force from the torque sum; you must still apply Sum F_x = 0 and Sum F_y = 0 to find the actual hinge reaction force."
+            },
+            {
+              "misconception": "Students apply the weight of a uniform beam at its end or support point instead of at its geometric center of mass.",
+              "repair": "For any uniform rigid rod or beam, draw the entire gravitational weight vector acting downward at the midpoint (L/2) to obtain the correct lever arm."
+            }
+          ]
         },
         {
           "id": "ap-physics-1-ch-05-section-03",
@@ -35003,7 +35269,26 @@
             "What condition supports angular-momentum conservation?"
           ],
           "transferMove": "Name the axis, identify the mass distribution, then choose a kinematic, energy, or momentum relation.",
-          "contentEnhancementVersion": "ap-physics-1-foundation-v12"
+          "contentEnhancementVersion": "ap-physics-1-foundation-v12",
+          "workedExample": {
+            "prompt": "A solid disk (I = 0.5*M*R^2) and a thin hoop (I = M*R^2) each have mass 2.0 kg and radius 0.40 m and spin at omega = 5.0 rad/s. Compare their rim tangential speeds, rotational inertias, and angular momenta.",
+            "steps": [
+              "Step 1: Relate rim tangential speed to angular speed with v = R*omega, and evaluate rotational inertia I and angular momentum L = I*omega about each central axis.",
+              "Step 2: Both rims have v = (0.40 m)(5.0 rad/s) = 2.0 m/s. However, I_disk = 0.5(2.0)(0.40)^2 = 0.16 kg*m^2 and I_hoop = (2.0)(0.40)^2 = 0.32 kg*m^2.",
+              "Step 3: Consequently L_disk = (0.16)(5.0) = 0.80 kg*m^2/s while L_hoop = (0.32)(5.0) = 1.60 kg*m^2/s; concentrating mass at the outer rim doubles both rotational inertia and angular momentum."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students expect two rigid bodies with identical mass and outer radius to have the same rotational inertia regardless of shape.",
+              "repair": "Inspect how mass is distributed relative to the axis: because each mass element contributes m*r^2, shifting mass farther from the axis increases rotational inertia sharply."
+            },
+            {
+              "misconception": "Students claim points near the hub of a rigid spinning disk have a smaller angular speed omega than points on the outer rim.",
+              "repair": "Distinguish angular speed from tangential speed: every point on a rigid body shares the same omega, whereas tangential speed v = r*omega grows linearly with radial distance r."
+            }
+          ]
         }
       ],
       "studyRoute": [
@@ -35475,7 +35760,26 @@
             "What does external torque change?"
           ],
           "transferMove": "Use both translation and rotation terms whenever a rigid body rolls.",
-          "contentEnhancementVersion": "ap-physics-1-foundation-v12"
+          "contentEnhancementVersion": "ap-physics-1-foundation-v12",
+          "workedExample": {
+            "prompt": "A 3.0 kg solid sphere (I = 2/5*M*R^2) of radius 0.20 m rolls without slipping along a level floor at center-of-mass speed 5.0 m/s. Find its angular speed, translational K, rotational K, and total kinetic energy.",
+            "steps": [
+              "Step 1: Apply the no-slip constraint omega = v / R and split total kinetic energy into translational K_trans = 0.5*M*v^2 and rotational K_rot = 0.5*I*omega^2.",
+              "Step 2: Compute omega = 5.0 / 0.20 = 25 rad/s and I = (2/5)(3.0)(0.20)^2 = 0.048 kg*m^2. Then K_trans = 0.5(3.0)(5.0)^2 = 37.5 J and K_rot = 0.5(0.048)(25)^2 = 15.0 J.",
+              "Step 3: Total kinetic energy is 37.5 + 15.0 = 52.5 J, with 5/7 (71.4%) in translation and 2/7 (28.6%) in rotation about the center of mass."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students compute total kinetic energy of a rolling object using only 0.5*M*v^2 and omit the rotational kinetic energy term.",
+              "repair": "Include both energy stores whenever a rigid body translates and rotates: K_total = 0.5*M*v_cm^2 + 0.5*I_cm*omega^2."
+            },
+            {
+              "misconception": "Students substitute v = R*omega even when a bowling ball or wheel is skidding across a surface.",
+              "repair": "Verify the no-slip condition before linking v and omega: v = R*omega holds only when the contact point is instantaneously at rest relative to the surface."
+            }
+          ]
         },
         {
           "id": "ap-physics-1-ch-06-section-02",
@@ -35815,7 +36119,26 @@
             "What evidence indicates axle loss?"
           ],
           "transferMove": "Write the no-slip relation first, then include both energy forms and any measured loss.",
-          "contentEnhancementVersion": "ap-physics-1-foundation-v12"
+          "contentEnhancementVersion": "ap-physics-1-foundation-v12",
+          "workedExample": {
+            "prompt": "A uniform solid cylinder (I = 0.5*M*R^2) rolls without slipping from rest down an incline of vertical height 1.2 m (g = 10 m/s^2). Compute its bottom speed and compare it to a frictionless sliding block.",
+            "steps": [
+              "Step 1: Choose the cylinder-Earth system; static friction provides torque at the instantaneously stationary contact point without dissipating energy, so M*g*h = 0.5*M*v^2 + 0.5*I*(v/R)^2.",
+              "Step 2: Substitute I = 0.5*M*R^2 to obtain M*g*h = 0.5*M*v^2 + 0.25*M*v^2 = 0.75*M*v^2, so v = sqrt((4/3)*g*h) = sqrt((4/3)(10)(1.2)) = sqrt(16) = 4.0 m/s.",
+              "Step 3: The rolling cylinder reaches 4.0 m/s, slower than a frictionless sliding block at sqrt(2*10*1.2) = 4.9 m/s, because one-third of M*g*h goes into rotational kinetic energy."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students subtract negative friction work from mechanical energy for a body rolling without slipping down a ramp.",
+              "repair": "Static friction during pure rolling acts on a contact point with zero instantaneous displacement, so it redirects energy into rotation without converting mechanical energy to heat."
+            },
+            {
+              "misconception": "Students predict that a heavier solid cylinder reaches the bottom of an incline faster than a lighter solid cylinder of the same shape.",
+              "repair": "Check the algebraic energy equation: both mass M and radius R cancel out of v = sqrt((4/3)*g*h), so only the geometric shape factor c in I = c*M*R^2 controls the rolling speed."
+            }
+          ]
         },
         {
           "id": "ap-physics-1-ch-06-section-03",
@@ -36155,7 +36478,26 @@
             "Why can kinetic energy change during an isolated shape change?"
           ],
           "transferMove": "Choose the axis, identify torque sources, integrate or conserve angular momentum, then check units.",
-          "contentEnhancementVersion": "ap-physics-1-foundation-v12"
+          "contentEnhancementVersion": "ap-physics-1-foundation-v12",
+          "workedExample": {
+            "prompt": "A turntable (I = 20 kg*m^2) spins freely at 4.0 rad/s about a frictionless vertical axle. A 20 kg child drops vertically onto the rim at r = 1.0 m with zero horizontal speed. Find the final angular speed and Delta K.",
+            "steps": [
+              "Step 1: Choose the turntable-child system about the vertical axle. Gravity and axle forces exert zero torque about this axis, so angular momentum L = I*omega is conserved.",
+              "Step 2: Initial L_i = (20 kg*m^2)(4.0 rad/s) = 80 kg*m^2/s. Final rotational inertia I_f = 20 + (20)(1.0)^2 = 40 kg*m^2, yielding omega_f = 80 / 40 = 2.0 rad/s.",
+              "Step 3: Rotational kinetic energy drops from K_i = 0.5(20)(4.0)^2 = 160 J to K_f = 0.5(40)(2.0)^2 = 80 J (Delta K = -80 J) as internal friction accelerates the child tangentially."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students assume rotational kinetic energy stays constant whenever angular momentum is conserved in a rotating collision or mass drop.",
+              "repair": "Write K_rot = L^2 / (2*I): when L is fixed and I increases (as when a mass lands on a disk), rotational kinetic energy must decrease through internal dissipative work."
+            },
+            {
+              "misconception": "Students invoke angular momentum conservation without specifying the axis or verifying that net external torque about that axis is zero.",
+              "repair": "Always state the chosen axis first and check every external force lever arm about it; if a nonzero external torque acts over Delta t, use angular impulse Delta L = tau_ext*Delta t."
+            }
+          ]
         }
       ],
       "studyRoute": [
@@ -36627,7 +36969,26 @@
             "Where is oscillator kinetic energy maximum?"
           ],
           "transferMove": "Locate equilibrium and turning points on the graph before applying a timing or energy relationship.",
-          "contentEnhancementVersion": "ap-physics-1-foundation-v12"
+          "contentEnhancementVersion": "ap-physics-1-foundation-v12",
+          "workedExample": {
+            "prompt": "A 0.40 kg block on a frictionless horizontal surface attaches to a spring (k = 160 N/m), is pulled 0.15 m from equilibrium, and released from rest. Find its period, frequency, and maximum acceleration magnitude.",
+            "steps": [
+              "Step 1: For horizontal simple harmonic motion, net restoring force F = -k*x gives angular frequency omega = sqrt(k/m), period T = 2*pi*sqrt(m/k), and a_max = (k/m)*A at x = +/-A.",
+              "Step 2: Compute omega = sqrt(160 / 0.40) = sqrt(400) = 20 rad/s, so T = 2*pi / 20 = 0.314 s, f = 1 / T = 3.18 Hz, and a_max = (400 s^-2)(0.15 m) = 60 m/s^2.",
+              "Step 3: The block completes 3.18 cycles per second with a 0.314 s period independent of amplitude, reaching its peak acceleration of 60 m/s^2 toward equilibrium at the turning points."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students think pulling a spring-mass oscillator twice as far from equilibrium doubles its oscillation period.",
+              "repair": "Check T = 2*pi*sqrt(m/k): larger amplitude increases both the travel distance and the restoring force proportionally, keeping the ideal SHM period unchanged."
+            },
+            {
+              "misconception": "Students claim acceleration is zero at the turning points of SHM because the oscillating block stops momentarily there.",
+              "repair": "Use a = -(k/m)*x: acceleration is zero at equilibrium (x = 0) where speed peaks, and acceleration reaches its maximum magnitude at the turning points (x = +/-A) where spring stretch peaks."
+            }
+          ]
         },
         {
           "id": "ap-physics-1-ch-07-section-02",
@@ -36967,7 +37328,26 @@
             "What does displacement slope represent?"
           ],
           "transferMove": "Label equilibrium and turning points before interpreting slope, timing, or energy.",
-          "contentEnhancementVersion": "ap-physics-1-foundation-v12"
+          "contentEnhancementVersion": "ap-physics-1-foundation-v12",
+          "workedExample": {
+            "prompt": "A horizontal oscillator follows x(t) = 0.20*cos(pi*t) in meters. Determine its amplitude, period, the first time it crosses equilibrium moving in the -x direction, and its speed at that instant.",
+            "steps": [
+              "Step 1: Match x(t) = A*cos(omega*t) to read amplitude A = 0.20 m and angular frequency omega = pi rad/s; equilibrium crossings occur where cos(omega*t) = 0 and peak speed is v_max = omega*A.",
+              "Step 2: Period T = 2*pi / pi = 2.0 s (f = 0.50 Hz). Starting at x(0) = +0.20 m, the first zero crossing is at t = T/4 = 0.50 s, where the x-t slope is steepest negative.",
+              "Step 3: At t = 0.50 s, the oscillator passes x = 0 moving in the -x direction at speed v_max = (pi rad/s)(0.20 m) = 0.628 m/s (velocity -0.628 m/s)."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students read the time interval between two consecutive zero crossings on a position-time graph as one full period T.",
+              "repair": "Confirm that one full cycle returns to the same position moving in the same direction; consecutive equilibrium crossings are separated by only half a period (T/2)."
+            },
+            {
+              "misconception": "Students identify the peaks and troughs of a displacement-time curve as the points of maximum speed.",
+              "repair": "Remember velocity is the slope of x(t): peaks and troughs have horizontal tangents (zero speed), while maximum speed occurs where the curve crosses equilibrium with steepest slope."
+            }
+          ]
         },
         {
           "id": "ap-physics-1-ch-07-section-03",
@@ -37307,7 +37687,26 @@
             "What apparatus limit could bend a spring-period trend?"
           ],
           "transferMove": "Separate timing evidence from amplitude evidence and test each claim with repeated measurements.",
-          "contentEnhancementVersion": "ap-physics-1-foundation-v12"
+          "contentEnhancementVersion": "ap-physics-1-foundation-v12",
+          "workedExample": {
+            "prompt": "A damped 0.50 kg spring oscillator (k = 50 N/m) starts at amplitude 0.20 m. After 10 cycles timed at 6.3 +/- 0.2 s, amplitude drops to 0.10 m. Find the mechanical energy lost and the experimental period with uncertainty.",
+            "steps": [
+              "Step 1: Evaluate total mechanical energy at turning points using E = 0.5*k*A^2, and divide both total elapsed time and timing uncertainty by N = 10 cycles to obtain T.",
+              "Step 2: Initial E_i = 0.5(50)(0.20)^2 = 1.00 J and final E_f = 0.5(50)(0.10)^2 = 0.25 J, so energy lost is 1.00 - 0.25 = 0.75 J. Period T = (6.3 +/- 0.2 s) / 10 = 0.63 +/- 0.02 s.",
+              "Step 3: Halving amplitude removes 75% (0.75 J) of mechanical energy to the surroundings, while the measured period 0.63 +/- 0.02 s agrees with the ideal prediction 2*pi*sqrt(0.50/50) = 0.628 s."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students expect halving the amplitude of a damped oscillator to reduce its mechanical energy by only half.",
+              "repair": "Use E = 0.5*k*A^2: because mechanical energy scales with amplitude squared, reducing amplitude to 1/2 leaves only (1/2)^2 = 1/4 of the original mechanical energy."
+            },
+            {
+              "misconception": "Students measure a single swing with a stopwatch and treat that raw reading as having minimal reaction-time uncertainty.",
+              "repair": "Time many consecutive cycles (such as 10 or 20) and divide both elapsed time and stopwatch uncertainty by the cycle count to shrink the per-period uncertainty."
+            }
+          ]
         }
       ],
       "studyRoute": [
@@ -37779,7 +38178,26 @@
             "How does area change speed in incompressible flow?"
           ],
           "transferMove": "Identify whether the fluid is stationary or flowing before choosing hydrostatic, continuity, or Bernoulli reasoning.",
-          "contentEnhancementVersion": "ap-physics-1-foundation-v12"
+          "contentEnhancementVersion": "ap-physics-1-foundation-v12",
+          "workedExample": {
+            "prompt": "Water (1000 kg/m^3) flows steadily through a horizontal pipe narrowing from area 0.040 m^2 to 0.010 m^2. If speed is 2.0 m/s and pressure is 150 kPa in the wide section, find speed and pressure in the narrow section.",
+            "steps": [
+              "Step 1: For steady incompressible ideal flow in a horizontal pipe (y1 = y2), apply continuity A1*v1 = A2*v2 and Bernoulli equation P1 + 0.5*rho*v1^2 = P2 + 0.5*rho*v2^2.",
+              "Step 2: Continuity gives v2 = (0.040 / 0.010)(2.0 m/s) = 8.0 m/s. Bernoulli gives P2 = 150,000 + 0.5(1000)(2.0^2 - 8.0^2) = 150,000 + 500(-60) = 120,000 Pa.",
+              "Step 3: In the narrow section, water speeds up fourfold to 8.0 m/s while static pressure drops by 30 kPa to 120 kPa as pressure energy converts into kinetic energy per unit volume."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students predict that fluid pressure must rise inside a narrowed pipe constriction because the water is squeezed into less space.",
+              "repair": "Link acceleration to a pressure gradient: fluid accelerates into a constriction only because higher pressure upstream pushes it toward lower pressure inside the faster narrow section."
+            },
+            {
+              "misconception": "Students substitute pipe radius or diameter directly for cross-sectional area A in the continuity equation A1*v1 = A2*v2.",
+              "repair": "Compute circular pipe area using A = pi*r^2: cutting a pipe diameter in half reduces cross-sectional area by a factor of four and quadruples flow speed."
+            }
+          ]
         },
         {
           "id": "ap-physics-1-ch-08-section-02",
@@ -38119,7 +38537,26 @@
             "What does a 30 percent submerged fraction imply?"
           ],
           "transferMove": "Identify the fluid, depth, displaced volume, and force balance before choosing a pressure relation.",
-          "contentEnhancementVersion": "ap-physics-1-foundation-v12"
+          "contentEnhancementVersion": "ap-physics-1-foundation-v12",
+          "workedExample": {
+            "prompt": "A wooden block (V = 0.020 m^3, density 750 kg/m^3) floats at rest in freshwater (1000 kg/m^3; g = 10 m/s^2). Find the buoyant force, submerged volume, and water gauge pressure at depth 0.30 m.",
+            "steps": [
+              "Step 1: For a floating object in equilibrium, upward buoyant force equals total weight (F_B = m*g = rho_fluid*V_sub*g), and gauge pressure at depth h is P_gauge = rho_fluid*g*h.",
+              "Step 2: Block mass m = (750)(0.020) = 15 kg, so F_B = W = 15(10) = 150 N. Thus V_sub = 150 / (1000*10) = 0.015 m^3 (75% submerged), and P_gauge = (1000)(10)(0.30) = 3000 Pa.",
+              "Step 3: The water exerts a 150 N upward buoyant force with 0.015 m^3 of the block submerged (matching rho_block / rho_water = 0.75), and gauge pressure at 0.30 m depth is 3.0 kPa."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students plug the entire volume of a floating block into F_B = rho_fluid*V*g instead of only the submerged portion.",
+              "repair": "Use only the displaced fluid volume V_sub in Archimedes principle; for a floating object, set F_B equal to object weight first so the submerged fraction equals rho_object / rho_fluid."
+            },
+            {
+              "misconception": "Students assume pushing an already fully submerged incompressible block deeper increases the buoyant force acting on it.",
+              "repair": "Remember buoyancy comes from the pressure difference between bottom and top faces: deeper water raises top and bottom pressures equally, leaving their difference and F_B unchanged."
+            }
+          ]
         },
         {
           "id": "ap-physics-1-ch-08-section-03",
@@ -38459,7 +38896,26 @@
             "What evidence indicates viscous loss?"
           ],
           "transferMove": "Classify the flow first, state assumptions second, then select conservation relations and test residuals.",
-          "contentEnhancementVersion": "ap-physics-1-foundation-v12"
+          "contentEnhancementVersion": "ap-physics-1-foundation-v12",
+          "workedExample": {
+            "prompt": "Water exits a small nozzle (area 2.0 x 10^-4 m^2) located 0.80 m below the open surface of a wide tank (g = 10 m/s^2). Find the ideal exit speed and flow rate, then explain why measured exit speed is 3.6 m/s.",
+            "steps": [
+              "Step 1: Apply Bernoulli between the open top surface (P1 = P_atm, v1 approx 0, y1 = 0.80 m) and open exit jet (P2 = P_atm, y2 = 0) to get v2 = sqrt(2*g*h) and flow rate Q = A*v2.",
+              "Step 2: Ideal exit speed v2 = sqrt(2*10*0.80) = sqrt(16) = 4.0 m/s, giving ideal volume flow rate Q = (2.0 x 10^-4 m^2)(4.0 m/s) = 8.0 x 10^-4 m^3/s (0.80 L/s).",
+              "Step 3: The measured 3.6 m/s speed retains only (3.6/4.0)^2 = 81% of ideal kinetic energy per volume because viscous friction and turbulence at the nozzle dissipate energy into heat."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Students expect ideal Bernoulli predictions to match real pipe or nozzle flow exactly even when viscosity and sharp bends are present.",
+              "repair": "Treat Bernoulli as an ideal inviscid model: viscosity, wall friction, and turbulence convert mechanical energy into heat, lowering measured speed or downstream pressure."
+            },
+            {
+              "misconception": "Students assume the ideal Torricelli exit speed from an open tank depends on fluid density or the nozzle cross-sectional area.",
+              "repair": "Cancel density from rho*g*h = 0.5*rho*v^2: ideal exit speed depends only on g and depth h for a small hole in a wide tank, though flow rate Q = A*v scales with area."
+            }
+          ]
         }
       ],
       "studyRoute": [
@@ -39582,9 +40038,908 @@
       "releaseEligible": false
     }
   ],
+  "diagrams": [
+    {
+      "id": "ap-physics-1-diagram-01",
+      "chapterId": "ap-physics-1-ch-01",
+      "domainId": "kinematics",
+      "title": "Motion-representation bridge",
+      "type": "optional-concept-flow",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Place one motion event into a coordinate sketch, position-time graph, and velocity-time interpretation.",
+      "caption": "Original AP Physics 1 Unit 1 visual scaffold: Build a three-panel representation for a cart that starts at a positive position, moves in the positive direction, and then slows to rest.",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based",
+        "https://openstax.org/details/books/college-physics-2e"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Text-first visual scaffold: The cart begins to the right of the origin, has positive velocity, and follows a position curve whose positive slope decreases to zero at the stopping time.",
+        "longDescription": "The cart begins to the right of the origin, has positive velocity, and follows a position curve whose positive slope decreases to zero at the stopping time. A position value above zero is not enough to determine the sign of velocity; inspect slope.",
+        "textEquivalent": [
+          "The cart begins to the right of the origin, has positive velocity, and follows a position curve whose positive slope decreases to zero at the stopping time.",
+          "Draw the axis and mark the initial position.",
+          "Sketch position versus time with slope changes that match the verbal motion.",
+          "Add a velocity sign or slope annotation for each interval.",
+          "Check that the graph reaches zero velocity at the stated stopping event.",
+          "Error check: A position value above zero is not enough to determine the sign of velocity; inspect slope."
+        ],
+        "readingOrder": [
+          "step-1",
+          "step-2",
+          "step-3",
+          "step-4",
+          "error-check"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "step-1",
+            "label": "Step 1: positive axis direction",
+            "detail": "Draw the axis and mark the initial position."
+          },
+          {
+            "id": "step-2",
+            "label": "Step 2: initial position",
+            "detail": "Sketch position versus time with slope changes that match the verbal motion."
+          },
+          {
+            "id": "step-3",
+            "label": "Step 3: time axis",
+            "detail": "Add a velocity sign or slope annotation for each interval."
+          },
+          {
+            "id": "step-4",
+            "label": "Step 4: position slope",
+            "detail": "Check that the graph reaches zero velocity at the stated stopping event."
+          },
+          {
+            "id": "error-check",
+            "label": "Visual error check",
+            "detail": "A position value above zero is not enough to determine the sign of velocity; inspect slope. Required labels: positive axis direction, initial position, time axis, position slope, velocity sign."
+          }
+        ],
+        "edges": [
+          {
+            "id": "step-1-to-step-2",
+            "from": "step-1",
+            "to": "step-2",
+            "label": "proceeds to"
+          },
+          {
+            "id": "step-2-to-step-3",
+            "from": "step-2",
+            "to": "step-3",
+            "label": "proceeds to"
+          },
+          {
+            "id": "step-3-to-step-4",
+            "from": "step-3",
+            "to": "step-4",
+            "label": "proceeds to"
+          },
+          {
+            "id": "step-4-to-error-check",
+            "from": "step-4",
+            "to": "error-check",
+            "label": "verify against"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "ap-physics-1-diagram-02",
+      "chapterId": "ap-physics-1-ch-02",
+      "domainId": "force-and-translational-dynamics",
+      "title": "Interaction-to-force bridge",
+      "type": "optional-concept-flow",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Make the selected system and external interactions visible before writing Newton equations.",
+      "caption": "Original AP Physics 1 Unit 2 visual scaffold: Build a free-body representation for a block pulled across a rough horizontal surface while a small drag force opposes motion.",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based",
+        "https://openstax.org/details/books/college-physics-2e"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Text-first visual scaffold: The isolated block has upward normal force, downward weight, a forward applied force, and backward resistive forces; constant speed means their signed net force is zero.",
+        "longDescription": "The isolated block has upward normal force, downward weight, a forward applied force, and backward resistive forces; constant speed means their signed net force is zero. Do not add a separate centripetal or motion arrow unless a physical interaction produces it.",
+        "textEquivalent": [
+          "The isolated block has upward normal force, downward weight, a forward applied force, and backward resistive forces; constant speed means their signed net force is zero.",
+          "Circle the object included in the system.",
+          "Draw only interactions crossing the boundary.",
+          "Choose positive axes and resolve angled forces if present.",
+          "Add a net-force statement and mark the constant-speed condition if applicable.",
+          "Error check: Do not add a separate centripetal or motion arrow unless a physical interaction produces it."
+        ],
+        "readingOrder": [
+          "step-1",
+          "step-2",
+          "step-3",
+          "step-4",
+          "error-check"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "step-1",
+            "label": "Step 1: system boundary",
+            "detail": "Circle the object included in the system."
+          },
+          {
+            "id": "step-2",
+            "label": "Step 2: applied force",
+            "detail": "Draw only interactions crossing the boundary."
+          },
+          {
+            "id": "step-3",
+            "label": "Step 3: normal force",
+            "detail": "Choose positive axes and resolve angled forces if present."
+          },
+          {
+            "id": "step-4",
+            "label": "Step 4: weight",
+            "detail": "Add a net-force statement and mark the constant-speed condition if applicable."
+          },
+          {
+            "id": "error-check",
+            "label": "Visual error check",
+            "detail": "Do not add a separate centripetal or motion arrow unless a physical interaction produces it. Required labels: system boundary, applied force, normal force, weight, friction or drag direction."
+          }
+        ],
+        "edges": [
+          {
+            "id": "step-1-to-step-2",
+            "from": "step-1",
+            "to": "step-2",
+            "label": "proceeds to"
+          },
+          {
+            "id": "step-2-to-step-3",
+            "from": "step-2",
+            "to": "step-3",
+            "label": "proceeds to"
+          },
+          {
+            "id": "step-3-to-step-4",
+            "from": "step-3",
+            "to": "step-4",
+            "label": "proceeds to"
+          },
+          {
+            "id": "step-4-to-error-check",
+            "from": "step-4",
+            "to": "error-check",
+            "label": "verify against"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "ap-physics-1-diagram-03",
+      "chapterId": "ap-physics-1-ch-03",
+      "domainId": "work-energy-and-power",
+      "title": "Energy-accounting bridge",
+      "type": "optional-concept-flow",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Track energy stores and transfers across a clearly named system boundary.",
+      "caption": "Original AP Physics 1 Unit 3 visual scaffold: Build an energy representation for a cart released by a spring that rises on a rough ramp and warms the contact surface.",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based",
+        "https://openstax.org/details/books/college-physics-2e"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Text-first visual scaffold: Spring energy decreases while gravitational and possibly kinetic energy increase; the rough contact adds thermal energy, so mechanical energy alone need not remain constant.",
+        "longDescription": "Spring energy decreases while gravitational and possibly kinetic energy increase; the rough contact adds thermal energy, so mechanical energy alone need not remain constant. A missing thermal or external-work arrow can make a correct conservation claim look falsely violated.",
+        "textEquivalent": [
+          "Spring energy decreases while gravitational and possibly kinetic energy increase; the rough contact adds thermal energy, so mechanical energy alone need not remain constant.",
+          "Name the system and decide whether the ramp surface is inside it.",
+          "Draw initial and final energy bars.",
+          "Add arrows for work or thermal transfer across the boundary.",
+          "Check that the total account closes even if mechanical energy changes.",
+          "Error check: A missing thermal or external-work arrow can make a correct conservation claim look falsely violated."
+        ],
+        "readingOrder": [
+          "step-1",
+          "step-2",
+          "step-3",
+          "step-4",
+          "error-check"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "step-1",
+            "label": "Step 1: system boundary",
+            "detail": "Name the system and decide whether the ramp surface is inside it."
+          },
+          {
+            "id": "step-2",
+            "label": "Step 2: spring energy",
+            "detail": "Draw initial and final energy bars."
+          },
+          {
+            "id": "step-3",
+            "label": "Step 3: gravitational energy",
+            "detail": "Add arrows for work or thermal transfer across the boundary."
+          },
+          {
+            "id": "step-4",
+            "label": "Step 4: kinetic energy",
+            "detail": "Check that the total account closes even if mechanical energy changes."
+          },
+          {
+            "id": "error-check",
+            "label": "Visual error check",
+            "detail": "A missing thermal or external-work arrow can make a correct conservation claim look falsely violated. Required labels: system boundary, spring energy, gravitational energy, kinetic energy, thermal transfer."
+          }
+        ],
+        "edges": [
+          {
+            "id": "step-1-to-step-2",
+            "from": "step-1",
+            "to": "step-2",
+            "label": "proceeds to"
+          },
+          {
+            "id": "step-2-to-step-3",
+            "from": "step-2",
+            "to": "step-3",
+            "label": "proceeds to"
+          },
+          {
+            "id": "step-3-to-step-4",
+            "from": "step-3",
+            "to": "step-4",
+            "label": "proceeds to"
+          },
+          {
+            "id": "step-4-to-error-check",
+            "from": "step-4",
+            "to": "error-check",
+            "label": "verify against"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "ap-physics-1-diagram-04",
+      "chapterId": "ap-physics-1-ch-04",
+      "domainId": "linear-momentum",
+      "title": "Collision-before-and-after bridge",
+      "type": "optional-concept-flow",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Preserve signed velocity and system membership through a short collision interval.",
+      "caption": "Original AP Physics 1 Unit 4 visual scaffold: Build before-and-after momentum representations for two carts that approach, collide, and separate with one cart reversing direction.",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based",
+        "https://openstax.org/details/books/college-physics-2e"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Text-first visual scaffold: The two-cart system has signed momentum before and after contact; a reversed cart changes sign, while deformation may reduce total kinetic energy without destroying momentum.",
+        "longDescription": "The two-cart system has signed momentum before and after contact; a reversed cart changes sign, while deformation may reduce total kinetic energy without destroying momentum. A rebound velocity cannot be represented by a positive speed alone.",
+        "textEquivalent": [
+          "The two-cart system has signed momentum before and after contact; a reversed cart changes sign, while deformation may reduce total kinetic energy without destroying momentum.",
+          "Set one positive direction for both snapshots.",
+          "Draw velocity arrows with lengths or labels that preserve sign.",
+          "Group both carts if testing total momentum conservation.",
+          "Compare total signed momentum and separately compare kinetic energy.",
+          "Error check: A rebound velocity cannot be represented by a positive speed alone."
+        ],
+        "readingOrder": [
+          "step-1",
+          "step-2",
+          "step-3",
+          "step-4",
+          "error-check"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "step-1",
+            "label": "Step 1: positive direction",
+            "detail": "Set one positive direction for both snapshots."
+          },
+          {
+            "id": "step-2",
+            "label": "Step 2: cart masses",
+            "detail": "Draw velocity arrows with lengths or labels that preserve sign."
+          },
+          {
+            "id": "step-3",
+            "label": "Step 3: signed velocities",
+            "detail": "Group both carts if testing total momentum conservation."
+          },
+          {
+            "id": "step-4",
+            "label": "Step 4: system boundary",
+            "detail": "Compare total signed momentum and separately compare kinetic energy."
+          },
+          {
+            "id": "error-check",
+            "label": "Visual error check",
+            "detail": "A rebound velocity cannot be represented by a positive speed alone. Required labels: positive direction, cart masses, signed velocities, system boundary, external impulse note."
+          }
+        ],
+        "edges": [
+          {
+            "id": "step-1-to-step-2",
+            "from": "step-1",
+            "to": "step-2",
+            "label": "proceeds to"
+          },
+          {
+            "id": "step-2-to-step-3",
+            "from": "step-2",
+            "to": "step-3",
+            "label": "proceeds to"
+          },
+          {
+            "id": "step-3-to-step-4",
+            "from": "step-3",
+            "to": "step-4",
+            "label": "proceeds to"
+          },
+          {
+            "id": "step-4-to-error-check",
+            "from": "step-4",
+            "to": "error-check",
+            "label": "verify against"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "ap-physics-1-diagram-05",
+      "chapterId": "ap-physics-1-ch-05",
+      "domainId": "torque-and-rotational-dynamics",
+      "title": "Torque-line-of-action bridge",
+      "type": "optional-concept-flow",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Expose the perpendicular lever arm and rotational sign before summing torques.",
+      "caption": "Original AP Physics 1 Unit 5 visual scaffold: Build a torque representation for a beam with a hanging load and a support force about a chosen pivot.",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based",
+        "https://openstax.org/details/books/college-physics-2e"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Text-first visual scaffold: Torque magnitude equals force times perpendicular distance to the line of action; a force through the pivot has zero torque about that pivot.",
+        "longDescription": "Torque magnitude equals force times perpendicular distance to the line of action; a force through the pivot has zero torque about that pivot. The full distance to the force location is not always the lever arm.",
+        "textEquivalent": [
+          "Torque magnitude equals force times perpendicular distance to the line of action; a force through the pivot has zero torque about that pivot.",
+          "Mark the pivot and every force application point.",
+          "Extend each force line of action.",
+          "Draw the perpendicular distance from pivot to each line.",
+          "Sum signed torques, then identify the separate net-force check.",
+          "Error check: The full distance to the force location is not always the lever arm."
+        ],
+        "readingOrder": [
+          "step-1",
+          "step-2",
+          "step-3",
+          "step-4",
+          "error-check"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "step-1",
+            "label": "Step 1: pivot",
+            "detail": "Mark the pivot and every force application point."
+          },
+          {
+            "id": "step-2",
+            "label": "Step 2: force line of action",
+            "detail": "Extend each force line of action."
+          },
+          {
+            "id": "step-3",
+            "label": "Step 3: perpendicular lever arm",
+            "detail": "Draw the perpendicular distance from pivot to each line."
+          },
+          {
+            "id": "step-4",
+            "label": "Step 4: clockwise or counterclockwise sign",
+            "detail": "Sum signed torques, then identify the separate net-force check."
+          },
+          {
+            "id": "error-check",
+            "label": "Visual error check",
+            "detail": "The full distance to the force location is not always the lever arm. Required labels: pivot, force line of action, perpendicular lever arm, clockwise or counterclockwise sign, beam weight."
+          }
+        ],
+        "edges": [
+          {
+            "id": "step-1-to-step-2",
+            "from": "step-1",
+            "to": "step-2",
+            "label": "proceeds to"
+          },
+          {
+            "id": "step-2-to-step-3",
+            "from": "step-2",
+            "to": "step-3",
+            "label": "proceeds to"
+          },
+          {
+            "id": "step-3-to-step-4",
+            "from": "step-3",
+            "to": "step-4",
+            "label": "proceeds to"
+          },
+          {
+            "id": "step-4-to-error-check",
+            "from": "step-4",
+            "to": "error-check",
+            "label": "verify against"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "ap-physics-1-diagram-06",
+      "chapterId": "ap-physics-1-ch-06",
+      "domainId": "energy-and-momentum-of-rotating-systems",
+      "title": "Rolling-energy bridge",
+      "type": "optional-concept-flow",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Show that a rolling object has simultaneous center-of-mass translation and rotation.",
+      "caption": "Original AP Physics 1 Unit 6 visual scaffold: Build a linked representation for a rigid disk rolling without slipping down a ramp.",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based",
+        "https://openstax.org/details/books/college-physics-2e"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Text-first visual scaffold: The disk translates down the ramp while rotating about its center; no slipping links center speed to angular speed, and inertia determines energy partition.",
+        "longDescription": "The disk translates down the ramp while rotating about its center; no slipping links center speed to angular speed, and inertia determines energy partition. The contact point is instantaneously at rest relative to the surface in the ideal no-slip model, not sliding forward.",
+        "textEquivalent": [
+          "The disk translates down the ramp while rotating about its center; no slipping links center speed to angular speed, and inertia determines energy partition.",
+          "Draw the center-of-mass velocity along the ramp.",
+          "Mark the angular-velocity direction about the center.",
+          "Annotate v equals r omega for no slip.",
+          "Split the kinetic-energy account into translational and rotational terms.",
+          "Error check: The contact point is instantaneously at rest relative to the surface in the ideal no-slip model, not sliding forward."
+        ],
+        "readingOrder": [
+          "step-1",
+          "step-2",
+          "step-3",
+          "step-4",
+          "error-check"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "step-1",
+            "label": "Step 1: center-of-mass velocity",
+            "detail": "Draw the center-of-mass velocity along the ramp."
+          },
+          {
+            "id": "step-2",
+            "label": "Step 2: angular velocity",
+            "detail": "Mark the angular-velocity direction about the center."
+          },
+          {
+            "id": "step-3",
+            "label": "Step 3: radius",
+            "detail": "Annotate v equals r omega for no slip."
+          },
+          {
+            "id": "step-4",
+            "label": "Step 4: contact point",
+            "detail": "Split the kinetic-energy account into translational and rotational terms."
+          },
+          {
+            "id": "error-check",
+            "label": "Visual error check",
+            "detail": "The contact point is instantaneously at rest relative to the surface in the ideal no-slip model, not sliding forward. Required labels: center-of-mass velocity, angular velocity, radius, contact point, translational and rotational energy."
+          }
+        ],
+        "edges": [
+          {
+            "id": "step-1-to-step-2",
+            "from": "step-1",
+            "to": "step-2",
+            "label": "proceeds to"
+          },
+          {
+            "id": "step-2-to-step-3",
+            "from": "step-2",
+            "to": "step-3",
+            "label": "proceeds to"
+          },
+          {
+            "id": "step-3-to-step-4",
+            "from": "step-3",
+            "to": "step-4",
+            "label": "proceeds to"
+          },
+          {
+            "id": "step-4-to-error-check",
+            "from": "step-4",
+            "to": "error-check",
+            "label": "verify against"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "ap-physics-1-diagram-07",
+      "chapterId": "ap-physics-1-ch-07",
+      "domainId": "oscillations",
+      "title": "Oscillation-phase bridge",
+      "type": "optional-concept-flow",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Align displacement, velocity direction, and energy changes over one oscillator cycle.",
+      "caption": "Original AP Physics 1 Unit 7 visual scaffold: Build a cycle map for a mass-spring oscillator beginning at maximum positive displacement and moving toward equilibrium.",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based",
+        "https://openstax.org/details/books/college-physics-2e"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Text-first visual scaffold: At maximum positive displacement the mass is momentarily at rest; moving toward equilibrium gives negative displacement slope or leftward velocity, and kinetic energy grows as spring potential energy falls.",
+        "longDescription": "At maximum positive displacement the mass is momentarily at rest; moving toward equilibrium gives negative displacement slope or leftward velocity, and kinetic energy grows as spring potential energy falls. Maximum displacement and maximum speed occur at different locations in the ideal cycle.",
+        "textEquivalent": [
+          "At maximum positive displacement the mass is momentarily at rest; moving toward equilibrium gives negative displacement slope or leftward velocity, and kinetic energy grows as spring potential energy falls.",
+          "Mark the positive and negative turning points.",
+          "Place equilibrium between them.",
+          "Use the displacement slope or motion arrow to infer velocity direction.",
+          "Annotate where speed and kinetic energy are largest.",
+          "Error check: Maximum displacement and maximum speed occur at different locations in the ideal cycle."
+        ],
+        "readingOrder": [
+          "step-1",
+          "step-2",
+          "step-3",
+          "step-4",
+          "error-check"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "step-1",
+            "label": "Step 1: equilibrium",
+            "detail": "Mark the positive and negative turning points."
+          },
+          {
+            "id": "step-2",
+            "label": "Step 2: turning points",
+            "detail": "Place equilibrium between them."
+          },
+          {
+            "id": "step-3",
+            "label": "Step 3: displacement sign",
+            "detail": "Use the displacement slope or motion arrow to infer velocity direction."
+          },
+          {
+            "id": "step-4",
+            "label": "Step 4: velocity direction",
+            "detail": "Annotate where speed and kinetic energy are largest."
+          },
+          {
+            "id": "error-check",
+            "label": "Visual error check",
+            "detail": "Maximum displacement and maximum speed occur at different locations in the ideal cycle. Required labels: equilibrium, turning points, displacement sign, velocity direction, kinetic or potential energy trend."
+          }
+        ],
+        "edges": [
+          {
+            "id": "step-1-to-step-2",
+            "from": "step-1",
+            "to": "step-2",
+            "label": "proceeds to"
+          },
+          {
+            "id": "step-2-to-step-3",
+            "from": "step-2",
+            "to": "step-3",
+            "label": "proceeds to"
+          },
+          {
+            "id": "step-3-to-step-4",
+            "from": "step-3",
+            "to": "step-4",
+            "label": "proceeds to"
+          },
+          {
+            "id": "step-4-to-error-check",
+            "from": "step-4",
+            "to": "error-check",
+            "label": "verify against"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "ap-physics-1-diagram-08",
+      "chapterId": "ap-physics-1-ch-08",
+      "domainId": "fluids",
+      "title": "Fluid-depth-and-flow bridge",
+      "type": "optional-concept-flow",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Keep hydrostatic depth reasoning separate from continuity and Bernoulli reasoning in a pipe.",
+      "caption": "Original AP Physics 1 Unit 8 visual scaffold: Build a two-part fluid representation: pressure at two depths in a tank and speed-pressure changes in a narrowing pipe.",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based",
+        "https://openstax.org/details/books/college-physics-2e"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Text-first visual scaffold: In the stationary tank, pressure increases with depth; in steady incompressible flow, a narrower section has greater speed, while pressure also depends on elevation and energy-loss assumptions.",
+        "longDescription": "In the stationary tank, pressure increases with depth; in steady incompressible flow, a narrower section has greater speed, while pressure also depends on elevation and energy-loss assumptions. A narrow pipe does not by itself guarantee higher pressure; classify the model and compare all relevant terms.",
+        "textEquivalent": [
+          "In the stationary tank, pressure increases with depth; in steady incompressible flow, a narrower section has greater speed, while pressure also depends on elevation and energy-loss assumptions.",
+          "Mark equal-depth points in the stationary tank.",
+          "Show deeper points with greater gauge pressure.",
+          "Draw wide and narrow pipe sections with flow direction.",
+          "Annotate the area-speed relationship and any elevation or loss assumption.",
+          "Error check: A narrow pipe does not by itself guarantee higher pressure; classify the model and compare all relevant terms."
+        ],
+        "readingOrder": [
+          "step-1",
+          "step-2",
+          "step-3",
+          "step-4",
+          "error-check"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "step-1",
+            "label": "Step 1: free surface",
+            "detail": "Mark equal-depth points in the stationary tank."
+          },
+          {
+            "id": "step-2",
+            "label": "Step 2: depth reference",
+            "detail": "Show deeper points with greater gauge pressure."
+          },
+          {
+            "id": "step-3",
+            "label": "Step 3: pressure comparison points",
+            "detail": "Draw wide and narrow pipe sections with flow direction."
+          },
+          {
+            "id": "step-4",
+            "label": "Step 4: pipe area",
+            "detail": "Annotate the area-speed relationship and any elevation or loss assumption."
+          },
+          {
+            "id": "error-check",
+            "label": "Visual error check",
+            "detail": "A narrow pipe does not by itself guarantee higher pressure; classify the model and compare all relevant terms. Required labels: free surface, depth reference, pressure comparison points, pipe area, flow direction."
+          }
+        ],
+        "edges": [
+          {
+            "id": "step-1-to-step-2",
+            "from": "step-1",
+            "to": "step-2",
+            "label": "proceeds to"
+          },
+          {
+            "id": "step-2-to-step-3",
+            "from": "step-2",
+            "to": "step-3",
+            "label": "proceeds to"
+          },
+          {
+            "id": "step-3-to-step-4",
+            "from": "step-3",
+            "to": "step-4",
+            "label": "proceeds to"
+          },
+          {
+            "id": "step-4-to-error-check",
+            "from": "step-4",
+            "to": "error-check",
+            "label": "verify against"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    }
+  ],
   "diagramPlacements": [
     {
       "id": "ap-physics-1-diagram-01",
+      "diagramId": "ap-physics-1-diagram-01",
       "title": "Motion-representation bridge",
       "unitId": "kinematics",
       "unitNumber": 1,
@@ -39637,6 +40992,7 @@
     },
     {
       "id": "ap-physics-1-diagram-02",
+      "diagramId": "ap-physics-1-diagram-02",
       "title": "Interaction-to-force bridge",
       "unitId": "force-and-translational-dynamics",
       "unitNumber": 2,
@@ -39689,6 +41045,7 @@
     },
     {
       "id": "ap-physics-1-diagram-03",
+      "diagramId": "ap-physics-1-diagram-03",
       "title": "Energy-accounting bridge",
       "unitId": "work-energy-and-power",
       "unitNumber": 3,
@@ -39741,6 +41098,7 @@
     },
     {
       "id": "ap-physics-1-diagram-04",
+      "diagramId": "ap-physics-1-diagram-04",
       "title": "Collision-before-and-after bridge",
       "unitId": "linear-momentum",
       "unitNumber": 4,
@@ -39793,6 +41151,7 @@
     },
     {
       "id": "ap-physics-1-diagram-05",
+      "diagramId": "ap-physics-1-diagram-05",
       "title": "Torque-line-of-action bridge",
       "unitId": "torque-and-rotational-dynamics",
       "unitNumber": 5,
@@ -39845,6 +41204,7 @@
     },
     {
       "id": "ap-physics-1-diagram-06",
+      "diagramId": "ap-physics-1-diagram-06",
       "title": "Rolling-energy bridge",
       "unitId": "energy-and-momentum-of-rotating-systems",
       "unitNumber": 6,
@@ -39897,6 +41257,7 @@
     },
     {
       "id": "ap-physics-1-diagram-07",
+      "diagramId": "ap-physics-1-diagram-07",
       "title": "Oscillation-phase bridge",
       "unitId": "oscillations",
       "unitNumber": 7,
@@ -39949,6 +41310,7 @@
     },
     {
       "id": "ap-physics-1-diagram-08",
+      "diagramId": "ap-physics-1-diagram-08",
       "title": "Fluid-depth-and-flow bridge",
       "unitId": "fluids",
       "unitNumber": 8,
@@ -72617,7 +73979,9 @@
     "reviewLadders": 5,
     "reviewLadderItems": 500,
     "misconceptionFamilies": 9,
-    "misconceptionOccurrences": 1500
+    "misconceptionOccurrences": 1500,
+    "glossaryTerms": 24,
+    "quickReferenceCards": 8
   },
   "accessibility": {
     "contentForm": "text-first, linear lessons, original response workshops, optional visual scaffolds, remediation playbooks, study-session plans, mastery checkpoints, adaptive review queues, spaced review plans, and alternate practice forms",
@@ -72663,5 +74027,1051 @@
     "richLessonPrototypes": 8,
     "status": "foundation-prototype",
     "note": "All eight unit chapters now include three navigable sections, 24 section-level flashcards, and 24 memory aids with structured examples, boundaries, misconception guidance, worked data, retrieval, and transfer; 39 deterministic topic diagnostic routes now connect each objective to its three-section study sequence, practice-specific item slices, entry checks, reinforcement sets, transfer sets, knowledge checks, and mastery signals; eight unit synthesis routes now aggregate topic order, starter items, mixed-practice sets, bank links, and practice slices; five cumulative review ladders now expose the existing progression from foundation core through translation, synthesis, chained scenarios, and capstone transfer; a nine-family misconception index now links every distractor explanation to a reusable remediation move and the affected topic, unit, and ladder routes; nine structured remediation playbooks now turn those families into recognize-repair-practice-retry-transfer-reflect loops; 15 study-session plans now turn unit, ladder, workshop, and timed-practice assets into bounded execution paths with success criteria and accessibility controls; 39 mastery checkpoints now define the evidence ledger for model-selection, representation-routine, and evidence-transfer states with deterministic next actions; eight original constructed-response workshops now add model-selection, mathematical, evidence, and experimental-design practice, while eight optional visual scaffolds provide original diagrams with text equivalents; independent review remains pending. 39 adaptive review queues now convert each checkpoint condition into three ordered, text-first, unscored next actions; independent review remains pending. Four-stage spaced review plans now add same-day, next-day, three-day, and seven-day retention touchpoints for all 39 topics; independent review remains pending. Four alternate 42-item internal practice forms now provide deterministic form variety with timing, practice, bank, and review metadata; independent review remains pending."
-  }
+  },
+  "glossary": [
+    {
+      "id": "ap-phys-1-gloss-01",
+      "term": "Displacement vs. distance",
+      "definition": "Displacement delta-x = x_f - x_i is a vector from initial to final position, whereas distance is the nonnegative scalar path length; their magnitudes differ whenever an object reverses direction.",
+      "aliases": [
+        "Position change"
+      ],
+      "chapterIds": [
+        "ap-physics-1-ch-01"
+      ],
+      "domainIds": [
+        "kinematics"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-physics-1-ch-01",
+            "chapterTitle": "Unit 1: Kinematics",
+            "domainId": "kinematics",
+            "domain": "Unit 1: Kinematics",
+            "sectionId": "ap-physics-1-ch-01-section-01",
+            "sectionHeading": "Motion as a model",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based"
+      ]
+    },
+    {
+      "id": "ap-phys-1-gloss-02",
+      "term": "Velocity-time graph area and slope",
+      "definition": "On a velocity-versus-time graph, the slope equals instantaneous acceleration a and the signed area between the curve and time axis equals displacement delta-x, even when acceleration is non-uniform.",
+      "aliases": [
+        "v-t graph analysis"
+      ],
+      "chapterIds": [
+        "ap-physics-1-ch-01"
+      ],
+      "domainIds": [
+        "kinematics"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-physics-1-ch-01",
+            "chapterTitle": "Unit 1: Kinematics",
+            "domainId": "kinematics",
+            "domain": "Unit 1: Kinematics",
+            "sectionId": "ap-physics-1-ch-01-section-02",
+            "sectionHeading": "Graph and equation translation",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based"
+      ]
+    },
+    {
+      "id": "ap-phys-1-gloss-03",
+      "term": "Projectile motion independence",
+      "definition": "In ideal free fall with negligible air drag, horizontal velocity stays constant (a_x = 0) while vertical velocity accelerates at a_y = -g; the two perpendicular motions share only the time of flight t.",
+      "aliases": [
+        "2D kinematics"
+      ],
+      "chapterIds": [
+        "ap-physics-1-ch-01"
+      ],
+      "domainIds": [
+        "kinematics"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-physics-1-ch-01",
+            "chapterTitle": "Unit 1: Kinematics",
+            "domainId": "kinematics",
+            "domain": "Unit 1: Kinematics",
+            "sectionId": "ap-physics-1-ch-01-section-03",
+            "sectionHeading": "Evidence and model limits",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based"
+      ]
+    },
+    {
+      "id": "ap-phys-1-gloss-04",
+      "term": "Newton's Second Law",
+      "definition": "The acceleration of a system's center of mass equals the vector sum of external forces divided by total mass, a_sys = Sigma F_ext / m_sys, so zero net force implies constant velocity, not necessarily rest.",
+      "aliases": [
+        "Translational dynamics"
+      ],
+      "chapterIds": [
+        "ap-physics-1-ch-02"
+      ],
+      "domainIds": [
+        "force-and-translational-dynamics"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-physics-1-ch-02",
+            "chapterTitle": "Unit 2: Force and Translational Dynamics",
+            "domainId": "force-and-translational-dynamics",
+            "domain": "Unit 2: Force and Translational Dynamics",
+            "sectionId": "ap-physics-1-ch-02-section-01",
+            "sectionHeading": "Forces and interactions",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based"
+      ]
+    },
+    {
+      "id": "ap-phys-1-gloss-05",
+      "term": "Free-body diagram",
+      "definition": "A vector diagram representing every external force acting on a chosen system as arrows from its center of mass; internal forces, velocity, acceleration, and net force are omitted from the diagram.",
+      "aliases": [
+        "FBD",
+        "Force diagram"
+      ],
+      "chapterIds": [
+        "ap-physics-1-ch-02"
+      ],
+      "domainIds": [
+        "force-and-translational-dynamics"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-physics-1-ch-02",
+            "chapterTitle": "Unit 2: Force and Translational Dynamics",
+            "domainId": "force-and-translational-dynamics",
+            "domain": "Unit 2: Force and Translational Dynamics",
+            "sectionId": "ap-physics-1-ch-02-section-02",
+            "sectionHeading": "Systems and force diagrams",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based"
+      ]
+    },
+    {
+      "id": "ap-phys-1-gloss-06",
+      "term": "Centripetal acceleration",
+      "definition": "The center-directed acceleration a_c = v^2 / r required to turn an object's velocity along a circular path, provided by real forces such as tension, gravity, or friction rather than a separate force.",
+      "aliases": [
+        "Radial acceleration"
+      ],
+      "chapterIds": [
+        "ap-physics-1-ch-02"
+      ],
+      "domainIds": [
+        "force-and-translational-dynamics"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-physics-1-ch-02",
+            "chapterTitle": "Unit 2: Force and Translational Dynamics",
+            "domainId": "force-and-translational-dynamics",
+            "domain": "Unit 2: Force and Translational Dynamics",
+            "sectionId": "ap-physics-1-ch-02-section-03",
+            "sectionHeading": "Friction, drag, and circular evidence",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based"
+      ]
+    },
+    {
+      "id": "ap-phys-1-gloss-07",
+      "term": "Work-energy theorem",
+      "definition": "External work W = F_parallel * d equals the change in total energy of a system (or change in kinetic energy delta-K for a single object); forces perpendicular to displacement do zero mechanical work.",
+      "aliases": [
+        "Mechanical work"
+      ],
+      "chapterIds": [
+        "ap-physics-1-ch-03"
+      ],
+      "domainIds": [
+        "work-energy-and-power"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-physics-1-ch-03",
+            "chapterTitle": "Unit 3: Work, Energy, and Power",
+            "domainId": "work-energy-and-power",
+            "domain": "Unit 3: Work, Energy, and Power",
+            "sectionId": "ap-physics-1-ch-03-section-01",
+            "sectionHeading": "Energy transfers",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based"
+      ]
+    },
+    {
+      "id": "ap-phys-1-gloss-08",
+      "term": "Conservation of mechanical energy",
+      "definition": "In a closed system with zero external work and no nonconservative dissipation such as friction, total mechanical energy K + U_g + U_s stays constant as energy transforms between kinetic and potential stores.",
+      "aliases": [
+        "Mechanical energy"
+      ],
+      "chapterIds": [
+        "ap-physics-1-ch-03"
+      ],
+      "domainIds": [
+        "work-energy-and-power"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-physics-1-ch-03",
+            "chapterTitle": "Unit 3: Work, Energy, and Power",
+            "domainId": "work-energy-and-power",
+            "domain": "Unit 3: Work, Energy, and Power",
+            "sectionId": "ap-physics-1-ch-03-section-02",
+            "sectionHeading": "Energy accounting routine",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based"
+      ]
+    },
+    {
+      "id": "ap-phys-1-gloss-09",
+      "term": "Power",
+      "definition": "The rate of doing work or transferring energy, P = delta-E / delta-t = F_parallel * v, measured in watts (J/s); two processes doing identical work deliver different power when their elapsed times differ.",
+      "aliases": [
+        "Rate of energy transfer"
+      ],
+      "chapterIds": [
+        "ap-physics-1-ch-03"
+      ],
+      "domainIds": [
+        "work-energy-and-power"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-physics-1-ch-03",
+            "chapterTitle": "Unit 3: Work, Energy, and Power",
+            "domainId": "work-energy-and-power",
+            "domain": "Unit 3: Work, Energy, and Power",
+            "sectionId": "ap-physics-1-ch-03-section-03",
+            "sectionHeading": "Power, efficiency, and model limits",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based"
+      ]
+    },
+    {
+      "id": "ap-phys-1-gloss-10",
+      "term": "Conservation of linear momentum",
+      "definition": "When net external impulse on a system is zero, total vector momentum Sigma p = Sigma m*v remains constant during any internal collision or explosion, even when mechanical energy is dissipated.",
+      "aliases": [
+        "Isolated system momentum"
+      ],
+      "chapterIds": [
+        "ap-physics-1-ch-04"
+      ],
+      "domainIds": [
+        "linear-momentum"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-physics-1-ch-04",
+            "chapterTitle": "Unit 4: Linear Momentum",
+            "domainId": "linear-momentum",
+            "domain": "Unit 4: Linear Momentum",
+            "sectionId": "ap-physics-1-ch-04-section-01",
+            "sectionHeading": "Momentum and collisions",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based"
+      ]
+    },
+    {
+      "id": "ap-phys-1-gloss-11",
+      "term": "Impulse-momentum theorem",
+      "definition": "Impulse J = F_avg * delta-t, equal to the signed area under a force-versus-time graph, equals the change in linear momentum delta-p; increasing collision duration lowers average force for a given delta-p.",
+      "aliases": [
+        "Impulse"
+      ],
+      "chapterIds": [
+        "ap-physics-1-ch-04"
+      ],
+      "domainIds": [
+        "linear-momentum"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-physics-1-ch-04",
+            "chapterTitle": "Unit 4: Linear Momentum",
+            "domainId": "linear-momentum",
+            "domain": "Unit 4: Linear Momentum",
+            "sectionId": "ap-physics-1-ch-04-section-02",
+            "sectionHeading": "Momentum and impulse representations",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based"
+      ]
+    },
+    {
+      "id": "ap-phys-1-gloss-12",
+      "term": "Elastic vs. inelastic collisions",
+      "definition": "Both isolated collision types conserve total momentum, but only elastic collisions conserve total kinetic energy; in a completely inelastic collision, objects stick together with maximal kinetic energy loss.",
+      "aliases": [
+        "Collision classification"
+      ],
+      "chapterIds": [
+        "ap-physics-1-ch-04"
+      ],
+      "domainIds": [
+        "linear-momentum"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-physics-1-ch-04",
+            "chapterTitle": "Unit 4: Linear Momentum",
+            "domainId": "linear-momentum",
+            "domain": "Unit 4: Linear Momentum",
+            "sectionId": "ap-physics-1-ch-04-section-03",
+            "sectionHeading": "Collision evidence and system limits",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based"
+      ]
+    },
+    {
+      "id": "ap-phys-1-gloss-13",
+      "term": "Rotational inertia",
+      "definition": "The scalar quantity I = Sigma m_i * r_i^2 measuring an object's resistance to angular acceleration about an axis; placing mass farther from the axis increases I and reduces alpha for a fixed torque.",
+      "aliases": [
+        "Moment of inertia"
+      ],
+      "chapterIds": [
+        "ap-physics-1-ch-05"
+      ],
+      "domainIds": [
+        "torque-and-rotational-dynamics"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-physics-1-ch-05",
+            "chapterTitle": "Unit 5: Torque and Rotational Dynamics",
+            "domainId": "torque-and-rotational-dynamics",
+            "domain": "Unit 5: Torque and Rotational Dynamics",
+            "sectionId": "ap-physics-1-ch-05-section-01",
+            "sectionHeading": "Torque and rotation",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based"
+      ]
+    },
+    {
+      "id": "ap-phys-1-gloss-14",
+      "term": "Torque and lever arm",
+      "definition": "Torque tau = r * F * sin(theta) = r_perp * F quantifies a force's turning effect about a pivot, where r_perp is perpendicular distance to the line of action; equilibrium needs Sigma F = 0 and Sigma tau = 0.",
+      "aliases": [
+        "Rotational equilibrium"
+      ],
+      "chapterIds": [
+        "ap-physics-1-ch-05"
+      ],
+      "domainIds": [
+        "torque-and-rotational-dynamics"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-physics-1-ch-05",
+            "chapterTitle": "Unit 5: Torque and Rotational Dynamics",
+            "domainId": "torque-and-rotational-dynamics",
+            "domain": "Unit 5: Torque and Rotational Dynamics",
+            "sectionId": "ap-physics-1-ch-05-section-02",
+            "sectionHeading": "Torque and equilibrium diagrams",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based"
+      ]
+    },
+    {
+      "id": "ap-phys-1-gloss-15",
+      "term": "Rotational Newton's Second Law",
+      "definition": "Angular acceleration about a fixed axis equals net external torque divided by rotational inertia, alpha = Sigma tau / I, connecting mass distribution directly to how rapidly angular velocity changes.",
+      "aliases": [
+        "Angular acceleration law"
+      ],
+      "chapterIds": [
+        "ap-physics-1-ch-05"
+      ],
+      "domainIds": [
+        "torque-and-rotational-dynamics"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-physics-1-ch-05",
+            "chapterTitle": "Unit 5: Torque and Rotational Dynamics",
+            "domainId": "torque-and-rotational-dynamics",
+            "domain": "Unit 5: Torque and Rotational Dynamics",
+            "sectionId": "ap-physics-1-ch-05-section-03",
+            "sectionHeading": "Rotational motion and mass distribution",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based"
+      ]
+    },
+    {
+      "id": "ap-phys-1-gloss-16",
+      "term": "Rotational kinetic energy",
+      "definition": "The kinetic energy of a rigid body spinning about an axis, K_rot = (1/2) * I * omega^2; an object rolling down a ramp shares potential energy between translational (1/2)mv^2 and rotational kinetic energy.",
+      "aliases": [
+        "Spin kinetic energy"
+      ],
+      "chapterIds": [
+        "ap-physics-1-ch-06"
+      ],
+      "domainIds": [
+        "energy-and-momentum-of-rotating-systems"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-physics-1-ch-06",
+            "chapterTitle": "Unit 6: Energy and Momentum of Rotating Systems",
+            "domainId": "energy-and-momentum-of-rotating-systems",
+            "domain": "Unit 6: Energy and Momentum of Rotating Systems",
+            "sectionId": "ap-physics-1-ch-06-section-01",
+            "sectionHeading": "Rotating systems",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based"
+      ]
+    },
+    {
+      "id": "ap-phys-1-gloss-17",
+      "term": "Rolling without slipping",
+      "definition": "Rolling motion where the contact point is momentarily at rest on the surface, linking center-of-mass and rotational kinematics via v_cm = R*omega and a_cm = R*alpha while static friction does zero work.",
+      "aliases": [
+        "No-slip constraint"
+      ],
+      "chapterIds": [
+        "ap-physics-1-ch-06"
+      ],
+      "domainIds": [
+        "energy-and-momentum-of-rotating-systems"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-physics-1-ch-06",
+            "chapterTitle": "Unit 6: Energy and Momentum of Rotating Systems",
+            "domainId": "energy-and-momentum-of-rotating-systems",
+            "domain": "Unit 6: Energy and Momentum of Rotating Systems",
+            "sectionId": "ap-physics-1-ch-06-section-02",
+            "sectionHeading": "Rolling energy routine",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based"
+      ]
+    },
+    {
+      "id": "ap-phys-1-gloss-18",
+      "term": "Conservation of angular momentum",
+      "definition": "Angular impulse tau_avg * delta-t equals delta-L; when net external torque about an axis is zero, L = I*omega (or r_perp*m*v for a particle) stays constant, so pulling mass inward decreases I and raises omega.",
+      "aliases": [
+        "Angular impulse"
+      ],
+      "chapterIds": [
+        "ap-physics-1-ch-06"
+      ],
+      "domainIds": [
+        "energy-and-momentum-of-rotating-systems"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-physics-1-ch-06",
+            "chapterTitle": "Unit 6: Energy and Momentum of Rotating Systems",
+            "domainId": "energy-and-momentum-of-rotating-systems",
+            "domain": "Unit 6: Energy and Momentum of Rotating Systems",
+            "sectionId": "ap-physics-1-ch-06-section-03",
+            "sectionHeading": "Angular impulse and conservation",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based"
+      ]
+    },
+    {
+      "id": "ap-phys-1-gloss-19",
+      "term": "Simple harmonic motion",
+      "definition": "Periodic oscillation driven by a linear restoring force proportional to and opposite displacement, F = -kx, giving acceleration a = -omega^2 * x that peaks at turning points and vanishes at equilibrium.",
+      "aliases": [
+        "SHM"
+      ],
+      "chapterIds": [
+        "ap-physics-1-ch-07"
+      ],
+      "domainIds": [
+        "oscillations"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-physics-1-ch-07",
+            "chapterTitle": "Unit 7: Oscillations",
+            "domainId": "oscillations",
+            "domain": "Unit 7: Oscillations",
+            "sectionId": "ap-physics-1-ch-07-section-01",
+            "sectionHeading": "Oscillations",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based"
+      ]
+    },
+    {
+      "id": "ap-phys-1-gloss-20",
+      "term": "Period of mass-spring and pendulum",
+      "definition": "One cycle takes T_s = 2*pi*sqrt(m/k) for an ideal mass-spring and T_p = 2*pi*sqrt(L/g) for a small-angle simple pendulum; both are amplitude-independent, and pendulum period is independent of mass.",
+      "aliases": [
+        "SHM period"
+      ],
+      "chapterIds": [
+        "ap-physics-1-ch-07"
+      ],
+      "domainIds": [
+        "oscillations"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-physics-1-ch-07",
+            "chapterTitle": "Unit 7: Oscillations",
+            "domainId": "oscillations",
+            "domain": "Unit 7: Oscillations",
+            "sectionId": "ap-physics-1-ch-07-section-02",
+            "sectionHeading": "Period, phase, and graph reading",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based"
+      ]
+    },
+    {
+      "id": "ap-phys-1-gloss-21",
+      "term": "SHM energy exchange",
+      "definition": "In undamped SHM, total mechanical energy E = (1/2)kA^2 stays constant, converting continuously between maximum potential energy at turning points (v = 0) and maximum kinetic energy at equilibrium (x = 0).",
+      "aliases": [
+        "Oscillator mechanical energy"
+      ],
+      "chapterIds": [
+        "ap-physics-1-ch-07"
+      ],
+      "domainIds": [
+        "oscillations"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-physics-1-ch-07",
+            "chapterTitle": "Unit 7: Oscillations",
+            "domainId": "oscillations",
+            "domain": "Unit 7: Oscillations",
+            "sectionId": "ap-physics-1-ch-07-section-03",
+            "sectionHeading": "Energy, damping, and evidence",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based"
+      ]
+    },
+    {
+      "id": "ap-phys-1-gloss-22",
+      "term": "Hydrostatic gauge pressure",
+      "definition": "In a static, incompressible fluid of uniform density rho, pressure increases with depth h as P = P_0 + rho*g*h, where rho*g*h is gauge pressure and depends only on depth, not container shape or fluid volume.",
+      "aliases": [
+        "Fluid depth pressure"
+      ],
+      "chapterIds": [
+        "ap-physics-1-ch-08"
+      ],
+      "domainIds": [
+        "fluids"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-physics-1-ch-08",
+            "chapterTitle": "Unit 8: Fluids",
+            "domainId": "fluids",
+            "domain": "Unit 8: Fluids",
+            "sectionId": "ap-physics-1-ch-08-section-01",
+            "sectionHeading": "Fluids and conservation",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based"
+      ]
+    },
+    {
+      "id": "ap-phys-1-gloss-23",
+      "term": "Buoyant force",
+      "definition": "The upward force F_b = rho_fluid * V_sub * g exerted by a fluid on a submerged object, equal to the displaced fluid's weight; floating objects satisfy F_b = m*g, while sunk objects displace their own volume.",
+      "aliases": [
+        "Archimedes' principle"
+      ],
+      "chapterIds": [
+        "ap-physics-1-ch-08"
+      ],
+      "domainIds": [
+        "fluids"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-physics-1-ch-08",
+            "chapterTitle": "Unit 8: Fluids",
+            "domainId": "fluids",
+            "domain": "Unit 8: Fluids",
+            "sectionId": "ap-physics-1-ch-08-section-02",
+            "sectionHeading": "Density, pressure, and buoyancy",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based"
+      ]
+    },
+    {
+      "id": "ap-phys-1-gloss-24",
+      "term": "Continuity and Bernoulli's equation",
+      "definition": "For steady, incompressible, nonviscous flow, volume flow rate A_1*v_1 = A_2*v_2 and P + (1/2)rho*v^2 + rho*g*y stay constant along a streamline, so faster flow in a narrower pipe has lower pressure at equal height.",
+      "aliases": [
+        "Bernoulli's principle",
+        "Volume flow rate"
+      ],
+      "chapterIds": [
+        "ap-physics-1-ch-08"
+      ],
+      "domainIds": [
+        "fluids"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-physics-1-ch-08",
+            "chapterTitle": "Unit 8: Fluids",
+            "domainId": "fluids",
+            "domain": "Unit 8: Fluids",
+            "sectionId": "ap-physics-1-ch-08-section-03",
+            "sectionHeading": "Flow, continuity, and assumptions",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based"
+      ]
+    }
+  ],
+  "quickReference": [
+    {
+      "id": "ap-phys1-reference-01",
+      "domainId": "kinematics",
+      "domainLabel": "Kinematics",
+      "title": "1D Motion, Motion Graphs & 2D Projectiles",
+      "purpose": "Anchors constant-acceleration kinematics, slope/area graph translations, independent projectile axes, and relative velocity vector addition.",
+      "checklistLabel": "Before calculating",
+      "formulasLabel": "Core equations & relationships",
+      "checklist": [
+        "Define explicit positive x and y coordinate axes before assigning signs to displacement, initial velocity, and gravitational acceleration.",
+        "Verify acceleration is constant over the entire interval before applying the Big Three kinematic equations.",
+        "Separate horizontal (ax = 0) and vertical (ay = −g) motion into two independent tables linked only by time t."
+      ],
+      "formulas": [
+        "Constant-acceleration kinematics: vx = vx0 + ax·t, x = x0 + vx0·t + ½ax·t², and vx² = vx0² + 2ax(x − x0).",
+        "Graphical kinematics: slope of x-t graph = velocity; slope of v-t graph = acceleration; signed area under v-t = displacement Δx; signed area under a-t = Δv.",
+        "Projectile components: vx = v0·cos θ (constant), vy = v0·sin θ − g·t, with g ≈ 9.8 m/s² (or 10 m/s² on AP Physics 1 estimates).",
+        "Relative velocity vector sum: v_AC = v_AB + v_BC (add components algebraically in each axis)."
+      ],
+      "decisionRules": [
+        "When you see a velocity-time graph crossing the time axis from positive to negative → identify an instant of zero velocity where the object reverses direction, even if acceleration stays constant and nonzero.",
+        "When you see velocity and acceleration pointing in opposite directions (opposite signs) → conclude the object is slowing down, regardless of whether acceleration is positive or negative.",
+        "When you see two projectiles launched from the same height with identical vy0 (such as one dropped and one launched horizontally) → conclude they hit flat ground at the exact same time.",
+        "When you see an object at the apex of a parabolic trajectory → set vy = 0 while keeping vx = v0·cos θ and vertical acceleration ay = −g downward."
+      ],
+      "cautions": [
+        "Negative acceleration does not automatically mean slowing down; an object moving in the negative direction with negative acceleration speeds up.",
+        "Total distance traveled adds absolute values of areas under a v-t graph, whereas displacement Δx sums signed positive and negative areas.",
+        "Never plug a 2D launch speed v0 directly into a vertical kinematic equation without taking the vertical component v0·sin θ."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-phys1-reference-02",
+      "domainId": "force-and-translational-dynamics",
+      "domainLabel": "Force and Translational Dynamics",
+      "title": "Newton's Laws, FBDs, Friction & Circular Motion",
+      "purpose": "Structures free-body diagrams, system vs. single-object Newton's second law equations, inclined planes, Hooke's law, and centripetal dynamics.",
+      "checklistLabel": "Before calculating",
+      "formulasLabel": "Core equations & relationships",
+      "checklist": [
+        "Draw a clean free-body diagram showing only real external contact and field forces acting ON the chosen object or system.",
+        "Align axes with the direction of acceleration (parallel/perpendicular to an incline, or radial/tangential for circular motion) before decomposing forces.",
+        "Check whether surfaces are slipping (kinetic friction fk = μk·FN) or stationary relative to each other (static friction fs ≤ μs·FN)."
+      ],
+      "formulas": [
+        "Newton's 2nd Law: a_sys = ΣF_ext / m_sys; internal tension or normal forces cancel when treating coupled blocks as one system.",
+        "Gravity & springs: near-Earth Fg = mg; universal gravitation Fg = G·m1·m2 / r² (g = G·M / r²); Hooke's law |Fs| = k·|Δx|.",
+        "Friction models: kinetic friction fk = μk·FN opposes relative sliding; static friction fs ≤ μs·FN adjusts to prevent slipping up to its maximum.",
+        "Uniform circular motion: centripetal acceleration ac = v² / r = ω²·r directed radially inward, supplied by ΣF_radial = m·v² / r."
+      ],
+      "decisionRules": [
+        "When you see a multi-block Atwood or pulley problem asking for acceleration first → treat all connected blocks as a single system to eliminate internal tension, then isolate one block to find tension.",
+        "When you see a block resting on an incline without sliding → set static friction equal to m·g·sin θ rather than automatically plugging in μs·m·g·cos θ.",
+        "When you see an object moving at constant speed in a vertical or horizontal circle → set net inward radial force equal to mv²/r and check normal/tension directions at top vs. bottom.",
+        "When you see two colliding or pushing objects of very different masses → apply Newton's 3rd law to confirm the interaction forces have equal magnitude and opposite direction."
+      ],
+      "cautions": [
+        "Never draw \"centripetal force,\" \"ma,\" or velocity vectors on a free-body diagram; centripetal force is simply the net inward sum of real forces like tension, gravity, normal, or friction.",
+        "Normal force FN equals mg only on a horizontal surface with zero vertical acceleration and no angled applied forces; on a frictionless incline FN = mg cos θ.",
+        "Newton's 3rd-law force pairs always act on two DIFFERENT objects, so they never cancel each other on a single object's free-body diagram."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-phys1-reference-03",
+      "domainId": "work-energy-and-power",
+      "domainLabel": "Work, Energy, and Power",
+      "title": "Work-Energy Theorem, Conservation & Power",
+      "purpose": "Organizes system-boundary selection, mechanical energy conservation, force-displacement work integration, and instantaneous vs. average power.",
+      "checklistLabel": "Before calculating",
+      "formulasLabel": "Core equations & relationships",
+      "checklist": [
+        "Declare the system explicitly (such as block-Earth-spring vs. block alone) because potential energy exists only when the interacting field/spring is inside the system.",
+        "Check whether any external forces do work or internal friction dissipates mechanical energy into thermal energy (ΔE_thermal = fk·d).",
+        "Pick a convenient zero-height reference (y = 0) and keep it consistent across initial and final states."
+      ],
+      "formulas": [
+        "Work: W = F_∥·d = F·d·cos θ = signed area under a Force vs. Position (F-x) graph; ΔE_sys = W_ext.",
+        "Mechanical energies: translational kinetic K = ½mv²; gravitational potential ΔUg = mgΔy (universal Ug = −G·m1·m2 / r); elastic potential Us = ½k(Δx)².",
+        "Conservation with dissipation: Ki + Ui + W_ext = Kf + Uf + ΔE_thermal (mechanical energy conserved when W_ext = 0 and no nonconservative dissipation).",
+        "Power: P_avg = ΔE / Δt = W / Δt; instantaneous power P = F_∥·v = F·v·cos θ (measured in watts, 1 W = 1 J/s)."
+      ],
+      "decisionRules": [
+        "When you see a curved track, ramp, or pendulum where direction changes continuously → use conservation of energy rather than constant-acceleration kinematics.",
+        "When you see a force acting perpendicular to instantaneous displacement (like normal force on a track or centripetal force in circular orbit) → set work done by that force equal to zero.",
+        "When you see a spring compressed by distance 2x instead of x → predict stored elastic energy Us quadruples (scales as x²) and launch speed doubles (scales as x).",
+        "When you see a single-block system excluding Earth falling downward → account for gravity as positive external work Wg = +mgh increasing the block's kinetic energy, rather than Ug."
+      ],
+      "cautions": [
+        "Kinetic energy and potential energy are scalars; kinetic energy is never negative, while gravitational potential energy can be negative depending on the chosen y = 0 reference.",
+        "If a block-Earth system includes gravity internally, do not double-count gravity as both ΔUg and external work Wg.",
+        "Stopping distance with constant braking friction scales with v² (because ½mv² = fk·d), so doubling speed quadruples stopping distance."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-phys1-reference-04",
+      "domainId": "linear-momentum",
+      "domainLabel": "Linear Momentum",
+      "title": "Impulse, Momentum Conservation & Collisions",
+      "purpose": "Links force-time impulse integrals, center-of-mass motion, vector momentum conservation, and elastic vs. inelastic kinetic energy outcomes.",
+      "checklistLabel": "Before calculating",
+      "formulasLabel": "Core equations & relationships",
+      "checklist": [
+        "Treat linear momentum and impulse as signed vectors; assign consistent +/- directions (and separate x/y components in 2D collisions).",
+        "Verify ΣF_ext = 0 along the axis of interest during the collision before setting Σpi = Σpf.",
+        "Never assume kinetic energy is conserved in a collision unless the problem explicitly states the collision is elastic."
+      ],
+      "formulas": [
+        "Linear momentum & center of mass: p = m·v; x_cm = Σ(mi·xi) / Σmi; v_cm = Σ(mi·vi) / Σmi = p_total / M_total.",
+        "Impulse-momentum theorem: J = F_avg·Δt = Δp = m(vf − vi) = signed area under an F-t graph.",
+        "Conservation of momentum: if ΣF_ext = 0, then Σpi = Σpf and v_cm remains constant before, during, and after internal interactions.",
+        "Collision types: elastic conserves p and K; inelastic conserves p while K decreases; perfectly inelastic (objects stick) conserves p with maximum allowed K loss."
+      ],
+      "decisionRules": [
+        "When you see an object bouncing back elastically off a wall instead of sticking → recognize Δp = m(−v − v) = −2mv has twice the magnitude of the sticking impulse.",
+        "When you see an airbag or crumple zone extending collision duration Δt for the same Δp → conclude impulse J stays identical while average impact force F_avg = Δp/Δt drops.",
+        "When you see a ballistic pendulum (bullet embeds in block, then swings up) → split into two stages: conserve momentum ONLY during the inelastic impact, then conserve mechanical energy ONLY during the upward swing.",
+        "When you see two carts pushed apart by an internal spring on a frictionless track → conclude both experience equal impulse magnitudes and v_cm stays zero."
+      ],
+      "cautions": [
+        "In a 1D rebound, forgetting the negative sign on final velocity yields Δp = 0 instead of ±2mv.",
+        "External forces (like friction or a pivot pin) can break momentum conservation even over short intervals if their impulse is non-negligible.",
+        "Explosions and spring releases conserve total momentum (often zero) while INCREASING total kinetic energy from stored internal potential energy."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-phys1-reference-05",
+      "domainId": "torque-and-rotational-dynamics",
+      "domainLabel": "Torque and Rotational Dynamics",
+      "title": "Rotational Kinematics, Torque, Inertia & Equilibrium",
+      "purpose": "Maps translational dynamics onto rotational analogs, lever-arm torque computation, rotational inertia distribution, and static equilibrium conditions.",
+      "checklistLabel": "Before calculating",
+      "formulasLabel": "Core equations & relationships",
+      "checklist": [
+        "Keep angular quantities in radians (rad, rad/s, rad/s²) whenever linking linear and rotational motion via v = rω or a_t = rα.",
+        "Choose a rotational pivot point strategically in static equilibrium (usually through an unknown hinge or support force) to eliminate that unknown torque.",
+        "Define counterclockwise (CCW) vs. clockwise (CW) torque sign conventions explicitly before summing Στ."
+      ],
+      "formulas": [
+        "Rotational kinematics (constant α): ω = ω0 + αt, θ = θ0 + ω0·t + ½αt², ω² = ω0² + 2αΔθ; no-slip rolling links s = rθ, v_cm = rω, a_cm = rα.",
+        "Torque: τ = r_⊥·F = r·F·sin θ, where r_⊥ is the perpendicular lever arm from the pivot to the line of action of force F.",
+        "Newton's 2nd law for rotation & inertia: α = Στ / I; point masses I = Σ(mi·ri²); parallel-axis theorem I = I_cm + M·d².",
+        "Static equilibrium conditions: ΣFx = 0, ΣFy = 0, AND Στ = 0 about any axis."
+      ],
+      "decisionRules": [
+        "When you see a hoop (I = MR²), solid cylinder (I = ½MR²), and solid sphere (I = 2/5 MR²) rolling down an incline without slipping → rank the smallest coefficient of I (solid sphere) fastest because less energy goes into rotation.",
+        "When you see a pulley with non-negligible mass I turning with a rope → recognize the tensions on the two sides of the pulley are NOT equal because their difference supplies net torque (T1 − T2)R = Iα.",
+        "When you see mass redistributed farther from the rotation axis → predict larger rotational inertia I and smaller angular acceleration α for the same applied torque.",
+        "When you see a force line of action passing directly through the pivot → set its torque equal to zero because r_⊥ = 0."
+      ],
+      "cautions": [
+        "For a rolling object, static friction provides the torque needed to maintain rolling without slipping, whereas kinetic friction occurs only if the object slips.",
+        "Zero net force does not guarantee zero net torque (a force couple produces pure rotation), and zero net torque does not guarantee zero net force.",
+        "Tangential acceleration a_t = rα changes speed along a circle, whereas centripetal acceleration ac = rω² points radially inward."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-phys1-reference-06",
+      "domainId": "energy-and-momentum-of-rotating-systems",
+      "domainLabel": "Energy and Momentum of Rotating Systems",
+      "title": "Rolling Energy, Angular Impulse & Angular Momentum",
+      "purpose": "Connects rotational kinetic energy, no-slip rolling budgets, point-mass and rigid-body angular momentum, and rotational collisions.",
+      "checklistLabel": "Before calculating",
+      "formulasLabel": "Core equations & relationships",
+      "checklist": [
+        "Include BOTH translational (½mv_cm²) and rotational (½I_cm·ω²) kinetic energy whenever an object rolls without slipping.",
+        "Check whether an external net torque exists about the chosen pivot before applying conservation of angular momentum Li = Lf.",
+        "Use the perpendicular distance r_⊥ from the pivot to the velocity line when computing point-mass angular momentum L = r_⊥·m·v."
+      ],
+      "formulas": [
+        "Rotational kinetic energy & work: K_rot = ½Iω² = L² / (2I); rotational work W = τ·Δθ; total rolling energy K_total = ½m·v_cm² + ½I_cm·ω².",
+        "Angular momentum: rigid body L = I·ω; point particle moving past a pivot L = r_⊥·p = r·m·v·sin θ.",
+        "Angular impulse-momentum theorem: ΔL = τ_avg·Δt = signed area under a Torque vs. Time (τ-t) graph.",
+        "Conservation of angular momentum: when Στ_ext = 0 about an axis, I_i·ω_i = I_f·ω_f (for orbits, r1·v1 = r2·v2 at perihelion/aphelion)."
+      ],
+      "decisionRules": [
+        "When you see a spinning skater or turntable pulling mass inward with zero external torque → keep L constant, decrease I, increase ω, and conclude K_rot = L²/(2I) INCREASES because internal muscles do positive work.",
+        "When you see a clay ball striking and sticking to a pivoted rod → conserve angular momentum about the pivot (linear momentum is NOT conserved because the pivot exerts an external impulse).",
+        "When you see a ball rolling without slipping up a ramp vs. sliding up a frictionless ramp with the same initial speed v0 → predict the rolling ball reaches a higher height because it starts with extra rotational kinetic energy ½Iω².",
+        "When you see a satellite moving from apogee to perigee in an elliptical orbit → conserve angular momentum (gravitational torque about the central planet is zero) and mechanical energy so speed increases as r decreases."
+      ],
+      "cautions": [
+        "Static friction on a wheel rolling without slipping does ZERO net mechanical work because the instantaneous point of contact is at rest relative to the ground.",
+        "A point mass traveling in a straight line still has nonzero angular momentum L = r_⊥·mv about any pivot not lying on its line of motion.",
+        "In an inelastic rotational collision (such as dropping a non-rotating disk onto a spinning disk), angular momentum is conserved while rotational kinetic energy decreases."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-phys1-reference-07",
+      "domainId": "oscillations",
+      "domainLabel": "Oscillations",
+      "title": "Simple Harmonic Motion, Period & Energy Exchange",
+      "purpose": "Links linear restoring forces, spring and pendulum period scaling laws, phase-shifted sinusoidal graphs, and SHM mechanical energy conservation.",
+      "checklistLabel": "Before calculating",
+      "formulasLabel": "Core equations & relationships",
+      "checklist": [
+        "Confirm the restoring force is proportional to displacement from equilibrium (F = −kx) before applying SHM period formulas.",
+        "Distinguish equilibrium position (x = 0: max speed, zero net force) from turning points (x = ±A: zero speed, max acceleration and restoring force).",
+        "Verify whether a change alters mass, spring constant, length, gravity, or amplitude before predicting how period T responds."
+      ],
+      "formulas": [
+        "SHM restoring condition: F_net = −k·x and a = −(k/m)·x = −ω²·x; position x(t) = A·cos(2πft) = A·cos(ωt).",
+        "Mass-spring period: Ts = 2π√(m / k); independent of amplitude A and gravitational field g (works horizontally and vertically).",
+        "Simple pendulum period (small angles): Tp = 2π√(l / g); independent of bob mass m and small amplitude.",
+        "SHM energy budget: E_total = ½kA² = ½mv² + ½kx²; frequency f = 1 / T and v_max = A√(k / m)."
+      ],
+      "decisionRules": [
+        "When you see a mass-spring oscillator moved from Earth to the Moon → predict its equilibrium stretch shortens, while its oscillation period Ts = 2π√(m/k) stays completely unchanged.",
+        "When you see pendulum length quadrupled or bob mass doubled → predict quadrupling l doubles period Tp (√4 = 2), whereas doubling mass leaves Tp unchanged.",
+        "When you see amplitude doubled on a frictionless spring oscillator → predict period stays unchanged, maximum speed doubles, and total mechanical energy quadruples.",
+        "When you see a cosine position-time graph for SHM → expect acceleration to be an inverted cosine (−Aω²cos ωt) and velocity to be a negative sine shifted by a quarter period."
+      ],
+      "cautions": [
+        "For a vertical hanging spring, gravity shifts the equilibrium position downward by mg/k but does NOT change the period Ts = 2π√(m/k).",
+        "At the equilibrium point x = 0, acceleration is zero while velocity magnitude and kinetic energy reach their maximum values.",
+        "Total mechanical energy of an SHM oscillator splits 50/50 between kinetic and potential energy at x = A / √2 ≈ 0.707A, NOT at x = A/2."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-phys1-reference-08",
+      "domainId": "fluids",
+      "domainLabel": "Fluids",
+      "title": "Hydrostatics, Buoyancy, Continuity & Bernoulli Flow",
+      "purpose": "Covers AP Physics 1 Unit 8 fluid statics and ideal fluid dynamics: depth pressure, Archimedes buoyancy, continuity, and Bernoulli energy conservation.",
+      "checklistLabel": "Before calculating",
+      "formulasLabel": "Core equations & relationships",
+      "checklist": [
+        "Separate static-fluid problems (Pascal/hydrostatic/buoyancy) from steady ideal-flow problems (continuity + Bernoulli).",
+        "Check whether pressure values are absolute (P = P0 + ρgh) or gauge pressure (P_gauge = ρgh) before comparing or solving.",
+        "Use ρ_fluid and V_submerged (NOT object density or total object volume if floating) inside the buoyant force formula."
+      ],
+      "formulas": [
+        "Density & pressure: ρ = m / V; P = F_⊥ / A (1 Pa = 1 N/m²); hydrostatic pressure at depth h: P = P0 + ρ·g·h.",
+        "Archimedes' principle: buoyant force Fb = ρ_fluid·V_submerged·g = weight of displaced fluid; floating fraction V_sub / V_obj = ρ_obj / ρ_fluid.",
+        "Continuity equation (incompressible steady flow): volume flow rate Q = A1·v1 = A2·v2 (narrower cross-section forces higher speed).",
+        "Bernoulli's equation (ideal non-viscous flow): P1 + ρ·g·y1 + ½ρ·v1² = P2 + ρ·g·y2 + ½ρ·v2²; open-tank efflux speed v = √(2gh)."
+      ],
+      "decisionRules": [
+        "When you see two containers of different shapes filled to the exact same vertical depth with the same liquid → conclude hydrostatic pressure at the bottom is identical regardless of total water volume.",
+        "When you see a floating block pushed completely underwater or a sunken object lowered deeper → note Fb increases as submerged volume grows, then stays constant once fully submerged even as depth increases.",
+        "When you see a horizontal pipe narrowing to half its diameter (one-fourth its area) → conclude fluid speed quadruples and static pressure drops by Bernoulli's equation.",
+        "When you see an object suspended from a scale while submerged in water → calculate apparent weight as F_T = m·g − Fb."
+      ],
+      "cautions": [
+        "Buoyant force on a fully submerged incompressible object does NOT increase with depth, because pressure rises equally on both top and bottom faces so ΔP stays constant.",
+        "Faster fluid flow at constant height corresponds to LOWER internal static pressure, not higher pressure.",
+        "In continuity A1v1 = A2v2, area scales with radius squared (πr²), so halving pipe radius multiplies speed by 4, not 2."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    }
+  ]
 }

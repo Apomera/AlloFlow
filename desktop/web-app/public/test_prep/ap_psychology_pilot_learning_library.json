@@ -979,7 +979,10 @@
     "contentCompleteSections": 15,
     "structuredContentSections": 15,
     "workedDataExamples": 15,
-    "sectionRetrievalChecks": 15
+    "sectionRetrievalChecks": 15,
+    "glossaryTerms": 25,
+    "quickReferenceCards": 5,
+    "misconceptionPlaybooks": 6
   },
   "skills": [
     {
@@ -1415,7 +1418,26 @@
           "contentEnhancementVersion": "ap-psychology-textbook-v1",
           "contentComplete": true,
           "contentWordCount": 349,
-          "contentBlockCount": 11
+          "contentBlockCount": 11,
+          "workedExample": {
+            "prompt": "A twin study finds a 0.72 heritability estimate for spatial reasoning in suburban teens. A journalist claims 72% of any individual teen's score is fixed by DNA. Evaluate that claim using AP research principles.",
+            "steps": [
+              "Step 1: Identify heritability as a population-level statistic estimating the proportion of observed trait variance linked to genetic differences within a specific group and environment.",
+              "Step 2: Apply heredity-environment interaction and research-design limits: twin concordance studies are correlational, and high heritability within one uniform environment does not rule out environmental effects on mean scores.",
+              "Step 3: Conclude that the journalist misinterprets a group variance statistic as individual genetic determinism; enriching spatial training could still shift every teen's performance upward."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "A heritability estimate of 70% means 70% of a single person's trait comes directly from their genes.",
+              "repair": "Heritability describes variance across a population in a given environment, never the genetic percentage inside one individual's score."
+            },
+            {
+              "misconception": "Strong genetic heritability proves that educational or environmental interventions cannot change the trait.",
+              "repair": "Even highly heritable traits such as height shift substantially across generations when nutrition, health, or instruction improves."
+            }
+          ]
         },
         {
           "id": "ap-psych-ch-01-section-02",
@@ -1796,7 +1818,26 @@
           "contentEnhancementVersion": "ap-psychology-textbook-v1",
           "contentComplete": true,
           "contentWordCount": 351,
-          "contentBlockCount": 11
+          "contentBlockCount": 11,
+          "workedExample": {
+            "prompt": "After taking a beta-blocker that binds to adrenergic receptors without activating them, a violinist feels calmer before an audition. Explain the synaptic and autonomic mechanisms involved.",
+            "steps": [
+              "Step 1: Classify the beta-blocker as a competitive antagonist at postsynaptic receptors normally activated by norepinephrine and epinephrine during sympathetic nervous system arousal.",
+              "Step 2: Trace the neural pathway: blocking receptor binding prevents ligand-gated ion channels from depolarizing target cells to threshold, dampening downstream sympathetic fight-or-flight responses such as elevated heart rate.",
+              "Step 3: Conclude that the drug reduces physiological stage fright by inhibiting postsynaptic receptor activation rather than halting presynaptic action potentials altogether."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Stronger stimuli cause individual neurons to fire larger or faster action potentials down the axon.",
+              "repair": "Action potentials obey the all-or-none law; stimulus intensity is coded by firing frequency and the number of recruited neurons, not spike height."
+            },
+            {
+              "misconception": "Neurotransmitters physically cross into the postsynaptic neuron and travel directly down its axon.",
+              "repair": "Neurotransmitters diffuse across the synaptic gap, bind briefly to receptors to open ion channels, and are cleared by reuptake or enzymes."
+            }
+          ]
         },
         {
           "id": "ap-psych-ch-01-section-03",
@@ -2177,7 +2218,26 @@
           "contentEnhancementVersion": "ap-psychology-textbook-v1",
           "contentComplete": true,
           "contentWordCount": 329,
-          "contentBlockCount": 11
+          "contentBlockCount": 11,
+          "workedExample": {
+            "prompt": "A night-shift nurse who sleeps only four hours daily struggles to recall new medication dosages and stops noticing the hum of hallway ventilators within minutes. Explain both phenomena biologically.",
+            "steps": [
+              "Step 1: Identify the circadian disruption via the suprachiasmatic nucleus (SCN) and melatonin misalignment, alongside truncated NREM-3 slow-wave and REM sleep needed for memory consolidation.",
+              "Step 2: Apply sensory transduction and sensory adaptation: auditory hair cells initially transduce ventilator vibrations, then decrease firing responsiveness under constant, unchanging stimulation.",
+              "Step 3: Conclude that reduced NREM-3/REM sleep impairs hippocampal-cortical consolidation of medication facts, while sensory adaptation filters out steady ventilator noise so attention stays free for alarms."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "REM sleep is the deepest, least active sleep stage because the sleeper's muscles are immobilized.",
+              "repair": "REM is paradoxical sleep with waking-like cortical brain waves and vivid dreaming despite brainstem-induced muscle atonia; NREM-3 has the slowest delta waves."
+            },
+            {
+              "misconception": "Absolute threshold means the faintest stimulus a person can detect 100% of the time in a lab.",
+              "repair": "Psychophysicists define absolute threshold as the minimum stimulus energy detected 50% of the time, because sensitivity fluctuates with fatigue and expectations."
+            }
+          ]
         }
       ],
       "knowledgeChecks": [
@@ -2715,7 +2775,26 @@
           "contentEnhancementVersion": "ap-psychology-textbook-v1",
           "contentComplete": true,
           "contentWordCount": 298,
-          "contentBlockCount": 11
+          "contentBlockCount": 11,
+          "workedExample": {
+            "prompt": "After watching local news cover three rare shark attacks, a coastal swimmer cancels a beach trip while driving carelessly to the store. Explain the swimmer's risk judgment and perceptual filtering.",
+            "steps": [
+              "Step 1: Identify the availability heuristic (judging event likelihood by how vividly examples come to mind) alongside top-down schema-driven threat perception.",
+              "Step 2: Contrast vivid news coverage with statistical base rates: dramatic shark footage is rapidly retrieved from memory, overriding higher actual probabilities of traffic injury and narrowing selective attention.",
+              "Step 3: Conclude that reliance on the availability heuristic distorts probability estimates, causing the swimmer to overestimate rare sensational hazards while underestimating routine everyday risks."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Bottom-up and top-down processing are mutually exclusive modes that never operate during the same task.",
+              "repair": "Real-world perception blends both simultaneously: sensory features drive bottom-up assembly while schemas and expectations guide top-down interpretation."
+            },
+            {
+              "misconception": "The representativeness heuristic is simply remembering vivid examples from recent media reports.",
+              "repair": "Recall ease defines the availability heuristic; representativeness judges likelihood by matching a target to a mental prototype while ignoring base rates."
+            }
+          ]
         },
         {
           "id": "ap-psych-ch-02-section-02",
@@ -3097,7 +3176,26 @@
           "contentEnhancementVersion": "ap-psychology-textbook-v1",
           "contentComplete": true,
           "contentWordCount": 311,
-          "contentBlockCount": 11
+          "contentBlockCount": 11,
+          "workedExample": {
+            "prompt": "Students who quiz themselves on Spanish verbs outperform peers who reread notes, yet one student later confuses newly learned French verbs with older Spanish forms. Explain both memory outcomes.",
+            "steps": [
+              "Step 1: Identify retrieval practice (the testing effect) as a long-term memory enhancer and retroactive interference as the mechanism disrupting older Spanish vocabulary.",
+              "Step 2: Apply cognitive memory principles: active recall strengthens retrieval cues and consolidation more than passive rereading, whereas new French verb encoding competes with and overwrites access to prior Spanish traces.",
+              "Step 3: Conclude that spaced self-testing builds durable retrieval pathways, while studying similar languages back-to-back invites retroactive interference unless cues are made distinct."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Proactive interference happens when newly learned material erases memories you encoded last year.",
+              "repair": "Proactive interference works forward in time: old memories disrupt recall of new material, whereas retroactive interference works backward from new to old."
+            },
+            {
+              "misconception": "Long-term memory stores events like a video recording that stays accurate if a witness feels confident.",
+              "repair": "Memory is reconstructive; post-event misinformation and schemas can alter details while leaving witness confidence artificially high."
+            }
+          ]
         },
         {
           "id": "ap-psych-ch-02-section-03",
@@ -3479,7 +3577,26 @@
           "contentEnhancementVersion": "ap-psychology-textbook-v1",
           "contentComplete": true,
           "contentWordCount": 311,
-          "contentBlockCount": 11
+          "contentBlockCount": 11,
+          "workedExample": {
+            "prompt": "A newly designed college-readiness exam produces nearly identical scores when students retake it two weeks later, yet scores show almost zero correlation with first-year GPA. Evaluate its psychometric quality.",
+            "steps": [
+              "Step 1: Distinguish test-retest reliability (consistency of scores across administrations) from predictive criterion validity (how well scores forecast future academic performance).",
+              "Step 2: Apply psychometric logic: high repeat consistency demonstrates strong test-retest reliability, but near-zero correlation with first-year GPA shows the exam lacks predictive validity for college readiness.",
+              "Step 3: Conclude that because reliability is necessary but not sufficient for validity, admissions officers cannot justify using this test to forecast college achievement without revising its content."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "If a standardized test yields consistent scores across repeated sittings, it must also be valid.",
+              "repair": "A measure can be reliably wrong; high reliability only confirms repeatable results, whereas validity requires evidence that the test measures its target construct."
+            },
+            {
+              "misconception": "Aptitude tests measure pure innate intelligence unaffected by schooling, while achievement tests measure learning.",
+              "repair": "Both aptitude and achievement tests reflect prior educational experience; aptitude exams aim to predict future performance, while achievement exams assess mastered content."
+            }
+          ]
         }
       ],
       "knowledgeChecks": [
@@ -4018,7 +4135,26 @@
           "contentEnhancementVersion": "ap-psychology-textbook-v1",
           "contentComplete": true,
           "contentWordCount": 293,
-          "contentBlockCount": 11
+          "contentBlockCount": 11,
+          "workedExample": {
+            "prompt": "A cross-sectional study finds 20-year-olds solve timed digital puzzles faster than 70-year-olds and concludes aging sharply destroys reasoning. Critique this inference using developmental design concepts.",
+            "steps": [
+              "Step 1: Identify the study as a cross-sectional design comparing different age cohorts at one time point, creating a major risk of cohort effects.",
+              "Step 2: Apply developmental methodology: 20-year-olds grew up with digital interfaces and formal computer training, confounding generational exposure with biological age while overlooking crystallized intelligence gains.",
+              "Step 3: Conclude that a longitudinal or sequential design tracking the same individuals over decades is needed to separate true age-related processing changes from generational cohort differences."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Cross-sectional studies prove how an individual naturally changes as they grow older over time.",
+              "repair": "Cross-sectional designs compare separate birth cohorts at one moment, so generational differences in education or technology can mimic aging effects."
+            },
+            {
+              "misconception": "Longitudinal studies eliminate every methodological flaw because they follow the same people for years.",
+              "repair": "Longitudinal designs avoid cohort confounds across groups, but they remain vulnerable to selective attrition, practice effects, and high cost."
+            }
+          ]
         },
         {
           "id": "ap-psych-ch-03-section-02",
@@ -4400,7 +4536,26 @@
           "contentEnhancementVersion": "ap-psychology-textbook-v1",
           "contentComplete": true,
           "contentWordCount": 292,
-          "contentBlockCount": 11
+          "contentBlockCount": 11,
+          "workedExample": {
+            "prompt": "A driver fastens the seat belt immediately to silence an annoying dashboard chime, and weeks later feels tense whenever a similar chime sounds in a store. Distinguish both conditioning processes.",
+            "steps": [
+              "Step 1: Identify fastening the seat belt as negative reinforcement in operant conditioning, because a voluntary behavior increases when it removes an aversive stimulus (the chime).",
+              "Step 2: Identify feeling tense at the store chime as classical conditioning with stimulus generalization: the car chime became associated with alarm tension and transferred to a similar sound.",
+              "Step 3: Conclude that voluntary escape behavior maintained by removing a noxious chime reflects negative reinforcement, while automatic emotional tension to a similar cue reflects classical generalization."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Negative reinforcement is a form of punishment that decreases unwanted behavior by adding something unpleasant.",
+              "repair": "All reinforcement increases behavior; negative reinforcement strengthens a response by removing an aversive stimulus, whereas positive punishment adds one to weaken behavior."
+            },
+            {
+              "misconception": "Extinction permanently erases a classically conditioned association from the learner's nervous system.",
+              "repair": "Extinction suppresses rather than erases learning, which is why a conditioned response often reappears after a rest period during spontaneous recovery."
+            }
+          ]
         },
         {
           "id": "ap-psych-ch-03-section-03",
@@ -4782,7 +4937,26 @@
           "contentEnhancementVersion": "ap-psychology-textbook-v1",
           "contentComplete": true,
           "contentWordCount": 308,
-          "contentBlockCount": 11
+          "contentBlockCount": 11,
+          "workedExample": {
+            "prompt": "A commuter rides as a passenger along a new bus route for months without driving, then navigates the exact detours flawlessly on her first day behind the wheel. Explain the learning process shown.",
+            "steps": [
+              "Step 1: Identify latent learning and cognitive map formation, classically demonstrated by Tolman's maze-running rats that learned spatial layouts without immediate reinforcement.",
+              "Step 2: Apply cognitive-learning principles: passive exposure built an internal spatial representation (cognitive map) that remained hidden until an incentive—driving herself—triggered its demonstration.",
+              "Step 3: Conclude that learning can occur cognitively without immediate overt reinforcement or motor practice, challenging strict radical behaviorist claims that reinforcement is required for acquisition."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Observational learning automatically occurs whenever someone watches another person perform a behavior.",
+              "repair": "Bandura's model requires attention, retention, motor reproduction ability, and motivation; watching a model without motivation or capability will not yield performance."
+            },
+            {
+              "misconception": "Any neutral stimulus can be classically conditioned to any unconditioned response with equal ease.",
+              "repair": "Biological preparedness constrains conditioning; organisms rapidly form taste aversions linking flavors to nausea, but rarely link bright lights or tones to illness."
+            }
+          ]
         }
       ],
       "knowledgeChecks": [
@@ -5320,7 +5494,26 @@
           "contentEnhancementVersion": "ap-psychology-textbook-v1",
           "contentComplete": true,
           "contentWordCount": 309,
-          "contentBlockCount": 11
+          "contentBlockCount": 11,
+          "workedExample": {
+            "prompt": "After a committee unanimously approves a flawed budget because no member wants to upset the chair, an outsider blames the members' \"low intelligence.\" Diagnose both social-psychological phenomena.",
+            "steps": [
+              "Step 1: Identify the committee's premature consensus as groupthink, driven by high cohesion, a directive leader, and pressure for unanimity that suppresses dissent.",
+              "Step 2: Identify the outsider's judgment as the fundamental attribution error (FAE): overemphasizing stable dispositional traits (\"low intelligence\") while ignoring powerful situational pressures inside the meeting.",
+              "Step 3: Conclude that appointing a devil's advocate and anonymous voting counteract groupthink, while weighing situational norms prevents the fundamental attribution error."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Cognitive dissonance occurs whenever someone feels angry after another person disagrees with their opinion.",
+              "repair": "Cognitive dissonance is internal psychological tension caused by inconsistency between one's own attitudes and voluntarily chosen actions, motivating attitude rationalization."
+            },
+            {
+              "misconception": "Group polarization means a group splits into two hostile factions holding opposite extreme views.",
+              "repair": "Group polarization shifts an already like-minded group's average attitude toward a more extreme version of its initial leaning after discussion."
+            }
+          ]
         },
         {
           "id": "ap-psych-ch-04-section-02",
@@ -5702,7 +5895,26 @@
           "contentEnhancementVersion": "ap-psychology-textbook-v1",
           "contentComplete": true,
           "contentWordCount": 322,
-          "contentBlockCount": 11
+          "contentBlockCount": 11,
+          "workedExample": {
+            "prompt": "A shy ninth-grader expects classmates to reject her, avoids club fairs, and thus receives few invitations—confirming her belief that peers are unfriendly. Explain this cycle using social-cognitive theory.",
+            "steps": [
+              "Step 1: Identify Bandura's concept of reciprocal determinism within the social-cognitive perspective on personality.",
+              "Step 2: Map the three mutually interacting factors: internal cognitions (expecting rejection), behavior (avoiding club fairs), and social environment (receiving fewer peer invitations) continuously reinforce one another.",
+              "Step 3: Conclude that personality expression is neither solely an unchanging trait nor purely environmental conditioning; changing one element—such as joining a small club—can shift the entire feedback loop."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "The Big Five trait model labels people into rigid binary categories like purely introvert or purely extravert.",
+              "repair": "Big Five dimensions (OCEAN) are continuous spectra on which most people score near the middle rather than at extreme categorical poles."
+            },
+            {
+              "misconception": "Projective tests like the Rorschach inkblot have stronger reliability and validity than standardized inventories.",
+              "repair": "Empirically derived self-report inventories like the Big Five or MMPI generally show higher reliability and criterion validity than loosely scored projective tests."
+            }
+          ]
         },
         {
           "id": "ap-psych-ch-04-section-03",
@@ -6083,7 +6295,26 @@
           "contentEnhancementVersion": "ap-psychology-textbook-v1",
           "contentComplete": true,
           "contentWordCount": 303,
-          "contentBlockCount": 11
+          "contentBlockCount": 11,
+          "workedExample": {
+            "prompt": "A student who loves sketching cartoons stops drawing for fun once a local shop starts paying her per comic, then feels calm before an art contest after reframing nerves as excitement. Explain both shifts.",
+            "steps": [
+              "Step 1: Identify the overjustification effect in motivation (extrinsic pay undermining pre-existing intrinsic interest) and cognitive appraisal in emotion.",
+              "Step 2: Apply theory: expected tangible rewards shift perceived causality from internal enjoyment to external payment, while Schachter-Singer and Lazarus frameworks show reappraising physiological arousal alters emotional experience.",
+              "Step 3: Conclude that unexpected praise preserves intrinsic motivation better than contingent pay, and reappraising arousal as challenge rather than threat supports adaptive emotional regulation."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Adding an extrinsic reward always adds on top of intrinsic motivation to maximize long-term effort.",
+              "repair": "When an activity is already intrinsically enjoyable, expected tangible rewards can trigger the overjustification effect and reduce later voluntary engagement."
+            },
+            {
+              "misconception": "Cultural display rules prove that people in different cultures cannot recognize basic facial expressions.",
+              "repair": "Basic facial expressions show substantial cross-cultural recognition, whereas display rules govern social norms about when to amplify, mask, or suppress emotions."
+            }
+          ]
         }
       ],
       "knowledgeChecks": [
@@ -6619,7 +6850,26 @@
           "contentEnhancementVersion": "ap-psychology-textbook-v1",
           "contentComplete": true,
           "contentWordCount": 308,
-          "contentBlockCount": 11
+          "contentBlockCount": 11,
+          "workedExample": {
+            "prompt": "Facing an unexpected layoff, one worker updates her resume and attends networking fairs while another practices paced breathing while waiting for a family biopsy result. Evaluate each coping strategy.",
+            "steps": [
+              "Step 1: Identify primary and secondary stress appraisal (evaluating threat and perceived controllability) alongside problem-focused versus emotion-focused coping.",
+              "Step 2: Match strategy to stressor controllability: job searching is a controllable challenge well suited to problem-focused coping, whereas awaiting a medical test result is temporarily uncontrollable and suited to emotion-focused regulation.",
+              "Step 3: Conclude that neither coping style is universally superior; psychological resilience depends on matching problem-focused action to controllable stressors and emotion-focused skills plus social support to uncontrollable ones."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Emotion-focused coping is always unhealthy avoidance, while problem-focused coping is always the best choice.",
+              "repair": "Emotion-focused coping such as reappraisal or relaxation is adaptive when a stressor cannot yet be changed, whereas rigid problem-solving can heighten frustration."
+            },
+            {
+              "misconception": "All physiological stress activation harms the body immediately and should be eliminated completely.",
+              "repair": "Short-term sympathetic activation mobilizes energy and focus for acute demands; health damage stems mainly from prolonged chronic HPA-axis cortisol elevation."
+            }
+          ]
         },
         {
           "id": "ap-psych-ch-05-section-02",
@@ -7001,7 +7251,26 @@
           "contentEnhancementVersion": "ap-psychology-textbook-v1",
           "contentComplete": true,
           "contentWordCount": 305,
-          "contentBlockCount": 11
+          "contentBlockCount": 11,
+          "workedExample": {
+            "prompt": "A college sophomore reports intense sadness for three days after failing a midterm, while another reports six weeks of anhedonia, insomnia, and missed classes alongside panic attacks. Apply clinical diagnostic criteria.",
+            "steps": [
+              "Step 1: Apply DSM-5-TR classification criteria—symptom cluster, minimum duration, clinically significant distress or functional impairment, and cultural/situational context—plus the concept of comorbidity.",
+              "Step 2: Contrast the two cases: three days of situational sadness lacks the two-week duration and pervasive impairment required for major depressive disorder, whereas the second student meets duration/impairment thresholds and shows possible anxiety comorbidity.",
+              "Step 3: Conclude that differential assessment using a biopsychosocial approach prevents pathologizing normal grief or academic disappointment while ensuring comorbid conditions receive comprehensive care."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "Feeling anxious or down for a few days after a setback automatically qualifies as a clinical disorder.",
+              "repair": "Diagnosis requires a persistent cluster of symptoms causing significant distress or functional impairment over a defined timeframe, not brief normal reactions."
+            },
+            {
+              "misconception": "Using the medical or biological model means psychological and social factors have no role in mental disorders.",
+              "repair": "Modern clinical psychology relies on the biopsychosocial approach, recognizing that genetic vulnerability interacts with thought patterns, trauma, and social environment."
+            }
+          ]
         },
         {
           "id": "ap-psych-ch-05-section-03",
@@ -7384,7 +7653,26 @@
           "contentEnhancementVersion": "ap-psychology-textbook-v1",
           "contentComplete": true,
           "contentWordCount": 324,
-          "contentBlockCount": 11
+          "contentBlockCount": 11,
+          "workedExample": {
+            "prompt": "A clinic advertises a new anxiety app after 80% of 40 self-selected users feel calmer after six weeks, with no comparison group. Critique this causal claim and propose an ethical evaluation design.",
+            "steps": [
+              "Step 1: Identify internal validity threats in an uncontrolled single-group pretest-posttest study: spontaneous remission, placebo expectancy, regression to the mean, and self-selection bias.",
+              "Step 2: Design a randomized controlled trial (RCT) randomly assigning consenting participants to the app versus an active placebo or wait-list control, with blinded outcome raters and APA ethical safeguards.",
+              "Step 3: Conclude that without random assignment and a control group, the clinic cannot attribute improvement to the app; ethical evaluation requires informed consent, confidentiality, and cultural responsiveness."
+            ],
+            "original": true
+          },
+          "misconceptionGuidance": [
+            {
+              "misconception": "If most clients improve after starting a therapy, that outcome proves the therapy caused their recovery.",
+              "repair": "Without random assignment to a control or placebo comparison group, improvement may reflect spontaneous remission, regression to the mean, or expectancy effects."
+            },
+            {
+              "misconception": "Informed consent allows researchers to drop confidentiality once a participant signs the intake form.",
+              "repair": "APA ethical standards require ongoing voluntary withdrawal rights, protection of participant confidentiality, and debriefing whenever minor deception is used."
+            }
+          ]
         }
       ],
       "knowledgeChecks": [
@@ -9035,5 +9323,1333 @@
     "status": "complete",
     "reviewStatus": "source-reviewed-editorial-pass",
     "note": "All native AP Psychology sections use structured lesson blocks and remain subject-expert pending."
-  }
+  },
+  "glossary": [
+    {
+      "id": "ap-psych-gloss-01",
+      "term": "Heritability",
+      "definition": "The proportion of observed variation in a trait across a specific population attributable to genetic differences rather than environmental differences; it describes population variance, not the genetic percentage within a single individual.",
+      "aliases": [],
+      "chapterIds": [
+        "ap-psych-ch-01"
+      ],
+      "domainIds": [
+        "biological-bases-of-behavior"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-psych-ch-01",
+            "chapterTitle": "Biological Bases of Behavior",
+            "domainId": "biological-bases-of-behavior",
+            "domain": "Biological Bases of Behavior",
+            "sectionId": "ap-psych-ch-01-section-01",
+            "sectionHeading": "Heredity, environment, and research claims",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ]
+    },
+    {
+      "id": "ap-psych-gloss-02",
+      "term": "Action potential",
+      "definition": "A brief, all-or-none electrical impulse conducted down an axon when depolarization crosses threshold, opening voltage-gated sodium channels and prompting neurotransmitter release from axon terminals into the synaptic cleft.",
+      "aliases": [
+        "Neural impulse"
+      ],
+      "chapterIds": [
+        "ap-psych-ch-01"
+      ],
+      "domainIds": [
+        "biological-bases-of-behavior"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-psych-ch-01",
+            "chapterTitle": "Biological Bases of Behavior",
+            "domainId": "biological-bases-of-behavior",
+            "domain": "Biological Bases of Behavior",
+            "sectionId": "ap-psych-ch-01-section-02",
+            "sectionHeading": "Neural communication, nervous systems, and the brain",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ]
+    },
+    {
+      "id": "ap-psych-gloss-03",
+      "term": "Agonist and antagonist",
+      "definition": "Chemical agents that alter synaptic transmission: agonists mimic or amplify a neurotransmitter at receptor sites, whereas antagonists bind to receptors to block or diminish the neurotransmitter signal.",
+      "aliases": [
+        "Synaptic modulators"
+      ],
+      "chapterIds": [
+        "ap-psych-ch-01"
+      ],
+      "domainIds": [
+        "biological-bases-of-behavior"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-psych-ch-01",
+            "chapterTitle": "Biological Bases of Behavior",
+            "domainId": "biological-bases-of-behavior",
+            "domain": "Biological Bases of Behavior",
+            "sectionId": "ap-psych-ch-01-section-02",
+            "sectionHeading": "Neural communication, nervous systems, and the brain",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ]
+    },
+    {
+      "id": "ap-psych-gloss-04",
+      "term": "Neuroplasticity",
+      "definition": "The nervous system's ability to reorganize synaptic connections and functional brain pathways in response to learning, experience, or injury; plasticity is highest in early childhood but continues throughout adulthood.",
+      "aliases": [
+        "Brain plasticity"
+      ],
+      "chapterIds": [
+        "ap-psych-ch-01"
+      ],
+      "domainIds": [
+        "biological-bases-of-behavior"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-psych-ch-01",
+            "chapterTitle": "Biological Bases of Behavior",
+            "domainId": "biological-bases-of-behavior",
+            "domain": "Biological Bases of Behavior",
+            "sectionId": "ap-psych-ch-01-section-02",
+            "sectionHeading": "Neural communication, nervous systems, and the brain",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ]
+    },
+    {
+      "id": "ap-psych-gloss-05",
+      "term": "Sensory transduction",
+      "definition": "The conversion of physical environmental stimuli, such as light wavelengths, sound waves, or odorant molecules, into graded receptor potentials and neural impulses transmitted along sensory pathways to the brain.",
+      "aliases": [
+        "Transduction"
+      ],
+      "chapterIds": [
+        "ap-psych-ch-01"
+      ],
+      "domainIds": [
+        "biological-bases-of-behavior"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-psych-ch-01",
+            "chapterTitle": "Biological Bases of Behavior",
+            "domainId": "biological-bases-of-behavior",
+            "domain": "Biological Bases of Behavior",
+            "sectionId": "ap-psych-ch-01-section-03",
+            "sectionHeading": "Sleep and sensation",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ]
+    },
+    {
+      "id": "ap-psych-gloss-06",
+      "term": "Top-down processing",
+      "definition": "Perceptual interpretation guided by existing schemas, expectations, prior knowledge, and surrounding context, contrasting with bottom-up processing that constructs perception directly from raw incoming sensory features.",
+      "aliases": [
+        "Conceptually driven processing"
+      ],
+      "chapterIds": [
+        "ap-psych-ch-02"
+      ],
+      "domainIds": [
+        "cognition"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-psych-ch-02",
+            "chapterTitle": "Cognition",
+            "domainId": "cognition",
+            "domain": "Cognition",
+            "sectionId": "ap-psych-ch-02-section-01",
+            "sectionHeading": "Perception, attention, and judgment",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ]
+    },
+    {
+      "id": "ap-psych-gloss-07",
+      "term": "Availability heuristic",
+      "definition": "A cognitive shortcut in which people judge the frequency or probability of an event by how quickly vivid, emotional, or recent examples come to mind, often distorting estimates of true statistical risk.",
+      "aliases": [],
+      "chapterIds": [
+        "ap-psych-ch-02"
+      ],
+      "domainIds": [
+        "cognition"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-psych-ch-02",
+            "chapterTitle": "Cognition",
+            "domainId": "cognition",
+            "domain": "Cognition",
+            "sectionId": "ap-psych-ch-02-section-01",
+            "sectionHeading": "Perception, attention, and judgment",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ]
+    },
+    {
+      "id": "ap-psych-gloss-08",
+      "term": "Long-term potentiation",
+      "definition": "A lasting increase in synaptic strength following repeated high-frequency stimulation of neural pathways, widely considered a foundational cellular mechanism supporting learning and long-term memory consolidation.",
+      "aliases": [
+        "LTP"
+      ],
+      "chapterIds": [
+        "ap-psych-ch-02"
+      ],
+      "domainIds": [
+        "cognition"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-psych-ch-02",
+            "chapterTitle": "Cognition",
+            "domainId": "cognition",
+            "domain": "Cognition",
+            "sectionId": "ap-psych-ch-02-section-02",
+            "sectionHeading": "Memory as encoding, storage, retrieval, and reconstruction",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ]
+    },
+    {
+      "id": "ap-psych-gloss-09",
+      "term": "Misinformation effect",
+      "definition": "A memory distortion in which exposure to misleading post-event details alters a person's recollection of the original episode, demonstrating that episodic retrieval is reconstructive rather than a literal recording.",
+      "aliases": [],
+      "chapterIds": [
+        "ap-psych-ch-02"
+      ],
+      "domainIds": [
+        "cognition"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-psych-ch-02",
+            "chapterTitle": "Cognition",
+            "domainId": "cognition",
+            "domain": "Cognition",
+            "sectionId": "ap-psych-ch-02-section-02",
+            "sectionHeading": "Memory as encoding, storage, retrieval, and reconstruction",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ]
+    },
+    {
+      "id": "ap-psych-gloss-10",
+      "term": "Construct validity",
+      "definition": "The degree to which a psychological assessment accurately measures the theoretical trait or cognitive ability it claims to evaluate, distinct from reliability, which reflects consistency of scores across administrations.",
+      "aliases": [],
+      "chapterIds": [
+        "ap-psych-ch-02"
+      ],
+      "domainIds": [
+        "cognition"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-psych-ch-02",
+            "chapterTitle": "Cognition",
+            "domainId": "cognition",
+            "domain": "Cognition",
+            "sectionId": "ap-psych-ch-02-section-03",
+            "sectionHeading": "Intelligence, achievement, and responsible measurement",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ]
+    },
+    {
+      "id": "ap-psych-gloss-11",
+      "term": "Cohort effect",
+      "definition": "Systematic differences between age groups in a cross-sectional study produced by shared historical, educational, or generational experiences rather than genuine developmental maturation across the lifespan.",
+      "aliases": [
+        "Generational effect"
+      ],
+      "chapterIds": [
+        "ap-psych-ch-03"
+      ],
+      "domainIds": [
+        "development-and-learning"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-psych-ch-03",
+            "chapterTitle": "Development and Learning",
+            "domainId": "development-and-learning",
+            "domain": "Development and Learning",
+            "sectionId": "ap-psych-ch-03-section-01",
+            "sectionHeading": "Lifespan development and its evidence",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ]
+    },
+    {
+      "id": "ap-psych-gloss-12",
+      "term": "Classical conditioning",
+      "definition": "Associative learning in which a neutral stimulus repeatedly paired with an unconditioned stimulus becomes a conditioned stimulus capable of eliciting an involuntary, learned conditioned response.",
+      "aliases": [
+        "Pavlovian conditioning"
+      ],
+      "chapterIds": [
+        "ap-psych-ch-03"
+      ],
+      "domainIds": [
+        "development-and-learning"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-psych-ch-03",
+            "chapterTitle": "Development and Learning",
+            "domainId": "development-and-learning",
+            "domain": "Development and Learning",
+            "sectionId": "ap-psych-ch-03-section-02",
+            "sectionHeading": "Classical and operant conditioning",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ]
+    },
+    {
+      "id": "ap-psych-gloss-13",
+      "term": "Operant conditioning",
+      "definition": "A learning process in which the frequency of a voluntary behavior increases when followed by positive or negative reinforcement and decreases when followed by positive or negative punishment.",
+      "aliases": [
+        "Instrumental conditioning"
+      ],
+      "chapterIds": [
+        "ap-psych-ch-03"
+      ],
+      "domainIds": [
+        "development-and-learning"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-psych-ch-03",
+            "chapterTitle": "Development and Learning",
+            "domainId": "development-and-learning",
+            "domain": "Development and Learning",
+            "sectionId": "ap-psych-ch-03-section-02",
+            "sectionHeading": "Classical and operant conditioning",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ]
+    },
+    {
+      "id": "ap-psych-gloss-14",
+      "term": "Observational learning",
+      "definition": "The acquisition of new behaviors, skills, or outcome expectations by watching a model act and observing vicarious consequences, without requiring direct personal reinforcement during initial learning.",
+      "aliases": [
+        "Modeling",
+        "Social learning"
+      ],
+      "chapterIds": [
+        "ap-psych-ch-03"
+      ],
+      "domainIds": [
+        "development-and-learning"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-psych-ch-03",
+            "chapterTitle": "Development and Learning",
+            "domainId": "development-and-learning",
+            "domain": "Development and Learning",
+            "sectionId": "ap-psych-ch-03-section-03",
+            "sectionHeading": "Observational, cognitive, and biological factors in learning",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ]
+    },
+    {
+      "id": "ap-psych-gloss-15",
+      "term": "Latent learning",
+      "definition": "Knowledge acquired through exploration without immediate external reinforcement that remains unexpressed in performance until an incentive motivates the organism to use its internal cognitive map.",
+      "aliases": [],
+      "chapterIds": [
+        "ap-psych-ch-03"
+      ],
+      "domainIds": [
+        "development-and-learning"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-psych-ch-03",
+            "chapterTitle": "Development and Learning",
+            "domainId": "development-and-learning",
+            "domain": "Development and Learning",
+            "sectionId": "ap-psych-ch-03-section-03",
+            "sectionHeading": "Observational, cognitive, and biological factors in learning",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ]
+    },
+    {
+      "id": "ap-psych-gloss-16",
+      "term": "Fundamental attribution error",
+      "definition": "The observer tendency to overestimate internal dispositional traits and underestimate external situational pressures when explaining the causes of another person's behavior.",
+      "aliases": [
+        "FAE",
+        "Correspondence bias"
+      ],
+      "chapterIds": [
+        "ap-psych-ch-04"
+      ],
+      "domainIds": [
+        "social-psychology-and-personality"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-psych-ch-04",
+            "chapterTitle": "Social Psychology and Personality",
+            "domainId": "social-psychology-and-personality",
+            "domain": "Social Psychology and Personality",
+            "sectionId": "ap-psych-ch-04-section-01",
+            "sectionHeading": "Attribution, attitudes, and social situations",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ]
+    },
+    {
+      "id": "ap-psych-gloss-17",
+      "term": "Cognitive dissonance",
+      "definition": "Unpleasant psychological tension triggered when a person holds contradictory beliefs or acts inconsistently with an attitude, motivating attitude revision, rationalization, or behavior change to restore consistency.",
+      "aliases": [],
+      "chapterIds": [
+        "ap-psych-ch-04"
+      ],
+      "domainIds": [
+        "social-psychology-and-personality"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-psych-ch-04",
+            "chapterTitle": "Social Psychology and Personality",
+            "domainId": "social-psychology-and-personality",
+            "domain": "Social Psychology and Personality",
+            "sectionId": "ap-psych-ch-04-section-01",
+            "sectionHeading": "Attribution, attitudes, and social situations",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ]
+    },
+    {
+      "id": "ap-psych-gloss-18",
+      "term": "Groupthink",
+      "definition": "Impaired collective decision-making in cohesive groups where desire for harmony and unanimity overrides critical evaluation of alternatives, suppresses dissenting views, and promotes unrealistic optimism.",
+      "aliases": [],
+      "chapterIds": [
+        "ap-psych-ch-04"
+      ],
+      "domainIds": [
+        "social-psychology-and-personality"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-psych-ch-04",
+            "chapterTitle": "Social Psychology and Personality",
+            "domainId": "social-psychology-and-personality",
+            "domain": "Social Psychology and Personality",
+            "sectionId": "ap-psych-ch-04-section-01",
+            "sectionHeading": "Attribution, attitudes, and social situations",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ]
+    },
+    {
+      "id": "ap-psych-gloss-19",
+      "term": "Reciprocal determinism",
+      "definition": "Bandura's social-cognitive principle holding that personal cognitive factors, overt behaviors, and environmental conditions continuously and bidirectionally interact to shape personality and action.",
+      "aliases": [],
+      "chapterIds": [
+        "ap-psych-ch-04"
+      ],
+      "domainIds": [
+        "social-psychology-and-personality"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-psych-ch-04",
+            "chapterTitle": "Social Psychology and Personality",
+            "domainId": "social-psychology-and-personality",
+            "domain": "Social Psychology and Personality",
+            "sectionId": "ap-psych-ch-04-section-02",
+            "sectionHeading": "Personality perspectives and measurement",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ]
+    },
+    {
+      "id": "ap-psych-gloss-20",
+      "term": "Self-efficacy",
+      "definition": "An individual's belief in their capacity to organize and execute the actions required to accomplish a specific task, strongly influencing goal selection, persistence, effort, and recovery after setbacks.",
+      "aliases": [],
+      "chapterIds": [
+        "ap-psych-ch-04"
+      ],
+      "domainIds": [
+        "social-psychology-and-personality"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-psych-ch-04",
+            "chapterTitle": "Social Psychology and Personality",
+            "domainId": "social-psychology-and-personality",
+            "domain": "Social Psychology and Personality",
+            "sectionId": "ap-psych-ch-04-section-03",
+            "sectionHeading": "Motivation and emotion",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ]
+    },
+    {
+      "id": "ap-psych-gloss-21",
+      "term": "Problem-focused coping",
+      "definition": "A stress-management strategy directed at actively altering or removing the source of a stressor through planning, skill acquisition, or direct action, generally most effective when the stressor is controllable.",
+      "aliases": [],
+      "chapterIds": [
+        "ap-psych-ch-05"
+      ],
+      "domainIds": [
+        "mental-and-physical-health"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-psych-ch-05",
+            "chapterTitle": "Mental and Physical Health",
+            "domainId": "mental-and-physical-health",
+            "domain": "Mental and Physical Health",
+            "sectionId": "ap-psych-ch-05-section-01",
+            "sectionHeading": "Stress, coping, and well-being",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ]
+    },
+    {
+      "id": "ap-psych-gloss-22",
+      "term": "Biopsychosocial approach",
+      "definition": "An integrative health and clinical framework explaining psychological disorders and physical well-being through the interacting influences of biological predispositions, psychological processes, and social-cultural contexts.",
+      "aliases": [
+        "Biopsychosocial model"
+      ],
+      "chapterIds": [
+        "ap-psych-ch-05"
+      ],
+      "domainIds": [
+        "mental-and-physical-health"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-psych-ch-05",
+            "chapterTitle": "Mental and Physical Health",
+            "domainId": "mental-and-physical-health",
+            "domain": "Mental and Physical Health",
+            "sectionId": "ap-psych-ch-05-section-02",
+            "sectionHeading": "Classification and selected disorder categories",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ]
+    },
+    {
+      "id": "ap-psych-gloss-23",
+      "term": "Comorbidity",
+      "definition": "The concurrent occurrence of two or more distinct psychological or medical disorders in the same individual, which complicates differential assessment, clinical prognosis, and coordinated treatment planning.",
+      "aliases": [],
+      "chapterIds": [
+        "ap-psych-ch-05"
+      ],
+      "domainIds": [
+        "mental-and-physical-health"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-psych-ch-05",
+            "chapterTitle": "Mental and Physical Health",
+            "domainId": "mental-and-physical-health",
+            "domain": "Mental and Physical Health",
+            "sectionId": "ap-psych-ch-05-section-02",
+            "sectionHeading": "Classification and selected disorder categories",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ]
+    },
+    {
+      "id": "ap-psych-gloss-24",
+      "term": "Cognitive-behavioral therapy",
+      "definition": "A structured, evidence-based psychotherapy that helps clients identify and restructure distorted thought patterns while practicing targeted behavioral skills and exposures to reduce distress and impairment.",
+      "aliases": [
+        "CBT"
+      ],
+      "chapterIds": [
+        "ap-psych-ch-05"
+      ],
+      "domainIds": [
+        "mental-and-physical-health"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-psych-ch-05",
+            "chapterTitle": "Mental and Physical Health",
+            "domainId": "mental-and-physical-health",
+            "domain": "Mental and Physical Health",
+            "sectionId": "ap-psych-ch-05-section-03",
+            "sectionHeading": "Treatment evidence, ethics, and access",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ]
+    },
+    {
+      "id": "ap-psych-gloss-25",
+      "term": "Informed consent",
+      "definition": "An ethical safeguard requiring that research participants or therapy clients receive clear disclosures about procedures, risks, benefits, confidentiality limits, and withdrawal rights before voluntarily agreeing.",
+      "aliases": [],
+      "chapterIds": [
+        "ap-psych-ch-05"
+      ],
+      "domainIds": [
+        "mental-and-physical-health"
+      ],
+      "linkage": {
+        "occurrences": [
+          {
+            "chapterId": "ap-psych-ch-05",
+            "chapterTitle": "Mental and Physical Health",
+            "domainId": "mental-and-physical-health",
+            "domain": "Mental and Physical Health",
+            "sectionId": "ap-psych-ch-05-section-03",
+            "sectionHeading": "Treatment evidence, ethics, and access",
+            "occurrences": 1
+          }
+        ]
+      },
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ]
+    }
+  ],
+  "quickReference": [
+    {
+      "id": "ap-psych-reference-01",
+      "domainId": "biological-bases-of-behavior",
+      "domainLabel": "Unit 1: Biological Bases of Behavior",
+      "title": "Neurobiology, Brain Systems, Sleep & Sensation",
+      "purpose": "Anchors neural firing, neurotransmitter drug action, cortical/subcortical localization, sleep architecture, and sensory transduction models in Unit 1.",
+      "checklistLabel": "Before answering",
+      "formulasLabel": "Key constructs & designs",
+      "checklist": [
+        "Trace whether a symptom involves peripheral autonomic arousal (sympathetic vs. parasympathetic) or a specific central brain structure.",
+        "Distinguish chemical agonist action (mimics/enhances neurotransmitter or blocks reuptake) from antagonist action (blocks receptors or inhibits release).",
+        "Separate physical stimulus transduction (sensation) from cognitive interpretation (perception) when diagnosing visual or auditory phenomena."
+      ],
+      "formulas": [
+        "Action potential sequence: resting potential (~ −70 mV) → threshold depolarization (Na+ rushes in, all-or-none) → repolarization (K+ exits) → refractory period; myelin speeds saltatory conduction.",
+        "Key neurotransmitters: ACh (muscle/memory), dopamine (reward/movement), serotonin (mood/sleep), GABA (main inhibitory), glutamate (main excitatory), norepinephrine (alertness), endorphins (pain relief).",
+        "Brain localization & imaging: medulla (vital functions), cerebellum (coordination), amygdala (fear/emotion), hippocampus (explicit memory consolidation), prefrontal cortex (executive control); fMRI tracks blood-oxygen activity while EEG tracks electrical timing.",
+        "Sensory theories: Weber's law (just-noticeable difference is a constant proportion); vision (trichromatic RGB cones + opponent-process afterimages); audition (place theory for high pitches, frequency/volley for low pitches); gate-control theory of pain."
+      ],
+      "decisionRules": [
+        "When you see a split-brain patient shown an image solely in the left visual field → predict the right hemisphere processes it, so the patient cannot verbally name it (left Broca's area) but can pick it up with the left hand.",
+        "When you see a drug blocking serotonin reuptake transporters (like an SSRI) → classify it as a functional agonist because more serotonin stays active in the synaptic cleft.",
+        "When you see rapid eye movements, vivid dreaming, high EEG brain activity, and skeletal muscle paralysis → identify REM (paradoxical) sleep rather than NREM-3 delta slow-wave sleep.",
+        "When you see a heritability statistic of 0.70 for a trait → interpret it as 70% of the variation across a population attributable to genetics, not 70% of one individual's trait."
+      ],
+      "cautions": [
+        "Neurons fire with identical peak voltage regardless of stimulus intensity (all-or-none law); stronger stimuli increase firing frequency and recruit more neurons.",
+        "Damage to the hippocampus impairs forming NEW explicit memories (anterograde amnesia) without erasing old childhood memories or procedural motor skills.",
+        "Broca's area (left frontal lobe) governs speech production, whereas Wernicke's area (left temporal lobe) governs language comprehension."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psych-reference-02",
+      "domainId": "cognition",
+      "domainLabel": "Unit 2: Cognition",
+      "title": "Perception, Memory Systems, Heuristics & Psychometrics",
+      "purpose": "Connects perceptual organization, working and long-term memory mechanics, cognitive biases, and intelligence test validity/reliability.",
+      "checklistLabel": "Before answering",
+      "formulasLabel": "Key constructs & designs",
+      "checklist": [
+        "Check whether a memory failure occurred at encoding (attention), storage (consolidation), or retrieval (cue mismatch/interference).",
+        "Distinguish whether old information blocks new recall (proactive interference) or new learning disrupts old memories (retroactive interference).",
+        "Identify whether a measurement critique targets consistency (reliability) or accuracy in measuring the intended construct (validity)."
+      ],
+      "formulas": [
+        "Processing & perception: bottom-up (data-driven features) vs. top-down (schemas/expectations); Gestalt grouping (proximity, similarity, closure, figure-ground); binocular retinal disparity vs. monocular depth cues.",
+        "Memory architecture: Baddeley's working memory (central executive, phonological loop, visuospatial sketchpad); explicit LTM (episodic events, semantic facts) vs. implicit LTM (procedural skills, priming).",
+        "Decision heuristics & obstacles: availability heuristic (vivid/recent examples), representativeness heuristic (prototype matching), confirmation bias, framing effect, mental set, and functional fixedness.",
+        "Psychometrics: Spearman's g, fluid (novel reasoning) vs. crystallized (accumulated knowledge) intelligence; standardization norms, test-retest/split-half reliability, construct/predictive validity, and Flynn effect."
+      ],
+      "decisionRules": [
+        "When you see someone overestimate shark-attack risk right after watching dramatic news coverage → identify the availability heuristic.",
+        "When you see a student who learned Spanish last year accidentally using Spanish vocabulary during a new French quiz → diagnose proactive interference (old disrupts new).",
+        "When you see an eyewitness incorporate misleading post-event phrasing (\"smashed\" vs. \"hit\") into their recall → identify Elizabeth Loftus's misinformation effect (memory reconsolidation distortion).",
+        "When you see a bathroom scale consistently reading 5 pounds too heavy every morning → classify it as high reliability but low validity."
+      ],
+      "cautions": [
+        "Negative reinforcement is NOT punishment, and similarly, semantic encoding (deep meaning) outperforms shallow phonemic or structural maintenance rehearsal.",
+        "Primacy effect reflects transfer into long-term memory, whereas recency effect reflects items still active in working memory (and disappears after a delay).",
+        "A test can be reliable without being valid, but it cannot be valid without first being reliable."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psych-reference-03",
+      "domainId": "development-and-learning",
+      "domainLabel": "Unit 3: Development and Learning",
+      "title": "Lifespan Development, Conditioning & Social Learning",
+      "purpose": "Integrates developmental stage frameworks and research designs with classical conditioning, operant schedules, and observational learning.",
+      "checklistLabel": "Before answering",
+      "formulasLabel": "Key constructs & designs",
+      "checklist": [
+        "Check whether the learning scenario involves an involuntary reflex paired with a neutral cue (classical) or a voluntary behavior shaped by its consequence (operant).",
+        "For operant items, ask two separate questions: does the behavior increase (reinforcement) or decrease (punishment), and is a stimulus added (positive) or removed (negative)?",
+        "Match developmental milestones to Piagetian cognitive operations versus Eriksonian psychosocial crises."
+      ],
+      "formulas": [
+        "Developmental designs & frameworks: longitudinal (tracks same cohort over time, costly/attrition) vs. cross-sectional (compares ages at once, cohort-effect risk); Bronfenbrenner's ecological systems.",
+        "Cognitive & social development: Piaget (sensorimotor/object permanence → preoperational/egocentrism → concrete operational/conservation → formal operational/abstract); Vygotsky ZPD & scaffolding; Ainsworth attachment & Baumrind authoritative vs. authoritarian/permissive parenting.",
+        "Classical conditioning: UCS → UCR; pairing NS + UCS yields CS → CR; key phenomena include acquisition, extinction, spontaneous recovery, stimulus generalization/discrimination, and Garcia biological taste aversion.",
+        "Operant schedules: fixed-ratio (scallop pause-run), variable-ratio (highest steady rate, most resistant to extinction), fixed-interval (scalloped ramp near deadline), variable-interval (slow steady rate)."
+      ],
+      "decisionRules": [
+        "When you see a driver buckling a seatbelt to stop an annoying dashboard chime → classify as negative reinforcement (removing an aversive stimulus increases buckling).",
+        "When you see a child pouring water into a taller thin glass and insisting it now holds more liquid → place the child in Piaget's preoperational stage (lacking conservation).",
+        "When you see slot-machine play persisting despite long losing streaks → identify a variable-ratio schedule producing high resistance to extinction.",
+        "When you see rats navigating a maze without reward and suddenly running it rapidly once food appears → identify Tolman's latent learning via cognitive maps."
+      ],
+      "cautions": [
+        "In operant conditioning, \"positive\" means ADDING a stimulus and \"negative\" means REMOVING a stimulus—never \"good\" or \"bad.\"",
+        "Authoritative parenting (high warmth + clear, reasoned boundaries) is distinct from authoritarian parenting (low warmth + rigid obedience).",
+        "Cross-sectional studies cannot separate true aging effects from generational cohort differences."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psych-reference-04",
+      "domainId": "social-psychology-and-personality",
+      "domainLabel": "Unit 4: Social Psychology and Personality",
+      "title": "Social Influence, Attributions, Personality & Motivation",
+      "purpose": "Clarifies attribution errors, conformity and group dynamics, personality frameworks, and core motivational and emotional theories.",
+      "checklistLabel": "Before answering",
+      "formulasLabel": "Key constructs & designs",
+      "checklist": [
+        "Identify whether an attribution explains another person's mistake (fundamental attribution error) versus one's own success/failure (self-serving bias).",
+        "Check whether group presence involves individual evaluated performance (social facilitation) or pooled unidentifiable effort (social loafing).",
+        "Verify which personality perspective (psychodynamic, humanistic, social-cognitive, or Big Five trait) matches the prompt's mechanism."
+      ],
+      "formulas": [
+        "Attributions & persuasion: fundamental attribution error (overweighting dispositional traits for others), actor-observer bias, cognitive dissonance (attitude shifts to match behavior), central (logic) vs. peripheral (cues) persuasion.",
+        "Group & compliance dynamics: Asch conformity (normative vs. informational influence), Milgram obedience, group polarization, groupthink (harmony overrides critique), bystander effect (diffusion of responsibility), foot-in-the-door vs. door-in-the-face.",
+        "Personality theories: Big Five OCEAN (Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism); Bandura reciprocal determinism & self-efficacy; Rogers unconditional positive regard; Freud defense mechanisms.",
+        "Motivation & emotion: Yerkes-Dodson law (moderate arousal optimal; lower for complex tasks, higher for simple tasks), intrinsic vs. extrinsic motivation (overjustification effect), Lewin approach-avoidance conflicts, facial-feedback hypothesis."
+      ],
+      "decisionRules": [
+        "When you see a like-minded committee end a discussion holding a more extreme stance than members started with → identify group polarization (distinct from groupthink's suppression of dissent).",
+        "When you see someone agree to put a giant billboard in their yard after first agreeing to a small window sticker → identify the foot-in-the-door compliance technique.",
+        "When you see an expert musician play faster in front of an audience while a novice stumbles → identify social facilitation (audience boosts dominant well-learned responses).",
+        "When you see children stop drawing for fun once external prizes for drawing are removed → diagnose the overjustification effect undermining intrinsic motivation."
+      ],
+      "cautions": [
+        "Do not confuse prejudice (an unjustified attitude), stereotype (a generalized belief), and discrimination (unjust behavior toward a group).",
+        "Negative reinforcement is behavioral, whereas cognitive dissonance requires internal psychological tension between conflicting beliefs and actions.",
+        "High scores on Big Five neuroticism indicate emotional instability/reactivity, not clinical neurosis."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psych-reference-05",
+      "domainId": "mental-and-physical-health",
+      "domainLabel": "Unit 5: Mental and Physical Health",
+      "title": "Stress, Positive Psych, Disorders & Evidence-Based Care",
+      "purpose": "Links stress physiology, DSM-5-TR diagnostic frameworks, psychological and biomedical treatments, and experimental evaluation of treatment efficacy.",
+      "checklistLabel": "Before answering",
+      "formulasLabel": "Key constructs & designs",
+      "checklist": [
+        "Evaluate symptoms through the biopsychosocial and diathesis-stress lenses rather than attributing disorders to a single biological or environmental cause.",
+        "Distinguish positive symptoms of schizophrenia (added experiences like hallucinations/delusions) from negative symptoms (diminished speech, flat affect, avolition).",
+        "Check experimental rigor (random assignment, double-blind placebo control, operational definitions) when judging whether a therapy study supports causation."
+      ],
+      "formulas": [
+        "Stress & positive psychology: Selye's General Adaptation Syndrome (alarm → resistance → exhaustion); problem-focused vs. emotion-focused coping; positive psychology (resilience, signature strengths, gratitude, posttraumatic growth).",
+        "Diagnostic framework (DSM-5-TR): dysfunction, distress, and deviance from cultural norms; major categories include neurodevelopmental, schizophrenia spectrum, depressive/bipolar, anxiety/OCD/PTSD, dissociative, eating, and personality disorders.",
+        "Psychotherapies: CBT (reframes maladaptive thoughts + behavioral activation), exposure/systematic desensitization (counterconditioning for phobias), client-centered humanistic (empathy, active listening), psychodynamic (insight).",
+        "Biomedical interventions: SSRIs (prolong serotonin for depression/anxiety), antipsychotics (block dopamine D2 receptors), anxiolytics (enhance GABA inhibition), lithium (mood stabilizer for bipolar), ECT/TMS for treatment-resistant depression."
+      ],
+      "decisionRules": [
+        "When you see a patient pairing progressive muscle relaxation with a gradual hierarchy of feared stimuli → identify systematic desensitization (behavioral counterconditioning).",
+        "When you see a client alternating between weeks of severe hopeless depression and episodes of sleepless, euphoric, impulsive grandiosity → diagnose bipolar disorder rather than major depressive disorder.",
+        "When you see intrusive unwanted obsessions temporarily relieved by repetitive ritualistic behaviors → identify obsessive-compulsive disorder maintained via negative reinforcement.",
+        "When you see a clinical trial using random assignment to CBT vs. waitlist control and double-blind outcome raters → conclude causal evidence of treatment efficacy while controlling experimenter bias."
+      ],
+      "cautions": [
+        "In schizophrenia, \"positive\" symptoms mean ADDED abnormal behaviors (hallucinations, delusions), NOT beneficial symptoms; \"negative\" symptoms mean ABSENT normal functions (flat affect, avolition).",
+        "Dissociative identity disorder (two or more distinct identity states) is completely separate from schizophrenia (psychosis/split from reality).",
+        "Correlational studies of stress and illness cannot establish causation because of third-variable confounds and bidirectional relationships."
+      ],
+      "originalStudyAid": true,
+      "officialExamReference": false,
+      "releaseEligible": false
+    }
+  ],
+  "misconceptionFamilies": [
+    {
+      "id": "ap-psych-mf-correlation-causation-third-variable",
+      "label": "Correlation vs. Causation and Third-Variable Blindness",
+      "description": "Learners treat a strong correlation coefficient (such as r = −0.84) as causal proof, confuse negative correlation direction with weak strength, or ignore unmeasured third variables and reverse directionality.",
+      "remediationMove": "Inspect study design before strength: read |r| for magnitude and its sign strictly for direction, then test whether a third variable or reverse causation explains the relationship when no random assignment occurred.",
+      "remediationPlaybookId": "ap-psych-pb-correlation-causation-third-variable",
+      "itemIds": [
+        "ap-psych-u4-001",
+        "ap-psych-u4-003",
+        "ap-psych-u4-002",
+        "ap-psych-u4-004",
+        "ap-psych-u4-005",
+        "ap-psych-u4-006",
+        "ap-psych-u5-001",
+        "ap-psych-u5-002",
+        "ap-psych-u5-003",
+        "ap-psych-u5-004",
+        "ap-psych-u5-005",
+        "ap-psych-u5-006"
+      ]
+    },
+    {
+      "id": "ap-psych-mf-operational-def-confounding",
+      "label": "Operational Definition, Random Assignment, and Confounding Confusion",
+      "description": "Learners conflate random selection (generalizing to a population) with random assignment (controlling preexisting group differences), accept vague constructs as operational definitions, or miss placebo and experimenter-expectancy confounds.",
+      "remediationMove": "Verify four research pillars in order: exact measurable operational definition, independent variable manipulation, random assignment vs. random sampling, and blinding against expectancy bias.",
+      "remediationPlaybookId": "ap-psych-pb-operational-def-confounding",
+      "itemIds": [
+        "ap-psych-u2-001",
+        "ap-psych-u2-002",
+        "ap-psych-u2-004",
+        "ap-psych-u2-003",
+        "ap-psych-u2-005",
+        "ap-psych-u2-006",
+        "ap-psych-u4-007",
+        "ap-psych-u4-008",
+        "ap-psych-u4-009",
+        "ap-psych-u4-010",
+        "ap-psych-u4-011",
+        "ap-psych-u4-012"
+      ]
+    },
+    {
+      "id": "ap-psych-mf-neg-reinforcement-vs-punishment",
+      "label": "Negative Reinforcement vs. Positive Punishment Reversal",
+      "description": "Learners read \"negative\" as \"unpleasant punishment\" instead of \"subtraction of a stimulus\", causing them to misclassify behaviors strengthened by removing an aversive cue as punishment.",
+      "remediationMove": "Apply a strict 2×2 operant decision grid: first decide whether the target behavior increases (reinforcement) or decreases (punishment), then decide whether a stimulus is added (positive) or removed (negative).",
+      "remediationPlaybookId": "ap-psych-pb-neg-reinforcement-vs-punishment",
+      "itemIds": [
+        "ap-psych-u3-001",
+        "ap-psych-u3-002",
+        "ap-psych-u3-003",
+        "ap-psych-u3-004",
+        "ap-psych-u3-005",
+        "ap-psych-u3-006",
+        "ap-psych-u3-007",
+        "ap-psych-u3-008",
+        "ap-psych-u3-009",
+        "ap-psych-u3-010",
+        "ap-psych-u3-011",
+        "ap-psych-u3-012"
+      ]
+    },
+    {
+      "id": "ap-psych-mf-sensation-perception-top-down",
+      "label": "Sensation vs. Perception and Bottom-Up vs. Top-Down Conflation",
+      "description": "Learners blur physical receptor transduction (sensation) with cortical selection, grouping, and schema-guided interpretation (perception), or mislabel expectation-driven perceptual sets as bottom-up processing.",
+      "remediationMove": "Locate the process on the sensory-to-cognitive pipeline: physical energy → receptor transduction (sensation/bottom-up) versus prior schemas, context, and expectations shaping meaning (perception/top-down).",
+      "remediationPlaybookId": "ap-psych-pb-sensation-perception-top-down",
+      "itemIds": [
+        "ap-psych-u1-003",
+        "ap-psych-u1-002",
+        "ap-psych-u1-001",
+        "ap-psych-u1-004",
+        "ap-psych-u1-005",
+        "ap-psych-u1-006",
+        "ap-psych-u2-007",
+        "ap-psych-u2-008",
+        "ap-psych-u2-009",
+        "ap-psych-u2-010",
+        "ap-psych-u2-011",
+        "ap-psych-u2-012"
+      ]
+    },
+    {
+      "id": "ap-psych-mf-neurotransmitter-brain-localization",
+      "label": "Neurotransmitter and Brain-Localization Oversimplification",
+      "description": "Learners swap agonists with antagonists, confuse reuptake inhibitors with receptor blockers, or mix up paired neural structures such as Broca vs. Wernicke areas, hippocampus vs. amygdala, and sympathetic vs. parasympathetic branches.",
+      "remediationMove": "Verify synaptic direction (increases vs. blocks signaling) and pair each neural structure with its signature clinical deficit rather than a vague one-word nickname.",
+      "remediationPlaybookId": "ap-psych-pb-neurotransmitter-brain-localization",
+      "itemIds": [
+        "ap-psych-u1-003",
+        "ap-psych-u1-002",
+        "ap-psych-u1-001",
+        "ap-psych-u1-004",
+        "ap-psych-u1-005",
+        "ap-psych-u1-006",
+        "ap-psych-u1-007",
+        "ap-psych-u1-008",
+        "ap-psych-u1-009",
+        "ap-psych-u1-010",
+        "ap-psych-u1-011",
+        "ap-psych-u1-012"
+      ]
+    },
+    {
+      "id": "ap-psych-mf-reliability-validity-biopsychosocial",
+      "label": "Reliability vs. Validity and Biopsychosocial Attribution Trap",
+      "description": "Learners equate test consistency (reliability) with measuring the intended construct (validity), or reduce psychological disorders and health outcomes to a single isolated biological or environmental cause.",
+      "remediationMove": "Separate consistency across trials (reliability) from construct accuracy (validity), and map clinical/health scenarios across all three interacting biopsychosocial domains before choosing an explanation or intervention.",
+      "remediationPlaybookId": "ap-psych-pb-reliability-validity-biopsychosocial",
+      "itemIds": [
+        "ap-psych-u5-001",
+        "ap-psych-u5-002",
+        "ap-psych-u5-003",
+        "ap-psych-u5-004",
+        "ap-psych-u5-005",
+        "ap-psych-u5-006",
+        "ap-psych-u5-007",
+        "ap-psych-u5-008",
+        "ap-psych-u5-009",
+        "ap-psych-u5-010",
+        "ap-psych-u5-011",
+        "ap-psych-u5-012"
+      ]
+    }
+  ],
+  "misconceptionRemediationPlaybooks": [
+    {
+      "id": "ap-psych-pb-correlation-causation-third-variable",
+      "familyId": "ap-psych-mf-correlation-causation-third-variable",
+      "familyLabel": "Correlation vs. Causation and Third-Variable Blindness",
+      "title": "Reading Correlation Strength, Direction, and Third-Variable Limits",
+      "recognitionCue": "You concluded that variable A causes variable B from a survey or naturalistic observation, or ranked r = +0.35 as stronger than r = −0.78.",
+      "repairQuestion": "Which value has the larger distance from zero (|r|), and what unmeasured third variable could simultaneously drive both measured variables?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Inspect the study method in the missed item for manipulation and random assignment; if both are absent, flag every causal verb (\"causes\", \"leads to\", \"prevents\", \"reduces\") in the choices as an overclaim.",
+          "requiredOutput": "A quick audit stating study design (correlational vs. experimental), the sign/magnitude breakdown of r, and the flagged causal distractor."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Sketch a 3-node triangle for the scenario showing A ↔ B along with a plausible third variable C (such as socioeconomic status, sleep deprivation, or baseline stress) pointing to both A and B.",
+          "requiredOutput": "A three-variable diagram plus one sentence explaining both reverse-directionality and third-variable alternatives."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Compare three correlation coefficients (r = −0.81, r = +0.52, r = −0.12) by predictive strength, then rewrite an overclaiming headline about screen time and anxiety into a defensible AP Psych conclusion.",
+          "requiredOutput": "Correct strength ranking (−0.81 strongest, −0.12 weakest) and a revised non-causal conclusion naming one plausible confounder."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Re-attempt the missed item and solve a fresh Unit 4 or Unit 5 study-critique item by confirming whether the conclusion matches the design limits.",
+          "requiredOutput": "Verified correct answers on both items with an explicit check of design-to-claim alignment."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psych-pb-operational-def-confounding",
+      "familyId": "ap-psych-mf-operational-def-confounding",
+      "familyLabel": "Operational Definition, Random Assignment, and Confounding Confusion",
+      "title": "Separating Operational Definitions, Random Assignment, and Sampling",
+      "recognitionCue": "You answered that random assignment makes a sample representative of the population, or selected a broad conceptual label instead of a replicable measurement procedure as an operational definition.",
+      "repairQuestion": "Does this procedure determine WHO enters the study (random sampling → generalizability) or WHICH condition each participant receives (random assignment → causal control)?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Identify whether the missed item tested measurement precision (operational definition), external validity (random sampling), or internal validity (random assignment and double-blind control).",
+          "requiredOutput": "A one-line diagnosis naming the research-design concept targeted by the stem versus the concept confused in the chosen distractor."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Convert the abstract psychological construct in the scenario (such as aggression, memory retention, or stress) into a concrete numeric operational definition, and pair random sampling with population generalization and random assignment with confounding control.",
+          "requiredOutput": "A replicable operational definition (with units or scoring criteria) plus a 2-row table separating random sampling from random assignment."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Critique a flawed memory experiment where morning volunteers receive mnemonic training and evening volunteers serve as the control group with an unblinded grader.",
+          "requiredOutput": "Identification of two confounds (time-of-day self-selection and experimenter bias) plus the exact design fixes (random assignment and double-blind scoring)."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Re-solve the original research-methods item and one new Unit 2/4 experimental vignette, verifying both operational measurability and confound elimination.",
+          "requiredOutput": "Correct choices on both items accompanied by a brief justification naming the exact validity threat eliminated."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psych-pb-neg-reinforcement-vs-punishment",
+      "familyId": "ap-psych-mf-neg-reinforcement-vs-punishment",
+      "familyLabel": "Negative Reinforcement vs. Positive Punishment Reversal",
+      "title": "Mastering the 2×2 Operant Conditioning Decision Matrix",
+      "recognitionCue": "You labeled buckling a seatbelt to silence a car chime or taking aspirin to stop a headache as punishment because an unpleasant stimulus appeared in the story.",
+      "repairQuestion": "After the consequence occurs, does the target behavior happen MORE often (reinforcement) or LESS often (punishment), and was a stimulus added (+) or removed (−)?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Isolate three elements in the missed Unit 3 scenario: the exact target behavior, whether its future frequency rises or falls, and whether the consequence adds or removes a stimulus.",
+          "requiredOutput": "A three-part breakdown exposing where emotional tone (\"bad/unpleasant\") hijacked the mathematical +/- and increase/decrease rule."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Fill in a 2×2 operant grid mapping Increase/Decrease on the rows and Add (+)/Remove (−) on the columns, placing the scenario cleanly in its single quadrant.",
+          "requiredOutput": "A completed 2×2 matrix with one concrete everyday example in each quadrant (PR, NR, PP, NP)."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Classify four quick AP Psych vignettes: ending a loud alarm by standing up (NR), losing phone privileges after curfew violation (NP), receiving extra chores after arguing (PP), and earning bonus credit for early submission (PR).",
+          "requiredOutput": "All four vignettes labeled accurately with explicit arrows showing behavior frequency direction and stimulus addition/removal."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Re-attempt the missed learning item and solve a paired classical-vs-operant item distinguishing voluntary consequence-driven learning from involuntary UCS → UCR / CS → CR associations.",
+          "requiredOutput": "Verified correct answers on both items without confusing negative reinforcement with punishment or classical conditioning."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psych-pb-sensation-perception-top-down",
+      "familyId": "ap-psych-mf-sensation-perception-top-down",
+      "familyLabel": "Sensation vs. Perception and Bottom-Up vs. Top-Down Conflation",
+      "title": "Separating Sensory Transduction from Schema-Driven Perception",
+      "recognitionCue": "You called reading a misspelled sentence via context \"bottom-up processing\", or labeled retinal rod/cone transduction as \"perception\".",
+      "repairQuestion": "Is the phenomenon happening at physical stimulus detection and neural transduction (sensation/bottom-up) or during brain-level interpretation guided by expectations and prior knowledge (perception/top-down)?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Trace the stimulus in the missed item from external energy to conscious meaning and pinpoint the boundary where receptor transduction ends and cortical interpretation begins.",
+          "requiredOutput": "A two-step pipeline note stating the sensory receptor involved and whether the item turns on transduction or cognitive expectation."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Contrast bottom-up feature assembly (receptors → feature detectors → whole object) against top-down guidance (perceptual set, priming, Gestalt context → expectation shaping what you notice).",
+          "requiredOutput": "A two-column comparison mapping key AP terms (absolute threshold, Weber law, transduction vs. perceptual set, figure-ground, binocular cues) to the right stage."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Classify two contrasting scenarios: a radiologist spotting a faint tumor cue using years of training (top-down perceptual set) versus a listener noticing a tone drop below their absolute threshold after sensory adaptation (sensation).",
+          "requiredOutput": "Two labeled justifications citing the exact cue (prior schema vs. receptor-level sensitivity shift)."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Re-solve the missed Unit 1/2 item and one unfamiliar Gestalt or selective-attention (inattentional blindness) item using the transduction-vs-interpretation check.",
+          "requiredOutput": "Correct choices on both items with a one-sentence confirmation of processing direction (bottom-up vs. top-down)."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psych-pb-neurotransmitter-brain-localization",
+      "familyId": "ap-psych-mf-neurotransmitter-brain-localization",
+      "familyLabel": "Neurotransmitter and Brain-Localization Oversimplification",
+      "title": "Pinpointing Synaptic Drug Action and Paired Brain-Structure Deficits",
+      "recognitionCue": "You labeled an SSRI reuptake inhibitor as an antagonist because it \"blocks\" a transporter, or swapped Broca expressive aphasia with Wernicke receptive aphasia.",
+      "repairQuestion": "Does this drug ultimately INCREASE postsynaptic neurotransmitter signaling (agonist) or DECREASE it (antagonist), and which exact functional deficit matches the damaged neural structure?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Check the missed Unit 1 item to see whether the slip was a synaptic-direction inversion (blocking reuptake leaves MORE neurotransmitter in the cleft → agonist) or a swapped anatomical pair.",
+          "requiredOutput": "An exact error tag naming the confused neurotransmitter mechanism or brain-region pair."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Build a high-yield paired-contrast cheat sheet: agonist (mimics or blocks reuptake) vs. antagonist (blocks postsynaptic receptors); Broca (speech production, frontal) vs. Wernicke (language comprehension, temporal); hippocampus (explicit memory consolidation) vs. amygdala (fear/emotion).",
+          "requiredOutput": "A 4-pair clinical-deficit table linking each structure or synaptic mechanism to its unmistakable AP symptom signature."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Diagnose two short case vignettes: a stroke patient who speaks fluently in nonsensical sentences (Wernicke area) and a medication that binds to acetylcholine receptors without opening ion channels (ACh antagonist).",
+          "requiredOutput": "Correct diagnosis for both vignettes explaining the exact functional mechanism rather than a generic brain-lobe guess."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Re-attempt the missed neurobiology item and solve a fresh autonomic-nervous-system item contrasting sympathetic mobilization against parasympathetic recovery.",
+          "requiredOutput": "Correct answers on both items backed by precise synaptic or anatomical mechanism statements."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psych-pb-reliability-validity-biopsychosocial",
+      "familyId": "ap-psych-mf-reliability-validity-biopsychosocial",
+      "familyLabel": "Reliability vs. Validity and Biopsychosocial Attribution Trap",
+      "title": "Distinguishing Test Consistency from Validity and Single-Cause Clinical Traps",
+      "recognitionCue": "You judged a consistently biased scale as valid because scores repeated closely, or picked a purely biological or purely willpower explanation when the vignette included interacting biological, cognitive, and social stressors.",
+      "repairQuestion": "Are the scores merely repeatable (reliable) or truly measuring the target construct (valid), and how do biological vulnerability, cognitive appraisal, and social context interact in this case?",
+      "stages": [
+        {
+          "order": 1,
+          "id": "recognize",
+          "label": "Recognize",
+          "instruction": "Examine the missed Unit 5 item and highlight whether the distractor conflated test-retest/split-half consistency with construct/predictive validity, or ignored one of the three biopsychosocial legs.",
+          "requiredOutput": "A targeted error note distinguishing the psychometric property or clinical model factor missed in the original choice."
+        },
+        {
+          "order": 2,
+          "id": "repair",
+          "label": "Repair",
+          "instruction": "Apply the bullseye rule (tight cluster off-center = reliable but invalid; centered tight cluster = reliable and valid) and map the clinical vignette onto a 3-column Biopsychosocial grid (Bio: genetics/neurochemistry; Psycho: maladaptive thoughts/coping; Social: support/culture/stressors).",
+          "requiredOutput": "A bullseye classification plus a filled 3-column biopsychosocial breakdown for the case."
+        },
+        {
+          "order": 3,
+          "id": "practice",
+          "label": "Targeted practice",
+          "instruction": "Evaluate two items: a depression scale that yields identical scores every week yet mostly asks about math anxiety (high reliability, low construct validity) and a diathesis-stress depression vignette combining genetic vulnerability with job loss.",
+          "requiredOutput": "Two concise rationales demonstrating why reliability never guarantees validity and why diathesis-stress requires interaction rather than a single cause."
+        },
+        {
+          "order": 4,
+          "id": "retry",
+          "label": "Retry & transfer",
+          "instruction": "Re-solve the original Unit 5 item and complete one therapy-matching transfer item pairing cognitive-behavioral therapy (CBT), exposure, and biomedical interventions with their exact targets.",
+          "requiredOutput": "Verified correct answers on both items with explicit alignment to validity type or biopsychosocial mechanism."
+        }
+      ],
+      "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ]
 }

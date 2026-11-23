@@ -2531,7 +2531,7 @@ function testPrepSearchPack(pack, learningLibrary, query, options) {
     });
   };
   normalizedPack.items.forEach((item) => add('question', item.id, item.prompt, item.rationale, item.domainId, [item.prompt].concat(item.choices, item.choiceRationales, testPrepItemSkillIds(item), item.chapterIds, item.rationale).join(' '), item.reviewStatus));
-  (Array.isArray(library.chapters) ? library.chapters : []).forEach((chapter) => add('chapter', chapter.id, chapter.title, (chapter.sections || []).map((section) => section.heading).join(' · '), chapter.domain, testPrepNativeChapterSearchText(chapter), chapter.reviewStatus));
+  (Array.isArray(library.chapters) ? library.chapters : []).forEach((chapter) => add('chapter', chapter.id, chapter.title, (chapter.sections || []).map((section) => section.heading || section.title || '').filter(Boolean).join(' · '), chapter.domain || chapter.unitId || '', testPrepNativeChapterSearchText(chapter), chapter.reviewStatus));
   const indexedDiagramIds = new Set();
   const indexDiagram = (diagram) => {
     const diagramId = testPrepNativePlainObject(diagram) ? String(diagram.id || '') : '';
@@ -3363,7 +3363,7 @@ function testPrepNativeRunsAreSafe(runs, depth) {
   if (!Array.isArray(runs) || level > 12) return false;
   return runs.every((run) => {
     if (!run || typeof run !== 'object' || Array.isArray(run)) return false;
-    if (run.type === 'text') return typeof run.text === 'string';
+    if (run.type === 'text' || (run.type === undefined && typeof run.text === 'string' && Object.keys(run).every((k) => k === 'text'))) return typeof run.text === 'string';
     if (run.type === 'line-break') return true;
     if (!['strong', 'emphasis', 'code', 'subscript', 'superscript', 'link'].includes(run.type)) return false;
     if (run.type === 'link' && !testPrepSafeHttpsUrl(run.url)) return false;
@@ -3401,7 +3401,7 @@ function testPrepNativeRunText(runs) {
   if (!Array.isArray(runs)) return '';
   return runs.map((run) => {
     if (!run || typeof run !== 'object') return '';
-    if (run.type === 'text') return String(run.text || '');
+    if (run.type === 'text' || (run.type === undefined && typeof run.text === 'string')) return String(run.text || '');
     if (run.type === 'line-break') return '\n';
     return testPrepNativeRunText(run.children);
   }).join('');
@@ -3429,12 +3429,26 @@ function testPrepNativeBlockText(block) {
 
 function testPrepNativeChapterSearchText(chapter) {
   if (!chapter || typeof chapter !== 'object') return '';
-  const parts = [chapter.title, chapter.domain];
+  const parts = [chapter.title, chapter.domain || chapter.unitId, chapter.summary || chapter.introduction];
+  if (Array.isArray(chapter.chapterTakeaways) && chapter.chapterTakeaways.length) {
+    parts.push(...chapter.chapterTakeaways);
+  }
   (chapter.sections || []).forEach((section) => {
-    parts.push(section.heading);
-    parts.push(testPrepNativeBlocksAreSafe(section.contentBlocks)
-      ? section.contentBlocks.map(testPrepNativeBlockText).filter(Boolean).join('\n')
+    parts.push(section.heading || section.title);
+    const sectionBlocks = testPrepNativeBlocksAreSafe(section.contentBlocks)
+      ? section.contentBlocks
+      : (testPrepNativeBlocksAreSafe(section.blocks) ? section.blocks : null);
+    parts.push(sectionBlocks
+      ? sectionBlocks.map(testPrepNativeBlockText).filter(Boolean).join('\n')
       : String(section.content || section.preview || ''));
+    if (section.workedExample && typeof section.workedExample === 'object') {
+      parts.push(section.workedExample.prompt, ...(Array.isArray(section.workedExample.steps) ? section.workedExample.steps : []));
+    }
+    if (Array.isArray(section.misconceptionGuidance)) {
+      section.misconceptionGuidance.forEach((entry) => {
+        if (entry && typeof entry === 'object') parts.push(entry.misconception, entry.repair);
+      });
+    }
     if (section.expandableCase) {
       parts.push(section.expandableCase.title, section.expandableCase.clinicalDescription,
         section.expandableCase.diagnosis, section.expandableCase.explanation);
@@ -3787,12 +3801,34 @@ function testPrepNativeReferenceText(reference) {
 
 function testPrepNativeChapterSpeechText(catalog, chapter) {
   if (!chapter || typeof chapter !== 'object') return '';
-  const parts = ['Chapter. ' + String(chapter.title || ''), String(chapter.domain || '')];
+  const parts = ['Chapter. ' + String(chapter.title || ''), String(chapter.domain || chapter.unitId || '')];
+  if (chapter.summary || chapter.introduction) parts.push(String(chapter.summary || chapter.introduction));
+  if (Array.isArray(chapter.chapterTakeaways) && chapter.chapterTakeaways.length) {
+    parts.push('Chapter takeaways.');
+    chapter.chapterTakeaways.forEach((takeaway) => parts.push(String(takeaway || '')));
+  }
   (chapter.sections || []).forEach((section, index) => {
-    parts.push('Lesson ' + String(index + 1) + '. ' + String(section.heading || ''));
-    parts.push(testPrepNativeBlocksAreSafe(section.contentBlocks)
-      ? section.contentBlocks.map(testPrepNativeBlockText).filter(Boolean).join('\n')
+    parts.push('Lesson ' + String(index + 1) + '. ' + String(section.heading || section.title || ''));
+    const sectionBlocks = testPrepNativeBlocksAreSafe(section.contentBlocks)
+      ? section.contentBlocks
+      : (testPrepNativeBlocksAreSafe(section.blocks) ? section.blocks : null);
+    parts.push(sectionBlocks
+      ? sectionBlocks.map(testPrepNativeBlockText).filter(Boolean).join('\n')
       : String(section.content || section.preview || ''));
+    if (section.workedExample && typeof section.workedExample === 'object') {
+      parts.push('Worked example. ' + String(section.workedExample.prompt || ''));
+      (Array.isArray(section.workedExample.steps) ? section.workedExample.steps : []).forEach((step, stepIndex) => {
+        parts.push('Step ' + String(stepIndex + 1) + '. ' + String(step || ''));
+      });
+    }
+    if (Array.isArray(section.misconceptionGuidance) && section.misconceptionGuidance.length) {
+      parts.push('Common misconceptions and repairs.');
+      section.misconceptionGuidance.forEach((entry) => {
+        if (entry && typeof entry === 'object') {
+          parts.push('Watch out for: ' + String(entry.misconception || '') + ' Repair: ' + String(entry.repair || ''));
+        }
+      });
+    }
     const spokenDiagrams = new Set();
     testPrepNativeChapterDiagramRecords(catalog, chapter, section).forEach(({ placement, payload }) => {
       const speechKey = String(payload && payload.id || placement && placement.id || '');
@@ -3803,10 +3839,10 @@ function testPrepNativeChapterSpeechText(catalog, chapter) {
     });
     const caseRecord = section.expandableCase;
     if (caseRecord) {
-      parts.push('Clinical vignette. ' + String(caseRecord.title || ''));
-      parts.push('Presentation. ' + String(caseRecord.clinicalDescription || ''));
-      parts.push('Diagnosis or answer. ' + String(caseRecord.diagnosis || ''));
-      parts.push('Explanation. ' + String(caseRecord.explanation || ''));
+      parts.push(String(caseRecord.label || 'Clinical vignette') + '. ' + String(caseRecord.title || ''));
+      parts.push(String(caseRecord.presentationLabel || 'Presentation') + '. ' + String(caseRecord.clinicalDescription || ''));
+      parts.push(String(caseRecord.answerLabel || 'Diagnosis or answer') + '. ' + String(caseRecord.diagnosis || ''));
+      parts.push(String(caseRecord.explanationLabel || 'Explanation') + '. ' + String(caseRecord.explanation || ''));
     }
   });
   if (chapter.reflectiveCoda) {
@@ -3890,7 +3926,7 @@ function writeTestPrepNativeChapterProgressStore(value) {
 function testPrepRenderNativeRuns(runs, keyPrefix) {
   return (Array.isArray(runs) ? runs : []).map((run, index) => {
     const key = String(keyPrefix || 'run') + '-' + index;
-    if (run.type === 'text') return run.text;
+    if (run.type === 'text' || (run.type === undefined && typeof run.text === 'string')) return run.text;
     if (run.type === 'line-break') return <br key={key} />;
     const children = testPrepRenderNativeRuns(run.children, key);
     if (run.type === 'strong') return <strong key={key}>{children}</strong>;
@@ -4046,14 +4082,19 @@ function testPrepNativeGlossarySpeechText(record) {
   return ('Glossary term. ' + String(record.term || '') + '. Definition. ' + String(record.definition || '') + aliases).trim();
 }
 
-function TestPrepNativeGlossaryLibrary({ glossary, chapters, query, chapterId, domainId, visibleCount, onQueryChange, onChapterChange, onDomainChange, onShowMore, onReadAloud, readAloudActive }) {
+function TestPrepNativeGlossaryLibrary({ glossary, chapters, libraryTitle, query, chapterId, domainId, visibleCount, onQueryChange, onChapterChange, onDomainChange, onShowMore, onReadAloud, readAloudActive }) {
   const view = testPrepBuildNativeGlossaryView(glossary, chapters, { query, chapterId, domainId });
   const shown = view.items.slice(0, Math.max(1, Number(visibleCount) || 100));
+  const resolvedTitle = String(libraryTitle || '').trim();
+  const isEpppGlossary = !resolvedTitle || /\beppp\b/i.test(resolvedTitle);
+  const headingText = isEpppGlossary
+    ? 'EPPP study glossary'
+    : (/\bglossary\b/i.test(resolvedTitle) ? resolvedTitle : resolvedTitle + ' study glossary');
   return <section className="space-y-4" aria-labelledby="native-glossary-title">
     <header className="rounded-xl border border-cyan-300 bg-cyan-50 p-5">
       <p className="text-xs font-black uppercase tracking-wide text-cyan-800">Native plain-text glossary</p>
-      <h4 id="native-glossary-title" className="mt-1 text-xl font-black text-slate-900">EPPP study glossary</h4>
-      <p className="mt-2 text-sm leading-relaxed text-cyan-950">Definitions preserve the effective legacy source text. Chapter and domain filters are derived only from bounded text occurrences; an occurrence is not evidence that a definition was expert reviewed.</p>
+      <h4 id="native-glossary-title" className="mt-1 text-xl font-black text-slate-900">{headingText}</h4>
+      <p className="mt-2 text-sm leading-relaxed text-cyan-950">{isEpppGlossary ? 'Definitions preserve the effective legacy source text. Chapter and domain filters are derived only from bounded text occurrences; an occurrence is not evidence that a definition was expert reviewed.' : 'Definitions support independent review across linked chapters and domains. Search terms, definitions, or aliases, or filter by chapter and domain; an occurrence is not evidence that a definition was expert reviewed.'}</p>
       <p className="mt-2 text-xs font-black text-amber-900">Source-parity reviewed · independent qualified-expert review pending · not production validated</p>
     </header>
     <div role="search" aria-label="Filter glossary terms" className="grid gap-3 rounded-xl border border-slate-300 bg-white p-4 lg:grid-cols-[1fr_260px_260px]">
@@ -4069,7 +4110,7 @@ function TestPrepNativeGlossaryLibrary({ glossary, chapters, query, chapterId, d
     <ol id="native-glossary-results" aria-labelledby="native-glossary-results-title" className="grid gap-3 md:grid-cols-2">
       {shown.map((record) => {
         const occurrences = record.occurrenceRecords || [];
-        const occurrenceCount = occurrences.reduce((sum, entry) => sum + Math.max(0, Number(entry.occurrences) || 0), 0);
+        const occurrenceCount = occurrences.reduce((sum, entry) => sum + (entry.occurrences === undefined ? 1 : Math.max(0, Number(entry.occurrences) || 0)), 0);
         const termId = 'native-glossary-' + testPrepSlug(record.id, 'term');
         return <li key={record.id}><article className="h-full rounded-xl border border-slate-300 bg-white p-4 shadow-sm" aria-labelledby={termId + '-title'}>
           <h6 id={termId + '-title'} className="text-lg font-black text-slate-900">{record.term}</h6>
@@ -7607,14 +7648,18 @@ function TestPrepHub(props) {
                     <p className="mt-2 text-sm leading-relaxed text-amber-950">Use these unit cards to retrieve method choices, relationships, and interpretation boundaries before practicing. This is not the official exam reference sheet and is not a substitute for current course materials.</p>
                   </div>
                   {references.length > 0 ? <div className="grid gap-4 lg:grid-cols-2">
-                    {references.map((reference) => <article key={reference.id} className="space-y-4 rounded-2xl border border-amber-300 bg-white p-5 shadow-sm">
-                      <div><p className="text-xs font-black uppercase tracking-wide text-amber-800">{reference.domainId || selectedPack.shortTitle || 'Quick reference'}</p><h5 className="mt-1 text-lg font-black text-slate-900">{reference.title}</h5><p className="mt-2 text-sm leading-relaxed text-slate-700">{reference.purpose}</p><button type="button" aria-pressed={readAloudActive} onClick={() => { if (readAloudActive) stopReadAloud(); else speakTestPrepText([reference.title, reference.purpose, 'Before calculating: ' + (reference.checklist || []).join('. '), 'Relationships: ' + (reference.formulas || []).join('. '), 'Decision rules: ' + (reference.decisionRules || []).join('. '), 'Cautions: ' + (reference.cautions || []).join('. ')].join('. ')); }} className="mt-3 rounded-lg border border-amber-500 bg-amber-50 px-3 py-2 text-sm font-black text-amber-950 focus:ring-2 focus:ring-amber-700">{readAloudActive ? 'Stop reading' : 'Read reference aloud'}</button></div>
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        <section><h6 className="font-black text-slate-900">Before calculating</h6><ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">{(reference.checklist || []).map((entry) => <li key={entry}>{entry}</li>)}</ul></section>
-                        <section><h6 className="font-black text-slate-900">Relationships</h6><ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">{(reference.formulas || []).map((entry) => <li key={entry}>{entry}</li>)}</ul></section>
-                      </div>
-                      <details className="rounded-xl border border-slate-200 bg-slate-50 p-3"><summary className="cursor-pointer font-black text-slate-900 focus:ring-2 focus:ring-amber-700">Decision rules and cautions</summary><div className="mt-3 grid gap-4 sm:grid-cols-2"><div><h6 className="font-black text-emerald-900">Choose or interpret</h6><ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">{(reference.decisionRules || []).map((entry) => <li key={entry}>{entry}</li>)}</ul></div><div><h6 className="font-black text-rose-900">Watch for</h6><ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">{(reference.cautions || []).map((entry) => <li key={entry}>{entry}</li>)}</ul></div></div></details>
-                    </article>)}
+                    {references.map((reference) => {
+                      const checkLabel = reference.checklistLabel || 'Before calculating';
+                      const relLabel = reference.formulasLabel || 'Relationships';
+                      return <article key={reference.id} className="space-y-4 rounded-2xl border border-amber-300 bg-white p-5 shadow-sm">
+                        <div><p className="text-xs font-black uppercase tracking-wide text-amber-800">{reference.domainLabel || reference.domainId || reference.unitId || selectedPack.shortTitle || 'Quick reference'}</p><h5 className="mt-1 text-lg font-black text-slate-900">{reference.title}</h5><p className="mt-2 text-sm leading-relaxed text-slate-700">{reference.purpose}</p><button type="button" aria-pressed={readAloudActive} onClick={() => { if (readAloudActive) stopReadAloud(); else speakTestPrepText([reference.title, reference.purpose, checkLabel + ': ' + (reference.checklist || []).join('. '), relLabel + ': ' + (reference.formulas || []).join('. '), 'Decision rules: ' + (reference.decisionRules || []).join('. '), 'Cautions: ' + (reference.cautions || []).join('. ')].join('. ')); }} className="mt-3 rounded-lg border border-amber-500 bg-amber-50 px-3 py-2 text-sm font-black text-amber-950 focus:ring-2 focus:ring-amber-700">{readAloudActive ? 'Stop reading' : 'Read reference aloud'}</button></div>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <section><h6 className="font-black text-slate-900">{checkLabel}</h6><ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">{(reference.checklist || []).map((entry) => <li key={entry}>{entry}</li>)}</ul></section>
+                          <section><h6 className="font-black text-slate-900">{relLabel}</h6><ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">{(reference.formulas || []).map((entry) => <li key={entry}>{entry}</li>)}</ul></section>
+                        </div>
+                        <details className="rounded-xl border border-slate-200 bg-slate-50 p-3"><summary className="cursor-pointer font-black text-slate-900 focus:ring-2 focus:ring-amber-700">Decision rules and cautions</summary><div className="mt-3 grid gap-4 sm:grid-cols-2"><div><h6 className="font-black text-emerald-900">Choose or interpret</h6><ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">{(reference.decisionRules || []).map((entry) => <li key={entry}>{entry}</li>)}</ul></div><div><h6 className="font-black text-rose-900">Watch for</h6><ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">{(reference.cautions || []).map((entry) => <li key={entry}>{entry}</li>)}</ul></div></div></details>
+                      </article>;
+                    })}
                   </div> : <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">This library does not currently include a quick-reference layer.</p>}
                 </section>;
               })()}
@@ -7622,6 +7667,7 @@ function TestPrepHub(props) {
               {learningLibrary && !libraryChapterId && libraryMode === 'glossary' && Array.isArray(learningLibrary.glossary) && learningLibrary.glossary.length > 0 && <TestPrepNativeGlossaryLibrary
                 glossary={learningLibrary.glossary}
                 chapters={learningLibrary.chapters}
+                libraryTitle={learningLibrary.shortTitle || learningLibrary.title || ''}
                 query={glossarySearch}
                 chapterId={glossaryChapterId}
                 domainId={glossaryDomainId}
@@ -7791,8 +7837,8 @@ function TestPrepHub(props) {
                   : Array.isArray(chapter.references) ? chapter.references : chapter.reviewReferences || [];
                 return <article className="space-y-6 rounded-2xl border border-indigo-300 bg-white p-5 shadow-sm sm:p-7" aria-labelledby="native-chapter-title" data-native-chapter-route={route}>
                   <header className="border-b border-slate-200 pb-5">
-                    <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-wider text-indigo-700">{chapter.domain} {'\u00B7'} Complete native study chapter</p><h4 id="native-chapter-title" tabIndex={-1} className="mt-1 text-2xl font-black text-slate-900">{chapter.title}</h4></div><span className="rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-900">Native content complete</span></div>
-                    {chapter.summary && <p className="mt-3 max-w-4xl leading-relaxed text-slate-700">{chapter.summary}</p>}
+                    <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-wider text-indigo-700">{chapter.domain || chapter.unitId || 'Study unit'} {'\u00B7'} Complete native study chapter</p><h4 id="native-chapter-title" tabIndex={-1} className="mt-1 text-2xl font-black text-slate-900">{chapter.title}</h4></div><span className="rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-900">Native content complete</span></div>
+                    {(chapter.summary || chapter.introduction) && <p className="mt-3 max-w-4xl leading-relaxed text-slate-700">{chapter.summary || chapter.introduction}</p>}
                     <p className="mt-3 text-sm font-bold text-slate-700" role="status" aria-live="polite">{completedCount} of {(chapter.sections || []).length} sections complete</p>
                     <div className="mt-4 flex flex-wrap gap-3">
                       <button type="button" aria-pressed={readAloudActive} onClick={() => {
@@ -7800,7 +7846,7 @@ function TestPrepHub(props) {
                         else speakTestPrepText(testPrepNativeChapterSpeechText(learningLibrary, chapter));
                       }} className="min-h-11 rounded-lg border border-indigo-400 bg-indigo-50 px-4 py-2 font-black text-indigo-900 focus:ring-2 focus:ring-indigo-600">{readAloudActive ? 'Stop chapter read-aloud' : 'Read chapter aloud'}</button>
                       {targetedCount > 0 && <button type="button" onClick={() => startTargetedPractice(chapter.skillId)} className="min-h-11 rounded-lg bg-indigo-700 px-4 py-2 font-black text-white focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">Practice this skill ({Math.min(20, targetedCount)} questions)</button>}
-                      <button type="button" onClick={() => { setLibraryMode('flashcards'); setLibraryChapterId(''); setLibraryDomain(chapter.domain); setFlashcardIndex(0); }} className="min-h-11 rounded-lg border border-slate-400 bg-white px-4 py-2 font-black text-slate-900 focus:ring-2 focus:ring-indigo-600">Study flashcards</button>
+                      <button type="button" onClick={() => { setLibraryMode('flashcards'); setLibraryChapterId(''); setLibraryDomain(chapter.domain || 'all'); setFlashcardIndex(0); }} className="min-h-11 rounded-lg border border-slate-400 bg-white px-4 py-2 font-black text-slate-900 focus:ring-2 focus:ring-indigo-600">Study flashcards</button>
                     </div>
                     <div className="mt-4 flex flex-wrap gap-2">
                       <button type="button" disabled={chapterIndex <= 0} onClick={() => setLibraryChapterId(learningLibrary.chapters[chapterIndex - 1].id)} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-bold text-slate-900 disabled:opacity-50 focus:ring-2 focus:ring-indigo-600">Previous chapter</button>
@@ -7816,10 +7862,11 @@ function TestPrepHub(props) {
                     <h5 className="font-black text-slate-900">Jump to a lesson</h5>
                     <ol className="mt-2 grid gap-2 sm:grid-cols-2">{(chapter.sections || []).map((section, index) => {
                       const targetId = 'native-' + testPrepSlug(section.id, 'section-' + (index + 1));
+                      const sectionHeading = section.heading || section.title || ('Lesson ' + (index + 1));
                       return <li key={section.id}><button type="button" onClick={() => {
                         const target = document.getElementById(targetId);
                         if (target) { target.scrollIntoView({ block: 'start' }); target.focus({ preventScroll: true }); }
-                      }} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-sm font-bold text-indigo-900 focus:ring-2 focus:ring-indigo-600">{index + 1}. {section.heading}</button></li>;
+                      }} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-sm font-bold text-indigo-900 focus:ring-2 focus:ring-indigo-600">{index + 1}. {sectionHeading}</button></li>;
                     })}</ol>
                   </nav>
 
@@ -7827,11 +7874,16 @@ function TestPrepHub(props) {
                     <h5 id="chapter-lessons-title" className="text-lg font-black text-slate-900">Chapter lessons</h5>
                     {(chapter.sections || []).map((section, index) => {
                       const sectionDomId = 'native-' + testPrepSlug(section.id, 'section-' + (index + 1));
-                      const structured = testPrepNativeBlocksAreSafe(section.contentBlocks);
+                      const sectionHeading = section.heading || section.title || ('Lesson ' + (index + 1));
+                      const sectionBlocks = testPrepNativeBlocksAreSafe(section.contentBlocks)
+                        ? section.contentBlocks
+                        : (testPrepNativeBlocksAreSafe(section.blocks) ? section.blocks : null);
                       const diagramRecords = testPrepNativeChapterDiagramRecords(learningLibrary, chapter, section);
                       const completeId = String(section.runtimeSectionId || section.id || '');
                       const complete = nativeChapterProgress[completeId] === true;
                       const caseRecord = section.expandableCase;
+                      const workedExample = section.workedExample && typeof section.workedExample === 'object' && section.workedExample.prompt ? section.workedExample : null;
+                      const misconceptions = Array.isArray(section.misconceptionGuidance) ? section.misconceptionGuidance.filter((entry) => entry && typeof entry === 'object' && (entry.misconception || entry.repair)) : [];
                       const sectionRoute = section.practiceRoute && Array.isArray(section.practiceRoute.itemIds) && section.practiceRoute.itemIds.length ? section.practiceRoute : null;
                       const objectiveCatalog = selectedPack && selectedPack.blueprint && Array.isArray(selectedPack.blueprint.learningObjectiveCatalog) ? selectedPack.blueprint.learningObjectiveCatalog : [];
                       const topicDrills = sectionRoute && Array.isArray(section.topicCoverage) ? section.topicCoverage.map((topicId) => {
@@ -7841,22 +7893,31 @@ function TestPrepHub(props) {
                       }).filter((drill) => drill.itemIds.length > 0) : [];
                       return <section id={sectionDomId} tabIndex={-1} key={section.id} className="rounded-xl border border-slate-300 bg-slate-50 p-4 focus:ring-2 focus:ring-indigo-600" aria-labelledby={sectionDomId + '-title'}>
                         <p className="text-xs font-black uppercase tracking-wide text-indigo-700">Lesson {index + 1}</p>
-                        <h6 id={sectionDomId + '-title'} className="mt-1 text-base font-black text-slate-900">{section.heading}</h6>
-                        <div className="mt-3 space-y-3">{structured
-                          ? testPrepRenderNativeBlocks(section.contentBlocks, sectionDomId + '-content', section.heading)
+                        <h6 id={sectionDomId + '-title'} className="mt-1 text-base font-black text-slate-900">{sectionHeading}</h6>
+                        <div className="mt-3 space-y-3">{sectionBlocks
+                          ? testPrepRenderNativeBlocks(sectionBlocks, sectionDomId + '-content', sectionHeading)
                           : <p className="whitespace-pre-line text-sm leading-relaxed text-slate-800">{section.content || section.preview || 'Section details are available in the reviewed source chapter.'}</p>}
                         </div>
-                        {diagramRecords.length > 0 && <div role="group" className="mt-4 space-y-3" aria-label={'Diagrams for ' + section.heading}>{diagramRecords.map(({ placement, payload }, placementIndex) => <TestPrepNativeDiagramPlacement key={String(placement && placement.id || payload && payload.id || placementIndex)} placement={placement} payload={payload} index={placementIndex} readAloudActive={readAloudActive} onReadAloud={(text) => { if (readAloudActive) stopReadAloud(); else speakTestPrepText(text); }} />)}</div>}
+                        {workedExample && <details open className="mt-4 rounded-xl border border-emerald-300 bg-emerald-50 p-4">
+                          <summary className="cursor-pointer font-black text-emerald-950 focus:ring-2 focus:ring-emerald-700">Worked example</summary>
+                          <p className="mt-2 text-sm font-bold leading-relaxed text-emerald-950">{workedExample.prompt}</p>
+                          {Array.isArray(workedExample.steps) && workedExample.steps.length > 0 && <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm leading-relaxed text-slate-800">{workedExample.steps.map((step, stepIndex) => <li key={stepIndex}>{step}</li>)}</ol>}
+                        </details>}
+                        {misconceptions.length > 0 && <aside className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4" aria-label={'Common misconceptions for ' + sectionHeading}>
+                          <h6 className="text-sm font-black text-amber-950">Common misconceptions and repairs</h6>
+                          <ul className="mt-2 space-y-2 text-sm leading-relaxed text-slate-800">{misconceptions.map((entry, entryIndex) => <li key={entryIndex}>{entry.misconception && <p><strong className="text-amber-950">Watch out:</strong> {entry.misconception}</p>}{entry.repair && <p><strong className="text-emerald-900">Repair:</strong> {entry.repair}</p>}</li>)}</ul>
+                        </aside>}
+                        {diagramRecords.length > 0 && <div role="group" className="mt-4 space-y-3" aria-label={'Diagrams for ' + sectionHeading}>{diagramRecords.map(({ placement, payload }, placementIndex) => <TestPrepNativeDiagramPlacement key={String(placement && placement.id || payload && payload.id || placementIndex)} placement={placement} payload={payload} index={placementIndex} readAloudActive={readAloudActive} onReadAloud={(text) => { if (readAloudActive) stopReadAloud(); else speakTestPrepText(text); }} />)}</div>}
                         {caseRecord && <details className="mt-4 rounded-xl border border-violet-300 bg-violet-50 p-4">
-                          <summary className="cursor-pointer font-black text-violet-950 focus:ring-2 focus:ring-violet-700">Clinical vignette: {caseRecord.title || 'Applied case'}</summary>
+                          <summary className="cursor-pointer font-black text-violet-950 focus:ring-2 focus:ring-violet-700">{caseRecord.label || 'Clinical vignette'}: {caseRecord.title || 'Applied case'}</summary>
                           <div className="mt-4 space-y-4">
-                            <section aria-labelledby={sectionDomId + '-case-presentation'}><h6 id={sectionDomId + '-case-presentation'} className="font-black text-slate-900">Presentation</h6><div className="mt-1">{testPrepRenderNativeField(caseRecord, 'clinicalDescription', sectionDomId + '-case-presentation-content')}</div></section>
-                            <section aria-labelledby={sectionDomId + '-case-answer'}><h6 id={sectionDomId + '-case-answer'} className="font-black text-emerald-900">Diagnosis or answer</h6><div className="mt-1">{testPrepRenderNativeField(caseRecord, 'diagnosis', sectionDomId + '-case-answer-content')}</div></section>
-                            <section aria-labelledby={sectionDomId + '-case-explanation'}><h6 id={sectionDomId + '-case-explanation'} className="font-black text-slate-900">Explanation</h6><div className="mt-1">{testPrepRenderNativeField(caseRecord, 'explanation', sectionDomId + '-case-explanation-content')}</div></section>
+                            <section aria-labelledby={sectionDomId + '-case-presentation'}><h6 id={sectionDomId + '-case-presentation'} className="font-black text-slate-900">{caseRecord.presentationLabel || 'Presentation'}</h6><div className="mt-1">{testPrepRenderNativeField(caseRecord, 'clinicalDescription', sectionDomId + '-case-presentation-content')}</div></section>
+                            <section aria-labelledby={sectionDomId + '-case-answer'}><h6 id={sectionDomId + '-case-answer'} className="font-black text-emerald-900">{caseRecord.answerLabel || 'Diagnosis or answer'}</h6><div className="mt-1">{testPrepRenderNativeField(caseRecord, 'diagnosis', sectionDomId + '-case-answer-content')}</div></section>
+                            <section aria-labelledby={sectionDomId + '-case-explanation'}><h6 id={sectionDomId + '-case-explanation'} className="font-black text-slate-900">{caseRecord.explanationLabel || 'Explanation'}</h6><div className="mt-1">{testPrepRenderNativeField(caseRecord, 'explanation', sectionDomId + '-case-explanation-content')}</div></section>
                           </div>
                         </details>}
-                        {(section.keyTerms || []).length > 0 && <div role="group" className="mt-3 flex flex-wrap gap-2" aria-label={'Key terms for ' + section.heading}>{section.keyTerms.map((term) => <span key={term} className="rounded-full border border-indigo-200 bg-white px-2 py-1 text-xs font-bold text-indigo-900">{term}</span>)}</div>}
-                        {sectionRoute && <div role="group" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-violet-300 bg-violet-50 p-4" aria-label={'Practice route for ' + section.heading}><div><p className="text-xs font-black uppercase tracking-wide text-violet-800">Section practice route</p><p className="mt-1 text-sm font-bold text-violet-950">{sectionRoute.foundationItemCount || 0} foundation &middot; {sectionRoute.depthItemCount || 0} depth &middot; {sectionRoute.transferItemCount || 0} transfer questions</p><p className="mt-1 text-xs text-violet-900">Use the same target, method, conditions, and conclusion move in three levels of context.</p></div><button type="button" onClick={() => startStudyRoute({ title: section.heading + ' - section practice', itemIds: sectionRoute.itemIds })} className="min-h-11 rounded-lg bg-violet-800 px-4 py-2 text-sm font-black text-white hover:bg-violet-900 focus:ring-2 focus:ring-violet-700 focus:ring-offset-2">Start section practice</button></div>}
+                        {(section.keyTerms || []).length > 0 && <div role="group" className="mt-3 flex flex-wrap gap-2" aria-label={'Key terms for ' + sectionHeading}>{section.keyTerms.map((term) => <span key={term} className="rounded-full border border-indigo-200 bg-white px-2 py-1 text-xs font-bold text-indigo-900">{term}</span>)}</div>}
+                        {sectionRoute && <div role="group" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-violet-300 bg-violet-50 p-4" aria-label={'Practice route for ' + sectionHeading}><div><p className="text-xs font-black uppercase tracking-wide text-violet-800">Section practice route</p><p className="mt-1 text-sm font-bold text-violet-950">{sectionRoute.foundationItemCount || 0} foundation &middot; {sectionRoute.depthItemCount || 0} depth &middot; {sectionRoute.transferItemCount || 0} transfer questions</p><p className="mt-1 text-xs text-violet-900">Use the same target, method, conditions, and conclusion move in three levels of context.</p></div><button type="button" onClick={() => startStudyRoute({ title: sectionHeading + ' - section practice', itemIds: sectionRoute.itemIds })} className="min-h-11 rounded-lg bg-violet-800 px-4 py-2 text-sm font-black text-white hover:bg-violet-900 focus:ring-2 focus:ring-violet-700 focus:ring-offset-2">Start section practice</button></div>}
                         {topicDrills.length > 0 && <details className="mt-3 rounded-xl border border-violet-200 bg-white p-3"><summary className="min-h-11 cursor-pointer py-2 font-black text-violet-950 focus:ring-2 focus:ring-violet-700">Open topic drills ({topicDrills.length})</summary><div className="mt-3 grid gap-2">{topicDrills.map((drill) => <div key={drill.topicId} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"><div><p className="text-sm font-black text-slate-900">{drill.topicId} - {drill.label}</p><p className="text-xs text-slate-600">{drill.itemIds.length} linked questions</p></div><button type="button" onClick={() => startStudyRoute({ title: drill.topicId + ' - topic drill', itemIds: drill.itemIds })} className="min-h-11 rounded-lg border border-violet-700 bg-white px-3 py-2 text-xs font-black text-violet-950 hover:bg-violet-50 focus:ring-2 focus:ring-violet-700">Practice topic</button></div>)}</div></details>}
                         <div className="mt-4 flex justify-end"><button type="button" aria-pressed={complete} onClick={() => toggleNativeChapterSection(section)} className={'min-h-11 rounded-lg border px-3 py-2 text-sm font-black focus:ring-2 focus:ring-indigo-600 ' + (complete ? 'border-emerald-600 bg-emerald-700 text-white' : 'border-indigo-400 bg-white text-indigo-900')}>{complete ? 'Section complete \u2713' : 'Mark section complete'}</button></div>
                       </section>;
@@ -7866,6 +7927,11 @@ function TestPrepHub(props) {
                   <section className="space-y-4" aria-labelledby="chapter-checks-title">
                     <div><h5 id="chapter-checks-title" className="text-lg font-black text-slate-900">Knowledge checks</h5><p className="mt-1 text-sm text-slate-700">Answer each question, check the response, and use the rationale to correct or strengthen your reasoning.</p></div>
                     {(chapter.knowledgeChecks || []).map((check, checkIndex) => {
+                      const hasInlineChoices = Array.isArray(check.choices) && check.choices.length > 0;
+                      if (!hasInlineChoices && Array.isArray(check.itemIds) && check.itemIds.length > 0) {
+                        return <div key={check.id || checkIndex} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-indigo-200 bg-indigo-50 p-4"><div><p className="text-xs font-black uppercase tracking-wide text-indigo-800">Retrieval check {checkIndex + 1}</p><p className="mt-1 text-sm font-black text-slate-900">{check.title || 'Unscored retrieval check'}</p><p className="mt-1 text-xs text-slate-700">{check.itemIds.length} linked practice question{check.itemIds.length === 1 ? '' : 's'} (unscored)</p></div><button type="button" onClick={() => startStudyRoute({ title: (check.title || chapter.title + ' - retrieval check') + ' (' + (checkIndex + 1) + ')', itemIds: check.itemIds })} className="min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-black text-white hover:bg-indigo-800 focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">Start retrieval check</button></div>;
+                      }
+                      if (!hasInlineChoices) return null;
                       const selected = chapterCheckAnswers[check.id];
                       const revealed = chapterCheckRevealed[check.id] === true;
                       return <fieldset key={check.id} disabled={revealed} className="rounded-xl border border-slate-300 p-4"><legend className="px-1 font-black text-slate-900">Check {checkIndex + 1}: {check.prompt}</legend><div className="mt-3 space-y-2">{check.choices.map((choice, choiceIndex) => { const inputId = check.id + '-choice-' + choiceIndex; const correct = revealed && choiceIndex === check.answerIndex; const missed = revealed && choiceIndex === selected && choiceIndex !== check.answerIndex; return <label key={inputId} htmlFor={inputId} className={'flex min-h-11 items-start gap-2 rounded-lg border p-3 text-sm focus-within:ring-2 focus-within:ring-indigo-600 ' + (correct ? 'border-emerald-500 bg-emerald-50 text-emerald-950' : missed ? 'border-rose-500 bg-rose-50 text-rose-950' : selected === choiceIndex ? 'border-indigo-500 bg-indigo-50 text-indigo-950' : 'border-slate-300 bg-white text-slate-900')}><input id={inputId} type="radio" name={check.id} checked={selected === choiceIndex} onChange={() => setChapterCheckAnswers((previous) => Object.assign({}, previous, { [check.id]: choiceIndex }))} className="mt-0.5 h-4 w-4 accent-indigo-700" /><span><strong>{String.fromCharCode(65 + choiceIndex)}.</strong> {choice}</span></label>; })}</div>{!revealed ? <button type="button" disabled={selected == null} onClick={() => setChapterCheckRevealed((previous) => Object.assign({}, previous, { [check.id]: true }))} className="mt-3 min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-indigo-600">Check answer</button> : <div className={'mt-3 rounded-lg border p-3 text-sm ' + (selected === check.answerIndex ? 'border-emerald-300 bg-emerald-50 text-emerald-950' : 'border-amber-300 bg-amber-50 text-amber-950')} role="status"><p className="font-black">{selected === check.answerIndex ? 'Correct' : 'Review the reasoning'}</p><p className="mt-1 leading-relaxed">{check.rationale}</p></div>}</fieldset>;

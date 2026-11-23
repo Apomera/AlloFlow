@@ -2423,15 +2423,15 @@ window.StemLab = window.StemLab || {
 
             // Function type buttons + Curated Starter Presets
 
-            React.createElement("div", { className: "mb-3 rounded-xl border border-slate-200 bg-white p-2.5 shadow-sm" },
-              React.createElement("p", { className: "mb-2 px-1 text-[0.625rem] font-black uppercase tracking-[0.16em] text-slate-600" }, __alloT('stem.funcgrapher.choose_family', "Choose a function family")),
+            React.createElement("div", { className: "mb-3 rounded-xl border p-2.5 shadow-sm " + (isDark ? "border-slate-700 bg-slate-900" : "border-slate-200 bg-white") },
+              React.createElement("p", { className: "mb-2 px-1 text-[0.625rem] font-black uppercase tracking-[0.16em] " + (isDark ? "text-slate-300" : "text-slate-600") }, __alloT('stem.funcgrapher.choose_family', "Choose a function family")),
               React.createElement("div", { className: "grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-5", role: "group", "aria-label": __alloT('stem.funcgrapher.a11y_function_families', 'Function families') },
                 TYPES.map(function(tp) { return React.createElement("button", { key: tp.id, onClick: function() { setFnType(tp.id); },
-                  className: "min-h-[2.5rem] min-w-0 whitespace-normal break-words px-2 py-2 rounded-lg text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-indigo-400 " + (d.type === tp.id && !hideFamilyAnswer ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-indigo-50')
+                  className: "min-h-[2.5rem] min-w-0 whitespace-normal break-words px-2 py-2 rounded-lg text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-indigo-400 " + (d.type === tp.id && !hideFamilyAnswer ? 'bg-indigo-600 text-white shadow-md' : (isDark ? 'bg-slate-800 text-slate-200 hover:bg-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-indigo-50'))
                 }, tp.emoji + " " + tp.label); })
               ),
-              !fgQuizLeaks && React.createElement("div", { className: "mt-2.5 pt-2 border-t border-slate-200 flex items-center gap-1.5 flex-wrap", role: "group", "aria-label": __alloT('stem.funcgrapher.starter_presets_aria', 'Curated function presets') },
-                React.createElement("span", { className: "text-[0.6875rem] font-bold uppercase tracking-wider text-slate-600 mr-1" }, __alloT('stem.funcgrapher.presets_label', 'Presets:')),
+              !fgQuizLeaks && React.createElement("div", { className: "mt-2.5 pt-2 border-t flex items-center gap-1.5 flex-wrap " + (isDark ? "border-slate-700" : "border-slate-200"), role: "group", "aria-label": __alloT('stem.funcgrapher.starter_presets_aria', 'Curated function presets') },
+                React.createElement("span", { className: "text-[0.6875rem] font-bold uppercase tracking-wider mr-1 " + (isDark ? "text-slate-300" : "text-slate-600") }, __alloT('stem.funcgrapher.presets_label', 'Presets:')),
                 [
                   { label: '2x − 1', type: 'linear', a: 2, b: -1, c: 0 },
                   { label: 'x² − 4', type: 'quadratic', a: 1, b: 0, c: -4 },
@@ -2443,7 +2443,7 @@ window.StemLab = window.StemLab || {
                 ].map(function(pr) {
                   return React.createElement("button", {
                     key: pr.label, type: "button",
-                    className: "allo-fg-preset-chip px-2.5 py-1 rounded-full text-xs font-mono font-bold border border-indigo-200 bg-indigo-50 text-indigo-800 hover:bg-indigo-100",
+                    className: "allo-fg-preset-chip px-2.5 py-1 rounded-full text-xs font-mono font-bold border " + (isDark ? "border-indigo-500/40 bg-indigo-950/60 text-indigo-200 hover:bg-indigo-900/70" : "border-indigo-200 bg-indigo-50 text-indigo-800 hover:bg-indigo-100"),
                     onClick: function() {
                       setLabToolData(function(prev) {
                         var fg = Object.assign({}, DEFAULT_FG, prev && prev.funcGrapher);
@@ -2679,7 +2679,13 @@ window.StemLab = window.StemLab || {
                   React.createElement('circle', { cx: txPx, cy: tyPx, r: 10, fill: '#ec4899', opacity: 0.2 }),
                   React.createElement('circle', { cx: txPx, cy: tyPx, r: 5, fill: '#ec4899', stroke: 'white', strokeWidth: 1.6 }),
                   !isContrast && React.createElement('circle', { cx: txPx - 1.3, cy: tyPx - 1.3, r: 1.4, fill: '#ffffff', opacity: 0.85 }),
-                  !fgTraceHidden && React.createElement('text', { x: txPx + 10, y: tyPx - 6, fill: '#ec4899', style: { fontSize: fgFs(12), fontWeight: 'bold' } }, '(' + traceX.toFixed(1) + ', ' + traceY.toFixed(2) + ') m=' + traceSlope.toFixed(2))
+                  !fgTraceHidden && React.createElement('text', {
+                    x: txPx > W - pad - 135 ? txPx - 12 : txPx + 12,
+                    y: tyPx < pad + 34 ? tyPx + 24 : tyPx - 20,
+                    textAnchor: txPx > W - pad - 135 ? 'end' : 'start',
+                    fill: isDark ? '#f472b6' : '#be185d',
+                    style: { fontSize: fgFs(12), fontWeight: 'bold', paintOrder: 'stroke', stroke: isContrast ? 'none' : (isDark ? '#0f172a' : '#ffffff'), strokeWidth: 3.5, strokeLinejoin: 'round' }
+                  }, '(' + traceX.toFixed(1) + ', ' + traceY.toFixed(2) + ') m=' + traceSlope.toFixed(2))
                 );
               })(),
 
@@ -2687,13 +2693,22 @@ window.StemLab = window.StemLab || {
 
               roots.map(function (r, i) {
                 var rxPx = toSX(r), ryPx = toSY(0);
+                var nearYAxis = Math.abs(rxPx - toSX(0)) < 26;
+                var nearTrace = tangentInRange && Math.hypot(rxPx - toSX(traceX), ryPx - toSY(traceY)) < 40;
+                var shiftLeft = nearYAxis || nearTrace;
                 return React.createElement("g", { key: 'root' + i },
                   !isContrast && !hideRootAnswer && React.createElement("circle", { className: "fg-beacon-pulse", cx: rxPx, cy: ryPx, r: 9.5, fill: "none", stroke: "#ef4444", strokeWidth: 1.5 }),
                   !isContrast && React.createElement("path", { d: "M" + (rxPx - 10) + " " + ryPx + "H" + (rxPx + 10) + "M" + rxPx + " " + (ryPx - 10) + "V" + (ryPx + 10), stroke: "rgba(239,68,68,0.55)", strokeWidth: 1 }),
                   React.createElement("circle", { cx: rxPx, cy: ryPx, r: 9.5, fill: "#ef4444", opacity: isDark ? 0.24 : 0.16 }),
                   React.createElement("circle", { cx: rxPx, cy: ryPx, r: 4.5, fill: "#ef4444", stroke: "white", strokeWidth: 1.5, style: { filter: isContrast ? 'none' : 'drop-shadow(0 0 3px rgba(239,68,68,0.75))' } }),
                   !isContrast && React.createElement("circle", { cx: rxPx - 1.2, cy: ryPx - 1.2, r: 1.3, fill: "#ffffff", opacity: 0.85 }),
-                  !hideRootAnswer && React.createElement("text", { x: rxPx, y: ryPx - 11, textAnchor: "middle", fill: isDark ? "#fca5a5" : "#dc2626", style: { fontSize: fgFs(12), fontWeight: 'bold' } }, r.toFixed(2))
+                  !hideRootAnswer && React.createElement("text", {
+                    x: shiftLeft ? rxPx - 12 : rxPx,
+                    y: ryPx - 12,
+                    textAnchor: shiftLeft ? "end" : "middle",
+                    fill: isDark ? "#fca5a5" : "#dc2626",
+                    style: { fontSize: fgFs(12), fontWeight: 'bold', paintOrder: 'stroke', stroke: isContrast ? 'none' : (isDark ? '#0f172a' : '#ffffff'), strokeWidth: 3.5, strokeLinejoin: 'round' }
+                  }, r.toFixed(2))
                 );
 
               }),
@@ -2702,13 +2717,19 @@ window.StemLab = window.StemLab || {
 
               yIntercept >= yR.yMin && yIntercept <= yR.yMax && (function() {
                 var yxPx = toSX(0), yyPx = toSY(yIntercept);
+                var nearOrigin = Math.abs(yyPx - toSY(0)) < 26 || (tangentInRange && Math.hypot(yxPx - toSX(traceX), yyPx - toSY(traceY)) < 40);
                 return React.createElement("g", null,
                   !isContrast && !hideYIntAnswer && React.createElement("circle", { className: "fg-beacon-pulse", cx: yxPx, cy: yyPx, r: 9.5, fill: "none", stroke: "#22c55e", strokeWidth: 1.5 }),
                   !isContrast && React.createElement("path", { d: "M" + (yxPx - 10) + " " + yyPx + "H" + (yxPx + 10) + "M" + yxPx + " " + (yyPx - 10) + "V" + (yyPx + 10), stroke: "rgba(34,197,94,0.55)", strokeWidth: 1 }),
                   React.createElement("circle", { cx: yxPx, cy: yyPx, r: 9.5, fill: "#22c55e", opacity: isDark ? 0.24 : 0.16 }),
                   React.createElement("circle", { cx: yxPx, cy: yyPx, r: 4.5, fill: "#22c55e", stroke: "white", strokeWidth: 1.5, style: { filter: isContrast ? 'none' : 'drop-shadow(0 0 3px rgba(34,197,94,0.75))' } }),
                   !isContrast && React.createElement("circle", { cx: yxPx - 1.2, cy: yyPx - 1.2, r: 1.3, fill: "#ffffff", opacity: 0.85 }),
-                  !hideYIntAnswer && React.createElement("text", { x: yxPx + 10, y: yyPx + 4, fill: isDark ? "#4ade80" : "#15803d", style: { fontSize: fgFs(12), fontWeight: 'bold' } }, "(0, " + yIntercept.toFixed(1) + ")")
+                  !hideYIntAnswer && React.createElement("text", {
+                    x: yxPx + 12,
+                    y: nearOrigin ? yyPx + 18 : yyPx + 4,
+                    fill: isDark ? "#4ade80" : "#15803d",
+                    style: { fontSize: fgFs(12), fontWeight: 'bold', paintOrder: 'stroke', stroke: isContrast ? 'none' : (isDark ? '#0f172a' : '#ffffff'), strokeWidth: 3.5, strokeLinejoin: 'round' }
+                  }, "(0, " + yIntercept.toFixed(1) + ")")
                 );
               })(),
 

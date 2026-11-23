@@ -41,6 +41,7 @@ const outputCode = [
   '/** AlloFlow Memory Aid Studio module. Generated from memory_aid_source.jsx. */',
   '(function() {',
   "'use strict';",
+  "if (typeof window === 'undefined') return;",
   "if (window.AlloModules && window.AlloModules.MemoryAidModule) { console.log('[CDN] MemoryAidModule already loaded, skipping'); return; }",
   'var React = window.React;',
   "if (!React) { console.error('[MemoryAid] React not found on window'); return; }",

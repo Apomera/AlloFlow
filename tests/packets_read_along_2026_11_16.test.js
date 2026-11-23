@@ -187,23 +187,32 @@ describe('the read-along activity in a student file', () => {
       expect(play.textContent).toBe('Stop');
       // Only one sentence is marked at a time.
       expect(lines().filter((n) => n.getAttribute('aria-current') === 'true')).toHaveLength(1);
-      await until(() => play.textContent === 'Read to me' && played.length === 4, 'the end of the page');
-      expect(played.map((p) => p[0])).toEqual(sentences.slice(0, 4).map((row) => row.text));
+      // Wave 9 multi-page continuity: with Auto-advance on, Read to me plays page 1 (4 sentences),
+      // pauses calmly (~700ms), turns to page 2, and reads the remaining 3 sentences (7 total).
+      await until(() => d.querySelector('#app h2').textContent === 'Read along: 2 of 2' && d.querySelector('[data-read-along-play]').textContent === 'Read to me' && played.length === 7, 'the end of both pages');
+      expect(played.map((p) => p[0])).toEqual(sentences.map((row) => row.text));
       expect(played.every((p) => p[1] === 1)).toBe(true);
       expect(lines().some((n) => n.hasAttribute('aria-current'))).toBe(false);
+      // Go back to page 1 to verify stop/resume mid-page and Slower (0.8x) via Reading tools.
+      const prevFromEnd = d.querySelector('[data-read-along-prev]');
+      expect(prevFromEnd && prevFromEnd.textContent).toBe('Previous page');
+      prevFromEnd.click();
+      await until(() => d.querySelector('#app h2').textContent === 'Read along: 1 of 2', 'back to page 1 for pause/resume');
+      const play1 = d.querySelector('[data-read-along-play]');
       // Stop in the middle of the page, then resume from that sentence (not sentence 1).
-      play.click();
-      await until(() => played.length === 6, 'second sentence started');
-      play.click();
-      expect(play.textContent).toBe('Read to me');
+      const beforeMid = played.length;
+      play1.click();
+      await until(() => played.length === beforeMid + 2, 'second sentence started');
+      play1.click();
+      expect(play1.textContent).toBe('Read to me');
       const pausedAt = played.length;
       const resumedSentence = played[pausedAt - 1][0];
       await wait(40);
       expect(played.length).toBe(pausedAt);
-      play.click();
+      play1.click();
       await until(() => played.length > pausedAt, 'resume from active sentence');
       expect(played[pausedAt][0]).toBe(resumedSentence);
-      play.click();
+      play1.click();
       await wait(30);
       // Slower via unified Reading tools (Voice speed: Slower) — bespoke Read-Along Slower button removed.
       expect(d.querySelector('[data-read-along-slower]')).toBeNull();
@@ -599,7 +608,7 @@ describe('the reading tools in a read-along file', () => {
       expect(d.querySelector('[data-read-along-syllables]')).toBeNull();
       // The tools that mean something on a page of running text with recordings are offered; question-only tools are not.
       const shown = [...d.querySelectorAll('[data-tool-group]')].filter((g) => !g.hidden).map((g) => g.getAttribute('data-tool-group'));
-      expect(shown).toEqual(['size', 'colors', 'spacing', 'font', 'focus', 'lens', 'speed', 'bold']);
+      expect(shown).toEqual(['size', 'colors', 'spacing', 'font', 'focus', 'lens', 'speed', 'bold', 'motion']);
       d.querySelector('[data-tools-open]').click();
       d.querySelector('[data-tool="font-1"]').click();
       expect(d.documentElement.getAttribute('data-lt-font')).toBe('1');
@@ -637,7 +646,9 @@ describe('the reading tools in a read-along file', () => {
       expect(JSON.stringify(manifest.attributions)).toContain('Syllable breaks: worked out when this file was made, from a word list (Moby Hyphenator II, Grady Ward, public domain by grant of the author (2001); checked against CMUdict, Carnegie Mellon University). No AI.');
       // The table itself (~1.2 MB) does not go into the file: only the breaks of this passage do.
       // Re-pinned 2026-11-19 (Immersive Reader parity Waves 4-8) from 200000: offline Focus Mode, Crawl, Chunk pace/moods, POS, Word meanings, Tap Sounds/Speak (~207 KB).
-      expect(html.length).toBeLessThan(225000);
+      // Re-pinned 2026-11-22 (Show my teacher) from 225000: collapsed deskside conferencing fold on practice end screen (~229.3 KB).
+      // Re-pinned 2026-11-22 (Wave 9 multi-page continuity) from 235000: multi-page Crawl/Focus/Chunk/Play continuity, Intl.Segmenter, Jump/Bookmark, full-passage print, Reduced Motion (~252 KB).
+      expect(html.length).toBeLessThan(260000);
     } finally { page.dom.window.close(); }
   }, 120000);
 });

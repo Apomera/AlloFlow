@@ -533,7 +533,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           className: primary ? primaryBtn : smallBtn,
           style: primary ? { backgroundColor: isContrast ? '#000000' : '#4338ca', color: isContrast ? '#ffff00' : '#ffffff', border: isContrast ? '2px solid #00ff00' : '1px solid #4338ca' } : undefined,
           'data-datalab-open': primary ? 'primary' : 'secondary',
-          'aria-label': desktop ? t('stem.dataLab.desktop_open_title', 'Open the Data Lab in your web browser') : t('stem.dataLab.open_title', 'Open the Data Lab in a new window (CODAP workspace with the AlloFlow tutor)')
+          title: desktop ? t('stem.dataLab.desktop_open_title', 'Open the Data Lab in your web browser') : t('stem.dataLab.open_title', 'Open the Data Lab in a new window (CODAP workspace with the AlloFlow tutor)')
         }, desktop ? t('stem.dataLab.desktop_open_btn', '📊 Open Data Lab in my web browser') : t('stem.dataLab.open', '📊 Open Data Lab'));
       }
 

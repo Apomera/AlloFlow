@@ -45,6 +45,29 @@ if (typeof window !== 'undefined') {
     liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(liveRegion);
   })();
+  // WCAG 2.3.3 / 2.4.7 / forced-colors scoped styles for Coping Toolkit
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-coping-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-coping-a11y-css';
+    st.textContent = [
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .selh-coping *, .selh-coping *::before, .selh-coping *::after {',
+      '    animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;',
+      '    transition-duration: 0.01ms !important; scroll-behavior: auto !important;',
+      '  }',
+      '}',
+      '.selh-coping button:focus-visible, .selh-coping input:focus-visible, .selh-coping textarea:focus-visible, .selh-coping select:focus-visible, .selh-coping summary:focus-visible, .selh-coping a:focus-visible, .selh-coping [tabindex]:focus-visible {',
+      '  outline: 3px solid #14b8a6 !important; outline-offset: 2px !important;',
+      '}',
+      '@media (forced-colors: active) {',
+      '  .selh-coping button:focus-visible, .selh-coping input:focus-visible, .selh-coping textarea:focus-visible, .selh-coping select:focus-visible, .selh-coping summary:focus-visible, .selh-coping a:focus-visible, .selh-coping [tabindex]:focus-visible {',
+      '    outline: 2px solid Highlight !important; outline-offset: 2px !important;',
+      '  }',
+      '}'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
 
 
   // ══════════════════════════════════════════════════════════════
@@ -26418,12 +26441,12 @@ if (typeof window !== 'undefined') {
           h('div', { style: { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: c.muted } }, o.kicker || 'Scripted practice · no AI'),
           h('div', { style: { fontSize: 16, fontWeight: 800, color: c.fg } }, story.title || o.kicker)
         ),
-        h('button', { type: 'button', 'data-sp-back': 'true', onClick: o.onBack, style: Object.assign({}, btn, { minHeight: 36, fontSize: 12 }) }, '← Choose another')
+        h('button', { type: 'button', 'data-sp-back': 'true', onClick: o.onBack, style: Object.assign({}, btn, { minHeight: 44, fontSize: 12 }) }, '← Choose another')
       ),
       h('p', { style: { margin: 0, fontSize: 12, lineHeight: 1.5, color: c.muted } }, 'Choose what you would do. Each choice shows what happens next. There is more than one ending; play again to find the others.'),
       o.introEl || null,
       (d.spCrisis && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function') ? window.SelHub.renderCrisisResources(h, o.band) : null,
-      h('div', { 'data-sp-player': id, onClick: onPlayerClick }, player),
+      h('section', { 'data-sp-player': id, 'aria-label': 'Scripted practice player', onClick: onPlayerClick }, player),
       h('p', { style: { margin: 0, fontSize: 12, textAlign: 'center', color: c.muted } }, 'Endings found: ' + found + ' of ' + endCount),
       d.spEnding ? h('div', { 'data-sp-reflect': id, style: { padding: 14, borderRadius: 12, border: '1px solid ' + c.line, background: c.card } },
         h('label', { htmlFor: fieldId, style: { display: 'block', fontSize: 13, fontWeight: 800, color: c.fg, marginBottom: 4 } }, 'Reflect'),
@@ -26454,7 +26477,7 @@ if (typeof window !== 'undefined') {
       var _copT = (ctx && ctx.theme) || {};
       var _copHC = !!_copT.isContrast, _copL = !_copHC && !_copT.isDark;
       var _cop_BGL = {'#334155':'#e2e8f0','#1e293b':'#ffffff','#0f172a':'#f8fafc','#7f1d1d':'#fee2e2','#78350f':'#fef3c7','#14b8a6':'#0f766e'}, _cop_BGH = {'#334155':'#000000','#1e293b':'#000000','#14b8a6':'#000000','#15803d':'#000000','#8b5cf6':'#000000','#0f172a':'#000000','#3b82f6':'#000000','#ec4899':'#000000','#f97316':'#000000','#eab308':'#000000','#042f2e':'#000000','#7c2d12':'#000000','#7f1d1d':'#000000','#78350f':'#000000'};
-      var _cop_FGL = {'#94a3b8':'#64748b','#cbd5e1':'#334155','#5eead4':'#0f766e','#f1f5f9':'#0f172a','#fecaca':'#b91c1c','#fca5a5':'#991b1b','#e2e8f0':'#1e293b','#86efac':'#166534','#fdba74':'#9a3412','#fcd34d':'#78350f','#fbbf24':'#854d0e','#fde68a':'#92400e','#fed7aa':'#9a3412','#22c55e':'#166534','#14b8a6':'#0f766e','#ef4444':'#b91c1c','#a855f7':'#7e22ce','#f97316':'#c2410c','#eab308':'#854d0e','#3b82f6':'#1d4ed8','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#10b981':'#047857','#0ea5e9':'#0369a1','#d97706':'#b45309','#0d9488':'#0f766e','#7c3aed':'#6d28d9','#dc2626':'#b91c1c'}, _cop_FGH = {'#94a3b8':'#ffff00','#cbd5e1':'#ffff00','#5eead4':'#ffff00','#f1f5f9':'#ffff00','#14b8a6':'#ffff00','#fecaca':'#ffff00','#fca5a5':'#ffff00','#fed7aa':'#ffff00','#e2e8f0':'#ffff00','#fff':'#ffff00','#3b82f6':'#ffff00','#22c55e':'#ffff00','#ef4444':'#ffff00','#8b5cf6':'#ffff00','#f97316':'#ffff00','#ec4899':'#ffff00','#86efac':'#ffff00','#fdba74':'#ffff00','#fcd34d':'#ffff00','#eab308':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#fbbf24':'#ffff00','#fde68a':'#ffff00'};
+      var _cop_FGL = {'#94a3b8':'#475569','#64748b':'#475569','#cbd5e1':'#334155','#5eead4':'#0f766e','#f1f5f9':'#0f172a','#fecaca':'#b91c1c','#fca5a5':'#991b1b','#e2e8f0':'#1e293b','#86efac':'#166534','#fdba74':'#9a3412','#fcd34d':'#78350f','#fbbf24':'#854d0e','#fde68a':'#92400e','#fed7aa':'#9a3412','#22c55e':'#166534','#14b8a6':'#0f766e','#ef4444':'#b91c1c','#a855f7':'#7e22ce','#f97316':'#c2410c','#eab308':'#854d0e','#3b82f6':'#1d4ed8','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#10b981':'#047857','#0ea5e9':'#0369a1','#d97706':'#b45309','#0d9488':'#0f766e','#7c3aed':'#6d28d9','#dc2626':'#b91c1c'}, _cop_FGH = {'#94a3b8':'#ffff00','#cbd5e1':'#ffff00','#5eead4':'#ffff00','#f1f5f9':'#ffff00','#14b8a6':'#ffff00','#fecaca':'#ffff00','#fca5a5':'#ffff00','#fed7aa':'#ffff00','#e2e8f0':'#ffff00','#fff':'#ffff00','#3b82f6':'#ffff00','#22c55e':'#ffff00','#ef4444':'#ffff00','#8b5cf6':'#ffff00','#f97316':'#ffff00','#ec4899':'#ffff00','#86efac':'#ffff00','#fdba74':'#ffff00','#fcd34d':'#ffff00','#eab308':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#fbbf24':'#ffff00','#fde68a':'#ffff00'};
       var _cop_BGD = {'#14b8a6':'#0f766e'}, _cop_BDL = {'#334155':'#e2e8f0','#475569':'#cbd5e1'}, _cop_BDH = {'#334155':'#ffff00','#14b8a6':'#ffff00','#ef4444':'#ffff00','#f97316':'#ffff00','#475569':'#ffff00','#fbbf24':'#ffff00','#f59e0b':'#ffff00','#ea580c':'#ffff00'};
       var _copBg = function(h){ return _copHC ? (_cop_BGH[h]||h) : (_copL ? (_cop_BGL[h]||h) : (_cop_BGD[h]||h)); };
       var _copFg = function(h){ return _copHC ? (_cop_FGH[h]||h) : (_copL ? (_cop_FGL[h]||h) : h); };
@@ -26469,6 +26492,9 @@ if (typeof window !== 'undefined') {
       var addToast = typeof ctx.addToast === 'function' ? ctx.addToast : function() {};
       var awardXP = typeof ctx.awardXP === 'function' ? ctx.awardXP : function() {};
       var announceToSR = typeof ctx.announceToSR === 'function' ? ctx.announceToSR : function() {};
+      function isImeComposing(e) {
+        return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+      }
       var a11yClick = typeof ctx.a11yClick === 'function' ? ctx.a11yClick : function(fn) {
         return {
           role: 'button', tabIndex: 0, onClick: fn,
@@ -26740,17 +26766,40 @@ if (typeof window !== 'undefined') {
         aiExtra: 'Choices are things the student could do, think or say in the moment; scenes show how the moment changes.' }) : null;
 
       var tabBar = h('div', {
-        style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
+        style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch', alignItems: 'center' }
       },
-        h('div', { role: 'tablist', 'aria-label': 'Coping Skills tabs', style: { display: 'flex', gap: 2 } },
-          tabs.map(function(tab) {
+        h('div', { role: 'tablist', 'aria-label': 'Coping Skills tabs', style: { display: 'flex', gap: 4 } },
+          tabs.map(function(tab, tabIdx) {
           var isActive = activeTab === tab.id;
+          function selectCopTab(nextId) {
+            if (nextId !== 'practice') { stopBreathTimer(); stopMoveTimer(); }
+            upd({ activeTab: nextId, practiceMode: nextId !== 'practice' ? null : d.practiceMode });
+            if (soundEnabled) sfxClick();
+          }
           return h('button', { type: 'button', 'aria-label': tab.label,
             key: tab.id,
-            role: 'tab', 'aria-selected': isActive,
-            onClick: function() { if (tab.id !== 'practice') { stopBreathTimer(); stopMoveTimer(); } upd({ activeTab: tab.id, practiceMode: tab.id !== 'practice' ? null : d.practiceMode }); if (soundEnabled) sfxClick(); },
+            id: 'cop-tab-' + tab.id,
+            role: 'tab', 'aria-selected': isActive, 'aria-controls': 'cop-panel-' + tab.id,
+            tabIndex: isActive ? 0 : -1,
+            onClick: function() { selectCopTab(tab.id); },
+            onKeyDown: function(e) {
+              if (isImeComposing(e) || e.ctrlKey || e.metaKey || e.altKey) return;
+              var next = null;
+              if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (tabIdx + 1) % tabs.length;
+              else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (tabIdx - 1 + tabs.length) % tabs.length;
+              else if (e.key === 'Home') next = 0;
+              else if (e.key === 'End') next = tabs.length - 1;
+              if (next === null) return;
+              e.preventDefault();
+              var targetId = tabs[next].id;
+              selectCopTab(targetId);
+              setTimeout(function() {
+                var el = typeof document !== 'undefined' && document.getElementById('cop-tab-' + targetId);
+                if (el && el.focus) el.focus();
+              }, 0);
+            },
             style: {
-              padding: '7px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
+              padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: 'none', cursor: 'pointer',
               background: isActive ? _copBg('#14b8a6') : 'transparent',
               color: isActive ? _copFg('#fff') : _copFg('#94a3b8'),
               fontWeight: isActive ? 700 : 500, fontSize: 12, whiteSpace: 'nowrap', flexShrink: 0
@@ -26761,11 +26810,11 @@ if (typeof window !== 'undefined') {
         h('button', { type: 'button', 'aria-label': 'Sound effects', 'aria-pressed': !!soundEnabled,
           onClick: function() { upd('soundEnabled', !soundEnabled); },
           title: soundEnabled ? 'Mute sounds' : 'Enable sounds',
-          style: { marginLeft: 'auto', padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: _copFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
+          style: { marginLeft: 'auto', padding: '8px 10px', minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: _copFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
         }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
         h('button', { type: 'button', 'aria-label': Object.keys(earnedBadges).length + '/' + shownBadges.length + ' badges earned', 'aria-expanded': !!showBadgesPanel,
           onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
-          style: { padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: showBadgesPanel ? '#14b8a633' : 'transparent', color: _copFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
+          style: { padding: '8px 10px', minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, border: 'none', cursor: 'pointer', background: showBadgesPanel ? '#14b8a633' : 'transparent', color: _copFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
         }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + shownBadges.length)
       );
 
@@ -28979,18 +29028,36 @@ if (typeof window !== 'undefined') {
           { id: 'cultural',     label: 'Cultural & Identity',   icon: '🌍' }
         ];
         var learnSubBar = h('div', { role: 'tablist', 'aria-label': 'Learn sub-sections', style: { display: 'flex', gap: 6, padding: '8px 12px 12px', flexWrap: 'wrap' } },
-          learnTabs.map(function(t) {
+          learnTabs.map(function(t, tIdx) {
             var sel = learnSection === t.id;
-            return h('button', { type: 'button', key: t.id, role: 'tab', 'aria-selected': sel,
+            return h('button', { type: 'button', key: t.id, id: 'cop-learn-tab-' + t.id, role: 'tab', 'aria-selected': sel, 'aria-controls': 'cop-learn-panel', tabIndex: sel ? 0 : -1,
               onClick: function() { upd({ learnSection: t.id }); if (soundEnabled) sfxClick(); },
-              style: { padding: '6px 10px', borderRadius: 8, border: '1px solid ' + (sel ? '#14b8a6' : _copBg('#334155')), background: sel ? '#14b8a633' : _copBg('#1e293b'), color: sel ? _copFg('#5eead4') : _copFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
+              onKeyDown: function(e) {
+                if (isImeComposing(e) || e.ctrlKey || e.metaKey || e.altKey) return;
+                var next = null;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (tIdx + 1) % learnTabs.length;
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (tIdx - 1 + learnTabs.length) % learnTabs.length;
+                else if (e.key === 'Home') next = 0;
+                else if (e.key === 'End') next = learnTabs.length - 1;
+                if (next === null) return;
+                e.preventDefault();
+                var targetId = learnTabs[next].id;
+                upd({ learnSection: targetId });
+                if (soundEnabled) sfxClick();
+                setTimeout(function() {
+                  var el = typeof document !== 'undefined' && document.getElementById('cop-learn-tab-' + targetId);
+                  if (el && el.focus) el.focus();
+                }, 0);
+              },
+              style: { padding: '8px 12px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + (sel ? '#14b8a6' : _copBg('#334155')), background: sel ? '#14b8a633' : _copBg('#1e293b'), color: sel ? _copFg('#5eead4') : _copFg('#cbd5e1'), fontSize: 12, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
             }, t.icon + ' ' + t.label);
           })
         );
         var learnSearchBar = h('div', { style: { padding: '0 12px 10px' } },
           h('input', { type: 'search', 'aria-label': 'Search coping skills library', placeholder: '🔎 Search...', value: d.learnSearch || '',
             onChange: function(e) { upd({ learnSearch: e.target.value }); },
-            style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: _copBg('#0f172a'), color: _copFg('#e2e8f0'), fontSize: 13 }
+            onKeyDown: function(e) { if (!isImeComposing(e) && e.key === 'Escape' && d.learnSearch) { e.preventDefault(); upd({ learnSearch: '' }); } },
+            style: { width: '100%', boxSizing: 'border-box', padding: '10px 12px', minHeight: 44, borderRadius: 8, border: '1px solid #334155', background: _copBg('#0f172a'), color: _copFg('#e2e8f0'), fontSize: 13 }
           })
         );
         var learnBody = null;
@@ -29041,7 +29108,7 @@ if (typeof window !== 'undefined') {
           learnBody = h('div', { style: { padding: '0 12px 24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 10 } },
             distFiltered.map(function(c) {
               return h('div', { key: c.id, style: { padding: 14, borderRadius: 10, background: _copBg('#1e293b'), border: '1px solid #334155' } },
-                h('h5', { style: { margin: 0, color: _copFg('#f1f5f9'), fontSize: 14, fontWeight: 700 } }, c.name),
+                h('h4', { style: { margin: 0, color: _copFg('#f1f5f9'), fontSize: 14, fontWeight: 700 } }, c.name),
                 c.plainName ? h('div', { style: { color: _copFg('#94a3b8'), fontSize: 11, fontStyle: 'italic', marginTop: 2 } }, c.plainName) : null,
                 c.alsoCalled && c.alsoCalled.length ? h('div', { style: { color: _copFg('#94a3b8'), fontSize: 10, marginTop: 2 } }, 'Also called: ' + c.alsoCalled.join(', ')) : null,
                 h('p', { style: { margin: '8px 0', color: _copFg('#cbd5e1'), fontSize: 12, lineHeight: 1.5 } }, c.definition && c.definition[learnBand]),
@@ -29099,7 +29166,7 @@ if (typeof window !== 'undefined') {
               'Polyvagal theory (Porges) is popular in trauma and SEL work, but its specific brain-and-evolution claims are scientifically contested and not well validated (Grossman & Taylor, 2007; Grossman, 2023). Use these "states" as a friendly map for noticing and shifting how your body feels — the calming practices help regardless of the exact mechanism.'),
             POLYVAGAL_STATES.map(function(p) {
               return h('div', { key: p.id, style: { padding: 12, borderRadius: 10, background: _copBg('#1e293b'), border: '1px solid ' + (p.color || _copBg('#334155')) } },
-                h('h5', { style: { margin: 0, color: p.color || _copFg('#f1f5f9'), fontSize: 14, fontWeight: 700 } }, (p.icon || '') + ' ' + p.name),
+                h('h4', { style: { margin: 0, color: p.color || _copFg('#f1f5f9'), fontSize: 14, fontWeight: 700 } }, (p.icon || '') + ' ' + p.name),
                 h('p', { style: { margin: '6px 0', color: _copFg('#cbd5e1'), fontSize: 12, lineHeight: 1.5 } }, (p.description || {})[learnBand]),
                 p.feelsLike && p.feelsLike.length ? h('div', { style: { color: _copFg('#94a3b8'), fontSize: 11, marginTop: 4 } },
                   h('strong', { style: { color: _copFg('#fbbf24') } }, 'Feels like: '), p.feelsLike.join(', ')) : null,
@@ -29155,7 +29222,7 @@ if (typeof window !== 'undefined') {
           learnBody = h('div', { style: { padding: '0 12px 24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 10 } },
             cpFiltered.map(function(p) {
               return h('div', { key: p.id, style: { padding: 12, borderRadius: 10, background: _copBg('#1e293b'), border: '1px solid #334155' } },
-                h('h5', { style: { margin: 0, color: _copFg('#f1f5f9'), fontSize: 14, fontWeight: 700 } }, (p.icon || '') + ' ' + p.name),
+                h('h4', { style: { margin: 0, color: _copFg('#f1f5f9'), fontSize: 14, fontWeight: 700 } }, (p.icon || '') + ' ' + p.name),
                 h('div', { style: { color: _copFg('#94a3b8'), fontSize: 11, marginTop: 2 } }, 'Tradition: ' + (p.tradition || '—')),
                 h('p', { style: { margin: '6px 0', color: _copFg('#cbd5e1'), fontSize: 12, lineHeight: 1.5 } }, (p.description || {})[learnBand]),
                 p.secularAdaptation ? h('div', { style: { marginTop: 6, color: _copFg('#5eead4'), fontSize: 11, fontStyle: 'italic' } }, 'Secular adaptation: ' + p.secularAdaptation) : null,
@@ -29178,7 +29245,7 @@ if (typeof window !== 'undefined') {
           learnBody = h('div', { style: { padding: '0 12px 24px', display: 'grid', gap: 10 } },
             caFiltered.map(function(c) {
               return h('div', { key: c.id, style: { padding: 14, borderRadius: 10, background: _copBg('#1e293b'), border: '1px solid #334155' } },
-                h('h5', { style: { margin: 0, color: _copFg('#f1f5f9'), fontSize: 14, fontWeight: 700 } }, (c.icon || '') + ' ' + c.context),
+                h('h4', { style: { margin: 0, color: _copFg('#f1f5f9'), fontSize: 14, fontWeight: 700 } }, (c.icon || '') + ' ' + c.context),
                 c.shortDesc ? h('p', { style: { margin: '6px 0', color: _copFg('#cbd5e1'), fontSize: 12, lineHeight: 1.5 } }, c.shortDesc) : null,
                 c.whyItMatters ? h('p', { style: { margin: '6px 0', color: _copFg('#94a3b8'), fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } }, c.whyItMatters) : null,
                 c.considerations && c.considerations.length ? h('details', { style: { marginTop: 6 } },
@@ -29219,7 +29286,7 @@ if (typeof window !== 'undefined') {
         if (learnSection === 'cultural' && typeof CULTURAL_ADAPTATIONS === 'undefined') {
           learnBody = h('div', { style: { padding: 20, textAlign: 'center', color: _copFg('#94a3b8'), fontSize: 12 } }, 'Cultural adaptations library is loading. Check back soon.');
         }
-        learnContent = h('div', null, learnSubBar, learnSearchBar, learnBody);
+        learnContent = h('div', null, learnSubBar, learnSearchBar, h('div', { id: 'cop-learn-panel', role: 'tabpanel', 'aria-labelledby': 'cop-learn-tab-' + learnSection }, learnBody));
       }
 
       // ══════════════════════════════════════════════════════════
@@ -29229,22 +29296,41 @@ if (typeof window !== 'undefined') {
       if (activeTab === 'scenarios') {
         var scSection = d.scSection || 'plans';
         var scSearch  = (d.scSearch || '').toLowerCase();
+        var scTabs = [
+          { id: 'plans',   label: 'Sample Plans',   icon: '📋' },
+          { id: 'scripts', label: 'Guided Scripts', icon: '🎧' }
+        ];
         var scSubBar = h('div', { role: 'tablist', 'aria-label': 'Scenarios sub-sections', style: { display: 'flex', gap: 6, padding: '8px 12px 12px', flexWrap: 'wrap' } },
-          [
-            { id: 'plans',   label: 'Sample Plans',   icon: '📋' },
-            { id: 'scripts', label: 'Guided Scripts', icon: '🎧' }
-          ].map(function(t) {
+          scTabs.map(function(t, tIdx) {
             var sel = scSection === t.id;
-            return h('button', { type: 'button', key: t.id, role: 'tab', 'aria-selected': sel,
+            return h('button', { type: 'button', key: t.id, id: 'cop-sc-tab-' + t.id, role: 'tab', 'aria-selected': sel, 'aria-controls': 'cop-sc-panel', tabIndex: sel ? 0 : -1,
               onClick: function() { upd({ scSection: t.id }); if (soundEnabled) sfxClick(); },
-              style: { padding: '6px 10px', borderRadius: 8, border: '1px solid ' + (sel ? '#14b8a6' : _copBg('#334155')), background: sel ? '#14b8a633' : _copBg('#1e293b'), color: sel ? _copFg('#5eead4') : _copFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
+              onKeyDown: function(e) {
+                if (isImeComposing(e) || e.ctrlKey || e.metaKey || e.altKey) return;
+                var next = null;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (tIdx + 1) % scTabs.length;
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (tIdx - 1 + scTabs.length) % scTabs.length;
+                else if (e.key === 'Home') next = 0;
+                else if (e.key === 'End') next = scTabs.length - 1;
+                if (next === null) return;
+                e.preventDefault();
+                var targetId = scTabs[next].id;
+                upd({ scSection: targetId });
+                if (soundEnabled) sfxClick();
+                setTimeout(function() {
+                  var el = typeof document !== 'undefined' && document.getElementById('cop-sc-tab-' + targetId);
+                  if (el && el.focus) el.focus();
+                }, 0);
+              },
+              style: { padding: '8px 12px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + (sel ? '#14b8a6' : _copBg('#334155')), background: sel ? '#14b8a633' : _copBg('#1e293b'), color: sel ? _copFg('#5eead4') : _copFg('#cbd5e1'), fontSize: 12, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
             }, t.icon + ' ' + t.label);
           })
         );
         var scSearchBar = h('div', { style: { padding: '0 12px 10px' } },
           h('input', { type: 'search', 'aria-label': __alloT('sel.coping.search_plans_aria', 'Search sample plans and guided scripts'), placeholder: '🔎 Search...', value: d.scSearch || '',
             onChange: function(e) { upd({ scSearch: e.target.value }); },
-            style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: _copBg('#0f172a'), color: _copFg('#e2e8f0'), fontSize: 13 }
+            onKeyDown: function(e) { if (!isImeComposing(e) && e.key === 'Escape' && d.scSearch) { e.preventDefault(); upd({ scSearch: '' }); } },
+            style: { width: '100%', boxSizing: 'border-box', padding: '10px 12px', minHeight: 44, borderRadius: 8, border: '1px solid #334155', background: _copBg('#0f172a'), color: _copFg('#e2e8f0'), fontSize: 13 }
           })
         );
         var scBody = null;
@@ -29258,7 +29344,7 @@ if (typeof window !== 'undefined') {
           scBody = h('div', { style: { padding: '0 12px 24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 10 } },
             spFiltered.map(function(p) {
               return h('div', { key: p.id, style: { padding: 14, borderRadius: 10, background: _copBg('#1e293b'), border: '1px solid #334155' } },
-                h('h5', { style: { margin: 0, color: _copFg('#f1f5f9'), fontSize: 14, fontWeight: 700 } }, (p.icon || '') + ' ' + p.scenario),
+                h('h4', { style: { margin: 0, color: _copFg('#f1f5f9'), fontSize: 14, fontWeight: 700 } }, (p.icon || '') + ' ' + p.scenario),
                 p.summary ? h('p', { style: { margin: '6px 0', color: _copFg('#cbd5e1'), fontSize: 12, lineHeight: 1.5 } }, p.summary) : null,
                 p.strategies && p.strategies.length ? h('details', { open: true, style: { marginTop: 8 } },
                   h('summary', { style: { cursor: 'pointer', color: _copFg('#5eead4'), fontSize: 11, fontWeight: 700 } }, 'Try these strategies in order'),
@@ -29290,13 +29376,13 @@ if (typeof window !== 'undefined') {
               var showFull = d.openScript === p.id;
               return h('div', { key: p.id, style: { padding: 12, borderRadius: 10, background: _copBg('#1e293b'), border: '1px solid #334155' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-                  h('span', { style: { fontSize: 22 } }, p.icon || '🎧'),
+                  h('span', { style: { fontSize: 22 }, 'aria-hidden': 'true' }, p.icon || '🎧'),
                   h('div', { style: { flex: 1 } },
-                    h('h5', { style: { margin: 0, color: _copFg('#f1f5f9'), fontSize: 13, fontWeight: 700 } }, p.name),
+                    h('h4', { style: { margin: 0, color: _copFg('#f1f5f9'), fontSize: 13, fontWeight: 700 } }, p.name),
                     h('div', { style: { color: _copFg('#94a3b8'), fontSize: 10 } }, (p.category || '') + ' · ~' + (p.durationMin || '?') + ' min')
                   ),
-                  h('button', { type: 'button', onClick: function() { upd({ openScript: showFull ? null : p.id }); if (soundEnabled) sfxClick(); },
-                    style: { padding: '5px 10px', borderRadius: 6, border: 'none', background: showFull ? _copBg('#334155') : '#14b8a6', color: showFull ? _copFg('#94a3b8') : _copFg('#fff'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                  h('button', { type: 'button', 'aria-expanded': showFull, onClick: function() { upd({ openScript: showFull ? null : p.id }); if (soundEnabled) sfxClick(); },
+                    style: { padding: '8px 14px', minWidth: 44, minHeight: 44, borderRadius: 6, border: 'none', background: showFull ? _copBg('#334155') : '#14b8a6', color: showFull ? _copFg('#94a3b8') : _copFg('#fff'), fontSize: 12, fontWeight: 700, cursor: 'pointer' }
                   }, showFull ? 'Close' : 'Open')
                 ),
                 p.contraindications && p.contraindications.length ? h('div', { style: { marginTop: 6, color: _copFg('#fbbf24'), fontSize: 10, lineHeight: 1.4 } }, '⚠️ ' + p.contraindications.join(' · ')) : null,
@@ -29311,7 +29397,7 @@ if (typeof window !== 'undefined') {
             })
           );
         }
-        scenariosContent = h('div', null, scSubBar, scSearchBar, scBody);
+        scenariosContent = h('div', null, scSubBar, scSearchBar, h('div', { id: 'cop-sc-panel', role: 'tabpanel', 'aria-labelledby': 'cop-sc-tab-' + scSection }, scBody));
       }
 
       // ══════════════════════════════════════════════════════════
@@ -29332,15 +29418,15 @@ if (typeof window !== 'undefined') {
                 var open = d.openCrisis === p.id;
                 return h('div', { key: p.id, style: { padding: 12, borderRadius: 10, background: _copBg('#1e293b'), border: '1px solid ' + (p.urgency === 'immediate' ? _copFg('#ef4444') : p.urgency === 'urgent' ? '#f59e0b' : _copBg('#334155')) } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-                    h('span', { style: { fontSize: 22 } }, p.icon || '🚨'),
+                    h('span', { style: { fontSize: 22 }, 'aria-hidden': 'true' }, p.icon || '🚨'),
                     h('div', { style: { flex: 1 } },
-                      h('h5', { style: { margin: 0, color: _copFg('#f1f5f9'), fontSize: 13, fontWeight: 700 } }, p.name),
+                      h('h4', { style: { margin: 0, color: _copFg('#f1f5f9'), fontSize: 13, fontWeight: 700 } }, p.name),
                       h('div', { style: { color: _copFg('#94a3b8'), fontSize: 11 } }, p.forWhat)
                     ),
                     p.urgency === 'immediate' ? h('span', { style: { padding: '3px 8px', borderRadius: 4, background: _copBg('#7f1d1d'), color: _copFg('#fecaca'), fontSize: 10, fontWeight: 800, textTransform: 'uppercase' } }, 'Immediate') :
                     p.urgency === 'urgent' ? h('span', { style: { padding: '3px 8px', borderRadius: 4, background: _copBg('#78350f'), color: _copFg('#fde68a'), fontSize: 10, fontWeight: 800, textTransform: 'uppercase' } }, 'Urgent') : null,
-                    h('button', { type: 'button', onClick: function() { upd({ openCrisis: open ? null : p.id }); if (soundEnabled) sfxClick(); },
-                      style: { padding: '5px 10px', borderRadius: 6, border: 'none', background: open ? _copBg('#334155') : '#14b8a6', color: _copFg('#fff'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                    h('button', { type: 'button', 'aria-expanded': open, onClick: function() { upd({ openCrisis: open ? null : p.id }); if (soundEnabled) sfxClick(); },
+                      style: { padding: '8px 14px', minWidth: 44, minHeight: 44, borderRadius: 6, border: 'none', background: open ? _copBg('#334155') : '#14b8a6', color: _copFg('#fff'), fontSize: 12, fontWeight: 700, cursor: 'pointer' }
                     }, open ? 'Close' : 'View')
                   ),
                   open && p.steps ? h('div', { style: { marginTop: 12 } },
@@ -29366,7 +29452,7 @@ if (typeof window !== 'undefined') {
       // ══════════════════════════════════════════════════════════
       // ── Final Render ──
       // ══════════════════════════════════════════════════════════
-      return h('div', { style: { minHeight: '100%' } },
+      return h('div', { className: 'selh-coping', style: { minHeight: '100%' } },
         (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('coping', h, ctx) : null),
         tabBar,
         (cpTs && activeTab !== 'rehearse') ? cpTs.renderJump({ onOpen: function() { upd({ activeTab: 'rehearse', spId: '', cpRpScenarioId: '' }); } }) : null,
@@ -29375,15 +29461,17 @@ if (typeof window !== 'undefined') {
         dailyCheckin,
         dailyRecBanner,
         badgePopup,
-        libraryContent,
-        practiceContent,
-        rehearseContent,
-        planContent,
-        matcherContent,
-        logContent,
-        learnContent,
-        scenariosContent,
-        crisisContent,
+        h('div', { id: 'cop-panel-' + activeTab, role: 'tabpanel', 'aria-labelledby': 'cop-tab-' + activeTab },
+          libraryContent,
+          practiceContent,
+          rehearseContent,
+          planContent,
+          matcherContent,
+          logContent,
+          learnContent,
+          scenariosContent,
+          crisisContent
+        ),
         window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
       );
     }

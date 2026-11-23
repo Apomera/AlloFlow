@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-21T21:57:26.068Z",
+  "generatedAt": "2026-11-22T02:26:05.705Z",
   "toolCount": 72,
   "themesAudited": [
     "light",
@@ -25,7 +25,7 @@
     {
       "id": "advocacy",
       "label": "Self-Advocacy Workshop",
-      "renderedBytes": 433144,
+      "renderedBytes": 433120,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -33,7 +33,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 144384,
+          "renderedBytes": 144376,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -42,7 +42,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 144384,
+          "renderedBytes": 144376,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -51,7 +51,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 144376,
+          "renderedBytes": 144368,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,

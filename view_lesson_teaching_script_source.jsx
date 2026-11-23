@@ -1,9 +1,47 @@
 
+function _ltsIsGlobalMuted() {
+  if (typeof window === 'undefined') return false;
+  try {
+    if (window.__alloGlobalMuted === true || window._alloGlobalMute === true) return true;
+    if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted() === true) return true;
+  } catch (_) {}
+  return false;
+}
+function _ltsHardAiBlocked() {
+  if (typeof window === 'undefined') return true;
+  try {
+    if (window.__alloStudentAiDisabled === true) return true;
+    if (window.__alloAiSecretsLocked === true) return true;
+    if (window.__alloQrStudentMode === true) return true;
+    if (window.__alloOfflineOnly === true) return true;
+    const mp = window.ALLOFLOW_MANAGED_AI_POLICY;
+    if (mp && typeof mp === 'object') {
+      if (mp.disabled === true || mp.allowAi === false) return true;
+      if (Array.isArray(mp.allowedBackends) && mp.allowedBackends.length === 0) return true;
+    }
+    const sp = window.AlloModules && window.AlloModules.StudentPolicy;
+    if (sp && typeof sp === 'object') {
+      if (sp.disabled === true || sp.allowAi === false || sp.aiEnabled === false) return true;
+      if (typeof sp.isAiBlocked === 'function' && sp.isAiBlocked()) return true;
+    }
+  } catch (_) {
+    return true;
+  }
+  return false;
+}
+function _ltsSafeJsonParse(raw) {
+  return JSON.parse(raw, (key, value) => {
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') return undefined;
+    return value;
+  });
+}
+
 function LessonSpokenDirections({ planId, version, draft, onBack, createAudio, t, audioVoice, audioSpeed, audioLanguage, onOpenVoiceSettings, initialStepIndex = 0, onStepChange }) {
   const tr = (key, fallback) => { const value = t?.('lesson_script.' + key); return value && value !== 'lesson_script.' + key ? value : fallback; };
-  const runtime = window.AlloModules?.LessonTeachingScript;
+  const runtime = typeof window !== 'undefined' ? window.AlloModules?.LessonTeachingScript : null;
+  const safeSteps = Array.isArray(version?.steps) ? version.steps : [];
   const segments = runtime?.spokenSegments?.(version) || [];
-  const [stepIndex, setStepIndex] = React.useState(() => Math.max(0, Math.min(version.steps.length - 1, Number.isInteger(initialStepIndex) ? initialStepIndex : 0))), [large, setLarge] = React.useState(false);
+  const [stepIndex, setStepIndex] = React.useState(() => Math.max(0, Math.min(Math.max(0, safeSteps.length - 1), Number.isInteger(initialStepIndex) ? initialStepIndex : 0))), [large, setLarge] = React.useState(false);
   const [exportScope, setExportScope] = React.useState('all');
   const exportSegments = segments.filter(segment => exportScope === 'all' || segment.stepIndex === stepIndex);
   const downloads = React.useRef(new Map());
@@ -33,12 +71,13 @@ function LessonSpokenDirections({ planId, version, draft, onBack, createAudio, t
   const refresh = () => { try { setSummary(controller().summary()); } catch (_) {} };
   React.useEffect(() => {
     alive.current = true;
+    const prevFocus = typeof document !== 'undefined' ? document.activeElement : null;
     const node = surface.current;
     if (node) {
       if (typeof node.showModal === 'function') { try { if (!node.open) node.showModal(); } catch (_) { node.setAttribute('open', ''); } }
       else node.setAttribute('open', '');
     }
-    const stack = (window.__alloFocusTrapStack = window.__alloFocusTrapStack || []);
+    const stack = (typeof window !== 'undefined' ? (window.__alloFocusTrapStack = window.__alloFocusTrapStack || []) : []);
     const trap = node ? { root: node } : null;
     if (trap) stack.push(trap);
     back.current?.focus(); refresh();
@@ -64,7 +103,7 @@ function LessonSpokenDirections({ planId, version, draft, onBack, createAudio, t
       if (!isTopTrap()) return;
       if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return;
       if (event.key === 'Escape') {
-        if (event.defaultPrevented) return;
+        if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
         event.preventDefault();
         event.stopPropagation();
         onBackRef.current?.();
@@ -79,12 +118,18 @@ function LessonSpokenDirections({ planId, version, draft, onBack, createAudio, t
       if (event.shiftKey && (document.activeElement === first || document.activeElement === node)) { event.preventDefault(); last.focus(); }
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     };
+    const onMuteChanged = event => {
+      const muted = (event && event.detail && event.detail.muted === true) || _ltsIsGlobalMuted();
+      if (muted) stop();
+    };
     document.addEventListener('keydown', onDocumentKeyDown);
+    if (typeof window !== 'undefined') window.addEventListener('alloflow-mute-changed', onMuteChanged);
     const changed = () => { setFullscreen(!!document.fullscreenElement); if (!document.fullscreenElement) ownsFullscreen.current = false; };
     document.addEventListener('fullscreenchange', changed);
     return () => {
       alive.current = false;
       document.removeEventListener('keydown', onDocumentKeyDown);
+      if (typeof window !== 'undefined') window.removeEventListener('alloflow-mute-changed', onMuteChanged);
       if (trap) {
         const index = stack.lastIndexOf(trap);
         if (index !== -1) stack.splice(index, 1);
@@ -93,10 +138,17 @@ function LessonSpokenDirections({ planId, version, draft, onBack, createAudio, t
       document.removeEventListener('fullscreenchange', changed);
       if (ownsFullscreen.current && document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
       stop(); audioController.current?.dispose?.(); audioController.current = null;
+      try { if (node && node.open && typeof node.close === 'function') node.close(); } catch (_) {}
+      try { if (prevFocus && prevFocus.isConnected && typeof prevFocus.focus === 'function') prevFocus.focus(); } catch (_) {}
     };
   }, []);
   const play = async segment => {
-    stop(); const pending = new AbortController(); request.current = pending;
+    stop();
+    if (_ltsIsGlobalMuted()) {
+      setStatus(tr('audio_muted', 'Audio is muted. Unmute to play spoken directions.'));
+      return;
+    }
+    const pending = new AbortController(); request.current = pending;
     setWorking('play'); setActive(segment.id); setStatus(tr('audio_preparing', 'Preparing audio…'));
     try {
       const url = await controller().resolve(segment.id, { signal: pending.signal });
@@ -139,7 +191,7 @@ function LessonSpokenDirections({ planId, version, draft, onBack, createAudio, t
         const timer = setTimeout(() => { URL.revokeObjectURL(url); downloads.current.delete(url); }, 1000);
         downloads.current.set(url, timer);
         const link = document.createElement('a');
-        const title = _ltsText(version.title).replace(/[^\p{L}\p{N} _-]/gu, '').slice(0, 100).trim() || 'teaching-script';
+        const title = _ltsText(version.title).replace(/[^\p{L}\p{N} _-]/gu, '').trim().slice(0, 100) || 'teaching-script';
         link.href = url; link.download = title + '-spoken' + (exportScope === 'step' ? '-step-' + (stepIndex + 1) : '') + (draft ? '-draft' : '') + '.txt';
         document.body.appendChild(link);
         try { link.click(); } finally { link.remove(); }
@@ -149,22 +201,22 @@ function LessonSpokenDirections({ planId, version, draft, onBack, createAudio, t
       const popup = window.open('', '_blank', 'width=800,height=700');
       if (!popup) throw new Error(tr('print_blocked', 'Allow the print window, then try again.'));
       const escape = value => String(value).replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char]));
-      popup.opener = null;
-      const sections = version.steps.map((step, index) => {
+      try { popup.opener = null; } catch (_) {}
+      const sections = safeSteps.map((step, index) => {
         const spoken = exportSegments.filter(segment => segment.stepIndex === index);
-        return spoken.length ? '<section><h2 dir="auto">' + escape((index + 1) + '. ' + _ltsText(step.title)) + '</h2>' + spoken.map(segment => '<p dir="auto">' + escape(segment.spokenText) + '</p>').join('') + '</section>' : '';
+        return spoken.length ? '<section><h2 dir="auto">' + escape((index + 1) + '. ' + _ltsText(step?.title)) + '</h2>' + spoken.map(segment => '<p dir="auto">' + escape(segment.spokenText) + '</p>').join('') + '</section>' : '';
       }).join('');
       const safeVersionTitle = _ltsText(version.title);
-      popup.document.write('<!doctype html><html lang="' + escape(document.documentElement.lang || 'en') + '"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\';"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + escape(safeVersionTitle) + '</title><style>*{box-sizing:border-box}body{font:18px/1.6 system-ui;color:#111;background:#fff;margin:0;padding:24px}main{max-width:48rem;margin:auto}p{white-space:pre-wrap;overflow-wrap:anywhere}section{break-inside:avoid}h1,h2{overflow-wrap:anywhere}h1{font-size:24px}h2{font-size:20px}@page{margin:18mm}@media print{body{padding:0}main{max-width:none}}</style></head><body><main><h1 dir="auto">' + escape(safeVersionTitle) + '</h1>' + (draft ? '<p><strong>' + escape(draftLabel) + '</strong><br>' + escape(draftHint) + '</p>' : '') + sections + '</main></body></html>');
-      popup.document.close(); popup.focus(); popup.print();
+      popup.document.write('<!doctype html><html lang="' + escape(document.documentElement.lang || 'en') + '"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; base-uri \'none\'; form-action \'none\';"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + escape(safeVersionTitle) + '</title><style>*{box-sizing:border-box}body{font:18px/1.6 system-ui;color:#111;background:#fff;margin:0;padding:24px}main{max-width:48rem;margin:auto}p{white-space:pre-wrap;overflow-wrap:anywhere}section{break-inside:avoid}h1,h2{overflow-wrap:anywhere}h1{font-size:24px}h2{font-size:20px}@page{margin:18mm}@media print{body{padding:0}main{max-width:none}}</style></head><body><main><h1 dir="auto">' + escape(safeVersionTitle) + '</h1>' + (draft ? '<p><strong>' + escape(draftLabel) + '</strong><br>' + escape(draftHint) + '</p>' : '') + sections + '</main></body></html>');
+      popup.document.close(); try { popup.focus(); popup.print(); } catch (_) {}
       if (alive.current) setStatus(tr('print_opened', 'The script print view is open.'));
     } catch (error) { if (alive.current) setStatus(_ltsText(error?.message || error) || tr('export_failed', 'The script could not be exported. Please try again.')); }
   };
   const button = 'min-h-11 rounded-lg border border-indigo-600 bg-white px-3 py-2 text-sm font-bold text-indigo-900 hover:bg-indigo-50 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:opacity-50';
   const bionicOn = (typeof window !== 'undefined' && typeof window.__alloUseBionic === 'function') ? window.__alloUseBionic() : false;
   const bt = s => (bionicOn && typeof s === 'string' && typeof window !== 'undefined' && typeof window.__alloBionicReact === 'function') ? window.__alloBionicReact(s) : s;
-  const step = version.steps[stepIndex];
-  const move = next => { if (!Number.isInteger(next) || next < 0 || next >= version.steps.length) return; stop(); setStatus(''); setStepIndex(next); onStepChange?.(next); refresh(); };
+  const step = safeSteps[stepIndex];
+  const move = next => { if (!Number.isInteger(next) || next < 0 || next >= safeSteps.length) return; stop(); setStatus(''); setStepIndex(next); onStepChange?.(next); refresh(); };
   const handleTeleprompterKeyDown = event => {
     if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return;
     if (event.altKey || event.ctrlKey || event.metaKey) return;
@@ -186,7 +238,7 @@ function LessonSpokenDirections({ planId, version, draft, onBack, createAudio, t
     <div className="flex flex-wrap gap-2">
       <button ref={back} type="button" className={button} onClick={onBack}>{tr('full_script', 'Full script')}</button>
       <button type="button" className={button} aria-pressed={large} onClick={() => setLarge(value => !value)}>{tr('larger_text', 'Larger text')}</button>
-      <button type="button" className={button} aria-pressed={fullscreen} onClick={async () => { try { if (document.fullscreenElement) await document.exitFullscreen(); else if (document.documentElement.requestFullscreen) { await document.documentElement.requestFullscreen(); if (!alive.current) { await document.exitFullscreen(); return; } ownsFullscreen.current = true; } else throw new Error(tr('fullscreen_unavailable', 'Full screen is unavailable in this browser.')); } catch (error) { if (alive.current) setStatus(error.message); } }}>{fullscreen ? tr('exit_fullscreen', 'Exit full screen') : tr('fullscreen', 'Full screen')}</button>
+      <button type="button" className={button} aria-pressed={fullscreen} onClick={async () => { try { if (document.fullscreenElement) await document.exitFullscreen(); else if (document.documentElement.requestFullscreen) { await document.documentElement.requestFullscreen(); if (!alive.current) { await document.exitFullscreen(); return; } ownsFullscreen.current = true; } else throw new Error(tr('fullscreen_unavailable', 'Full screen is unavailable in this browser.')); } catch (error) { if (alive.current) setStatus(_ltsText(error?.message || error) || tr('fullscreen_unavailable', 'Full screen is unavailable in this browser.')); } }}>{fullscreen ? tr('exit_fullscreen', 'Exit full screen') : tr('fullscreen', 'Full screen')}</button>
     </div>
     <h3 className="break-words text-xl font-black">{_ltsText(version.title)}</h3>
     <p className="text-sm text-slate-700">{tr('spoken_hint', 'Only wording addressed to students is shown. Playback stops after each spoken block. Review older scripts for delivery notes before playing.')}</p>
@@ -217,20 +269,20 @@ function LessonSpokenDirections({ planId, version, draft, onBack, createAudio, t
     <p role="status" className="text-sm text-indigo-950">{status}</p>
     <nav className="flex flex-wrap items-center justify-between gap-2" aria-label={tr('spoken_steps', 'Spoken step navigation')}>
       <button type="button" className={button} disabled={stepIndex === 0} onClick={() => move(stepIndex - 1)}>{tr('previous_step', 'Previous step')}</button>
-      <span className="font-bold">{stepIndex + 1} / {version.steps.length}</span>
-      <button type="button" className={button} disabled={stepIndex >= version.steps.length - 1} onClick={() => move(stepIndex + 1)}>{tr('next_step', 'Next step')}</button>
+      <span className="font-bold">{safeSteps.length ? (stepIndex + 1) : 0} / {safeSteps.length}</span>
+      <button type="button" className={button} disabled={stepIndex >= safeSteps.length - 1} onClick={() => move(stepIndex + 1)}>{tr('next_step', 'Next step')}</button>
     </nav>
-    {version.steps.length > 1 && (() => {
-      const pct = Math.round(((stepIndex + 1) / version.steps.length) * 100);
+    {safeSteps.length > 1 && (() => {
+      const pct = Math.round(((stepIndex + 1) / safeSteps.length) * 100);
       return (
         <div
           data-spoken-step-progress="true"
           role="progressbar"
           aria-label={tr('spoken_progress', 'Spoken step progress')}
           aria-valuemin={1}
-          aria-valuemax={version.steps.length}
+          aria-valuemax={safeSteps.length}
           aria-valuenow={stepIndex + 1}
-          aria-valuetext={`Step ${stepIndex + 1} of ${version.steps.length} (${pct}%)`}
+          aria-valuetext={`Step ${stepIndex + 1} of ${safeSteps.length} (${pct}%)`}
           className="h-2 w-full rounded-full bg-indigo-100 overflow-hidden"
         >
           <div className="h-full rounded-full bg-indigo-600 transition-all motion-reduce:transition-none" style={{ width: pct + '%' }} />
@@ -240,7 +292,7 @@ function LessonSpokenDirections({ planId, version, draft, onBack, createAudio, t
     <p className="text-xs text-slate-700">{tr('spoken_keyboard_hint', 'Tip: Press Left/Right arrow keys or Space to move between steps.')}</p>
     <label className="block text-sm font-bold">{tr('jump_step', 'Go to step')}
       <select aria-label={tr('jump_step', 'Go to step')} className="mt-1 block min-h-11 w-full min-w-0 max-w-full rounded-lg border border-slate-400 bg-white p-2 text-slate-900 focus-visible:ring-2 focus-visible:ring-indigo-600" value={stepIndex} onChange={event => move(Number(event.target.value))}>
-        {version.steps.map((item, index) => <option key={item.id || index} value={index}>{index + 1}. {_ltsText(item.title)}</option>)}
+        {safeSteps.map((item, index) => <option key={item?.id || index} value={index}>{index + 1}. {_ltsText(item?.title)}</option>)}
       </select>
     </label>
     <h4 aria-live="polite" aria-atomic="true" className="break-words text-lg font-bold">{stepIndex + 1}. {_ltsText(step?.title)}</h4>
@@ -266,10 +318,11 @@ const _LTS_GRADES = ['Pre-K', 'Kindergarten', '1st Grade', '2nd Grade', '3rd Gra
 const _LTS_SUBJECTS = [['mathematics', 'Mathematics'], ['reading', 'Reading and literacy'], ['writing', 'Writing'], ['science', 'Science'], ['social-studies', 'Social studies and history'], ['world-languages', 'World languages'], ['arts', 'Arts and music'], ['health-pe', 'Health and physical education'], ['technology', 'Technology and computer science'], ['other', 'Other or interdisciplinary']];
 const _LTS_SCOPES = { segment: { minSteps: 3, maxSteps: 8, minMinutes: 5, maxMinutes: 60, maxStepMinutes: 30 }, lesson: { minSteps: 4, maxSteps: 24, minMinutes: 15, maxMinutes: 240, maxStepMinutes: 60 } };
 const _LTS_PHASES = { hook: 'Hook', directInstruction: 'Direct instruction', guidedPractice: 'Guided practice', independentPractice: 'Independent practice', closure: 'Closure' };
-function _ltsText(value) {
+function _ltsText(value, depth = 0) {
+  if (depth > 8) return '';
   if (typeof value === 'string') return value;
-  if (typeof value === 'number') return String(value);
-  if (value && typeof value === 'object') return _ltsText(value.en || value.text || value.title);
+  if (typeof value === 'number') return Number.isFinite(value) ? String(value) : '';
+  if (value && typeof value === 'object') return _ltsText(value.en || value.text || value.title, depth + 1);
   return '';
 }
 // Plans saved before 2026-10-29 carry "; retrieved page text offset N", a line index into the reader's copy that no teacher can look up.
@@ -352,16 +405,16 @@ function _ltsSessionValue(value) {
     && _ltsRecord(value.defaults) && ['goal', 'grade', 'subject', 'topic', 'standard'].every(key => _ltsBoundedString(value.defaults[key], 4000))
     && _ltsBoundedString(value.selectedId, 160)
     && (value.draft == null || _ltsRecord(value.draft) && _ltsSessionVersion(value.draft.version) && _ltsBoundedString(value.draft.baseline, _LTS_SESSION_LIMIT)
-      && _ltsSessionSteps(JSON.parse(value.draft.baseline)) && _ltsSessionSteps(value.draft.steps) && _ltsSessionStepUndo(value.draft.stepUndo, value.draft.steps));
+      && _ltsSessionSteps(_ltsSafeJsonParse(value.draft.baseline)) && _ltsSessionSteps(value.draft.steps) && _ltsSessionStepUndo(value.draft.stepUndo, value.draft.steps));
 }
 function _ltsReadSession(key, scope, planId) {
-  if (!key) return { value: null, status: 'unavailable' };
+  if (!key || typeof window === 'undefined') return { value: null, status: 'unavailable' };
   let raw;
   try { raw = window.sessionStorage.getItem(key); } catch (_) { return { value: null, status: 'unavailable' }; }
   if (!raw) return { value: null, status: '' };
   try {
     if (raw.length > _LTS_SESSION_LIMIT) throw new Error('Oversized recovery data');
-    const value = JSON.parse(raw);
+    const value = _ltsSafeJsonParse(raw);
     // Optional undo history must not prevent recovery of the teacher's main draft.
     if (_ltsRecord(value?.draft) && !_ltsSessionStepUndo(value.draft.stepUndo, value.draft.steps)) value.draft.stepUndo = [];
     if (!_ltsSessionValue(value) || value.scope !== scope || value.planId !== planId) throw new Error('Invalid recovery data');
@@ -369,7 +422,7 @@ function _ltsReadSession(key, scope, planId) {
   } catch (_) { return { value: null, status: 'invalid' }; }
 }
 function _ltsWriteSession(key, value) {
-  if (!key) return 'unavailable';
+  if (!key || typeof window === 'undefined') return 'unavailable';
   try {
     if (!_ltsSessionValue(value)) return 'large';
     let raw = JSON.stringify(value);
@@ -388,7 +441,8 @@ function _ltsClearSubmittedDraft(key, scope, planId, submitted) {
   return _ltsWriteSession(key, { ...stored, draft: null });
 }
 function LessonTeachingScriptView(props) {
-  if (!props.isTeacherMode || props.isParentMode || props.isIndependentMode || !props.generatedContent?.id || props.generatedContent.type !== 'lesson-plan') return null;
+  props = props && typeof props === 'object' ? props : {};
+  if (!props.isTeacherMode || props.isParentMode || props.isIndependentMode || (typeof window !== 'undefined' && window.__alloQrStudentMode === true) || !props.generatedContent?.id || props.generatedContent.type !== 'lesson-plan') return null;
   return <LessonTeachingScriptPanel key={JSON.stringify([props.draftScope || '', String(props.generatedContent.id)])} {...props} />;
 }
 function LessonTeachingScriptPanel(props) {
@@ -405,7 +459,7 @@ function LessonTeachingScriptPanel(props) {
   const savedVersions = Array.isArray(plan.data?.teachingScripts) ? plan.data.teachingScripts : [];
   const versions = savedVersions.filter(version => version && version.id && Array.isArray(version.steps) && version.steps.length && version.steps.every(step => step && typeof step === 'object' && !Array.isArray(step)));
   const hasIncompleteVersions = versions.length !== savedVersions.length;
-  const runtime = window.AlloModules?.LessonTeachingScript;
+  const runtime = typeof window !== 'undefined' ? window.AlloModules?.LessonTeachingScript : null;
   const materials = (Array.isArray(history) ? history : []).filter(item => item && item.id != null && String(item.id) !== planId);
   const materialAvailable = material => materials.filter(item => String(item.id) === String(material.id)).length === 1 && (typeof runtime?.hasTeachingMaterialText !== 'function' || runtime.hasTeachingMaterialText(material));
   const gradeOptions = Array.isArray(defaultSettings.gradeOptions) && defaultSettings.gradeOptions.length ? defaultSettings.gradeOptions.map(_ltsText) : _LTS_GRADES;
@@ -477,6 +531,28 @@ function LessonTeachingScriptPanel(props) {
   const generatingRequest = React.useRef(false);
   const savingRequest = React.useRef(false);
   const downloads = React.useRef(new Map());
+  const focusTimers = React.useRef(new Set());
+  const scheduleFocus = fn => {
+    const tId = setTimeout(() => {
+      focusTimers.current.delete(tId);
+      if (!mounted.current) return;
+      try { fn(); } catch (_) {}
+    }, 0);
+    focusTimers.current.add(tId);
+  };
+  const [, bumpAiPolicy] = React.useState(0);
+  React.useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return;
+    const onPolicyChange = () => bumpAiPolicy(n => n + 1);
+    window.addEventListener('alloflow:ai-config-changed', onPolicyChange);
+    window.addEventListener('alloflow:student-ai-config-changed', onPolicyChange);
+    window.addEventListener('alloflow:ai-key-lock-changed', onPolicyChange);
+    return () => {
+      window.removeEventListener('alloflow:ai-config-changed', onPolicyChange);
+      window.removeEventListener('alloflow:student-ai-config-changed', onPolicyChange);
+      window.removeEventListener('alloflow:ai-key-lock-changed', onPolicyChange);
+    };
+  }, []);
   const previousVersions = React.useRef(versions.map(version => String(version.id)));
   const canonicalVersion = versions.find(item => String(item.id) === (draft ? draftVersionId : selectedId)) || (!draft ? versions[versions.length - 1] : null) || null;
   const version = canonicalVersion || (draft ? draftSnapshot : null);
@@ -486,14 +562,15 @@ function LessonTeachingScriptPanel(props) {
   const bionicOn = (typeof window !== 'undefined' && typeof window.__alloUseBionic === 'function') ? window.__alloUseBionic() : false;
   const bt = s => (bionicOn && typeof s === 'string' && typeof window !== 'undefined' && typeof window.__alloBionicReact === 'function') ? window.__alloBionicReact(s) : s;
   const aiDoor = (() => { try { return typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway('text', props.t) : null; } catch (_) { return null; } })();
-  const canGenerate = capabilities.canGenerate === true && typeof onGenerateTeachingScript === 'function' && !aiDoor?.disabled;
-  const canResearch = capabilities.canResearch === true;
+  const aiHardBlocked = _ltsHardAiBlocked();
+  const canGenerate = capabilities.canGenerate === true && typeof onGenerateTeachingScript === 'function' && !aiHardBlocked && !aiDoor?.disabled;
+  const canResearch = capabilities.canResearch === true && !aiHardBlocked;
   const rules = scopes[scope] || _LTS_SCOPES.segment;
   const durationValid = Number.isInteger(Number(durationMinutes)) && Number(durationMinutes) >= rules.minMinutes && Number(durationMinutes) <= rules.maxMinutes;
   const sourceSteps = canonicalVersion?.steps || [];
   const steps = draft || sourceSteps;
   const versionRules = _ltsRules(version);
-  const timings = steps.reduce((sum, step) => sum + Number(step.minutes || 0), 0);
+  const timings = steps.reduce((sum, step) => { const m = Number(step?.minutes); return sum + (Number.isFinite(m) ? m : 0); }, 0);
   const invalidStepTiming = !!draft && draft.some(step => !Number.isInteger(Number(step.minutes)) || Number(step.minutes) < 1 || Number(step.minutes) > versionRules.maxStepMinutes);
   const invalidTiming = !!draft && (invalidStepTiming || timings !== Number(version?.durationMinutes));
   const draftTextProblems = (draft || []).map(step => ({
@@ -563,16 +640,18 @@ function LessonTeachingScriptPanel(props) {
     return () => {
       mounted.current = false;
       requestOwner.current += 1;
+      focusTimers.current.forEach(tId => clearTimeout(tId));
+      focusTimers.current.clear();
       downloads.current.forEach((timer, url) => { clearTimeout(timer); URL.revokeObjectURL(url); });
       downloads.current.clear();
     };
   }, []);
   const deliveryStorageKey = version?.id ? 'alloflow:script-done:' + planId + ':' + String(version.id) : '';
   const [completedSteps, setCompletedSteps] = React.useState(() => {
-    if (!deliveryStorageKey) return new Set();
+    if (!deliveryStorageKey || typeof window === 'undefined') return new Set();
     try {
       const raw = window.localStorage?.getItem(deliveryStorageKey);
-      const parsed = raw ? JSON.parse(raw) : [];
+      const parsed = raw ? _ltsSafeJsonParse(raw) : [];
       return Array.isArray(parsed) ? new Set(parsed.map(String)) : new Set();
     } catch (_) { return new Set(); }
   });
@@ -580,15 +659,15 @@ function LessonTeachingScriptPanel(props) {
   React.useEffect(() => {
     if (prevDeliveryKeyRef.current === deliveryStorageKey) return;
     prevDeliveryKeyRef.current = deliveryStorageKey;
-    if (!deliveryStorageKey) { setCompletedSteps(new Set()); return; }
+    if (!deliveryStorageKey || typeof window === 'undefined') { setCompletedSteps(new Set()); return; }
     try {
       const raw = window.localStorage?.getItem(deliveryStorageKey);
-      const parsed = raw ? JSON.parse(raw) : [];
+      const parsed = raw ? _ltsSafeJsonParse(raw) : [];
       setCompletedSteps(Array.isArray(parsed) ? new Set(parsed.map(String)) : new Set());
     } catch (_) { setCompletedSteps(new Set()); }
   }, [deliveryStorageKey]);
   const persistCompletedSteps = nextSet => {
-    if (!deliveryStorageKey) return;
+    if (!deliveryStorageKey || typeof window === 'undefined') return;
     try {
       if (nextSet.size === 0) window.localStorage?.removeItem(deliveryStorageKey);
       else window.localStorage?.setItem(deliveryStorageKey, JSON.stringify(Array.from(nextSet)));
@@ -609,16 +688,22 @@ function LessonTeachingScriptPanel(props) {
   };
   const [speakingStepIdx, setSpeakingStepIdx] = React.useState(null);
   const stepSpeechTokenRef = React.useRef(0);
+  const stepSpeechTimerRef = React.useRef(null);
   const hasSpeechBackend = typeof window !== 'undefined' && (
     (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function')
     || (typeof window.speechSynthesis !== 'undefined' && typeof window.SpeechSynthesisUtterance === 'function')
   );
   const stopStepSpeech = React.useCallback(() => {
     stepSpeechTokenRef.current += 1;
+    if (stepSpeechTimerRef.current) {
+      clearTimeout(stepSpeechTimerRef.current);
+      stepSpeechTimerRef.current = null;
+    }
     try {
       if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === 'function') {
         window.AlloSpeechPlayer.stop();
-      } else if (typeof window !== 'undefined' && window.speechSynthesis) {
+      }
+      if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.speechSynthesis.cancel === 'function') {
         window.speechSynthesis.cancel();
       }
     } catch (_) {}
@@ -631,9 +716,19 @@ function LessonTeachingScriptPanel(props) {
         if (mounted.current) setSpeakingStepIdx(null);
       }
     };
-    if (typeof window !== 'undefined') window.addEventListener('allo-speech-state', onSpeechState);
+    const onMuteChanged = event => {
+      const muted = (event && event.detail && event.detail.muted === true) || _ltsIsGlobalMuted();
+      if (muted) stopStepSpeech();
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('allo-speech-state', onSpeechState);
+      window.addEventListener('alloflow-mute-changed', onMuteChanged);
+    }
     return () => {
-      if (typeof window !== 'undefined') window.removeEventListener('allo-speech-state', onSpeechState);
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('allo-speech-state', onSpeechState);
+        window.removeEventListener('alloflow-mute-changed', onMuteChanged);
+      }
       stopStepSpeech();
     };
   }, [stopStepSpeech]);
@@ -641,9 +736,11 @@ function LessonTeachingScriptPanel(props) {
     if (speakingStepIdx !== null && (draft || spokenOnly)) stopStepSpeech();
   }, [draft, spokenOnly, version?.id, speakingStepIdx, stopStepSpeech]);
   const toggleRehearseStep = (step, index) => {
+    if (_ltsIsGlobalMuted()) { stopStepSpeech(); return; }
     if (speakingStepIdx === index) { stopStepSpeech(); return; }
     const speechText = [_ltsText(step.teacherSays).trim(), _ltsText(step.checkQuestion).trim()].filter(Boolean).join('. ');
     if (!speechText) return;
+    if (stepSpeechTimerRef.current) { clearTimeout(stepSpeechTimerRef.current); stepSpeechTimerRef.current = null; }
     const token = ++stepSpeechTokenRef.current;
     const speechLang = version?.inputSnapshot?.settings?.language || plan.config?.language || defaultSettings.language || undefined;
     try {
@@ -659,17 +756,27 @@ function LessonTeachingScriptPanel(props) {
       } else if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
         window.speechSynthesis.cancel();
         const utter = new window.SpeechSynthesisUtterance(speechText);
-        utter.onend = () => { if (mounted.current && stepSpeechTokenRef.current === token) setSpeakingStepIdx(null); };
-        utter.onerror = () => { if (mounted.current && stepSpeechTokenRef.current === token) setSpeakingStepIdx(null); };
+        if (typeof speechLang === 'string' && speechLang.trim()) utter.lang = speechLang.trim();
+        const rawSpeed = Number(props.audioSpeed);
+        if (Number.isFinite(rawSpeed) && rawSpeed > 0) utter.rate = Math.max(0.5, Math.min(2, rawSpeed));
+        utter.volume = 1;
+        const finishSpeech = () => {
+          if (stepSpeechTimerRef.current) { clearTimeout(stepSpeechTimerRef.current); stepSpeechTimerRef.current = null; }
+          if (mounted.current && stepSpeechTokenRef.current === token) setSpeakingStepIdx(null);
+        };
+        utter.onend = finishSpeech;
+        utter.onerror = finishSpeech;
+        stepSpeechTimerRef.current = setTimeout(finishSpeech, Math.min(120000, Math.max(15000, speechText.length * 120)));
         setSpeakingStepIdx(index);
         window.speechSynthesis.speak(utter);
       }
     } catch (_) {
+      if (stepSpeechTimerRef.current) { clearTimeout(stepSpeechTimerRef.current); stepSpeechTimerRef.current = null; }
       if (mounted.current) setSpeakingStepIdx(null);
     }
   };
   const doneStepCount = !draft ? steps.reduce((acc, step, idx) => acc + (completedSteps.has(String(step.id || idx)) ? 1 : 0), 0) : 0;
-  const remainingMinutes = !draft ? steps.reduce((sum, step, idx) => sum + (completedSteps.has(String(step.id || idx)) ? 0 : Math.max(0, Number(step.minutes || 0))), 0) : timings;
+  const remainingMinutes = !draft ? steps.reduce((sum, step, idx) => { const m = Number(step?.minutes); return sum + (completedSteps.has(String(step.id || idx)) ? 0 : Math.max(0, Number.isFinite(m) ? m : 0)); }, 0) : timings;
   React.useEffect(() => {
     if (regenerateFocus.current === null || regeneratingStep !== null) return;
     const index = regenerateFocus.current; regenerateFocus.current = null;
@@ -854,7 +961,7 @@ function LessonTeachingScriptPanel(props) {
     setConfirmDiscard(false); restoreEditFocus.current = quiet !== true;
     setDraft(null); setDraftSnapshot(null); setDraftBase(''); setDraftVersionId(''); setShowRecoveryNotice(false); setLocalError('');
   };
-  const keepEditing = () => { setConfirmDiscard(false); setTimeout(() => discardToggle.current?.focus(), 0); };
+  const keepEditing = () => { setConfirmDiscard(false); scheduleFocus(() => { if (discardToggle.current?.isConnected) discardToggle.current.focus(); }); };
   // Resolves true once the edits are in the plan; quiet keeps focus on the plan's Done button.
   const saveOwner = React.useRef(0);
   const saveEdits = async quiet => {
@@ -910,14 +1017,14 @@ function LessonTeachingScriptPanel(props) {
       if (!(staleDraft || invalidTiming || invalidDraftText || invalidDraftLength)) return saveEdits(true);
       setExpanded(true);
       setNotice(tr('finish_blocked', 'Your teaching script edits need attention before you finish editing.'));
-      setTimeout(() => { editActions.current?.scrollIntoView?.({ block: 'start' }); editActions.current?.focus(); }, 0);
+      scheduleFocus(() => { if (editActions.current?.isConnected) { editActions.current.scrollIntoView?.({ block: 'start' }); editActions.current.focus(); } });
       return false;
     };
     bridge.current = finish;
     return () => { if (bridge.current === finish) bridge.current = null; };
   });
   const exportText = async kind => {
-    const runtime = window.AlloModules?.LessonTeachingScript;
+    const runtime = typeof window !== 'undefined' ? window.AlloModules?.LessonTeachingScript : null;
     if (!version || (!draft && typeof runtime?.toPlainText !== 'function')) { setLocalError(tr('export_unavailable', 'Text export is still loading. Please try again.')); return; }
     const exportVersion = draft ? { ...version, steps: draft } : version;
     try {
@@ -931,16 +1038,18 @@ function LessonTeachingScriptPanel(props) {
         const popup = window.open('', '_blank', 'width=850,height=800');
         if (!popup) throw new Error(tr('print_blocked', 'Allow the print window, then try again.'));
         const escape = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
-        popup.opener = null;
-        popup.document.write('<!doctype html><html lang="' + escape(document.documentElement.lang || 'en') + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>' + escape(version.title) + '</title><style>*{box-sizing:border-box}body{font:16px/1.55 system-ui,sans-serif;color:#111;background:#fff;margin:0;padding:24px}main{max-width:50rem;margin:auto}h1{font-size:24px}pre{font:inherit;white-space:pre-wrap;overflow-wrap:anywhere}@page{margin:18mm}@media print{body{padding:0}main{max-width:none}}</style></head><body><main><h1>' + escape(tr('print_title', 'Full teaching script')) + '</h1><pre dir="auto">' + escape(text) + '</pre></main></body></html>');
-        popup.document.close(); popup.focus(); popup.print();
+        try { popup.opener = null; } catch (_) {}
+        const safePrintTitle = _ltsText(version.title) || tr('title', 'Teaching script');
+        popup.document.write('<!doctype html><html lang="' + escape(document.documentElement.lang || 'en') + '"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; base-uri \'none\'; form-action \'none\';"><meta name="viewport" content="width=device-width, initial-scale=1"><title>' + escape(safePrintTitle) + '</title><style>*{box-sizing:border-box}body{font:16px/1.55 system-ui,sans-serif;color:#111;background:#fff;margin:0;padding:24px}main{max-width:50rem;margin:auto}h1{font-size:24px}pre{font:inherit;white-space:pre-wrap;overflow-wrap:anywhere}@page{margin:18mm}@media print{body{padding:0}main{max-width:none}}</style></head><body><main><h1>' + escape(tr('print_title', 'Full teaching script')) + '</h1><pre dir="auto">' + escape(text) + '</pre></main></body></html>');
+        popup.document.close(); try { popup.focus(); popup.print(); } catch (_) {}
         if (mounted.current) setNotice(tr('print_opened', 'The script print view is open.'));
       } else {
         const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
         const timer = setTimeout(() => { URL.revokeObjectURL(url); downloads.current.delete(url); }, 1000);
         downloads.current.set(url, timer);
         const link = document.createElement('a');
-        link.href = url; link.download = (_ltsText(version.title) || 'teaching-script').replace(/[^\p{L}\p{N} _-]/gu, '').slice(0, 100) + (draft ? '-draft' : '') + '.txt';
+        const safeFileBase = _ltsText(version.title).replace(/[^\p{L}\p{N} _-]/gu, '').trim().slice(0, 100) || 'teaching-script';
+        link.href = url; link.download = safeFileBase + (draft ? '-draft' : '') + '.txt';
         document.body.appendChild(link);
         try { link.click(); } finally { link.remove(); }
         setNotice(tr('downloaded', 'Script text downloaded.'));
@@ -951,7 +1060,7 @@ function LessonTeachingScriptPanel(props) {
   const keepVersion = () => {
     if (deletingRequest.current) return;
     setDeleteCandidate(null);
-    setTimeout(() => deleteToggle.current?.focus(), 0);
+    scheduleFocus(() => { if (deleteToggle.current?.isConnected) deleteToggle.current.focus(); });
   };
   const deleteScript = async () => {
     if (deletingRequest.current || !deleteCandidate || deleting || draft || busy || saving || typeof props.onDeleteTeachingScript !== 'function') return;
@@ -1031,13 +1140,13 @@ function LessonTeachingScriptPanel(props) {
     researched: tr('research_fresh', 'Research sources retrieved'),
     retrieved: tr('research_fresh', 'Research sources retrieved')
   };
-  const phaseLabel = phase => phase && _LTS_PHASES[phase] ? tr('phase_' + phase, _LTS_PHASES[phase]) : '';
+  const phaseLabel = phase => phase && Object.prototype.hasOwnProperty.call(_LTS_PHASES, phase) ? tr('phase_' + phase, _LTS_PHASES[phase]) : '';
   const detectedNote = [
     defaultSettings.subjectDetected ? tr('context_subject_detected', 'Subject detected from the saved plan') : tr('context_subject_ai', 'Subject could not be detected yet; AI will identify it when you generate'),
     defaultSettings.gradeSource === 'plan' ? tr('context_grade_plan', 'Grade from the saved plan') : tr('context_grade_missing', 'The saved plan has no grade; choose one below'),
     Array.isArray(defaultSettings.phases) && defaultSettings.phases.length ? tr('context_phases', 'Plan phases:') + ' ' + defaultSettings.phases.map(phaseLabel).filter(Boolean).join(', ') : ''
   ].filter(Boolean);
-  const progressLabel = ({
+  const stageMap = {
     context: tr('progress_context', 'Identifying the lesson subject and topic…'),
     research: tr('progress_research', 'Finding research for this lesson…'),
     generating: tr('progress_generating', 'Writing the teaching script…'),
@@ -1045,8 +1154,10 @@ function LessonTeachingScriptPanel(props) {
     ready: tr('progress_saving', 'Adding the completed script to this lesson…'),
     regeneratingStep: tr('progress_step', 'Writing the replacement step…'),
     chunking: tr('progress_chunking', 'Writing the script in smaller sections…') + (Number.isInteger(hostRun.totalChunks) && hostRun.totalChunks > 0 ? ' ' + Math.min(hostRun.totalChunks, Math.max(0, Number(hostRun.completedChunks) || 0)) + '/' + hostRun.totalChunks : ''),
-  })[regeneratingStep !== null ? 'regeneratingStep' : hostRun.stage] || _ltsText(hostRun.stage) || tr('generating', 'Preparing the teaching script…');
-  if (spokenOnly && version) return <LessonSpokenDirections key={JSON.stringify([version.id, runtime?.spokenSegments?.({ ...version, steps }), !!draft, props.audioProfile, version.inputSnapshot?.settings?.language, plan.config?.language])} initialStepIndex={spokenPosition?.versionId === String(version.id) ? spokenPosition.index : 0} onStepChange={index => setSpokenPosition({ versionId: String(version.id), index })} planId={planId} version={{ ...version, steps }} draft={!!draft} createAudio={props.createTeachingScriptAudio} t={props.t} audioVoice={props.audioVoice} audioSpeed={props.audioSpeed} audioLanguage={version.inputSnapshot?.settings?.language || plan.config?.language || defaultSettings.language} onOpenVoiceSettings={props.onOpenVoiceSettings} onBack={() => { setSpokenOnly(false); setTimeout(() => spokenToggle.current?.focus(), 0); }} />;
+  };
+  const stageKey = regeneratingStep !== null ? 'regeneratingStep' : hostRun.stage;
+  const progressLabel = (stageKey && Object.prototype.hasOwnProperty.call(stageMap, stageKey) ? stageMap[stageKey] : '') || _ltsText(hostRun.stage) || tr('generating', 'Preparing the teaching script…');
+  if (spokenOnly && version) return <LessonSpokenDirections key={JSON.stringify([version.id, runtime?.spokenSegments?.({ ...version, steps }), !!draft, props.audioProfile, version.inputSnapshot?.settings?.language, plan.config?.language])} initialStepIndex={spokenPosition?.versionId === String(version.id) ? spokenPosition.index : 0} onStepChange={index => setSpokenPosition({ versionId: String(version.id), index })} planId={planId} version={{ ...version, steps }} draft={!!draft} createAudio={props.createTeachingScriptAudio} t={props.t} audioVoice={props.audioVoice} audioSpeed={props.audioSpeed} audioLanguage={version.inputSnapshot?.settings?.language || plan.config?.language || defaultSettings.language} onOpenVoiceSettings={props.onOpenVoiceSettings} onBack={() => { setSpokenOnly(false); scheduleFocus(() => { if (spokenToggle.current?.isConnected) spokenToggle.current.focus(); }); }} />;
   return (
     <section className="rounded-xl border border-indigo-200 bg-white shadow-sm" aria-labelledby={id + '-title'} data-teaching-script-plan={planId}>
       <div className="p-4 sm:p-5">
@@ -1156,7 +1267,7 @@ function LessonTeachingScriptPanel(props) {
             {researchEnabled && !canResearch && canReuseResearch && !canFinishSaving && <p className="text-sm text-slate-700">{tr('research_reused', 'Resume will reuse this run’s saved research. Starting over with research requires live research access.')}</p>}
           </div>
           {!canGenerate && !canFinishSaving && <p role="status" className="rounded-lg bg-amber-50 p-3 text-sm text-amber-950">{tr('ai_unavailable', 'Script generation needs an available AI connection. Saved versions remain available to read, edit and export.')}</p>}
-          {aiDoor?.disabled && typeof window !== 'undefined' && typeof window.AlloAiSetupNotice === 'function' && <window.AlloAiSetupNotice t={props.t} kind="text" />}
+          {(aiHardBlocked || aiDoor?.disabled) && typeof window !== 'undefined' && typeof window.AlloAiSetupNotice === 'function' && <window.AlloAiSetupNotice t={props.t} kind="text" />}
           {!!draft && <p className="text-sm text-indigo-900">{tr('finish_edits', 'Save or discard your script edits before generating another version.')}</p>}
           <p className="text-xs text-slate-600">{tr('history_retention', 'Script versions are kept until you delete them. Deleting a version also removes its saved audio.')}</p>
           {generationRecovery && <p role="status" className="rounded-lg bg-indigo-50 p-3 text-sm text-indigo-950">{generationRecovery.completedChunks === generationRecovery.totalChunks ? tr('resume_save_progress', 'All sections are ready. Finish saving to add the completed script to this lesson.') : generationRecovery.completedChunks === 0 ? tr('resume_setup_progress', 'Your lesson setup is ready. Resume to write the script.') : tr('resume_progress', '{completed} of {total} sections are ready. Resume to finish the remaining sections.').replace('{completed}', String(generationRecovery.completedChunks)).replace('{total}', String(generationRecovery.totalChunks))}</p>}
@@ -1188,14 +1299,14 @@ function LessonTeachingScriptPanel(props) {
           </div>
           <p className="text-sm text-slate-700">{tr('history_retention', 'Script versions are kept until you delete them. Deleting a version also removes its saved audio.')}</p>
           {!draft && typeof props.onDeleteTeachingScript === 'function' && <div className="no-print space-y-2">
-            {deleteCandidate ? <div role="group" aria-label={tr('delete_confirm', 'Delete this script version and its saved audio?')} className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-amber-950" onKeyDown={event => { if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return; if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); keepVersion(); } }}>
+            {deleteCandidate ? <div role="group" aria-label={tr('delete_confirm', 'Delete this script version and its saved audio?')} className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-amber-950" onKeyDown={event => { if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return; if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); keepVersion(); } }}>
               <p>{tr('delete_confirm', 'Delete this script version and its saved audio?')} {_ltsText(deleteCandidate.title)}</p>
               <div className="mt-2 flex flex-wrap gap-2"><button type="button" aria-busy={deleting ? 'true' : undefined} className={buttonClass} disabled={deleting || busy} onClick={deleteScript}>{tr('confirm_delete', 'Delete version and audio')}</button><button autoFocus type="button" className={buttonClass} disabled={deleting} onClick={keepVersion}>{tr('keep_version', 'Keep version')}</button></div>
             </div> : <button ref={deleteToggle} type="button" className={buttonClass} disabled={saving || busy || deleting} onClick={() => { setLocalError(''); setNotice(''); setDeleteCandidate(JSON.parse(JSON.stringify(version))); }}>{tr('delete_version', 'Delete this version')}</button>}
           </div>}
           <div>
             <h4 className="text-lg font-black text-slate-900">{_ltsText(version.title) || tr('title', 'Teaching script')}</h4>
-            <p className="text-sm text-slate-700">{scopeLabel(version)} · {version.durationMinutes} {tr('minutes', 'minutes')}{version.inputSnapshot?.settings?.grade ? ' · ' + _ltsGradeLabel(version.inputSnapshot.settings.grade) : ''}{version.inputSnapshot?.settings?.subject ? ' · ' + subjectLabel(version.inputSnapshot.settings.subject) : ''} · {researchLabels[version.researchStatus] || _ltsText(version.researchStatus).replace(/[-_]/g, ' ') || tr('research_unspecified', 'Research status not recorded')}</p>
+            <p className="text-sm text-slate-700">{scopeLabel(version)} · {version.durationMinutes} {tr('minutes', 'minutes')}{version.inputSnapshot?.settings?.grade ? ' · ' + _ltsGradeLabel(version.inputSnapshot.settings.grade) : ''}{version.inputSnapshot?.settings?.subject ? ' · ' + subjectLabel(version.inputSnapshot.settings.subject) : ''} · {(version.researchStatus && Object.prototype.hasOwnProperty.call(researchLabels, version.researchStatus) ? researchLabels[version.researchStatus] : '') || _ltsText(version.researchStatus).replace(/[-_]/g, ' ') || tr('research_unspecified', 'Research status not recorded')}</p>
             {version.editedAt && <p className="text-xs text-slate-600">{tr('last_edited', 'Last edited:')} <time dateTime={_ltsText(version.editedAt)}>{_ltsText(version.editedAt).replace('T', ' ').replace(/\.\d+Z$/, ' UTC')}</time></p>}
             {version.createdAt && <p className="text-xs text-slate-600"><time dateTime={_ltsText(version.createdAt)}>{_ltsText(version.createdAt).replace('T', ' ').replace(/\.\d+Z$/, ' UTC')}</time></p>}
           </div>
@@ -1290,7 +1401,7 @@ function LessonTeachingScriptPanel(props) {
                 </div>
               </div>}
               {canGenerate && typeof onRegenerateTeachingStep === 'function' && typeof onUpdateTeachingScript === 'function' && <div className="space-y-2 no-print">
-                {regenerateIndex === index ? <div role="group" aria-label={tr('regenerate_step', 'Regenerate step') + ' ' + (index + 1)} className="space-y-2 rounded-lg border border-indigo-200 bg-indigo-50 p-3">
+                {regenerateIndex === index ? <div role="group" aria-label={tr('regenerate_step', 'Regenerate step') + ' ' + (index + 1)} className="space-y-2 rounded-lg border border-indigo-200 bg-indigo-50 p-3" onKeyDown={event => { if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return; if (event.key === 'Escape' && !busy && !saving && !deleting) { event.preventDefault(); event.stopPropagation(); regenerateFocus.current = index; setRegenerateIndex(null); setRegenerateInstruction(''); } }}>
                   <label className="block text-sm font-bold">{tr('step_instruction', 'What should change? (optional)')} · {index + 1}<textarea autoFocus aria-label={tr('step_instruction', 'What should change? (optional)') + ' · ' + (index + 1)} rows={2} maxLength={2000} className={fieldClass + ' mt-1'} value={regenerateInstruction} disabled={busy || saving || deleting} onChange={event => setRegenerateInstruction(event.target.value)} /></label>
                   <p className="text-xs text-slate-700">{tr('step_regenerate_hint', 'Only this step will change. Review the replacement in your draft before saving.')}</p>
                   <div className="flex flex-wrap gap-2">
@@ -1340,7 +1451,7 @@ function LessonTeachingScriptPanel(props) {
             <div className="flex flex-wrap gap-2">
               <button type="button" aria-busy={saving ? 'true' : undefined} className={buttonClass} disabled={saving || busy || invalidTiming || invalidDraftText || invalidDraftLength || staleDraft} onClick={saveEdits}>{saving ? tr('saving', 'Adding edits…') : tr('save', 'Save edits')}</button>
               {!confirmDiscard && <button ref={discardToggle} type="button" className={buttonClass} disabled={saving || busy} onClick={() => draftChanged ? setConfirmDiscard(true) : discardEdits()}>{tr('discard', 'Discard edits')}</button>}
-              {confirmDiscard && <div role="group" aria-label={tr('discard_question', 'Discard your unsaved script changes?')} className="w-full space-y-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-amber-950" onKeyDown={event => { if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return; if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); keepEditing(); } }}>
+              {confirmDiscard && <div role="group" aria-label={tr('discard_question', 'Discard your unsaved script changes?')} className="w-full space-y-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-amber-950" onKeyDown={event => { if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return; if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); keepEditing(); } }}>
                 <p className="text-sm">{tr('discard_question', 'Discard your unsaved script changes?')}</p>
                 <div className="flex flex-wrap gap-2"><button autoFocus type="button" className={buttonClass} disabled={saving || busy} onClick={keepEditing}>{tr('keep_editing', 'Keep editing')}</button><button type="button" className={buttonClass} disabled={saving || busy} onClick={discardEdits}>{tr('discard_confirm', 'Discard changes')}</button></div>
               </div>}

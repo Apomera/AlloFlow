@@ -648,7 +648,7 @@
     "prompt": "Which figure always has exactly one line of symmetry?",
     "choices": [
       "A non-equilateral isosceles triangle",
-      "A nonsquare rectangle",
+      "A rectangle with unequal adjacent sides",
       "A scalene triangle",
       "A circle"
     ],

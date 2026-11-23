@@ -32,6 +32,7 @@ const moduleSrc = `/**
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.AlignmentReportView) {
     console.log('[CDN] ViewAlignmentReportModule already loaded, skipping');
     return;

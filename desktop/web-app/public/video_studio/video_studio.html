@@ -33,7 +33,7 @@
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
   body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
-  .skip-link { position: fixed; left: 10px; top: -64px; z-index: 1000; padding: 10px 14px; border-radius: 8px; background: #fff; color: #0f172a; font-weight: 700; text-decoration: none; border: 2px solid #4f46e5; }
+  .skip-link { position: fixed; left: 10px; top: -72px; z-index: 1000; min-height: 44px; display: inline-flex; align-items: center; padding: 10px 14px; border-radius: 8px; background: #fff; color: #0f172a; font-weight: 700; text-decoration: none; border: 2px solid #4f46e5; }
   .skip-link:focus { top: 10px; }
   :focus-visible { outline: 3px solid #a5b4fc; outline-offset: 2px; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
@@ -43,19 +43,19 @@
   header .sub { color: var(--dim); font-size: 12px; }
   main { padding: 14px 16px 24px; max-width: 1280px; margin: 0 auto; }
   .tabs { display: flex; gap: 6px; margin-bottom: 12px; }
-  .tabs button { background: var(--panel); color: var(--dim); border: 1px solid var(--line); border-radius: 10px 10px 0 0; padding: 8px 18px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .tabs button { min-height: 44px; background: var(--panel); color: var(--dim); border: 1px solid var(--line); border-radius: 10px 10px 0 0; padding: 10px 18px; font-size: 14px; font-weight: 600; cursor: pointer; }
   .tabs button[aria-selected="true"] { background: var(--panel2); color: var(--text); border-bottom-color: var(--panel2); }
   .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; }
   .card h2 { font-size: 13px; margin: 0 0 10px; color: var(--accent2); text-transform: uppercase; letter-spacing: 0.06em; }
-  button.action { background: #4f46e5; color: #fff; border: none; border-radius: 9px; padding: 9px 16px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  button.action { min-height: 44px; background: #4f46e5; color: #fff; border: none; border-radius: 9px; padding: 10px 16px; font-size: 14px; font-weight: 600; cursor: pointer; }
   button.action:hover { background: #4338ca; }
-  button.action:disabled { background: #3f3f5a; color: #7d7da0; cursor: not-allowed; }
-  button.quiet { background: var(--panel2); color: var(--text); border: 1px solid var(--control-border); border-radius: 9px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
+  button.action:disabled { background: #334155; color: #cbd5e1; cursor: not-allowed; }
+  button.quiet { min-height: 44px; background: var(--panel2); color: var(--text); border: 1px solid var(--control-border); border-radius: 9px; padding: 10px 14px; font-size: 13px; cursor: pointer; }
   button.quiet:hover { border-color: var(--accent); }
-  button.danger { background: transparent; border: 1px solid var(--bad); color: var(--bad); border-radius: 9px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
+  button.danger { min-height: 44px; background: transparent; border: 1px solid var(--bad); color: var(--bad); border-radius: 9px; padding: 10px 14px; font-size: 13px; cursor: pointer; }
   button[aria-pressed="true"] { border-color: var(--accent); background: rgba(99,102,241,0.18); color: #fff; }
   label { font-size: 13px; color: var(--dim); }
-  input[type="text"], input[type="number"], input[type="search"], input[type="url"], select, textarea { background: var(--bg); border: 1px solid var(--control-border); color: var(--text); border-radius: 7px; padding: 7px 9px; font-size: 13px; }
+  input[type="text"], input[type="number"], input[type="search"], input[type="url"], select, textarea { min-height: 44px; background: var(--bg); border: 1px solid var(--control-border); color: var(--text); border-radius: 7px; padding: 8px 10px; font-size: 13px; }
   input[type="range"] { accent-color: var(--accent); }
   a { color:var(--accent2); text-underline-offset:3px; }
   a:visited { color:#c4b5fd; }
@@ -64,7 +64,7 @@
   .demo-goal-composer textarea { width: 100%; box-sizing: border-box; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 9px; resize: vertical; }
   .demo-goal-actions { display: flex; gap: 12px; align-items: center; justify-content: space-between; margin-top: 8px; }
   .demo-goal-hint { color: var(--dim); font-size: 12px; line-height: 1.4; }
-  #demoPlanBtn { flex: 0 0 auto; min-height: 40px; }
+  #demoPlanBtn { flex: 0 0 auto; min-height: 44px; }
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   @media (max-width: 900px) { .grid2 { grid-template-columns: 1fr; } }
   .ferpa { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.45); border-radius: 10px; padding: 9px 12px; font-size: 12.5px; color: #fde68a; margin-bottom: 12px; }
@@ -8566,6 +8566,7 @@ function buildContactSheet(t, count, shouldCancel) {
         var cellW = 320;
         var cellH = Math.max(60, Math.round(cellW * (v.videoHeight || 720) / (v.videoWidth || 1280)));
         var cv = document.createElement('canvas');
+        cv.setAttribute('aria-hidden', 'true');
         cv.width = cols * cellW; cv.height = rows * cellH;
         var ctx = cv.getContext('2d');
         ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
@@ -11427,6 +11428,7 @@ function buildContactSheet(t, count, shouldCancel) {
     var mr = null;
     try {
       cv = document.createElement('canvas');
+      cv.setAttribute('aria-hidden', 'true');
       var sceneOutputFormat = exportCanvasSizeFor(currentExportFormatKey(), 1280, 720);
       var sceneOutputContainer = currentExportContainer();
       var sceneMimeInfo = chooseExportMime(sceneOutputContainer);
@@ -13913,7 +13915,7 @@ function buildContactSheet(t, count, shouldCancel) {
     if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') return navigator.clipboard.writeText(text);
     return new Promise(function (resolve, reject) {
       try {
-        var area = document.createElement('textarea'); area.value = text; area.setAttribute('readonly', ''); area.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
+        var area = document.createElement('textarea'); area.value = text; area.setAttribute('readonly', ''); area.setAttribute('aria-hidden', 'true'); area.setAttribute('tabindex', '-1'); area.setAttribute('aria-label', 'Temporary clipboard copy buffer'); area.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
         document.body.appendChild(area); area.select();
         var ok = document.execCommand('copy'); area.remove();
         if (ok) resolve(); else reject(new Error('Clipboard access was not available.'));
@@ -15365,8 +15367,12 @@ function buildContactSheet(t, count, shouldCancel) {
       coachPipWin = w;
       w.document.body.style.cssText = 'margin:0;background:#000;overflow:hidden;font-family:system-ui,sans-serif';
       var pc = w.document.createElement('canvas');
+      pc.setAttribute('role', 'img');
+      pc.setAttribute('aria-label', 'Screen Coach live mirrored screen');
       pc.style.cssText = 'width:100%;display:block';
       var bar = w.document.createElement('div');
+      bar.setAttribute('role', 'status');
+      bar.setAttribute('aria-live', 'polite');
       bar.style.cssText = 'position:fixed;left:0;right:0;bottom:0;background:rgba(15,23,42,.92);color:#fff;font-size:13px;padding:6px 9px;line-height:1.35';
       bar.textContent = '🧭 Screen Coach — suggestions appear here.';
       w.document.body.appendChild(pc);
@@ -15435,6 +15441,7 @@ function buildContactSheet(t, count, shouldCancel) {
     if (!coachCaptureActive()) return null;
     var scale = Math.min(1, 1280 / v.videoWidth);
     var c = document.createElement('canvas');
+    c.setAttribute('aria-hidden', 'true');
     c.width = Math.max(2, Math.round(v.videoWidth * scale));
     c.height = Math.max(2, Math.round(v.videoHeight * scale));
     c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
@@ -16124,7 +16131,7 @@ function buildContactSheet(t, count, shouldCancel) {
         var outputContainerChoice = sanitizeExportContainer(opts.container || 'auto');
         var outputMimeInfo = chooseExportMime(outputContainerChoice);
         var w = outputFormat.width, hgt = outputFormat.height;
-        var cv = document.createElement('canvas'); cv.width = w; cv.height = hgt;
+        var cv = document.createElement('canvas'); cv.setAttribute('aria-hidden', 'true'); cv.width = w; cv.height = hgt;
         var ctx = cv.getContext('2d');
         var ac = new (window.AudioContext || window.webkitAudioContext)();
         var mixItems = [];
@@ -16526,7 +16533,7 @@ function buildContactSheet(t, count, shouldCancel) {
           var outputFraming = sanitizeExportFraming(opts.framing || 'fit');
           var outputContainerChoice = sanitizeExportContainer(opts.container || 'auto');
           var w = outputFormat.width, hgt = outputFormat.height;
-          var cv = document.createElement('canvas'); cv.width = w; cv.height = hgt;
+          var cv = document.createElement('canvas'); cv.setAttribute('aria-hidden', 'true'); cv.width = w; cv.height = hgt;
           var ctx = cv.getContext('2d');
           var captionStyle = vsResolveCaptionStyle(captionStyleKey, captionCustom);
           var insertList = vsSanitizeTeachingInserts(inserts || [], take.duration || 0);
@@ -17051,6 +17058,7 @@ function buildContactSheet(t, count, shouldCancel) {
           if (done || v.seeking || v.readyState < 2) return;
           try {
             var cv = document.createElement('canvas');
+            if (cv.setAttribute) cv.setAttribute('aria-hidden', 'true');
             cv.width = 640; cv.height = Math.round(640 * (v.videoHeight || 9) / (v.videoWidth || 16));
             var cctx = cv.getContext('2d');
             cctx.drawImage(v, 0, 0, cv.width, cv.height);

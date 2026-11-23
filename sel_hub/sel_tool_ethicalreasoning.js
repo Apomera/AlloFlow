@@ -1089,14 +1089,14 @@ window.SelHub = window.SelHub || {
                     h('span', { className: 'text-xs text-slate-600 font-bold uppercase' }, dl.category)
                   )
                 ),
-                h('p', { className: 'text-xs text-slate-600 leading-relaxed line-clamp-2' }, dl.scenario.substring(0, 120) + '...')
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, dl.scenario.substring(0, 120) + '...')
               );
             })
           )
         ),
 
         // ═══ BRANCHING SCENARIOS TAB ═══
-        tab === 'branching' && h('div', {  className: 'space-y-4' },
+        tab === 'branching' && h('div', { id: 'eth-panel-branching', role: 'tabpanel', 'aria-labelledby': 'eth-tab-branching', className: 'space-y-4' },
           h('div', {  className: 'text-center mb-2' },
             h('h3', { id: 'ethical-branch-title', className: 'text-lg font-black text-slate-100' }, '\uD83C\uDF33 Ethical Scenarios'),
             h('p', { className: 'text-sm text-slate-300' }, 'Choose wisely \u2014 every decision has consequences.')
@@ -1267,7 +1267,7 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ FRAMEWORKS TAB (Grade-Banded) ═══
-        tab === 'frameworks' && h('div', {  className: 'space-y-4' },
+        tab === 'frameworks' && h('div', { id: 'eth-panel-frameworks', role: 'tabpanel', 'aria-labelledby': 'eth-tab-frameworks', className: 'space-y-4' },
           h('p', { className: 'text-sm text-slate-300 text-center mb-2' }, 'Ethical frameworks are different lenses for examining the same question. No single framework has all the answers.'),
 
           // Grade band indicator
@@ -1352,7 +1352,7 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ EXPLORE TAB (selected dilemma deep dive) ═══
-        tab === 'explore' && selectedDilemma && h('div', {  className: 'space-y-4' },
+        tab === 'explore' && selectedDilemma && h('div', { id: 'eth-panel-explore', role: 'tabpanel', 'aria-labelledby': 'eth-tab-explore', className: 'space-y-4' },
 
           // Dilemma header
           h('div', {  className: 'bg-gradient-to-r from-slate-50 to-indigo-50 rounded-2xl border-2 border-slate-200 p-5' },
@@ -1432,13 +1432,13 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ EXPLORE TAB - no dilemma selected ═══
-        tab === 'explore' && !selectedDilemma && h('div', {  className: 'bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center' },
+        tab === 'explore' && !selectedDilemma && h('div', { id: 'eth-panel-explore', role: 'tabpanel', 'aria-labelledby': 'eth-tab-explore', className: 'bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center' },
           h('p', { className: 'text-slate-600 font-bold' }, 'Choose a dilemma from the Dilemmas tab first, then come here to explore it deeply.'),
           h('button', { onClick: function() { upd('tab', 'dilemmas'); }, className: 'mt-3 px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700' }, 'Go to Dilemmas')
         ),
 
         // ═══ SOCRATIC DIALOGUE TAB ═══
-        tab === 'dialogue' && h('div', { role: 'region', 'aria-label': 'Socratic dialogue', className: 'space-y-4' },
+        tab === 'dialogue' && h('div', { id: 'eth-panel-dialogue', role: 'tabpanel', 'aria-labelledby': 'eth-tab-dialogue', 'aria-label': 'Socratic dialogue', className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83D\uDCAC Socratic Dialogue'),
             h('p', { className: 'text-sm text-slate-300' }, selectedDilemma ? 'Exploring: ' + selectedDilemma.title : 'Select a dilemma first, then share your thinking.')
@@ -1484,7 +1484,7 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ KOHLBERG MORAL REASONING ASSESSMENT TAB ═══
-        tab === 'kohlberg' && h('div', { className: 'space-y-4' },
+        tab === 'kohlberg' && h('div', { id: 'eth-panel-kohlberg', role: 'tabpanel', 'aria-labelledby': 'eth-tab-kohlberg', className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83E\uDDE0 Moral Reasoning Style'),
             h('p', { className: 'text-sm text-slate-300' }, 'Discover how you think about right and wrong. There are no wrong answers \u2014 only YOUR reasoning.')
@@ -1623,7 +1623,7 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ DEBATE PREP TAB ═══
-        tab === 'debate' && h('div', {  className: 'space-y-4' },
+        tab === 'debate' && h('div', { id: 'eth-panel-debate', role: 'tabpanel', 'aria-labelledby': 'eth-tab-debate', className: 'space-y-4' },
           h('div', {  className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83C\uDFA4 Debate Prep Tool'),
             h('p', { className: 'text-sm text-slate-300' }, 'Pick a topic, choose a side, and build your argument.')
@@ -1758,7 +1758,7 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ CASE STUDIES TAB ═══
-        tab === 'casestudies' && h('div', {  className: 'space-y-4' },
+        tab === 'casestudies' && h('div', { id: 'eth-panel-casestudies', role: 'tabpanel', 'aria-labelledby': 'eth-tab-casestudies', className: 'space-y-4' },
           h('div', {  className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83D\uDCD6 Ethical Case Studies'),
             h('p', { className: 'text-sm text-slate-300' }, 'Real-world ethical situations for deeper analysis and Socratic dialogue.')
@@ -1968,7 +1968,7 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ VALUES CLARIFICATION TAB ═══
-        tab === 'values' && h('div', {  className: 'space-y-4' },
+        tab === 'values' && h('div', { id: 'eth-panel-values', role: 'tabpanel', 'aria-labelledby': 'eth-tab-values', className: 'space-y-4' },
           h('div', {  className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83D\uDC8E Values Clarification'),
             h('p', { className: 'text-sm text-slate-300' }, 'What matters most to you? Rank your top values and reflect on why.')
@@ -2149,7 +2149,7 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ DECISION TREE BUILDER TAB ═══
-        tab === 'decisiontree' && h('div', {  className: 'space-y-4' },
+        tab === 'decisiontree' && h('div', { id: 'eth-panel-decisiontree', role: 'tabpanel', 'aria-labelledby': 'eth-tab-decisiontree', className: 'space-y-4' },
           h('div', {  className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83C\uDF32 Ethical Decision Tree Builder'),
             h('p', { className: 'text-sm text-slate-300' }, 'Walk through ethical reasoning step by step and build your decision tree.')
@@ -2289,7 +2289,7 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ PHILOSOPHY CORNER TAB ═══
-        tab === 'philosophy' && h('div', {  className: 'space-y-4' },
+        tab === 'philosophy' && h('div', { id: 'eth-panel-philosophy', role: 'tabpanel', 'aria-labelledby': 'eth-tab-philosophy', className: 'space-y-4' },
           h('div', {  className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83E\uDDD0 Philosophy Corner'),
             h('p', { className: 'text-sm text-slate-300' }, 'Meet the thinkers who shaped how we reason about right and wrong.')
@@ -2367,7 +2367,7 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ BADGES TAB ═══
-        tab === 'badges' && h('div', { className: 'space-y-4' },
+        tab === 'badges' && h('div', { id: 'eth-panel-badges', role: 'tabpanel', 'aria-labelledby': 'eth-tab-badges', className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83C\uDFC5 Badges & Achievements'),
             h('p', { className: 'text-sm text-slate-300' }, 'Earn badges by exploring ethical reasoning deeply.')

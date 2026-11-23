@@ -3,7 +3,7 @@
   "reviewedAt": "2026-07-18",
   "reviewer": "OpenAI Codex independent cross-review",
   "itemCount": 100,
-  "sourceSha256": "f34856cad9ed4f77eb5752616ef49ef338be7345ee0d28aecd87790851bb0ab9",
+  "sourceSha256": "2990cadcad83029bdd413e7330f0ecffe90d5410cdfdf48cdb25f1ac39a90e05",
   "verdict": "pass — independently authored Audiology 5343 draft; structurally and editorially ready for integrated QA",
   "blockers": [],
   "correctionsMade": [
@@ -26,6 +26,14 @@
     {
       "issue": "Non-EPPP editorial screening flagged residual lexical-leakage, brief distractor-rationale, or asymmetric-extreme-distractor warnings in 43 item(s).",
       "change": "Remediated 43 item(s) by hand via dev-tools/non_eppp_authored_remediation/audiology_5343_batch3.cjs without changing any answerIndex, domainId, rationale, or references. All editorial warning checks now report 0 findings across the batch."
+    },
+    {
+      "issue": "Non-EPPP editorial screening flagged residual lexical-leakage, brief distractor-rationale, or asymmetric-extreme-distractor warnings in 49 item(s).",
+      "change": "Remediated 49 item(s) by hand via dev-tools/non_eppp_authored_remediation/audiology_5343_batch3.cjs + length_balance_wave2_part1.cjs without changing any answerIndex, domainId, rationale, or references. All editorial warning checks now report 0 findings across the batch."
+    },
+    {
+      "issue": "Non-EPPP editorial screening flagged residual lexical-leakage, brief distractor-rationale, or asymmetric-extreme-distractor warnings in 49 item(s).",
+      "change": "Remediated 49 item(s) by hand via dev-tools/non_eppp_authored_remediation/audiology_5343_batch3.cjs + length_balance_wave2_part1.cjs without changing any answerIndex, domainId, rationale, or references. All editorial warning checks now report 0 findings across the batch."
     }
   ],
   "checks": {
@@ -272,7 +280,7 @@
   },
   "artifactBinding": {
     "algorithm": "sha256",
-    "sha256": "f34856cad9ed4f77eb5752616ef49ef338be7345ee0d28aecd87790851bb0ab9"
+    "sha256": "2990cadcad83029bdd413e7330f0ecffe90d5410cdfdf48cdb25f1ac39a90e05"
   },
   "integration": {
     "packId": "praxis-audiology-5343",
@@ -302,6 +310,26 @@
       "ledger": "dev-tools/non_eppp_authored_remediation/audiology_5343_batch3.cjs",
       "priorSha256": "241b64515a8b401a6e344fca2405ba56213b6974db4c9e90f821d57e8e769e20",
       "sha256": "f34856cad9ed4f77eb5752616ef49ef338be7345ee0d28aecd87790851bb0ab9",
+      "note": "Edited after the independent cross-review to eliminate editorial warning findings while preserving tested constructs and answer positions. The binding was renewed so the artifact stays self-consistent; the original reviewer did not review these replacements."
+    },
+    {
+      "at": "2026-11-21",
+      "by": "Antigravity — AlloFlow test-prep warning remediation pass",
+      "scope": "editorial warning remediation (lexical leakage / distractor feedback depth / extreme-qualifier balance)",
+      "itemsChanged": 49,
+      "ledger": "dev-tools/non_eppp_authored_remediation/audiology_5343_batch3.cjs + length_balance_wave2_part1.cjs",
+      "priorSha256": "f34856cad9ed4f77eb5752616ef49ef338be7345ee0d28aecd87790851bb0ab9",
+      "sha256": "3e17c87cf073e4365e21b2bfc0140c22c16864d0ecf19dd7b4b34f8a02c69f2f",
+      "note": "Edited after the independent cross-review to eliminate editorial warning findings while preserving tested constructs and answer positions. The binding was renewed so the artifact stays self-consistent; the original reviewer did not review these replacements."
+    },
+    {
+      "at": "2026-11-21",
+      "by": "Antigravity — AlloFlow test-prep warning remediation pass",
+      "scope": "editorial warning remediation (lexical leakage / distractor feedback depth / extreme-qualifier balance)",
+      "itemsChanged": 49,
+      "ledger": "dev-tools/non_eppp_authored_remediation/audiology_5343_batch3.cjs + length_balance_wave2_part1.cjs",
+      "priorSha256": "3e17c87cf073e4365e21b2bfc0140c22c16864d0ecf19dd7b4b34f8a02c69f2f",
+      "sha256": "2990cadcad83029bdd413e7330f0ecffe90d5410cdfdf48cdb25f1ac39a90e05",
       "note": "Edited after the independent cross-review to eliminate editorial warning findings while preserving tested constructs and answer positions. The binding was renewed so the artifact stays self-consistent; the original reviewer did not review these replacements."
     }
   ]

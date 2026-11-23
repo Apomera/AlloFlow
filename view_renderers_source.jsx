@@ -1521,7 +1521,7 @@ const renderOutlineContentCore = (deps) => {
                                      }
                                    } catch (_) {}
                                  }}
-                                 aria-label={(t('a11y.read_aloud') || 'Listen') + (branch.title ? ': ' + branch.title : '')}
+                                 aria-label={(t('common.listen') || 'Listen') + (branch.title ? ': ' + branch.title : '')}
                                  title={t('a11y.read_aloud') || 'Listen'}
                                  className="no-print shrink-0 inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                ><span aria-hidden="true">🔊</span><span>{t('common.listen') || 'Listen'}</span></button>
@@ -3208,7 +3208,7 @@ const renderOutlineContentCore = (deps) => {
                                                                     }
                                                                 } catch (_) {}
                                                             }}
-                                                            aria-label={(t('a11y.read_aloud') || 'Listen') + (branch.title ? ': ' + branch.title : '')}
+                                                            aria-label={(t('common.listen') || 'Listen') + (branch.title ? ': ' + branch.title : '')}
                                                             title={t('a11y.read_aloud') || 'Listen'}
                                                             className="no-print shrink-0 inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                                         ><span aria-hidden="true">🔊</span><span>{t('common.listen') || 'Listen'}</span></button>

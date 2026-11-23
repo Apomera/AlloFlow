@@ -208,7 +208,8 @@
   var say = function (words) { setText('said', ''); setText('said', words); };
   var nameOf = function (service) { return SERVICES.filter(function (one) { return one.id === service; })[0].name; };
 
-  var state = { word: '', searched: '', online: false, run: 0, busy: false };
+  var state = { word: '', searched: '', online: false, run: 0, busy: false, offlineRun: 0, queue: [], hadQueue: false, savedCount: 0 };
+  var offlineTimer = 0;
 
   function storage() { try { return root.localStorage; } catch (_) { return null; } }
   function safeJsonParse(raw) {
@@ -228,23 +229,79 @@
     } catch (_) { return false; }
   }
 
-  // The word: from the address (#word=cat or #from=present&word=cat) or typed
+  // The word: from the address (#word=cat, #from=present&word=cat, or #word=cat&more=dog,sun) or typed
   function wordFromAddress() {
     var found = /[#&]word=([^&]*)/.exec(String(root.location && root.location.hash || ''));
     if (!found) return '';
     try { return store.normalizeWord(decodeURIComponent(found[1])); } catch (_) { return ''; }
   }
-  function takeWord(value) {
+  function queueFromAddress(firstWord) {
+    var found = /[#&]more=([^&]*)/.exec(String(root.location && root.location.hash || ''));
+    if (!found) return [];
+    var seen = Object.create(null), out = [];
+    if (firstWord) seen[firstWord] = true;
+    try {
+      decodeURIComponent(found[1]).split(',').forEach(function (part) {
+        if (out.length >= 50) return;
+        var w = store.normalizeWord(part);
+        if (w && !seen[w]) { seen[w] = true; out.push(w); }
+      });
+    } catch (_) {}
+    return out;
+  }
+  function mountQueueControls() {
+    var hint = $('word-hint');
+    if (!hint || !hint.parentNode || $('queue-note')) return;
+    var row = el('p', 'hint');
+    row.id = 'queue-note';
+    row.hidden = true;
+    var skip = el('button', 'btn btn-text btn-small', 'Skip word');
+    skip.type = 'button';
+    skip.id = 'queue-skip';
+    skip.hidden = true;
+    skip.addEventListener('click', function () {
+      if (!state.queue.length) return;
+      var nextWord = state.queue.shift();
+      $('word').value = nextWord;
+      takeWord(nextWord, { immediate: true });
+      drawQueueNote();
+      $('word').focus();
+    });
+    hint.parentNode.appendChild(row);
+    hint.parentNode.appendChild(skip);
+  }
+  function drawQueueNote() {
+    var note = $('queue-note'), skip = $('queue-skip');
+    if (!note) return;
+    if (!state.queue.length) {
+      note.textContent = '';
+      note.hidden = true;
+      if (skip) skip.hidden = true;
+      return;
+    }
+    var preview = state.queue.slice(0, 4).join(', ') + (state.queue.length > 4 ? ', and more' : '');
+    note.textContent = 'Next in your list (' + state.queue.length + ' more): ' + preview + '.';
+    note.hidden = false;
+    if (skip) skip.hidden = false;
+  }
+  function takeWord(value, options) {
+    var opts = options || {};
     var word = store.normalizeWord(String(value || ''));
     if (word === state.word) return;
     state.word = word;
+    state.offlineRun++;
+    root.clearTimeout(offlineTimer);
     // Pictures found for another word are put away.
     if (state.searched && state.searched !== word) { state.run++; state.searched = ''; state.busy = false; show('results', false); drawSearch(); }
-    show('saved', false);
+    if (!opts.keepSaved) show('saved', false);
     setText('device-said', '');
     setText('online-said', '');
     setText('offline-said', '');
     if ($('pics-offline')) empty($('pics-offline'));
+    if (word) {
+      if (opts.immediate) searchOfflineDiagrams({ auto: true });
+      else offlineTimer = root.setTimeout(function () { searchOfflineDiagrams({ auto: true }); }, 200);
+    }
   }
   function needWord(saidId) {
     if (state.word) return true;
@@ -258,10 +315,24 @@
   function showSaved(word, entry) {
     var picture = entry && entry.picture;
     if (!picture) return;
+    state.savedCount++;
+    state.queue = state.queue.filter(function (item) { return item !== word; });
+    var nextWord = state.queue.length ? state.queue.shift() : '';
     $('saved-picture').src = picture.dataUri;
-    setText('saved-line', 'Saved for the word ' + word + '. It is on this device only.');
+    var line = 'Saved for the word ' + word + '. It is on this device only.';
+    if (nextWord) {
+      line = 'Saved for the word ' + word + '. Next word ready above: ' + nextWord + (state.queue.length ? ' (' + state.queue.length + ' more after that).' : '.');
+    } else if (state.hadQueue) {
+      line = 'Saved for the word ' + word + '. All words in your list are done. It is on this device only.';
+    }
+    setText('saved-line', line);
     setText('saved-credit', store.creditLine(picture.credit));
     show('saved', true);
+    if (nextWord) {
+      $('word').value = nextWord;
+      takeWord(nextWord, { keepSaved: true, immediate: true });
+    }
+    drawQueueNote();
     var title = $('saved-title');
     title.focus();
     if (typeof title.scrollIntoView === 'function') title.scrollIntoView({ block: 'center' });
@@ -561,17 +632,21 @@
     device.parentNode.insertBefore(section, device.nextSibling);
     btn.addEventListener('click', searchOfflineDiagrams);
   }
-  function searchOfflineDiagrams() {
-    if (!needWord('offline-said')) return;
-    var word = state.word;
+  function searchOfflineDiagrams(options) {
+    var auto = !!(options && options.auto === true);
+    if (!state.word) { if (!auto) needWord('offline-said'); return; }
+    var word = state.word, run = ++state.offlineRun;
     var saidLine = $('offline-said'), list = $('pics-offline');
     if (!saidLine || !list) return;
-    setText('offline-said', 'Searching built-in diagrams.');
+    if (!auto) setText('offline-said', 'Searching built-in diagrams.');
     empty(list);
     loadOfflineMatcher().then(function (matcher) {
+      if (run !== state.offlineRun || state.word !== word) return;
       if (!matcher) {
-        var fail = 'Built-in diagrams could not be loaded on this page.';
-        setText('offline-said', fail); say(fail);
+        if (!auto) {
+          var fail = 'Built-in diagrams could not be loaded on this page.';
+          setText('offline-said', fail); say(fail);
+        }
         return;
       }
       var hits = [];
@@ -583,8 +658,9 @@
       }
       empty(list);
       if (!hits.length) {
-        var none = 'No built-in diagram matched "' + word + '". Try choosing a file from your device or searching online.';
-        setText('offline-said', none); say(none);
+        var none = auto ? 'No built-in diagram matched "' + word + '".' : 'No built-in diagram matched "' + word + '". Try choosing a file from your device or searching online.';
+        setText('offline-said', none);
+        if (!auto) say(none);
         return;
       }
       hits.forEach(function (hit) {
@@ -594,14 +670,14 @@
         var li = el('li', 'pic');
         var img = el('img');
         img.src = uri;
-        img.alt = title;
+        img.alt = '';
         img.width = 160; img.height = 160;
         var useBtn = el('button', 'btn', 'Use this picture');
         useBtn.type = 'button';
         useBtn.setAttribute('aria-label', 'Use ' + title + ' for ' + word);
         useBtn.addEventListener('click', function () {
           var targetWord = state.word || word;
-          store.put(targetWord, { picture: { dataUri: uri, credit: { own: true } } }).then(function (entry) {
+          store.put(targetWord, { picture: { dataUri: uri, credit: { title: title, author: 'AlloFlow', license: 'AGPL-3.0', source: 'AlloFlow Curriculum Diagrams' } } }).then(function (entry) {
             showSaved(targetWord, entry);
           }, function (error) {
             var errMsg = problemText(error, 'This picture could not be saved.');
@@ -611,30 +687,51 @@
         list.appendChild(add(li, img, el('p', 'pic-title', title), el('p', 'pic-by', 'Built-in curriculum diagram'), el('p', 'pic-license', 'AGPL-3.0'), useBtn));
       });
       var doneMsg = count(hits.length, 'built-in diagram', 'built-in diagrams') + ' for "' + word + '".';
-      setText('offline-said', doneMsg); say(doneMsg);
+      setText('offline-said', doneMsg);
+      if (!auto) say(doneMsg);
     });
   }
 
   function start() {
     mountOfflineSection();
+    mountQueueControls();
     var input = $('word');
-    // Back to the page the teacher came from: Present, Vocab or Symbol Runner via #from=...; else the Word Sounds maker.
+    // Back to the page the teacher came from: Present, Vocab, Symbol Runner, Read-Along or Word Sounds via #from=...; else the Word Sounds maker.
     var rawHash = String(root.location && root.location.hash || '');
-    var back = $('back-link');
-    if (back) {
-      if (/[#&]from=present(?:&|$)/.test(rawHash)) {
-        back.setAttribute('href', 'packets-present-export.html'); back.textContent = 'Back to Present & print word cards';
-      } else if (/[#&]from=vocab(?:&|$)/.test(rawHash)) {
-        back.setAttribute('href', 'packets-vocab.html'); back.textContent = 'Back to Make vocabulary practice';
-      } else if (/[#&]from=symbol-runner(?:&|$)/.test(rawHash)) {
-        back.setAttribute('href', 'packets-symbol-runner.html'); back.textContent = 'Back to Make Symbol Runner practice';
-      }
+    var backHref = '', backLabel = '';
+    if (/[#&]from=present(?:&|$)/.test(rawHash)) {
+      backHref = 'packets-present-export.html'; backLabel = 'Back to Present & print word cards';
+    } else if (/[#&]from=vocab(?:&|$)/.test(rawHash)) {
+      backHref = 'packets-vocab.html'; backLabel = 'Back to Make vocabulary practice';
+    } else if (/[#&]from=symbol-runner(?:&|$)/.test(rawHash)) {
+      backHref = 'packets-symbol-runner.html'; backLabel = 'Back to Make Symbol Runner practice';
+    } else if (/[#&]from=read-along(?:&|$)/.test(rawHash)) {
+      backHref = 'packets-read-along.html'; backLabel = 'Back to Make a read-along';
+    } else if (/[#&]from=make(?:&|$)/.test(rawHash)) {
+      backHref = 'packets-make.html'; backLabel = 'Back to the maker';
+    }
+    if (backHref) {
+      var back = $('back-link'), topBack = $('from-back-link');
+      if (back) { back.setAttribute('href', backHref); back.textContent = backLabel; }
+      if (topBack) { topBack.setAttribute('href', backHref); topBack.textContent = backLabel; }
+      show('from-back', true);
     }
     state.word = wordFromAddress();
+    state.queue = queueFromAddress(state.word);
+    if (!state.word && state.queue.length) state.word = state.queue.shift();
+    state.hadQueue = state.queue.length > 0;
     input.value = state.word;
+    drawQueueNote();
     input.addEventListener('input', function () { takeWord(input.value); });
     input.addEventListener('keydown', function (event) { if (event.key === 'Enter' && !event.repeat && !event.isComposing && event.keyCode !== 229 && state.online) { event.preventDefault(); search(); } });
-    root.addEventListener('hashchange', function () { var word = wordFromAddress(); if (word) { input.value = word; takeWord(word); } });
+    root.addEventListener('hashchange', function () {
+      var word = wordFromAddress();
+      var more = queueFromAddress(word);
+      if (more.length) { state.queue = more; state.hadQueue = true; }
+      if (!word && state.queue.length) word = state.queue.shift();
+      if (word) { input.value = word; takeWord(word, { immediate: true }); }
+      drawQueueNote();
+    });
 
     $('choose').addEventListener('click', chooseFile);
     $('file').addEventListener('change', fileChosen);
@@ -678,7 +775,10 @@
       show('offline-lib', yes);
       show('online', yes);
       show('mine', yes);
-      if (yes) drawMine();
+      if (yes) {
+        drawMine();
+        if (state.word) searchOfflineDiagrams({ auto: true });
+      }
     });
     // A picture added or removed in another tab shows here too.
     store.onChange(function (change) { if (!change.here) drawMine(); });

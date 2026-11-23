@@ -2089,8 +2089,8 @@
       :host([data-theme="dark"]) .encounter-art{background:linear-gradient(135deg,#134e4a,#312e81);color:#f1f5f9}
       :host([data-theme="dark"]) button{background:#1e293b;color:#f1f5f9;border-color:#64748b}
       :host([data-theme="dark"]) button:hover:not(:disabled){background:#334155;color:#ffffff}
-      :host([data-theme="dark"]) button.primary{background:#0d9488;color:#ffffff;border-color:#14b8a6}
-      :host([data-theme="dark"]) button.primary:hover:not(:disabled){background:#0f766e;color:#ffffff}
+      :host([data-theme="dark"]) button.primary{background:#0f766e;color:#ffffff;border-color:#14b8a6}
+      :host([data-theme="dark"]) button.primary:hover:not(:disabled){background:#115e59;color:#ffffff}
       :host([data-theme="contrast"]){--ink:#fff;--muted:#eee;--paper:#000;--line:#ff0;--control-line:#ff0;--accent:#ff0;color-scheme:dark}
       :host([data-theme="contrast"]) :is(button,input,textarea,select,.scene,.campaign-card,.action,.location-info,.notice,.written-response,.encounter-panel,.encounter-feedback,.encounter-art){background:#000;color:#fff;border-color:#ff0}
       :host([data-theme="contrast"]) button:hover:not(:disabled),

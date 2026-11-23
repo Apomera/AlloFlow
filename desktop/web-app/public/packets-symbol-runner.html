@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en" data-sr-css>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<!-- The product name is written once on this page, in #product-name. packets-page.js puts it in front of this title. -->
+<title>Make Symbol Runner practice</title>
+<meta name="description" content="Make quick naming practice or a 1-minute check for letters, letter sounds, numbers, words and dot patterns, in three steps. The file is put together in your browser. Runs without AI. No account.">
+<link rel="icon" type="image/svg+xml" href="packets-mark.svg">
+<link rel="stylesheet" href="packets.css">
+<link rel="stylesheet" href="packets-make.css">
+<link rel="stylesheet" href="packets-symbol-runner.css">
+<script src="packets-page.js" defer></script>
+<script src="packets_verify_core.js" defer></script>
+<script src="packets_reopen.js" defer></script>
+<script src="packets_handoff.js" defer></script>
+<script src="packets_zip.js" defer></script>
+<script src="packets_my_words.js" defer></script>
+<script src="vendor/pptxgenjs-3.12.0.bundle.js" defer></script>
+<script src="word_sounds_take_home_loader.js" defer></script>
+<script src="packets_audio_kit.js" defer></script>
+<script src="word_sounds_symbols_en.js" defer></script>
+<script src="word_picture_matcher.js" defer></script>
+<script src="word_practice_core.js" defer></script>
+<script src="word_practice_media.js" defer></script>
+<script src="symbol_runner_core.js" defer></script>
+<script src="packet_symbol_runner_builder.js" defer></script>
+<script src="packets-symbol-runner.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the main part</a>
+
+<header class="top">
+  <div class="wrap wrap-narrow top-row">
+    <a class="brand" href="packets.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 3 7.5l9 4.5 9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
+      <span id="product-name">AlloFlow Packets</span>
+    </a>
+    <details class="top-menu">
+      <summary>Switch maker</summary>
+      <nav aria-label="Other Packets tools">
+        <a href="packets-make.html">Word Sounds</a>
+        <a href="packets-vocab.html">Vocabulary</a>
+        <a href="packets-math-practice.html">Math Fact Practice</a>
+        <a href="packets-check.html">Math Check</a>
+        <a href="packets-read-along.html">Read-Along</a>
+        <a href="packets-symbol-runner.html" aria-current="page">Symbol Runner</a>
+        <a href="packets-present-export.html">Present &amp; print</a>
+        <a href="packets-results.html">Add up results</a>
+      </nav>
+    </details>
+    <a class="top-link" href="packets-results.html">Add up results</a>
+  </div>
+<details class="proof">
+  <summary class="wrap wrap-narrow">
+    <span class="proof-line">This page runs without AI. No account. Nothing you choose is uploaded.</span>
+    <span class="proof-open proof-open-closed">See the details</span>
+    <span class="proof-open proof-open-opened">Hide the details</span>
+  </summary>
+  <div class="wrap wrap-narrow proof-body">
+    <ul>
+      <li>Nothing is generated when you make a file or when a student uses it. The sets of symbols are fixed lists.</li>
+      <li>The sounds were recorded ahead of time with two computer voices made with AI: Google Gemini for letter names, letter sounds and common sight words, and Kokoro for the other words.</li>
+      <li>The file is put together in this browser tab. Your choices, the symbols you type and the pictures you add are not sent anywhere.</li>
+      <li>This page never uses the microphone. In the round on this page, the student answers by tapping, clicking or typing.</li>
+      <li>When a symbol has no recording, the round on this page can say it with a voice that is built into this device. It never uses an online voice.</li>
+      <li>There are no cookies and nothing to sign in to.</li>
+      <li>The page loads files from this site only. It gets the recordings of letters and sounds from this site too. Some words have their sounds in small files of about 40 words each, and the page gets only the ones your words need.</li>
+      <li>Like any website, the server that sends these files can see that your browser asked for them. That includes which of the small sound files were asked for, but not which words. It receives nothing else.</li>
+      <li>On this device the page keeps your last choices, and pictures you add are resized on this device and kept in the browser's shared My words database on this device. It never keeps a student's code name or a teacher code. The button that removes your choices is under About this page, at the bottom.</li>
+      <li>Open a file I made reads a file you saved before, on this device only. Nothing in it is run.</li>
+    </ul>
+    <p>Every file this page loads: <span data-show-files>they are listed in the page's source, and all of them are on this site.</span></p>
+    <p>The rule this page gives your browser. The browser refuses anything the rule does not allow:
+      <code class="rule-text" data-show-rule>It is the Content-Security-Policy line near the top of this page's source.</code>
+    </p>
+  </div>
+</details>
+</header>
+
+<main id="main" tabindex="-1" class="maker">
+  <div class="wrap wrap-narrow">
+    <h1>Make Symbol Runner practice</h1>
+    <p class="scope" id="what-practice-is">Quick naming practice, or a 1-minute check, for letters, letter sounds, numbers, words and dots. The student sees one card at a time and names it.</p>
+
+    <div id="reopen" class="reopen">
+      <p class="reopen-row">
+        <button type="button" class="btn btn-text btn-small" id="sr-reopen-btn" aria-describedby="sr-reopen-hint">Open a file I made</button>
+        <span class="hint" id="sr-reopen-hint">Start from a file you saved before.<span class="reopen-more"> Then change what you want. You can also drop the file here. It is read on this device only.</span></span>
+      </p>
+      <input type="file" id="sr-reopen-file" accept=".html,.htm,text/html" hidden aria-label="A file you made before">
+      <div id="reopen-note" class="note reopen-note" tabindex="-1" hidden>
+        <p id="sr-reopen-status" class="reopen-line" role="status" aria-live="polite"></p>
+        <p class="row reopen-actions">
+          <button type="button" class="btn btn-text btn-small" id="reopen-close">Close this note</button>
+        </p>
+      </div>
+    </div>
+
+    <nav aria-label="Steps">
+      <ol class="steps">
+        <li><button type="button" class="step-tab" data-go="1" aria-current="step"><span class="step-n" aria-hidden="true">1</span><span class="step-label"><span class="sr-only">Step 1: </span>What to practice</span></button></li>
+        <li><button type="button" class="step-tab" data-go="2"><span class="step-n" aria-hidden="true">2</span><span class="step-label"><span class="sr-only">Step 2: </span>How it works</span></button></li>
+        <li><button type="button" class="step-tab" data-go="3"><span class="step-n" aria-hidden="true">3</span><span class="step-label"><span class="sr-only">Step 3: </span>Make the file</span></button></li>
+      </ol>
+    </nav>
+
+    <noscript><p class="note note-problem">This page needs JavaScript to put the file together. Nothing is sent anywhere.</p></noscript>
+
+    <p id="sr-status" class="sr-status" role="status" aria-live="polite"></p>
+
+    <section id="step-1" class="sheet" aria-labelledby="step-1-title">
+      <p class="kicker">Step 1 of 3</p>
+      <h2 id="step-1-title" tabindex="-1">What to practice</h2>
+      <p class="sheet-intro">Choose a practice file or a 1-minute check, then the set of symbols. Or type your own list.</p>
+
+      <fieldset class="block">
+        <legend>Kind of file</legend>
+        <div class="choices">
+          <label class="choice"><input type="radio" name="sr-packet-mode" value="practice" checked>
+            <span class="choice-name">Practice file</span>
+            <span class="choice-line">At the student's own pace. After a miss, the student tries again.</span>
+          </label>
+          <label class="choice"><input type="radio" name="sr-packet-mode" value="check">
+            <span class="choice-name">1-minute check</span>
+            <span class="choice-line">One try on each card, with a 60-second clock. Two practice cards come first.</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset class="block sr-sets-field">
+        <legend>Set of symbols</legend>
+        <div id="sr-sets"></div>
+      </fieldset>
+
+      <div class="field block" id="sr-mode-field" hidden>
+        <label for="sr-mode">Set of symbols</label>
+        <select id="sr-mode" aria-describedby="sr-mode-line">
+          <optgroup label="Letters and sounds">
+            <option value="confusable_letters" data-line="Letters that are easy to mix up, such as b, d, p and q.">Letters that look alike (b, d, p, q)</option>
+            <option value="letters_lower" data-line="All 26 lowercase letters.">Lowercase letters (a to z)</option>
+            <option value="letters_upper" data-line="All 26 capital letters.">Uppercase letters (A to Z)</option>
+            <option value="letter_sounds" data-line="The student says the sound a letter or letter pair makes.">Letter sounds (a, b, sh, ch, th)</option>
+            <option value="bigrams_rimes" data-line="Letter pairs and word endings to say quickly.">Letter teams and word endings (sh, st, at, ing)</option>
+            <option value="vowel_teams_r" data-line="Vowels that work together, such as ee and oa, and vowels with r, such as ar.">Vowel teams and vowels with r (ee, oa, ar, air)</option>
+          </optgroup>
+          <optgroup label="Words">
+            <option value="sight_words" data-line="Words students see often and should read on sight.">Common sight words (all, are, come)</option>
+            <option value="sight_words_g1" data-line="Sight words often taught in grade 1.">Sight words: after, again, every</option>
+            <option value="sight_words_g2_3" data-line="Sight words often taught in grades 2 and 3.">Sight words: always, because, together</option>
+            <option value="multisyllable_words" data-line="Words of two or more syllables to sound out.">Longer words to sound out (planet, volcano)</option>
+            <option value="morpheme_chunks" data-line="Word parts that come at the start or the end of a word.">Prefixes and suffixes (un-, re-, -ing, -ment)</option>
+          </optgroup>
+          <optgroup label="Numbers and math facts">
+            <option value="digits_single" data-line="The ten single numbers.">Numbers 0 to 9</option>
+            <option value="digits_teen_decade" data-line="Numbers that sound alike, such as 13 and 30.">Teens and tens (13 and 30)</option>
+            <option value="math_make_10" data-line="The student says the number that makes 10.">Make 10 (6 + ? = 10)</option>
+            <option value="math_doubles" data-line="Doubles, and doubles plus one.">Doubles and near doubles (6 + 6, 6 + 7)</option>
+            <option value="math_mult_2_5_10" data-line="Multiplication facts with 2, 5 and 10.">Times 2, 5 and 10 (5 x 4, 10 x 6)</option>
+            <option value="math_squares" data-line="A number times itself.">Square facts (2 x 2 to 10 x 10)</option>
+            <option value="subitize_dots" data-line="Dots in a pattern. The student says how many without counting one by one.">Quick dot counting (1 to 9)</option>
+          </optgroup>
+          <optgroup label="Attention and switching" data-line="Practice for focus and for switching between kinds of symbols. Not reading or math practice.">
+            <option value="ras_switch" data-line="Letters and numbers take turns, so the student switches every card.">Quick naming: letters and numbers in turn</option>
+            <option value="ras_triple" data-line="Letters, numbers and color words take turns. For a color word, the student names the ink color.">Quick naming: letters, numbers and colors in turn</option>
+            <option value="flanker_letters" data-line="Five letters in a row, as in ddbdd. The student names only the middle one. (A flanker task.)">Middle letter: b, d, p, q</option>
+            <option value="quantity_stroop" data-line="A number made of dots. The student says how many dots, not the number. (A Stroop-style task.)">Count the dots, not the number</option>
+            <option value="number_size_stroop" data-line="Two numbers in different sizes. The student picks the bigger number, not the bigger print. (A Stroop-style task.)">Bigger number, not bigger print</option>
+            <option value="color_word_stroop" data-line="A color word printed in a color, such as RED in blue ink. The student names the ink color. Not suited to a student who is color-blind. (A Stroop task.)">Name the ink color, not the word</option>
+          </optgroup>
+          <optgroup label="Your own">
+            <option value="custom" data-line="Type the letters, numbers or words you want below.">My own list</option>
+          </optgroup>
+        </select>
+        <span class="hint" id="sr-mode-line"></span>
+      </div>
+
+      <div class="field block" id="sr-custom-field" hidden>
+        <label for="sr-custom">My own list</label>
+        <span class="hint" id="sr-custom-hint">Type at least 2 letters, numbers or words, with spaces or commas between them.</span>
+        <input id="sr-custom" type="text" placeholder="b d p q m n" maxlength="200" autocomplete="off" spellcheck="false" autocapitalize="none" aria-describedby="sr-custom-hint">
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn btn-primary push" id="sr-next-1">Next: how it works</button>
+      </div>
+    </section>
+
+    <section id="step-2" class="sheet" aria-labelledby="step-2-title" hidden>
+      <p class="kicker">Step 2 of 3</p>
+      <h2 id="step-2-title" tabindex="-1">How it works</h2>
+      <p class="sheet-intro">These choices can stay as they are. Open Settings to change how the student answers, the sounds or the pictures. Try a round below to see them.</p>
+
+      <details class="more block" id="sr-more-2">
+        <summary><span class="more-name">Settings</span><span class="more-now" id="sr-more-2-now"></span></summary>
+        <div class="more-body">
+      <fieldset class="block">
+        <legend>How the student answers</legend>
+        <div class="choices">
+          <label class="choice"><input type="radio" name="sr-control" value="direct" checked>
+            <span class="choice-name">Answer right away</span>
+            <span class="choice-line">The student taps, clicks or types the answer as soon as the card shows.</span>
+          </label>
+          <label class="choice"><input type="radio" name="sr-control" value="lockon">
+            <span class="choice-name">Point at the card first</span>
+            <span class="choice-line">The student first points at the card's lane with the mouse or the arrow keys, then answers. Practice in looking before naming.</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <div class="block" id="sr-practice-options">
+        <label class="choice"><input type="checkbox" id="sr-rehearsal">
+          <span class="choice-name">Rehearsal with known facts</span>
+          <span class="choice-line">Up to 3 new symbols, mixed in among symbols the student already knows, so most answers are right. Based on incremental rehearsal.</span>
+        </label>
+        <div id="sr-rehearsal-box" class="field sr-sub" hidden>
+          <label for="sr-known">Symbols the student already knows</label>
+          <span class="hint" id="sr-known-hint">At least 3, with spaces or commas between them. Leave it empty and the first few symbols are new, the rest known.</span>
+          <input id="sr-known" type="text" maxlength="200" autocomplete="off" spellcheck="false" autocapitalize="none" aria-describedby="sr-known-hint">
+        </div>
+
+        <div id="sr-audio-wrap" class="sr-sub-block">
+          <label class="choice"><input type="checkbox" id="sr-include-audio" checked>
+            <span class="choice-name">Put the sounds in the file</span>
+            <span class="choice-line">The student can hear each symbol. The file works with no internet.</span>
+          </label>
+          <div class="field sr-sub">
+            <label for="sr-audio-mode">What the student hears for a letter</label>
+            <select id="sr-audio-mode">
+              <option value="auto">Letter names for letters, sounds for letter sounds</option>
+              <option value="name">Letter names (a, b, c)</option>
+              <option value="sound">Letter sounds (/a/, /b/, /sh/)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="sr-check-options" class="block" hidden>
+        <label class="choice"><input type="checkbox" id="sr-untimed">
+          <span class="choice-name">No clock</span>
+          <span class="choice-line">An accommodation for one student. The score is the number right, and it is kept apart from timed scores.</span>
+        </label>
+        <div class="field sr-sub">
+          <label for="sr-teacher-code">Teacher code (optional)</label>
+          <span class="hint" id="sr-code-why">Without a code, the screen at the end shows only the score. With a code, it also shows each answer. It is a lock on the screen, not secret writing.</span>
+          <span class="hint" id="sr-code-hint">4 or more characters. This page does not keep the code, so write it down. It cannot be recovered.</span>
+          <input id="sr-teacher-code" type="password" autocomplete="off" maxlength="64" autocapitalize="none" spellcheck="false" aria-describedby="sr-code-why sr-code-hint">
+          <div class="loosen">
+            <button type="button" class="btn btn-small" id="sr-code-show" aria-pressed="false" aria-controls="sr-teacher-code" aria-label="Show the teacher code">Show</button>
+          </div>
+        </div>
+      </div>
+
+      <details class="sr-pics-panel block">
+        <summary>Pictures to help (optional)</summary>
+        <p class="hint">A small picture next to a symbol, such as a ball for b. The built-in pictures are on this site. You can also use a picture from this device (shared with My words on this device).</p>
+        <div class="sr-pic-toolbar">
+          <button type="button" class="btn btn-small" id="sr-auto-pics">Fill in the built-in pictures</button>
+          <input type="file" id="sr-pic-file" accept="image/*" hidden aria-label="A picture from this device">
+        </div>
+        <div id="sr-pic-list" class="sr-pic-list"></div>
+      </details>
+        </div>
+      </details>
+
+      <div class="block sr-live" id="sr-live">
+        <h3>Try a round on this page</h3>
+        <p class="hint">The round does not use the microphone. Answer by tapping, clicking or typing.</p>
+        <fieldset class="sr-fieldset">
+          <legend>How the round on this page looks</legend>
+          <p class="hint">The student's file always shows one card at a time. This changes only the round on this page.</p>
+          <div class="radios">
+            <label class="radio"><input type="radio" name="sr-view" value="3d" checked> Cards coming down a road</label>
+            <label class="radio"><input type="radio" name="sr-view" value="2d"> Three flat lanes</label>
+            <label class="radio"><input type="radio" name="sr-view" value="grid"> A sheet of 40 (5 by 8)</label>
+          </div>
+          <label class="radio sr-hc"><input type="checkbox" id="sr-hc"> High contrast colors</label>
+        </fieldset>
+        <div class="sr-live-bar">
+          <button type="button" class="btn" id="sr-start-live">Start the round again</button>
+        </div>
+        <div id="sr-live-host" class="sr-live-host"></div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn" id="sr-back-2">Back</button>
+        <button type="button" class="btn btn-primary push" id="sr-next-2">Next: make the file</button>
+      </div>
+    </section>
+
+    <section id="step-3" class="sheet" aria-labelledby="step-3-title" hidden>
+      <p class="kicker">Step 3 of 3</p>
+      <h2 id="step-3-title" tabindex="-1">Make the file</h2>
+
+      <div id="sr-build-problem" class="note note-problem" hidden>
+        <p id="sr-build-problem-text"></p>
+        <p><button type="button" class="btn btn-small" id="sr-fix-choices">Change the choices</button></p>
+      </div>
+
+      <div id="sr-summary" class="summary" hidden>
+        <h3>The file is ready</h3>
+        <p id="sr-summary-line" class="summary-facts"></p>
+      </div>
+
+      <div class="field block" id="sr-title-field">
+        <label for="sr-title">Title</label>
+        <span class="hint" id="sr-title-hint">The student sees it at the top of the file. The results file's name starts with it.</span>
+        <input id="sr-title" type="text" maxlength="120" autocomplete="off" aria-describedby="sr-title-hint">
+      </div>
+
+      <div class="actions actions-file">
+        <button type="button" class="btn" id="sr-back-3">Back</button>
+        <button type="button" class="btn push" id="sr-try-packet">Try it <span class="sr-only">(opens in a new tab)</span></button>
+        <button type="button" class="btn btn-primary" id="sr-save-html">Save the file</button>
+      </div>
+
+      <div id="sr-after-save" class="next" tabindex="-1" hidden>
+        <h3>Saved. What to do next</h3>
+        <ol>
+          <li>Send the file to your students the way you send any file: your learning platform, a shared drive or a USB drive. From Google Drive or Google Classroom, a student downloads the file first: the preview there does not run it.</li>
+          <li>Each student opens it in a browser, does the practice or the check and presses the main button at the end, <strong id="sr-work-label">Save my work</strong> (in a check: <strong id="sr-csv-label">Save results as a spreadsheet file (CSV)</strong>). They hand that file back to you.</li>
+          <li>Add the results up on <a href="packets-results.html">Add up results</a>, or open them in a spreadsheet.</li>
+        </ol>
+        <p class="after-phone">If the file does not open on a device (a phone, a tablet, or a school computer that will not open downloaded files), a student opens it on <a href="packets-open.html">Open a practice file or check</a>: <span data-open-address>apomera.github.io/AlloFlow/packets-open.html</span>.</p>
+        <p id="sr-after-code" hidden>The answers screen inside the file opens with your teacher code. This page has not kept the code.</p>
+      </div>
+
+      <details class="batch" id="sr-batch">
+        <summary>Put student code names in the file</summary>
+        <div class="batch-body">
+          <p class="hint">Type 1 code name to put it into the file above, or 2 to 40 (one per line) to save one file per student in a .zip. In Google Classroom, where one assignment gives every student the same file, leave this empty and each student types a code name at the start.</p>
+          <div class="field">
+            <label for="sr-learners">Code names, one on each line</label>
+            <span class="hint" id="sr-learners-hint">Use code names or first names only, never full names. At most 40 at a time.</span>
+            <textarea id="sr-learners" rows="5" maxlength="2400" spellcheck="false" autocapitalize="none" autocomplete="off" placeholder="BlueHeron7&#10;RedFox3" aria-describedby="sr-learners-hint sr-batch-said"></textarea>
+          </div>
+          <p class="row">
+            <button type="button" class="btn btn-small" id="sr-batch-load">Load list from a .txt file</button>
+            <input type="file" id="sr-batch-file" accept=".txt,text/plain" aria-label="A text file of code names" hidden>
+          </p>
+          <p id="sr-batch-said" class="result-sub" role="status"></p>
+          <p class="row batch-row">
+            <button type="button" class="btn" id="sr-batch-make" hidden>Save .zip</button>
+          </p>
+          <p id="sr-batch-problem" class="actions-note" role="alert"></p>
+          <p class="hint" id="sr-learner-tip-line">Sharing by web link instead? Add <code>#learner=CodeName</code> to the end of the link, for example <code>#learner=BlueHeron7</code>. It stays on the student's device.</p>
+        </div>
+      </details>
+
+      <details class="why sr-more" id="sr-more">
+        <summary>More things to make from these symbols</summary>
+        <p class="hint">Each one is saved as its own file. Printed sheets have no sound.</p>
+        <div class="sr-export-bar">
+          <button type="button" class="btn btn-small" id="sr-save-ran-grid">A sheet of 40 to print (5 by 8)</button>
+          <button type="button" class="btn btn-small" id="sr-save-flashcards">Flashcards to print</button>
+          <button type="button" class="btn btn-small" id="sr-save-ccc">Cover, copy, compare sheet to print</button>
+          <button type="button" class="btn btn-small" id="sr-save-pptx">Slides, one symbol on each (.pptx)</button>
+          <button type="button" class="btn btn-small" id="sr-open-present-export">Open the words in Present &amp; print word cards</button>
+        </div>
+      </details>
+    </section>
+
+    <details id="about-page" class="about">
+      <summary>About this page</summary>
+      <div class="about-body">
+        <h2>What this page keeps</h2>
+        <p>Your last choices are kept in this browser so that the page opens the way you left it: the kind of file, the set of symbols, how the student answers, the round's look, rehearsal, sounds and the title. A student's code name and a teacher code are never kept. Nothing is kept anywhere else.</p>
+        <p class="row">
+          <button type="button" class="btn btn-small" id="sr-clear-local">Forget my choices</button>
+          <span id="sr-clear-status" role="status"></span>
+        </p>
+        <h2>Where the pictures and sounds come from</h2>
+        <ul>
+          <li>The built-in pictures are Mulberry Symbols and OpenMoji, under CC BY-SA 4.0, and simple drawings made for AlloFlow. A picture you add from this device is yours.</li>
+          <li>The sounds were recorded ahead of time with Google Gemini and Kokoro voices. Each practice file lists its credits under About this file.</li>
+          <li>In the file, rehearsal with known facts follows one fixed plan. Each new symbol comes with 1 known symbol, then 2, then 3, and once more at the end. The first time a new symbol comes, it is shown with its answer.</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap wrap-narrow foot-row">
+    <p>Free to use. Open source, license AGPL-3.0.</p>
+    <p><a href="./">More from AlloFlow</a></p>
+  </div>
+</footer>
+</body>
+</html>

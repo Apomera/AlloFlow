@@ -1,0 +1,32 @@
+{
+  "about": "Human overrides for dev-tools/build_word_picture_semantic_bridge.cjs. Put false-positive words under \"exclude\" (word -> reason) or pinned mappings under \"force\" (word -> { target, kind: \"syn\"|\"hyp\"|\"diag\" }).",
+  "version": 1,
+  "exclude": {
+    "bat": "homograph (animal vs sports bat)",
+    "bark": "homograph (tree bark vs dog bark)",
+    "bank": "homograph (riverbank vs financial bank)",
+    "crane": "homograph (bird vs machine)",
+    "date": "homograph (fruit vs calendar date)",
+    "fan": "homograph (cooling fan vs admirer)",
+    "jam": "homograph (food vs traffic jam)",
+    "match": "homograph (fire match vs sports match)",
+    "mint": "homograph (herb vs coin mint)",
+    "mole": "homograph (animal vs chemistry mole)",
+    "nail": "homograph (fingernail vs hardware nail)",
+    "palm": "homograph (hand palm vs palm tree)",
+    "pitch": "homograph (tar vs throw vs musical pitch)",
+    "seal": "homograph (animal vs stamp seal)",
+    "spring": "homograph (season vs coil vs water spring)",
+    "trunk": "homograph (elephant vs tree vs car trunk)",
+    "ash": "homograph (fire ash vs ash tree)",
+    "cog": "mechanical gear tooth, not human tooth",
+    "needle": "sewing needle vs pine needle",
+    "sauceboat": "gravy dish, not watercraft",
+    "spectator": "audience member, not spectator shoe",
+    "priming": "paint primer, not wearable coat",
+    "castor": "caster wheel / oil, not beaver hat",
+    "frank": "honest adjective vs frankfurter",
+    "swift": "fast adjective vs swift bird"
+  },
+  "force": {}
+}

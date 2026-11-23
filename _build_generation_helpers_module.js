@@ -13,6 +13,7 @@ const source = fs.readFileSync(SOURCE, 'utf-8');
 const outputCode =
 `(function() {
 'use strict';
+if (typeof window === 'undefined') return;
 if (window.AlloModules && window.AlloModules.GenerationHelpersModule) { console.log('[CDN] GenerationHelpersModule already loaded, skipping'); return; }
 ${source}
 window.AlloModules.GenerationHelpersModule = true;

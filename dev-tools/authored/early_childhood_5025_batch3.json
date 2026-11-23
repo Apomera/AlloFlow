@@ -423,7 +423,7 @@
     "prompt": "A child can identify rhyming words but cannot blend onset and rime. Which prompt directly assesses onset-rime blending?",
     "choices": [
       "“Do map and sun rhyme?”",
-      "“What word do /m/ and /ap/ make when you put them together?”",
+      "“What word do /m/ and /ap/ make?”",
       "“How many syllables are in map?”",
       "“What is the last phoneme in map?”"
     ],

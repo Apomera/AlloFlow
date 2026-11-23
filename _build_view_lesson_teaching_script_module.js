@@ -14,6 +14,7 @@ const output = [
   '/** Teacher-only teaching script attached to an existing lesson plan. */',
   '(function () {',
   "  'use strict';",
+  "  if (typeof window === 'undefined') return;",
   '  if (window.AlloModules && window.AlloModules.LessonTeachingScriptView) return;',
   '  var React = window.React;',
   "  if (!React) throw new Error('[LessonTeachingScriptView] React is required');",

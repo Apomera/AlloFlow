@@ -2,7 +2,7 @@
 (function (root) {
   'use strict';
   const CSS = `
-.awp,.awp *{box-sizing:border-box}.awp{font:1rem/1.5 system-ui,sans-serif;color:#14213d;background:#f5f7fb;overflow-wrap:anywhere;color-scheme:light}.awp-overlay{position:fixed;inset:0;z-index:2147483000;padding:20px;display:flex;align-items:center;justify-content:center;background:#14213dcc}.awp-dialog{width:min(100%,1100px);max-height:calc(100dvh - 40px);overflow:auto;border-radius:20px;background:#f5f7fb;padding:1.5rem;box-shadow:0 16px 80px #0005}.awp h1:not(.allo-anno-scope *),.awp .awp-head h2:not(.allo-anno-scope *),.awp p:not(.allo-anno-scope *){margin:0 0 .75rem}.awp h1{font-size:1.625rem;line-height:1.2}.awp .awp-head h2{font-size:1.625rem;line-height:1.2}.awp button:not(.allo-anno-scope *),.awp input:not(.allo-anno-scope *),.awp textarea:not(.allo-anno-scope *),.awp select:not(.allo-anno-scope *){font:inherit;color:#14213d}.awp button:not(.allo-anno-scope *){min-height:44px;padding:.5625rem .9375rem;border:1px solid #a8b4c7;border-radius:9px;background:white;cursor:pointer;white-space:normal}.awp button:hover:not(:disabled):not(.allo-anno-scope *){background:#e9effa}.awp button:disabled:not(.allo-anno-scope *){color:#596579;background:#e7ebf2;cursor:default}.awp .awp-primary{color:white;background:#294fc3;border-color:#294fc3}.awp .awp-primary:hover:not(:disabled){background:#1e3d99}.awp .awp-aa{min-width:44px;font-weight:700}.awp :focus-visible{outline:3px solid #bc4a00;outline-offset:3px}.awp input:not([type=checkbox]):not([type=radio]):not([type=range]):not(.allo-anno-scope *),.awp textarea:not(.allo-anno-scope *),.awp select:not(.allo-anno-scope *){width:100%;max-width:100%;border:1px solid #8191a9;background:white;border-radius:7px;padding:.5625rem}.awp textarea:not(.allo-anno-scope *){resize:vertical;min-height:10.625rem}.awp label:not(.allo-anno-scope *){display:block;font-weight:600}.awp label>span{display:block;margin-bottom:.3125rem}.awp label:has(input[type=checkbox]):not(.allo-anno-scope *){display:flex;align-items:center;gap:.5625rem;font-weight:400}.awp input[type=checkbox]:not(.allo-anno-scope *){width:1.25rem;height:1.25rem;flex-shrink:0;accent-color:#294fc3}.awp-head,.awp-row{display:flex;align-items:center;gap:.625rem;flex-wrap:wrap}.awp-head{justify-content:space-between;margin-bottom:1.25rem}.awp-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.5rem}.awp-fields{display:grid;gap:.8125rem}.awp-note{font-size:.875rem;color:#45536a}.awp-status{min-height:1.5625rem;margin-top:.875rem!important;color:#263e6c}.awp-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.125rem}.awp-surface{border:1px solid #bdc8da;border-radius:14px;background:white;padding:1.125rem;min-width:0}.awp-player{width:100%;max-width:1400px;margin:auto;padding:1.25rem}.awp-stage{position:relative;display:flex;align-items:safe center;justify-content:center;min-height:48vh;max-height:60dvh;padding:2.125rem;border:1px solid #bac6d9;border-radius:16px;background:white;margin:1rem 0;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable}.awp-card{max-width:100%;width:100%;text-align:center;line-height:var(--allo-reader-line-height,1.5);letter-spacing:var(--allo-reader-letter-spacing,normal)}.awp-word{font-weight:750;font-size:clamp(2.125rem,9vw,7rem);line-height:var(--allo-reader-line-height,1.5);overflow-wrap:anywhere;white-space:normal}.awp-stage[data-position^=top]{align-items:flex-start}.awp-stage[data-position^=bottom]{align-items:safe flex-end}.awp-stage[data-position$=left] .awp-card{text-align:left}.awp-stage[data-position$=right] .awp-card{text-align:right}.awp-detail{font-size:clamp(1.25rem,3vw,2.125rem);line-height:var(--allo-reader-line-height,1.5);white-space:pre-wrap}.awp-phonemes{display:flex;justify-content:center;flex-wrap:wrap;gap:.875rem;font-size:clamp(1.75rem,6vw,4.5rem);font-weight:650}.awp-phoneme{padding:.125rem .75rem;border-bottom:4px solid #294fc3}.awp-choices{display:flex;justify-content:center;flex-wrap:wrap;gap:.625rem;margin-top:1.5rem}.awp-choices button{font-size:clamp(1.25rem,3vw,1.875rem);min-width:5.625rem}.awp-feedback{font-size:1.25rem;min-height:1.875rem;margin-top:.875rem!important}.awp-progress{font-variant-numeric:tabular-nums}.awp-footer{display:flex;justify-content:space-between;gap:.75rem;flex-wrap:wrap}.awp:fullscreen{overflow:auto;background:#f5f7fb}.awp [hidden]{display:none!important}.awp .awp-gap{margin-top:.875rem}.awp .awp-review[aria-pressed=true]{background:#fdf0cf;border-color:#926300;color:#664500}
+.awp,.awp *{box-sizing:border-box}.awp{font:1rem/1.5 system-ui,sans-serif;color:#14213d;background:#f5f7fb;overflow-wrap:anywhere;color-scheme:light}.awp-overlay{position:fixed;inset:0;z-index:2147483000;padding:20px;display:flex;align-items:center;justify-content:center;background:#14213dcc}.awp-dialog{width:min(100%,1100px);max-height:calc(100dvh - 40px);overflow:auto;border-radius:20px;background:#f5f7fb;padding:1.5rem;box-shadow:0 16px 80px #0005}.awp h1:not(.allo-anno-scope *),.awp .awp-head h2:not(.allo-anno-scope *),.awp p:not(.allo-anno-scope *){margin:0 0 .75rem}.awp h1{font-size:1.625rem;line-height:1.2}.awp .awp-head h2{font-size:1.625rem;line-height:1.2}.awp button:not(.allo-anno-scope *),.awp input:not(.allo-anno-scope *),.awp textarea:not(.allo-anno-scope *),.awp select:not(.allo-anno-scope *){font:inherit;color:#14213d}.awp button:not(.allo-anno-scope *){min-height:44px;padding:.5625rem .9375rem;border:1px solid #a8b4c7;border-radius:9px;background:white;cursor:pointer;white-space:normal}.awp button:hover:not(:disabled):not(.allo-anno-scope *){background:#e9effa}.awp button:disabled:not(.allo-anno-scope *){color:#596579;background:#e7ebf2;cursor:default}.awp .awp-primary{color:white;background:#294fc3;border-color:#294fc3}.awp .awp-primary:hover:not(:disabled){background:#1e3d99}.awp .awp-aa{min-width:44px;font-weight:700}.awp :focus-visible{outline:3px solid #bc4a00;outline-offset:3px}.awp input:not([type=checkbox]):not([type=radio]):not([type=range]):not(.awp-symbol-search):not(.allo-anno-scope *),.awp textarea:not(.allo-anno-scope *),.awp select:not(.allo-anno-scope *){width:100%;max-width:100%;border:1px solid #8191a9;background:white;border-radius:7px;padding:.5625rem}.awp textarea:not(.allo-anno-scope *){resize:vertical;min-height:10.625rem}.awp label:not(.allo-anno-scope *){display:block;font-weight:600}.awp label>span{display:block;margin-bottom:.3125rem}.awp label:has(input[type=checkbox]):not(.allo-anno-scope *){display:flex;align-items:center;gap:.5625rem;font-weight:400}.awp input[type=checkbox]:not(.allo-anno-scope *){width:1.25rem;height:1.25rem;flex-shrink:0;accent-color:#294fc3}.awp-head,.awp-row{display:flex;align-items:center;gap:.625rem;flex-wrap:wrap}.awp-head{justify-content:space-between;margin-bottom:1.25rem}.awp-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.5rem}.awp-fields{display:grid;gap:.8125rem}.awp-note{font-size:.875rem;color:#45536a}.awp-status{min-height:1.5625rem;margin-top:.875rem!important;color:#263e6c}.awp-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.125rem}.awp-surface{border:1px solid #bdc8da;border-radius:14px;background:white;padding:1.125rem;min-width:0}.awp-player{width:100%;max-width:1400px;margin:auto;padding:1.25rem}.awp-stage{position:relative;display:flex;align-items:safe center;justify-content:center;min-height:48vh;max-height:60dvh;padding:2.125rem;border:1px solid #bac6d9;border-radius:16px;background:white;margin:1rem 0;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable}.awp-card{max-width:100%;width:100%;text-align:center;line-height:var(--allo-reader-line-height,1.5);letter-spacing:var(--allo-reader-letter-spacing,normal)}.awp-word{font-weight:750;font-size:clamp(2.125rem,9vw,7rem);line-height:var(--allo-reader-line-height,1.5);overflow-wrap:anywhere;white-space:normal}.awp-stage[data-position^=top]{align-items:flex-start}.awp-stage[data-position^=bottom]{align-items:safe flex-end}.awp-stage[data-position$=left] .awp-card{text-align:left}.awp-stage[data-position$=right] .awp-card{text-align:right}.awp-detail{font-size:clamp(1.25rem,3vw,2.125rem);line-height:var(--allo-reader-line-height,1.5);white-space:pre-wrap}.awp-phonemes{display:flex;justify-content:center;flex-wrap:wrap;gap:.875rem;font-size:clamp(1.75rem,6vw,4.5rem);font-weight:650}.awp-phoneme{padding:.125rem .75rem;border-bottom:4px solid #294fc3}.awp-choices{display:flex;justify-content:center;flex-wrap:wrap;gap:.625rem;margin-top:1.5rem}.awp-choices button{font-size:clamp(1.25rem,3vw,1.875rem);min-width:5.625rem}.awp-feedback{font-size:1.25rem;min-height:1.875rem;margin-top:.875rem!important}.awp-progress{font-variant-numeric:tabular-nums}.awp-footer{display:flex;justify-content:space-between;gap:.75rem;flex-wrap:wrap}.awp:fullscreen{overflow:auto;background:#f5f7fb}.awp:fullscreen .awp-stage{min-height:68dvh;max-height:78dvh}.awp [hidden]{display:none!important}.awp .awp-gap{margin-top:.875rem}.awp .awp-review[aria-pressed=true]{background:#fdf0cf;border-color:#926300;color:#664500}
 .awp-anno-tools{margin-top:.5rem}.awp-anno-tools:empty{display:none}.awp-anno-layer{position:static;width:0;height:0;flex:none}
 .awp-sr{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 .awp-card .awp-definition,.awp-card .awp-example,.awp-card .awp-origin{text-align:start}
@@ -20,7 +20,7 @@
 .awp .awp-translation-row button{inline-size:44px;padding-inline:0}.awp .awp-translation-row button[aria-disabled=true]{color:#64748b;border-color:#cbd5e1;cursor:default}.awp .awp-translation-actions button[aria-pressed=true]{background:#e8effd;border-color:#294fc3}
 .awp-translation-menu{max-inline-size:36rem}
 @media(max-width:640px){.awp-translation-row{grid-template-columns:44px 44px minmax(0,1fr)}.awp-translation-row>label{grid-column:1/-1}.awp .awp-translation-actions button{padding-inline:.25rem}}
-.awp .awp-choices button[aria-disabled=true]{cursor:default}.awp .awp-choices button[aria-disabled=true],.awp .awp-choices button:hover:not(:disabled){background:var(--awp-card-background,#fff);color:var(--awp-card-heading,#14213d)}.awp .awp-choices button:hover:not(:disabled):not([aria-disabled=true]){border-color:var(--awp-card-accent,#294fc3);box-shadow:inset 0 0 0 1px var(--awp-card-accent,#294fc3)}
+.awp .awp-choices button[aria-disabled=true]{cursor:default}.awp .awp-choices button[data-awp-tried=true]{opacity:.72;text-decoration:line-through;border-style:dashed}.awp .awp-choices button[aria-disabled=true],.awp .awp-choices button:hover:not(:disabled){background:var(--awp-card-background,#fff);color:var(--awp-card-heading,#14213d)}.awp .awp-choices button:hover:not(:disabled):not([aria-disabled=true]){border-color:var(--awp-card-accent,#294fc3);box-shadow:inset 0 0 0 1px var(--awp-card-accent,#294fc3)}
 .awp-preview-word{font-weight:750;line-height:var(--allo-reader-line-height,1.5);overflow-wrap:anywhere;white-space:normal}.awp-preview-detail{line-height:var(--allo-reader-line-height,1.5);white-space:pre-wrap}.awp-preview-definition,.awp-preview-example,.awp-preview-origin{text-align:start}
 .awp .awp-sentence-prompt[data-prose=true],.awp .awp-preview-prompt[data-prose=true]{text-align:start}.awp-preview-picker{margin-bottom:.75rem}
 .awp-stage .awp-language-name,.awp-card-preview .awp-preview-language-name{display:block;text-align:start;font-weight:650;margin-bottom:.25rem}.awp-stage .awp-translation,.awp-card-preview .awp-preview-translation{display:block;text-align:start}.awp-stage .awp-language-name,.awp-card-preview .awp-preview-language-name,.awp-card-preview .awp-note{color:var(--awp-card-muted,#45536a)}
@@ -29,13 +29,13 @@
 .awp-meaning-choices{min-width:0;margin:0;padding:.75rem;border:1px solid #bdc8da;border-radius:9px}.awp-meaning-choices label{min-height:44px;padding:.375rem 0;align-items:flex-start!important}.awp-meaning-choices input{margin-top:.25rem}.awp-meaning-choices legend{font-weight:650;padding:0 .25rem}
 .awp .awp-meaning-copy{min-width:0;flex:1;margin:0}.awp-meaning-heading{display:flex;align-items:baseline;flex-wrap:wrap;gap:.125em .375em;min-width:0;text-align:start}.awp-meaning-number{font-size:.875em;font-weight:500;color:#45536a}.awp-meaning-term{min-width:0;font-weight:650;unicode-bidi:isolate}.awp .awp-meaning-language{max-width:100%;padding:.0625em .375em;border:1px solid #cbd5e1;border-radius:999px;min-width:0;overflow-wrap:anywhere;font-size:.8125em;line-height:1.4;font-weight:500;unicode-bidi:isolate}.awp-meaning-excerpt{display:block;margin-block-start:.25rem;color:#45536a;text-align:start}
 .awp-meaning-details{min-width:0;margin-inline-start:1.8125rem;margin-block-end:.5rem}.awp-meaning-details>summary{min-height:44px;cursor:pointer;font-weight:600}.awp-meaning-definition{max-block-size:min(16rem,45vh);overflow:auto;overscroll-behavior:contain;white-space:pre-wrap;text-align:start}
-.awp-fields{align-content:start;min-width:0}.awp-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8125rem}.awp-options>label:first-child{grid-column:1/-1}.awp-checks{display:grid;gap:.375rem}.awp-checks label{min-height:36px}.awp-checks label>span{margin:0}.awp-audio-setup{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-top:1rem;padding:.875rem 1rem;border:1px solid #bdc8da;border-radius:12px;background:#edf2fc}.awp-audio-setup .awp-note{margin:0;flex:1 1 25rem}.awp-format-note{margin-top:1rem!important}.awp-delivery{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1fr)}.awp-set-actions{padding-top:.875rem;border-top:1px solid #d5deeb}.awp-set-actions button{background:transparent}.awp-timing-note{grid-column:1/-1;margin:0!important}
+.awp-fields{align-content:start;min-width:0}.awp-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8125rem}.awp-options>label:first-child{grid-column:1/-1}.awp-checks{display:grid;gap:.375rem}.awp-checks label{min-height:44px}.awp-checks label>span{margin:0}.awp-audio-setup{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-top:1rem;padding:.875rem 1rem;border:1px solid #bdc8da;border-radius:12px;background:#edf2fc}.awp-audio-setup .awp-note{margin:0;flex:1 1 25rem}.awp-format-note{margin-top:1rem!important}.awp-delivery{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1fr)}.awp-print-sheets{margin-top:.875rem;padding:.5rem .875rem;border:1px solid #bdc8da;border-radius:10px;background:white}.awp-print-sheets>summary{min-height:44px;cursor:pointer;font-weight:650;display:flex;align-items:center}.awp-print-sheets-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,14rem),1fr));gap:.5rem;margin-top:.5rem!important}.awp-set-actions{padding-top:.875rem;border-top:1px solid #d5deeb}.awp-set-actions button{background:transparent}.awp-timing-note{grid-column:1/-1;margin:0!important}
 .awp-audio-details{flex:1 1 25rem;min-width:0}.awp-audio-setup .awp-audio-mode{margin-top:.375rem;font-weight:600;color:#263e6c}.awp-plan{margin-top:1rem;padding:.875rem 1rem;border:1px solid #bdc8da;border-radius:12px;background:white}.awp-plan p{margin:0}.awp-plan-count{font-weight:650;font-variant-numeric:tabular-nums}.awp-plan .awp-plan-note{margin-top:.375rem;color:#784411}.awp-plan[data-needs-review=true]{border-inline-start:4px solid #a76918}
 .awp-operation{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem;margin-top:1rem;padding:.75rem;background:#f5f7fb;border:1px solid #bdc8da;border-radius:10px}.awp-operation[data-active=true]{position:sticky;bottom:0;max-height:min(50dvh,18rem);overflow:auto}.awp-operation:has(.awp-status:empty):has(button[hidden]){display:none}.awp-operation .awp-status{flex:1 1 18rem;margin:0!important;min-height:0}.awp-operation progress{width:100%;height:.625rem;accent-color:#294fc3}.awp-review-details{margin-top:.75rem}.awp-review-details summary{cursor:pointer;min-height:44px;font-weight:650}.awp-review-details ul{max-height:12rem;overflow:auto;margin:.375rem 0;padding-inline-start:1.5rem;scrollbar-gutter:stable;overscroll-behavior:contain}.awp-review-details h2{font-size:.875rem;margin:.75rem 0 .25rem}.awp-review-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.75rem}
 @media(max-width:640px){.awp-overlay{padding:6px}.awp-dialog{padding:.9375rem;max-height:calc(100dvh - 12px);border-radius:12px}.awp-grid{grid-template-columns:minmax(0,1fr);gap:1rem}.awp-player{padding:.5rem}.awp-dialog .awp-player{padding-inline:0}.awp-stage{padding:1.125rem .625rem;min-height:42vh}.awp-head{gap:.5rem}.awp h1{font-size:1.375rem}.awp button{padding:.5625rem .6875rem}.awp-word{font-size:clamp(1.875rem,11vw,4.5rem)}}
 @media(max-width:640px){.awp-options{grid-template-columns:minmax(0,1fr)}.awp-delivery{grid-template-columns:repeat(2,minmax(0,1fr))}.awp-delivery .awp-primary{grid-column:1/-1}.awp-set-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.awp-audio-setup{padding:.75rem}.awp-audio-setup button{width:100%}.awp-operation{padding:.5rem}.awp-operation button{width:100%;padding-inline:.375rem}}
 @media(max-width:640px){.awp-appearance-controls{grid-template-columns:minmax(0,1fr)}.awp-appearance{padding:.75rem}.awp-card-preview{padding:.75rem}}
-.awp-stage{touch-action:pan-y}.awp-picture{margin:1rem auto 0;max-width:min(100%,32rem)}.awp-picture img{display:block;max-width:100%;max-height:34vh;margin:0 auto;object-fit:contain;border-radius:10px}.awp-picture figcaption{margin-top:.25rem;font-size:.75rem;color:var(--awp-card-muted,#45536a);text-align:center}.awp-card-preview .awp-picture img{max-height:8rem}
+.awp-stage{touch-action:pan-y}.awp-picture{margin:1rem auto 0;max-width:min(100%,32rem)}.awp-picture img{display:block;max-width:100%;max-height:34vh;margin:0 auto;object-fit:contain;border-radius:10px}.awp:fullscreen .awp-picture img{max-height:48dvh}.awp-picture figcaption{margin-top:.25rem;font-size:.75rem;color:var(--awp-card-muted,#45536a);text-align:center}.awp-card-preview .awp-picture img{max-height:8rem}
 .awp [data-awp-reader-spacing=true],.awp [data-awp-reader-spacing=true] :is(div,p,span,button,b,figcaption):not(.allo-anno-scope *){line-height:var(--allo-reader-line-height,1.5)!important;letter-spacing:var(--allo-reader-letter-spacing,normal)!important}
 .awp [data-awp-reader-font=true],.awp [data-awp-reader-font=true] :not(.allo-anno-scope *):not(svg):not(svg *){font-family:var(--awp-card-font-family)!important}
 .awp [data-awp-reader-variant=true] :is(.awp-word,.awp-preview-word){--awp-text-weight:750}
@@ -59,9 +59,10 @@
 .awp-picture-word-row{display:flex;flex-wrap:wrap;align-items:center;gap:.375rem;justify-content:space-between}
 .awp-picture-word{font-weight:700;overflow-wrap:anywhere}
 .awp-picture-actions{display:flex;flex-wrap:wrap;gap:.375rem}
-.awp .awp-picture-actions button,.awp .awp-picture-toolbar button{min-height:40px;padding:.3125rem .625rem;font-size:.875rem}
+.awp .awp-picture-actions button,.awp .awp-picture-toolbar button{min-height:44px;padding:.3125rem .625rem;font-size:.875rem}
 .awp-picture-alt{font-size:.875rem}
 .awp-symbol-picker{display:grid;gap:.5rem;margin-top:.5rem;padding:.625rem;border:1px solid #cbd5e1;border-radius:8px;background:#fff}
+.awp .awp-symbol-search{flex:1 1 12rem;width:auto;min-width:0;max-width:100%;border:1px solid #8191a9;background:white;border-radius:7px;padding:.5625rem}
 .awp-symbol-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(5.5rem,1fr));gap:.375rem;max-height:11rem;overflow:auto}
 .awp .awp-symbol-grid button{min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.2rem;padding:.35rem;font-size:.75rem}
 .awp-symbol-grid img{width:28px;height:28px;object-fit:contain}
@@ -330,7 +331,7 @@
   async function readWordSetFile(file, core, label) {
     if (file.size > core.LIMITS.setFileBytes) throw new Error(label('set_too_large', 'This word set is too large. Use a file smaller than 32 MB.'));
     let raw;
-    try { raw = JSON.parse(await file.text()); }
+    try { raw = JSON.parse(await file.text(), (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v); }
     catch (_) { throw new Error(label('set_invalid_file', 'Choose a valid word set JSON file.')); }
     const imported = core.normalizeInput(raw);
     if (!imported.items.length) throw new Error(label('set_no_words', 'This file does not contain a word list.'));
@@ -658,7 +659,7 @@
     const roundActions = make('div', null, 'awp-row awp-round-controls', roundPanel);
     const newRound = button(L('new_round', 'New round'), () => startRound(pack, options), roundActions);
     const reviewRound = button(L('start_review', 'Start review ({count})', { count: 0 }), () => startRound({ items: markedCards() }, { ...options, repetitions: 1 }), roundActions);
-    make('p', options.autoAdvance ? L('keys_help_timed', 'Arrow keys: move · Space: start or pause timer · R: reveal') : L('keys_help_manual', 'Arrow keys: move · Space: next card · R: reveal'), 'awp-note', footer);
+    make('p', options.autoAdvance ? L('keys_help_timed', 'Arrow keys or Page Up/Down: move · Space: start or pause timer · R: reveal · H/S: audio · M: review · F: full screen') : L('keys_help_manual', 'Arrow keys or Page Up/Down: move · Space: next card · R: reveal · H/S: audio · M: review · F: full screen'), 'awp-note', footer);
     const coarse = (() => { try { return !!(win.matchMedia && win.matchMedia('(any-pointer: coarse)').matches); } catch (_) { return false; } })();
     if (coarse) make('p', L('touch_help', 'Touch screens: tap the card to reveal, tap again for the next card, or swipe to move.'), 'awp-note awp-touch-help', footer);
     const status = make('p', '', 'awp-status'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
@@ -677,9 +678,19 @@
         stage.focus({ preventScroll: true }); stage.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
       }
     }
+    function isGlobalMuted() {
+      try {
+        if (typeof win.__alloIsGlobalMuted === 'function' && win.__alloIsGlobalMuted()) return true;
+        if (typeof win.isAlloMuted === 'function' && win.isAlloMuted()) return true;
+        if (win._alloGlobalMute === true) return true;
+        if (win.localStorage && (win.localStorage.getItem('alloflow-global-muted') === '1' || win.localStorage.getItem('alloflow_muted') === '1' || win.localStorage.getItem('alloflow_muted') === 'true')) return true;
+      } catch (_) {}
+      return false;
+    }
     function stopAudio() { audioRun++; if (audio) { audio.pause(); audio.removeAttribute('src'); audio.load(); audio = null; } if (finishAudio) { finishAudio(); finishAudio = null; } }
     async function playClips(clips) {
       stopAudio();
+      if (isGlobalMuted()) return;
       if (!clips.length || clips.some(clip => !core.safeAudio(clip))) { setLabel(status, 'recording_unavailable', 'The complete recording is not available for this word.'); return; }
       const run = audioRun;
       for (const clip of clips) {
@@ -723,16 +734,32 @@
     // The glossary picture with its credit. A decorative picture is hidden from screen readers.
     function appendPicture(parent, picture) {
       const figure = make('figure', null, 'awp-picture', parent);
+      const makeAltFallback = targetParent => {
+        if (!picture.alt) return null;
+        const description = make('span', picture.alt, 'awp-picture-fallback', targetParent);
+        if (picture.usesClueLabel) language(description, labelLanguages.picture_clue || core.languageInfo('English'));
+        return description;
+      };
       if (hooks.allowWebPictures === false && /^https:/i.test(picture.src)) {
-        if (picture.alt) {
-          const description = make('span', picture.alt, '', figure);
-          if (picture.usesClueLabel) language(description, labelLanguages.picture_clue || core.languageInfo('English'));
-        }
+        makeAltFallback(figure);
       } else {
         const image = make('img', null, '', figure);
         image.src = picture.src; image.alt = picture.alt || ''; image.decoding = 'async';
         if (picture.usesClueLabel) language(image, labelLanguages.picture_clue || core.languageInfo('English'));
         if (!picture.alt) image.setAttribute('role', 'presentation');
+        image.onerror = () => {
+          image.onerror = null;
+          if (!image.isConnected) return;
+          if (picture.alt) {
+            const description = doc.createElement('span');
+            description.className = 'awp-picture-fallback';
+            description.textContent = picture.alt;
+            if (picture.usesClueLabel) language(description, labelLanguages.picture_clue || core.languageInfo('English'));
+            image.replaceWith(description);
+          } else {
+            image.remove();
+          }
+        };
       }
       if (picture.credit) make('figcaption', picture.credit, '', figure);
     }
@@ -772,6 +799,7 @@
       const showWord = () => { const word = passage(card, item.word, fieldLanguage(item, 'term'), 'awp-word', 'div'); word.dataset.awpWordScale = String(frame.scale); };
       if (options.mode === 'sentence') {
         const activity = item.sentenceActivity;
+        let wrongTries = 0;
         passage(card, activity.prompt, fieldLanguage(item, 'sentence'), 'awp-detail awp-sentence-prompt', 'p');
         const choices = make('div', null, 'awp-choices', card);
         const feedback = make('p', '', 'awp-feedback', card); feedback.setAttribute('role', 'status');
@@ -780,7 +808,16 @@
           const choiceButton = language(button(choice, () => {
             if (revealed) return;
             if (core.key(choice) === core.key(activity.answer)) { labeledPassage(feedback, 'sentence_correct', 'Yes. {answer} completes the sentence.', 'answer', activity.answer, fieldLanguage(item, 'term')); revealed = true; reveal.disabled = true; choices.querySelectorAll('button').forEach(node => node.setAttribute('aria-disabled', 'true')); updateAudioControls(); schedule(); }
-            else setLabel(feedback, 'sentence_try_again', 'Try another word. Read the whole sentence again.');
+            else {
+              wrongTries += 1;
+              choiceButton.setAttribute('aria-disabled', 'true');
+              choiceButton.dataset.awpTried = 'true';
+              const base = L('sentence_try_again', 'Try another word. Read the whole sentence again.');
+              feedback.replaceChildren();
+              language(feedback, resolvedLabels.get(base));
+              passage(feedback, choice, fieldLanguage(item, 'term'));
+              feedback.appendChild(doc.createTextNode(' — ' + base + (wrongTries > 1 ? ' (' + wrongTries + ')' : '')));
+            }
           }, choices), fieldLanguage(item, 'term'));
           // Keep a solved choice focusable for arrow-key navigation, while
           // exposing that further guesses no longer change this card.
@@ -880,8 +917,10 @@
     function finishRound() {
       if (finished) return;
       running = false; updateTimer(); schedule(); stopAudio();
-      if (options.autoAdvance) { setLabel(status, 'round_complete', 'Round complete. Start a new round or review the words you marked.'); return; }
-      finished = true; next.disabled = true; status.textContent = '';
+      if (options.autoAdvance && hooks.onBack) { setLabel(status, 'round_complete', 'Round complete. Start a new round or review the words you marked.'); return; }
+      finished = true; next.disabled = true;
+      if (options.autoAdvance) setLabel(status, 'round_complete', 'Round complete. Start a new round or review the words you marked.');
+      else status.textContent = '';
       updateReview(); roundHeading.focus();
     }
     function move(direction) {
@@ -890,16 +929,27 @@
       index += direction; render();
     }
     function keydown(event) {
-      if (dead || event.ctrlKey || event.metaKey || event.altKey || /INPUT|TEXTAREA|SELECT/.test(event.target.tagName)) return;
+      if (dead || event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey || /INPUT|TEXTAREA|SELECT/.test(event.target.tagName) || (event.target && event.target.isContentEditable)) return;
       // A panel opened inside the full-screen player keeps its own keys.
       const panel = event.target.closest && event.target.closest('[role="dialog"]'); if (panel && host.contains(panel)) return;
       if (event.target.closest && event.target.closest('.awp-appearance-panel')) return;
       if (event.target.closest && event.target.closest('.allo-anno-scope')) return;
       if (!current()) return;
+      const lower = typeof event.key === 'string' ? event.key.toLowerCase() : '';
       if (event.key === 'ArrowRight') { event.preventDefault(); move(host.dir === 'rtl' ? -1 : 1); }
       else if (event.key === 'ArrowLeft') { event.preventDefault(); move(host.dir === 'rtl' ? 1 : -1); }
       else if (event.key === ' ' && event.target.tagName !== 'BUTTON') { event.preventDefault(); if (options.autoAdvance) { running = !running; updateTimer(); schedule(); } else move(1); }
-      else if (event.key.toLowerCase() === 'r' && !reveal.hidden && !reveal.disabled) { event.preventDefault(); revealed = true; renderCard(); schedule(); }
+      else if (lower === 'r' && !reveal.hidden && !reveal.disabled) { event.preventDefault(); revealed = true; renderCard(); schedule(); }
+      else if (lower === 'h' && !wordButton.hidden && !wordButton.disabled) { event.preventDefault(); wordButton.click(); }
+      else if (lower === 's' && !soundsButton.hidden && !soundsButton.disabled) { event.preventDefault(); soundsButton.click(); }
+      else if (lower === 'f' && !fullscreen.hidden && !fullscreen.disabled) { event.preventDefault(); fullscreen.click(); }
+      else if (lower === 'm' && !reviewButton.hidden && !reviewButton.disabled) { event.preventDefault(); reviewButton.click(); }
+      else if ((event.key === 'PageDown' || event.key === 'PageUp') && stage.scrollHeight <= stage.clientHeight + 2) { event.preventDefault(); move(event.key === 'PageDown' ? 1 : -1); }
+      else if (options.mode === 'sentence' && !revealed && /^[1-9]$/.test(event.key)) {
+        const choices = card.querySelectorAll('.awp-choices button');
+        const target = choices[Number(event.key) - 1];
+        if (target && !target.disabled && target.getAttribute('aria-disabled') !== 'true') { event.preventDefault(); target.click(); }
+      }
     }
     // Touch and pen only (a mouse keeps its buttons and keys): a tap on the card reveals,
     // then moves on; a sideways swipe moves, mirrored for right-to-left interfaces.
@@ -923,8 +973,10 @@
     function fullscreenChange() { setLabel(fullscreen, doc.fullscreenElement ? 'exit_full_screen' : 'full_screen', doc.fullscreenElement ? 'Exit full screen' : 'Full screen'); }
     const unwatchReading = watchCardReading(stage, () => options, core);
     function warnUnsavedExit(event) { if (editGuard.dirty()) { event.preventDefault(); event.returnValue = ''; } }
+    function onMuteChanged() { if (isGlobalMuted()) stopAudio(); }
     win.addEventListener('beforeunload', warnUnsavedExit);
-    function destroy() { if (dead) return; savingSet?.abort(); win.removeEventListener('beforeunload', warnUnsavedExit); openingSet?.abort(); captureCardGeometry(); dead = true; unwatchReading(); if (timer) win.clearTimeout(timer); stopAudio(); if (annotate) { annotate.destroy(); annotate = null; } host.removeEventListener('keydown', keydown); doc.removeEventListener('visibilitychange', visibility); doc.removeEventListener('fullscreenchange', fullscreenChange); win.removeEventListener('pagehide', destroy); if (doc.fullscreenElement === host && doc.exitFullscreen) doc.exitFullscreen().catch(() => {}); }
+    win.addEventListener('alloflow-mute-changed', onMuteChanged);
+    function destroy() { if (dead) return; savingSet?.abort(); win.removeEventListener('beforeunload', warnUnsavedExit); win.removeEventListener('alloflow-mute-changed', onMuteChanged); openingSet?.abort(); captureCardGeometry(); dead = true; unwatchReading(); if (timer) win.clearTimeout(timer); stopAudio(); if (annotate) { annotate.destroy(); annotate = null; } host.removeEventListener('keydown', keydown); doc.removeEventListener('visibilitychange', visibility); doc.removeEventListener('fullscreenchange', fullscreenChange); win.removeEventListener('pagehide', destroy); if (doc.fullscreenElement === host && doc.exitFullscreen) doc.exitFullscreen().catch(() => {}); }
     host.tabIndex = -1; host.addEventListener('keydown', keydown); doc.addEventListener('visibilitychange', visibility); doc.addEventListener('fullscreenchange', fullscreenChange); win.addEventListener('pagehide', destroy);
     try { render(); host.focus(); } catch (error) { destroy(); throw error; }
     return { destroy, captureCardGeometry };
@@ -967,7 +1019,7 @@
 
   // The player's strings, translated once per dialog and handed to the player (and
   // to the offline file). English stays inline in the player as the fallback.
-  const PLAYER_STRINGS = [["word_practice.back_to_setup","Back to setup"],["word_practice.annotate","Annotate"],["word_practice.word_origin","Word origin: {origin}"],["word_practice.full_screen","Full screen"],["word_practice.exit_full_screen","Exit full screen"],["word_practice.full_screen_unavailable","Full screen is unavailable in this browser."],["word_practice.practice_card","Practice card"],["word_practice.previous","Previous"],["word_practice.next","Next"],["word_practice.reveal_answer","Reveal answer"],["word_practice.hear_word","Hear word"],["word_practice.hear_sounds","Hear sounds"],["word_practice.start_timer","Start timer"],["word_practice.pause_timer","Pause timer"],["word_practice.add_to_review","Add to review"],["word_practice.remove_from_review","Remove from review"],["word_practice.new_round","New round"],["word_practice.start_review","Start review ({count})"],["word_practice.keys_help_timed","Arrow keys: move · Space: start or pause timer · R: reveal"],["word_practice.keys_help_manual","Arrow keys: move · Space: next card · R: reveal"],["word_practice.recording_unavailable","The complete recording is not available for this word."],["word_practice.recording_failed","This browser could not play the recording."],["word_practice.answer","Answer: {answer}"],["word_practice.sentence_correct","Yes. {answer} completes the sentence."],["word_practice.sentence_try_again","Try another word. Read the whole sentence again."],["word_practice.spell_listen","Listen, then spell the word."],["word_practice.spell_teacher","Ask your teacher to say the word, then spell it."],["word_practice.blend_help","Say the sounds, then blend the word."],["word_practice.no_meaning","No meaning or example has been prepared for this word."],["word_practice.show_meaning","Show meaning"],["word_practice.show_word","Show word"],["word_practice.card_announce","Card {n} of {total}. {visible}"],["word_practice.card_progress","Card {n} of {total}"],["word_practice.add_words","Add words to begin practice."],["word_practice.round_complete","Round complete. Start a new round or review the words you marked."],["word_practice.practice_label","Word practice"]];
+  const PLAYER_STRINGS = [["word_practice.back_to_setup","Back to setup"],["word_practice.annotate","Annotate"],["word_practice.word_origin","Word origin: {origin}"],["word_practice.full_screen","Full screen"],["word_practice.exit_full_screen","Exit full screen"],["word_practice.full_screen_unavailable","Full screen is unavailable in this browser."],["word_practice.practice_card","Practice card"],["word_practice.previous","Previous"],["word_practice.next","Next"],["word_practice.reveal_answer","Reveal answer"],["word_practice.hear_word","Hear word"],["word_practice.hear_sounds","Hear sounds"],["word_practice.start_timer","Start timer"],["word_practice.pause_timer","Pause timer"],["word_practice.add_to_review","Add to review"],["word_practice.remove_from_review","Remove from review"],["word_practice.new_round","New round"],["word_practice.start_review","Start review ({count})"],["word_practice.keys_help_timed","Arrow keys or Page Up/Down: move · Space: start or pause timer · R: reveal · H/S: audio · M: review · F: full screen"],["word_practice.keys_help_manual","Arrow keys or Page Up/Down: move · Space: next card · R: reveal · H/S: audio · M: review · F: full screen"],["word_practice.recording_unavailable","The complete recording is not available for this word."],["word_practice.recording_failed","This browser could not play the recording."],["word_practice.answer","Answer: {answer}"],["word_practice.sentence_correct","Yes. {answer} completes the sentence."],["word_practice.sentence_try_again","Try another word. Read the whole sentence again."],["word_practice.spell_listen","Listen, then spell the word."],["word_practice.spell_teacher","Ask your teacher to say the word, then spell it."],["word_practice.blend_help","Say the sounds, then blend the word."],["word_practice.no_meaning","No meaning or example has been prepared for this word."],["word_practice.show_meaning","Show meaning"],["word_practice.show_word","Show word"],["word_practice.card_announce","Card {n} of {total}. {visible}"],["word_practice.card_progress","Card {n} of {total}"],["word_practice.add_words","Add words to begin practice."],["word_practice.round_complete","Round complete. Start a new round or review the words you marked."],["word_practice.practice_label","Word practice"]];
   PLAYER_STRINGS.push(['word_practice.download_started', 'Download started'], ['word_practice.confirm_download_help', 'Check that the word set file is in your downloads before confirming. If the download was cancelled or blocked, keep editing and try again.'], ['word_practice.confirm_download_saved', 'I saved the file'], ['word_practice.keep_editing', 'Keep editing'], ['word_practice.download_newer_changes', 'More changes were made after this download. Download the updated word set before confirming it is saved.'], ['word_practice.download_confirmed', 'Download confirmed. Your current word set changes are marked as saved.'], ['word_practice.download_unconfirmed', 'Download not confirmed. Your unsaved changes are still protected.']);
   PLAYER_STRINGS.push(['word_practice.audio_language_omitted', '{count} saved recordings use a different language and are not played. Prepare replacement audio in Present & Export.']);
   PLAYER_STRINGS.push(['word_practice.audio_language_omitted_one', '{count} saved recording uses a different language and is not played. Prepare replacement audio in Present & Export.']);
@@ -993,9 +1045,14 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
   [['appearance', 'Card appearance'], ['card_font', 'Card font'], ['font_default', 'Default font'], ['card_text_size', 'Card text size'], ['card_style', 'Card style'], ['style_paper', 'Plain'], ['style_cream', 'Warm'], ['style_mist', 'Blue tint'], ['card_preview', 'Card preview']].forEach(([key, fallback]) => PLAYER_STRINGS.push(['word_practice.' + key, fallback]));
   function sanitizeSvgMarkup(raw) {
     const text = String(raw || '').trim();
-    if (!/<svg[\s>]/i.test(text) || text.length > 600000) return '';
-    if (/<\s*(script|foreignobject|iframe|object|embed)\b|\bon[a-z]+\s*=|javascript:|(?:src|href|xlink:href)\s*=\s*["']\s*https?:/i.test(text)) return '';
-    return text;
+    if (!/<(?:[a-z0-9_-]+:)?svg[\s>]/i.test(text) || text.length > 600000) return '';
+    const decoded = text
+      .replace(/&#x([0-9a-f]+);?/gi, (_, h) => { const cp = parseInt(h, 16); return Number.isFinite(cp) && cp >= 0 && cp <= 0x10ffff ? String.fromCodePoint(cp) : ''; })
+      .replace(/&#([0-9]+);?/g, (_, d) => { const cp = parseInt(d, 10); return Number.isFinite(cp) && cp >= 0 && cp <= 0x10ffff ? String.fromCodePoint(cp) : ''; })
+      .replace(/&(?:colon|tab|newline);/gi, m => (m.toLowerCase() === '&colon;' ? ':' : ' '));
+    const check = text + '\n' + decoded;
+    if (/<\s*(?:[a-z0-9_-]+:)?(?:script|foreignobject|iframe|object|embed|animate[a-z]*|set|handler|audio|video)\b|<!entity\b|<!doctype[\s\S]*?\[|<\?xml-stylesheet\b|\bon[a-z]+\s*=|\bsrcdoc\s*=|\bxml:base\s*=|(?:javascript|vbscript)\s*:|@import\b|image-set\s*\(|url\s*\(\s*["']?\s*(?!#)|(?:src|href|xlink:href)\s*=\s*["']?\s*(?:https?:|\/\/|data:|javascript:|vbscript:|file:)/i.test(check)) return '';
+    return text.replace(/<svg(?=[\s>])(?![^>]*\bxmlns\s*=)/i, '<svg xmlns="http://www.w3.org/2000/svg"');
   }
   function parseSvgDimensions(svgText) {
     const open = (svgText.match(/<svg\b[^>]*>/i) || [''])[0];
@@ -1075,7 +1132,9 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     } else if (/^data:image\/svg\+xml/i.test(raw)) {
       const comma = raw.indexOf(',');
       const payload = comma >= 0 ? raw.slice(comma + 1) : '';
-      const decoded = /;base64/i.test(raw.slice(0, comma)) ? root.atob(payload) : decodeURIComponent(payload);
+      let decoded = '';
+      try { decoded = /;base64/i.test(raw.slice(0, comma)) ? root.atob(payload) : decodeURIComponent(payload); }
+      catch (_) { throw new Error('That SVG image could not be decoded.'); }
       svgText = sanitizeSvgMarkup(decoded);
       if (!svgText) throw new Error('That SVG image contains unsupported markup.');
       raw = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgText);
@@ -1109,11 +1168,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
       } catch (_) {}
     }
     if (alreadySafe) return alreadySafe;
-    if (svgText) {
-      const dims = parseSvgDimensions(svgText);
-      const scale = Math.min(1, 96 / Math.max(dims.w, dims.h));
-      return minimalPngDataUrl(Math.max(16, Math.round(dims.w * scale)), Math.max(16, Math.round(dims.h * scale)));
-    }
+    if (svgText) throw new Error('That SVG image could not be converted to a picture. Try a PNG or JPEG image.');
     throw new Error('Choose a valid PNG, JPEG, GIF, WebP, or SVG image.');
   }
   let active = null, nextDialogId = 0;
@@ -1130,7 +1185,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     const SETUP_FIELDS = ['mode', 'repetitions', 'autoAdvance', 'intervalSeconds', 'shuffle', 'varyPosition', 'varySize', 'includeAudio', 'includePictures', 'pictureSlides', 'vocabularyFirst', 'cardFont', 'cardTextStyle', 'cardTextScale', 'wordTextScale', 'meaningTextScale', 'translationTextScale', 'cardTheme'];
     if (!context.options) {
       try {
-        const saved = JSON.parse(root.localStorage.getItem(SETUP_KEY) || 'null'), chosen = {};
+        const saved = JSON.parse(root.localStorage.getItem(SETUP_KEY) || 'null', (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v), chosen = {};
         if (saved && typeof saved === 'object' && !Array.isArray(saved)) SETUP_FIELDS.forEach(name => { if (Object.prototype.hasOwnProperty.call(saved, name)) chosen[name] = saved[name]; });
         // Finish the Sentence needs prepared boards; never reopen a list onto an empty activity.
         if (chosen.mode === 'sentence' && !pack.items.some(item => item.sentenceActivity)) delete chosen.mode;
@@ -1308,6 +1363,12 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     chooseActivityButton.onclick = () => { mode.focus(); mode.scrollIntoView?.({ block: 'nearest' }); };
     make('p', tx('word_practice.formats_note', 'HTML keeps interactive practice and works offline. PowerPoint uses fixed slides and embeds available recordings. Sentence activities use only prepared boards; PowerPoint includes prompt and answer slides.'), setup, 'awp-note awp-format-note');
     const actions = make('div', null, setup, 'awp-actions awp-delivery');
+    let sheetButtonsHost = null;
+    if (!context.hideInlineSheetButtons) {
+      const sheetDetails = make('details', null, setup, 'awp-print-sheets');
+      make('summary', tx('word_practice.printable_sheets', 'Printable classroom sheets (7)'), sheetDetails);
+      sheetButtonsHost = make('div', null, sheetDetails, 'awp-actions awp-print-sheets-list');
+    }
     const setActions = make('div', null, setup, 'awp-actions awp-set-actions');
     // Progress must stay outside the form's aria-busy subtree so updates can be announced during work.
     const operationPanel = make('div', null, dialog, 'awp-operation');
@@ -1666,29 +1727,47 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
         if (!list.length) { make('p', tx('word_practice.no_symbols_found', 'No built-in symbols matched that search. Try Import image… to use your own picture.'), gridNode, 'awp-note'); return; }
         list.slice(0, 24).forEach(sym => {
           const btn = make('button', null, gridNode); btn.type = 'button';
-          if (sym.src || sym.svg) {
+          const safeSrc = sym.src ? (core && core.safePicture ? core.safePicture(sym.src) : '') : '';
+          const safeSvg = !safeSrc && sym.svg ? sanitizeSvgMarkup(sym.svg) : '';
+          if (safeSrc || safeSvg) {
             const img = make('img', null, btn);
-            img.src = sym.src || ('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(sym.svg));
+            img.src = safeSrc || ('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(safeSvg));
             img.alt = '';
           }
           make('span', sym.label || sym.word || '', btn);
-          btn.onclick = () => action(async () => {
-            const png = await rasterizeImageToPng(sym.svg || sym.src, doc);
-            const fallbackCredit = sym.set === 'openmoji' ? { set: 'OpenMoji', license: 'CC BY-SA 4.0' } : { set: 'Mulberry Symbols', author: 'Steve Lee', license: 'CC BY-SA 4.0' };
-            applyWordPicture(row.id, png, sym.label || row.word, sym.credit || fallbackCredit);
-            activeSymbolRowId = '';
-            status.textContent = tx('word_practice.picture_updated', 'Picture updated for {word}.', { word: row.word });
-          }, btn);
+          btn.onclick = async () => {
+            await action(async () => {
+              const rasterizer = (root.AlloModules && root.AlloModules.WordPractice && typeof root.AlloModules.WordPractice.rasterizeImage === 'function')
+                ? root.AlloModules.WordPractice.rasterizeImage : rasterizeImageToPng;
+              const png = await rasterizer(sym.svg || sym.src, doc);
+              const fallbackCredit = sym.set === 'openmoji' ? { set: 'OpenMoji', license: 'CC BY-SA 4.0' } : { set: 'Mulberry Symbols', author: 'Steve Lee', license: 'CC BY-SA 4.0' };
+              activeSymbolRowId = '';
+              applyWordPicture(row.id, png, sym.label || row.word, sym.credit || fallbackCredit);
+              status.textContent = tx('word_practice.picture_updated', 'Picture updated for {word}.', { word: row.word });
+            }, btn);
+            if (!closed && (!doc.activeElement || doc.activeElement === doc.body || !pictureList.contains(doc.activeElement))) {
+              (findRowBtn(row.id, 'symbol') || findRowBtn(row.id, 'import') || pictureDetails.querySelector('summary'))?.focus();
+            }
+          };
         });
       } catch (err) {
         if (closed || !gridNode.isConnected || gridNode._awpSymReq !== reqId) return;
         gridNode.replaceChildren(); empty.textContent = (err && err.message) || 'Could not load symbols.'; gridNode.appendChild(empty);
       }
     }
+    const findRow = targetId => Array.from(pictureList.querySelectorAll('.awp-picture-row')).find(node => node.dataset.wordId === targetId) || null;
+    const findRowBtn = (targetId, actionName) => findRow(targetId)?.querySelector('[data-pic-action="' + actionName + '"]') || null;
     function renderPictureManager(current) {
       pictureDetails.hidden = !current.items.length;
       const key = JSON.stringify([activeSymbolRowId, activeTextRowId, current.items.map(item => [item.id, item.word, item.definition, item.example, item.picture ? [item.picture.src.length, item.picture.alt, item.picture.credit] : null])]);
       if (key === lastPictureKey) return;
+      const activeEl = doc.activeElement;
+      const prevRow = activeEl && pictureList.contains(activeEl) ? activeEl.closest('.awp-picture-row') : null;
+      const prevFocus = prevRow ? {
+        wordId: prevRow.dataset.wordId,
+        action: activeEl.dataset?.picAction || '',
+        isAlt: !!(activeEl.classList && activeEl.classList.contains('awp-picture-alt')),
+      } : null;
       lastPictureKey = key;
       pictureList.replaceChildren();
       const symbolsAvailable = hasSymbolSource();
@@ -1706,16 +1785,26 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
         setLanguage(make('span', item.word, top, 'awp-picture-word'), core.fieldLanguage(item, 'term', current.language));
         if (item.picture && item.picture.credit) make('span', item.picture.credit, top, 'awp-note');
         const rowBtns = make('div', null, meta, 'awp-picture-actions');
-        const importBtn = make('button', item.picture ? tx('word_practice.replace_image', 'Switch image…') : tx('word_practice.import_image', 'Import image…'), rowBtns); importBtn.type = 'button';
+        const importBtn = make('button', item.picture ? tx('word_practice.replace_image', 'Switch image…') : tx('word_practice.import_image', 'Import image…'), rowBtns); importBtn.type = 'button'; importBtn.dataset.picAction = 'import';
         importBtn.onclick = () => { if (!busy) { symbolTargetId = item.id; rowImageInput.value = ''; rowImageInput.click(); } };
         if (symbolsAvailable) {
-          const symBtn = make('button', tx('word_practice.switch_symbol', 'Choose symbol…'), rowBtns); symBtn.type = 'button';
+          const symBtn = make('button', tx('word_practice.switch_symbol', 'Choose symbol…'), rowBtns); symBtn.type = 'button'; symBtn.dataset.picAction = 'symbol';
           symBtn.setAttribute('aria-expanded', String(activeSymbolRowId === item.id));
-          symBtn.onclick = () => { activeSymbolRowId = activeSymbolRowId === item.id ? '' : item.id; symbolSearchQuery = item.word; lastPictureKey = ''; renderPictureManager(pack); };
+          symBtn.onclick = () => {
+            const opening = activeSymbolRowId !== item.id;
+            activeSymbolRowId = opening ? item.id : '';
+            symbolSearchQuery = item.word; lastPictureKey = ''; renderPictureManager(pack);
+            if (opening) findRow(item.id)?.querySelector('.awp-symbol-search')?.focus();
+            else findRowBtn(item.id, 'symbol')?.focus();
+          };
         }
         if (item.picture) {
-          const clearBtn = make('button', tx('word_practice.remove_image', 'Remove'), rowBtns); clearBtn.type = 'button';
-          clearBtn.onclick = () => { clearWordPicture(item.id); status.textContent = tx('word_practice.picture_removed', 'Picture removed from {word}.', { word: item.word }); };
+          const clearBtn = make('button', tx('word_practice.remove_image', 'Remove'), rowBtns); clearBtn.type = 'button'; clearBtn.dataset.picAction = 'remove';
+          clearBtn.onclick = () => {
+            clearWordPicture(item.id);
+            status.textContent = tx('word_practice.picture_removed', 'Picture removed from {word}.', { word: item.word });
+            (findRowBtn(item.id, 'edit') || findRowBtn(item.id, 'symbol') || findRowBtn(item.id, 'import') || pictureDetails.querySelector('summary'))?.focus();
+          };
           const altInput = make('input', null, meta, 'awp-picture-alt'); altInput.type = 'text'; altInput.value = item.picture.alt || '';
           altInput.placeholder = tx('word_practice.alt_placeholder', 'Describe this picture');
           altInput.setAttribute('aria-label', tx('word_practice.alt_label', 'Image description for {word}', { word: item.word }));
@@ -1726,10 +1815,11 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
           });
         }
         const textBtn = make('button', tx('word_practice.edit_meaning', 'Edit meaning…'), rowBtns); textBtn.type = 'button';
-        textBtn.dataset.editText = item.id;
+        textBtn.dataset.editText = item.id; textBtn.dataset.picAction = 'edit';
         textBtn.setAttribute('aria-expanded', String(activeTextRowId === item.id));
         textBtn.setAttribute('aria-label', tx('word_practice.edit_meaning_for', 'Edit the meaning and sentence for {word}', { word: item.word }));
-        textBtn.onclick = () => { activeTextRowId = activeTextRowId === item.id ? '' : item.id; lastPictureKey = ''; renderPictureManager(pack); const again = pictureList.querySelector('[data-edit-text="' + item.id + '"]'); if (activeTextRowId) pictureList.querySelector('.awp-text-edit textarea')?.focus(); else again?.focus(); };
+        const findEditBtn = targetId => Array.from(pictureList.querySelectorAll('[data-edit-text]')).find(el => el.dataset.editText === targetId);
+        textBtn.onclick = () => { activeTextRowId = activeTextRowId === item.id ? '' : item.id; lastPictureKey = ''; renderPictureManager(pack); const again = findEditBtn(item.id); if (activeTextRowId) pictureList.querySelector('.awp-text-edit textarea')?.focus(); else again?.focus(); };
         if (activeTextRowId === item.id) {
           const editor = make('div', null, meta, 'awp-text-edit');
           const fieldFor = (labelText, value, name) => {
@@ -1747,10 +1837,10 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
             applyWordText(item.id, meaningArea.value, sentenceArea.value);
             activeTextRowId = ''; lastPictureKey = ''; renderPictureManager(pack);
             status.textContent = tx('word_practice.meaning_updated', 'Meaning updated for {word}. It is used on the cards, the offline file and the printed sheets.', { word: item.word });
-            pictureList.querySelector('[data-edit-text="' + item.id + '"]')?.focus();
+            findEditBtn(item.id)?.focus();
           };
           const closeText = make('button', tx('word_practice.close', 'Close'), editRow); closeText.type = 'button';
-          closeText.onclick = () => { activeTextRowId = ''; lastPictureKey = ''; renderPictureManager(pack); pictureList.querySelector('[data-edit-text="' + item.id + '"]')?.focus(); };
+          closeText.onclick = () => { activeTextRowId = ''; lastPictureKey = ''; renderPictureManager(pack); findEditBtn(item.id)?.focus(); };
           [meaningArea, sentenceArea].forEach(area => area.addEventListener('change', event => event.stopPropagation()));
         }
         if (symbolsAvailable && activeSymbolRowId === item.id) {
@@ -1763,10 +1853,21 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
           const symGrid = make('div', null, picker, 'awp-symbol-grid');
           searchInput.addEventListener('input', () => { symbolSearchQuery = searchInput.value; populateSymbolGrid(symGrid, item, symbolSearchQuery); });
           const closeSym = make('button', tx('word_practice.close', 'Close'), searchRow); closeSym.type = 'button';
-          closeSym.onclick = () => { activeSymbolRowId = ''; lastPictureKey = ''; renderPictureManager(pack); };
+          closeSym.onclick = () => {
+            activeSymbolRowId = ''; lastPictureKey = ''; renderPictureManager(pack);
+            (findRowBtn(item.id, 'symbol') || findRowBtn(item.id, 'import') || pictureDetails.querySelector('summary'))?.focus();
+          };
           populateSymbolGrid(symGrid, item, symbolSearchQuery || item.word);
         }
       });
+      if (prevFocus && (!doc.activeElement || doc.activeElement === doc.body)) {
+        const target = prevFocus.isAlt
+          ? (findRow(prevFocus.wordId)?.querySelector('.awp-picture-alt') || findRowBtn(prevFocus.wordId, 'import'))
+          : prevFocus.action
+            ? (findRowBtn(prevFocus.wordId, prevFocus.action) || findRowBtn(prevFocus.wordId, 'edit') || findRowBtn(prevFocus.wordId, 'symbol') || findRowBtn(prevFocus.wordId, 'import'))
+            : null;
+        target?.focus?.({ preventScroll: true });
+      }
     }
     batchImportBtn.onclick = () => { if (!busy) { batchImageInput.value = ''; batchImageInput.click(); } };
     autoFillPicturesBtn.onclick = () => action(async run => {
@@ -1782,7 +1883,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
         ? await matcher.ensureSymbols({ symbols: rawBank })
         : rawBank;
       if (bank && !matcher && typeof bank.ready === 'function') { try { await bank.ready(); } catch (_) {} }
-      let matched = 0;
+      let matched = 0, failed = 0;
       for (const item of missing) {
         if (!isCurrentOperation(run)) return;
         let hit = null;
@@ -1799,13 +1900,23 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
           hit = list.find(s => s && (s.svg || s.src) && String(s.word || '').trim().toLowerCase() === cleanWord) || list[0] || null;
         }
         if (!hit || (!hit.svg && !hit.src)) continue;
-        const png = await rasterizeImageToPng(hit.svg || hit.src, doc);
+        let png = '';
+        try {
+          const rasterizer = (root.AlloModules && root.AlloModules.WordPractice && typeof root.AlloModules.WordPractice.rasterizeImage === 'function')
+            ? root.AlloModules.WordPractice.rasterizeImage : rasterizeImageToPng;
+          png = await rasterizer(hit.svg || hit.src, doc);
+        } catch (_) {
+          failed++;
+          continue;
+        }
         const fallbackCredit = hit.set === 'openmoji' ? { set: 'OpenMoji', license: 'CC BY-SA 4.0' } : { set: 'Mulberry Symbols', author: 'Steve Lee', license: 'CC BY-SA 4.0' };
         applyWordPicture(item.id, png, hit.alt || hit.label || item.word, hit.credit || fallbackCredit);
         matched++;
       }
       if (matched) {
-        status.textContent = tx('word_practice.pictures_auto_filled', 'Added pictures to {count} word(s).', { count: matched });
+        status.textContent = tx('word_practice.pictures_auto_filled', 'Added pictures to {count} word(s).', { count: matched }) + (failed ? ' (' + failed + ' could not be converted.)' : '');
+      } else if (failed) {
+        status.textContent = tx('word_practice.pictures_convert_failed', 'Matched pictures could not be converted in this browser. Try Import image… with PNG or JPEG files.');
       } else {
         status.textContent = tx('word_practice.no_symbols_found', 'No built-in symbols matched that search. Try Import image… to use your own picture.');
       }
@@ -1816,7 +1927,9 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
       if (!file || !targetId) return;
       action(async () => {
         const currentItem = pack.items.find(it => it.id === targetId) || catalogue.get(targetId);
-        const png = await rasterizeImageToPng(file, doc);
+        const rasterizer = (root.AlloModules && root.AlloModules.WordPractice && typeof root.AlloModules.WordPractice.rasterizeImage === 'function')
+          ? root.AlloModules.WordPractice.rasterizeImage : rasterizeImageToPng;
+        const png = await rasterizer(file, doc);
         applyWordPicture(targetId, png, (currentItem && currentItem.word) || file.name.replace(/\.[^.]+$/, ''), { set: 'Custom imported image' });
         status.textContent = tx('word_practice.picture_updated', 'Picture updated for {word}.', { word: currentItem ? currentItem.word : 'word' });
       }, rowImageInput);
@@ -1826,18 +1939,23 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
       const files = Array.from(batchImageInput.files || []);
       if (!files.length) return;
       action(async () => {
-        const current = readPack(); let matched = 0;
+        const current = readPack(); let matched = 0, failed = 0;
+        const rasterizer = (root.AlloModules && root.AlloModules.WordPractice && typeof root.AlloModules.WordPractice.rasterizeImage === 'function')
+          ? root.AlloModules.WordPractice.rasterizeImage : rasterizeImageToPng;
         for (const file of files) {
           const stem = file.name.replace(/\.[^.]+$/, '').replace(/^[0-9]+[-_\s]+/, '').trim().toLowerCase();
           const target = current.items.find(it => core.key(it.word) === core.key(stem)) || (current.items.length === 1 && files.length === 1 ? current.items[0] : null);
           if (!target) continue;
-          const png = await rasterizeImageToPng(file, doc);
+          let png = '';
+          try { png = await rasterizer(file, doc); } catch (_) { failed++; continue; }
           applyWordPicture(target.id, png, target.word, { set: 'Custom imported image' });
           matched++;
         }
         status.textContent = matched
-          ? tx('word_practice.batch_pictures_imported', 'Added custom pictures to {count} word(s).', { count: matched })
-          : tx('word_practice.batch_pictures_none', 'No filenames matched the words in your list. Name image files after words (for example, cat.png) or use Import image on a word row.');
+          ? tx('word_practice.batch_pictures_imported', 'Added custom pictures to {count} word(s).', { count: matched }) + (failed ? ' (' + failed + ' could not be converted.)' : '')
+          : failed
+            ? tx('word_practice.pictures_convert_failed', 'Matched pictures could not be converted in this browser. Try Import image… with PNG or JPEG files.')
+            : tx('word_practice.batch_pictures_none', 'No filenames matched the words in your list. Name image files after words (for example, cat.png) or use Import image on a word row.');
       }, batchImportBtn);
     });
     function updateCoverage() {
@@ -1901,7 +2019,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     }
     actionButton(tx('word_practice.present', 'Present'), () => {
       const current = ready(), opts = options(), sequence = core.createSequence(current, opts);
-      setup.hidden = true; playerHost.hidden = false;
+      setup.hidden = true; if (inlineHost) header.hidden = true; playerHost.hidden = false;
       const hooks = { onBack() { closeReading(); player = null; playerHost.replaceChildren(); playerHost.hidden = true; setup.hidden = false; header.hidden = false; if (readingButton) readingButton.hidden = false; present.focus(); }, onAppearanceChange(patch) { const next = core.normalizeOptions({ ...options(), ...patch }); appearance.setOptions(next); translationSettings.update(pack.items, next); updateCoverage(); }, labels: playerLabels(), uiLanguage: uiLanguageName,
         t: key => { const value = typeof context.t === 'function' && context.t(key); return value && value !== key ? value : ((root.AlloWordPracticeAnnotationAssets || {}).labels || {})[key] || key; }, isTeacher: context.isTeacher !== false, annotationStore, review, editGuard,
         onAnnotationsChange(key, list, viewport, edited) {
@@ -1976,48 +2094,50 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     }
     actionButton(tx('word_practice.download_pptx', 'Download PowerPoint'), run => exportPptxDeck(run, false));
     exportPictureSlidesBtn.onclick = () => action(run => exportPptxDeck(run, true), exportPictureSlidesBtn);
-    actionButton(tx('word_practice.download_flashcards', 'Download 2-sided flashcards'), () => {
-      const current = ready(), opts = options(), media = root.AlloWordPracticeMedia;
-      if (!media || typeof media.buildFlashcardsHtml !== 'function') throw new Error(tx('word_practice.flashcards_unavailable', 'Flashcards export is unavailable. Try reopening Present & Export.'));
-      download(media.buildFlashcardsHtml(current, opts), 'text/html;charset=utf-8', '-flashcards.html');
-      status.textContent = tx('word_practice.flashcards_downloaded', '2-sided flashcards downloaded.');
-    });
-    actionButton(tx('word_practice.download_frayer', 'Download Frayer study sheets'), () => {
-      const current = ready(), opts = options(), media = root.AlloWordPracticeMedia;
-      if (!media || typeof media.buildFrayerHtml !== 'function') throw new Error(tx('word_practice.frayer_unavailable', 'Frayer study sheets export is unavailable. Try reopening Present & Export.'));
-      download(media.buildFrayerHtml(current, opts), 'text/html;charset=utf-8', '-frayer.html');
-      status.textContent = tx('word_practice.frayer_downloaded', 'Frayer study sheets downloaded.');
-    });
-    actionButton(tx('word_practice.download_sorting_cards', 'Download cut-out sorting cards'), () => {
-      const current = ready(), opts = options(), media = root.AlloWordPracticeMedia;
-      if (!media || typeof media.buildSortingCardsHtml !== 'function') throw new Error(tx('word_practice.sorting_cards_unavailable', 'Sorting cards export is unavailable. Try reopening Present & Export.'));
-      download(media.buildSortingCardsHtml(current, opts), 'text/html;charset=utf-8', '-sorting-cards.html');
-      status.textContent = tx('word_practice.sorting_cards_downloaded', 'Cut-out sorting cards downloaded.');
-    });
-    actionButton(tx('word_practice.download_worksheet', 'Download cloze and matching worksheet'), () => {
-      const current = ready(), opts = options(), media = root.AlloWordPracticeMedia;
-      if (!media || typeof media.buildWorksheetHtml !== 'function') throw new Error(tx('word_practice.worksheet_unavailable', 'Worksheet export is unavailable. Try reopening Present & Export.'));
-      download(media.buildWorksheetHtml(current, opts), 'text/html;charset=utf-8', '-worksheet.html');
-      status.textContent = tx('word_practice.worksheet_downloaded', 'Cloze and matching worksheet downloaded.');
-    });
-    actionButton(tx('word_practice.download_bingo', 'Download classroom Bingo boards'), () => {
-      const current = ready(), opts = options(), media = root.AlloWordPracticeMedia;
-      if (!media || typeof media.buildBingoHtml !== 'function') throw new Error(tx('word_practice.bingo_unavailable', 'Bingo boards export is unavailable. Try reopening Present & Export.'));
-      download(media.buildBingoHtml(current, opts), 'text/html;charset=utf-8', '-bingo.html');
-      status.textContent = tx('word_practice.bingo_downloaded', 'Classroom Bingo boards downloaded.');
-    });
-    actionButton(tx('word_practice.download_loop_cards', 'Download I Have, Who Has cards'), () => {
-      const current = ready(), opts = options(), media = root.AlloWordPracticeMedia;
-      if (!media || typeof media.buildLoopGameHtml !== 'function') throw new Error(tx('word_practice.loop_cards_unavailable', 'Loop cards export is unavailable. Try reopening Present & Export.'));
-      download(media.buildLoopGameHtml(current, opts), 'text/html;charset=utf-8', '-loop-cards.html');
-      status.textContent = tx('word_practice.loop_cards_downloaded', 'I Have, Who Has loop cards downloaded.');
-    });
-    actionButton(tx('word_practice.download_word_wall', 'Download classroom Word Wall cards'), () => {
-      const current = ready(), opts = options(), media = root.AlloWordPracticeMedia;
-      if (!media || typeof media.buildWordWallHtml !== 'function') throw new Error(tx('word_practice.word_wall_unavailable', 'Word Wall export is unavailable. Try reopening Present & Export.'));
-      download(media.buildWordWallHtml(current, opts), 'text/html;charset=utf-8', '-word-wall.html');
-      status.textContent = tx('word_practice.word_wall_downloaded', 'Classroom Word Wall cards downloaded.');
-    });
+    if (sheetButtonsHost) {
+      actionButton(tx('word_practice.download_flashcards', 'Download 2-sided flashcards'), () => {
+        const current = ready(), opts = options(), media = root.AlloWordPracticeMedia;
+        if (!media || typeof media.buildFlashcardsHtml !== 'function') throw new Error(tx('word_practice.flashcards_unavailable', 'Flashcards export is unavailable. Try reopening Present & Export.'));
+        download(media.buildFlashcardsHtml(current, opts), 'text/html;charset=utf-8', '-flashcards.html');
+        status.textContent = tx('word_practice.flashcards_downloaded', '2-sided flashcards downloaded.');
+      }, false, sheetButtonsHost);
+      actionButton(tx('word_practice.download_frayer', 'Download Frayer study sheets'), () => {
+        const current = ready(), opts = options(), media = root.AlloWordPracticeMedia;
+        if (!media || typeof media.buildFrayerHtml !== 'function') throw new Error(tx('word_practice.frayer_unavailable', 'Frayer study sheets export is unavailable. Try reopening Present & Export.'));
+        download(media.buildFrayerHtml(current, opts), 'text/html;charset=utf-8', '-frayer.html');
+        status.textContent = tx('word_practice.frayer_downloaded', 'Frayer study sheets downloaded.');
+      }, false, sheetButtonsHost);
+      actionButton(tx('word_practice.download_sorting_cards', 'Download cut-out sorting cards'), () => {
+        const current = ready(), opts = options(), media = root.AlloWordPracticeMedia;
+        if (!media || typeof media.buildSortingCardsHtml !== 'function') throw new Error(tx('word_practice.sorting_cards_unavailable', 'Sorting cards export is unavailable. Try reopening Present & Export.'));
+        download(media.buildSortingCardsHtml(current, opts), 'text/html;charset=utf-8', '-sorting-cards.html');
+        status.textContent = tx('word_practice.sorting_cards_downloaded', 'Cut-out sorting cards downloaded.');
+      }, false, sheetButtonsHost);
+      actionButton(tx('word_practice.download_worksheet', 'Download cloze and matching worksheet'), () => {
+        const current = ready(), opts = options(), media = root.AlloWordPracticeMedia;
+        if (!media || typeof media.buildWorksheetHtml !== 'function') throw new Error(tx('word_practice.worksheet_unavailable', 'Worksheet export is unavailable. Try reopening Present & Export.'));
+        download(media.buildWorksheetHtml(current, opts), 'text/html;charset=utf-8', '-worksheet.html');
+        status.textContent = tx('word_practice.worksheet_downloaded', 'Cloze and matching worksheet downloaded.');
+      }, false, sheetButtonsHost);
+      actionButton(tx('word_practice.download_bingo', 'Download classroom Bingo boards'), () => {
+        const current = ready(), opts = options(), media = root.AlloWordPracticeMedia;
+        if (!media || typeof media.buildBingoHtml !== 'function') throw new Error(tx('word_practice.bingo_unavailable', 'Bingo boards export is unavailable. Try reopening Present & Export.'));
+        download(media.buildBingoHtml(current, opts), 'text/html;charset=utf-8', '-bingo.html');
+        status.textContent = tx('word_practice.bingo_downloaded', 'Classroom Bingo boards downloaded.');
+      }, false, sheetButtonsHost);
+      actionButton(tx('word_practice.download_loop_cards', 'Download I Have, Who Has cards'), () => {
+        const current = ready(), opts = options(), media = root.AlloWordPracticeMedia;
+        if (!media || typeof media.buildLoopGameHtml !== 'function') throw new Error(tx('word_practice.loop_cards_unavailable', 'Loop cards export is unavailable. Try reopening Present & Export.'));
+        download(media.buildLoopGameHtml(current, opts), 'text/html;charset=utf-8', '-loop-cards.html');
+        status.textContent = tx('word_practice.loop_cards_downloaded', 'I Have, Who Has loop cards downloaded.');
+      }, false, sheetButtonsHost);
+      actionButton(tx('word_practice.download_word_wall', 'Download classroom Word Wall cards'), () => {
+        const current = ready(), opts = options(), media = root.AlloWordPracticeMedia;
+        if (!media || typeof media.buildWordWallHtml !== 'function') throw new Error(tx('word_practice.word_wall_unavailable', 'Word Wall export is unavailable. Try reopening Present & Export.'));
+        download(media.buildWordWallHtml(current, opts), 'text/html;charset=utf-8', '-word-wall.html');
+        status.textContent = tx('word_practice.word_wall_downloaded', 'Classroom Word Wall cards downloaded.');
+      }, false, sheetButtonsHost);
+    }
     const prepareAudioButton = actionButton(tx('word_practice.prepare_audio', 'Prepare audio'), async run => {
       run.keepAudioOnStop = true; updateLabel(cancelButton, tx('word_practice.stop_keep_audio', 'Stop and keep completed audio')); 
       const current = ready(), media = root.AlloWordPracticeMedia;
@@ -2035,7 +2155,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
       pack = nextPack; remember(pack); fill();
       // The lesson that opened Word Practice keeps the word clips made here, so they are not made again.
       if (typeof context.onSaveAudio === 'function') {
-        const clips = {};
+        const clips = Object.create(null);
         pack.items.forEach(item => { if (item && item.word && core.safeAudio(item.wordAudio)) clips[item.word] = item.wordAudio; });
         if (Object.keys(clips).length) { try { context.onSaveAudio(clips); } catch (_) { /* the lesson keeps working without them */ } }
       }
@@ -2086,10 +2206,10 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
       if (inlineHost) return;
       if (focusTrapStack && focusTrapStack.length && focusTrapStack[focusTrapStack.length - 1] !== focusTrapEntry) return;
       if (event.key === 'Escape' && !doc.fullscreenElement && !(event.isComposing || event.keyCode === 229)) { event.preventDefault(); event.stopPropagation(); requestClose(); return; }
-      if (event.key !== 'Tab') return;
+      if (event.key !== 'Tab' || event.ctrlKey || event.metaKey || event.altKey) return;
       event.stopPropagation();
       const scope = doc.fullscreenElement && doc.fullscreenElement.contains(playerHost) ? doc.fullscreenElement : dialog;
-      const candidates = Array.from(scope.querySelectorAll('button,input,textarea,select,summary,a[href],[tabindex="0"]')).filter(node => !node.disabled && !node.closest('[hidden]') && (!node.closest('details:not([open])') || node.tagName === 'SUMMARY') && node.getClientRects().length);
+      const candidates = Array.from(scope.querySelectorAll('button,input,textarea,select,summary,a[href],[tabindex="0"]')).filter(node => !node.disabled && !node.closest('[hidden],[inert],[aria-hidden="true"]') && (!node.closest('details:not([open])') || node.tagName === 'SUMMARY') && node.getClientRects().length && (typeof root.getComputedStyle !== 'function' || root.getComputedStyle(node).visibility !== 'hidden'));
       if (!candidates.length) { event.preventDefault(); return; }
       const first = candidates[0], last = candidates[candidates.length - 1];
       if (event.shiftKey && (doc.activeElement === first || !candidates.includes(doc.activeElement))) { event.preventDefault(); last.focus(); }
@@ -2145,6 +2265,8 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     ? root.AlloWordPracticeMedia.buildSortingCardsHtml(...args) : '';
   const buildWorksheetHtml = (...args) => root.AlloWordPracticeMedia && typeof root.AlloWordPracticeMedia.buildWorksheetHtml === 'function'
     ? root.AlloWordPracticeMedia.buildWorksheetHtml(...args) : '';
+  const buildWordSoundsWorksheetHtml = (...args) => root.AlloWordPracticeMedia && typeof root.AlloWordPracticeMedia.buildWordSoundsWorksheetHtml === 'function'
+    ? root.AlloWordPracticeMedia.buildWordSoundsWorksheetHtml(...args) : '';
   const buildBingoHtml = (...args) => root.AlloWordPracticeMedia && typeof root.AlloWordPracticeMedia.buildBingoHtml === 'function'
     ? root.AlloWordPracticeMedia.buildBingoHtml(...args) : '';
   const buildLoopGameHtml = (...args) => root.AlloWordPracticeMedia && typeof root.AlloWordPracticeMedia.buildLoopGameHtml === 'function'
@@ -2152,5 +2274,5 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
   const buildWordWallHtml = (...args) => root.AlloWordPracticeMedia && typeof root.AlloWordPracticeMedia.buildWordWallHtml === 'function'
     ? root.AlloWordPracticeMedia.buildWordWallHtml(...args) : '';
   root.AlloModules = root.AlloModules || {};
-  root.AlloModules.WordPractice = { open, mount, buildHtml, buildFlashcardsHtml, buildFrayerHtml, buildSortingCardsHtml, buildWorksheetHtml, buildBingoHtml, buildLoopGameHtml, buildWordWallHtml, rasterizeImage: rasterizeImageToPng };
+  root.AlloModules.WordPractice = { open, mount, buildHtml, buildFlashcardsHtml, buildFrayerHtml, buildSortingCardsHtml, buildWorksheetHtml, buildWordSoundsWorksheetHtml, buildBingoHtml, buildLoopGameHtml, buildWordWallHtml, rasterizeImage: rasterizeImageToPng };
 })(typeof window !== 'undefined' ? window : globalThis);

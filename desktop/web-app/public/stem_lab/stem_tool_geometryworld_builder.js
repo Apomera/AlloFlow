@@ -132,12 +132,15 @@
       summary: { blockCount: blocks.length, bounds: { width: max.x - min.x + 1, depth: max.z - min.z + 1, height: max.y - min.y + 1 }, min: min, max: max }
     };
   }
+  function _gwSafeJsonParse(text) {
+    return JSON.parse(text, function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });
+  }
   function parseEditableWorldText(text, declaredBytes) {
     text = String(text == null ? '' : text);
     var byteLength = Math.max(0, Math.round(Number(declaredBytes) || editableWorldByteLength(text)));
     if (byteLength > MAX_EDITABLE_WORLD_BYTES || text.length > MAX_EDITABLE_WORLD_BYTES) return { ok: false, error: 'Editable Geometry World files are limited to 512 KiB.' };
     var parsed;
-    try { parsed = JSON.parse(text, function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; }); }
+    try { parsed = _gwSafeJsonParse(text); }
     catch (_) { return { ok: false, error: 'The selected file is not valid JSON.' }; }
     if (parsed && ['alloflow-print-package/1','alloflow-geometry-world-build/1'].indexOf(parsed.schema) >= 0) return {ok:false,error:'Choose the original Print Lab ZIP or its editable-world.json file to reopen these blocks.'};
     var normalized = normalizeEditableWorld(parsed);
@@ -753,7 +756,7 @@
   function committedWorldTitle(engine) {
     if (!engine || !engine._workshopProjectId) return '';
     try {
-      var signature=JSON.parse(engine._workshopSavedSignature || 'null');
+      var signature=_gwSafeJsonParse(engine._workshopSavedSignature || 'null');
       return Array.isArray(signature) && signature[0] && signature[0].schema===EDITABLE_WORLD_SCHEMA
         ? editableTitle(signature[0].title) : '';
     } catch (_) { return ''; }
@@ -1149,7 +1152,7 @@
       var raw=(storage||window.localStorage).getItem(WORLD_SHELF_KEY);
       if(raw==null)return {ok:true,projects:[]};
       if(raw.length>WORLD_SHELF_BYTES || editableWorldByteLength(raw)>WORLD_SHELF_BYTES)throw Error('Project storage exceeds its safe limit.');
-      var parsed=JSON.parse(raw),seen=Object.create(null),total=0;
+      var parsed=_gwSafeJsonParse(raw),seen=Object.create(null),total=0;
       if(!parsed || parsed.schema!=='alloflow-geometry-projects/1' || !Array.isArray(parsed.projects) || parsed.projects.length>8)throw Error('The project shelf could not be read.');
       var projects=parsed.projects.map(function(p){
         if(!p || typeof p.id!=='string' || !/^[a-zA-Z0-9_-]{1,64}$/.test(p.id) || seen[p.id] || typeof p.version!=='string' || p.version.length>100 || !Number.isFinite(p.savedAt) || !p.world || !Array.isArray(p.world.blocks))throw Error('A saved project is invalid.');
@@ -1344,8 +1347,10 @@
     }
     function up(e){if(!start || start.id!==e.pointerId)return;stop(e);if(mode==='select' && allowed()){
       var cells=[],v=canvas.getBoundingClientRect();
-      if(Math.hypot(e.clientX-start.x,e.clientY-start.y)<6){var ray=new THREE.Raycaster();ray.far=160;engine.camera.updateMatrixWorld(true);ray.setFromCamera(new THREE.Vector2((e.clientX-v.left)/v.width*2-1,1-(e.clientY-v.top)/v.height*2),engine.camera);var hits=ray.intersectObjects(engine.getRaycastTargets?engine.getRaycastTargets():Object.values(engine.blocks));if(hits.length && isStudentBlock(hits[0].object.userData))cells=[hits[0].object.userData.gridPos];}
-      else cells=workshopScreenSelection(engine,{left:Math.min(start.x,e.clientX),right:Math.max(start.x,e.clientX),top:Math.min(start.y,e.clientY),bottom:Math.max(start.y,e.clientY)},v,depth);
+      if(v && v.width>0 && v.height>0){
+        if(Math.hypot(e.clientX-start.x,e.clientY-start.y)<6){var ray=new THREE.Raycaster();ray.far=160;engine.camera.updateMatrixWorld(true);ray.setFromCamera(new THREE.Vector2((e.clientX-v.left)/v.width*2-1,1-(e.clientY-v.top)/v.height*2),engine.camera);var hits=ray.intersectObjects(engine.getRaycastTargets?engine.getRaycastTargets():Object.values(engine.blocks));if(hits.length && isStudentBlock(hits[0].object.userData))cells=[hits[0].object.userData.gridPos];}
+        else cells=workshopScreenSelection(engine,{left:Math.min(start.x,e.clientX),right:Math.max(start.x,e.clientX),top:Math.min(start.y,e.clientY),bottom:Math.max(start.y,e.clientY)},v,depth);
+      }
       onSelection(updateWorkshopSelection(engine,cells,e.altKey?'remove':e.shiftKey?'add':operation));
     }clear();}
     var cameraActions={
@@ -1354,7 +1359,7 @@
     };
     engine._workshopCameraActions=cameraActions;
     function wheel(e){if(mode!=='orbit' || !allowed())return;stop(e);var offset=engine.camera.position.clone().sub(target),length=offset.length();offset.setLength(Math.max(2,Math.min(140,length*Math.exp(Math.max(-100,Math.min(100,e.deltaY))*.002))));engine.camera.position.copy(target).add(offset);look();}
-    function key(e){if(engine._pendingWorldTransition || e.target && e.target.closest && e.target.closest('.gwe-builder-dock'))return;if(e.code==='Escape'){clear();onExit();}}
+    function key(e){if(e.isComposing || e.keyCode===229 || e.ctrlKey || e.metaKey || e.altKey)return;var tg=e.target;if(tg && (tg.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName||'')))return;if(engine._pendingWorldTransition || tg && tg.closest && tg.closest('.gwe-builder-dock'))return;if(e.code==='Escape'){clear();onExit();}}
     function block(e){if(allowed())stop(e);}
     var handlers={pointerdown:down,pointermove:move,pointerup:up,pointercancel:clear,mousedown:block,click:block,dblclick:block,contextmenu:block,wheel:wheel,touchstart:block,touchmove:block,touchend:block};
     Object.keys(handlers).forEach(function(k){canvas.addEventListener(k,handlers[k],{capture:true,passive:false});});window.addEventListener('keydown',key,true);
@@ -1389,18 +1394,24 @@
       button.addEventListener('pointermove',function(e){if(!drag||drag.id!==e.pointerId)return;stop(e);if(!allowed()){release();if(!engine._pendingWorldTransition)onPreview(null);return;}var offset=workshopDragOffset(axis,e.clientX-drag.x,e.clientY-drag.y,drag.vector);if(!offset){onPreview({ok:false,reason:'This axis points toward the camera. Orbit the camera or use the arrow keys.'});return;}if(offset[axis]!==drag.last){drag.last=offset[axis];keyboardAxis=axis;keyboardSteps={x:0,y:0,z:0};keyboardSteps[axis]=offset[axis];if(offset[axis]===0)onPreview(null);else onPreview(previewSelectionEdit(engine,'move',offset),offset);}});
       button.addEventListener('pointerup',function(e){if(drag&&drag.id===e.pointerId){stop(e);release();}});
       button.addEventListener('pointercancel',function(){release();if(!engine._pendingWorldTransition)onPreview(null);});
-      button.addEventListener('keydown',function(e){if(!allowed())return;var step=['ArrowRight','ArrowUp'].indexOf(e.key)!==-1?1:['ArrowLeft','ArrowDown'].indexOf(e.key)!==-1?-1:0;if(step){stop(e);preview(axis,step*(e.shiftKey?5:1));}else if(e.key==='Enter'||e.key===' '){stop(e);preview(axis,1);}});
+      button.addEventListener('keydown',function(e){if(e.isComposing || e.keyCode===229 || e.ctrlKey || e.metaKey || e.altKey || !allowed())return;var step=['ArrowRight','ArrowUp'].indexOf(e.key)!==-1?1:['ArrowLeft','ArrowDown'].indexOf(e.key)!==-1?-1:0;if(step){stop(e);preview(axis,step*(e.shiftKey?5:1));}else if(e.key==='Enter'||e.key===' '){stop(e);preview(axis,1);}});
       button.addEventListener('click',function(e){stop(e);if(e.detail===0 && allowed())preview(axis,1);});
     });
     var transformActions={reset:function(){release();keyboardSteps={x:0,y:0,z:0};keyboardAxis=null;}};engine._workshopTransformActions=transformActions;
     var rotate=document.createElement('button');rotate.type='button';rotate.className='gwe-transform-rotate';rotate.textContent='↻ 90°';rotate.setAttribute('aria-label','Preview rotation of selected blocks by 90 degrees');root.appendChild(rotate);rotate.addEventListener('click',function(e){stop(e);if(allowed())onPreview(previewSelectionEdit(engine,'rotate',{}));});
     function draw(){
-      if(disposed)return;if(engine._destroyed){root.hidden=true;return;}var rect=canvas.getBoundingClientRect();engine.camera.updateMatrixWorld(true);var p=project(center,rect),visible=allowed() && p.z>=-1&&p.z<=1 && p.x>=rect.left&&p.x<=rect.right&&p.y>=rect.top&&p.y<=rect.bottom;
-      root.hidden=!visible;svg.setAttribute('width',String(window.innerWidth));svg.setAttribute('height',String(window.innerHeight));
-      if(visible){Object.keys(axes).forEach(function(axis){var a=axes[axis],point=center.clone();point[axis]+=1;var q=project(point,rect),dx=q.x-p.x,dy=q.y-p.y,len=Math.hypot(dx,dy);a.vector={x:dx,y:dy};if(len<2){dx=axis==='x'?1:axis==='z'?-1:0;dy=axis==='y'?-1:.6;len=Math.hypot(dx,dy);}var x=Math.max(rect.left+26,Math.min(rect.right-26,p.x+dx/len*88)),y=Math.max(rect.top+26,Math.min(rect.bottom-26,p.y+dy/len*88));a.button.style.left=x+'px';a.button.style.top=y+'px';a.line.setAttribute('x1',p.x);a.line.setAttribute('y1',p.y);a.line.setAttribute('x2',x);a.line.setAttribute('y2',y);});rotate.style.left=Math.max(rect.left+38,Math.min(rect.right-38,p.x))+'px';rotate.style.top=Math.max(rect.top+26,Math.min(rect.bottom-26,p.y+60))+'px';}
+      if(disposed)return;if(engine._destroyed){root.hidden=true;return;}
+      if(typeof document==='undefined' || !document.hidden){
+        var rect=canvas.getBoundingClientRect();
+        if(rect && rect.width>0 && rect.height>0){
+          engine.camera.updateMatrixWorld(true);var p=project(center,rect),visible=allowed() && p.z>=-1&&p.z<=1 && p.x>=rect.left&&p.x<=rect.right&&p.y>=rect.top&&p.y<=rect.bottom;
+          root.hidden=!visible;svg.setAttribute('width',String(window.innerWidth));svg.setAttribute('height',String(window.innerHeight));
+          if(visible){Object.keys(axes).forEach(function(axis){var a=axes[axis],point=center.clone();point[axis]+=1;var q=project(point,rect),dx=q.x-p.x,dy=q.y-p.y,len=Math.hypot(dx,dy);a.vector={x:dx,y:dy};if(len<2){dx=axis==='x'?1:axis==='z'?-1:0;dy=axis==='y'?-1:.6;len=Math.hypot(dx,dy);}var x=Math.max(rect.left+26,Math.min(rect.right-26,p.x+dx/len*88)),y=Math.max(rect.top+26,Math.min(rect.bottom-26,p.y+dy/len*88));a.button.style.left=x+'px';a.button.style.top=y+'px';a.line.setAttribute('x1',p.x);a.line.setAttribute('y1',p.y);a.line.setAttribute('x2',x);a.line.setAttribute('y2',y);});rotate.style.left=Math.max(rect.left+38,Math.min(rect.right-38,p.x))+'px';rotate.style.top=Math.max(rect.top+26,Math.min(rect.bottom-26,p.y+60))+'px';}
+        } else { root.hidden=true; }
+      }
       frame=window.requestAnimationFrame(draw);
     }
-    function key(e){if(engine._pendingWorldTransition || e.target && e.target.closest && e.target.closest('.gwe-builder-dock'))return;if(e.key==='Escape'){stop(e);release();onPreview(null);onExit();}}
+    function key(e){if(e.isComposing || e.keyCode===229 || e.ctrlKey || e.metaKey || e.altKey)return;var tg=e.target;if(tg && (tg.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName||'')))return;if(engine._pendingWorldTransition || tg && tg.closest && tg.closest('.gwe-builder-dock'))return;if(e.key==='Escape'){stop(e);release();onPreview(null);onExit();}}
     function block(e){if(allowed())stop(e);}
     var events=['pointerdown','mousedown','click','dblclick','contextmenu','touchstart'];events.forEach(function(k){canvas.addEventListener(k,block,{capture:true,passive:false});});window.addEventListener('keydown',key,true);draw();
     return function(){disposed=true;window.cancelAnimationFrame(frame);release();root.remove();if(engine._workshopTransformActions===transformActions)delete engine._workshopTransformActions;document.removeEventListener('fullscreenchange',attach);events.forEach(function(k){canvas.removeEventListener(k,block,true);});window.removeEventListener('keydown',key,true);canvas.style.cursor=oldCursor;canvas.style.touchAction=oldTouch;};
@@ -1702,7 +1713,7 @@
       storage=storage || window.localStorage;
       var raw=storage.getItem(BUILD_STAMP_KEY);if(raw==null)return {ok:true,stamps:[]};
       if(raw.length>BUILD_STAMP_BYTES || editableWorldByteLength(raw)>BUILD_STAMP_BYTES)throw new Error('The stamp library is larger than its safe limit.');
-      var parsed=JSON.parse(raw),stamps=[],seen=Object.create(null),total=0;
+      var parsed=_gwSafeJsonParse(raw),stamps=[],seen=Object.create(null),total=0;
       if(!parsed || parsed.schema!=='alloflow-build-stamps/1' || !Array.isArray(parsed.stamps) || parsed.stamps.length>BUILD_STAMP_LIMIT)throw new Error('The saved stamp library could not be read.');
       for(var rawStamp of parsed.stamps){var checked=normalizeBuildStamp(rawStamp);if(!checked.ok || seen[rawStamp.id])throw new Error('The saved stamp library contains an invalid recipe.');seen[rawStamp.id]=true;total+=checked.value.blocks.length;stamps.push(checked.value);}
       if(total>BUILD_STAMP_TOTAL)throw new Error('The stamp library is larger than its safe limit.');
@@ -2995,7 +3006,7 @@
     return true;
   }
 
-  window.StemLab = window.StemLab || {};
+  if (typeof window !== 'undefined') window.StemLab = window.StemLab || {};
   // The print guide reads the same selected mesh and printer profile as export.
   // It adds disposable lines only; source geometry and physical scale stay intact.
   function geometryPrintGuideData(engine, positions, profile, unitMm, check) {
@@ -3156,6 +3167,7 @@
     patchGeometryState(ctx,{sandboxDockCollapsed:true,hudPanel:''});focusPrintCameraControl(engine,'.gwe-collapse');return true;
   }
 
+  if (typeof window !== 'undefined' && window.StemLab) {
   window.StemLab.geometryWorldBuilderPure = {
     suspendPreviewScenery:suspendPreviewScenery,findWorkshopTools:findWorkshopTools,previewChangeFacts:previewChangeFacts,frameBuildPreview:frameBuildPreview,
     capturePreviewCamera:capturePreviewCamera, installPreviewCamera:installPreviewCamera,
@@ -3215,6 +3227,7 @@
     captureProject:captureProject, restoreProject:restoreProject, selectionMeasurement:selectionMeasurement, polledSelectionMeasurement:polledSelectionMeasurement,
     openSelectedBuildInPrintLab:openSelectedBuildInPrintLab, worldToStl:worldToStl, printUnit:printUnit
   };
+  }
 
   var GEOMETRY_ACTIVITY_GUIDE_CSS = `
 #geoworld-fs-workspace .gwe-activity-backdrop{background:#111817b8;padding:16px}
@@ -3361,7 +3374,7 @@
   }
 
   function installStyles() {
-    if (typeof document === 'undefined' || document.getElementById('allo-geometryworld-builder-css')) return;
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-geometryworld-builder-css')) return;
     var style = document.createElement('style');
     style.id = 'allo-geometryworld-builder-css';
     style.textContent = [
@@ -3626,6 +3639,7 @@
   }
 
   function trapDialogKeys(event, close) {
+    if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
     if (event.key === 'Escape') { event.preventDefault(); close(); return; }
     if (event.key !== 'Tab') return;
     var dialog = event.currentTarget;
@@ -3985,6 +3999,7 @@
   }
 
   function installBuilderEnhancement() {
+    if (typeof window === 'undefined') return false;
     var lab = window.StemLab;
     var tool = lab && lab._registry && lab._registry.geometryWorld;
     if (!tool || typeof tool.render !== 'function') return false;
@@ -4005,7 +4020,7 @@
       var data = (_rawGwData && typeof _rawGwData === 'object' && !Array.isArray(_rawGwData)) ? _rawGwData : {};
       var isGwLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
       var isSandbox = data.activeLesson === 'builderSandbox';
-      var pendingReturn = window.__alloGeometryWorldPendingBuild, hasPendingReturn = !!pendingReturn;
+      var pendingReturn = typeof window !== 'undefined' ? window.__alloGeometryWorldPendingBuild : null, hasPendingReturn = !!pendingReturn;
       var currentPrintUnit = printUnit(printContext(ctx).unitMm);
       var base = originalRender(ctx);
       var launcherFocusRef = React.useRef('');
@@ -4024,7 +4039,7 @@
       var _packageArrival = React.useState(null), packageArrival = _packageArrival[0], setPackageArrival = _packageArrival[1];
       var editablePreview = packageArrival ? packageArrival.preview : filePreview;
       var editableError = packageArrival ? packageArrival.error : fileError;
-      var homeOpen = !!data.showGeometryHome && !hasPendingReturn && !packageArrival && !window[ENGINE_KEY + '_failed'];
+      var homeOpen = !!data.showGeometryHome && !hasPendingReturn && !packageArrival && !(typeof window !== 'undefined' && window[ENGINE_KEY + '_failed']);
       var homePage = ['start','learn','build','explore','create','open'].indexOf(data.geometryHomePage)>=0 ? data.geometryHomePage : 'start';
       var homeRef = React.useRef(null);
       var homePreviousPageRef = React.useRef('start');
@@ -4358,7 +4373,7 @@
                 h('small', null, 'Includes cell X '+first.x+', Y '+first.y+', Z '+first.z),
                 h('div', {className:'gwe-builder-actions'},
                   h('button', {type:'button','data-gwe-inspect-piece':index+1,'aria-label':'Inspect piece '+(index+1),onClick:function(){inspectPrintIssue('part',index+1);}}, 'Inspect'),
-                  h('button', {type:'button','aria-label':'Prepare only piece '+(index+1),'data-gwe-use-piece':index+1,onClick:function(){changePrintPiece(index);}}, 'Prepare only this piece')));
+                  h('button', {type:'button','aria-label':'Prepare only this piece (piece '+(index+1)+')','data-gwe-use-piece':index+1,onClick:function(){changePrintPiece(index);}}, 'Prepare only this piece')));
             }),
             groups.length > 8 && h('div', {className:'gwe-piece-pages'},
               h('button', {type:'button',disabled:page===0,onClick:function(){setPrintPartPage(page-1);}}, 'Previous pieces'),
@@ -4691,7 +4706,7 @@
       React.useEffect(function(){if(!selectionEditPreview || !data.sandboxDockCollapsed)setPreviewReview(false);},[selectionEditPreview,data.sandboxDockCollapsed]);
       React.useEffect(function(){
         if(!previewReview)return undefined;
-        function escape(event){if(event.key!=='Escape' || document.pointerLockElement || (window[ENGINE_KEY] && window[ENGINE_KEY]._pendingWorldTransition))return;event.preventDefault();event.stopPropagation();completePreview('cancel');}
+        function escape(event){if(event.isComposing || event.keyCode===229 || event.ctrlKey || event.metaKey || event.altKey)return;if(event.key!=='Escape' || document.pointerLockElement || (window[ENGINE_KEY] && window[ENGINE_KEY]._pendingWorldTransition))return;event.preventDefault();event.stopPropagation();completePreview('cancel');}
         window.addEventListener('keydown',escape,true);return function(){window.removeEventListener('keydown',escape,true);};
       },[previewReview]);
       function workshopFocusAllowed(owner,expectedCollapsed,request){
@@ -4751,7 +4766,7 @@
       }
       function renderToolFinder(){
         var tools=findWorkshopTools(toolQuery,hasRetainedSelection).filter(function(tool){return toolCategory==='all' || tool.group===toolCategory;}).map(function(tool){return Object.assign({},tool,{available:tool.available && (tool.id!=='send' || hasStudentBuild!==false)});}),first=tools.find(function(tool){return tool.available;});
-        return h('section',{id:'gwe-tool-finder',className:'gwe-tool-finder','aria-label':__alloT('stem.geometryworld_builder.find_a_free_build_tool','Find a Free Build tool'),onKeyDown:function(event){event.stopPropagation();if(event.key==='Escape'){event.preventDefault();closeToolFinder();}}},
+        return h('section',{id:'gwe-tool-finder',className:'gwe-tool-finder','aria-label':__alloT('stem.geometryworld_builder.find_a_free_build_tool','Find a Free Build tool'),onKeyDown:function(event){event.stopPropagation();if(event.isComposing || event.keyCode===229 || event.ctrlKey || event.metaKey || event.altKey)return;if(event.key==='Escape'){event.preventDefault();closeToolFinder();}}},
           h('form',{role:'search',onSubmit:function(event){event.preventDefault();if(first)navigateWorkshopTool(first);}},h('label',{htmlFor:'gwe-tool-query'},'Find a tool'),h('input',{ref:toolFinderInput,id:'gwe-tool-query',type:'search',value:toolQuery,placeholder:__alloT('stem.gw.searchToolsPlaceholder','Search tools'),autoComplete:'off',onChange:function(event){setToolQuery(event.target.value);}}),h('label',{className:'gwe-tool-category',htmlFor:'gwe-tool-category'},'Category',h('select',{id:'gwe-tool-category',value:toolCategory,onChange:function(event){setToolCategory(event.target.value);}},['all','Build','Edit','Share','Print','Keep','Explore'].map(function(category){return h('option',{key:category,value:category},category==='all'?'All tools':category);})))),
           h('p',{className:'gwe-tool-count',role:'status'},tools.length?tools.length+' matching tool'+(tools.length===1?'':'s'):'No matching tools'),
           !tools.length && h('button',{type:'button',className:'gwe-finder-reset',onClick:function(){setToolQuery('');setToolCategory('all');if(toolFinderInput.current)toolFinderInput.current.focus();}},'Clear filters'),
@@ -4784,6 +4799,7 @@
         focusAfterPreview(action==='apply' && (!result || !result.ok));
       }
       function cancelInlinePreview(event){
+        if(event.isComposing || event.keyCode===229 || event.ctrlKey || event.metaKey || event.altKey)return;
         if(event.key!=='Escape' || previewReview || studioEditableReview || toolFinderOpen || stampRemoval || !selectionEditPreview || document.pointerLockElement)return;
         var target=event.target,live=window[ENGINE_KEY],overlay=live && live._buildBatchPreview;
         if(!target || !target.closest || !target.closest('.gwe-creation-edit-form,.gwe-nudge-controls,.gwe-stamp-placement,.gwe-starter-placement,.gwe-coordinate-builder,.gwe-edit-preview,.gwe-preview-footer'))return;
@@ -4845,7 +4861,7 @@
       }
       function renderStampRemoval(){
         if(!stampRemoval)return null;
-        return h('div',{'data-gwe-stamp-remove-confirmation':true,className:'gwe-stamp-removal',role:'group','aria-labelledby':'gwe-stamp-remove-title',onKeyDown:function(event){if(event.key==='Escape'){event.preventDefault();event.stopPropagation();cancelStampRemoval();}}},
+        return h('div',{'data-gwe-stamp-remove-confirmation':true,className:'gwe-stamp-removal',role:'group','aria-labelledby':'gwe-stamp-remove-title',onKeyDown:function(event){if(event.isComposing || event.keyCode===229 || event.ctrlKey || event.metaKey || event.altKey)return;if(event.key==='Escape'){event.preventDefault();event.stopPropagation();cancelStampRemoval();}}},
           h('h4',{id:'gwe-stamp-remove-title',tabIndex:-1},'Remove “'+stampRemoval.stamp.name+'”?'),
           h('p',null,'This removes its reusable recipe from this browser. Blocks already placed stay in your world.'),
           stampRemoval.error && h('p',{role:'alert'},stampRemoval.error),
@@ -4956,6 +4972,7 @@
           outline.geometry.dispose();outline.material.dispose();outline=null;outlineOwner=null;
         }
         function refresh(){
+          if(typeof document!=='undefined' && document.hidden)return;
           var eng=window[ENGINE_KEY];
           if(eng && eng.pollWorkshopDraft)eng.pollWorkshopDraft();
           // Reuse this refresh and the engine's cached array. Lifetime placement
@@ -4967,8 +4984,8 @@
             previousStudentPresence = studentPresence;
             setHasStudentBuild(studentPresence);
           }
-          if(eng && !eng._showcase && (liveBuilderCtx.current.toolData.geometryWorld || {}).showcaseActive)patchGeometryState(liveBuilderCtx.current,{showcaseActive:false});
-          if(!!(eng && eng._creationFocus)!==!!((liveBuilderCtx.current.toolData.geometryWorld || {}).creationFocusAvailable))patchGeometryState(liveBuilderCtx.current,{creationFocusAvailable:!!(eng && eng._creationFocus)});
+          if(eng && !eng._showcase && guidanceData.showcaseActive)patchGeometryState(liveBuilderCtx.current,{showcaseActive:false});
+          if(!!(eng && eng._creationFocus)!==!!guidanceData.creationFocusAvailable)patchGeometryState(liveBuilderCtx.current,{creationFocusAvailable:!!(eng && eng._creationFocus)});
           var cameraView=selectedCreationCameraView(eng);if(cameraView!==previousCameraView){previousCameraView=cameraView;setCreationCameraView(cameraView);}
           if(outline)outline.visible=!(eng && eng._showcase);
           syncGeometryPrintGuide(eng,liveBuilderCtx.current);
@@ -5387,7 +5404,7 @@
       function renderSelectionChooser(){
         if(!selectionChooserOpen)return null;
         var count=coordinateSelectionCells(window[ENGINE_KEY]).length;
-        return h('section',{className:'gwe-selection-chooser','aria-labelledby':'gwe-selection-choice-title',onKeyDown:function(event){if(event.key==='Escape'){event.preventDefault();event.stopPropagation();closeSelectionChooser();}}},
+        return h('section',{className:'gwe-selection-chooser','aria-labelledby':'gwe-selection-choice-title',onKeyDown:function(event){if(event.isComposing || event.keyCode===229 || event.ctrlKey || event.metaKey || event.altKey)return;if(event.key==='Escape'){event.preventDefault();event.stopPropagation();closeSelectionChooser();}}},
           h('p',{className:'gwe-journey-kicker'},selectionIntent==='print'?'Before you print':'Choose your creation'),
           h('h3',{id:'gwe-selection-choice-title',tabIndex:-1},selectionIntent==='print'?'Choose what to print':'Choose your blocks'),
           h('p',null,'Only your selected blocks will be included. The ground and lesson structures stay in the world.'),
@@ -5994,7 +6011,7 @@
 
       if (isSandbox && data.worldActive) additions.push(h('aside', {
         key: 'gwe-dock', className: 'gwe-builder-dock', 'data-collapsed': collapsed ? 'true' : 'false',
-        'data-editable-review':studioEditableReview?'true':'false',onFocusCapture:keepEditorFocusVisible,onKeyDownCapture:cancelInlinePreview,onKeyDown:studioEditableReview?function(event){if(event.key==='Escape'){event.preventDefault();event.stopPropagation();cancelEditableImport();}}:undefined,
+        'data-editable-review':studioEditableReview?'true':'false',onFocusCapture:keepEditorFocusVisible,onKeyDownCapture:cancelInlinePreview,onKeyDown:studioEditableReview?function(event){if(event.isComposing || event.keyCode===229 || event.ctrlKey || event.metaKey || event.altKey)return;if(event.key==='Escape'){event.preventDefault();event.stopPropagation();cancelEditableImport();}}:undefined,
         'aria-label': __alloT('stem.geometryworld_builder.free_build_studio','Free Build Studio'), 'data-finder':toolFinderOpen?'true':'false', 'data-print-preparing':printPreparationActive?'true':'false', 'data-coordinate-selecting':coordinateActive?'true':'false', 'data-coordinate-building':coordinateBuildActive?'true':'false', 'data-selection-choosing':selectionChooserOpen?'true':'false','data-stamp-removing':stampRemoval?'true':'false'
       },
         h('div', { className: 'gwe-builder-head' },
@@ -6309,7 +6326,7 @@
   }
 
   installStyles();
-  if (!installBuilderEnhancement()) {
+  if (typeof window !== 'undefined' && !installBuilderEnhancement()) {
     // The shell loads this file BEFORE the core (it is the core's declared dependency), and mounts the
     // core the moment it registers. Wrap inside registerTool itself so the first render is already the
     // enhanced one: a render whose hook count grows on a later re-render throws in React.

@@ -37,10 +37,10 @@ module.exports = {
       if (!display || display.length > 40) return { missing: ['a problem of 1 to 40 characters'] };
       if (!whole(p.answer)) return { missing: ['a whole-number answer'] };
       var own = { word: display, display: display, answer: String(Number(p.answer)) };
-      var signs = display.replace(/(^|\s)[-\u2013\u2014](?=\s|\d)/g, function (all, lead) { return lead + String.fromCharCode(0x2212); })
-        .replace(/(\d)\s*[-\u2013\u2014]\s*(?=\d)/g, function (all, lead) { return lead + ' ' + String.fromCharCode(0x2212) + ' '; })
-        .replace(/(\d)\s*[xX*\u00B7\u22C5]\s*(?=\d)/g, function (all, lead) { return lead + ' ' + String.fromCharCode(0xD7) + ' '; })
-        .replace(/(\d)\s*\/\s*(?=\d)/g, function (all, lead) { return lead + ' ' + String.fromCharCode(0xF7) + ' '; });
+      var signs = display.replace(/(^|[\s(])[-\u2013\u2014](?=\s|\d|\()/g, '$1\u2212')
+        .replace(/([\d)])\s*[-\u2013\u2014]\s*(?=[\d(])/g, '$1 \u2212 ')
+        .replace(/([\d)])\s*[xX*\u00B7\u22C5]\s*(?=[\d(])/g, '$1 \u00D7 ')
+        .replace(/([\d)])\s*\/\s*(?=[\d(])/g, '$1 \u00F7 ');
       // said: the label's text (the signs, the plain numbers).
       if (signs !== display) own.said = signs;
       if (grouped(signs) !== display) own.shown = grouped(signs);
@@ -69,7 +69,7 @@ module.exports = {
     ctx.root.appendChild(ctx.el('p', { class: 'prompt', 'aria-hidden': 'true', style: 'white-space:nowrap;font-size:min(2.6rem,' + (137 / n | 0) + 'vw,' + (1130 / n | 0) + 'px)', text: shown }));
     if (note) ctx.root.appendChild(ctx.el('p', { class: 'muted', style: 'text-align:center', text: note }));
     ctx.root.appendChild(pad.node);
-    pad.focus();
+    if (!ctx.noFocus) pad.focus();
     return {
       // Practice items only: lock the keys.
       reveal: function () { pad.lock(); },

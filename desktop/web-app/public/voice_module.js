@@ -1539,6 +1539,360 @@
     return 'data:audio/wav;base64,' + encode(binary);
   }
 
+  function pcmToWavBlob(samples, sampleRate) {
+    var input = samples instanceof Float32Array ? samples : new Float32Array(samples || []);
+    sampleRate = Math.max(8000, Math.round(Number(sampleRate) || 16000));
+    var bytes = new Uint8Array(44 + input.length * 2);
+    var view = new DataView(bytes.buffer);
+    function ascii(offset, value) {
+      for (var i = 0; i < value.length; i++) view.setUint8(offset + i, value.charCodeAt(i));
+    }
+    ascii(0, 'RIFF');
+    view.setUint32(4, 36 + input.length * 2, true);
+    ascii(8, 'WAVE');
+    ascii(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    ascii(36, 'data');
+    view.setUint32(40, input.length * 2, true);
+    for (var k = 0; k < input.length; k++) {
+      var sample = Math.max(-1, Math.min(1, input[k]));
+      view.setInt16(44 + k * 2, sample < 0 ? sample * 32768 : sample * 32767, true);
+    }
+    return new Blob([bytes], { type: 'audio/wav' });
+  }
+
+  function _normOverlapWord(w) {
+    return String(w || '').toLowerCase().replace(/^[^a-z0-9\u00C0-\u024F]+|[^a-z0-9\u00C0-\u024F]+$/gi, '');
+  }
+
+  function dedupeOverlapText(existing, incoming) {
+    var left = String(existing || '').trim();
+    var right = String(incoming || '').trim();
+    if (!left) return right;
+    if (!right) return left;
+    var leftWords = left.split(/\s+/);
+    var rightWords = right.split(/\s+/);
+    var maxCheck = Math.min(8, leftWords.length, rightWords.length);
+    var overlap = 0;
+    for (var k = maxCheck; k >= 1; k--) {
+      var matched = true;
+      for (var i = 0; i < k; i++) {
+        var a = _normOverlapWord(leftWords[leftWords.length - k + i]);
+        var b = _normOverlapWord(rightWords[i]);
+        if (!a || a !== b) { matched = false; break; }
+      }
+      if (matched) {
+        if (k === 1 && _normOverlapWord(rightWords[0]).length < 3) continue;
+        overlap = k;
+        break;
+      }
+    }
+    var tail = rightWords.slice(overlap).join(' ');
+    return tail ? (left + ' ' + tail) : left;
+  }
+
+  // Rolling-window segmented dictation recorder (local Whisper by default).
+  // Emits incremental local transcripts while retaining bounded in-memory segment
+  // audio for optional 5-second slice replay and opt-in Gemini cross-triangulation.
+  function createSegmentedDictationRecorder(opts) {
+    opts = opts || {};
+    var lang = opts.lang || loadPreference().lang || 'en-US';
+    var tier = opts.tier || loadPreference().whisperTier || 'tiny';
+    var segmentSeconds = Math.max(5, Math.min(60, Number(opts.segmentSeconds) || 25));
+    var overlapSeconds = Math.max(0, Math.min(5, opts.overlapSeconds == null ? 2 : Number(opts.overlapSeconds)));
+    var silenceMs = Math.max(400, Math.min(5000, Number(opts.silenceMs) || 1400));
+    var maxAudioBytes = Math.max(1024 * 1024, Math.min(60 * 1024 * 1024, Number(opts.maxAudioBytes) || 30 * 1024 * 1024));
+    var maxDurationSec = Math.max(60, Math.min(3600, Number(opts.maxMinutes) ? Number(opts.maxMinutes) * 60 : 3600));
+
+    var state = 'idle'; // idle | recording | paused | stopping
+    var stream = null, context = null, source = null, processor = null, gain = null, lease = null;
+    var inputRate = 48000;
+    var blocks = [], bufferedSamples = 0, voicedSamples = 0, silentSamples = 0;
+    var overlapTail = null;
+    var elapsedSec = 0;
+    var segments = [];
+    var totalAudioBytes = 0;
+    var createdUrls = [];
+    var draftText = String(opts.initialText || '').trim();
+    var queue = Promise.resolve();
+    var segCounter = 0;
+
+    function emitStatus(next, info) {
+      state = next;
+      if (typeof opts.onStatus === 'function') {
+        try { opts.onStatus(next, info || {}); } catch (_) {}
+      }
+    }
+    function emitError(err) {
+      if (typeof opts.onError === 'function') {
+        try { opts.onError(err); } catch (_) {}
+      }
+    }
+    function closeHardware() {
+      try { if (source) source.disconnect(); } catch (_) {}
+      try { if (processor) { processor.onaudioprocess = null; processor.disconnect(); } } catch (_) {}
+      try { if (gain) gain.disconnect(); } catch (_) {}
+      try { if (stream) stream.getTracks().forEach(function (tr) { tr.stop(); }); } catch (_) {}
+      try { if (context) context.close(); } catch (_) {}
+      source = processor = gain = stream = context = null;
+    }
+    function releaseLease() {
+      var held = lease;
+      lease = null;
+      try { if (held) held.release('dictation-studio-stopped'); } catch (_) {}
+    }
+    function trimStoredAudioCap() {
+      for (var i = 0; i < segments.length && totalAudioBytes > maxAudioBytes; i++) {
+        if (segments[i].blob) {
+          totalAudioBytes = Math.max(0, totalAudioBytes - (segments[i].blob.size || 0));
+          segments[i].blob = null;
+        }
+      }
+    }
+    function flushBuffer(isFinal) {
+      if (!bufferedSamples) return;
+      var raw = new Float32Array(bufferedSamples);
+      var off = 0;
+      for (var i = 0; i < blocks.length; i++) {
+        raw.set(blocks[i], off);
+        off += blocks[i].length;
+      }
+      blocks = [];
+      bufferedSamples = 0;
+      voicedSamples = 0;
+      silentSamples = 0;
+
+      var pcmNew = downsamplePcm(raw, inputRate, 16000);
+      var segStart = Math.max(0, elapsedSec - (overlapTail ? overlapTail.length / 16000 : 0));
+      var segDurationNew = pcmNew.length / 16000;
+      elapsedSec += segDurationNew;
+      var segEnd = elapsedSec;
+
+      var pcm = pcmNew;
+      if (overlapTail && overlapTail.length) {
+        pcm = new Float32Array(overlapTail.length + pcmNew.length);
+        pcm.set(overlapTail, 0);
+        pcm.set(pcmNew, overlapTail.length);
+      }
+      var keepOverlap = (!isFinal && overlapSeconds > 0)
+        ? Math.min(pcmNew.length, Math.round(overlapSeconds * 16000))
+        : 0;
+      overlapTail = keepOverlap > 0 ? pcmNew.slice(pcmNew.length - keepOverlap) : null;
+
+      if (pcmVoicedMs(pcm) < 160) return;
+      var wavBlob = pcmToWavBlob(pcm, 16000);
+      var segIndex = segCounter++;
+      var segMeta = {
+        id: 'seg-' + (segIndex + 1),
+        index: segIndex,
+        startSec: Math.round(segStart * 10) / 10,
+        endSec: Math.round(segEnd * 10) / 10,
+        text: '',
+        blob: wavBlob,
+        mimeType: 'audio/wav'
+      };
+      segments.push(segMeta);
+      totalAudioBytes += wavBlob.size || 0;
+      trimStoredAudioCap();
+
+      queue = queue.then(function () {
+        var runTranscribe = typeof opts.transcribeSegment === 'function'
+          ? function () { return Promise.resolve(opts.transcribeSegment(pcm, segMeta)); }
+          : function () {
+              return loadWhisperModel(tier, { lang: lang }).then(function () {
+                return transcribeAudio(null, { engine: 'whisper', tier: tier, lang: lang, pcm: pcm });
+              });
+            };
+        return runTranscribe().then(function (res) {
+          var rawText = typeof res === 'string' ? res : (res && typeof res.transcript === 'string' ? res.transcript : '');
+          var clean = filterWhisperHallucination(rawText, pcm);
+          segMeta.text = clean;
+          if (clean) {
+            draftText = dedupeOverlapText(draftText, clean);
+          }
+          if (typeof opts.onSegment === 'function') {
+            try { opts.onSegment(segMeta); } catch (_) {}
+          }
+          if (typeof opts.onDraft === 'function') {
+            try { opts.onDraft(draftText, segments.slice()); } catch (_) {}
+          }
+        }).catch(function (err) {
+          emitError(err);
+        });
+      });
+    }
+
+    function openHardware() {
+      if (typeof navigator === 'undefined' || !navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') {
+        return Promise.reject(new Error('Microphone access is unavailable in this browser.'));
+      }
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return Promise.reject(new Error('Web Audio is unavailable in this browser.'));
+      return navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }).then(function (opened) {
+        if (state !== 'recording') {
+          try { opened.getTracks().forEach(function (tr) { tr.stop(); }); } catch (_) {}
+          return;
+        }
+        stream = opened;
+        context = new AC();
+        inputRate = context.sampleRate || 48000;
+        var segLimitSamples = Math.round(segmentSeconds * inputRate);
+        var silenceLimitSamples = Math.round((silenceMs / 1000) * inputRate);
+        var minSpeechForPause = Math.round(2.5 * inputRate);
+        source = context.createMediaStreamSource(stream);
+        processor = context.createScriptProcessor(4096, 1, 1);
+        gain = context.createGain();
+        gain.gain.value = 0;
+        processor.onaudioprocess = function (event) {
+          if (state !== 'recording') return;
+          var frame = new Float32Array(event.inputBuffer.getChannelData(0));
+          var energy = 0;
+          for (var i = 0; i < frame.length; i++) energy += frame[i] * frame[i];
+          var rms = Math.sqrt(energy / Math.max(1, frame.length));
+          if (typeof opts.onLevel === 'function') {
+            try { opts.onLevel(Math.min(1, rms * 8)); } catch (_) {}
+          }
+          blocks.push(frame);
+          bufferedSamples += frame.length;
+          if (rms >= 0.012) {
+            voicedSamples += frame.length;
+            silentSamples = 0;
+          } else {
+            silentSamples += frame.length;
+          }
+          var totalProjected = elapsedSec + (bufferedSamples / inputRate);
+          if (totalProjected >= maxDurationSec) {
+            stop();
+            return;
+          }
+          if (bufferedSamples >= segLimitSamples || (voicedSamples >= minSpeechForPause && silentSamples >= silenceLimitSamples)) {
+            flushBuffer(false);
+          }
+        };
+        source.connect(processor);
+        processor.connect(gain);
+        gain.connect(context.destination);
+        try { Promise.resolve(context.resume()).catch(function () {}); } catch (_) {}
+      });
+    }
+
+    function start() {
+      if (state === 'recording') return Promise.resolve();
+      if (state === 'paused') return resume();
+      lease = acquireVoiceSession('dictation-studio', {
+        mode: 'microphone',
+        label: 'Dictation Studio',
+        engine: 'browser-whisper',
+        engineLabel: 'On-device Whisper',
+        privacy: 'Audio stays on this device unless you choose Gemini check.',
+        onStop: function () { stop(); }
+      });
+      emitStatus('recording', { elapsedSec: elapsedSec });
+      return openHardware().catch(function (err) {
+        closeHardware();
+        releaseLease();
+        emitStatus('idle', { elapsedSec: elapsedSec });
+        emitError(err);
+        throw err;
+      });
+    }
+
+    function pause() {
+      if (state !== 'recording') return queue;
+      closeHardware();
+      flushBuffer(true);
+      emitStatus('paused', { elapsedSec: elapsedSec });
+      return queue;
+    }
+
+    function resume() {
+      if (state !== 'paused') return Promise.resolve();
+      overlapTail = null;
+      emitStatus('recording', { elapsedSec: elapsedSec });
+      return openHardware().catch(function (err) {
+        closeHardware();
+        releaseLease();
+        emitStatus('idle', { elapsedSec: elapsedSec });
+        emitError(err);
+        throw err;
+      });
+    }
+
+    function stop() {
+      if (state === 'idle') return queue.then(function () { return { text: draftText, segments: segments.slice(), durationSec: elapsedSec }; });
+      emitStatus('stopping', { elapsedSec: elapsedSec });
+      closeHardware();
+      flushBuffer(true);
+      overlapTail = null;
+      releaseLease();
+      return queue.then(function () {
+        emitStatus('idle', { elapsedSec: elapsedSec });
+        return { text: draftText, segments: segments.slice(), durationSec: elapsedSec };
+      });
+    }
+
+    function getAudioSliceUrl(startSec, endSec) {
+      var target = Math.max(0, Number(startSec) || 0);
+      var match = null;
+      for (var i = 0; i < segments.length; i++) {
+        if (!segments[i].blob) continue;
+        if (target >= segments[i].startSec - 0.5 && target <= segments[i].endSec + 0.5) {
+          match = segments[i];
+          break;
+        }
+      }
+      if (!match) {
+        for (var j = 0; j < segments.length; j++) {
+          if (segments[j].blob) { match = segments[j]; break; }
+        }
+      }
+      if (!match || !match.blob || typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') return null;
+      var url = URL.createObjectURL(match.blob);
+      createdUrls.push(url);
+      var relStart = Math.max(0, target - match.startSec);
+      var span = Math.max(2, Math.min(12, (Number(endSec) > target ? (Number(endSec) - target) : 5)));
+      return { url: url, offsetSec: relStart, durationSec: span, segmentId: match.id };
+    }
+
+    function clearAudio() {
+      for (var i = 0; i < createdUrls.length; i++) {
+        try { if (typeof URL !== 'undefined' && typeof URL.revokeObjectURL === 'function') URL.revokeObjectURL(createdUrls[i]); } catch (_) {}
+      }
+      createdUrls = [];
+      for (var j = 0; j < segments.length; j++) segments[j].blob = null;
+      totalAudioBytes = 0;
+      overlapTail = null;
+    }
+
+    return {
+      start: start,
+      pause: pause,
+      resume: resume,
+      stop: stop,
+      pushAudioBufferForTest: function (float32, rate) {
+        inputRate = rate || 16000;
+        blocks.push(float32 instanceof Float32Array ? float32 : new Float32Array(float32 || []));
+        bufferedSamples += blocks[blocks.length - 1].length;
+        flushBuffer(false);
+        return queue;
+      },
+      getState: function () { return state; },
+      getDraft: function () { return draftText; },
+      setDraft: function (text) { draftText = String(text || ''); },
+      getSegments: function () { return segments.slice(); },
+      getAudioBlobs: function () { return segments.filter(function (s) { return !!s.blob; }).map(function (s) { return s.blob; }); },
+      getAudioBytes: function () { return totalAudioBytes; },
+      getAudioSliceUrl: getAudioSliceUrl,
+      clearAudio: clearAudio
+    };
+  }
+
   function createHandsFreeVad(opts) {
     opts = opts || {};
     var finiteOpt = function (v, minVal, defVal) {
@@ -3261,6 +3615,9 @@
 
     // Phase 3v.5 - shared session arbitration + honest engine status
     createDictationController: createDictationController,
+    createSegmentedDictationRecorder: createSegmentedDictationRecorder,
+    dedupeOverlapText: dedupeOverlapText,
+    pcmToWavBlob: pcmToWavBlob,
     createHandsFreeRecognizer: createHandsFreeRecognizer,
     createLocalSpeechRecognition: createLocalSpeechRecognition,
     isLocalSpeechOnly: isLocalSpeechOnly,
@@ -3286,6 +3643,8 @@
     _handsFreePure: {
       downsamplePcm: downsamplePcm,
       pcmToWavDataUri: pcmToWavDataUri,
+      pcmToWavBlob: pcmToWavBlob,
+      dedupeOverlapText: dedupeOverlapText,
       createHandsFreeVad: createHandsFreeVad,
       filterWhisperHallucination: filterWhisperHallucination,
       parseGeminiTranscript: parseGeminiTranscript

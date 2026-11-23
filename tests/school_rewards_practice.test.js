@@ -129,7 +129,9 @@ describe('practice page', () => {
   it('is the real portal with the stub ahead of it, a role and scenario bar, an editable tour, and no indexing', () => {
     expect(PAGE).toContain('<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">');
     expect(PAGE).toContain('<meta name="robots" content="noindex">');
-    expect(PAGE.indexOf('/* SR_PRACTICE_START */')).toBeLessThan(PAGE.indexOf('<main class="shell">'));
+    const mainStart = PAGE.search(/<main\b[^>]*\bclass="shell"[^>]*>/);
+    expect(mainStart).toBeGreaterThan(-1);
+    expect(PAGE.indexOf('/* SR_PRACTICE_START */')).toBeLessThan(mainStart);
     expect(PAGE).toContain('id="practice-role"');
     expect(PAGE).toContain('id="practice-scenario"');
     expect(PAGE).toContain('id="practice-tour-list"');
@@ -144,7 +146,9 @@ describe('practice page', () => {
     expect(PAGE).toContain('/* SR_PRACTICE_UI_START */');
     // The portal markup and script are embedded unchanged.
     const portal = readFileSync(resolve(ROOT, 'apps_script/school_rewards/Portal.html'), 'utf8').replace(/\r\n/g, '\n');
-    expect(PAGE.replace(/\r\n/g, '\n')).toContain(portal.slice(portal.indexOf('<main class="shell">'), portal.indexOf('<script>')));
+    const portalMainStart = portal.search(/<main\b[^>]*\bclass="shell"[^>]*>/);
+    expect(portalMainStart).toBeGreaterThan(-1);
+    expect(PAGE.replace(/\r\n/g, '\n')).toContain(portal.slice(portalMainStart, portal.indexOf('<script>')));
     expect(readFileSync(resolve(ROOT, 'desktop/web-app/public/school-rewards-practice.html'), 'utf8')).toBe(PAGE);
   });
 
@@ -171,7 +175,7 @@ describe('practice wrapper Spanish coverage', () => {
   // This walks the generated page and proves every wrapper string is covered.
   const dict = JSON.parse(PAGE.match(/var WRAP_ES=(\{[\s\S]*?\});\n/)[1]);
   const keys = new Set(Object.keys(dict));
-  const head = PAGE.slice(PAGE.indexOf('<body'), PAGE.indexOf('<main class="shell">'))
+  const head = PAGE.slice(PAGE.indexOf('<body'), PAGE.search(/<main\b[^>]*\bclass="shell"[^>]*>/))
     .replace(/<script[\s\S]*?<\/script>/g, '')
     .replace(/<style[\s\S]*?<\/style>/g, '');
   const unescape = (t) => t.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')

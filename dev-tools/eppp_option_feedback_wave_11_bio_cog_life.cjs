@@ -70,9 +70,9 @@ const revisions = {
   'eppp-v3-lifespan-036': {
     expectedAnswerIndex: 1,
     incorrectFeedback: {
-      0: 'Understanding that unseen objects continue to exist develops during infancy in Piaget?s sensorimotor period. That achievement does not describe adolescents? heightened social self-consciousness.',
+      0: 'Understanding that unseen objects continue to exist develops during infancy in Piaget’s sensorimotor period. That achievement does not describe adolescents’ heightened social self-consciousness.',
       2: 'Failure to conserve quantity is associated with preoperational centration in early childhood. Adolescents’ belief that others are closely observing them concerns perceived social evaluation, not transformations of quantity.',
-      3: 'Attributing life or mental states to inanimate objects is a preoperational pattern. It differs from imagining oneself as the continuing focus of peers? attention.',
+      3: 'Attributing life or mental states to inanimate objects is a preoperational pattern. It differs from imagining oneself as the continuing focus of peers’ attention.',
     },
     feedbackDesign: ['sensorimotor-construct substitution', 'preoperational-conservation substitution', 'preoperational-animism substitution'],
     sourceCheck: 'Elkind’s original theory of adolescent egocentrism introduced the imaginary-audience and personal-fable constructs; later empirical work treats them as related but distinguishable forms of adolescent self-focus.',

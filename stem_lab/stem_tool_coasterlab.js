@@ -258,6 +258,7 @@
   @media (max-width:820px){.clab-root #clab-hud{right:8px;left:8px;bottom:8px;overflow-x:auto}.clab-root #clab-vectorLegend{top:8px;left:8px}.clab-root #clab-visualTheme,.clab-root #clab-trackViz{max-width:98px}}
   @media (prefers-reduced-motion:reduce){.clab-root .hudv{text-shadow:none}.clab-root .clab-challenge-meter i{transition:none}}
   .clab-root :where(button,select,input,a,summary):focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.clab-root .clab-stage-surface:focus-visible{outline:3px solid var(--focus);outline-offset:-3px}
   .clab-root :where(button,select,input,a,summary){scroll-margin-block:12px}
   .clab-root button,.clab-root .clab-sel{min-block-size:32px}
   @media (forced-colors:active){
@@ -11656,7 +11657,7 @@ return { destroy: __clabDestroy };
     var st = props.React.useState(0);
     var setGen = st[1];
     props.refCb._restart = function () { setGen(function (n) { return n + 1; }); };
-    return props.React.createElement('div', { key: 'clab-stage-' + st[0], ref: props.refCb, role: 'group', 'aria-label': 'Coaster Lab 3-D designer', style: { position: 'absolute', inset: 0, outline: 'none' } });
+    return props.React.createElement('div', { key: 'clab-stage-' + st[0], className: 'clab-stage-surface', ref: props.refCb, role: 'group', 'aria-label': 'Coaster Lab 3-D designer', style: { position: 'absolute', inset: 0 } });
   }
 
   window.StemLab.registerTool('coasterLab', {

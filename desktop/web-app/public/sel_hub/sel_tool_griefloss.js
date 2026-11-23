@@ -45,6 +45,29 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
     liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(liveRegion);
   })();
+  // WCAG 2.3.3 / 2.4.7 / forced-colors scoped styles for Grief & Loss
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-griefloss-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-griefloss-a11y-css';
+    st.textContent = [
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .selh-griefloss *, .selh-griefloss *::before, .selh-griefloss *::after {',
+      '    animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;',
+      '    transition-duration: 0.01ms !important; scroll-behavior: auto !important;',
+      '  }',
+      '}',
+      '.selh-griefloss button:focus-visible, .selh-griefloss input:focus-visible, .selh-griefloss select:focus-visible, .selh-griefloss textarea:focus-visible, .selh-griefloss a:focus-visible, .selh-griefloss [tabindex]:focus-visible {',
+      '  outline: 3px solid #fb7185 !important; outline-offset: 2px !important;',
+      '}',
+      '@media (forced-colors: active) {',
+      '  .selh-griefloss button:focus-visible, .selh-griefloss input:focus-visible, .selh-griefloss select:focus-visible, .selh-griefloss textarea:focus-visible, .selh-griefloss a:focus-visible, .selh-griefloss [tabindex]:focus-visible {',
+      '    outline: 2px solid Highlight !important; outline-offset: 2px !important;',
+      '  }',
+      '}'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
 
   // Worden's 4 Tasks of Mourning (modernized phrasing)
   var TASKS = [
@@ -242,7 +265,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
       var _griT = (ctx && ctx.theme) || {};
       var _griHC = !!_griT.isContrast, _griL = !_griHC && !_griT.isDark;
       var _gri_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _gri_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#fff':'#000000','#fdf2f8':'#000000'};
-      var _gri_FGL = {'#cbd5e1':'#334155','#fda4af':'#9f1239','#fecdd3':'#9f1239','#bbf7d0':'#166534','#dcfce7':'#14532d','#94a3b8':'#64748b','#fecaca':'#b91c1c','#e2e8f0':'#1e293b','#a5b4fc':'#3730a3','#fee2e2':'#991b1b','#c7d2fe':'#312e81','#e9d5ff':'#581c87','#c4b5fd':'#5b21b6','#fca5a5':'#991b1b','#fcd34d':'#78350f','#fde68a':'#92400e'}, _gri_FGH = {'#cbd5e1':'#ffff00','#fda4af':'#ffff00','#94a3b8':'#ffff00','#fecaca':'#ffff00','#fecdd3':'#ffff00','#e2e8f0':'#ffff00','#a5b4fc':'#ffff00','#fff':'#ffff00','#bbf7d0':'#ffff00','#dcfce7':'#ffff00','#fee2e2':'#ffff00','#c7d2fe':'#ffff00','#e9d5ff':'#ffff00','#c4b5fd':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fca5a5':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
+      var _gri_FGL = {'#cbd5e1':'#334155','#fda4af':'#9f1239','#fecdd3':'#9f1239','#bbf7d0':'#166534','#dcfce7':'#14532d','#94a3b8':'#475569','#64748b':'#475569','#fecaca':'#b91c1c','#e2e8f0':'#1e293b','#a5b4fc':'#3730a3','#fee2e2':'#991b1b','#c7d2fe':'#312e81','#e9d5ff':'#581c87','#c4b5fd':'#5b21b6','#fca5a5':'#991b1b','#fcd34d':'#78350f','#fde68a':'#92400e'}, _gri_FGH = {'#cbd5e1':'#ffff00','#fda4af':'#ffff00','#94a3b8':'#ffff00','#fecaca':'#ffff00','#fecdd3':'#ffff00','#e2e8f0':'#ffff00','#a5b4fc':'#ffff00','#fff':'#ffff00','#bbf7d0':'#ffff00','#dcfce7':'#ffff00','#fee2e2':'#ffff00','#c7d2fe':'#ffff00','#e9d5ff':'#ffff00','#c4b5fd':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fca5a5':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
       var _gri_BDL = {'#334155':'#cbd5e1','#1e293b':'#e2e8f0','#475569':'#cbd5e1'}, _gri_BDH = {'#334155':'#ffff00','#ef4444':'#ffff00','#1e293b':'#ffff00','#fb7185':'#ffff00','#818cf8':'#ffff00','#6366f1':'#ffff00','#a855f7':'#ffff00','#22c55e':'#ffff00','#0ea5e9':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#be123c':'#ffff00','#f59e0b':'#ffff00'};
       var _griBg = function(h){ return _griHC ? (_gri_BGH[h]||h) : (_griL ? (_gri_BGL[h]||h) : h); };
       var _griFg = function(h){ return _griHC ? (_gri_FGH[h]||h) : (_griL ? (_gri_FGL[h]||h) : h); };
@@ -263,6 +286,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
       var announceToSR = ctx.announceToSR;
       var onSafetyFlag = ctx.onSafetyFlag || null;
       var _griBand = (ctx && ctx.gradeBand) || 'high';
+      function isImeComposing(e) {
+        return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+      }
+      function announceGL(msg) {
+        if (!msg) return;
+        if (typeof announceToSR === 'function') { try { announceToSR(msg); } catch (_) {} }
+        if (typeof document !== 'undefined') {
+          var lr = document.getElementById('allo-live-griefloss');
+          if (lr) { lr.textContent = ''; setTimeout(function() { lr.textContent = msg; }, 20); }
+        }
+      }
 
       var d = labToolData.griefLoss || defaultState();
       function setG(patch) {
@@ -305,8 +339,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
-          h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: _griHC ? '#000000' : (_griL ? '#f1f5f9' : 'rgba(255,255,255,0.05)'), border: '1px solid ' + _griBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _griFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+          h('button', { type: 'button', onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
+            style: { background: _griHC ? '#000000' : (_griL ? '#f1f5f9' : 'rgba(255,255,255,0.05)'), border: '1px solid ' + _griBd('#334155'), borderRadius: 8, padding: '10px 14px', minHeight: 44, cursor: 'pointer', color: _griFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _griFg('#fda4af'), fontSize: 22, fontWeight: 900 } }, '🕯️ Grief & Loss'),
             h('div', { style: { fontSize: 12, color: _griFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A guided companion for grief, on your own time.')
@@ -324,13 +358,30 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
           { id: 'print', label: 'Print', icon: '🖨' },
           { id: 'about', label: 'About', icon: 'ℹ' }
         ];
+        function onTabKeyDown(e, idx) {
+          if (isImeComposing(e) || e.ctrlKey || e.metaKey || e.altKey) return;
+          var next = null;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (idx + 1) % tabs.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (idx - 1 + tabs.length) % tabs.length;
+          else if (e.key === 'Home') next = 0;
+          else if (e.key === 'End') next = tabs.length - 1;
+          if (next === null) return;
+          e.preventDefault();
+          var targetId = tabs[next].id;
+          goto(targetId);
+          setTimeout(function() {
+            var el = typeof document !== 'undefined' && document.getElementById('grief-tab-' + targetId);
+            if (el && el.focus) el.focus();
+          }, 0);
+        }
         return h('div', { className: 'no-print', role: 'tablist', 'aria-label': 'Grief and Loss sections',
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
-          tabs.map(function(t) {
+          tabs.map(function(t, idx) {
             var active = view === t.id;
-            return h('button', { key: t.id, id: 'grief-tab-' + t.id, onClick: function() { goto(t.id); },
+            return h('button', { key: t.id, type: 'button', id: 'grief-tab-' + t.id, onClick: function() { goto(t.id); },
+              onKeyDown: function(e) { onTabKeyDown(e, idx); },
               role: 'tab', 'aria-selected': active, 'aria-controls': 'grief-panel-' + t.id, tabIndex: active ? 0 : -1,
-              style: { padding: '6px 12px', borderRadius: 8, border: (_griHC ? '2px' : '1px') + ' solid ' + _griBd(active ? '#fb7185' : '#334155'),
+              style: { padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: (_griHC ? '2px' : '1px') + ' solid ' + _griBd(active ? '#fb7185' : '#334155'),
                 background: active ? (_griHC ? '#000000' : (_griL ? '#ffe4e6' : 'rgba(251,113,133,0.18)')) : _griBg('#1e293b'),
                 color: active ? _griFg('#fecdd3') : _griFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
@@ -404,8 +455,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
       }
 
       function stepCard(title, blurb, onClick, color) {
-        return h('button', { onClick: onClick, 'aria-label': title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid ' + _griBd('#1e293b'), borderRight: '1px solid ' + _griBd('#1e293b'), borderBottom: '1px solid ' + _griBd('#1e293b'), borderLeft: '4px solid ' + _griBd(color), background: _griBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _griFg('#e2e8f0') } },
+        return h('button', { type: 'button', onClick: onClick, 'aria-label': title,
+          style: { width: '100%', textAlign: 'left', padding: 14, minHeight: 44, borderRadius: 10, borderTop: '1px solid ' + _griBd('#1e293b'), borderRight: '1px solid ' + _griBd('#1e293b'), borderBottom: '1px solid ' + _griBd('#1e293b'), borderLeft: '4px solid ' + _griBd(color), background: _griBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _griFg('#e2e8f0') } },
           h('div', { style: { fontSize: 14, fontWeight: 800, color: _griInk(color), marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _griFg('#94a3b8'), lineHeight: 1.55 } }, blurb)
         );
@@ -428,7 +479,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
             h('label', { htmlFor: 'g-type', style: { display: 'block', fontSize: 12, color: _griFg('#fda4af'), fontWeight: 800, marginBottom: 6 } }, 'What kind of loss is this?'),
             h('select', { id: 'g-type', value: d.lossType || '',
               onChange: function(e) { setG({ lossType: e.target.value }); },
-              style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _griBd('#334155'), background: _griBg('#1e293b'), color: _griFg('#e2e8f0'), fontSize: 13 } },
+              style: { width: '100%', boxSizing: 'border-box', minHeight: 44, padding: '10px 12px', borderRadius: 6, border: '1px solid ' + _griBd('#334155'), background: _griBg('#1e293b'), color: _griFg('#e2e8f0'), fontSize: 13 } },
               h('option', { value: '' }, '(pick one)'),
               LOSS_TYPES.map(function(lt) { return h('option', { key: lt.id, value: lt.id }, lt.label); })
             )
@@ -440,8 +491,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
             h('input', { id: 'g-who', type: 'text', value: d.whoOrWhat || '',
               placeholder: 'e.g. My grandma. My dog Rex. My friend group.',
               onChange: function(e) { setG({ whoOrWhat: e.target.value }); },
+              onKeyDown: function(e) { if (!isImeComposing(e) && e.key === 'Escape' && d.whoOrWhat) { e.preventDefault(); setG({ whoOrWhat: '' }); } },
               onBlur: function(e) { scanGriefText(e.target.value); },
-              style: { width: '100%', padding: 10, borderRadius: 6, border: '1px solid ' + _griBd('#334155'), background: _griBg('#1e293b'), color: _griFg('#e2e8f0'), fontSize: 14 } })
+              style: { width: '100%', boxSizing: 'border-box', minHeight: 44, padding: '10px 12px', borderRadius: 6, border: '1px solid ' + _griBd('#334155'), background: _griBg('#1e293b'), color: _griFg('#e2e8f0'), fontSize: 14 } })
           ),
 
           // Description
@@ -452,12 +504,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
               placeholder: '',
               onChange: function(e) { setG({ loss: e.target.value }); },
               onBlur: function(e) { scanGriefText(e.target.value); },
-              style: { width: '100%', minHeight: 140, padding: 10, borderRadius: 6, border: '1px solid ' + _griBd('#334155'), background: _griBg('#1e293b'), color: _griFg('#e2e8f0'), fontSize: 14, fontFamily: 'inherit', lineHeight: 1.75, resize: 'vertical' } })
+              style: { width: '100%', boxSizing: 'border-box', minHeight: 140, padding: 10, borderRadius: 6, border: '1px solid ' + _griBd('#334155'), background: _griBg('#1e293b'), color: _griFg('#e2e8f0'), fontSize: 14, fontFamily: 'inherit', lineHeight: 1.75, resize: 'vertical' } })
           ),
 
           h('div', { style: { display: 'flex', gap: 10, marginTop: 8, flexWrap: 'wrap' } },
-            h('button', { onClick: function() { goto('tasks'); }, 'aria-label': 'Continue to the four tasks',
-              style: { padding: '10px 22px', borderRadius: 10, border: _griHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _griHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _griHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 14 } },
+            h('button', { type: 'button', onClick: function() { goto('tasks'); }, 'aria-label': 'Continue to the four tasks',
+              style: { padding: '10px 22px', minHeight: 44, borderRadius: 10, border: _griHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _griHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _griHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 14 } },
               '→ Continue to the four tasks')
           ),
 
@@ -471,6 +523,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
       function renderTasks() {
         var activeTaskId = d.currentTask || TASKS[0].id;
         var active = TASKS.find(function(t) { return t.id === activeTaskId; }) || TASKS[0];
+        var activeEdge = '1px solid ' + (_griHC ? '#ffff00' : active.color + '66');
 
         function setTaskNotes(taskId, val) {
           setLabToolData(function(prev) {
@@ -490,12 +543,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
             TASKS.map(function(t) {
               var isActive = t.id === activeTaskId;
               var hasNotes = (d.taskNotes || {})[t.id];
-              return h('button', { key: t.id,
-                onClick: function() { setG({ currentTask: t.id }); },
+              return h('button', { key: t.id, type: 'button',
+                onClick: function() { setG({ currentTask: t.id }); announceGL('Task ' + t.number + ': ' + t.label); },
                 'aria-label': 'Task ' + t.number + ': ' + t.label, 'aria-pressed': isActive,
-                style: { textAlign: 'left', padding: 10, borderRadius: 8, border: '2px solid ' + _griBd(isActive ? t.color : '#334155'), background: isActive ? (_griHC ? '#000000' : t.color + '22') : _griBg('#0f172a'), cursor: 'pointer', color: _griFg('#e2e8f0') } },
+                style: { textAlign: 'left', padding: 10, minHeight: 44, borderRadius: 8, border: '2px solid ' + _griBd(isActive ? t.color : '#334155'), background: isActive ? (_griHC ? '#000000' : t.color + '22') : _griBg('#0f172a'), cursor: 'pointer', color: _griFg('#e2e8f0') } },
                 h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 6 } },
-                  h('span', { style: { fontSize: 16 } }, t.icon),
+                  h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, t.icon),
                   h('span', { style: { fontSize: 10, color: _griInk(t.color), fontWeight: 800 } }, 'Task ' + t.number),
                   hasNotes ? h('span', { style: { marginLeft: 'auto', fontSize: 10, color: _griInk(t.color) } }, '✓') : null
                 ),
@@ -505,9 +558,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
           ),
 
           // Active task card
-          h('div', { style: { padding: 18, borderRadius: 12, background: _griHC ? '#000000' : (_griL ? '#f8fafc' : 'linear-gradient(135deg, ' + active.color + '14 0%, rgba(15,23,42,0.4) 60%)'), border: '1px solid ' + (_griHC ? '#ffff00' : active.color + '66'), borderLeft: '4px solid ' + _griBd(active.color), marginBottom: 14 } },
+          h('div', { style: { padding: 18, borderRadius: 12, background: _griHC ? '#000000' : (_griL ? '#f8fafc' : 'linear-gradient(135deg, ' + active.color + '14 0%, rgba(15,23,42,0.4) 60%)'), borderTop: activeEdge, borderRight: activeEdge, borderBottom: activeEdge, borderLeft: '4px solid ' + _griBd(active.color), marginBottom: 14 } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' } },
-              h('span', { style: { fontSize: 36 } }, active.icon),
+              h('span', { style: { fontSize: 36 }, 'aria-hidden': 'true' }, active.icon),
               h('div', null,
                 h('div', { style: { fontSize: 10, color: _griFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Task ' + active.number + ' of 4'),
                 h('h3', { style: { margin: '2px 0 0', color: _griInk(active.color), fontSize: 19, fontWeight: 900 } }, active.label)
@@ -541,7 +594,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
               placeholder: 'Whatever is on this task right now. You can come back.',
               onChange: function(e) { setTaskNotes(active.id, e.target.value); },
               onBlur: function(e) { scanGriefText(e.target.value); },
-              style: { width: '100%', minHeight: 110, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _griBg('#1e293b'), color: _griFg('#e2e8f0'), fontSize: 13.5, fontFamily: 'inherit', lineHeight: 1.75, resize: 'vertical' } })
+              style: { width: '100%', boxSizing: 'border-box', minHeight: 110, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _griBg('#1e293b'), color: _griFg('#e2e8f0'), fontSize: 13.5, fontFamily: 'inherit', lineHeight: 1.75, resize: 'vertical' } })
           ),
 
           h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(99,102,241,0.10)', borderTop: '1px solid rgba(99,102,241,0.3)', borderRight: '1px solid rgba(99,102,241,0.3)', borderBottom: '1px solid rgba(99,102,241,0.3)', borderLeft: '3px solid #6366f1', fontSize: 13, color: _griFg('#c7d2fe'), lineHeight: 1.7 } },
@@ -648,9 +701,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
               h('strong', null, '🖨 Print preview. '),
               'This is your private work. Print only if you want a paper copy; nothing is shared anywhere.'
             ),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _griHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _griHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _griHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
-            h('button', { onClick: function() { goto('home'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _griBd('#475569'), background: _griBg('#1e293b'), color: _griFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+            h('button', { type: 'button', onClick: printNow, style: { padding: '10px 18px', minHeight: 44, borderRadius: 8, border: _griHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _griHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _griHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { type: 'button', onClick: function() { goto('home'); }, 'aria-label': 'Back',
+              style: { padding: '10px 18px', minHeight: 44, borderRadius: 8, border: '1px solid ' + _griBd('#475569'), background: _griBg('#1e293b'), color: _griFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
@@ -680,8 +733,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
             TASKS.map(function(t) {
               var notes = (d.taskNotes || {})[t.id];
               if (!notes || !notes.trim()) return null;
+              var taskPrintEdge = _griHC ? '1px solid #ffff00' : '1px solid #e2e8f0';
               return h('div', { key: t.id, style: { marginBottom: 14, pageBreakInside: 'avoid' } },
-                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderRadius: 4, marginBottom: 6, background: _griHC ? '#000000' : '#f1f5f9', border: _griHC ? '1px solid #ffff00' : '1px solid #e2e8f0', borderLeft: '4px solid ' + _griBd(t.color), color: _griHC ? '#ffff00' : '#0f172a' } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderRadius: 4, marginBottom: 6, background: _griHC ? '#000000' : '#f1f5f9', borderTop: taskPrintEdge, borderRight: taskPrintEdge, borderBottom: taskPrintEdge, borderLeft: '4px solid ' + _griBd(t.color), color: _griHC ? '#ffff00' : '#0f172a' } },
                   h('span', { style: { fontSize: 16 } }, t.icon),
                   h('span', { style: { fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Task ' + t.number + ': ' + t.label)
                 ),
@@ -790,7 +844,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
           h('div', { style: { fontSize: 11, color: _griFg('#fda4af'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: _griFg('#fecdd3'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+                style: { fontSize: 13, color: _griFg('#fecdd3'), fontWeight: 700, textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', minHeight: 44, marginBottom: 4 } }, title + ' ↗')
             : h('div', { style: { fontSize: 13, color: _griFg('#fecdd3'), fontWeight: 700, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _griFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );
@@ -805,7 +859,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
       else if (view === 'about') body = renderAbout();
       else body = renderHome();
 
-      return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Grief and Loss Companion' },
+      return h('div', { className: 'selh-griefloss', style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Grief and Loss Companion' },
         header(),
         navTabs(),
         (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')

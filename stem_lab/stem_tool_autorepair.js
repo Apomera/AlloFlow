@@ -12359,9 +12359,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           style: { color: T.text, background: T.bg, borderRadius: 14 }
         },
           h('a', { href: '#ar-menu-categories', 'data-ar-focusable': true,
-            style: { position: 'absolute', left: '-9999px', top: 'auto', width: 1, height: 1, overflow: 'hidden' },
-            onFocus: function(e) { Object.assign(e.target.style, { position: 'static', left: 'auto', width: 'auto', height: 'auto', display: 'inline-block', padding: '6px 12px', background: T.accent, color: '#0f172a', textDecoration: 'none', fontWeight: 700, borderRadius: 6, marginBottom: 10 }); },
-            onBlur: function(e) { Object.assign(e.target.style, { position: 'absolute', left: '-9999px', top: 'auto', width: '1px', height: '1px', overflow: 'hidden' }); }
+            style: { position: 'absolute', insetInlineStart: '8px', top: '8px', width: 1, height: 1, overflow: 'hidden', clipPath: 'inset(50%)', whiteSpace: 'nowrap' },
+            onFocus: function(e) { Object.assign(e.target.style, { position: 'static', insetInlineStart: 'auto', width: 'auto', height: 'auto', overflow: 'visible', clipPath: 'none', whiteSpace: 'normal', display: 'inline-block', padding: '6px 12px', background: T.accent, color: '#0f172a', textDecoration: 'none', fontWeight: 700, borderRadius: 6, marginBottom: 10 }); },
+            onBlur: function(e) { Object.assign(e.target.style, { position: 'absolute', insetInlineStart: '8px', top: '8px', width: '1px', height: '1px', overflow: 'hidden', clipPath: 'inset(50%)', whiteSpace: 'nowrap' }); }
           }, __alloT('stem.autorepair.skip_to_module_categories', 'Skip to module categories')),
 
           h('section', {

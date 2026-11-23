@@ -96,6 +96,7 @@ module.exports = {
     letter_tracing_question: 'Trace the letter {letter} with your finger, a pen or the mouse.',
     letter_tracing_canvas: 'Tracing area for the letter {letter}',
     letter_tracing_done: 'I traced it',
+    letter_tracing_undo: 'Undo stroke',
     letter_tracing_clear: 'Start again',
     letter_tracing_skip: 'Skip (not traced)',
     letter_tracing_more: 'Keep going. Trace over more of the letter.',
@@ -162,7 +163,7 @@ module.exports = {
     var at = 0;
     var pen = 22; // the width of the student's line and of the guide
     // A square that shrinks on a narrow phone (padding-top keeps it square without aspect-ratio).
-    var wrap = ctx.el('div', { 'data-trace-box': '', style: 'position:relative;width:var(--trace-sz,' + size + 'px);max-width:100%;margin:12px auto;border:2px dashed var(--muted);border-radius:16px;background:var(--card);overflow:hidden;touch-action:none' });
+    var wrap = ctx.el('div', { 'data-trace-box': '', style: 'position:relative;width:var(--trace-sz,' + size + 'px);max-width:100%;margin:6px auto;border:2px dashed var(--muted);border-radius:16px;background:var(--card);overflow:hidden;touch-action:none' });
     wrap.appendChild(ctx.el('div', { 'aria-hidden': 'true', style: 'padding-top:100%' }));
     var guide = doc.createElement('canvas');
     var ink = doc.createElement('canvas');
@@ -290,7 +291,7 @@ module.exports = {
       // a short line to it) that is 36 px from every earlier dot and 24 px from every earlier arrow, inside the box,
       // and leaves room for its own arrow (24 px from other dots, 22 from its own, 21 from every arrow), best nearer its own dot
       // than any other. Dots are drawn last, dot 1 on top. Guides only: the tracing check does not use them.
-      var R = 12, many = shape.strokes.length > 1, dots = [], arrows = [], all = [];
+      var R = 12, dots = [], arrows = [], all = [];
       shape.strokes.forEach(function (st) { all = all.concat(st.pts); });
       var mid = [all.reduce(function (n, q) { return n + q[0]; }, 0) / all.length, all.reduce(function (n, q) { return n + q[1]; }, 0) / all.length];
       var lenOf = function (pts) { var t = 0; for (var i = 1; i < pts.length; i++) t += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); return t; };
@@ -364,6 +365,7 @@ module.exports = {
       pg.restore();
     };
     var drawing = false, activeId = null, last = null;
+    var strokes = [], curStroke = null, undo = null;
     // The first stroke of a part (after Start again too): where it began and how long it is, for the start tip.
     var first = null, firstDone = false;
     var spot = function (e) {
@@ -376,11 +378,31 @@ module.exports = {
       pg.strokeStyle = palette().accent; pg.lineWidth = pen; pg.lineCap = 'round'; pg.lineJoin = 'round';
       pg.beginPath(); pg.moveTo(a.x, a.y); pg.lineTo(b.x, b.y); pg.stroke();
     };
-    var wipe = function () { first = null; firstDone = false; drawing = false; activeId = null; last = null; if (pg) { pg.setTransform(1, 0, 0, 1, 0, 0); pg.clearRect(0, 0, px, px); } };
+    var redrawInk = function () {
+      if (!pg) return;
+      pg.setTransform(1, 0, 0, 1, 0, 0);
+      pg.clearRect(0, 0, px, px);
+      strokes.forEach(function (pts) {
+        if (!pts || !pts.length) return;
+        line(pts[0], pts[0]);
+        for (var i = 1; i < pts.length; i++) line(pts[i - 1], pts[i]);
+      });
+    };
+    var updateUndo = function () {
+      if (!undo) return;
+      var has = strokes.length > 0 && !ctx.isDone();
+      undo.hidden = strokes.length === 0;
+      undo.disabled = !has;
+      undo.setAttribute('aria-disabled', has ? 'false' : 'true');
+    };
+    var wipe = function () { first = null; firstDone = false; drawing = false; activeId = null; last = null; strokes = []; curStroke = null; if (pg) { pg.setTransform(1, 0, 0, 1, 0, 0); pg.clearRect(0, 0, px, px); } updateUndo(); };
     ink.addEventListener('pointerdown', function (e) {
       // Ignore secondary touches (palm rest / second finger on iPad) and non-left mouse buttons.
       if (ctx.isDone() || drawing || e.isPrimary === false || (e.pointerType === 'mouse' && e.button !== 0)) return;
-      drawing = true; activeId = e.pointerId != null ? e.pointerId : null; last = spot(e); line(last, last);
+      drawing = true; activeId = e.pointerId != null ? e.pointerId : null; last = spot(e);
+      curStroke = [last]; strokes.push(curStroke);
+      line(last, last);
+      updateUndo();
       if (!firstDone) first = { x: last.x, y: last.y, len: 0 };
       try { ink.setPointerCapture(e.pointerId); } catch (_) {}
       e.preventDefault();
@@ -388,6 +410,7 @@ module.exports = {
     ink.addEventListener('pointermove', function (e) {
       if (!drawing || (activeId != null && e.pointerId !== activeId)) return;
       var p = spot(e);
+      if (curStroke) curStroke.push(p);
       if (first && !firstDone) first.len += Math.sqrt((p.x - last.x) * (p.x - last.x) + (p.y - last.y) * (p.y - last.y));
       line(last, p); last = p; e.preventDefault();
     });
@@ -401,7 +424,7 @@ module.exports = {
     };
     var stop = function (e) {
       if (!drawing || (e && activeId != null && e.pointerId !== activeId)) return;
-      startTip(); drawing = false; activeId = null; last = null;
+      startTip(); drawing = false; activeId = null; last = null; curStroke = null; updateUndo();
     };
     ink.addEventListener('pointerup', stop);
     ink.addEventListener('pointercancel', stop);
@@ -446,11 +469,11 @@ module.exports = {
       for (var c2 = 0; c2 < G * G; c2++) if ((want[c2] || 0) >= 6) { cells++; if ((got[c2] || 0) / want[c2] >= 0.35) covered++; }
       return { done: cells ? covered / cells : 0, stray: all ? away / all : 0 };
     };
-    var question = ctx.el('p', { class: 'letters', 'data-trace-question': '' });
-    var tools = ctx.el('p', { class: 'muted', style: 'margin:0', text: L.letter_tracing_tools || '' });
-    var stepLine = ctx.el('p', { class: 'muted', 'data-trace-part': '', style: 'margin:0' });
-    var how = ctx.el('p', { class: 'muted', 'data-trace-how': '' });
-    var note = ctx.el('p', { class: 'letters', 'aria-live': 'polite' });
+    var question = ctx.el('p', { class: 'letters', 'data-trace-question': '', style: 'margin:0 0 2px' });
+    var tools = ctx.el('p', { class: 'muted', style: 'margin:0;font-size:0.875rem', text: L.letter_tracing_tools || '' });
+    var stepLine = ctx.el('p', { class: 'muted', 'data-trace-part': '', style: 'margin:0;font-size:0.9rem' });
+    var how = ctx.el('p', { class: 'muted', 'data-trace-how': '', style: 'margin:4px 0 0;font-size:0.9rem' });
+    var note = ctx.el('p', { class: 'letters', 'aria-live': 'polite', style: 'margin:4px 0 0;min-height:1.2em' });
     var skipLower = ctx.el('button', { type: 'button', 'data-trace-skip-lowercase': '', hidden: true, on: { click: function () {
       if (ctx.isDone()) return;
       ctx.support('lowercaseSkipped');
@@ -493,20 +516,29 @@ module.exports = {
       note.textContent = '';
       ctx.practice('traced', L.letter_tracing_traced);
     } }, text: L.letter_tracing_done });
+    undo = ctx.el('button', { type: 'button', 'data-trace-undo': '', hidden: true, disabled: true, 'aria-disabled': 'true', on: { click: function () {
+      if (ctx.isDone() || !strokes.length) return;
+      strokes.pop();
+      if (!strokes.length) { first = null; firstDone = false; note.textContent = ''; }
+      redrawInk();
+      updateUndo();
+    } }, text: L.letter_tracing_undo || 'Undo stroke' });
     var clear = ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; wipe(); note.textContent = ''; } }, text: L.letter_tracing_clear });
     var skip = ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; ctx.practice('skipped', L.letter_tracing_skipped); } }, text: L.letter_tracing_skip });
     ctx.root.appendChild(question);
-    if (item.word) ctx.root.appendChild(ctx.el('p', { class: 'letters', 'data-trace-word': '', style: 'font-size:1.25rem;margin:0 0 4px' }, String(L.letter_tracing_word || '{word}').split('{word}').reduce(function (out, bit, i) { if (i) out.push(ctx.el('span', { lang: 'en', dir: 'ltr', text: item.word })); if (bit) out.push(bit); return out; }, [])));
+    var metaKids = [];
+    if (item.word) metaKids.push(ctx.el('p', { class: 'letters', 'data-trace-word': '', style: 'font-size:1.1rem;margin:0' }, String(L.letter_tracing_word || '{word}').split('{word}').reduce(function (out, bit, i) { if (i) out.push(ctx.el('span', { lang: 'en', dir: 'ltr', text: item.word })); if (bit) out.push(bit); return out; }, [])));
+    metaKids.push(stepLine);
+    ctx.root.appendChild(ctx.el('div', { style: 'display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:2px 10px;margin:0 0 2px' }, metaKids));
     ctx.root.appendChild(tools);
-    ctx.root.appendChild(stepLine);
-    if (buttons.length) ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'margin-top:8px' }, buttons));
+    if (buttons.length) ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'margin-top:4px;gap:6px' }, buttons));
     ctx.root.appendChild(how);
     ctx.root.appendChild(wrap);
     ctx.root.appendChild(note);
-    ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'margin-top:12px' }, [done, clear, skipLower, skip]));
+    ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'margin-top:6px;gap:8px' }, [done, undo, clear, skipLower, skip]));
     showPart();
     return {
-      reveal: function () { [done, clear, skipLower, skip].forEach(function (b) { b.setAttribute('aria-disabled', 'true'); }); },
+      reveal: function () { [done, undo, clear, skipLower, skip].forEach(function (b) { b.setAttribute('aria-disabled', 'true'); }); if (undo) undo.disabled = true; },
     };
   },
 };

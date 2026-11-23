@@ -12,6 +12,7 @@
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.MathView) {
     console.log('[CDN] ViewMathModule already loaded, skipping');
     return;
@@ -22,7 +23,7 @@
 
   var _lazyIcon = function (name) {
     return function (props) {
-      var I = window.AlloIcons && window.AlloIcons[name];
+      var I = typeof window !== 'undefined' && window.AlloIcons && window.AlloIcons[name];
       return I ? React.createElement(I, props) : null;
     };
   };
@@ -51,17 +52,78 @@ function _renderDiagramSvg(tool, state, titleText) {
     return null;
   }
 }
+function _mathIsGlobalMuted() {
+  if (typeof window === 'undefined') return false;
+  try {
+    if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+  } catch (_) {}
+  return !!(window.__alloGlobalMuted || window._alloGlobalMute || window.__alloMuted);
+}
+var _MATH_CRISIS_RE = /\b(kill\s+my\s*self|suicid(?:e|al)|end\s+my\s+life|want\s+to\s+die|don['’]?t\s+want\s+to\s+live|hurt\s+my\s*self|cut(?:ting)?\s+my\s*self|self[- ]?harm|overdose|jump\s+off\s+a\s+bridge)\b/i;
+var _MATH_CRISIS_MSG = 'If you or someone you know is struggling or in crisis, please reach out for free, confidential support right away: call or text 988 (Suicide & Crisis Lifeline), text HOME to 741741 (Crisis Text Line), or call 911 in an emergency. Please also talk to a trusted teacher, counselor, or family member.';
+function _mathScreenCrisis(value) {
+  var text = String(value == null ? '' : value).trim();
+  if (!text) return {
+    blocked: false,
+    message: ''
+  };
+  try {
+    var checker = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SafetyContentChecker;
+    if (checker) {
+      var fn = typeof checker.checkContent === 'function' ? checker.checkContent : typeof checker.checkText === 'function' ? checker.checkText : typeof checker.screenText === 'function' ? checker.screenText : null;
+      if (fn) {
+        var res = fn(text);
+        if (res && (res.isCrisis || res.blocked || res.flagged || res.level === 'critical' || res.severity === 'critical' || res.category === 'self_harm')) {
+          return {
+            blocked: true,
+            message: typeof res.message === 'string' && res.message.includes('988') ? res.message : _MATH_CRISIS_MSG
+          };
+        }
+      }
+    }
+  } catch (_) {}
+  if (_MATH_CRISIS_RE.test(text)) return {
+    blocked: true,
+    message: _MATH_CRISIS_MSG
+  };
+  return {
+    blocked: false,
+    message: ''
+  };
+}
+function _mathSanitizeInlineSvg(rawSvg) {
+  if (typeof rawSvg !== 'string' || !rawSvg.trim()) return '';
+  if (typeof window !== 'undefined' && typeof window.sanitizeSvgGraph === 'function') {
+    try {
+      var sanitized = window.sanitizeSvgGraph(rawSvg);
+      return typeof sanitized === 'string' ? sanitized : '';
+    } catch (_) {
+      return '';
+    }
+  }
+  if (/<\s*(?:script|foreignObject|iframe|object|embed)\b|\bon[a-z]+\s*=|javascript:|data\s*:\s*text\/html/i.test(rawSvg)) {
+    return '';
+  }
+  return rawSvg;
+}
 
 // Student AI-off: without usable AI, hints come from authored steps (math_helpers
 // holds back the final step when there are several), so the button shows only
 // while an authored hint is left. Host-blocked or policy-off = unusable. The AI
 // call goes through the host handler, so an absent global alone does not hide it.
 function _mathViewAiUsable() {
+  if (typeof window === 'undefined') return false;
   try {
+    if (window.__alloStudentAiDisabled === true || window.__alloOfflineOnly === true || window.__alloAiSecretsLocked === true) return false;
+    var qr = window.__alloQrStudentMode;
+    if (qr === true || qr && typeof qr === 'object' && (qr.aiDisabled === true || qr.aiPolicy === 'off')) return false;
+    var managed = window.ALLOFLOW_MANAGED_AI_POLICY;
+    if (managed && typeof managed === 'object' && (managed.aiEnabled === false || managed.aiDisabled === true || managed.mode === 'off' || managed.locked === true)) return false;
+    var sp = window.AlloModules && window.AlloModules.StudentPolicy;
+    if (sp && typeof sp.isAiDisabled === 'function' && sp.isAiDisabled() === true) return false;
+    if (window.callGemini && window.callGemini._alloQrBlocked) return false;
     if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', window.callGemini);
-  } catch (_) {}
-  try {
-    return !(window.callGemini && window.callGemini._alloQrBlocked) && window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true;
+    return true;
   } catch (_) {
     return false;
   }
@@ -517,7 +579,16 @@ function MathView(props) {
   var activeManipulativeSessionRef = React.useRef(null);
   var mathSpokenSlotRef = React.useRef(null);
   var spokenMathAudioRef = React.useRef(null);
+  var spokenMathSeqRef = React.useRef(0);
+  var mathMountedRef = React.useRef(true);
+  var editFocusTimerRef = React.useRef(null);
+  var _aiRevState = React.useState(0);
+  var setMathAiRev = _aiRevState[1];
+  var _crisisState = React.useState('');
+  var mathCrisisAlert = _crisisState[0];
+  var setMathCrisisAlert = _crisisState[1];
   var stopSpokenMathAudio = function () {
+    spokenMathSeqRef.current += 1;
     var activeAudio = spokenMathAudioRef.current;
     spokenMathAudioRef.current = null;
     if (activeAudio) {
@@ -526,41 +597,86 @@ function MathView(props) {
         activeAudio.currentTime = 0;
       } catch (_) {}
     }
+    try {
+      var player = typeof window !== 'undefined' ? window.AlloSpeechPlayer : null;
+      if (player && typeof player.stop === 'function') player.stop();
+    } catch (_) {}
+    try {
+      if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel();
+    } catch (_) {}
   };
   React.useEffect(function () {
+    mathMountedRef.current = true;
+    var onMuteChange = function () {
+      if (_mathIsGlobalMuted()) {
+        stopSpokenMathAudio();
+        mathSpokenSlotRef.current = null;
+      }
+    };
+    var onAiConfigChange = function () {
+      if (mathMountedRef.current) setMathAiRev(function (r) {
+        return r + 1;
+      });
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('alloflow-mute-changed', onMuteChange);
+      window.addEventListener('alloflow:ai-config-changed', onAiConfigChange);
+      window.addEventListener('alloflow:student-ai-config-changed', onAiConfigChange);
+    }
     return function () {
+      mathMountedRef.current = false;
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('alloflow-mute-changed', onMuteChange);
+        window.removeEventListener('alloflow:ai-config-changed', onAiConfigChange);
+        window.removeEventListener('alloflow:student-ai-config-changed', onAiConfigChange);
+      }
+      if (editFocusTimerRef.current) {
+        clearTimeout(editFocusTimerRef.current);
+        editFocusTimerRef.current = null;
+      }
       stopSpokenMathAudio();
       mathSpokenSlotRef.current = null;
-      try {
-        if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel();
-      } catch (_) {}
     };
   }, []);
   var canSpeakMath = typeof window !== 'undefined' && Boolean(window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function' || typeof window.callTTS === 'function' || window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function');
+  var speakWithBrowserFallback = function (text) {
+    if (_mathIsGlobalMuted() || !mathMountedRef.current) return;
+    if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+      window.speechSynthesis.cancel();
+      var utt = new window.SpeechSynthesisUtterance(text);
+      utt.rate = Number.isFinite(window.__alloPlaybackRate) ? Math.max(0.5, Math.min(2, window.__alloPlaybackRate)) : 1;
+      utt.volume = Number.isFinite(window.__alloVoiceVolume) ? Math.max(0, Math.min(1, window.__alloVoiceVolume)) : 1;
+      window.speechSynthesis.speak(utt);
+    }
+  };
   var handleSpeakMathProblem = function (slotKey, problemNum, questionText) {
     var spoken = _mathToSpokenText('Problem ' + problemNum + '. ' + questionText);
     if (!spoken) return;
     try {
-      if (typeof window !== 'undefined' && window.__alloMuted === true) return;
+      if (_mathIsGlobalMuted()) return;
       var player = typeof window !== 'undefined' ? window.AlloSpeechPlayer : null;
       var playerBusy = player && typeof player.isPlaying === 'function' && player.isPlaying();
       var synthBusy = typeof window !== 'undefined' && window.speechSynthesis && window.speechSynthesis.speaking;
       if (mathSpokenSlotRef.current === slotKey && (playerBusy || synthBusy)) {
         mathSpokenSlotRef.current = null;
-        if (player && typeof player.stop === 'function') player.stop();else if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel();
+        stopSpokenMathAudio();
         return;
       }
+      stopSpokenMathAudio();
+      var seq = ++spokenMathSeqRef.current;
       mathSpokenSlotRef.current = slotKey;
       if (player && typeof player.speak === 'function') {
         Promise.resolve(player.speak(spoken)).catch(noop);
-      } else if (typeof window !== 'undefined' && typeof window.callTTS === 'function') {
-        window.callTTS(spoken);
-      } else if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
-        window.speechSynthesis.cancel();
-        var utt = new window.SpeechSynthesisUtterance(spoken);
-        utt.rate = window.__alloPlaybackRate || 1;
-        utt.volume = Number.isFinite(window.__alloVoiceVolume) ? Math.max(0, Math.min(1, window.__alloVoiceVolume)) : 1;
-        window.speechSynthesis.speak(utt);
+      } else if (typeof window !== 'undefined' && typeof window.callTTS === 'function' && _mathViewAiUsable()) {
+        Promise.resolve(window.callTTS(spoken)).then(function (res) {
+          if (!mathMountedRef.current || spokenMathSeqRef.current !== seq || _mathIsGlobalMuted()) return;
+          if (!res) speakWithBrowserFallback(spoken);
+        }).catch(function () {
+          if (!mathMountedRef.current || spokenMathSeqRef.current !== seq || _mathIsGlobalMuted()) return;
+          speakWithBrowserFallback(spoken);
+        });
+      } else {
+        speakWithBrowserFallback(spoken);
       }
     } catch (_) {}
   };
@@ -617,7 +733,8 @@ function MathView(props) {
   var mathGraphAlt = _mathScalarText(generatedContent.data.graphAlt, 4000);
   var resourceSeed = mathTitle || _mathScalarText(generatedContent.data.problem, 12000) || _mathScalarText(generatedContent.timestamp, 500) || 'math';
   var suppliedResourceId = _mathScalarText(generatedContent.id, 500).trim();
-  var suppliedMathResourceId = _mathScalarText(props.mathResourceId).trim().slice(0, 1000);
+  var rawSuppliedMathResourceId = _mathScalarText(props.mathResourceId).trim().slice(0, 1000);
+  var suppliedMathResourceId = rawSuppliedMathResourceId && !Object.prototype.hasOwnProperty.call(Object.prototype, rawSuppliedMathResourceId) && rawSuppliedMathResourceId !== '__proto__' ? rawSuppliedMathResourceId : '';
   var mathResourceId = suppliedMathResourceId || (suppliedResourceId ? Object.prototype.hasOwnProperty.call(Object.prototype, suppliedResourceId) ? 'math-resource-' + _mathStableHash(resourceSeed + '|' + suppliedResourceId) : suppliedResourceId : 'legacy-math-' + _mathStableHash(resourceSeed));
   var mathProblems = _normalizeMathProblems(generatedContent, mathResourceId);
   if (!mathProblems.length) return /*#__PURE__*/React.createElement("div", {
@@ -649,7 +766,7 @@ function MathView(props) {
   var setShowStemLab = typeof props.setShowStemLab === 'function' ? props.setShowStemLab : noop;
   var canSetLabToolData = typeof props.setLabToolData === 'function';
   var setLabToolData = canSetLabToolData ? props.setLabToolData : noop;
-  var workspaceAdapter = window.AlloModules?.MathManipulativeGrader;
+  var workspaceAdapter = typeof window !== 'undefined' && window.AlloModules ? window.AlloModules.MathManipulativeGrader : null;
   var canUseWorkspaceAdapter = canSetLabToolData && typeof workspaceAdapter?.writeMathViewState === 'function';
   var workspaceSetter = (tool, legacySetter) => value => {
     if (canUseWorkspaceAdapter) setLabToolData(previous => workspaceAdapter.writeMathViewState(tool, previous, value));else if (typeof legacySetter === 'function') legacySetter(value);
@@ -1131,90 +1248,98 @@ function MathView(props) {
       addToast(_mathManipulativeFallbackMessage(availability), 'error');
       return;
     }
-    var tool = response.tool;
-    var target = _mathPlainRecord(response.state);
-    var baseline = _mathManipulativeActualState(tool, currentManipulativeSnapshot());
-    var resetAvailable = true;
-    if (tool === 'base10' && target.mode && target.mode !== 'blocks' && canUseWorkspaceAdapter) {
-      setLabToolData(previous => workspaceAdapter.prepareHubActivity(previous, target));
-    } else if (problem.manipulativeResponse.tool === 'coordinate') {
-      resetAvailable = canSetGridPoints;
-      setGridPoints([]);
-    } else if (problem.manipulativeResponse.tool === 'base10') {
-      resetAvailable = canSetBase10Value;
-      setBase10Value({
-        ones: 0,
-        tens: 0,
-        hundreds: 0,
-        thousands: 0
-      });
-    } else if (problem.manipulativeResponse.tool === 'numberline') {
-      resetAvailable = canSetNumberLineMarkers;
-      setNumberLineMarkers([]);
-      if (_mathPlainRecord(target.range) === target.range) {
-        setNumberLineRange({
-          min: target.range.min,
-          max: target.range.max
+    try {
+      var tool = response.tool;
+      var target = _mathPlainRecord(response.state);
+      var baseline = _mathManipulativeActualState(tool, currentManipulativeSnapshot());
+      var resetAvailable = true;
+      if (tool === 'base10' && target.mode && target.mode !== 'blocks' && canUseWorkspaceAdapter) {
+        setLabToolData(previous => workspaceAdapter.prepareHubActivity(previous, target));
+      } else if (problem.manipulativeResponse.tool === 'coordinate') {
+        resetAvailable = canSetGridPoints;
+        setGridPoints([]);
+      } else if (problem.manipulativeResponse.tool === 'base10') {
+        resetAvailable = canSetBase10Value;
+        setBase10Value({
+          ones: 0,
+          tens: 0,
+          hundreds: 0,
+          thousands: 0
         });
+      } else if (problem.manipulativeResponse.tool === 'numberline') {
+        resetAvailable = canSetNumberLineMarkers;
+        setNumberLineMarkers([]);
+        var rangeRec = _mathPlainRecord(target.range);
+        if (rangeRec === target.range && Number.isFinite(Number(rangeRec.min)) && Number.isFinite(Number(rangeRec.max))) {
+          setNumberLineRange({
+            min: Number(rangeRec.min),
+            max: Number(rangeRec.max)
+          });
+        } else {
+          var rawMarkers = Array.isArray(target.markers) ? target.markers : [];
+          var markerValues = rawMarkers.map(marker => Number(typeof marker === 'number' ? marker : marker?.value)).filter(Number.isFinite);
+          setNumberLineRange({
+            min: Math.min(0, ...markerValues),
+            max: Math.max(20, ...markerValues)
+          });
+        }
+      } else if (problem.manipulativeResponse.tool === 'fractions') {
+        var fractionLimit = _mathFractionDenominatorLimit();
+        var denominator = Number(target.denominator);
+        setFractionPieces({
+          numerator: 0,
+          denominator: Number.isInteger(denominator) && denominator >= 2 ? Math.min(fractionLimit, denominator) : Math.min(8, fractionLimit)
+        });
+        resetAvailable = canSetFractionPieces;
+      } else if (problem.manipulativeResponse.tool === 'volume') {
+        setCubeDims({
+          l: 1,
+          w: 1,
+          h: 1
+        });
+        resetAvailable = canSetCubeDims;
+      } else if (problem.manipulativeResponse.tool === 'protractor') {
+        setAngleValue(0);
+        resetAvailable = canSetAngleValue;
+      } else if (tool === 'chemBalance') {
+        var rawCoeffs = Array.isArray(target.coefficients) ? target.coefficients : [];
+        setLabToolData(previous => ({
+          ..._mathPlainRecord(previous),
+          chemBalance: {
+            equation: target.equation,
+            coefficients: rawCoeffs.map(() => 1),
+            subtool: 'balance',
+            _everPicked: true,
+            tierFilter: 'all'
+          }
+        }));
       } else {
-        var markerValues = target.markers.map(marker => typeof marker === 'number' ? marker : marker.value);
-        setNumberLineRange({
-          min: Math.min(0, ...markerValues),
-          max: Math.max(20, ...markerValues)
+        resetAvailable = canSetLabToolData;
+        setLabToolData(previous => {
+          var next = {
+            ..._mathPlainRecord(previous)
+          };
+          delete next[tool];
+          if (tool === 'circuit') delete next._circuit;
+          return next;
         });
       }
-    } else if (problem.manipulativeResponse.tool === 'fractions') {
-      var fractionLimit = _mathFractionDenominatorLimit();
-      var denominator = Number(target.denominator);
-      setFractionPieces({
-        numerator: 0,
-        denominator: Number.isInteger(denominator) && denominator >= 2 ? Math.min(fractionLimit, denominator) : Math.min(8, fractionLimit)
-      });
-      resetAvailable = canSetFractionPieces;
-    } else if (problem.manipulativeResponse.tool === 'volume') {
-      setCubeDims({
-        l: 1,
-        w: 1,
-        h: 1
-      });
-      resetAvailable = canSetCubeDims;
-    } else if (problem.manipulativeResponse.tool === 'protractor') {
-      setAngleValue(0);
-      resetAvailable = canSetAngleValue;
-    } else if (tool === 'chemBalance') {
-      setLabToolData(previous => ({
-        ..._mathPlainRecord(previous),
-        chemBalance: {
-          equation: target.equation,
-          coefficients: target.coefficients.map(() => 1),
-          subtool: 'balance',
-          _everPicked: true,
-          tierFilter: 'all'
-        }
-      }));
-    } else {
-      resetAvailable = canSetLabToolData;
-      setLabToolData(previous => {
-        var next = {
-          ..._mathPlainRecord(previous)
-        };
-        delete next[tool];
-        if (tool === 'circuit') delete next._circuit;
-        return next;
-      });
+      activeManipulativeSessionRef.current = {
+        artifact: generatedContentArtifact,
+        resourceId: mathResourceId,
+        problemKey: problem.__viewKey,
+        responseSource: response.__source,
+        tool,
+        baseline,
+        requiresChange: !resetAvailable
+      };
+      setStemLabTool(tool);
+      setShowStemLab(true);
+      setStemLabTab('explore');
+    } catch (_) {
+      activeManipulativeSessionRef.current = null;
+      addToast(_mathT(t, 'math.manipulative_invalid_data', 'This visual support contains invalid data and could not be opened safely.'), 'error');
     }
-    activeManipulativeSessionRef.current = {
-      artifact: generatedContentArtifact,
-      resourceId: mathResourceId,
-      problemKey: problem.__viewKey,
-      responseSource: response.__source,
-      tool,
-      baseline,
-      requiresChange: !resetAvailable
-    };
-    setStemLabTool(tool);
-    setShowStemLab(true);
-    setStemLabTab('explore');
   };
   var checkMathManipulativeResponse = problem => {
     var response = problem.manipulativeResponse;
@@ -1271,7 +1396,7 @@ function MathView(props) {
   var renderMathManipulativeSupport = problem => /*#__PURE__*/React.createElement(React.Fragment, null, problem.manipulativeSupport && (() => {
     // Inline accessible diagram (step 2): show the parametric scaffold inline +
     // screen-readable for supported types; the Open-in-Lab button below stays for full editing.
-    var _suppSvg = _renderDiagramSvg(problem.manipulativeSupport.tool, problem.manipulativeSupport.state, mathTitle);
+    var _suppSvg = _mathSanitizeInlineSvg(_renderDiagramSvg(problem.manipulativeSupport.tool, problem.manipulativeSupport.state, mathTitle));
     return _suppSvg ? /*#__PURE__*/React.createElement("div", {
       className: "mb-2 flex justify-center bg-slate-50 rounded-lg border border-slate-100 p-3 overflow-x-auto",
       dangerouslySetInnerHTML: {
@@ -1492,9 +1617,20 @@ function MathView(props) {
       if (event.key !== 'Enter' || !event.ctrlKey && !event.metaKey || !canToggleMathEdit) return;
       event.preventDefault();
       toggleMathEdit(pIdx, problem.__viewKey, mathResourceId);
-      if (typeof window !== 'undefined') window.setTimeout(() => {
-        if (typeof document !== 'undefined') document.getElementById(mathEditButtonId(problem.__viewKey))?.focus();
-      }, 0);
+      if (typeof window !== 'undefined') {
+        if (editFocusTimerRef.current) clearTimeout(editFocusTimerRef.current);
+        editFocusTimerRef.current = window.setTimeout(() => {
+          editFocusTimerRef.current = null;
+          if (typeof document !== 'undefined') {
+            var btn = document.getElementById(mathEditButtonId(problem.__viewKey));
+            if (btn && btn.isConnected && typeof btn.focus === 'function') {
+              try {
+                btn.focus();
+              } catch (_) {}
+            }
+          }
+        }, 0);
+      }
     },
     placeholder: t('common.placeholder_enter_problem_question')
   }), mathKeyboardButton(() => openAccessibleMathInput({
@@ -1772,17 +1908,30 @@ function MathView(props) {
   }), !canHandleStudentInput || isMathResponseLocked(problem.__viewKey))), (() => {
     const checkResult = getMathCheckResult(problem.__viewKey);
     const studentWork = _mathScalarText(resourceStudentResponses[problem.__viewKey]);
-    return /*#__PURE__*/React.createElement(React.Fragment, null, !checkResult?.checked && /*#__PURE__*/React.createElement("button", {
+    return /*#__PURE__*/React.createElement(React.Fragment, null, mathCrisisAlert && /*#__PURE__*/React.createElement("div", {
+      role: "alert",
+      className: "mb-2 rounded-xl border border-amber-400 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-950"
+    }, mathCrisisAlert), !checkResult?.checked && /*#__PURE__*/React.createElement("button", {
       type: "button",
       "aria-busy": checkResult?.checking === true,
-      onClick: () => handleCheckMathWork(mathResourceId, problem.__viewKey, mathQuestionForGrading(problem), problem.answer, problem.steps, studentWork),
+      onClick: () => {
+        var crisis = _mathScreenCrisis(studentWork);
+        if (crisis.blocked) {
+          setMathCrisisAlert(crisis.message);
+          return;
+        }
+        if (mathCrisisAlert) setMathCrisisAlert('');
+        handleCheckMathWork(mathResourceId, problem.__viewKey, mathQuestionForGrading(problem), problem.answer, problem.steps, studentWork);
+      },
       disabled: !canHandleCheckMathWork || !studentWork.trim() || checkResult?.checking === true,
       className: "flex min-h-[44px] items-center justify-center gap-2 w-full py-3 px-4 rounded-xl font-bold text-sm transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 hover:shadow-md active:scale-[0.98]",
       "data-help-key": "math_check_work"
     }, checkResult?.checking ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
+      "aria-hidden": "true",
       size: 16,
       className: "animate-spin motion-reduce:animate-none"
     }), " ", t('math.check.checking') || 'Evaluating your work...') : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Sparkles, {
+      "aria-hidden": "true",
       size: 16
     }), " ", checkResult?.verdict === 'error' ? _mathT(t, 'math.check.try_checking_again', 'Try checking again') : t('math.check.button') || 'Check My Work')), !checkResult?.checked && (() => {
       const hintInfo = getMathHintState(problem.__viewKey);
@@ -1960,11 +2109,19 @@ function MathView(props) {
   }, /*#__PURE__*/React.createElement("input", {
     type: "text",
     value: mathEditInput,
-    onChange: e => setMathEditInput(e.target.value),
+    onChange: e => {
+      if (mathCrisisAlert) setMathCrisisAlert('');
+      setMathEditInput(e.target.value);
+    },
     onKeyDown: e => {
-      if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+      if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.nativeEvent?.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
       if (e.key !== "Enter" || !mathEditInput.trim() || isMathEditingChat || isProcessing || !canHandleMathEdit) return;
       e.preventDefault();
+      var crisis = _mathScreenCrisis(mathEditInput);
+      if (crisis.blocked) {
+        setMathCrisisAlert(crisis.message);
+        return;
+      }
       handleMathEdit(mathEditInput, mathResourceId);
     },
     placeholder: tr('math.edit_placeholder_examples', 'e.g. Make these easier, add 2 more division problems, change to a space theme...'),
@@ -1974,11 +2131,20 @@ function MathView(props) {
     disabled: !canSetMathEditInput || isMathEditingChat || isProcessing
   }), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    onClick: () => handleMathEdit(mathEditInput, mathResourceId),
+    onClick: () => {
+      var crisis = _mathScreenCrisis(mathEditInput);
+      if (crisis.blocked) {
+        setMathCrisisAlert(crisis.message);
+        return;
+      }
+      if (mathCrisisAlert) setMathCrisisAlert('');
+      handleMathEdit(mathEditInput, mathResourceId);
+    },
     "aria-busy": isMathEditingChat || isProcessing,
     disabled: !canHandleMathEdit || !mathEditInput.trim() || isMathEditingChat || isProcessing,
     className: "min-h-[44px] px-4 py-2 bg-gradient-to-r from-indigo-700 to-purple-700 text-white font-bold text-sm rounded-lg hover:from-indigo-800 hover:to-purple-800 disabled:opacity-40 transition-all flex items-center gap-2 shadow-md"
   }, isMathEditingChat ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
+    "aria-hidden": "true",
     size: 14,
     className: "animate-spin motion-reduce:animate-none"
   }), " Editing...") : "✏️ Apply")), /*#__PURE__*/React.createElement("div", {

@@ -56,7 +56,7 @@
       <summary><span><span class="eyebrow">THE CONNECTED CHALLENGE</span><strong>Dinner for four</strong></span><span id="serviceSummary">Bring six skills together in one meal</span></summary>
       <div class="service-body"><p>Prepare a chicken dinner with vegetables and sauce, then store the leftovers. Put six decisions into a connected rehearsal, with time to explain each one.</p><p class="muted">Untimed · Pause whenever you need · Six decision checkpoints, not a real-time cooking model. Each retry keeps its earlier evidence.</p>
       <ol id="serviceSteps" class="service-steps" aria-label="Dinner rehearsal checkpoints"></ol>
-      <div class="service-controls"><label for="serviceMode">Rehearsal mode</label><select id="serviceMode"><option value="demonstrate">Demonstrate my knowledge</option><option value="practice">Rehearse with coaching</option></select><button type="button" id="serviceStart">Start rehearsal</button><button type="button" id="serviceResume" hidden>Resume rehearsal</button><button type="button" id="servicePause" hidden>Pause for station practice</button></div>
+      <div class="service-controls"><label for="serviceMode">Rehearsal mode</label><select id="serviceMode" aria-label="Rehearsal mode"><option value="demonstrate">Demonstrate my knowledge</option><option value="practice">Rehearse with coaching</option></select><button type="button" id="serviceStart">Start rehearsal</button><button type="button" id="serviceResume" hidden>Resume rehearsal</button><button type="button" id="servicePause" hidden>Pause for station practice</button></div>
       <p id="serviceStatus" class="muted" role="status" aria-live="polite"></p></div>
     </details>
     <section class="workspace" aria-label="Kitchen practice workspace">
@@ -92,7 +92,7 @@
             <details id="studioKeyboard" class="studio-keyboard">
               <summary>Use the 3D tools with keyboard</summary>
               <p id="studioKeyboardHelp">Choose a tool and pick it up. Arrow keys move it; Shift moves farther. For smaller steps, select Fine movement before pickup or press F while holding a tool. T aims at the next available target. Enter or Space releases; Escape cancels. Tab leaves the interaction.</p>
-              <label for="studioKeyboardTool">Kitchen tool <select id="studioKeyboardTool"></select></label>
+              <label for="studioKeyboardTool">Kitchen tool</label><select id="studioKeyboardTool" aria-label="Kitchen tool"></select>
               <label class="studio-keyboard-fine"><input id="studioKeyboardFine" type="checkbox"> Fine movement · smaller arrow steps</label>
               <div class="studio-keyboard-buttons"><button id="studioKeyboardGrab" type="button">Pick up selected tool</button><button id="studioKeyboardCancel" type="button" disabled>Cancel keyboard movement</button></div>
               <p id="studioKeyboardStatus" role="status" aria-live="polite" aria-atomic="true">Choose a tool to begin.</p>

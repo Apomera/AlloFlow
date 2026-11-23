@@ -880,7 +880,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
               ),
               React.createElement("button", { onClick: applyChartRecommendation, disabled: chartType === recommendedChart, className: "px-3 py-1.5 rounded-lg text-xs font-bold disabled:opacity-50",
                 style: { background: chartType === recommendedChart ? _card : _btnBg, color: chartType === recommendedChart ? _muted : _btnFg, border: '1px solid ' + (chartType === recommendedChart ? _border : _btnBorder) },
-                "aria-label": t('stem.datastudio.apply_chart_coach_recommendation','Apply Chart Coach recommendation') }, chartType === recommendedChart ? "Using suggestion" : "Use this chart")
+                title: t('stem.datastudio.apply_chart_coach_recommendation','Apply Chart Coach recommendation') }, chartType === recommendedChart ? "Using suggestion" : "Use this chart")
             ),
 
             // Chart type selector
@@ -1071,7 +1071,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                         effectiveDataLabels && React.createElement("text", { x: x + barW / 2, y: valueLabelY, textAnchor: "middle", style: { fontSize: '10.5px', fontWeight: 'bold', fill: _text } }, row.value),
 
-                        React.createElement("text", { x: x + barW / 2, y: H - pad + 14, textAnchor: "middle", style: { fontSize: '8.5px', fontWeight: 600, fill: _muted } }, row.label.length > 7 ? row.label.substring(0, 6) + '…' : row.label)
+                        React.createElement("text", { x: x + barW / 2, y: H - pad + 14, textAnchor: "middle", style: { fontSize: '8.5px', fontWeight: 600, fill: _muted } }, (function () { var maxC = Math.max(7, Math.floor((W - pad - 15) / Math.max(1, displayRows.length) / 5.4)); return row.label.length > maxC ? row.label.substring(0, maxC - 1) + '…' : row.label; })())
 
                       );
 
@@ -1135,9 +1135,11 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                       var midAngle = startAngle + angle / 2;
 
-                      var lx = Math.max(46, Math.min(W - 46, cx + (r + 20) * Math.cos(midAngle)));
+                      var cosM = Math.cos(midAngle);
+                      var pieAnchor = cosM > 0.25 ? 'start' : (cosM < -0.25 ? 'end' : 'middle');
+                      var lx = Math.max(pieAnchor === 'start' ? 12 : 68, Math.min(pieAnchor === 'end' ? W - 12 : W - 68, cx + (r + 12) * cosM));
 
-                      var ly = Math.max(36, Math.min(H - 14, cy + (r + 18) * Math.sin(midAngle)));
+                      var ly = Math.max(32, Math.min(H - 10, cy + (r + 14) * Math.sin(midAngle)));
 
                       var pct = Math.round(row.value / total * 100);
 
@@ -1164,7 +1166,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                         }, React.createElement("title", null, row.label + ': ' + row.value + ' (' + pct + '%)')),
 
-                        effectiveDataLabels && pct >= 5 && React.createElement("text", { x: lx, y: ly + 3, textAnchor: "middle", style: { fontSize: '8.5px', fontWeight: 'bold', fill: _text } }, row.label.substring(0, 6) + ' ' + pct + '%')
+                        effectiveDataLabels && pct >= 5 && React.createElement("text", { x: lx, y: ly + 3, textAnchor: pieAnchor, style: { fontSize: '8.5px', fontWeight: 'bold', fill: _text } }, (row.label.length > 12 ? row.label.substring(0, 11) + '…' : row.label) + ' ' + pct + '%')
 
                       );
 
@@ -1675,7 +1677,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
                 style: { background: _card, border: '1px solid ' + _border, color: _accent }
 
               }, t('stem.datastudio.export_csv_2', "💾 Export CSV")),
-              React.createElement("button", { "aria-label": t('stem.datastudio.export_chart_as_svg','Export chart as SVG'), onClick: function() {
+              React.createElement("button", { title: t('stem.datastudio.export_chart_as_svg','Export chart as SVG'), onClick: function() {
                   var el = document.querySelector('[data-datastudio-chart="true"]');
                   if (!el || typeof XMLSerializer === 'undefined') { if (addToast) addToast('Chart export is not available.', 'warning'); return; }
                   var clone = el.cloneNode(true); clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
@@ -1686,7 +1688,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
                   if (addToast) addToast('Chart exported as SVG.', 'success');
                 }, className: "px-3 py-2 rounded-xl text-xs font-bold transition-all", style: { background: _card, border: '1px solid ' + _border, color: _accent }
               }, "Export SVG"),
-              React.createElement("button", { "aria-label": t('stem.datastudio.export_analysis_as_json','Export analysis as JSON'), onClick: function() {
+              React.createElement("button", { title: t('stem.datastudio.export_analysis_as_json','Export analysis as JSON'), onClick: function() {
                   var report = {
                     schema: 'alloflow-data-studio-report-v1', title: chartTitle, chartType: chartType,
                     axes: { x: xAxisLabel, y: yAxisLabel }, source: dataSource, rows: dataRows,

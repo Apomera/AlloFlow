@@ -155,7 +155,12 @@
     "refine_go": "Herschrijving voorstellen",
     "refining": "Voorstel wordt geschreven…",
     "made_from_version": "Gemaakt van versie {version} van uw bron",
-    "remake": "Opnieuw maken van de huidige versie"
+    "remake": "Opnieuw maken van de huidige versie",
+    "dictate": "Dicteren",
+    "close_dictate": "Dicteren sluiten",
+    "send_read_along": "Naar Meelesset sturen",
+    "upload_verify_banner": "Audio/video lokaal getranscribeerd met Whisper ({count} segmenten in het geheugen bewaard)",
+    "clear_audio": "Audio wissen"
   },
   "sel": {
     "peersupport": {
@@ -7178,7 +7183,10 @@
     "source_choice_ambiguous": "Kies een leestekst bij Gebaseerd op voordat je genereert. Er is meer dan één leestekst beschikbaar.",
     "source_choices_load_failed": "De keuzes voor de leestekst konden niet worden geladen. Probeer het opnieuw.",
     "submission_tools_still_loading": "De tools voor inleveren worden nog geladen. Probeer het opnieuw met Indienen.",
-    "blank_created": "Leeg concept voor {title} gemaakt. Vul het in voordat u het deelt."
+    "blank_created": "Leeg concept voor {title} gemaakt. Vul het in voordat u het deelt.",
+    "sent_to_read_along": "Tekstgedeelte geopend in de Meelesset op een nieuw tabblad.",
+    "read_along_handoff_failed": "Kon het concept niet overdragen aan de Meelesset.",
+    "read_along_no_text": "Voeg brontekst toe of dicteer eerst voordat je naar de Meelesset stuurt."
   },
   "large_file": {
     "modal_title": "Groot audiobestand importeren",
@@ -7195,7 +7203,8 @@
     "chunk_info": "Audio wordt opgesplitst in delen van 5 minuten voor verwerking",
     "chunk_progress": "Deel {current} van {total}",
     "audio_only_error": "Momenteel worden alleen audiobestanden (MP3, WAV, enz.) ondersteund voor gedeelde transcriptie.",
-    "starting": "Bezig met starten..."
+    "starting": "Bezig met starten...",
+    "engine_legend": "Transcriptie-engine"
   },
   "voice_engine": {
     "preparing": "Stem-engine voorbereiden...",
@@ -7610,7 +7619,8 @@
       "analyzing_short": "Analyseren...",
       "generate_short": "Genereren",
       "books_short": "Boeken",
-      "books_hint": "Open prentenboeken: elk boek kan je brontekst worden"
+      "books_hint": "Open prentenboeken: elk boek kan je brontekst worden",
+      "dictate_hint": "Dicteer je brontekst met lokale Whisper op dit apparaat en optionele Gemini-controle"
     },
     "status_generating": "Brontekst genereren...",
     "success_long_form": "Lange tekst succesvol gegenereerd!",
@@ -7660,7 +7670,8 @@
     "empty_desc_teacher": "Voeg een tekst toe en kies dan de gereedschappen die de tekst aanpassen voor uw leerlingen.",
     "empty_desc_family": "Voeg iets toe wat uw kind aan het lezen is en kies dan hoe u wilt helpen.",
     "reading_catalog": "Leescatalogus",
-    "find_online": "Online zoeken"
+    "find_online": "Online zoeken",
+    "dictate_or_record": "Dicteren of opnemen"
   },
   "wizard": {
     "title": "Snelstart",
@@ -7794,7 +7805,12 @@
     "paste_word_count": "{count} woorden",
     "length_custom": "Aangepast…",
     "length_custom_label": "Aantal woorden",
-    "length_custom_hint": "50 tot 5.000 woorden"
+    "length_custom_hint": "50 tot 5.000 woorden",
+    "dictate_desc": "Lokale Whisper-spraakdictatie en optionele controle",
+    "dictate_title": "Dicteer of neem je brontekst op",
+    "dictate_helper": "Gebruikt standaard privédictatie met lokale Whisper op dit apparaat. Bewerk vrij, laat de tekst optioneel opschonen of controleer je opname met Gemini.",
+    "dictate_loading": "Dicteerstudio (Lokale Whisper) wordt geladen… Je kunt hieronder alvast typen of bewerken.",
+    "words_dictated_unit": "gedicteerde woorden"
   },
   "settings": {
     "immersive_options": "Meeslepende opties",
@@ -109971,5 +109987,68 @@
     "sc_findText": "Tekst in het ontwerp zoeken",
     "sc_commandPalette": "Snelle acties openen",
     "sc_help": "Deze lijst met sneltoetsen tonen"
+  },
+  "dictation": {
+    "badge_desktop": "Desktop Whisper gereed",
+    "badge_download_needed": "Lokale Whisper · Eerste download",
+    "badge_local_ready": "Lokale Whisper gereed · {name}",
+    "cleanup_apply": "Opschoning toepassen",
+    "cleanup_failed": "Kon de tekst nu niet opschonen.",
+    "cleanup_fillers": "Stopwoorden verwijderen",
+    "cleanup_heading": "Optionele AI-tekstopmaak",
+    "cleanup_keep": "Origineel behouden",
+    "cleanup_no_changes": "Er zijn geen wijzigingen voorgesteld voor dit concept.",
+    "cleanup_notes": "Opmaken als lesnotities",
+    "cleanup_punctuation": "Interpunctie en opmaak opschonen",
+    "cleanup_review_title": "Voorgestelde opschoning gereed — je concept is nog niet gewijzigd",
+    "cleanup_text_only": "alleen tekst — er wordt geen audio verzonden",
+    "cleanup_unavailable": "AI-tekstopmaak is nu niet beschikbaar.",
+    "cleanup_undo": "Opschoning ongedaan maken",
+    "cleanup_working": "Bezig met opschonen…",
+    "clear_audio": "Opgenomen audio wissen ({mb} MB)",
+    "crosscheck_all_resolved": "Alle gemarkeerde plekken zijn gecontroleerd.",
+    "crosscheck_btn": "Controleren op audio met Gemini",
+    "crosscheck_count": "{count} gemarkeerde plek(ken) om te controleren:",
+    "crosscheck_disabled_note": "Nu niet beschikbaar (uitgeschakeld in offline-/leerlingmodus zonder AI of zonder Gemini-sleutel). Je lokale Whisper-dictatie werkt gewoon volledig offline.",
+    "crosscheck_disclosure": "Wordt alleen uitgevoerd als je hieronder klikt: stuurt je tijdelijk opgeslagen audiosegmenten en concepttekst naar Gemini om mogelijke woordfouten te markeren.",
+    "crosscheck_failed": "De Gemini-audiocontrole is niet voltooid. Je lokale transcriptie is ongewijzigd.",
+    "crosscheck_heading": "Vergelijken met audio via Gemini (optioneel)",
+    "crosscheck_none": "Geen inhoudelijke verschillen gevonden tussen Lokale Whisper en Gemini Audio.",
+    "crosscheck_running": "Bezig met controleren op audio…",
+    "crosscheck_unavailable": "Audiocontrole met Gemini is nu niet beschikbaar.",
+    "download_now": "Lokale Whisper downloaden ({size} MB)",
+    "download_warning": "Downloadmelding: Lokale Whisper gebruikt standaard privé spraakherkenning op dit apparaat. Het downloaden van het model {name} kost eenmalig ~{size} MB (~1–2 minuten afhankelijk van je verbinding), wordt offline in je browser opgeslagen en houdt je spraakopnamen op dit apparaat.",
+    "draft_label": "Transcriptieconcept (bewerkbaar)",
+    "draft_placeholder": "Klik hierboven op Dicteren starten, of typ/bewerk je transcriptie rechtstreeks hier…",
+    "guide_both_body": "Begin privé met Lokale Whisper zodat dicteren snel en offline-first blijft. Wil je een tweede mening bij lastige termen of namen, kies dan voor Gemini-kruiscontrole om twee onafhankelijke modellen met je audio te vergelijken en bij elke gemarkeerde plek fragmenten van 5 seconden terug te luisteren.",
+    "guide_both_label": "Waarom beide gebruiken (kruiscontrole):",
+    "guide_gemini_body": "Geen modeldownload nodig. Sterker bij vakterminologie, eigennamen, spraak met accent, rumoerige klaslokalen en interpunctie — stuurt alleen opgenomen audiofragmenten naar Gemini als je daar zelf voor kiest.",
+    "guide_gemini_title": "Gemini Audio (optionele controle)",
+    "guide_summary": "Lokale Whisper vs. Gemini Audio — sterke punten en waarom je beide kunt gebruiken",
+    "guide_whisper_body": "Privé en offline na een eenmalige download (~39–73 MB). Er verlaat geen audio je apparaat, er is geen API-sleutel of quotum nodig en langdurig doorlopend dicteren werkt betrouwbaar.",
+    "guide_whisper_title": "Lokale Whisper (standaard)",
+    "ios_canvas_blocked": "Lokale Whisper is gepauzeerd op iPhone/iPad binnen Gemini Canvas. Typ direct hieronder of open AlloFlow in een desktopbrowser.",
+    "ios_canvas_hint": "Je kunt direct hieronder typen, AlloFlow in een desktopbrowser openen voor Lokale Whisper, of Gemini Audio gebruiken als dat is ingesteld.",
+    "ios_canvas_title": "Lokale Whisper op het apparaat is gepauzeerd op iPhone/iPad binnen Gemini Canvas",
+    "listening_local": "Luistert lokaal met Whisper… pauzeer kort of praat door om tekst toe te voegen.",
+    "mic_start_failed": "Kon de microfoon niet starten. Controleer je browsermachtigingen.",
+    "model_size_label": "Modelgrootte van Lokale Whisper",
+    "pause_recording": "Pauzeren",
+    "paused_note": "Gepauzeerd. Je kunt de transcriptie hieronder bewerken of op Hervatten klikken om verder te dicteren.",
+    "privacy_tag": "Privé · Offline na download · Geen API-sleutel nodig",
+    "resume_recording": "Hervatten",
+    "send_read_along": "Naar Meelesset sturen",
+    "speech_settings": "Spraakinstellingen",
+    "speed_badge_lesson": "Getest: {speed}x sneller dan spraak · Geschikt voor lang dicteren",
+    "speed_badge_short": "Getest: {speed}x sneller dan spraak · Ideaal voor korte fragmenten",
+    "speed_badge_slow": "Getest: {speed}x · Langzamer dan realtime (verwacht korte pauzes)",
+    "speed_badge_upgrade": "Getest: {speed}x sneller dan spraak · Geschikt voor lang dicteren (je kunt ook {name} proberen)",
+    "start_recording": "Dicteren starten (Lokale Whisper)",
+    "stop_recording": "Stoppen",
+    "studio_title": "Dicteerstudio",
+    "test_mic": "Microfoon testen (4s)",
+    "upload_media": "Audio-/videobestand transcriberen",
+    "use_text": "Gedicteerde tekst gebruiken",
+    "voice_unavailable": "De spraakrecorder wordt nog geladen. Probeer het over een moment opnieuw."
   }
 }

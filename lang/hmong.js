@@ -155,7 +155,12 @@
     "refine_go": "Tawm tswv yim sau dua tshiab",
     "refining": "Tab tom sau ib qho tswv yim…",
     "made_from_version": "Ua los ntawm tsab {version} ntawm koj cov ntawv qhov chaw",
-    "remake": "Ua dua los ntawm tsab tam sim no"
+    "remake": "Ua dua los ntawm tsab tam sim no",
+    "dictate": "Hais lus sau",
+    "close_dictate": "Kaw qhov hais lus sau",
+    "send_read_along": "Xa mus rau Pob Nyeem Ua Ke",
+    "upload_verify_banner": "Suab/yeeb yaj kiab tau muab sau ua ntawv hauv khoos phis tawj nrog Whisper ({count} ntu khaws cia rau hauv nco)",
+    "clear_audio": "Tshem suab tawm"
   },
   "sel": {
     "peersupport": {
@@ -5994,7 +5999,10 @@
     "source_choice_ambiguous": "Xaiv ib daim ntawv nyeem hauv Raws Li ua ntej tsim. Muaj ntau dua ib daim ntawv nyeem.",
     "source_choices_load_failed": "Thauj tsis tau cov kev xaiv nyeem. Thov sim dua.",
     "submission_tools_still_loading": "Cov cuab yeej xa haujlwm tseem tab tom thauj. Sim Xa dua.",
-    "blank_created": "Tsim tau {title} khoob lawm. Sau kom tiav ua ntej koj qhia rau lwm tus."
+    "blank_created": "Tsim tau {title} khoob lawm. Sau kom tiav ua ntej koj qhia rau lwm tus.",
+    "sent_to_read_along": "Tau xa zaj ntawv mus rau Pob Nyeem Ua Ke hauv lub tab tshiab lawm.",
+    "read_along_handoff_failed": "Xa tsis tau daim ntawv sau mus rau Pob Nyeem Ua Ke.",
+    "read_along_no_text": "Ntxiv lossis hais lus sau zaj ntawv ua ntej xa mus rau Pob Nyeem Ua Ke."
   },
   "large_file": {
     "modal_title": "Coj los Large suab cov ntaub ntawv",
@@ -6011,7 +6019,8 @@
     "chunk_info": "Lub suab raug faib ua cov seem 5 feeb los ua haujlwm",
     "chunk_progress": "Chunk {current} ntawm {total}",
     "audio_only_error": "Tam sim no tsuas txhawb cov ntaub ntawv suab (MP3, WAV, thiab lwm yam) rau kev sau ua ntawv ib seem ib seem xwb.",
-    "starting": "Tab tom pib..."
+    "starting": "Tab tom pib...",
+    "engine_legend": "Lub Cav Sau Suab Ua Ntawv"
   },
   "formatting": {
     "bold": "Bold (**cov ntawv**)",
@@ -6415,7 +6424,8 @@
       "analyzing_short": "Tab tom tshuaj xyuas...",
       "generate_short": "Tsim",
       "books_short": "Phau ntawv",
-      "books_hint": "Qhib cov phau ntawv duab: txhua phau ntawv tuaj yeem ua koj cov ntawv qub"
+      "books_hint": "Qhib cov phau ntawv duab: txhua phau ntawv tuaj yeem ua koj cov ntawv qub",
+      "dictate_hint": "Hais lus sau koj zaj ntawv nrog Whisper hauv koj lub cuab yeej thiab xaiv kuaj nrog Gemini"
     },
     "status_generating": "Generating qhov chaw cov ntawv...",
     "success_long_form": "ntev-form cov ntawv tau tsim successfully!",
@@ -6465,7 +6475,8 @@
     "empty_desc_teacher": "Ntxiv ib zaj ntawv nyeem, ces xaiv cov cuab yeej uas hloov nws kom haum rau koj cov tub ntxhais kawm.",
     "empty_desc_family": "Ntxiv yam koj tus menyuam tab tom nyeem, ces xaiv li cas koj xav pab nws.",
     "reading_catalog": "Cov ntawv nyeem",
-    "find_online": "Nrhiav hauv internet"
+    "find_online": "Nrhiav hauv internet",
+    "dictate_or_record": "Hais lus sau lossis kaw suab"
   },
   "wizard": {
     "title": "ceev Pib",
@@ -6599,7 +6610,12 @@
     "paste_word_count": "{count} lo lus",
     "length_custom": "Xaiv koj tus kheej…",
     "length_custom_label": "Pes tsawg lo lus",
-    "length_custom_hint": "50 txog 5,000 lo lus"
+    "length_custom_hint": "50 txog 5,000 lo lus",
+    "dictate_desc": "Hais lus sau nrog Whisper hauv khoos phis tawj & xaiv kuaj ntxiv",
+    "dictate_title": "Hais lus sau lossis kaw suab rau koj zaj ntawv",
+    "dictate_helper": "Siv Whisper ntiag tug hauv koj lub cuab yeej ua qhov pib. Kho tau ywj siab, xaiv kho cov ntawv kom huv, lossis muab piv kuaj nrog koj lub suab kaw siv Gemini.",
+    "dictate_loading": "Tab tom qhib Chav Hais Lus Sau (Local Whisper)… Koj kuj tuaj yeem ntaus ntawv lossis kho hauv qab no thaum nws tab tom qhib.",
+    "words_dictated_unit": "lo lus tau hais sau"
   },
   "settings": {
     "immersive_options": "Kiv ntsuab kev xaiv",
@@ -106845,5 +106861,68 @@
     "sc_findText": "Nrhiav ntawv hauv qhov tsim qauv",
     "sc_commandPalette": "Qhib kev ua sai",
     "sc_help": "Qhia daim ntawv teev shortcuts no"
+  },
+  "dictation": {
+    "badge_desktop": "Desktop Whisper Npaj Tau Lawm",
+    "badge_download_needed": "Local Whisper · Yuav Tsum Rub Thawj Zaug",
+    "badge_local_ready": "Local Whisper Npaj Tau Lawm · {name}",
+    "cleanup_apply": "Siv qhov kho kom huv",
+    "cleanup_failed": "Kho tsis tau cov ntawv kom huv tam sim no.",
+    "cleanup_fillers": "Tshem cov lus ntxiv tsis tseem ceeb",
+    "cleanup_heading": "Xaiv kom AI kho ntawv kom huv",
+    "cleanup_keep": "Khaws daim qub cia",
+    "cleanup_no_changes": "Tsis muaj kev hloov kho dab tsi qhia rau daim ntawv no.",
+    "cleanup_notes": "Teem ua ntawv sau kawm hauv chav kawm",
+    "cleanup_punctuation": "Kho cim lus thiab kev teem ntawv",
+    "cleanup_review_title": "Cov lus qhia kho kom huv npaj tau lawm — koj daim ntawv tseem tsis tau hloov",
+    "cleanup_text_only": "ntawv xwb — tsis xa suab mus",
+    "cleanup_unavailable": "Kev siv AI kho ntawv kom huv tsis muaj tam sim no.",
+    "cleanup_undo": "Thim qhov kho kom huv",
+    "cleanup_working": "Tab tom kho kom huv…",
+    "clear_audio": "Tshem lub suab tau kaw ({mb} MB)",
+    "crosscheck_all_resolved": "Tau tshuaj xyuas txhua qhov chaw cim lawm.",
+    "crosscheck_btn": "Kuaj piv nrog lub suab siv Gemini",
+    "crosscheck_count": "{count} qhov chaw cim uas yuav tsum tshuaj xyuas:",
+    "crosscheck_disabled_note": "Tsis muaj tam sim no (tau kaw thaum tsis muaj internet / hom kawm tsis siv AI lossis tsis muaj tus yuam sij Gemini). Koj lub Local Whisper tseem siv tau tsis tas muaj internet.",
+    "crosscheck_disclosure": "Tsuas khiav yog koj nias hauv qab no: xa koj cov ntu suab kaw hauv nco thiab daim ntawv sau mus rau Gemini kom cim cov lus uas tej zaum yuam kev.",
+    "crosscheck_failed": "Kev kuaj suab Gemini tsis tiav. Koj daim ntawv sau hauv khoos phis tawj tsis raug hloov.",
+    "crosscheck_heading": "Muab piv kuaj nrog lub suab siv Gemini (Xaiv siv)",
+    "crosscheck_none": "Tsis pom qhov sib txawv tseem ceeb ntawm Local Whisper thiab Gemini Audio.",
+    "crosscheck_running": "Tab tom kuaj piv nrog lub suab…",
+    "crosscheck_unavailable": "Kev muab piv kuaj suab Gemini tsis muaj tam sim no.",
+    "download_now": "Rub Local Whisper tam sim no ({size} MB)",
+    "download_warning": "Ceeb toom kev rub: Local Whisper pib siv kev paub suab ntiag tug hauv koj lub cuab yeej. Kev rub tus qauv {name} siv ~{size} MB ib zaug (~1–2 feeb nyob ntawm internet), khaws cia tsis tas siv internet hauv koj lub browser, thiab khaws koj cov suab kaw nyob rau hauv lub cuab yeej no xwb.",
+    "draft_label": "Daim ntawv sau los ntawm suab (kho tau)",
+    "draft_placeholder": "Nias Pib hais lus sau saum toj no, lossis ntaus/kho koj daim ntawv ncaj qha ntawm no…",
+    "guide_both_body": "Pib ntiag tug nrog Local Whisper kom koj kev hais lus sau ceev thiab tsis tas siv internet. Yog koj xav tau ib qho kev kuaj ntxiv rau cov lus nyuaj lossis npe neeg, xaiv Gemini piv kuaj ob zaug kom muab ob lub qauv ywj pheej piv nrog koj lub suab thiab rov mloog 5-feeb-ntxiv (5-second) suab ntawm txhua qhov chaw cim.",
+    "guide_both_label": "Vim li cas thiaj siv ob leeg (Piv Kuaj Ob Zaug):",
+    "guide_gemini_body": "Tsis tas rub qauv. Zoo dua rau cov lus tshwj xeeb, npe tshwj xeeb, suab hais txawv, chav kawm nrov, thiab cim lus — tsuas xa cov ntu suab kaw mus rau Gemini yog koj xaiv siv.",
+    "guide_gemini_title": "Gemini Audio (Xaiv kuaj)",
+    "guide_summary": "Local Whisper piv rau Gemini Audio — qhov zoo & vim li cas thiaj siv ob leeg",
+    "guide_whisper_body": "Ntiag tug thiab tsis tas siv internet tom qab rub ib zaug (~39–73 MB). Tsis muaj suab tawm ntawm koj lub cuab yeej, tsis tas muaj tus yuam sij API lossis txwv, thiab hais lus sau ntev txuas ntxiv ua hauj lwm tau zoo.",
+    "guide_whisper_title": "Local Whisper (Qhov pib)",
+    "ios_canvas_blocked": "Local Whisper raug ncua ntawm iPhone/iPad hauv Gemini Canvas. Ntaus ntawv ncaj qha hauv qab no lossis qhib AlloFlow hauv lub browser saum rooj.",
+    "ios_canvas_hint": "Koj tuaj yeem ntaus ntawv ncaj qha hauv qab no, qhib AlloFlow hauv lub browser saum rooj rau Local Whisper, lossis siv Gemini Audio yog teem tseg lawm.",
+    "ios_canvas_title": "Whisper hauv cuab yeej raug ncua ntawm iPhone/iPad hauv Gemini Canvas",
+    "listening_local": "Tab tom mloog hauv cuab yeej nrog Whisper… so ib pliag lossis hais ntxiv kom txuas ntawv.",
+    "mic_start_failed": "Qhib tsis tau lub microphone. Kuaj kev tso cai hauv lub browser.",
+    "model_size_label": "Qhov loj ntawm tus qauv Local Whisper",
+    "pause_recording": "Ncua tseg",
+    "paused_note": "Tau ncua tseg. Koj tuaj yeem kho daim ntawv hauv qab no lossis nias Hais txuas ntxiv kom rov hais lus sau.",
+    "privacy_tag": "Ntiag tug · Tsis tas siv internet tom qab rub · Tsis tas muaj API key",
+    "resume_recording": "Hais txuas ntxiv",
+    "send_read_along": "Xa mus rau Pob Nyeem Ua Ke",
+    "speech_settings": "Kev teem suab hais",
+    "speed_badge_lesson": "Tau kuaj: ceev dua kev hais lus {speed}x · Zoo rau hais lus sau ntev",
+    "speed_badge_short": "Tau kuaj: ceev dua kev hais lus {speed}x · Zoo tshaj rau cov suab luv",
+    "speed_badge_slow": "Tau kuaj: {speed}x · Qeeb dua sij hawm tiag (tej zaum yuav tos me ntsis)",
+    "speed_badge_upgrade": "Tau kuaj: ceev dua kev hais lus {speed}x · Zoo rau hais lus sau ntev (kuj sim tau {name})",
+    "start_recording": "Pib hais lus sau (Local Whisper)",
+    "stop_recording": "Nres",
+    "studio_title": "Chav Hais Lus Sau",
+    "test_mic": "Sim microphone (4s)",
+    "upload_media": "Sau suab/yeeb yaj kiab ua ntawv",
+    "use_text": "Siv cov ntawv tau hais sau",
+    "voice_unavailable": "Lub tshuab kaw suab tseem tab tom qhib. Thov sim dua ib pliag."
   }
 }

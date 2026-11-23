@@ -132,7 +132,7 @@ describe('no student-facing path re-derives the verdict', () => {
     // and offers to rewrite it. This is the same defect wearing a not.
     expect(view).not.toContain('!== q.correctAnswer');
     expect(view).not.toContain('!== question.correctAnswer');
-    expect(view).toContain('!_quizAnswerMatches(opt, q.correctAnswer)');
+    expect(view).toContain('!_quizAnswerMatches(opt, _quizMcqCorrectAnswer(q))');
   });
 
   it('the key is repaired, not abandoned, when a teacher edits the options', () => {

@@ -57,6 +57,48 @@
   // Strictly in-memory tab state: consent is never persisted across visits or tabs.
   var allowed = false, queue = [], savedWords = [];
   var found = null, asked = '';
+  function syncConsent() {
+    var box = $('online-on');
+    if (box && box.parentNode && box.parentNode.classList) box.parentNode.classList.toggle('is-on', !!box.checked);
+  }
+  function setBusy(on) {
+    var btn = $('look');
+    if (!btn) return;
+    btn.disabled = !!on;
+    btn.setAttribute('aria-busy', on ? 'true' : 'false');
+    btn.textContent = on ? 'Looking it up...' : 'Look it up';
+  }
+  function drawQueue() {
+    var note = $('queue-line'), skip = $('skip-word');
+    if (!queue.length) {
+      if (note) { note.textContent = ''; note.hidden = true; }
+      if (skip) skip.hidden = true;
+      return;
+    }
+    if (note) {
+      var preview = queue.slice(0, 4).join(', ') + (queue.length > 4 ? ', and more' : '');
+      note.textContent = 'Next in your list (' + queue.length + ' more): ' + preview + '.';
+      note.hidden = false;
+    }
+    if (skip) skip.hidden = false;
+  }
+  function clearStaleFound() {
+    found = null;
+    if ($('found')) $('found').hidden = true;
+    setText('use-line', '');
+  }
+  function skipWord() {
+    if (!queue.length) return;
+    abortActive();
+    lookRun++;
+    setBusy(false);
+    clearStaleFound();
+    var nextWord = queue.shift();
+    $('word').value = nextWord;
+    setText('look-line', 'Skipped. Next word ready above: ' + nextWord + '. Press Look it up, or go back to the vocabulary maker.');
+    drawQueue();
+    try { $('word').focus(); } catch (_) {}
+  }
   function draw(result, word) {
     var host = $('meanings');
     host.textContent = '';
@@ -90,6 +132,7 @@
     var word = wordOf($('word').value);
     setText('use-line', '');
     allowed = !!$('online-on').checked;
+    syncConsent();
     if (!allowed) { setText('look-line', 'Turn on Allow this page to look up words online first. Nothing has been sent.'); return; }
     if (!word) { setText('look-line', 'Type a word: letters, and at most 40 characters.'); return; }
     if (typeof window.fetch !== 'function') { setText('look-line', 'This browser cannot look words up.'); return; }
@@ -98,7 +141,9 @@
     abortActive();
     var run = ++lookRun;
     asked = word;
+    found = null;
     $('found').hidden = true;
+    setBusy(true);
     setText('look-line', 'Looking up ' + word + '.');
     var control = typeof window.AbortController === 'function' ? new window.AbortController() : null;
     activeStop = control;
@@ -109,6 +154,7 @@
     var finish = function () {
       window.clearTimeout(timer);
       if (activeStop === control) activeStop = null;
+      if (run === lookRun) setBusy(false);
     };
     var MAX_DICT_JSON_BYTES = 2 * 1024 * 1024;
     var safeJsonParse = function (raw) {
@@ -135,7 +181,14 @@
       finish();
       if (run !== lookRun || asked !== word) return;
       var result = rows ? meaningsOf(rows, word) : { list: [] };
-      if (!result.list.length) { found = null; setText('look-line', 'The dictionary has no meaning for ' + word + '. Type its meaning yourself in the vocabulary maker.'); return; }
+      if (!result.list.length) {
+        found = null;
+        drawQueue();
+        setText('look-line', queue.length
+          ? 'The dictionary has no meaning for ' + word + '. Type its meaning yourself in the vocabulary maker, or press Skip to next word (' + queue.length + ' left).'
+          : 'The dictionary has no meaning for ' + word + '. Type its meaning yourself in the vocabulary maker.');
+        return;
+      }
       found = { word: word, result: result };
       setText('look-line', 'Found ' + result.list.length + (result.list.length === 1 ? ' meaning.' : ' meanings.'));
       draw(result, word);
@@ -188,6 +241,7 @@
       ? 'Saved for ' + savedWord + savedNote + '. Next word ready above: ' + nextWord + '. Press Look it up, or go back to the vocabulary maker.'
       : 'Saved for ' + savedWord + savedNote + '. Type another word above to look it up on this tab, or go back to the vocabulary maker.';
     $('word').value = nextWord || '';
+    drawQueue();
     setText('use-line', doneText);
     setText('look-line', doneText);
     try { $('word').focus(); } catch (_) {}
@@ -214,12 +268,20 @@
         });
       } catch (_) {}
     }
+    drawQueue();
+    syncConsent();
     try { window.localStorage.getItem(EDITS_KEY); } catch (_) { $('not-keeping').hidden = false; }
     $('look').addEventListener('click', look);
+    if ($('skip-word')) $('skip-word').addEventListener('click', skipWord);
+    $('word').addEventListener('input', function () {
+      if (activeStop) { abortActive(); lookRun++; setBusy(false); }
+      if (found || ($('found') && !$('found').hidden)) clearStaleFound();
+    });
     $('word').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.repeat && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); look(); } });
     $('online-on').addEventListener('change', function () {
       allowed = !!this.checked;
-      if (!allowed) { abortActive(); lookRun++; }
+      syncConsent();
+      if (!allowed) { abortActive(); lookRun++; setBusy(false); }
       setText('look-line', allowed ? 'On for this visit. Press Look it up to send the word.' : 'Off. Nothing is sent.');
     });
     $('use').addEventListener('click', use);

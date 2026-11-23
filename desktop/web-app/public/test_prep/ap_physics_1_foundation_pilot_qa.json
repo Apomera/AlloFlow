@@ -102,9 +102,9 @@
       "knowledgeChecks": 24,
       "flashcards": 24,
       "memoryAids": 24,
-      "diagrams": 0,
+      "diagrams": 8,
       "diagramPlacements": 8,
-      "glossaryTerms": 0,
+      "glossaryTerms": 24,
       "constructedResponseWorkshops": 8,
       "topicDiagnosticRoutes": 39,
       "remediationPlaybooks": 9,
@@ -112,10 +112,7 @@
       "spacedReviewPlans": 39,
       "sourceCatalog": 3
     },
-    "emptyLibraryLayers": [
-      "diagrams",
-      "glossaryTerms"
-    ],
+    "emptyLibraryLayers": [],
     "lessonDepth": {
       "chapterCount": 8,
       "sectionCount": 24,
@@ -369,8 +366,8 @@
     "nearDuplicatePairCount": 0
   },
   "inputs": {
-    "packSha256": "6b4aef867101ad7fd4ed129f2056a8040845c7fded09a5d526c71d235152536c",
-    "learningLibrarySha256": "bc78cdefe519bffb16b5c08739ac532faca1ea1fc1792565209a2615f01b49cb",
+    "packSha256": "096e1334d8722e16b44ddb9d27cae1031098defec2f535c8150b5b0d7ea57bec",
+    "learningLibrarySha256": "eecb050386adad41f624fa50fa447c61b26f6f95cfacc9bc9bbef51a0904c20f",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
     "officialCourseUrl": "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based",
     "factualCrossCheckUrl": "https://openstax.org/details/books/college-physics-2e"
@@ -380,15 +377,15 @@
       "asset": "pack",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "6b4aef867101ad7fd4ed129f2056a8040845c7fded09a5d526c71d235152536c",
-      "deploySha256": "6b4aef867101ad7fd4ed129f2056a8040845c7fded09a5d526c71d235152536c"
+      "sourceSha256": "096e1334d8722e16b44ddb9d27cae1031098defec2f535c8150b5b0d7ea57bec",
+      "deploySha256": "096e1334d8722e16b44ddb9d27cae1031098defec2f535c8150b5b0d7ea57bec"
     },
     {
       "asset": "learning-library",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "bc78cdefe519bffb16b5c08739ac532faca1ea1fc1792565209a2615f01b49cb",
-      "deploySha256": "bc78cdefe519bffb16b5c08739ac532faca1ea1fc1792565209a2615f01b49cb"
+      "sourceSha256": "eecb050386adad41f624fa50fa447c61b26f6f95cfacc9bc9bbef51a0904c20f",
+      "deploySha256": "eecb050386adad41f624fa50fa447c61b26f6f95cfacc9bc9bbef51a0904c20f"
     }
   ],
   "releaseBlockers": [

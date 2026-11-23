@@ -84,13 +84,16 @@ describe('the timeline and concept sort banners', () => {
     const el = render(window.AlloModules.TimelineView, timeline());
     expect(el.querySelector('[data-timeline-toolbar]')).toBeNull();
     expect(el.querySelector('input[type="range"]')).toBeNull();
-    expect(buttons(el)).toHaveLength(1);
-    expect(buttons(el)[0].getAttribute('aria-label')).toBeNull();
+    const btns = buttons(el);
+    expect(btns).toHaveLength(2);
+    expect(btns[0].getAttribute('aria-label')).toBeNull();
+    expect(btns[1].hasAttribute('data-timeline-listen-intro')).toBe(true);
   });
   it('a teacher keeps the timeline toolbar with the UDL goal', () => {
     const el = render(window.AlloModules.TimelineView, timeline({ isTeacherMode: true }));
     expect(el.querySelector('[data-timeline-toolbar]').textContent).toContain('timeline.udl_goal_desc');
-    expect(buttons(el).every(b => !b.getAttribute('aria-label') || b.getAttribute('aria-label').includes(b.textContent.trim()))).toBe(true);
+    const visibleLabel = b => [...b.childNodes].filter(n => n.nodeType === 3 || n.getAttribute?.('aria-hidden') !== 'true').map(n => n.textContent).join('').trim();
+    expect(buttons(el).every(b => !b.getAttribute('aria-label') || b.getAttribute('aria-label').includes(visibleLabel(b)))).toBe(true);
   });
   it('an independent learner keeps the start button and slider, without the UDL rationale', () => {
     const el = render(window.AlloModules.TimelineView, timeline({ isIndependentMode: true }));

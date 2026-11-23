@@ -1036,7 +1036,7 @@ window.StemLab = window.StemLab || {
                     React.createElement("span", {
                       className: "rounded-full px-3 py-1 text-xs font-black border",
                       style: isContrast
-                        ? { background: '#00ff00', color: '#000000', borderColor: '#00ff00' }
+                        ? { background: '#000000', color: '#00ff00', borderColor: '#00ff00' }
                         : { background: _gViolet, color: '#ffffff', borderColor: '#7c3aed' }
                     }, activeModeLabel)
                   ),
@@ -1845,7 +1845,7 @@ window.StemLab = window.StemLab || {
                         React.createElement("div", { className: "flex items-center justify-between text-[0.6875rem] font-bold mb-1.5" },
                           React.createElement("span", { className: "text-emerald-700" }, "\u2713 True: " + trueCount + " / " + table.rows.length + " rows"),
                           React.createElement("span", { className: "text-slate-500 font-mono" }, truePct.toFixed(0) + "% satisfied"),
-                          React.createElement("span", { className: "text-red-600" }, "\u2717 False: " + falseCount + " / " + table.rows.length + " rows")
+                          React.createElement("span", { className: isDark ? "text-red-400" : "text-red-700" }, "\u2717 False: " + falseCount + " / " + table.rows.length + " rows")
                         ),
                         React.createElement("div", { className: "h-2 rounded-full overflow-hidden flex bg-red-100" },
                           React.createElement("div", { className: "bg-gradient-to-r from-emerald-400 to-emerald-500", style: { width: truePct + '%', transition: 'width 0.3s' } })
@@ -1991,9 +1991,9 @@ window.StemLab = window.StemLab || {
                         title: t('stem.logiclab.drag_or_click_to_select_2', "Drag or click to select")
                       },
 
-                        React.createElement("span", { className: "text-xs font-black text-indigo-400 w-6" }, "P" + (pi + 1)),
+                        React.createElement("span", { className: isDark ? "text-xs font-black text-indigo-300 w-6" : "text-xs font-black text-indigo-700 w-6" }, "P" + (pi + 1)),
 
-                        React.createElement("code", { className: "font-mono font-bold text-indigo-800 flex-1" }, p),
+                        React.createElement("code", { className: isDark ? "font-mono font-bold text-indigo-200 flex-1" : "font-mono font-bold text-indigo-800 flex-1" }, p),
 
                         isSelected && React.createElement("span", { className: "text-indigo-600 text-xs font-black" }, "\u2714")
 
@@ -2003,7 +2003,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("div", { className: "mt-2 pt-2 border-t border-indigo-200 flex items-center gap-2" },
 
-                      React.createElement("span", { className: "text-xs font-bold text-indigo-400" }, "Goal:"),
+                      React.createElement("span", { className: "text-xs font-bold", style: { color: isContrast ? '#ffff00' : '#3730a3' } }, "Goal:"),
 
                       React.createElement("code", { className: "font-mono font-bold text-violet-700 bg-violet-100 px-3 py-1 rounded-lg" }, activeCh.conclusion)
 
@@ -2102,7 +2102,7 @@ window.StemLab = window.StemLab || {
 
                     onClick: function() { upd({ showHint: !d.showHint }); },
 
-                    className: "text-xs font-bold text-amber-600 hover:text-amber-800 transition-colors"
+                    className: isDark ? "text-xs font-bold text-amber-300 hover:text-amber-200 transition-colors" : "text-xs font-bold text-amber-800 hover:text-amber-900 transition-colors"
 
                   }, d.showHint ? "\uD83D\uDCA1 " + activeCh.hint : "\uD83D\uDCA1 Show Hint")
 

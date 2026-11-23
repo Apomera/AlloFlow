@@ -392,6 +392,9 @@
     { id: 'post-message', name: 'postMessage', re: /\bpostMessage\b/g, cls: LOOK, why: 'Sends a message to another window or to the page around this one. A packet sends one only to the page it is opened in.' },
     // 2026-11-13: a channel to other pages of the same site in this browser. A packet uses one to tell another copy of itself that it is open (see scanSource).
     { id: 'broadcast-channel', name: 'BroadcastChannel', re: /\bBroadcastChannel\b/g, cls: LOOK, why: 'Talks to other pages of the same site open in this browser. A packet uses it only to tell another copy of itself, open in another tab, that it is open.' },
+    // Listens for messages from another window or frame; only the preview jump listener gated by navToken is omitted in scanSource.
+    { id: 'message-listener', name: 'A message listener (onmessage or addEventListener("message"))', re: /\bonmessage\s*=|\baddEventListener\s*\(\s*['"`]message['"`]/g, cls: UNEXPECTED,
+      why: 'Listens for messages sent from another window or frame. A packet listens only for the preview jump command when its storage is refused and a matching token is present.' },
   ];
   // Why the channel between two copies of one file is expected (rules broadcast-channel and post-message).
   var TAB_WHY = 'When the same file is open in two tabs or windows of this browser, the copies tell each other, so only one goes on and keeps the student\'s place, and a check open in both is noted in its results. The channel is named after the file\'s own storage name and reaches only pages of the same site in this browser on this device. It needs no connection.';
@@ -411,7 +414,7 @@
   function scanSource(text, about) {
     var a = about || {};
     var where = typeof a.where === 'function' ? a.where : function () { return 'the code'; };
-    var found = [], seen = Object.create(null), fetches = 0, more = 0;
+    var found = [], seen = Object.create(null), fetches = 0, navListeners = 0, more = 0;
     var outside = [];
     RULES.forEach(function (rule) {
       rule.re.lastIndex = 0;
@@ -503,6 +506,16 @@
         }
       } else if (f.id === 'broadcast-channel') {
         if (a.tabBus && place === 'the code') { f.cls = EXPECTED; f.why = TAB_WHY; }
+      } else if (f.id === 'message-listener') {
+        var beforeNav = text.slice(Math.max(0, f.at - 32), f.at);
+        var afterNav = text.slice(f.at, f.at + 280);
+        if (a.navListener && place === 'the code' && navListeners === 0
+          && /\bif\s*\(\s*navToken\s*\)\s*win\.\s*$/.test(beforeNav)
+          && /^addEventListener\(\s*['"]message['"]\s*,\s*function\s*\(\s*e\s*\)\s*\{\s*var\s+d\s*=\s*e\s*&&\s*e\.data\s*;\s*if\s*\(\s*e\.source\s*===\s*win\.parent\s*&&\s*d\s*&&\s*d\.kind\s*===\s*['"]alloflow-packet-nav['"]\s*&&\s*d\.token\s*===\s*navToken\s*\)\s*previewNav\(\s*d\.action\s*,\s*d\.index\s*\)\s*;\s*\}\s*\)/.test(afterNav)) {
+          navListeners++;
+          f._omit = true;
+          return;
+        }
       } else if (f.id === 'clipboard') {
         if (/^clipboard\s*\.\s*writeText\b/.test(text.substr(f.at, 40))) { f.cls = EXPECTED; f.why = 'Puts the results on the clipboard when the student presses the copy button. It needs no connection.'; }
         else { f.cls = LOOK; f.why = 'Uses the clipboard in a way other than writing the results to it.'; }
@@ -517,6 +530,7 @@
       delete f.text;
       delete f.length;
     });
+    found = found.filter(function (f) { return !f._omit; });
     found.more = more;
     return found;
   }
@@ -816,14 +830,21 @@
     var items = [];
     (Array.isArray(L.blocks) ? L.blocks : []).forEach(function (block) { if (isObject(block) && Array.isArray(block.items)) block.items.forEach(function (item) { if (isObject(item)) items.push(item); }); });
     var lessonCheck = isObject(L.check) ? L.check : null;
+    var diagMeta = isObject(m.pictures) && isObject(m.pictures.diagram) ? m.pictures.diagram : null;
+    var diagramCount = diagMeta ? (Array.isArray(diagMeta.words) ? diagMeta.words.length : (Number(diagMeta.words) || 0)) : 0;
     report.data = !lesson ? null : {
       id: show(L.lessonId, 120), version: show(L.revision, 120), title: show(L.title, 200), mode: isCheckMode(L.mode) ? 'check' : 'practice', form: show(L.form, 60),
       storageName: 'alloflow-take-home:' + show(L.lessonId, 120) + ':' + show(L.revision, 120), items: items.length,
       mailboxAddress: show(address, 300), teacherCode: !!(lessonCheck && isObject(lessonCheck.lock)),
       scrambled: isCheckMode(L.mode) ? items.length > 0 && items.every(function (item) { return typeof item.key === 'string' && !('answer' in item); }) : null,
       timeLimitS: Number(L.timeLimitS) > 0 ? Number(L.timeLimitS) : null,
+      mixedOrder: Array.isArray(L.sequence) && L.sequence.length > 0,
+      diagram: diagramCount,
     };
-    if (lesson && inline.length) report.script.codeSha256 = sha256OfText(oneLineEnd(text.slice(inline[0].textFrom, dataFrom)) + oneLineEnd(text.slice(dataTo, inline[0].textTo))).hex;
+    var codeOnly = lesson && inline.length
+      ? oneLineEnd(text.slice(inline[0].textFrom, dataFrom)) + oneLineEnd(text.slice(dataTo, inline[0].textTo))
+      : scriptText;
+    if (lesson && inline.length) report.script.codeSha256 = sha256OfText(codeOnly).hex;
     var mailbox = policyMailbox && dataMailbox;
     report.mailbox = { declared: policyMailbox, host: policyMailbox ? MAILBOX_HOST : '', address: dataMailbox ? show(address, 300) : '' };
     if (policyMailbox && !dataMailbox) add('mailbox-data', 'A mailbox in the policy, none in the data', LOOK, 'The policy lets the file connect to ' + MAILBOX_HOST + ', but the file\'s data holds no class mailbox address there.', policyTag.at, policyTag.end - policyTag.at);
@@ -847,7 +868,7 @@
       && neverList.indexOf('microphone') < 0
       && closed
       && lesson && !isCheckMode(L.mode) && L.studentMic === true
-      && !/\bvideo\s*:/.test(scriptText)
+      && !/\bvideo\s*:/.test(codeOnly)
     );
     var keyStated = /\bvar\s+storageKey\s*=\s*'alloflow-take-home:'\s*\+\s*lesson\.lessonId\s*\+\s*':'\s*\+\s*lesson\.revision\s*;/.test(scriptText) && (scriptText.match(/\bstorageKey\s*=(?!=)/g) || []).length === 1;
     // Two copies of one file (the take-home loader, 2026-11-13): a copy that opens tells the others through a BroadcastChannel named
@@ -859,7 +880,10 @@
     // The bridge to the "Open a practice file or check" page: one postMessage, to the parent, used only with that page's block.
     var bridge = (scriptText.match(/\bpostMessage\b/g) || []).length === 1 + (tabBus ? 1 : 0) && /\bwin\.parent\s*!==\s*win\b/.test(scriptText)
       && scriptText.indexOf("('packet-store-snapshot')") >= 0 && /\bwin\.parent\.postMessage\(\s*message\s*,\s*'\*'\s*\)/.test(scriptText);
-    var scanned = scanSource(text, { where: where, mailbox: mailbox, closed: closed, older: older, pinned: pinned, builds: pinFact.builds, speech: speech, studentMic: studentMic, bridge: bridge, tabBus: tabBus });
+    var navListener = bridge
+      && /\bvar\s+navGate\s*=\s*false\s*;\s*try\s*\{\s*readPlace\(\)\s*;\s*\}\s*catch\s*\(\s*_\s*\)\s*\{\s*navGate\s*=\s*true\s*;\s*\}\s*var\s+navToken\s*=\s*navGate\s*&&\s*linked\(\)\s*&&\s*link\.nav\s*\?\s*link\.nav\s*:\s*['"]['"]\s*;/.test(codeOnly)
+      && (codeOnly.match(/\bnavToken\s*=(?!=)/g) || []).length === 1;
+    var scanned = scanSource(text, { where: where, mailbox: mailbox, closed: closed, older: older, pinned: pinned, builds: pinFact.builds, speech: speech, studentMic: studentMic, bridge: bridge, tabBus: tabBus, navListener: navListener });
     var inCode = function (id) { return scanned.filter(function (f) { return f.id === id && f.where === 'the code'; }); };
     var any = function (ids) { return scanned.some(function (f) { return ids.indexOf(f.id) >= 0; }); };
 
@@ -953,6 +977,17 @@
             !/^scrambled\b/.test(show(m.check.answers, 200)) ? CANNOT : report.data.scrambled ? AGREE : DIFFERS, LOOK);
         }
       }
+      if (isObject(m.qr)) {
+        var qrFp = show(m.qr.keyFingerprint, 32), qrAlg = show(m.qr.algorithm, 80);
+        var dataQr = lesson && isObject(L.qr) ? L.qr : null;
+        var qrKeyOk = !!(dataQr && typeof dataQr.k === 'string' && /^AFPK1\.[A-Za-z0-9_-]{40,50}$/.test(dataQr.k) && show(dataQr.fp, 32) === qrFp);
+        claim('sealed-qr', 'sealed QR results',
+          'enabled for teacher key ' + (qrFp || '(none)') + (qrAlg ? ' (' + qrAlg + ')' : '') + ', with no internet connection.',
+          qrKeyOk
+            ? 'The data block holds the matching AFPK1 public key (Key ID ' + qrFp + ') and the script encrypts results locally with no network access.'
+            : 'The data block does not match the teacher QR key declared in the manifest.',
+          qrKeyOk && closed ? AGREE : DIFFERS, LOOK);
+      }
     }
     report.claims = claims;
 
@@ -997,6 +1032,12 @@
     }
     return '';
   }
+  function hasCompleteSvg(svg) {
+    var open = /<\s*(?:[a-z][a-z0-9._-]*:)?svg(?:\s[^>]*)?(\/?)>/i.exec(svg);
+    if (!open) return false;
+    if (open[1] === '/') return true;
+    return /<\s*\/\s*(?:[a-z][a-z0-9._-]*:)?svg\s*>/i.test(svg);
+  }
   function decodeSvgDataUri(uri) {
     var m = /^data:image\/svg\+xml((?:;\s*[a-z0-9._+-]+(?:\s*=\s*[^;,]+)?)*)\s*,([\s\S]*)$/i.exec(String(uri || ''));
     if (!m) return { ok: false };
@@ -1004,12 +1045,16 @@
     if (/;\s*base64(?:\s*$|;)/i.test(params)) {
       var bytes = bytesOfBase64(payload, MAX_SVG_BYTES);
       if (!bytes) return { ok: false };
-      try { return { ok: true, svg: textOf(bytes) }; } catch (_) { return { ok: false }; }
+      try {
+        var b64Svg = textOf(bytes);
+        return hasCompleteSvg(b64Svg) ? { ok: true, svg: b64Svg } : { ok: false, svg: b64Svg };
+      } catch (_) { return { ok: false }; }
     }
     if (payload.length > MAX_SVG_BYTES * 3) return { ok: false };
     try {
       var decoded = decodeURIComponent(payload);
-      return decoded.length <= MAX_SVG_BYTES ? { ok: true, svg: decoded } : { ok: false };
+      if (decoded.length > MAX_SVG_BYTES) return { ok: false };
+      return hasCompleteSvg(decoded) ? { ok: true, svg: decoded } : { ok: false, svg: decoded };
     } catch (_) {
       // Unencoded SVGs may contain bare '%' (e.g. width="100%"), which makes
       // full decodeURIComponent throw. Decode all valid UTF-8 percent-encoded
@@ -1018,13 +1063,13 @@
       var partial = payload.replace(/(?:%[0-9a-f]{2})+/gi, function (seq) {
         try { return decodeURIComponent(seq); } catch (_e) { return seq; }
       });
-      if (/%[0-9a-f]{2}/i.test(partial)) return { ok: false };
-      return partial.length <= MAX_SVG_BYTES && /<\s*svg\b/i.test(partial) ? { ok: true, svg: partial } : { ok: false };
+      if (/%[0-9a-f]{2}/i.test(partial) || partial.length > MAX_SVG_BYTES) return { ok: false };
+      return hasCompleteSvg(partial) ? { ok: true, svg: partial } : { ok: false, svg: partial };
     }
   }
   // Inspect every data:image/svg+xml URI in parsed lesson.images and across the raw file text.
   function scanSvgDataUris(text, lesson, dataFrom, where) {
-    var out = [], seen = Object.create(null), checked = 0;
+    var out = [], seen = Object.create(null), seenAt = Object.create(null), checked = 0;
     function unescapeJson(raw) {
       if (raw.indexOf('\\') < 0) return raw;
       return raw
@@ -1035,21 +1080,24 @@
     function inspect(uri, at, len, place) {
       if (checked >= MAX_KEPT) return;
       var norm = String(uri || '');
+      if (at >= 0) seenAt[at] = true;
       if (seen[norm]) return;
       seen[norm] = true;
       checked++;
       var decoded = decodeSvgDataUri(norm);
+      if (decoded.svg) {
+        var reason = svgHazard(decoded.svg);
+        if (reason) {
+          out.push({ id: 'svg-active', name: 'Code or an external link inside an embedded SVG picture', cls: UNEXPECTED, at: at, length: len, where: place,
+            why: 'An SVG picture stored inside the file contains ' + reason + '. A packet picture should hold only static drawing shapes.',
+            excerpt: at >= 0 ? excerptAt(text, at, len) : show(decoded.svg, 120), listed: true });
+          return;
+        }
+      }
       if (!decoded.ok) {
         out.push({ id: 'svg-unreadable', name: 'An embedded SVG picture could not be read', cls: LOOK, at: at, length: len, where: place,
-          why: 'An SVG picture held as a data: address could not be decoded as text, so its contents were not read.',
+          why: 'An SVG picture held as a data: address could not be decoded as a complete SVG drawing, so its contents were not read.',
           excerpt: at >= 0 ? excerptAt(text, at, len) : show(norm, 120), listed: true });
-        return;
-      }
-      var reason = svgHazard(decoded.svg);
-      if (reason) {
-        out.push({ id: 'svg-active', name: 'Code or an external link inside an embedded SVG picture', cls: UNEXPECTED, at: at, length: len, where: place,
-          why: 'An SVG picture stored inside the file contains ' + reason + '. A packet picture should hold only static drawing shapes.',
-          excerpt: at >= 0 ? excerptAt(text, at, len) : show(decoded.svg, 120), listed: true });
       }
     }
     if (lesson && isObject(lesson.images)) {
@@ -1066,10 +1114,16 @@
       var raw = m[2];
       inspect(unescapeJson(raw), m.index + 1, raw.length, where(m.index + 1));
     }
+    var cssUrl = /url\s*\(\s*(?!["'])(data:image\/svg\+xml[^)]*)\)/gi;
+    while ((m = cssUrl.exec(text))) {
+      var rawUrl = m[1].replace(/\s+$/, '');
+      var urlAt = m.index + m[0].indexOf(m[1]);
+      inspect(unescapeJson(rawUrl), urlAt, rawUrl.length, where(urlAt));
+    }
     var bare = /\bdata:image\/svg\+xml(?:;\s*[a-z0-9._+-]+(?:\s*=\s*[^;,\s"'`<>)]+)?)*\s*,[^\s"'`<>)]+/gi;
     while ((m = bare.exec(text))) {
       var before = m.index > 0 ? text.charAt(m.index - 1) : '';
-      if (before === '"' || before === "'") continue;
+      if (before === '"' || before === "'" || seenAt[m.index]) continue;
       inspect(unescapeJson(m[0]), m.index, m[0].length, where(m.index));
     }
     return out;
@@ -1132,6 +1186,20 @@
     if (id.license) plain.about.push('License: ' + id.license + '.');
     var creditRow = claims.filter(function (row) { return row.id === 'credits'; })[0];
     if (creditRow && creditRow.says !== 'no credits listed.') plain.about.push('Credits: ' + creditRow.says);
+    if (report.data && report.data.mixedOrder) {
+      var orderKind = isObject(m.builder) && m.builder.order === 'own' ? 'set by the teacher' : 'mixed across activities';
+      plain.about.push('Question order: ' + orderKind + ' (' + count(L.sequence.length, 'item') + ' in a set order).');
+    }
+    if (diagramCount > 0) {
+      var diagName = show(diagMeta.set, 80) || 'AlloFlow Curriculum Diagrams';
+      var diagLicense = show(diagMeta.license, 40) || 'AGPL-3.0';
+      plain.about.push('Built-in curriculum diagrams: ' + count(diagramCount, 'word') + ' (' + diagName + ', ' + diagLicense + ').');
+    }
+    if (isObject(m.qr)) {
+      var mQrFp = show(m.qr.keyFingerprint, 32), mQrAlg = show(m.qr.algorithm, 80);
+      report.qr = { enabled: true, fingerprint: mQrFp, algorithm: mQrAlg };
+      plain.about.push('Sealed QR results: enabled for teacher key ' + mQrFp + (mQrAlg ? ' (' + mQrAlg + ')' : '') + '. Encrypted on this device; no internet connection.' + (verdictOf('sealed-qr') === AGREE ? ' The data block agrees.' : ''));
+    }
     plain.about.push('Inside the file: ' + count(report.counts.sounds, 'recorded sound') + ' and ' + count(report.counts.pictures, 'picture') + '. Size: ' + report.sizeText + '.');
 
     if (!policyTag) plain.reach.push('It has no policy line, so nothing stops its code from connecting to any address.');
@@ -1143,8 +1211,17 @@
     var openLoads = LOADS.filter(function (load) { return factOf(load.id).open; });
     if (policyTag && !openLoads.length) plain.reach.push('It cannot load scripts, pictures, sounds, fonts or other pages from anywhere else. What it uses is inside the file.');
     openLoads.forEach(function (load) { if (policyTag) plain.reach.push('Its policy lets it load ' + load.what + ' from: ' + factOf(load.id).from.join(', ') + '.'); });
-    // 2026-11-13: a vocabulary file's Read aloud, said in plain words too (before, only the scan list named it).
-    if (scanned.some(function (f) { return f.id === 'speech' && f.where === 'the code' && f.cls === EXPECTED; })) plain.reach.push('It can read the words aloud with the voice built into the device, when the student presses Read aloud. It uses only a voice that runs on the device, so this needs no connection. A scan cannot tell how that voice was made.');
+    // 2026-11-13: a vocabulary file's Read aloud (or read-along device voice), said in plain words too.
+    var readAlongVoice = (isObject(m.readAlong) && m.readAlong.deviceVoice === true) || L.deviceVoice === true;
+    if (scanned.some(function (f) { return f.id === 'speech' && f.where === 'the code' && f.cls === EXPECTED; })) {
+      plain.reach.push(readAlongVoice
+        ? 'It can read words or sentences aloud with the voice built into the device when the student asks. It uses only a voice that runs on the device, so this needs no connection. A scan cannot tell how that voice was made.'
+        : 'It can read the words aloud with the voice built into the device, when the student presses Read aloud. It uses only a voice that runs on the device, so this needs no connection. A scan cannot tell how that voice was made.');
+    }
+    var expectedMic = studentMic && scanned.some(function (f) { return f.id === 'microphone' && f.where === 'the code' && f.cls === EXPECTED; });
+    if (expectedMic) {
+      plain.reach.push('It can ask for the microphone when the student presses Record my voice for optional voice practice. It never asks for the camera, and its policy refuses every connection.');
+    }
     if (report.script.verdict === AGREE) plain.reach.push('Its one script is pinned by a hash: the browser runs it only while it matches. This file\'s script matches the hash in its policy and the hash in its manifest.');
     else if (report.script.verdict === DIFFERS) plain.reach.push(report.script.note + ' The file was changed after it was made, or it was not saved whole.');
     else if (older && !pinned) plain.reach.push('Its script is not pinned by a hash. Older files were made this way.');
@@ -1167,6 +1244,9 @@
     } else {
       plain.keeps.push(storageCalls.length ? 'Its code uses the browser\'s storage (localStorage) in ' + count(storageCalls.length, 'place') + (storageFacts.name ? ', under the name ' + storageFacts.name : '') + '.' : 'The scan found no use of the browser\'s storage.');
       plain.keeps.push(any(['other-storage', 'cookie']) ? 'The scan also found cookies or another kind of storage.' : 'The scan found no cookies and no other storage.');
+    }
+    if (expectedMic) {
+      plain.keeps.push('Optional student voice recordings stay in this tab in memory only; they are not saved to browser storage or sent anywhere.');
     }
     plain.keeps.push('A scan cannot see what a saved item holds. The guide for school IT shows where to look at it in the browser, and how to clear it.');
 

@@ -155,7 +155,12 @@
     "refine_go": "Proponi reverkadon",
     "refining": "Verkante proponon…",
     "made_from_version": "Kreita el versio {version} de via fonto",
-    "remake": "Rekrei el la nuna versio"
+    "remake": "Rekrei el la nuna versio",
+    "dictate": "Dikti",
+    "close_dictate": "Fermi diktadon",
+    "send_read_along": "Sendi al Kunlega Pako",
+    "upload_verify_banner": "Sono/video transskribita loke per Whisper ({count} segmentoj konservitaj en memoro)",
+    "clear_audio": "Forviŝi sonon"
   },
   "sel": {
     "peersupport": {
@@ -7188,7 +7193,10 @@
     "source_choice_ambiguous": "Elektu legadon en Bazita sur antaŭ ol generi. Pli ol unu legado disponeblas.",
     "source_choices_load_failed": "Ne eblis ŝargi la legadajn elektojn. Bonvolu provi denove.",
     "submission_tools_still_loading": "La iloj por sendado ankoraŭ ŝargiĝas. Provu Sendi denove.",
-    "blank_created": "Malplena malneto de {title} kreita. Plenigu ĝin antaŭ ol kunhavigi ĝin."
+    "blank_created": "Malplena malneto de {title} kreita. Plenigu ĝin antaŭ ol kunhavigi ĝin.",
+    "sent_to_read_along": "Tekstoparto sendita al la Kunlega Pako en nova langeto.",
+    "read_along_handoff_failed": "Ne eblis transdoni la malneton al la Kunlega Pako.",
+    "read_along_no_text": "Aldonu aŭ diktu fontotekston antaŭ ol sendi al la Kunlega Pako."
   },
   "large_file": {
     "modal_title": "Importi Grandan Sondosieron",
@@ -7205,7 +7213,8 @@
     "chunk_info": "La sono estas dividita en 5-minutajn pecojn por prilaborado",
     "chunk_progress": "Peco {current} el {total}",
     "audio_only_error": "Nuntempe nur sondosieroj (MP3, WAV, ktp.) estas subtenataj por peca transskribo.",
-    "starting": "Komencante..."
+    "starting": "Komencante...",
+    "engine_legend": "Transskriba motoro"
   },
   "voice_engine": {
     "preparing": "Preparante la voĉan motoron...",
@@ -7620,7 +7629,8 @@
       "analyzing_short": "Analizado...",
       "generate_short": "Generi",
       "books_short": "Libroj",
-      "books_hint": "Malfermu bildlibrojn: ĉiu libro povas fariĝi via fonta teksto"
+      "books_hint": "Malfermu bildlibrojn: ĉiu libro povas fariĝi via fonta teksto",
+      "dictate_hint": "Diktu vian fontotekston per suraparata Whisper kaj nedeviga kontrolo de Gemini"
     },
     "status_generating": "Generado de fontoteksto...",
     "success_long_form": "Longforma teksto sukcese generita!",
@@ -7670,7 +7680,8 @@
     "empty_desc_teacher": "Aldonu tekstaĵon, poste elektu la ilojn, kiuj adaptas ĝin al viaj lernantoj.",
     "empty_desc_family": "Aldonu ion, kion via infano legas, poste elektu kiel vi volas helpi.",
     "reading_catalog": "Legokatalogo",
-    "find_online": "Serĉi interrete"
+    "find_online": "Serĉi interrete",
+    "dictate_or_record": "Dikti aŭ registri"
   },
   "wizard": {
     "title": "Rapida Komenco",
@@ -7804,7 +7815,12 @@
     "paste_word_count": "{count} vortoj",
     "length_custom": "Propra…",
     "length_custom_label": "Nombro de vortoj",
-    "length_custom_hint": "De 50 ĝis 5.000 vortoj"
+    "length_custom_hint": "De 50 ĝis 5.000 vortoj",
+    "dictate_desc": "Loka voĉdiktado per Whisper kaj nedeviga kontrolo",
+    "dictate_title": "Diktu aŭ registru vian fontotekston",
+    "dictate_helper": "Defaŭlte uzas privatan suraparatan diktadon per Whisper. Redaktu libere, laŭvole poluru la tekston, aŭ komparu kontraŭ via registraĵo per Gemini.",
+    "dictate_loading": "Ŝargante Diktostudion (Loka Whisper)… Vi ankaŭ povas tajpi aŭ redakti sube dum ĝi ŝargiĝas.",
+    "words_dictated_unit": "diktitaj vortoj"
   },
   "settings": {
     "immersive_options": "Mergaj Opcioj",
@@ -107879,5 +107895,68 @@
     "sc_findText": "Trovi tekston en la dezajno",
     "sc_commandPalette": "Malfermi rapidajn agojn",
     "sc_help": "Montri ĉi tiun liston de klavkombinoj"
+  },
+  "dictation": {
+    "badge_desktop": "Labortabla Whisper Preta",
+    "badge_download_needed": "Loka Whisper · Unuafoja Elŝuto",
+    "badge_local_ready": "Loka Whisper Preta · {name}",
+    "cleanup_apply": "Apliki poluradon",
+    "cleanup_failed": "Ne eblis poluri la tekston nun.",
+    "cleanup_fillers": "Forigi plenigvortojn",
+    "cleanup_heading": "Nedeviga AI-tekstopolurado",
+    "cleanup_keep": "Konservi originalon",
+    "cleanup_no_changes": "Neniuj ŝanĝoj estis proponitaj por ĉi tiu malneto.",
+    "cleanup_notes": "Aranĝi kiel klasĉambrajn notojn",
+    "cleanup_punctuation": "Poluri interpunkcion kaj aranĝon",
+    "cleanup_review_title": "Proponita polurado preta — via malneto ankoraŭ ne ŝanĝiĝis",
+    "cleanup_text_only": "nur teksto — neniu sono estas sendata",
+    "cleanup_unavailable": "AI-tekstopolurado ne disponeblas nun.",
+    "cleanup_undo": "Malfari poluradon",
+    "cleanup_working": "Polurante…",
+    "clear_audio": "Forviŝi registritan sonon ({mb} MB)",
+    "crosscheck_all_resolved": "Ĉiuj markitaj lokoj estas reviziitaj.",
+    "crosscheck_btn": "Kontroli kontraŭ sono per Gemini",
+    "crosscheck_count": "{count} markita(j) loko(j) por revizii:",
+    "crosscheck_disabled_note": "Ne disponeblas nun (malŝaltita en eksterreta / sen-AI lernanta reĝimo aŭ sen ŝlosilo de Gemini). Via loka diktado per Whisper plu funkcias tute eksterrete.",
+    "crosscheck_disclosure": "Ruliĝas nur se vi klakas sube: sendas viajn enmemorajn sonsegmentojn kaj malnetan tekston al Gemini por marki eblajn vorterarojn.",
+    "crosscheck_failed": "La sonkontrolo de Gemini ne finiĝis. Via loka transskribo restis netuŝita.",
+    "crosscheck_heading": "Kruckontroli kontraŭ sono per Gemini (laŭvola)",
+    "crosscheck_none": "Neniuj gravaj diferencoj trovitaj inter Loka Whisper kaj Gemini Audio.",
+    "crosscheck_running": "Kontrolante kontraŭ sono…",
+    "crosscheck_unavailable": "Son-kruckontrolo de Gemini ne disponeblas nun.",
+    "download_now": "Elŝuti Lokan Whisper ({size} MB)",
+    "download_warning": "Elŝuta avizo: Loka Whisper defaŭlte uzas privatan suraparatan parolrekonon. Elŝuti la modelon {name} postulas ~{size} MB unufoje (~1–2 minutojn laŭ la konekto), konserviĝas eksterrete en via retumilo kaj tenas viajn voĉregistraĵojn sur ĉi tiu aparato.",
+    "draft_label": "Transskriba malneto (redaktebla)",
+    "draft_placeholder": "Premu Komenci diktadon supre, aŭ tajpu/redaktu vian transskribon rekte ĉi tie…",
+    "guide_both_body": "Komencu private per Loka Whisper por ke via diktado restu rapida kaj eksterreta. Se vi volas duan opinion pri malfacilaj terminoj aŭ nomoj, elektu kruckontrolon per Gemini por kompari du sendependajn modelojn kun via sono kaj reaŭskulti 5-sekundajn pecojn ĉe ĉiu markita loko.",
+    "guide_both_label": "Kial uzi ambaŭ (Kruckontrolo):",
+    "guide_gemini_body": "Neniu modelelŝuto bezonata. Pli forta pri faka vortprovizo, propraj nomoj, akĉenta parolo, bruaj klasĉambroj kaj interpunkcio — sendas registritajn sonpecojn al Gemini nur se vi elektas tion.",
+    "guide_gemini_title": "Gemini Audio (Nedeviga kontrolo)",
+    "guide_summary": "Loka Whisper kontraŭ Gemini Audio — avantaĝoj kaj kial uzi ambaŭ",
+    "guide_whisper_body": "Privata kaj eksterreta post unufoja elŝuto (~39–73 MB). Neniu sono forlasas vian aparaton, neniu API-ŝlosilo aŭ kvoto necesas, kaj longa daŭra diktado funkcias fidinde.",
+    "guide_whisper_title": "Loka Whisper (Defaŭlta)",
+    "ios_canvas_blocked": "Loka Whisper estas paŭzigita sur iPhone/iPad ene de Gemini Canvas. Tajpu rekte sube aŭ malfermu AlloFlow en labortabla retumilo.",
+    "ios_canvas_hint": "Vi povas tajpi rekte sube, malfermi AlloFlow en labortabla retumilo por Loka Whisper, aŭ uzi Gemini Audio se agordite.",
+    "ios_canvas_title": "Suraparata Whisper estas paŭzigita sur iPhone/iPad ene de Gemini Canvas",
+    "listening_local": "Aŭskultante loke per Whisper… paŭzu mallonge aŭ daŭrigu paroli por aldoni tekston.",
+    "mic_start_failed": "Ne eblis lanĉi la mikrofonon. Kontrolu retumilajn permesojn.",
+    "model_size_label": "Modelgrandeco de Loka Whisper",
+    "pause_recording": "Paŭzi",
+    "paused_note": "Paŭzigita. Vi povas redakti la transskribon sube aŭ premi Daŭrigi por plu dikti.",
+    "privacy_tag": "Privata · Eksterreta post elŝuto · Neniu API-ŝlosilo necesa",
+    "resume_recording": "Daŭrigi",
+    "send_read_along": "Sendi al Kunlega Pako",
+    "speech_settings": "Parolagordoj",
+    "speed_badge_lesson": "Testita: {speed}x pli rapida ol parolo · Bona por longa diktado",
+    "speed_badge_short": "Testita: {speed}x pli rapida ol parolo · Plej bona por mallongaj pecoj",
+    "speed_badge_slow": "Testita: {speed}x · Pli malrapida ol reala tempo (atendu paŭzojn)",
+    "speed_badge_upgrade": "Testita: {speed}x pli rapida ol parolo · Bona por longa diktado (vi ankaŭ povas provi {name})",
+    "start_recording": "Komenci diktadon (Loka Whisper)",
+    "stop_recording": "Halti",
+    "studio_title": "Diktostudio",
+    "test_mic": "Testi mikrofonon (4s)",
+    "upload_media": "Transskribi son-/videodosieron",
+    "use_text": "Uzi diktitan tekston",
+    "voice_unavailable": "La voĉregistrilo ankoraŭ ŝargiĝas. Bonvolu reprovi post momento."
   }
 }

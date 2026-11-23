@@ -1,9 +1,28 @@
 // Student Interaction Components — extracted from AlloFlowANTI.txt
 
 // ═══ StudentSubmitModal (lines 5776-5961) ═══
-const StudentInteractionThemeFallbackContext = (window.React && window.React.createContext)
+const StudentInteractionThemeFallbackContext = (typeof window !== 'undefined' && window.React && window.React.createContext)
   ? window.React.createContext({ theme: 'light', colorOverlay: 'none' })
   : null;
+const StudentInteractionLangFallbackContext = (typeof window !== 'undefined' && window.React && window.React.createContext)
+  ? window.React.createContext({ t: (k) => k })
+  : null;
+const _SI_CRISIS_RE = /\b(?:kill\s+my\s*self|end\s+my\s+life|want\s+to\s+die|commit\s+suicide|suicidal|hurt\s+myself|harm\s+myself|self[\s-]?harm|cut\s+myself|overdose\s+on|shoot\s+myself|hang\s+myself)\b/i;
+const _SI_CRISIS_MESSAGE = 'It sounds like you may be going through a difficult time. Please pause and talk with a trusted adult right away. You can call or text 988 (Suicide & Crisis Lifeline), text HOME to 741741 (Crisis Text Line), or call 911 in an emergency.';
+function _siScreenCrisis(text) {
+  const s = String(text || '').trim();
+  if (!s) return null;
+  try {
+    const checker = typeof window !== 'undefined' && ((window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker || (window.AlloModules && window.AlloModules.SafetyContentChecker));
+    if (checker && typeof checker.check === 'function') {
+      const res = checker.check(s);
+      if (Array.isArray(res) && res.some(f => f && (f.category === 'self_harm' || f.severity === 'crisis'))) return { blocked: true, message: _SI_CRISIS_MESSAGE };
+      if (res && typeof res === 'object' && (res.severity === 'crisis' || res.category === 'self_harm' || res.crisis === true || res.blocked === true)) return { blocked: true, message: _SI_CRISIS_MESSAGE };
+    }
+  } catch (_) {}
+  if (_SI_CRISIS_RE.test(s)) return { blocked: true, message: _SI_CRISIS_MESSAGE };
+  return null;
+}
 
 const cx = (...parts) => parts.filter(Boolean).join(' ');
 
@@ -98,7 +117,7 @@ function resolveStudentSubmitVoiceOption(options, reference) {
     ten: 10, tenth: 10, eleven: 11, eleventh: 11, twelve: 12, twelfth: 12
   };
   const numericMatch = normalized.match(/^(\d{1,3})(?:st|nd|rd|th)?$/);
-  const oneBasedIndex = numericMatch ? Number(numericMatch[1]) : ordinalWords[normalized];
+  const oneBasedIndex = numericMatch ? Number(numericMatch[1]) : (Object.prototype.hasOwnProperty.call(ordinalWords, normalized) ? ordinalWords[normalized] : undefined);
   if (Number.isInteger(oneBasedIndex) && oneBasedIndex >= 1 && oneBasedIndex <= values.length) {
     return { value: values[oneBasedIndex - 1], index: oneBasedIndex };
   }
@@ -225,8 +244,9 @@ function createStudentSubmitVoiceScopeSpec(scopeRef) {
 }
 
 const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = [], currentNickname = "", submissionMethod = "download", submissionContext = "file" }) => {
-  const { t } = useContext(LanguageContext);
-  const themeContext = useContext(window.AlloThemeContext || StudentInteractionThemeFallbackContext);
+  const langCtx = useContext((typeof window !== 'undefined' && window.AlloLanguageContext) || LanguageContext || StudentInteractionLangFallbackContext) || {};
+  const t = typeof langCtx.t === 'function' ? langCtx.t : (k) => k;
+  const themeContext = useContext((typeof window !== 'undefined' && window.AlloThemeContext) || StudentInteractionThemeFallbackContext);
   const styles = getStudentInteractionThemeStyles(themeContext);
   const dialogRef = useRef(null);
   const titleId = 'student-submit-modal-title';
@@ -244,7 +264,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
   const [receipt, setReceipt] = useState(null);
   const receiptDoneRef = useRef(null);
   useEffect(() => { if (isOpen) { setChangingName(false); setReceipt(null); setSubmitError(''); } }, [isOpen]);
-  useEffect(() => { if (receipt && receiptDoneRef.current) receiptDoneRef.current.focus(); }, [receipt]);
+  useEffect(() => { if (receipt && receiptDoneRef.current && receiptDoneRef.current.isConnected) { try { receiptDoneRef.current.focus(); } catch (_) {} } }, [receipt]);
   const say = (key, fallback) => { try { const v = key ? t(key) : ''; return typeof v === 'string' && v && v !== key ? v : fallback; } catch (_) { return fallback; } };
   const submitVoiceScopeRef = useRef(null);
   const rawAdjectives = t('codenames.adjectives', { returnObjects: true });
@@ -290,7 +310,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
   submittingRef.current = submitting;
   const focusTrapRef = useRef(null);
   useEffect(() => {
-    if (!isOpen) return undefined;
+    if (!isOpen || typeof document === 'undefined') return undefined;
     const previousFocus = document.activeElement;
     const dialog = dialogRef.current;
     const stack = typeof window !== 'undefined'
@@ -341,6 +361,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
       const currentDialog = dialogRef.current;
       if (!currentDialog) return;
       if (e.key === 'Escape') {
+        if (e.altKey || e.ctrlKey || e.metaKey) return;
         e.preventDefault();
         e.stopPropagation();
         if (submittingRef.current) return;
@@ -388,7 +409,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
       });
       if (lockState && typeof document !== 'undefined' && document.body) {
         lockState.count = Math.max(0, lockState.count - 1);
-        if (lockState.count === 0) document.body.style.overflow = lockState.overflow;
+        if (lockState.count === 0) document.body.style.overflow = (lockState.overflow ?? lockState.prev ?? '');
       }
       if (stack) {
         const idx = stack.lastIndexOf(trap);
@@ -406,7 +427,8 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
       readings: 0,
       scaffolds: 0,
     };
-    history.forEach(item => {
+    (Array.isArray(history) ? history : []).forEach(item => {
+      if (!item || typeof item !== 'object') return;
       if (item.type === 'quiz') stats.quizzes++;
       else if (item.type === 'adventure') stats.adventures++;
       else if (item.type === 'simplified') stats.readings++;
@@ -475,7 +497,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
     setSubmitting(true);
     setSubmitError('');
     try {
-      const completed = await Promise.resolve(onSubmit(fullName, stats));
+      const completed = typeof onSubmit === 'function' ? await Promise.resolve(onSubmit(fullName, stats)) : false;
       const succeeded = completed !== false && !(completed && completed.ok === false);
       if (succeeded && mountedRef.current) {
         setReceipt({ delivery: (completed && completed.delivery) || (mailboxDelivery ? 'mailbox' : 'download'), name: fullName, time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) });
@@ -516,7 +538,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
       return choice;
     },
     submit: handleSubmit,
-    cancel: onClose,
+    cancel: () => { if (typeof onClose === 'function') onClose(); },
   };
   // Keep one high-priority semantic scope for the lifetime of this open
   // consequential dialog. The private codename never enters command state,
@@ -526,24 +548,31 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
     let disposed = false;
     let unregister = null;
     let retryTimer = null;
+    let retryAttempts = 0;
     const attach = () => {
       if (disposed || unregister) return;
       const commands = window.AlloModules && window.AlloModules.AlloCommands;
       if (!commands || typeof commands.registerCommandScope !== 'function') {
-        retryTimer = window.setTimeout(attach, 200);
+        if (retryAttempts < 25) {
+          retryAttempts += 1;
+          retryTimer = window.setTimeout(attach, 200);
+        }
         return;
       }
       unregister = commands.registerCommandScope(createStudentSubmitVoiceScopeSpec(submitVoiceScopeRef));
     };
     attach();
+    const onRegistry = () => attach();
+    if (typeof window.addEventListener === 'function') window.addEventListener('alloflow:module-registry-changed', onRegistry);
     return () => {
       disposed = true;
       if (retryTimer) window.clearTimeout(retryTimer);
+      if (typeof window.removeEventListener === 'function') window.removeEventListener('alloflow:module-registry-changed', onRegistry);
       try { if (typeof unregister === 'function') unregister(); } catch (_) {}
     };
   }, [isOpen]);
   const handleDialogKeyDown = (e) => {
-    if (e.defaultPrevented || e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return;
+    if (e.defaultPrevented || e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229 || e.nativeEvent?.keyCode === 229) return;
     const dialog = dialogRef.current;
     const stack = typeof window !== 'undefined' ? window.__alloFocusTrapStack : null;
     const trap = focusTrapRef.current;
@@ -552,10 +581,11 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
       if (top !== trap && !(top && top.root && dialog && dialog.contains(top.root) && top.root === dialog)) return;
     }
     if (e.key === 'Escape') {
+      if (e.altKey || e.ctrlKey || e.metaKey) return;
       e.preventDefault();
       e.stopPropagation();
       if (submittingRef.current) return;
-      onClose();
+      if (typeof onClose === 'function') onClose();
       return;
     }
     if (e.key !== 'Tab') return;
@@ -603,7 +633,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
         <button
             type="button"
             disabled={submitting}
-            onClick={() => { if (!submittingRef.current) onClose(); }}
+            onClick={() => { if (!submittingRef.current && typeof onClose === 'function') onClose(); }}
             className={cx('absolute top-4 right-4 min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 transition-colors motion-reduce:transition-none', styles.secondary, styles.focusOffset)}
             aria-label={say('common.close', 'Close')}
         >
@@ -630,7 +660,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
               <div className={cx('text-xl font-black tracking-tight break-words', styles.title)}>{receipt.name}</div>
               <div className={cx('text-sm font-medium mt-2', styles.text)}>{receipt.time}</div>
             </div>
-            <button type="button" ref={receiptDoneRef} onClick={onClose} data-submit-receipt-done="" className={cx('w-full min-h-11 font-bold py-3 rounded-xl transition-all motion-reduce:transition-none active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500', styles.primary, styles.focusOffset)}>{say('modals.submit_receipt_done', 'Done')}</button>
+            <button type="button" ref={receiptDoneRef} onClick={() => { if (typeof onClose === 'function') onClose(); }} data-submit-receipt-done="" className={cx('w-full min-h-11 font-bold py-3 rounded-xl transition-all motion-reduce:transition-none active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500', styles.primary, styles.focusOffset)}>{say('modals.submit_receipt_done', 'Done')}</button>
           </div>
         ) : (<React.Fragment>
         <div className="mb-6">
@@ -734,7 +764,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
             </p>
             <button
                 type="button"
-                onClick={onClose}
+                onClick={() => { if (typeof onClose === 'function') onClose(); }}
                 disabled={submitting}
                 className={cx('w-full min-h-11 font-bold py-3 rounded-xl transition-all motion-reduce:transition-none active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500', styles.secondary, styles.focusOffset)}
             >
@@ -761,9 +791,22 @@ const DraftFeedbackInterface = React.memo(({
   finalScore = null,
   xpEarned = null
 }) => {
-  const { t } = useContext(LanguageContext);
-  const themeContext = useContext(window.AlloThemeContext || StudentInteractionThemeFallbackContext);
+  const langCtx = useContext((typeof window !== 'undefined' && window.AlloLanguageContext) || LanguageContext || StudentInteractionLangFallbackContext) || {};
+  const t = typeof langCtx.t === 'function' ? langCtx.t : (k) => k;
+  const themeContext = useContext((typeof window !== 'undefined' && window.AlloThemeContext) || StudentInteractionThemeFallbackContext);
   const styles = getStudentInteractionThemeStyles(themeContext);
+  const [crisisBanner, setCrisisBanner] = useState('');
+  const safeDraftCount = Math.max(1, Math.trunc(Number(draftCount) || 1));
+  const safeCancel = () => { if (typeof onCancel === 'function') onCancel(); };
+  const handleScreenedSubmit = () => {
+    const crisis = _siScreenCrisis(normalizedDraft);
+    if (crisis) {
+      setCrisisBanner(crisis.message);
+      return;
+    }
+    setCrisisBanner('');
+    if (typeof onSubmit === 'function') onSubmit();
+  };
   const say = (key, fallback, opts) => {
     try {
       const v = key ? (opts ? t(key, opts) : t(key)) : '';
@@ -842,7 +885,7 @@ const DraftFeedbackInterface = React.memo(({
     );
   };
   if (status === 'writing') {
-    const draftTitle = say('mastery.draft_label', `Draft ${draftCount}`, { count: draftCount });
+    const draftTitle = say('mastery.draft_label', `Draft ${safeDraftCount}`, { count: safeDraftCount });
     return (
       <div className="max-w-4xl mx-auto p-2">
         <div className={cx('rounded-2xl shadow-xl overflow-hidden', styles.panel)}>
@@ -854,9 +897,14 @@ const DraftFeedbackInterface = React.memo(({
                         <p className={cx('text-xs', styles.headerText)}>{say('mastery.instruction', 'Write your response below, then submit for feedback.')}</p>
                     </div>
                 </div>
-                <button type="button" onClick={onCancel} className={cx('min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full transition-colors motion-reduce:transition-none', styles.secondary, focusRing)} aria-label={say('common.close', 'Close')}><X size={20} aria-hidden="true" /></button>
+                <button type="button" onClick={safeCancel} className={cx('min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full transition-colors motion-reduce:transition-none', styles.secondary, focusRing)} aria-label={say('common.close', 'Close')}><X size={20} aria-hidden="true" /></button>
             </div>
             <div className="p-6">
+                {crisisBanner && (
+                  <div role="alert" className="mb-4 rounded-xl border-2 border-rose-500 bg-rose-50 p-4 text-sm font-semibold text-rose-950">
+                    {crisisBanner}
+                  </div>
+                )}
                 {normalizedCriteria.length > 0 && (
                   <details data-draft-rubric-disclosure="true" className={cx('mb-4 rounded-xl border p-3', styles.panelSoft)}>
                     <summary className={cx('min-h-11 flex items-center cursor-pointer text-xs font-bold uppercase tracking-wider rounded-lg px-2', styles.title, focusRing)}>
@@ -898,7 +946,7 @@ const DraftFeedbackInterface = React.memo(({
                       )}
                     </div>
                     <button type="button"
-                        onClick={onSubmit}
+                        onClick={handleScreenedSubmit}
                         disabled={!trimmedDraft}
                         className={cx('min-h-11 font-bold py-3 px-8 rounded-full transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-105 active:scale-95 disabled:opacity-60 disabled:scale-100 disabled:cursor-not-allowed flex items-center gap-2', styles.primary, focusRing)}
                     >
@@ -926,9 +974,14 @@ const DraftFeedbackInterface = React.memo(({
     );
   }
   if (status === 'revision') {
-    const newDraftLabel = say('mastery.new_draft', `Draft ${draftCount + 1}`, { count: draftCount + 1 });
+    const newDraftLabel = say('mastery.new_draft', `Draft ${safeDraftCount + 1}`, { count: safeDraftCount + 1 });
     return (
       <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-8 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-500">
+        {crisisBanner && (
+          <div role="alert" className="rounded-xl border-2 border-rose-500 bg-rose-50 p-4 text-sm font-semibold text-rose-950">
+            {crisisBanner}
+          </div>
+        )}
         <div className={cx('flex justify-between items-center p-4 rounded-xl', styles.needsWork)}>
              <div className="flex items-center gap-3">
                  <div className={cx('p-2 rounded-full', styles.iconBubble)} aria-hidden="true">
@@ -947,14 +1000,14 @@ const DraftFeedbackInterface = React.memo(({
                        <span className={cx('text-xs font-bold', styles.text)}>{say('mastery.current_progress', 'Current score')}: {gradingDetails.rawScore}/100</span>
                    </div>
                  )}
-                 <button type="button" onClick={onCancel} className={cx('min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full transition-colors motion-reduce:transition-none', styles.secondary, focusRing)} aria-label={say('common.close', 'Close')}><X size={20} aria-hidden="true" /></button>
+                 <button type="button" onClick={safeCancel} className={cx('min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full transition-colors motion-reduce:transition-none', styles.secondary, focusRing)} aria-label={say('common.close', 'Close')}><X size={20} aria-hidden="true" /></button>
              </div>
         </div>
         {renderRubric()}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="flex flex-col gap-2">
                 <div id="mastery-locked-draft-heading" className={cx('text-xs font-bold uppercase tracking-wider flex items-center gap-2', styles.muted)}>
-                    <History size={14} aria-hidden="true" /> {say('mastery.locked_draft', `Previous Draft ${draftCount}`, { count: draftCount })}
+                    <History size={14} aria-hidden="true" /> {say('mastery.locked_draft', `Previous Draft ${safeDraftCount}`, { count: safeDraftCount })}
                 </div>
                 <div role="region" tabIndex={0} aria-labelledby="mastery-locked-draft-heading" className={cx('p-6 rounded-xl h-96 overflow-y-auto font-serif relative whitespace-pre-wrap', styles.panelSoft, focusRing)}>
                     <div className={cx('absolute top-4 right-4', styles.muted)} aria-hidden="true">
@@ -998,7 +1051,7 @@ const DraftFeedbackInterface = React.memo(({
         </div>
         <div className="sticky bottom-6 z-50 flex justify-center">
             <button type="button"
-                onClick={onSubmit}
+                onClick={handleScreenedSubmit}
                 disabled={!trimmedDraft}
                 className={cx('min-h-11 font-bold py-4 px-10 rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all motion-reduce:transition-none flex items-center gap-3 active:scale-95 disabled:opacity-60 disabled:scale-100 disabled:cursor-not-allowed', styles.primary, focusRing)}
             >
@@ -1009,6 +1062,9 @@ const DraftFeedbackInterface = React.memo(({
     );
   }
   if (status === 'mastery') {
+    const hasFiniteFinalScore = typeof finalScore === 'number' && Number.isFinite(finalScore);
+    const hasFiniteRawScore = typeof gradingDetails?.rawScore === 'number' && Number.isFinite(gradingDetails.rawScore);
+    const hasFiniteXp = typeof xpEarned === 'number' && Number.isFinite(xpEarned);
     return (
       <div className="max-w-4xl mx-auto p-8 text-center animate-in motion-reduce:animate-none zoom-in duration-500">
         <div className="mb-8 relative inline-block">
@@ -1024,15 +1080,15 @@ const DraftFeedbackInterface = React.memo(({
             {say('mastery.mastery_desc', 'You met the mastery standard for this assignment.')}
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 max-w-3xl mx-auto">
-            {(typeof finalScore === 'number' || typeof gradingDetails?.rawScore === 'number') && <div className={cx('p-6 rounded-2xl', styles.stat)}>
+            {(hasFiniteFinalScore || hasFiniteRawScore) && <div className={cx('p-6 rounded-2xl', styles.stat)}>
                 <div className={cx('font-bold uppercase text-xs mb-2', styles.muted)}>{say('mastery.final_score', 'Final Score')}</div>
-                <div className={cx('text-5xl font-black', styles.title)}>{typeof finalScore === 'number' ? finalScore : gradingDetails.rawScore}</div>
+                <div className={cx('text-5xl font-black', styles.title)}>{hasFiniteFinalScore ? finalScore : gradingDetails.rawScore}</div>
             </div>}
             <div className={cx('p-6 rounded-2xl', styles.stat)}>
                 <div className={cx('font-bold uppercase text-xs mb-2', styles.muted)}>{say('mastery.drafts', 'Drafts')}</div>
-                <div className={cx('text-5xl font-black', styles.title)}>{draftCount}</div>
+                <div className={cx('text-5xl font-black', styles.title)}>{safeDraftCount}</div>
             </div>
-            {typeof xpEarned === 'number' && <div className={cx('p-6 rounded-2xl', styles.stat)}>
+            {hasFiniteXp && <div className={cx('p-6 rounded-2xl', styles.stat)}>
                 <div className={cx('font-bold uppercase text-xs mb-2', styles.muted)}>{say('mastery.xp_earned', 'XP Earned')}</div>
                 <div className={cx('text-5xl font-black', styles.title)}>+{xpEarned}</div>
             </div>}
@@ -1046,7 +1102,7 @@ const DraftFeedbackInterface = React.memo(({
              </div>
         )}
         <button type="button"
-            onClick={onCancel}
+            onClick={safeCancel}
             className={cx('min-h-11 font-bold py-3 px-12 rounded-full shadow-lg transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-105 active:scale-95', styles.primary, focusRing)}
         >
             {say('mastery.continue', 'Continue')}

@@ -343,13 +343,15 @@
   // block changes; the script and its hash do not, so one file per student is this applied to the file made with none.
   function withCodeName(html, name) {
     var clean = codeName(name), open = '<script type="application/json" id="packet-manifest">';
-    var at = clean ? html.indexOf(open) : -1;
+    var at = typeof html === 'string' ? html.indexOf(open) : -1;
     if (at < 0) return html;
     var from = at + open.length, to = html.indexOf('</script>', from), manifest;
     if (to < 0) return html;
     try { manifest = safeParseManifest(html.slice(from, to)); } catch (_) { return html; }
     if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) return html;
-    manifest.learner = clean;
+    if (clean) manifest.learner = clean;
+    else if (own(manifest, 'learner')) delete manifest.learner;
+    else return html;
     var json = JSON.stringify(manifest).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
     return html.slice(0, from) + json + html.slice(to);
   }

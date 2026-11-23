@@ -355,7 +355,9 @@ describe('the file', () => {
       // Re-pinned 2026-11-19 (Wave 2A) from 160000: unified Voice speed + noVoice notice in Reading tools + shared takeHomeKeypad (~160.1 KB).
       // Re-pinned 2026-11-19 (Wave 5A) from 161500: HC .progress track, forced-colors badges/star, dark --hover, picture matte, touch-action:manipulation (~161.7 KB).
       // Re-pinned 2026-11-19 (Wave 8A) from 162500: Dark/HC @media print reset, Reading Focus Dark/HC curtain + resize sync, Magnifier touch edge clamp (~163.4-164.1 KB).
-      expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(164500);
+      // Re-pinned 2026-11-21 (UX Waves 1-2) from 164500: folded Reading tools .lt-more, 390px #lt-stop docking, Enter learner submit, resume question progress (~166.5 KB).
+      // Re-pinned 2026-11-22 (Show my teacher) from 168000: collapsed deskside conferencing fold on practice end screen (~172.6 KB).
+      expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(176000);
       expect(lessonOf(html)).toMatchObject({ mode: 'practice', audio: {}, images: {}, submit: null });
       // Its answers are the arithmetic of its facts.
       for (const it of lessonOf(html).blocks[0].items) {
@@ -635,7 +637,8 @@ function wordsOf(doc) {
   }
   // The one place the verb appears: the line shared with the other Packets pages when a part did not load.
   // 2026-11-14 (T1): #after-save also names "Open a practice file or check" (packets-open.html), not calling this file a check.
-  return squash(shown.join(' \n ')).split('Check the connection').join('').split('Open a practice file or check').join('');
+  // 2026-11-21 (Wave 1): .top-menu links to "Math Check" (packets-check.html), not calling this file a check.
+  return squash(shown.join(' \n ')).split('Check the connection').join('').split('Open a practice file or check').join('').split('Math Check').join('');
 }
 function openPage(options = {}) {
   const dom = new JSDOM(read(PAGE), { runScripts: 'outside-only', pretendToBeVisual: true, url: 'https://packets.test/site/' + PAGE });
@@ -1033,7 +1036,8 @@ describe('the front door', () => {
     const link = (href) => [...doc.querySelectorAll('.card h3 > a')].find((a) => a.getAttribute('href') === href);
     expect(link(PAGE).textContent).toBe('Make math fact practice');
     expect(link('packets-check.html').textContent).toBe('Make a math check');
-    expect(doc.querySelectorAll('.cards > .card')).toHaveLength(10);
+    // 2026-11-22: 11 cards after adding Collect by sealed QR under Results and more.
+    expect(doc.querySelectorAll('.cards > .card')).toHaveLength(11);
     expect(existsSync(PAGE)).toBe(true);
     // Listed with the other builders on the front door and in the guide for school IT.
     for (const file of ['packets.html', 'packets-it.html']) expect(read(file), file).toContain('<code>packet_math_practice_builder.js</code>');

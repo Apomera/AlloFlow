@@ -428,7 +428,7 @@
 
       return h('div', {
         'data-circuitshelf-workbench': 'true',
-        className: 'flex flex-col gap-4 animate-in fade-in duration-300 w-full max-w-3xl',
+        className: 'flex flex-col gap-4 animate-in fade-in duration-300 w-full max-w-3xl mx-auto',
         style: {
           backgroundColor: pal.shellBg,
           border: (isContrast ? '2px' : '1px') + ' solid ' + pal.shellBorder,
@@ -621,7 +621,7 @@
                 border: (isContrast ? '2px' : '1px') + ' solid ' + pal.ctaBorder,
                 boxShadow: isContrast ? 'none' : '0 6px 16px -4px rgba(194, 65, 12, 0.45)'
               },
-              'aria-label': t('stem.circuitShelf.open_title', 'Open the Circuit Shelf in a new window (CircuitJS simulator with the Predict-Explore-Explain coach)')
+              title: t('stem.circuitShelf.open_title', 'Open the Circuit Shelf in a new window (CircuitJS simulator with the Predict-Explore-Explain coach)')
             }, selectedId
               ? (t('stem.circuitShelf.open_selected_prefix', '🔌 Launch Build: ') + selectedStarter.label)
               : t('stem.circuitShelf.open', '🔌 Open Circuit Shelf')),

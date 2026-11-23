@@ -30,6 +30,19 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 3 7.5l9 4.5 9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
       <span id="product-name">AlloFlow Packets</span>
     </a>
+    <details class="top-menu">
+      <summary>Switch maker</summary>
+      <nav aria-label="Other Packets tools">
+        <a href="packets-make.html">Word Sounds</a>
+        <a href="packets-vocab.html">Vocabulary</a>
+        <a href="packets-math-practice.html" aria-current="page">Math Fact Practice</a>
+        <a href="packets-check.html">Math Check</a>
+        <a href="packets-read-along.html">Read-Along</a>
+        <a href="packets-symbol-runner.html">Symbol Runner</a>
+        <a href="packets-present-export.html">Present &amp; print</a>
+        <a href="packets-results.html">Add up results</a>
+      </nav>
+    </details>
     <a class="top-link" href="packets-results.html">Add up results</a>
   </div>
 <details class="proof">
@@ -76,13 +89,13 @@
     <div id="reopen" class="reopen" hidden>
       <p class="reopen-row">
         <button type="button" class="btn btn-text btn-small" id="reopen-choose" aria-describedby="reopen-hint">Open a file I made</button>
-        <span class="hint" id="reopen-hint">Start from a practice file you saved before.<span class="reopen-more"> Then change what you want. It is read on this device only.</span></span>
+        <span class="hint" id="reopen-hint">Start from a practice file you saved before, or drop one here.<span class="reopen-more"> Then change what you want. It is read on this device only.</span></span>
       </p>
       <input type="file" id="reopen-file" accept=".html,.htm,text/html" hidden aria-label="A practice file you made before">
       <div id="reopen-note" class="note reopen-note" tabindex="-1" hidden>
         <p id="reopen-line" class="reopen-line"></p>
         <ul id="reopen-list"></ul>
-        <p class="row reopen-actions"><a class="btn btn-small" id="reopen-page" href="packets.html" hidden>Open that page</a></p>
+        <p class="row reopen-actions"><a class="btn btn-small" id="reopen-page" href="packets.html" hidden>Open that page</a><button type="button" class="btn btn-text btn-small" id="reopen-close">Close</button></p>
       </div>
     </div>
 
@@ -133,6 +146,9 @@
           <label for="f-facts">Facts</label>
           <span class="hint" id="facts-hint">One fact on each line, or commas between them, like 7 x 8, 6 + 7, 12 - 5 or 56 / 8. Whole numbers only. Each fact is looked at as you type.</span>
           <textarea id="f-facts" rows="6" maxlength="2000" spellcheck="false" autocapitalize="none" autocomplete="off" aria-describedby="facts-hint"></textarea>
+          <p class="example-row" id="own-example-row">
+            <button type="button" class="btn btn-text btn-small" id="own-example">Try an example set</button>
+          </p>
         </div>
         <div class="result">
           <p id="own-line" class="result-line" role="status"></p>
@@ -144,6 +160,24 @@
         <p id="set-line" class="result-line" role="status"></p>
         <p id="set-facts" class="result-sub"></p>
       </div>
+
+      <fieldset class="block" id="math-presets">
+        <legend>Saved presets on this device</legend>
+        <p class="hint" id="math-preset-hint">Save a setup to reuse later on this browser. Nothing leaves your device.</p>
+        <div class="starter-row">
+          <label for="math-preset-select">Saved setup</label>
+          <select id="math-preset-select" aria-describedby="math-preset-hint">
+            <option value="">Choose a saved preset</option>
+          </select>
+          <button type="button" class="btn btn-small" id="math-preset-delete" disabled>Delete</button>
+        </div>
+        <div class="starter-row">
+          <label for="math-preset-name">Preset name</label>
+          <input type="text" id="math-preset-name" maxlength="60" autocomplete="off" placeholder="Example: 7s rehearsal">
+          <button type="button" class="btn btn-small" id="math-preset-save">Save preset</button>
+        </div>
+        <p id="math-preset-status" class="result-sub" role="status"></p>
+      </fieldset>
 
       <div class="actions">
         <button type="button" class="btn btn-primary push" id="next-1">Next: how to practice</button>
@@ -223,6 +257,8 @@
         <button type="button" class="btn" id="back-3">Back</button>
         <a class="btn push" id="try" href="packets-try.html" target="_blank" rel="noopener" hidden>Try it <span class="sr-only">(opens in a new tab)</span></a>
         <button type="button" class="btn" id="print" aria-describedby="print-note" hidden>Print on paper</button>
+        <button type="button" class="btn" id="download-worksheet" hidden>Download worksheet</button>
+        <button type="button" class="btn" id="download-bundle" hidden>Download classroom bundle (.zip)</button>
         <button type="button" class="btn btn-primary" id="save" hidden>Save the file</button>
         <p class="actions-note" id="print-note" hidden>For a student with no device: a cover, copy, compare sheet with the same facts, plus an answer key on a sheet of its own.</p>
       </div>

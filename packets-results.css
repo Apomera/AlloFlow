@@ -13,6 +13,7 @@
 .drop-mark { width: 3rem; height: 3rem; color: var(--accent); }
 .drop h2 { font-size: clamp(1.45rem, 1.25rem + 0.9vw, 1.8rem); letter-spacing: -0.018em; }
 .drop-sub { max-width: 30rem; color: var(--muted); }
+.drop-tip { max-width: 34rem; font-size: 0.9375rem; color: var(--muted); }
 .drop-go { margin-top: 0.75rem; }
 .drop-go .btn { min-width: 12rem; }
 .drop-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 0 0.75rem; margin-top: 1rem; }
@@ -35,7 +36,10 @@
 .view-pick { margin-top: 1.25rem; max-width: 26rem; }
 .view-pick .switch { margin-top: 0; }
 #view-group > h3, #view-learner > h3, .take > h3 { margin-top: 2rem; font-size: 1.3rem; letter-spacing: -0.012em; }
-.learner-pick { margin-top: 0.75rem; max-width: 22rem; }
+.learner-pick { margin-top: 0.75rem; max-width: 28rem; }
+.learner-pick-row { display: flex; align-items: center; gap: 0.4rem; margin-top: 0.35rem; }
+.learner-pick-row select { margin-top: 0; flex: 1 1 auto; min-width: 0; }
+.learner-step { flex: none; min-width: 2.75rem; min-height: 3rem; padding: 0.35rem 0.75rem; }
 
 .middles { display: grid; gap: 1rem; grid-template-columns: 1fr; margin-top: 1rem; }
 .middle { padding: 1.1rem 1.25rem; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); }
@@ -145,6 +149,17 @@ th[aria-sort="descending"] .sort-name::after { content: " \2193"; content: " \21
 .missed-names { margin-top: 0.15rem; }
 .missed-fold { margin-top: 0.2rem; }
 .missed-fold summary { min-height: 2.75rem; display: flex; align-items: center; font-size: 0.875rem; font-weight: 600; color: var(--ink); cursor: pointer; }
+.copy-names { display: inline-flex; min-height: 2.25rem; padding: 0.15rem 0.25rem; margin-top: 0.15rem; font-size: 0.8125rem; }
+.copy-names-said { margin-top: 0.45rem; font-size: 0.875rem; font-weight: 600; color: var(--ink); }
+.copy-names-said:empty { display: none; }
+.copy-names-wrap { margin-top: 0.45rem; max-width: 22rem; }
+.copy-names-box { display: block; width: 100%; padding: 0.5rem 0.7rem; font: inherit; font-size: 0.875rem; color: var(--ink); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; }
+.check-missed-fold { margin-top: 1.5rem; }
+.check-missed-fold > summary { width: fit-content; min-height: 2.75rem; display: inline-flex; align-items: center; font-size: 1rem; font-weight: 700; color: var(--ink); cursor: pointer; }
+.next-practice { margin-top: 1.5rem; padding: 1rem 1.25rem; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); }
+.next-practice-title { margin: 0; font-size: 1.0625rem; color: var(--ink); line-height: 1.25; }
+.next-practice-links { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+.next-practice .new-tab-hint { margin-top: 0.65rem; }
 .new-tab-hint { margin-top: 0.4rem; }
 .mixed-files { margin-top: 0.75rem; }
 .goal-fold { margin-top: 0.75rem; }
@@ -158,12 +173,22 @@ th[aria-sort="descending"] .sort-name::after { content: " \2193"; content: " \21
 .row-remove:hover { color: var(--ink); }
 .save-nudge { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.9rem; margin: 1rem 0 0; padding: 0.6rem 0.9rem; max-width: 46rem; color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
 .save-nudge[hidden] { display: none; }
+.group-filter { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; margin-top: 1.25rem; }
+.group-filter label { font-weight: 600; color: var(--ink); }
+.group-filter input { width: min(100%, 18rem); min-height: 2.75rem; padding: 0.4rem 0.75rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--ink); }
+.group-filter input:hover { border-color: var(--ink); }
+.group-filter-count { font-size: 0.875rem; color: var(--muted); }
+.session-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; margin-top: 0.75rem; }
+.session-controls-group { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; }
+.session-controls .btn.is-on { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); }
 
 /* Take it with you */
 .take { margin-top: 2.5rem; padding-top: 0.5rem; border-top: 1px solid var(--line); }
 .take-row { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.9rem; }
 .take > .hint { margin-top: 0.75rem; max-width: 44rem; }
 .take-said { margin-top: 0.5rem; font-weight: 600; color: var(--ink); min-height: 1.6em; }
+.copy-summary-wrap { margin-top: 0.6rem; max-width: 46rem; }
+.copy-summary-box { display: block; width: 100%; padding: 0.6rem 0.75rem; font: inherit; font-size: 0.875rem; line-height: 1.5; color: var(--ink); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; }
 .keep { margin-top: 1.25rem; padding: 1rem 1.25rem; max-width: 46rem; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
 .keep-switch { display: inline-flex; align-items: center; gap: 0.7rem; min-height: 2.75rem; font-weight: 700; color: var(--ink); cursor: pointer; }
 .keep-switch input { width: 1.4rem; height: 1.4rem; margin: 0; accent-color: var(--accent); }
@@ -227,7 +252,8 @@ th[aria-sort="descending"] .sort-name::after { content: " \2193"; content: " \21
   .wrap { max-width: none; padding: 0; }
   .results h1 { font-size: 16pt; }
   .results-head { margin-top: 0.5rem; border-bottom-color: #000000; }
-  h1, h2, h3, h4, .hint, .results-line, .cell-sub, .cell-value, .middle-label, .middle-range, .measure-unit, .measure-middle, .chart-key, .data thead th, .data tbody th, .honest, .learner-line, .sort, .name-link { color: #000000 !important; }
+  h1, h2, h3, h4, .hint, .results-line, .cell-sub, .cell-value, .middle-label, .middle-range, .measure-unit, .measure-middle, .chart-key, .data thead th, .data tbody th, .honest, .learner-line, .sort, .name-link, .check-missed-fold > summary, .missed-fold > summary { color: #000000 !important; }
+  .check-missed-fold > summary, .missed-fold > summary { min-height: 0; padding: 0.25rem 0; }
   .name-link { display: inline !important; min-height: 0; text-decoration: none; }
   .sort { min-height: 0; padding: 0; }
   .table-scroll { overflow: visible; max-width: none; border-color: #000000; border-radius: 0; }

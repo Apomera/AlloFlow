@@ -18,6 +18,12 @@
     gap: 8px;
 }
 
+.footer-link-group a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+}
+
 .footer-link-heading {
     color: #0f172a;
     font-size: 0.78rem;
@@ -50,8 +56,21 @@
     }
 }
 
+@media (prefers-reduced-motion: reduce) {
+    .footer-link-groups *,
+    .tool-noscript-note {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
 @media (forced-colors: active) {
     .tool-noscript-note {
         border: 1px solid CanvasText;
+    }
+
+    .footer-link-heading {
+        color: CanvasText;
     }
 }

@@ -38,6 +38,19 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 3 7.5l9 4.5 9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
       <span id="product-name">AlloFlow Packets</span>
     </a>
+    <details class="top-menu">
+      <summary>Switch maker</summary>
+      <nav aria-label="Other Packets tools">
+        <a href="packets-make.html" aria-current="page">Word Sounds</a>
+        <a href="packets-vocab.html">Vocabulary</a>
+        <a href="packets-math-practice.html">Math Fact Practice</a>
+        <a href="packets-check.html">Math Check</a>
+        <a href="packets-read-along.html">Read-Along</a>
+        <a href="packets-symbol-runner.html">Symbol Runner</a>
+        <a href="packets-present-export.html">Present &amp; print</a>
+        <a href="packets-results.html">Add up results</a>
+      </nav>
+    </details>
     <a class="top-link" href="packets-results.html">Add up results</a>
   </div>
 <details class="proof">
@@ -117,16 +130,22 @@
       <div class="quick" id="quick">
         <button type="button" class="btn" id="quick-make" aria-describedby="quick-line">Make it with the usual settings</button>
         <p class="hint" id="quick-line">Skips to step 3 and makes the file with what is chosen now. You can still change anything.</p>
+        <div class="quick-recipes" role="group" aria-label="Quick presets">
+          <span class="quick-recipes-label">Or start from a preset:</span>
+          <button type="button" class="btn btn-small" data-recipe="blending-cvc">Blending CVC</button>
+          <button type="button" class="btn btn-small" data-recipe="digraphs-blends">Digraphs &amp; Blends</button>
+          <button type="button" class="btn btn-small" data-recipe="spelling-practice">Spelling Practice</button>
+        </div>
       </div>
       <div id="strands"></div>
+      <!-- 2026-11-18 / 2026-11-21: a mix is the usual order when 2+ activities are chosen; surfaced below the activities. -->
+      <div class="block mix-field" id="mix-field" hidden>
+        <label class="radio"><input type="checkbox" id="f-mix" aria-describedby="mix-line"> <span>Mix the activities</span></label>
+        <span class="hint" id="mix-line">The activities take turns, in a mixed order, so students switch between them. Turned off: all of one activity, then the next. To put the questions in your own order: step 3, More options.</span>
+      </div>
       <details class="more" id="more-1" hidden>
         <summary><span class="more-name">More options</span><span class="more-now" id="more-1-now"></span></summary>
         <div class="more-body">
-          <!-- 2026-11-18 (owner): a mix is the usual order; the teacher's own order is in step 3 (Question order). -->
-          <div class="block mix-field" id="mix-field" hidden>
-            <label class="radio"><input type="checkbox" id="f-mix" aria-describedby="mix-line"> <span>Mix the activities</span></label>
-            <span class="hint" id="mix-line">The activities take turns, in a mixed order, so students switch between them. Turned off: all of one activity, then the next. To put the questions in your own order: step 3, More options.</span>
-          </div>
           <div class="field trace-cases" id="trace-cases-field" hidden>
             <label for="f-trace-cases">Letter Trace: which letters to trace</label>
             <select id="f-trace-cases" aria-describedby="trace-cases-hint">
@@ -138,12 +157,16 @@
           </div>
           <div class="field choice-level" id="choice-level-field" hidden>
             <label for="f-choices">Choices</label>
-            <select id="f-choices" aria-describedby="choice-level-hint">
+            <select id="f-choices" aria-label="Choices" aria-describedby="choice-level-hint">
               <option value="easy">Easy: fewer choices</option>
               <option value="medium">Medium</option>
               <option value="all">All</option>
             </select>
             <span class="hint" id="choice-level-hint">How many answers to choose from: Easy (fewer), Medium (usual), or All. Details are under About these levels in step 2.</span>
+          </div>
+          <div class="field show-letters" id="show-letters-field" hidden>
+            <label class="radio"><input type="checkbox" id="f-show-letters" aria-describedby="show-letters-hint"> <span>Show letter hints on sound activities</span></label>
+            <span class="hint" id="show-letters-hint">Off by default so students listen to sounds alone. Turn on to show letters or sound labels on sound activities.</span>
           </div>
         </div>
       </details>
@@ -168,39 +191,55 @@
       <!-- Step 2, top to bottom: the level (the page picks), or the typed words; then the picked words; then one "More options" box
            with the rarely used choices (a sound, a pattern, the version, groups of words, choosing the words yourself). 2026-11-17. -->
       <div id="pick-top">
-        <div class="fields">
-          <div class="field">
-            <!-- 2026-11-18 (owner): levels are named by what they practice, not by grade, so an older student who needs
-                 the first level (or makes a file themselves) is not told it is for kindergarten. The grades: #stage-key. -->
+        <div class="field stage-pick-field">
+          <!-- 2026-11-18 (owner): levels are named by what they practice, not by grade, so an older student who needs
+               the first level (or makes a file themselves) is not told it is for kindergarten. The grades: #stage-key. -->
+          <div id="stage-single-wrap">
             <label for="f-stage">Level</label>
             <select id="f-stage" aria-describedby="stage-hint"><option value="">Any level</option></select>
-            <span class="hint" id="stage-hint">Each level keeps to the letter patterns taught up to it.</span>
-            <span class="hint" id="stage-k-note" hidden>sh, ch and th start at Level 3. Choose 'Any level' to use them earlier.</span>
-            <span class="hint" id="stage-spell-note" hidden>For spelling, choose a level: your students then spell only patterns they have been taught.</span>
-            <details class="why stage-key" id="about-levels">
-              <summary>About these levels</summary>
-              <p id="stage-why-text" hidden></p>
-              <div id="stage-key-body"></div>
-              <p class="stage-key-head">Answer choices (Step 1)</p>
-              <ul class="stage-key-list">
-                <li>Easy: 3 choices in Find Sounds, Blend Sounds and Rhyme Time; Find Sounds asks the first sound; Sound Counting shows the count with two numbers either side; Break it Down shows the word's sounds and one more; Sight &amp; Spell shows a smaller letter bank and word length.</li>
-                <li>Medium: 4 choices in Find Sounds and Rhyme Time, 6 in Blend Sounds; Find Sounds asks the first or last sound; Sound Counting shows 1 to 8.</li>
-                <li>All: every choice, any sound, and 1 to 11 or more.</li>
-              </ul>
-              <p id="not-offered-text" class="hint" hidden></p>
-            </details>
           </div>
+          <span class="hint" id="stage-hint">Each level keeps to the letter patterns taught up to it.</span>
+          <span class="hint" id="stage-k-note" hidden>sh, ch and th start at Level 3. Choose 'Any level' to use them earlier.</span>
+          <span class="hint" id="stage-spell-note" hidden>For spelling, choose a level: your students then spell only patterns they have been taught.</span>
+          <div class="multi-toggle" id="multi-stage-toggle">
+            <label class="radio"><input type="checkbox" id="f-multi-stage" aria-controls="stage-multi-field"> <span>Mix multiple levels</span></label>
+          </div>
+          <fieldset class="block pill-group" id="stage-multi-field" hidden>
+            <legend>Levels to mix</legend>
+            <span class="hint" id="stage-multi-hint">Choose two or more levels for a balanced random mix across them.</span>
+            <p class="pill-meta" id="stage-multi-meta" hidden><span id="stage-multi-count" role="status"></span> <button type="button" class="btn btn-text btn-small" id="stage-multi-clear" aria-label="Clear selected levels">Clear</button></p>
+            <div class="pill-list" id="stage-pills"></div>
+          </fieldset>
+          <details class="why stage-key" id="about-levels">
+            <summary>About these levels</summary>
+            <p id="stage-why-text" hidden></p>
+            <div id="stage-key-body"></div>
+            <p class="stage-key-head">Answer choices (Step 1)</p>
+            <ul class="stage-key-list">
+              <li>Easy: 3 choices in Find Sounds, Blend Sounds and Rhyme Time; Find Sounds asks the first sound; Sound Counting shows the count with two numbers either side; Break it Down shows the word's sounds and one more; Sight &amp; Spell shows a smaller letter bank and word length.</li>
+              <li>Medium: 4 choices in Find Sounds and Rhyme Time, 6 in Blend Sounds; Find Sounds asks the first or last sound; Sound Counting shows 1 to 8.</li>
+              <li>All: every choice, any sound, and 1 to 11 or more.</li>
+            </ul>
+            <p id="not-offered-text" class="hint" hidden></p>
+          </details>
         </div>
+        <fieldset class="block pill-group" id="shape-field">
+          <legend>Sound patterns</legend>
+          <span class="hint" id="shape-hint">Leave unchecked for any pattern, or check one or more. C is a consonant sound. V is a vowel sound. CVC is three sounds, like cat.</span>
+          <p class="pill-meta" id="shape-meta" hidden><span id="shape-count" role="status"></span> <button type="button" class="btn btn-text btn-small" id="shape-clear" aria-label="Clear selected sound patterns">Clear</button></p>
+          <div class="pill-list" id="f-shapes"></div>
+        </fieldset>
       </div>
 
       <div id="panel-own" hidden>
         <div class="field block">
           <label for="f-own">Your words</label>
-          <span class="hint" id="own-hint">Leave a space, a comma or a new line between words. Each word is checked as you type. A word the sound dictionary does not have can be used once you give it its sounds and a recording with Edit this word. Many common first names are left out. Words you type are saved in the file and its results. A word with no recording can also get one from a computer voice: <a href="packets-voice.html">Make recordings with a computer voice</a>. It is a separate page with its own rule: read its top line first.</span>
+          <span class="hint" id="own-hint">Leave a space, a comma or a new line between words. Each word is checked as you type. A word the sound dictionary does not have can be used once you give it its sounds and a recording with Edit this word. Many common first names are left out. Words you type are saved in the file and its results. A word with no recording can also get one from a computer voice: <a id="own-voice-link" href="packets-voice.html">Make recordings with a computer voice</a>. It is a separate page with its own rule: read its top line first.</span>
           <textarea id="f-own" rows="4" spellcheck="false" autocapitalize="none" autocomplete="off" aria-describedby="own-hint"></textarea>
         </div>
         <div class="result">
           <p id="own-line" class="result-line" role="status"></p>
+          <p id="own-limit-note" class="result-sub own-limit-note" hidden><span id="own-limit-text"></span> <button type="button" class="btn btn-small" id="own-use-all">Use all words</button></p>
           <ul id="own-list" class="checked" aria-label="Your words, checked"></ul>
         </div>
       </div>
@@ -245,7 +284,7 @@
         <summary><span class="more-name">More options</span><span class="more-now" id="more-2-now"></span></summary>
         <div class="more-body">
           <div id="more-2-pick">
-            <p class="hint" id="more-2-hint">Narrow the words to one sound or one pattern.</p>
+            <p class="hint" id="more-2-hint">Narrow the words to one sound.</p>
             <div class="fields">
               <div class="field">
                 <label for="f-sound">A sound to practice</label>
@@ -259,11 +298,6 @@
                   <option value="middle">In the middle</option>
                   <option value="last">Last sound</option>
                 </select>
-              </div>
-              <div class="field">
-                <label for="f-shape">Sound pattern</label>
-                <select id="f-shape" aria-describedby="shape-hint"><option value="">Any pattern</option></select>
-                <span class="hint" id="shape-hint">C is a consonant sound. V is a vowel sound. CVC is three sounds, like cat.</span>
               </div>
             </div>
             <details class="why" id="stage-other" hidden>
@@ -329,6 +363,18 @@
         <summary id="my-words-line">My words on this device</summary>
         <div class="my-words-body">
           <p class="hint">What you added to a word: its sounds, a recording or a picture. It is kept in this browser for this site, and it is not uploaded.</p>
+          <div id="my-words-tools" class="my-words-tools" hidden>
+            <label for="my-words-find" class="sr-only">Filter My words</label>
+            <input type="search" id="my-words-find" placeholder="Filter saved words" autocomplete="off" autocapitalize="none" spellcheck="false">
+            <label for="my-words-filter" class="sr-only">Filter by saved part</label>
+            <select id="my-words-filter">
+              <option value="all">All saved</option>
+              <option value="sounds">Sounds</option>
+              <option value="recording">Your recording</option>
+              <option value="computer-voice">Computer voice</option>
+              <option value="picture">Picture</option>
+            </select>
+          </div>
           <ul id="my-words-list" class="my-words-list" aria-label="My words on this device"></ul>
           <p class="row">
             <button type="button" class="btn btn-small" id="my-words-clear">Remove all my words</button>
@@ -435,7 +481,7 @@
 
           <div class="block">
             <label class="radio"><input type="checkbox" id="f-directions-once" aria-describedby="directions-once-line"> <span>Say the directions once per activity</span></label>
-            <span class="hint" id="directions-once-line">Says what to do on the first question of each activity, then goes straight to each word or sound. Students can still press Hear the question, or change this in Reading tools.</span>
+            <span class="hint" id="directions-once-line">Reads the directions on the first question of each activity, and again whenever the activity changes, then goes straight to each word. Students can still press Hear the question, or change this in Reading tools.</span>
           </div>
 
           <div class="block">
@@ -466,6 +512,9 @@
         <p class="row paper-row">
           <button type="button" class="btn btn-small" id="print-cards" hidden>Print word cards</button>
           <a class="btn btn-small" id="open-present-export" href="packets-present-export.html#from-word-sounds" target="_blank" rel="noopener">Present &amp; print word cards <span class="sr-only">(opens in a new tab)</span></a>
+          <a class="btn btn-small" id="open-symbol-runner" href="packets-symbol-runner.html" target="_blank" rel="noopener" hidden>Practice in Symbol Runner <span class="sr-only">(opens in a new tab)</span></a>
+          <button type="button" class="btn btn-small" id="print-worksheet" hidden>Print activity worksheet</button>
+          <button type="button" class="btn btn-small" id="download-bundle" hidden>Download classroom bundle (.zip)</button>
         </p>
       </div>
 
@@ -505,7 +554,7 @@
       <summary>About this page</summary>
       <div class="about-body">
         <h2 id="keeps-title">What this page keeps</h2>
-        <p>Your last choices are kept in this browser so that the page opens the way you left it: the activities, how you chose the words, any words you typed or checked in the list, the version, the length, which letters Letter Trace traces and how many choices to show. The sound files are kept too, so that they are not downloaded again. Nothing is kept anywhere else.</p>
+        <p>Your last choices are kept in this browser so that the page opens the way you left it: the activities, how you chose the words, any words you typed or checked in the list, the version, the length, which letters Letter Trace traces, whether to show letter hints and how many choices to show. The sound files are kept too, so that they are not downloaded again. Nothing is kept anywhere else.</p>
         <p>What you add to a word (its sounds, your recording, your picture) is kept in this browser's storage for this site, until you remove it under My words on this device, in step 2. It is not uploaded.</p>
         <p class="row">
           <button type="button" class="btn btn-small" id="forget">Forget my choices</button>

@@ -7,7 +7,7 @@ const read = (name) => fs.readFileSync(path.join(root, name), 'utf8');
 
 describe('Learning Lab shell and cross-tool navigation accessibility', () => {
   const source = read('stem_lab/stem_tool_learning_lab.js');
-  const start = source.indexOf("  window.StemLab.registerTool('learningLab'");
+  const start = source.indexOf("window.StemLab.registerTool('learningLab'");
   const shell = source.slice(start);
   const routerStart = shell.indexOf('      switch (view) {');
   const errorStart = shell.indexOf('      } catch(e) {', routerStart);

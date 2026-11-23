@@ -11,7 +11,8 @@
 
   .paper { font-family: var(--font); color: var(--ink); background: var(--surface); }
   .paper h2 { color: var(--ink); margin: 0 0 3mm; font-size: 16pt; line-height: 1.2; }
-  .paper-sheet { break-after: page; page-break-after: always; }
+  .paper-teacher h2, .paper-teacher h3, .paper-sub { break-after: avoid; page-break-after: avoid; }
+  .paper-sheet + .paper-sheet { break-before: page; page-break-before: always; }
   .paper-teacher { break-before: page; page-break-before: always; break-after: auto; page-break-after: auto; }
 
   .paper-who { display: flex; gap: 8mm; align-items: flex-end; margin: 0 0 4mm; font-size: 12pt; }
@@ -29,10 +30,10 @@
   .paper-ccc td { padding: 3mm 2.5mm; border-bottom: 0.25mm solid var(--line-strong); vertical-align: middle; font-size: 13pt; }
   .paper-ccc tr { break-inside: avoid; page-break-inside: avoid; }
   .paper-ccc .pc-n { width: 9mm; font-size: 10pt; font-weight: 700; color: var(--muted); }
-  .paper-ccc .pc-look { width: 30%; font-weight: 700; border-right: 0.4mm dashed var(--ink); white-space: nowrap; }
-  .paper-ccc .pc-try { width: 32%; white-space: nowrap; }
-  .paper-ccc .pc-fix { width: 32%; }
-  .paper-blank { display: inline-block; width: 16mm; height: 0.9em; margin-left: 1.5mm; border-bottom: 0.45mm solid var(--ink); vertical-align: baseline; }
+  .paper-ccc .pc-look { width: 28%; font-weight: 700; border-right: 0.4mm dashed var(--ink); white-space: nowrap; }
+  .paper-ccc .pc-try { width: 37%; white-space: nowrap; }
+  .paper-ccc .pc-fix { width: 29%; }
+  .paper-blank { display: inline-block; width: 15mm; height: 0.9em; margin-left: 1.5mm; border-bottom: 0.45mm solid var(--ink); vertical-align: baseline; }
   .paper-blank-wide { width: 100%; max-width: 44mm; margin-left: 0; }
 
   .paper-key { margin: 0; padding: 0; list-style: none; column-gap: 8mm; columns: 2; font-variant-numeric: tabular-nums lining-nums; }

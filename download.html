@@ -47,7 +47,7 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:v
 @media(max-width:600px){.wrap{padding:24px 16px 60px}h1{font-size:26px}}
 @media(prefers-reduced-motion:reduce){.cta{transition:none}}
 @media(forced-colors:active){.cta,.warn,.ok,.quote{border:2px solid CanvasText}}
-.skip-link{position:absolute;left:-9999px;top:8px;z-index:999;background:#1e1b4b;color:#fff;padding:10px 16px;border-radius:8px;font-weight:700;text-decoration:none;}.skip-link:focus{left:12px;outline:3px solid #facc15;outline-offset:2px;}
+.skip-link{position:absolute;inset-inline-start:8px;top:8px;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;pointer-events:none;z-index:999;background:#1e1b4b;color:#fff;padding:10px 16px;border-radius:8px;font-weight:700;text-decoration:none;}.skip-link:focus{inset-inline-start:12px;width:auto;height:auto;overflow:visible;clip-path:none;white-space:normal;pointer-events:auto;outline:3px solid #facc15;outline-offset:2px;}
 </style>
 </head>
 <body>

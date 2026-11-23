@@ -1,0 +1,38 @@
+{
+  "message": "locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-board-move=\"bridge\"]')\u001b[22m\n",
+  "document": {
+    "hostId": "host",
+    "mode": "sync",
+    "roster": {
+      "mb-ccccdddd000000000002": {
+        "uid": "mb-ccccdddd000000000002",
+        "name": "Rowan"
+      },
+      "mb-ccccdddd000000000003": {
+        "uid": "mb-ccccdddd000000000003",
+        "name": "Sky"
+      }
+    },
+    "quizState": {
+      "isActive": false
+    }
+  },
+  "lastWrites": [],
+  "pages": [
+    {
+      "online": true,
+      "alerts": [],
+      "lastWrites": []
+    },
+    {
+      "online": true,
+      "alerts": [],
+      "lastWrites": []
+    },
+    {
+      "online": true,
+      "alerts": [],
+      "lastWrites": []
+    }
+  ]
+}

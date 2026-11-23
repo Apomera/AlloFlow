@@ -18,6 +18,7 @@
 <meta name="twitter:description" content="Teach the water cycle as a system, with a storm experiment that changes one variable at a time.">
 <link rel="stylesheet" href="shared.css">
 <link rel="stylesheet" href="tool-manual.css">
+<script src="tool-manual.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#manual-main">Skip to content</a>
@@ -33,7 +34,7 @@
     </div>
 </nav>
 
-<main id="manual-main" class="manual-page">
+<main id="manual-main" tabindex="-1" class="manual-page">
     <nav class="manual-crumbs" aria-label="Breadcrumb">
         <ol>
             <li><a href="./">AlloFlow</a></li>
@@ -111,7 +112,8 @@
 
     <section class="manual-block" id="modes" aria-labelledby="modes-heading">
         <h2 id="modes-heading">3. The five modes</h2>
-        <table class="manual-table" tabindex="0">
+        <div class="manual-table-scroll" role="region" aria-label="What each mode is for" tabindex="0">
+        <table class="manual-table">
             <caption>What each mode is for</caption>
             <thead>
                 <tr><th scope="col">Mode</th><th scope="col">What students do</th><th scope="col">Reach for it when</th></tr>
@@ -124,6 +126,7 @@
                 <tr><th scope="row">🌱 Water Worlds</th><td>Edit the ground cover of a valley, then run repeatable storms and watch the stream respond. Three depths: notice, investigate, and a water-accounting model.</td><td>A second, longer investigation once students can already explain infiltration &mdash; or a modelling unit in its own right.</td></tr>
             </tbody>
         </table>
+        </div>
         <p><strong>🎯 Focus Canvas</strong> strips the surrounding interface for projection, and
             <strong>⊕ Set baseline</strong> marks the current state so a later run can be compared
             against it. Both are worth showing students on day one.</p>
@@ -204,7 +207,8 @@
         <p>Storm Lab is the tool's experiment surface, and its design supports honest
             investigation: five named sliders plus six presets, with the presets acting as
             pre-built comparisons rather than shortcuts past the thinking.</p>
-        <table class="manual-table" tabindex="0">
+        <div class="manual-table-scroll" role="region" aria-label="The five controls" tabindex="0">
+        <table class="manual-table">
             <caption>The five controls</caption>
             <thead><tr><th scope="col">Control</th><th scope="col">What it represents</th></tr></thead>
             <tbody>
@@ -215,6 +219,7 @@
                 <tr><th scope="row">Antecedent soil saturation</th><td>How wet the ground already was. The variable students never think of, and the one that decides whether rain soaks in or runs off.</td></tr>
             </tbody>
         </table>
+        </div>
         <p>The six presets are <strong>Custom controls</strong>, <strong>Balanced baseline</strong>,
             <strong>Heatwave and dry ground</strong>, <strong>Heavy storm</strong>, <strong>Forest
             and permeable ground</strong> and <strong>Urban runoff</strong>.</p>

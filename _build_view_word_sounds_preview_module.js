@@ -27,6 +27,7 @@ const moduleSrc = `/**
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.WordSoundsPreviewView) {
     console.log('[CDN] ViewWordSoundsPreviewModule already loaded, skipping');
     return;

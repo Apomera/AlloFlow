@@ -72,6 +72,7 @@ function main() {
     const overrides = byStem[stem];
     const seenIds = new Set();
     const isPraxis60 = !stem.startsWith('ap_') && stem !== 'parapro' && stem !== 'eppp';
+    const balanceAnswers = isPraxis60 || stem === 'ap_chemistry_foundation_pilot';
     let libChanged = 0;
     let globalIdx = 0;
     const promptSet = new Set();
@@ -112,7 +113,7 @@ function main() {
             }
           }
         }
-        if (isPraxis60) {
+        if (balanceAnswers) {
           next = rotateChoicesToTarget(next, globalIdx % 4);
         }
         globalIdx += 1;
@@ -146,6 +147,9 @@ function main() {
     if (unknownIds.length) problems.push(`${stem}: unknown check id(s): ${unknownIds.join(', ')}`);
     if (isPraxis60 && ansDist.join('/') !== '15/15/15/15') {
       problems.push(`${stem}: expected 15/15/15/15 answer balance, got ${ansDist.join('/')}`);
+    }
+    if (stem === 'ap_chemistry_foundation_pilot' && ansDist.join('/') !== '7/7/7/6') {
+      problems.push(`${stem}: expected 7/7/7/6 answer balance, got ${ansDist.join('/')}`);
     }
 
     console.log(stem.padEnd(48), String(Object.keys(overrides).length).padStart(3) + ' overrides', String(libChanged).padStart(3) + ' changed', 'ansDist:', ansDist.join('/'));

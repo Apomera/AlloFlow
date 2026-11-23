@@ -150,7 +150,7 @@ if (typeof window !== 'undefined') window.StemLab = window.StemLab || {
       '.playlab-starter-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:#bae6fd;margin-right:2px}',
       '.playlab-starter-chip{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:44px;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:800;background:#0f172a;border:1px solid #64748b;color:#f8fafc;cursor:pointer;transition:background-color .15s,border-color .15s,color .15s}',
       '.playlab-starter-chip:hover:not(:disabled){background:#1e293b;border-color:#7dd3fc;color:#ffffff}',
-      '.playlab-starter-chip[aria-pressed="true"]{background:#0284c7;border-color:#bae6fd;color:#ffffff}',
+      '.playlab-starter-chip[aria-pressed="true"]{background:#0369a1;border-color:#bae6fd;color:#ffffff}',
       '.playlab-starter-chip:disabled{opacity:.6;cursor:not-allowed}',
       '.playlab-stage-legend{position:relative;z-index:1;margin-top:8px;padding:7px 10px;border-radius:10px;background:rgba(2,6,23,.62);border:1px solid rgba(148,163,184,.34);display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;font-size:11px;color:#e2e8f0}',
       '.playlab-legend-item{display:inline-flex;align-items:center;gap:6px;font-weight:700;min-width:0}',
@@ -5446,7 +5446,7 @@ if (typeof window !== 'undefined') window.StemLab = window.StemLab || {
                 disabled: !!d.runActive,
                 'aria-busy': !!d.runActive,
                 'data-pl-focusable': 'true',
-                'aria-label': d.runActive ? 'Play is running' : 'Run the active play with animation',
+                'aria-label': d.runActive ? 'Running play animation' : 'Run Play — animate the active play',
                 className: 'playlab-run-button'
               }, d.runActive ? '⏱ Running…' : '▶ Run Play'),
               d.runOutcome ? h('span', {

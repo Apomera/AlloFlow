@@ -495,11 +495,135 @@ function itemsForSection(unitNumber, sectionNumber) {
   return items.filter((item) => item.unitNumber === unitNumber && topicIds.includes(item.topicRouteId));
 }
 
+const sectionExamples = {
+  'ap-calc-ab-ch-01-section-01': [
+    'Evaluate lim (x^2 - 9)/(x - 3) as x approaches 3 using algebraic manipulation.',
+    'Factor the numerator as (x - 3)(x + 3) and cancel (x - 3) for nearby x not equal to 3.',
+    'Evaluate the reduced expression x + 3 as x approaches 3 to obtain 6.',
+  ],
+  'ap-calc-ab-ch-01-section-02': [
+    'Classify the discontinuity of f(x) = (x^2 - 4)/(x - 2) at x = 2 and state how to make f continuous.',
+    'Both one-sided limits equal lim (x + 2) = 4 as x approaches 2, so the two-sided limit exists while f(2) is undefined.',
+    'Thus x = 2 is a removable discontinuity; defining f(2) = 4 satisfies lim f(x) = f(2).',
+  ],
+  'ap-calc-ab-ch-01-section-03': [
+    'Use the Intermediate Value Theorem to show f(x) = x^3 + x - 1 has at least one root on [0, 1].',
+    'Because f is a polynomial, it is continuous on the closed interval [0, 1], with f(0) = -1 and f(1) = 1.',
+    'Since -1 < 0 < 1, IVT guarantees at least one c in (0, 1) where f(c) = 0.',
+  ],
+  'ap-calc-ab-ch-02-section-01': [
+    "Use the limit definition to find f'(2) for f(x) = x^2 and justify continuity at x = 2.",
+    'Evaluate lim [(2 + h)^2 - 4]/h = lim (4h + h^2)/h = lim (4 + h) = 4 as h approaches 0.',
+    "Because f'(2) = 4 exists, f is differentiable at x = 2, which automatically guarantees continuity at x = 2.",
+  ],
+  'ap-calc-ab-ch-02-section-02': [
+    'Differentiate g(x) = 4x^3 - 6x^(1/2) + 9 using linearity and the power rule.',
+    'Differentiate term by term: d/dx(4x^3) = 12x^2, d/dx(-6x^(1/2)) = -3x^(-1/2), and d/dx(9) = 0.',
+    "Combine the terms to obtain g'(x) = 12x^2 - 3/sqrt(x).",
+  ],
+  'ap-calc-ab-ch-02-section-03': [
+    'Differentiate h(x) = x^2 e^x using the product rule and basic transcendental derivatives.',
+    "Label u = x^2 (u' = 2x) and v = e^x (v' = e^x), then apply (uv)' = u'v + uv'.",
+    "Simplify h'(x) = 2x e^x + x^2 e^x = e^x(x^2 + 2x).",
+  ],
+  'ap-calc-ab-ch-03-section-01': [
+    'Differentiate x^2 + y^2 = 25 implicitly and find the tangent slope at (3, 4).',
+    'Apply the chain rule to y^2 to obtain 2x + 2y(dy/dx) = 0, then solve for dy/dx = -x/y.',
+    'Substitute (3, 4) to get tangent slope dy/dx = -3/4.',
+  ],
+  'ap-calc-ab-ch-03-section-02': [
+    "Given f(2) = 5 and f'(2) = 3 for an invertible differentiable function f, find (f^-1)'(5).",
+    'Match corresponding coordinates: because f(2) = 5, we know f^-1(5) = 2.',
+    "Apply the inverse derivative formula (f^-1)'(5) = 1 / f'(f^-1(5)) = 1 / f'(2) = 1/3.",
+  ],
+  'ap-calc-ab-ch-03-section-03': [
+    "Find the second derivative f''(x) of f(x) = sin(2x) by applying the chain rule twice.",
+    "Differentiate once to get f'(x) = cos(2x) * 2 = 2 cos(2x).",
+    "Differentiate again using the chain rule to get f''(x) = 2(-sin(2x)) * 2 = -4 sin(2x).",
+  ],
+  'ap-calc-ab-ch-04-section-01': [
+    'A particle moves with position s(t) = t^3 - 6t^2 + 9t meters (t in seconds). Determine whether speed is increasing at t = 4.',
+    "Compute velocity v(t) = s'(t) = 3t^2 - 12t + 9 so v(4) = 9 m/s, and acceleration a(t) = v'(t) = 6t - 12 so a(4) = 12 m/s^2.",
+    'Because v(4) > 0 and a(4) > 0 share the same sign, the particle is speeding up at t = 4 seconds.',
+  ],
+  'ap-calc-ab-ch-04-section-02': [
+    'A circle radius grows at dr/dt = 2 cm/s. Find the rate of change of area dA/dt when r = 3 cm.',
+    'Differentiate A = pi r^2 with respect to time t before substituting instant values: dA/dt = 2 pi r (dr/dt).',
+    'Substitute r = 3 cm and dr/dt = 2 cm/s to obtain dA/dt = 12 pi cm^2/s.',
+  ],
+  'ap-calc-ab-ch-04-section-03': [
+    "Linearize f(x) = sqrt(x) at a = 9 to approximate sqrt(9.2), and evaluate lim (e^x - 1)/x as x approaches 0 with L'Hospital's Rule.",
+    "Using f(9) = 3 and f'(9) = 1/6, L(9.2) = 3 + (1/6)(0.2) = 3.033 approximates sqrt(9.2).",
+    "Because numerator and denominator both approach 0 as x approaches 0, L'Hospital's Rule yields lim e^x / 1 = 1.",
+  ],
+  'ap-calc-ab-ch-05-section-01': [
+    'Verify the Mean Value Theorem for f(x) = x^2 on [1, 5] and find the guaranteed number c.',
+    'Because f is continuous on [1, 5] and differentiable on (1, 5), the average rate of change is [25 - 1]/(5 - 1) = 6.',
+    "Solve f'(c) = 2c = 6 to obtain c = 3, which lies inside (1, 5).",
+  ],
+  'ap-calc-ab-ch-05-section-02': [
+    'Use the First Derivative Test to classify the local extrema of f(x) = x^3 - 3x.',
+    "Solve f'(x) = 3x^2 - 3 = 3(x - 1)(x + 1) = 0 for critical numbers x = -1 and x = 1.",
+    "Because f' changes from + to - at x = -1 (local max 2) and from - to + at x = 1 (local min -2), both are local extrema.",
+  ],
+  'ap-calc-ab-ch-05-section-03': [
+    'Maximize the area of a rectangle with perimeter 20 and confirm concavity with the Second Derivative Test.',
+    "Model A(x) = x(10 - x) = 10x - x^2 on 0 <= x <= 10 and solve A'(x) = 10 - 2x = 0 to get x = 5.",
+    "Because A''(x) = -2 < 0 (concave down) and endpoint areas are 0, the maximum area is 25 for a 5 by 5 square.",
+  ],
+  'ap-calc-ab-ch-06-section-01': [
+    'Approximate the definite integral of f(x) = x^2 on [0, 4] using a left Riemann sum with n = 2 equal subintervals.',
+    'Compute uniform width Delta x = (4 - 0)/2 = 2 and sample at left endpoints x = 0 and x = 2.',
+    'Sum L_2 = 2[f(0) + f(2)] = 2(0 + 4) = 8, which underestimates because x^2 is increasing on [0, 4].',
+  ],
+  'ap-calc-ab-ch-06-section-02': [
+    'Differentiate G(x) = integral from 2 to x^2 of cos(t) dt using the Fundamental Theorem of Calculus.',
+    'Apply FTC Part 1 together with the chain rule for the composite upper limit u(x) = x^2 (du/dx = 2x).',
+    "Evaluate the integrand at x^2 and multiply by 2x to obtain G'(x) = 2x cos(x^2).",
+  ],
+  'ap-calc-ab-ch-06-section-03': [
+    'Evaluate the definite integral from 0 to 1 of 2x(x^2 + 1)^3 dx using u-substitution.',
+    'Set u = x^2 + 1 so du = 2x dx, and change bounds from x = 0, 1 to u = 1, 2.',
+    'Integrate u^3 from 1 to 2 to get [u^4/4] from 1 to 2 = 16/4 - 1/4 = 15/4.',
+  ],
+  'ap-calc-ab-ch-07-section-01': [
+    'Verify that y(x) = 3e^(2x) is the particular solution to dy/dx = 2y with y(0) = 3.',
+    'Differentiate y(x) = 3e^(2x) to get dy/dx = 6e^(2x), which equals 2y = 2(3e^(2x)) for every x.',
+    'Evaluate y(0) = 3e^0 = 3 to confirm the initial condition holds.',
+  ],
+  'ap-calc-ab-ch-07-section-02': [
+    'Determine slope-field segment slopes for dy/dx = x - y at (2, 2), (2, 0), and (0, 2).',
+    'Substitute each pair into x - y: slopes are 0 at (2, 2), +2 at (2, 0), and -2 at (0, 2).',
+    'All segments along the diagonal line y = x are horizontal because dy/dx = 0 whenever y = x.',
+  ],
+  'ap-calc-ab-ch-07-section-03': [
+    'Solve the separable differential equation dy/dx = 2y with initial condition y(0) = 3.',
+    'Separate variables as (1/y) dy = 2 dx (y != 0) and integrate to get ln|y| = 2x + C, giving y = A e^(2x).',
+    'Apply y(0) = 3 to find A = 3, yielding the particular solution y = 3e^(2x).',
+  ],
+  'ap-calc-ab-ch-08-section-01': [
+    'Find the average value of f(x) = 3x^2 on [0, 2] and distinguish it from total accumulation.',
+    'Compute total accumulation via the definite integral from 0 to 2 of 3x^2 dx = [x^3] from 0 to 2 = 8.',
+    'Divide by interval width 2 - 0 = 2 to obtain average value 8 / 2 = 4.',
+  ],
+  'ap-calc-ab-ch-08-section-02': [
+    'Find the area enclosed between y = x and y = x^2 on [0, 1].',
+    'Identify intersections at x = 0 and x = 1 and note that y = x lies above y = x^2 on [0, 1].',
+    'Integrate (x - x^2) from 0 to 1 to obtain [x^2/2 - x^3/3] from 0 to 1 = 1/2 - 1/3 = 1/6.',
+  ],
+  'ap-calc-ab-ch-08-section-03': [
+    'Find the volume when the region between y = x and y = x^2 on [0, 1] revolves around the x-axis.',
+    'Set washer radii from the axis: outer radius R(x) = x and inner radius r(x) = x^2.',
+    'Evaluate pi * integral from 0 to 1 of (x^2 - x^4) dx = pi(1/3 - 1/5) = 2pi/15.',
+  ],
+};
+
 const chapters = units.map((unit) => {
   const sections = [1, 2, 3].map((number) => {
     const sectionTopics = unit.topics.filter((entry) => sectionNumberForTopic(unit, entry.id) === number);
     const sectionItems = itemsForSection(unit.number, number);
     const id = sectionId(unit.number, number);
+    const secExample = sectionExamples[id] || unit.example;
     return {
       id,
       title: unit.shortLabel + ': ' + (number === 1 ? 'foundations' : number === 2 ? 'representation and reasoning' : 'transfer and synthesis'),
@@ -510,11 +634,11 @@ const chapters = units.map((unit) => {
       blocks: [
         paragraph(unit.overview),
         list(sectionTopics.map((entry) => entry.label + ': ' + entry.studyMove)),
-        paragraph('Worked-example sequence: ' + unit.example.join(' ')),
+        paragraph('Worked-example sequence: ' + secExample.join(' ')),
         list(sectionTopics.map((entry) => 'Boundary check: ' + entry.boundary)),
         paragraph('Retrieval move: explain the selected procedure, carry out the mathematics, and state why the result matches the representation or context.'),
       ],
-      workedExample: { prompt: unit.example[0], steps: unit.example.slice(1), original: true },
+      workedExample: { prompt: secExample[0], steps: secExample.slice(1), original: true },
       misconceptionGuidance: sectionTopics.map((entry) => ({ topicRouteId: entry.id, misconception: entry.boundary, repair: entry.studyMove })),
       knowledgeCheck: {
         id: id + '-check',
@@ -704,38 +828,197 @@ const quickReference = units.map((unit) => ({
   releaseEligible: false,
 }));
 
-const diagrams = units.map((unit) => ({
-  id: 'ap-calc-ab-flow-' + String(unit.number).padStart(2, '0'),
-  title: unit.shortLabel + ' reasoning flow',
-  type: 'optional-concept-flow',
-  spec: {
+const calcDiagramSpecs = [
+  {
+    unitNumber: 1,
+    title: 'Limits, continuity classification, and Intermediate Value Theorem flow',
+    shortAlt: 'Four-step Unit 1 flow from one-sided limits to algebraic manipulation, continuity classification, and IVT existence.',
     nodes: [
-      { id: 'representation', label: 'Identify representation and givens' },
-      { id: 'procedure', label: 'Select procedure and verify conditions' },
-      { id: 'execution', label: 'Execute with notation and units' },
-      { id: 'interpretation', label: 'Interpret, justify, and check' },
+      { id: 'one-sided', label: 'Compare left- and right-hand limits', detail: 'Inspect nearby behavior from both sides of c using tables, graphs, or expressions before evaluating f(c).' },
+      { id: 'algebra', label: 'Resolve indeterminate forms algebraically', detail: 'Factor, rationalize, or apply limit laws and dominant-term analysis for removable holes and limits at infinity.' },
+      { id: 'continuity', label: 'Verify three-part continuity at c', detail: 'Check that f(c) is defined, the two-sided limit exists, and lim f(x) = f(c) to separate removable, jump, and infinite discontinuities.' },
+      { id: 'ivt', label: 'Apply IVT on a closed interval', detail: 'Once continuity on [a, b] is confirmed and k lies between f(a) and f(b), guarantee at least one c in (a, b) with f(c) = k.' },
     ],
     edges: [
-      { from: 'representation', to: 'procedure' },
-      { from: 'procedure', to: 'execution' },
-      { from: 'execution', to: 'interpretation' },
+      { id: 'one-sided-to-algebra', from: 'one-sided', to: 'algebra', label: 'motivates simplification via' },
+      { id: 'algebra-to-continuity', from: 'algebra', to: 'continuity', label: 'supplies limit values for' },
+      { id: 'continuity-to-ivt', from: 'continuity', to: 'ivt', label: 'satisfies hypothesis for' },
     ],
   },
-  accessibility: {
-    textEquivalent: ['Identify the representation and givens.', 'Select a procedure and verify conditions.', 'Execute with notation and units.', 'Interpret, justify, and check the result.'],
-    fallbackMode: 'ordered-text-equivalent',
+  {
+    unitNumber: 2,
+    title: 'Limit definition of derivative to differentiation rule selection flow',
+    shortAlt: 'Four-step Unit 2 flow from average rate of change to instantaneous derivative, differentiability checks, and differentiation rules.',
+    nodes: [
+      { id: 'secant', label: 'Frame average rate via difference quotient', detail: 'Write [f(a+h)-f(a)]/h or [f(x)-f(a)]/(x-a) to connect secant slope with contextual average rate of change.' },
+      { id: 'tangent', label: 'Take the limit for instantaneous slope', detail: 'Evaluate the limit as h approaches 0 to define f prime(a) as tangent-line slope and instantaneous rate.' },
+      { id: 'diff-cont', label: 'Check differentiability and continuity', detail: 'Confirm smooth behavior with no corners, cusps, vertical tangents, or discontinuities; differentiability implies continuity.' },
+      { id: 'rules', label: 'Apply power, product, quotient, and trig rules', detail: 'Match expression structure to linearity, transcendental formulas, and ordered product or quotient rules.' },
+    ],
+    edges: [
+      { id: 'secant-to-tangent', from: 'secant', to: 'tangent', label: 'passes to the limit as' },
+      { id: 'tangent-to-diff-cont', from: 'tangent', to: 'diff-cont', label: 'requires existence checked by' },
+      { id: 'diff-cont-to-rules', from: 'diff-cont', to: 'rules', label: 'enables efficient calculation with' },
+    ],
   },
-  unscored: true,
-  officialItem: false,
-  releaseEligible: false,
-}));
+  {
+    unitNumber: 3,
+    title: 'Composite, implicit, inverse, and higher-order differentiation flow',
+    shortAlt: 'Four-step Unit 3 flow from structural decomposition to chain rule, implicit and inverse differentiation, and higher-order derivatives.',
+    nodes: [
+      { id: 'structure', label: 'Decompose outer and inner structure', detail: 'Read composite functions from outside inward and distinguish explicit y = f(x) from implicit F(x, y) = c.' },
+      { id: 'chain', label: 'Execute chain rule with inner derivative', detail: 'Differentiate the outer layer while keeping the inner expression unchanged, then multiply by the inner derivative.' },
+      { id: 'implicit-inv', label: 'Handle implicit y terms and inverse slopes', detail: 'Attach dy/dx whenever differentiating y with respect to x, and use reciprocal slopes 1/f prime(f^-1(a)) for inverses.' },
+      { id: 'higher', label: 'Differentiate repeatedly and track units', detail: 'Compute second and higher derivatives cleanly while interpreting how each order tracks rate of change of the previous derivative.' },
+    ],
+    edges: [
+      { id: 'structure-to-chain', from: 'structure', to: 'chain', label: 'determines layer order for' },
+      { id: 'chain-to-implicit-inv', from: 'chain', to: 'implicit-inv', label: 'generalizes directly to' },
+      { id: 'implicit-inv-to-higher', from: 'implicit-inv', to: 'higher', label: 'extends to successive rates via' },
+    ],
+  },
+  {
+    unitNumber: 4,
+    title: 'Contextual derivatives, rectilinear motion, related rates, and local linearity flow',
+    shortAlt: 'Four-step Unit 4 flow from contextual units and motion signs to related rates, tangent-line approximation, and L Hospital Rule.',
+    nodes: [
+      { id: 'context-units', label: 'Translate rate sign and compound units', detail: 'Interpret derivative values as output units per input unit at a specific instant, never as total accumulated quantity.' },
+      { id: 'motion', label: 'Separate position, velocity, speed, and acceleration', detail: 'Compare signs of v(t) = s prime(t) and a(t) = v prime(t): speed increases when velocity and acceleration share a sign.' },
+      { id: 'related-rates', label: 'Differentiate geometric equation in time first', detail: 'Relate changing quantities with one equation, differentiate with respect to t, and substitute instant values only afterward.' },
+      { id: 'linear-lhopital', label: 'Approximate locally or verify indeterminate limits', detail: 'Use tangent line L(x) = f(a) + f prime(a)(x-a) near a, and verify 0/0 or infinity/infinity before applying L Hospital Rule.' },
+    ],
+    edges: [
+      { id: 'context-to-motion', from: 'context-units', to: 'motion', label: 'anchors sign and unit meaning in' },
+      { id: 'motion-to-related', from: 'motion', to: 'related-rates', label: 'extends time-rate modeling to' },
+      { id: 'related-to-linear', from: 'related-rates', to: 'linear-lhopital', label: 'pairs local rates with' },
+    ],
+  },
+  {
+    unitNumber: 5,
+    title: 'MVT, critical-point tests, concavity, and optimization justification flow',
+    shortAlt: 'Four-step Unit 5 flow from MVT and EVT hypotheses to first-derivative sign charts, second-derivative concavity, and closed-interval optimization.',
+    nodes: [
+      { id: 'theorems', label: 'Verify MVT and EVT hypotheses', detail: 'Confirm continuity on [a, b] and differentiability on (a, b) before guaranteeing an average-instantaneous slope match or global extrema.' },
+      { id: 'first-deriv', label: 'Find critical points and build f prime sign chart', detail: 'Solve f prime(x) = 0 or undefined, then check sign changes of f prime to identify increasing/decreasing intervals and local extrema.' },
+      { id: 'second-deriv', label: 'Analyze concavity and inflection via f double prime', detail: 'Test sign changes of f double prime for inflection points and confirm local extrema where f prime = 0 using the Second Derivative Test.' },
+      { id: 'optimize', label: 'Compare candidates and endpoints for global extrema', detail: 'Evaluate the objective function at all feasible interior critical points and domain endpoints, then state a contextual conclusion.' },
+    ],
+    edges: [
+      { id: 'theorems-to-first', from: 'theorems', to: 'first-deriv', label: 'establishes existence before' },
+      { id: 'first-to-second', from: 'first-deriv', to: 'second-deriv', label: 'refines curve shape with' },
+      { id: 'second-to-optimize', from: 'second-deriv', to: 'optimize', label: 'justifies global decisions in' },
+    ],
+  },
+  {
+    unitNumber: 6,
+    title: 'Riemann sums, definite integral properties, FTC, and u-substitution flow',
+    shortAlt: 'Four-step Unit 6 flow from Riemann sums to definite integral properties, Fundamental Theorem of Calculus, and antiderivative substitution.',
+    nodes: [
+      { id: 'riemann', label: 'Accumulate change via Riemann sums', detail: 'Multiply each subinterval width Delta x by left, right, midpoint, or trapezoidal heights and interpret signed area with units.' },
+      { id: 'properties', label: 'Apply integral additivity and bound orientation', detail: 'Split or combine adjacent intervals, factor constants, and negate the integral whenever upper and lower limits reverse.' },
+      { id: 'ftc', label: 'Link rates and accumulation through FTC', detail: 'Differentiate accumulation functions G(x) with the chain rule on composite bounds, and evaluate net change via F(b) - F(a).' },
+      { id: 'usub', label: 'Select antiderivatives and u-substitution', detail: 'Match an inner composite expression u with its differential du, convert definite limits to u-bounds, and include +C for indefinite integrals.' },
+    ],
+    edges: [
+      { id: 'riemann-to-properties', from: 'riemann', to: 'properties', label: 'passes to the definite integral with' },
+      { id: 'properties-to-ftc', from: 'properties', to: 'ftc', label: 'simplifies evaluation using' },
+      { id: 'ftc-to-usub', from: 'ftc', to: 'usub', label: 'requires antiderivatives found by' },
+    ],
+  },
+  {
+    unitNumber: 7,
+    title: 'Differential equation modeling, slope fields, separation, and particular solutions flow',
+    shortAlt: 'Four-step Unit 7 flow from rate-equation modeling to slope-field behavior, separation of variables, and initial-condition particular solutions.',
+    nodes: [
+      { id: 'model-de', label: 'Translate proportional rates into dy/dx', detail: 'Convert verbal statements about rate of change into a differential equation, checking equilibrium solutions where dy/dx = 0.' },
+      { id: 'slope-field', label: 'Sketch and read local slope fields', detail: 'Evaluate dy/dx at grid coordinates to identify horizontal isoclines, sign regions, and qualitative long-term trajectories.' },
+      { id: 'separate', label: 'Separate y and x factors cleanly', detail: 'Group all y factors with dy and x factors with dx, integrate both sides, and add a single constant of integration C.' },
+      { id: 'initial-cond', label: 'Apply initial condition for particular solution', detail: 'Substitute (x_0, y_0) to determine C, select the matching algebraic branch, and verify the solution satisfies both dy/dx and y(x_0).' },
+    ],
+    edges: [
+      { id: 'model-to-slope', from: 'model-de', to: 'slope-field', label: 'visualizes local trajectories via' },
+      { id: 'slope-to-separate', from: 'slope-field', to: 'separate', label: 'guides analytical solving by' },
+      { id: 'separate-to-initial', from: 'separate', to: 'initial-cond', label: 'narrows the general family through' },
+    ],
+  },
+  {
+    unitNumber: 8,
+    title: 'Average value, net accumulation, area between curves, and solids of revolution flow',
+    shortAlt: 'Four-step Unit 8 flow from average value and net change to area between curves, cross-sectional slices, and disc or washer volumes.',
+    nodes: [
+      { id: 'avg-net', label: 'Compute average value and net vs. total change', detail: 'Divide definite accumulation by (b - a) for average value, add initial value to net rate for final amount, and integrate |v(t)| for total distance.' },
+      { id: 'area', label: 'Set up upper-minus-lower or right-minus-left area', detail: 'Find intersection bounds first and split integrals wherever curves cross so signed areas never cancel.' },
+      { id: 'cross-sec', label: 'Express known cross-section area A(x) or A(y)', detail: 'Write the cross-sectional slice area (square, semicircle, triangle) directly from base length before integrating along the perpendicular axis.' },
+      { id: 'washers', label: 'Measure disc and washer radii from the axis', detail: 'Compute outer radius R and inner radius r relative to the stated axis of revolution and integrate pi(R^2 - r^2) with cubic units.' },
+    ],
+    edges: [
+      { id: 'avg-to-area', from: 'avg-net', to: 'area', label: 'generalizes 1D accumulation to 2D' },
+      { id: 'area-to-cross', from: 'area', to: 'cross-sec', label: 'supplies base lengths for 3D' },
+      { id: 'cross-to-washers', from: 'cross-sec', to: 'washers', label: 'specializes circular slices into' },
+    ],
+  },
+];
 
-const diagramPlacements = units.map((unit) => ({
+const diagrams = units.map((unit, index) => {
+  const spec = calcDiagramSpecs[index];
+  const textEquivalent = spec.nodes.map((node) => `${node.label}: ${node.detail}`);
+  return {
+    id: 'ap-calc-ab-flow-' + String(unit.number).padStart(2, '0'),
+    chapterId: chapterId(unit.number),
+    domainId: unit.id,
+    title: spec.title,
+    type: 'optional-concept-flow',
+    diagramType: 'directed-concept-flow',
+    learnerPurpose: `Trace the Unit ${unit.number} AP Calculus AB reasoning sequence from problem representation to justified mathematical conclusion.`,
+    caption: `An original AP Calculus AB Unit ${unit.number} concept flow summarizing ${spec.title.toLowerCase()}.`,
+    spec: {
+      format: 'alloflow-diagram-v1',
+      layout: 'left-to-right',
+      nodes: spec.nodes,
+      edges: spec.edges,
+      renderingHints: {
+        connectorStyle: 'arrow',
+        allowHorizontalScroll: true,
+        minimumTextSize: 'user-scalable',
+      },
+    },
+    accessibility: {
+      essentialVisualContent: false,
+      shortAlt: spec.shortAlt,
+      longDescription: 'Read from left to right. ' + spec.nodes.map((node) => node.detail).join(' '),
+      textEquivalent,
+      readingOrder: spec.nodes.map((node) => node.id),
+      colorIndependent: true,
+      shapeIndependentLabels: true,
+      fallbackMode: 'ordered-text-equivalent',
+      independentReviewStatus: 'pending',
+    },
+    unscored: true,
+    officialItem: false,
+    releaseEligible: false,
+    reviewStatus: 'source-reviewed-editorial-pass',
+    expertReviewStatus: 'pending',
+    rights: {
+      originalSpecification: true,
+      officialFigureReproduced: false,
+      sourceFigureReproduced: false,
+      thirdPartyArtworkIncluded: false,
+    },
+  };
+});
+
+const diagramPlacements = units.map((unit, index) => ({
   id: 'ap-calc-ab-placement-' + String(unit.number).padStart(2, '0'),
   diagramId: 'ap-calc-ab-flow-' + String(unit.number).padStart(2, '0'),
+  chapterId: chapterId(unit.number),
   sectionId: sectionId(unit.number, 1),
+  position: 'after-section-content',
+  learnerPurpose: diagrams[index].learnerPurpose,
   fallbackMode: 'diagram-text-equivalent',
   requiredForComprehension: false,
+  unscored: true,
+  reviewStatus: 'source-reviewed-editorial-pass',
+  accessibilityReviewStatus: 'pending-independent-review',
   releaseEligible: false,
 }));
 
@@ -744,41 +1027,145 @@ const workshopSeeds = [
     title: 'Limits, continuity, and theorem conditions',
     scenario: 'An original piecewise function is described by a formula on two intervals and a separately defined joining value.',
     parts: ['Determine a two-sided limit at the join.', 'Classify continuity and identify a repair if possible.', 'State whether IVT can justify a target value on a named interval.', 'Explain which theorem condition controls the conclusion.'],
+    responsePlanning: [
+      'Evaluate the left-hand and right-hand limits separately at the join point before stating a two-sided limit.',
+      'Compare the two-sided limit against the defined point value f(c) to classify removable, jump, or infinite discontinuity.',
+      'Verify continuity on the closed interval [a, b] and confirm the target value lies strictly between f(a) and f(b) before invoking IVT.',
+      'Write formal limit notation lim_{x->c-} and lim_{x->c+} rather than substituting undefined expressions directly.',
+    ],
+    selfCheck: [
+      'Both one-sided limits at the join are computed explicitly and compared.',
+      'Continuity classification cites all three conditions (defined value, finite limit, equality).',
+      'IVT justification explicitly states continuity on [a, b] and the endpoint inequality.',
+      'Any proposed repair redefines only the point value when a removable hole exists.',
+      'No score or official rubric claim is made.',
+    ],
   },
   {
     title: 'Derivative definition and rule selection',
     scenario: 'An original table and formula describe the same differentiable quantity near one input.',
     parts: ['Write a derivative as a difference-quotient limit.', 'Estimate the derivative from the table.', 'Differentiate the formula using appropriate rules.', 'Reconcile the numerical and analytical representations.'],
+    responsePlanning: [
+      'Set up lim_{h->0} [f(a+h) - f(a)] / h or lim_{x->a} [f(x) - f(a)] / (x - a) at the named input.',
+      'Select the narrowest symmetric or adjacent interval in the table to compute a difference-quotient estimate with units.',
+      'Identify product, quotient, or power structure before differentiating the symbolic formula term by term.',
+      'Compare the analytical derivative at the point against the tabular secant estimate and account for curvature differences.',
+    ],
+    selfCheck: [
+      'Limit notation stays attached until the algebraic simplification eliminates division by zero.',
+      'Tabular derivative estimate shows the exact difference quotient before simplifying.',
+      'Symbolic rule choice (power, product, or quotient) matches the algebraic structure cleanly.',
+      'Numerical estimate and analytical value carry matching units and a clear reconciliation.',
+      'No score or official rubric claim is made.',
+    ],
   },
   {
     title: 'Composite and implicit derivative reasoning',
     scenario: 'An original implicit relation defines a branch y as a function of x near a stated point.',
     parts: ['Find dy/dx implicitly.', 'Evaluate the slope at the point.', 'Find a second derivative or derivative of a related composition.', 'Explain where the procedure requires a nonzero denominator.'],
+    responsePlanning: [
+      'Differentiate every term with respect to x, attaching dy/dx via the chain rule whenever differentiating a y-expression.',
+      'Collect all dy/dx terms on one side, factor out dy/dx, and isolate the quotient before substituting the point coordinates.',
+      'Differentiate dy/dx again using quotient/product rules and substitute the expression for dy/dx back into d^2y/dx^2.',
+      'Inspect the denominator of dy/dx to identify vertical tangents or points where the implicit branch fails to give a finite slope.',
+    ],
+    selfCheck: [
+      'Every y-term differentiation includes the inner chain-rule factor dy/dx.',
+      'The point (x0, y0) is verified on the relation and substituted only after isolating dy/dx.',
+      'Second-derivative work replaces dy/dx with its explicit expression or evaluated value cleanly.',
+      'Domain restriction explains why a zero denominator prevents a finite derivative.',
+      'No score or official rubric claim is made.',
+    ],
   },
   {
     title: 'Contextual rates and local approximation',
     scenario: 'A sensor records the changing radius and volume of an original container model.',
     parts: ['Interpret a derivative with units.', 'Relate two rates by differentiating a geometric equation.', 'Use a tangent-line approximation at a nearby input.', 'State why the approximation is local.'],
+    responsePlanning: [
+      'State the contextual meaning of the derivative including the quantity, sign (increasing/decreasing), time/input instant, and compound units.',
+      'Differentiate the geometric formula implicitly with respect to time t before substituting instantaneous radius and rate values.',
+      'Build the linearization L(x) = f(a) + f\'(a)(x - a) from the base point and rate, then evaluate at the nearby target input.',
+      'Use concavity (sign of the second derivative) and step size |x - a| to explain why tangent accuracy degrades away from a.',
+    ],
+    selfCheck: [
+      'Contextual rate statement includes quantity, direction, instant, and exact units.',
+      'Related-rates equation is differentiated with respect to t before plugging in changing values.',
+      'Linearization clearly states the anchor point, slope, and approximate output with units.',
+      'Locality explanation connects curvature or concavity to over-/underestimation behavior.',
+      'No score or official rubric claim is made.',
+    ],
   },
   {
     title: 'Function analysis and optimization',
     scenario: 'An original derivative sign table describes a cost-efficiency function over a closed interval.',
     parts: ['Identify increasing and decreasing intervals.', 'Justify local extrema from sign changes.', 'Compare absolute-extremum candidates.', 'Formulate and justify one contextual optimization conclusion.'],
+    responsePlanning: [
+      'Map intervals where f\'(x) > 0 (increasing) and f\'(x) < 0 (decreasing) directly from the sign table.',
+      'Justify local maxima and minima strictly by sign changes in f\'(x) rather than merely citing f\'(c) = 0.',
+      'Apply the Candidates Test on the closed interval by evaluating f(x) at both endpoints and every interior critical point.',
+      'Translate the winning candidate into a clear contextual optimization recommendation with units.',
+    ],
+    selfCheck: [
+      'Monotonicity claims cite the sign of f\'(x) explicitly rather than vague pronoun references.',
+      'Local extremum justifications specify the direction of the sign change in f\'(x).',
+      'Absolute extremum reasoning checks both closed-interval endpoints and all critical numbers.',
+      'Final optimization statement answers the exact contextual quantity requested with units.',
+      'No score or official rubric claim is made.',
+    ],
   },
   {
     title: 'Accumulation and the Fundamental Theorem',
     scenario: 'An original rate table describes material entering and leaving a process over time.',
     parts: ['Construct a Riemann-sum estimate.', 'Interpret the signed accumulation with units.', 'Differentiate a related accumulation function.', 'Use integral properties to combine intervals.'],
+    responsePlanning: [
+      'List each subinterval width Delta t explicitly (accounting for unequal spacing) and multiply by the designated left, right, midpoint, or trapezoidal heights.',
+      'Interpret the definite integral of the net rate as total net change in quantity over the stated time interval with accumulated units.',
+      'Apply FTC Part 1 (including the chain rule if the upper or lower limit is a function of x) to differentiate the accumulation function.',
+      'Use additivity and reversal of limits to combine adjacent or overlapping definite integrals cleanly.',
+    ],
+    selfCheck: [
+      'Riemann sum uses each subinterval\'s actual width rather than assuming uniform spacing.',
+      'Signed accumulation interpretation distinguishes net change from initial amount plus net change.',
+      'FTC differentiation replaces the dummy variable accurately and includes any boundary chain-rule factor.',
+      'Integral property steps track sign flips when reversing limits of integration.',
+      'No score or official rubric claim is made.',
+    ],
   },
   {
     title: 'Differential-equation model audit',
     scenario: 'An original population model is proposed with an initial value and a capacity limit.',
     parts: ['Interpret the differential equation.', 'Verify or reject a proposed solution.', 'Use local slopes to describe behavior.', 'Compare exponential and logistic assumptions.'],
+    responsePlanning: [
+      'Identify the dependent variable, independent variable, equilibria (where dy/dt = 0), and proportionality structure in the differential equation.',
+      'Test a proposed solution by differentiating it and comparing LHS and RHS identically, then checking the initial condition.',
+      'Read sign and magnitude of dy/dt across population levels to describe monotonic approach toward or away from equilibrium.',
+      'Contrast unbounded exponential growth (dy/dt = kP) with carrying-capacity-limited logistic behavior (inflection at half capacity).',
+    ],
+    selfCheck: [
+      'Differential-equation interpretation explains what dy/dt = 0 implies about equilibrium levels.',
+      'Solution verification checks both the differential equation identity and the initial value.',
+      'Slope analysis connects dy/dt sign to growth/decay direction without confusing P with dP/dt.',
+      'Model comparison accurately distinguishes constant relative growth from capacity-constrained growth.',
+      'No score or official rubric claim is made.',
+    ],
   },
   {
     title: 'Area and volume model selection',
     scenario: 'An original planar region is described by two curves and used as the base of a solid.',
     parts: ['Write an area integral with correct curve order.', 'Write a cross-section volume integral.', 'Write a washer integral for a stated axis.', 'Explain the units and one common radius error.'],
+    responsePlanning: [
+      'Find intersection points first to establish limits of integration and verify which curve stays on top (or right) across the region.',
+      'Express the base length s(x) = top - bottom, then substitute s(x) into the exact cross-section area formula (square, semicircle, or triangle) before integrating.',
+      'Measure outer radius R(x) and inner radius r(x) from the stated axis of revolution and integrate pi * [R(x)^2 - r(x)^2].',
+      'Check linear vs. squared vs. cubic units and guard against squaring (R - r)^2 instead of subtracting R^2 - r^2.',
+    ],
+    selfCheck: [
+      'Intersection limits match the variable of integration (dx vs. dy) consistently.',
+      'Cross-section integral applies the exact geometric area coefficient (such as pi/8 for diameter semicircles).',
+      'Washer setup shifts both outer and inner radii cleanly relative to any non-zero axis of revolution.',
+      'Error check explicitly contrasts pi*(R^2 - r^2) against the common mistake pi*(R - r)^2.',
+      'No score or official rubric claim is made.',
+    ],
   },
 ];
 
@@ -789,8 +1176,8 @@ const constructedResponseWorkshops = workshopSeeds.map((seed, index) => ({
   responseType: 'constructed-response-planning-workshop',
   scenario: seed.scenario,
   parts: seed.parts.map((prompt, partIndex) => ({ id: String.fromCharCode(65 + partIndex), prompt })),
-  responsePlanning: ['Identify givens and representations.', 'Name a valid procedure or theorem and its conditions.', 'Show an expression before calculator evaluation.', 'Use notation, units, and a contextual or mathematical conclusion.'],
-  selfCheck: ['Every requested quantity is addressed.', 'The selected procedure matches the representation.', 'Theorem conditions are stated when needed.', 'Signs and units are interpreted.', 'No score or official rubric claim is made.'],
+  responsePlanning: seed.responsePlanning,
+  selfCheck: seed.selfCheck,
   calculatorUse: index % 3 === 0 ? 'calculator-permitted-planning' : 'calculator-not-required',
   references: [CED_URL, COURSE_URL, EXAM_URL],
   original: true,

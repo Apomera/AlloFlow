@@ -3293,7 +3293,10 @@
     "adventure_resumed_level": "Resumed Adventure (Level {level})",
     "source_choice_ambiguous": "Choose a reading in Based on before generating. More than one reading is available.",
     "source_choices_load_failed": "Reading choices could not load. Please try again.",
-    "submission_tools_still_loading": "Submission tools are still loading. Try Submit again."
+    "submission_tools_still_loading": "Submission tools are still loading. Try Submit again.",
+    "sent_to_read_along": "Kicwalo buk me kwan i Paket me Kwan Kacel i tab manyen.",
+    "read_along_handoff_failed": "Pe otwero cwalo coc manok i Paket me Kwan Kacel.",
+    "read_along_no_text": "Med onyo coo coc me acakki ki dwan ma peya icwalo i Paket me Kwan Kacel."
   },
   "large_file": {
     "modal_title": "Import Large Audio buk",
@@ -3310,7 +3313,8 @@
     "chunk_info": "Audio tye split into 5-minute chunks pi processing",
     "chunk_progress": "Chunk {current} pa {total}",
     "audio_only_error": "Currently only audio buk (MP3, WAV, etc.) tye supported pi chunked transcription.",
-    "starting": "Tye ka cako..."
+    "starting": "Tye ka cako...",
+    "engine_legend": "Injin me coyo dwan"
   },
   "formatting": {
     "bold": "Bold (**text**)",
@@ -3622,7 +3626,8 @@
       "analyzing_short": "Tye ka Niang...",
       "generate_short": "Cwec",
       "books_short": "Buk",
-      "books_hint": "Yab buk ma tye ki cal: buk mo keken twero doko coc mamegi me acakki"
+      "books_hint": "Yab buk ma tye ki cal: buk mo keken twero doko coc mamegi me acakki",
+      "dictate_hint": "Coo coc me acakki mamegi ki Whisper ma i kom kompyuta ki ngiyo pa Gemini ka imito"
     },
     "status_generating": "Generating source text...",
     "success_long_form": "Long-form text yene successfully!",
@@ -3665,7 +3670,8 @@
     "qs_find": "Yeny jami i intanet",
     "qs_find_sub": "Mwon link onyo wek AI oyeny",
     "qs_generate": "Cwe ki i lok",
-    "qs_generate_sub": "AI coyo pi in"
+    "qs_generate_sub": "AI coyo pi in",
+    "dictate_or_record": "Coo ki dwan onyo mak dwan"
   },
   "wizard": {
     "title": "Quick Cak",
@@ -3790,7 +3796,12 @@
     "step_of": "pa",
     "progress": "Cako tic oyoto",
     "progress_value": "Tyelo {current} me {total}",
-    "help_click_element": "Dii gin mo kiken ma piny kany pi lok ma mako ne"
+    "help_click_element": "Dii gin mo kiken ma piny kany pi lok ma mako ne",
+    "dictate_desc": "Coyo ki dwan i kom kompyuta ki Whisper ki ngiyo ka imito",
+    "dictate_title": "Coo ki dwan onyo mak dwan me coc mamegi",
+    "dictate_helper": "Cako ki Whisper ma i kom kompyuta ma mung. Lok coc labongo geng, yub coc ka imito, onyo por ki dwan ma imako kun itiyo ki Gemini.",
+    "dictate_loading": "Tye ka yabo Studio me Coyo ki Dwan (Whisper ma i Kom Kompyuta)… Itwero bene coyo onyo loko piny ka pud tye ka yabe.",
+    "words_dictated_unit": "nyig lok ma kicoyo ki dwan"
   },
   "settings": {
     "immersive_options": "Immersive Options",
@@ -101958,5 +101969,75 @@
     "a11y_unverified_clinical_deletion": "Unverified clinical deletion",
     "a11y_review_protected_clinical_record_deletion": "Review protected clinical record deletion",
     "a11y_protected_record_security": "Protected record security"
+  },
+  "source_view": {
+    "dictate": "Coo ki dwan",
+    "close_dictate": "Lor coyo ki dwan",
+    "send_read_along": "Cwal i Paket me Kwan Kacel",
+    "upload_verify_banner": "Dwan/vidiyo kicoyo i kom kompyuta ki Whisper (dul {count} kigwoko i wi kompyuta)",
+    "clear_audio": "Jwa dwan"
+  },
+  "dictation": {
+    "badge_desktop": "Desktop Whisper Otyeko Yube",
+    "badge_download_needed": "Whisper ma i Kom Kompyuta · Gam Piny me Acakki",
+    "badge_local_ready": "Whisper ma i Kom Kompyuta Otyeko Yube · {name}",
+    "cleanup_apply": "Ket yubo coc",
+    "cleanup_failed": "Pe otwero yubo coc kombedi.",
+    "cleanup_fillers": "Kwany nyig lok ma pe pire tek",
+    "cleanup_heading": "Yubo coc ki AI (ka imito)",
+    "cleanup_keep": "Gwok coc macon",
+    "cleanup_no_changes": "Pe tye alokaloka mo ma kimiyo pi coc man.",
+    "cleanup_notes": "Yub calo coc me kilaci",
+    "cleanup_punctuation": "Yub alama me coc ki kit ma coc nen kwede",
+    "cleanup_review_title": "Yubo coc ma kimiyo otyeko yube — coc mamegi pud pe oloke",
+    "cleanup_text_only": "coc keken — pe kicwalo dwan mo",
+    "cleanup_unavailable": "Yubo coc ki AI pe tye kombedi.",
+    "cleanup_undo": "Dwok cen yubo coc",
+    "cleanup_working": "Tye ka yubo…",
+    "clear_audio": "Jwa dwan ma kimako ({mb} MB)",
+    "crosscheck_all_resolved": "Kabedo ducu ma kiketo iye alama dong kingiyo.",
+    "crosscheck_btn": "Ngi ki dwan kun itiyo ki Gemini",
+    "crosscheck_count": "Kabedo {count} ma kiketo iye alama me angiya:",
+    "crosscheck_disabled_note": "Pe tye kombedi (kineko i kare ma intanet peke / mode pa latin kwan labongo AI onyo labongo layab me Gemini). Coyo ki dwan ki Whisper ma i kom kompyuta pud tiyo maber labongo intanet.",
+    "crosscheck_disclosure": "Tiyo keken ka idiyo piny: cwalo dul dwan ma kimako i wi kompyuta ki coc mamegi bot Gemini me nyuto nyig lok ma romo bedo ki roc.",
+    "crosscheck_failed": "Ngiyo dwan ki Gemini pe otum. Coc ma icoyo i kom kompyuta pud tye kit ma yam tye kwede.",
+    "crosscheck_heading": "Por coc ki dwan kun itiyo ki Gemini (Ka imito)",
+    "crosscheck_none": "Pe kinongo apokapoka madit i kin Whisper ma i Kom Kompyuta ki Gemini Audio.",
+    "crosscheck_running": "Tye ka ngiyo ki dwan…",
+    "crosscheck_unavailable": "Poro dwan ki Gemini pe tye kombedi.",
+    "download_now": "Gam Whisper ma i Kom Kompyuta ({size} MB)",
+    "download_warning": "Ngec me gam piny: Whisper ma i Kom Kompyuta tiyo ki ngeyo dwan ma mung i kom kompyuta. Gamo model {name} tero ~{size} MB kicel keken (~dakika 1–2 lube ki intanet), gwoke labongo intanet i browser mamegi, dok gwoko dwan ma imako i kom kompyuta man.",
+    "draft_label": "Coc ma kicoyo ki dwan (twero loke)",
+    "draft_placeholder": "Dii Cak coyo ki dwan malo, onyo coo/lok coc mamegi atir kany…",
+    "guide_both_body": "Cak ki mung ki Whisper ma i Kom Kompyuta wek coyo ki dwan obed oyot dok oti labongo intanet. Ka imito tam me aryo i kom nyig lok matek onyo nying dano, yer poro coc ki Gemini me poro model aryo mapat ki dwan mamegi dok iwiny dul dwan me cekon 5 i kabedo mo keken ma kiketo iye alama.",
+    "guide_both_label": "Pingo myero itii kwedgi aryo ducu (Poro Coc):",
+    "guide_gemini_body": "Pe mito gam model piny. Tek makato i nyig lok me pwony, nying, kit me lok mapatpat, kilaci ma woo tye iye, ki alama me coc — cwalo dul dwan bot Gemini keken ka in iyero.",
+    "guide_gemini_title": "Gemini Audio (Ngiyo ka imito)",
+    "guide_summary": "Whisper ma i Kom Kompyuta ki Gemini Audio — tekogi ki pingo myero itii kwedgi aryo ducu",
+    "guide_whisper_body": "Mung dok tiyo labongo intanet i nge gam piny kicel (~39–73 MB). Dwan mo pe a ki i kom kompyuta mamegi, pe mito layab API onyo wel tic, dok coyo ki dwan pi kare malac tiyo maber.",
+    "guide_whisper_title": "Whisper ma i Kom Kompyuta (Me acakki)",
+    "ios_canvas_blocked": "Whisper ma i Kom Kompyuta kicungo manok i iPhone/iPad i iye Gemini Canvas. Coo atir piny onyo yab AlloFlow i browser me kompyuta.",
+    "ios_canvas_hint": "Itwero coyo atir piny, yabo AlloFlow i browser me kompyuta pi Whisper ma i Kom Kompyuta, onyo tic ki Gemini Audio ka kiyubo.",
+    "ios_canvas_title": "Whisper ma i kom kompyuta kicungo manok i iPhone/iPad i iye Gemini Canvas",
+    "listening_local": "Tye ka winyo i kom kompyuta ki Whisper… cung manok onyo mede ki lok me medo coc.",
+    "mic_start_failed": "Pe otwero cako makirofon. Ngi twero ma imiyo i browser.",
+    "model_size_label": "Dit pa model me Whisper ma i Kom Kompyuta",
+    "pause_recording": "Cung manok",
+    "paused_note": "Ocung manok. Itwero loko coc piny onyo diyo Mede anyim me mede ki coyo ki dwan.",
+    "privacy_tag": "Mung · Tiyo labongo intanet i nge gam piny · Pe mito layab API",
+    "resume_recording": "Mede anyim",
+    "send_read_along": "Cwal i Paket me Kwan Kacel",
+    "speech_settings": "Ter me dwan",
+    "speed_badge_lesson": "Kitemo: oyot tyen {speed}x makato lok · Ber pi coyo ki dwan malac",
+    "speed_badge_short": "Kitemo: oyot tyen {speed}x makato lok · Ber makato pi dul dwan macek",
+    "speed_badge_slow": "Kitemo: {speed}x · Mot makato kare kikome (cung manok romo time)",
+    "speed_badge_upgrade": "Kitemo: oyot tyen {speed}x makato lok · Ber pi coyo ki dwan malac (itwero bene temo {name})",
+    "start_recording": "Cak coyo ki dwan (Whisper ma i Kom Kompyuta)",
+    "stop_recording": "Juk",
+    "studio_title": "Studio me Coyo ki Dwan",
+    "test_mic": "Tem makirofon (4s)",
+    "upload_media": "Coo dwan ki i fail me dwan/vidiyo",
+    "use_text": "Tii ki coc ma kicoyo ki dwan",
+    "voice_unavailable": "Gin mako dwan pud tye ka yabe. Tim ber item doki i nge kare manok."
   }
 }

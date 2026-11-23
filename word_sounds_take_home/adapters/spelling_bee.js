@@ -39,6 +39,7 @@ module.exports = {
     spelling_bee_answer: 'The word is spelled: {word}',
     spelling_bee_letter_keys: 'Letter keys',
     spelling_bee_delete: 'Delete the last letter',
+    spelling_bee_clear: 'Clear',
   },
   prepare: function (w, env) {
     var word = String(env.word || '').trim();
@@ -49,8 +50,16 @@ module.exports = {
     var prompt = env.bankClip('instructions', 'inst_spelling_bee');
     if (!prompt) missing.push('question');
     if (missing.length) return { missing: missing };
-    var item = { target: word.toLowerCase(), wordAudio: wordAudio, promptAudio: prompt,
+    var letterRe = null;
+    try { letterRe = new RegExp('[\\p{L}\\p{M}\\p{N}]', 'u'); } catch (_) {}
+    var target = word.toLowerCase();
+    var extra = [];
+    target.split('').forEach(function (ch) {
+      if (!/[a-z]/.test(ch) && extra.indexOf(ch) < 0 && ch.trim() && (letterRe ? letterRe.test(ch) : !/^['’\-.]$/.test(ch))) extra.push(ch);
+    });
+    var item = { target: target, wordAudio: wordAudio, promptAudio: prompt,
       introAudio: [prompt, wordAudio], answerAudio: [wordAudio] };
+    if (extra.length) item.extraTiles = extra;
     // A word written with a capital (a name): how it is written, for the answer line and the hints.
     if (word !== item.target && word.length === item.target.length) item.shown = word;
     return { item: item };
@@ -184,7 +193,12 @@ module.exports = {
     ctx.root.appendChild(ctx.el('label', { for: inputId, text: L.spelling_bee_input }));
     ctx.root.appendChild(input);
     // On-screen letters for students without a keyboard (2026-11-07 parity audit). Typing still works.
-    var letterKeys = 'abcdefghijklmnopqrstuvwxyz'.split('').map(function (ch) {
+    var keyChars = 'abcdefghijklmnopqrstuvwxyz'.split('');
+    (Array.isArray(item.extraTiles) ? item.extraTiles : []).forEach(function (ch) {
+      var c = String(ch == null ? '' : ch);
+      if (c && keyChars.indexOf(c) < 0) keyChars.push(c);
+    });
+    var letterKeys = keyChars.map(function (ch) {
       return ctx.el('button', { type: 'button', style: 'min-width:44px;min-height:44px;font-weight:700', on: { click: function () {
         if (ctx.isDone() || own(value()).length >= total) return;
         set(hasFixed ? align(value() + ch) : value() + ch);
@@ -194,7 +208,11 @@ module.exports = {
       if (ctx.isDone() || !value()) return;
       set(hasFixed ? align(own(value()).slice(0, -1)) : value().slice(0, -1));
     } } }, ['⌫']);
-    ctx.root.appendChild(ctx.el('div', { class: 'row', role: 'group', 'aria-label': L.spelling_bee_letter_keys, style: 'flex-wrap:wrap;gap:4px;margin-top:8px' }, letterKeys.concat([deleteKey])));
+    var clearKey = ctx.el('button', { type: 'button', style: 'min-height:44px;padding:0 12px', on: { click: function () {
+      if (ctx.isDone() || !value()) return;
+      set('');
+    } } }, [L.spelling_bee_clear || 'Clear']);
+    ctx.root.appendChild(ctx.el('div', { class: 'row', role: 'group', 'aria-label': L.spelling_bee_letter_keys, style: 'flex-wrap:wrap;gap:4px;margin-top:8px' }, letterKeys.concat([deleteKey, clearKey])));
     ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'margin-top:12px' }, [checkBtn, firstBtn, moreBtn]));
     ctx.root.appendChild(answerLine);
     draw();
@@ -202,7 +220,7 @@ module.exports = {
       reveal: function () {
         input.setAttribute('readonly', '');
         input.setAttribute('aria-readonly', 'true');
-        [checkBtn, firstBtn, moreBtn, deleteKey].concat(letterKeys).forEach(function (b) { b.setAttribute('aria-disabled', 'true'); });
+        [checkBtn, firstBtn, moreBtn, deleteKey, clearKey].concat(letterKeys).forEach(function (b) { b.setAttribute('aria-disabled', 'true'); });
         answerLine.hidden = false;
       },
     };

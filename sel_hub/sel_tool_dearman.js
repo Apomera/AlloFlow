@@ -131,7 +131,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
       var _deT = (ctx && ctx.theme) || {};
       var _deHC = !!_deT.isContrast, _deL = !_deHC && !_deT.isDark;
       var _de_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _de_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#fff':'#000000','#dbeafe':'#000000'};
-      var _de_FGL = {'#cbd5e1':'#334155','#93c5fd':'#1e3a8a','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#bfdbfe':'#1e40af','#fcd34d':'#78350f','#fde68a':'#92400e'}, _de_FGH = {'#cbd5e1':'#ffff00','#93c5fd':'#ffff00','#94a3b8':'#ffff00','#e2e8f0':'#ffff00','#fff':'#ffff00','#bfdbfe':'#ffff00','#dbeafe':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#22c55e':'#ffff00','#a855f7':'#ffff00','#6366f1':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
+      var _de_FGL = {'#cbd5e1':'#334155','#93c5fd':'#1e3a8a','#94a3b8':'#475569','#e2e8f0':'#1e293b','#bfdbfe':'#1e40af','#fcd34d':'#78350f','#fde68a':'#92400e'}, _de_FGH = {'#cbd5e1':'#ffff00','#93c5fd':'#ffff00','#94a3b8':'#ffff00','#e2e8f0':'#ffff00','#fff':'#ffff00','#bfdbfe':'#ffff00','#dbeafe':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#22c55e':'#ffff00','#a855f7':'#ffff00','#6366f1':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
       var _de_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _de_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#3b82f6':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#2563eb':'#ffff00','#f59e0b':'#ffff00'};
       var _deBg = function(h){ return _deHC ? (_de_BGH[h]||h) : (_deL ? (_de_BGL[h]||h) : h); };
       // Dark-mode foreground remap. The tool shell is always dark, so these
@@ -220,8 +220,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
-          h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _deFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+          h('button', { type: 'button', onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
+            style: { minHeight: 44, background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '8px 12px', cursor: 'pointer', color: _deFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _deFg('#93c5fd'), fontSize: 22, fontWeight: 900 } }, '🗣️ DEAR MAN'),
             h('div', { style: { fontSize: 12, color: _deFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A seven-step script for a hard ask.')
@@ -242,6 +242,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
           tabs.map(function(t) {
             var active = view === t.id;
             return h('button', {
+              type: 'button',
               id: 'dearman-tab-' + t.id,
               key: t.id,
               'aria-label': t.label,
@@ -251,6 +252,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
               tabIndex: active ? 0 : -1,
               onClick: function() { goto(t.id); },
               onKeyDown: function(event) {
+                if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || (event.nativeEvent && event.nativeEvent.keyCode === 229)) return;
                 var tabIndex = tabs.indexOf(t);
                 var nextIndex = tabIndex;
                 if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (tabIndex + 1) % tabs.length;
@@ -266,7 +268,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
                 }, 0);
               },
 
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#3b82f6' : '#334155'),
+              style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#3b82f6' : '#334155'),
                 background: active ? 'rgba(59,130,246,0.18)' : _deBg('#1e293b'),
                 color: active ? _deFg('#bfdbfe') : _deFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
@@ -311,7 +313,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
                   placeholder: 'e.g. I want my mom to let me ride my bike to school.',
                   onChange: function(e) { setDM({ ask: e.target.value }); },
                   onBlur: function(e) { scanDearManText(e.target.value); },
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: _deBg('#1e293b'), color: _deFg('#e2e8f0'), fontSize: 13 } })
+                  style: { width: '100%', minHeight: 44, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _deBg('#1e293b'), color: _deFg('#e2e8f0'), fontSize: 13 } })
               ),
               h('div', null,
                 h('label', { htmlFor: 'dm-audience', style: { display: 'block', fontSize: 11, color: _deFg('#93c5fd'), fontWeight: 800, marginBottom: 4 } }, 'Who am I asking?'),
@@ -319,7 +321,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
                   placeholder: 'e.g. Mom, Coach Smith, Mr. Patel',
                   onChange: function(e) { setDM({ audience: e.target.value }); },
                   onBlur: function(e) { scanDearManText(e.target.value); },
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: _deBg('#1e293b'), color: _deFg('#e2e8f0'), fontSize: 13 } })
+                  style: { width: '100%', minHeight: 44, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _deBg('#1e293b'), color: _deFg('#e2e8f0'), fontSize: 13 } })
               )
             )
           ),
@@ -342,7 +344,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
                     'data-dearman-build-mode': mode,
                     'aria-pressed': selected,
                     onClick: function() { setBuildMode(mode); },
-                    style: { padding: '7px 10px', borderRadius: 7, border: 'none', cursor: 'pointer', background: selected ? '#2563eb' : 'transparent', color: selected ? '#fff' : _deFg('#cbd5e1'), fontSize: 11, fontWeight: 800 }
+                    style: { minHeight: 44, padding: '8px 12px', borderRadius: 7, border: 'none', cursor: 'pointer', background: selected ? '#2563eb' : 'transparent', color: selected ? '#fff' : _deFg('#cbd5e1'), fontSize: 11, fontWeight: 800 }
                   }, mode === 'guided' ? 'Guided steps' : 'All steps');
                 })
               )
@@ -361,7 +363,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
                   'aria-current': isCurrent ? 'step' : undefined,
                   'aria-label': 'Step ' + (idx + 1) + ': ' + L.label + '. ' + (isDrafted ? 'Drafted' : 'Not drafted') + (isCurrent ? '. Current step.' : '.'),
                   onClick: function() { goToBuildStep(idx); },
-                  style: { display: 'flex', alignItems: 'center', gap: 7, minWidth: 0, padding: '7px 8px', borderRadius: 8, cursor: 'pointer', textAlign: 'left', border: '1px solid ' + (isCurrent ? L.color : (isDrafted ? 'rgba(34,197,94,0.55)' : '#334155')), background: isCurrent ? 'rgba(59,130,246,0.16)' : _deBg('#1e293b'), color: _deFg('#e2e8f0') }
+                  style: { minHeight: 44, display: 'flex', alignItems: 'center', gap: 7, minWidth: 0, padding: '7px 8px', borderRadius: 8, cursor: 'pointer', textAlign: 'left', border: '1px solid ' + (isCurrent ? L.color : (isDrafted ? 'rgba(34,197,94,0.55)' : '#334155')), background: isCurrent ? 'rgba(59,130,246,0.16)' : _deBg('#1e293b'), color: _deFg('#e2e8f0') }
                 },
                   h('span', { 'aria-hidden': 'true', style: { width: 24, height: 24, flex: '0 0 24px', borderRadius: 7, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: isDrafted && !isCurrent ? 'rgba(34,197,94,0.18)' : 'rgba(255,255,255,0.06)', color: isDrafted && !isCurrent ? _deFg('#22c55e') : _deFg(L.color), fontWeight: 900, fontSize: 12 } }, isDrafted && !isCurrent ? '\u2713' : L.letter),
                   h('span', { style: { minWidth: 0 } },
@@ -385,7 +387,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
               ),
               h('div', { style: { fontSize: 12, color: _deFg('#cbd5e1'), marginBottom: 8, lineHeight: 1.6 } }, L.blurb),
               h('details', { style: { marginBottom: 8 } },
-                h('summary', { style: { cursor: 'pointer', fontSize: 11, color: _deFg('#94a3b8'), fontStyle: 'italic' } }, '💡 Example'),
+                h('summary', { style: { minHeight: 44, padding: '10px 0', boxSizing: 'border-box', cursor: 'pointer', fontSize: 11, color: _deFg('#94a3b8'), fontStyle: 'italic' } }, '💡 Example'),
                 h('div', { style: { padding: 8, borderRadius: 6, background: _deBg('#1e293b'), fontSize: 12, color: _deFg('#cbd5e1'), marginTop: 6, lineHeight: 1.6, fontStyle: 'italic' } }, '"' + L.example + '"')
               ),
               h('label', { htmlFor: 'dm-' + L.id, style: { display: 'block', fontSize: 11, color: _deFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, L.prompt),
@@ -402,19 +404,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
               type: 'button',
               disabled: activeStep === 0,
               onClick: function() { goToBuildStep(activeStep - 1); },
-              style: { justifySelf: 'start', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: _deBg('#1e293b'), color: _deFg('#cbd5e1'), cursor: activeStep === 0 ? 'not-allowed' : 'pointer', opacity: activeStep === 0 ? 0.45 : 1, fontSize: 11, fontWeight: 800 }
+              style: { justifySelf: 'start', minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: _deBg('#1e293b'), color: _deFg('#cbd5e1'), cursor: activeStep === 0 ? 'not-allowed' : 'pointer', opacity: activeStep === 0 ? 0.45 : 1, fontSize: 11, fontWeight: 800 }
             }, '\u2190 Previous'),
             h('span', { style: { color: _deFg('#94a3b8'), fontSize: 10.5, fontWeight: 800, whiteSpace: 'nowrap' } }, 'Step ' + (activeStep + 1) + ' of ' + LETTERS.length),
             h('button', {
               type: 'button',
               onClick: function() { activeStep === LETTERS.length - 1 ? goto('script') : goToBuildStep(activeStep + 1); },
-              style: { justifySelf: 'end', maxWidth: '100%', overflowWrap: 'anywhere', padding: '8px 12px', borderRadius: 8, border: '1px solid #3b82f6', background: 'rgba(59,130,246,0.18)', color: _deFg('#bfdbfe'), cursor: 'pointer', fontSize: 11, fontWeight: 800 }
+              style: { justifySelf: 'end', minHeight: 44, maxWidth: '100%', overflowWrap: 'anywhere', padding: '8px 12px', borderRadius: 8, border: '1px solid #3b82f6', background: 'rgba(59,130,246,0.18)', color: _deFg('#bfdbfe'), cursor: 'pointer', fontSize: 11, fontWeight: 800 }
             }, activeStep === LETTERS.length - 1 ? 'Review my script \u2192' : 'Next: ' + LETTERS[activeStep + 1].label + ' \u2192')
           ) : null,
 
           h('div', { style: { display: 'flex', gap: 10, marginTop: 8, flexWrap: 'wrap' } },
-            h('button', { onClick: function() { goto('script'); }, 'aria-label': 'See my full script',
-              style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)', color: _deFg('#fff'), fontWeight: 800, fontSize: 14 } },
+            h('button', { type: 'button', onClick: function() { goto('script'); }, 'aria-label': 'See my full script',
+              style: { minHeight: 44, padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)', color: _deFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '📜 See my full script')
           ),
 
@@ -437,8 +439,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
               h('div', { style: { fontSize: 36, marginBottom: 8 } }, '📜'),
               h('div', { style: { color: _deFg('#cbd5e1'), fontSize: 14, marginBottom: 4 } }, 'No script yet'),
               h('div', { style: { color: _deFg('#94a3b8'), fontSize: 12 } }, 'Draft any DEAR MAN step and your script will assemble here. Every step is optional.'),
-              h('button', { onClick: function() { goto('home'); }, 'aria-label': 'Build script',
-                style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid #3b82f6', background: 'rgba(59,130,246,0.18)', color: _deFg('#bfdbfe'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Build a script')
+              h('button', { type: 'button', onClick: function() { goto('home'); }, 'aria-label': 'Build script',
+                style: { minHeight: 44, marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid #3b82f6', background: 'rgba(59,130,246,0.18)', color: _deFg('#bfdbfe'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Build a script')
             )
           );
         }
@@ -462,6 +464,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
               var copyField = document.createElement('textarea');
               copyField.value = script;
               copyField.setAttribute('readonly', '');
+              copyField.setAttribute('aria-hidden', 'true');
+              copyField.tabIndex = -1;
               copyField.style.position = 'fixed';
               copyField.style.opacity = '0';
               document.body.appendChild(copyField);
@@ -498,7 +502,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
                 type: 'button',
                 onClick: function() { editReviewStep(LETTERS.indexOf(missingSteps[0])); },
                 'aria-label': 'Add next undrafted step: ' + missingSteps[0].label,
-                style: { padding: '7px 11px', borderRadius: 8, border: '1px solid #f59e0b', background: 'rgba(245,158,11,0.12)', color: _deFg('#fcd34d'), cursor: 'pointer', fontSize: 11, fontWeight: 800 }
+                style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid #f59e0b', background: 'rgba(245,158,11,0.12)', color: _deFg('#fcd34d'), cursor: 'pointer', fontSize: 11, fontWeight: 800 }
               }, 'Add next: ' + missingSteps[0].label) : null
             )
           ),
@@ -508,7 +512,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
             h('div', { style: { fontSize: 11, color: _deFg('#93c5fd'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '📜 Your full script'),
             h('p', { style: { margin: 0, color: _deFg('#e2e8f0'), fontSize: 15, lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, script),
             h('button', { type: 'button', 'data-dearman-copy-script': 'true', onClick: copyScriptToClipboard, 'aria-label': 'Copy full DEAR MAN script',
-              style: { marginTop: 10, padding: '6px 10px', borderRadius: 7, border: '1px solid #3b82f6', background: 'rgba(59,130,246,0.12)', color: _deFg('#bfdbfe'), cursor: 'pointer', fontSize: 10.5, fontWeight: 800 } }, 'Copy script')
+              style: { minHeight: 44, marginTop: 10, padding: '8px 14px', borderRadius: 7, border: '1px solid #3b82f6', background: 'rgba(59,130,246,0.12)', color: _deFg('#bfdbfe'), cursor: 'pointer', fontSize: 11, fontWeight: 800 } }, 'Copy script')
           ),
 
           // Step-by-step view
@@ -522,7 +526,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
                 h('span', { style: { fontSize: 11, color: _deFg(L.color), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, L.label),
                 h('span', { style: { marginLeft: 'auto', color: isDrafted ? _deFg('#22c55e') : _deFg('#94a3b8'), fontSize: 10, fontWeight: 800 } }, isDrafted ? 'Drafted' : 'Optional'),
                 h('button', { type: 'button', onClick: function() { editReviewStep(index); }, 'aria-label': (isDrafted ? 'Edit ' : 'Add ') + L.label + ' step',
-                  style: { padding: '4px 8px', borderRadius: 6, border: '1px solid #475569', background: _deBg('#1e293b'), color: _deFg('#cbd5e1'), cursor: 'pointer', fontSize: 10, fontWeight: 800 } }, isDrafted ? 'Edit' : 'Add')
+                  style: { minHeight: 44, minWidth: 44, padding: '6px 12px', borderRadius: 6, border: '1px solid #475569', background: _deBg('#1e293b'), color: _deFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 800 } }, isDrafted ? 'Edit' : 'Add')
               ),
               isDrafted
                 ? h('p', { style: { margin: 0, color: _deFg('#e2e8f0'), fontSize: 13, lineHeight: 1.65 } }, v)
@@ -534,23 +538,23 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
           h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(59,130,246,0.10)', borderTop: '1px solid rgba(59,130,246,0.3)', borderRight: '1px solid rgba(59,130,246,0.3)', borderBottom: '1px solid rgba(59,130,246,0.3)', borderLeft: '3px solid #3b82f6', marginTop: 12, marginBottom: 8 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _deFg('#bfdbfe'), marginBottom: 6 } }, '🪞 Practice before you do it for real'),
             h('button', { type: 'button', 'data-dearman-start-practice': 'true', onClick: function() { setDM({ view: 'practice', practiceStep: 0, practiceSupport: 'full', practiceReveal: false }); }, 'aria-label': 'Start guided rehearsal',
-              style: { width: '100%', marginBottom: 10, padding: '9px 12px', borderRadius: 8, border: '1px solid #3b82f6', background: 'rgba(59,130,246,0.18)', color: _deFg('#bfdbfe'), cursor: 'pointer', fontSize: 12, fontWeight: 800 } }, 'Start guided rehearsal'),
+              style: { width: '100%', minHeight: 44, marginBottom: 10, padding: '9px 12px', borderRadius: 8, border: '1px solid #3b82f6', background: 'rgba(59,130,246,0.18)', color: _deFg('#bfdbfe'), cursor: 'pointer', fontSize: 12, fontWeight: 800 } }, 'Start guided rehearsal'),
             h('div', { style: { fontSize: 12.5, color: _deFg('#dbeafe'), lineHeight: 1.7 } },
               h('div', null, '• Read your script out loud in private. Hear yourself say it.'),
               h('div', null, '• Practice with a friend, sibling, or stuffed animal playing the other person.'),
               h('div', null, '• Rehearse your "broken record" phrase: what you say if they try to derail.'),
               h('div', null, '• Notice if your voice gets small. Practice it again at full volume.'),
               h('div', null, '• Practice count: ', h('strong', { style: { color: _deFg('#bfdbfe') } }, d.practiceCount || 0), '  ',
-                h('button', { onClick: logPractice, 'aria-label': 'Log a practice',
-                  style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #3b82f6', background: 'transparent', color: _deFg('#bfdbfe'), cursor: 'pointer', fontSize: 11, fontWeight: 700, marginLeft: 4 } }, '+ Practiced once'))
+                h('button', { type: 'button', onClick: logPractice, 'aria-label': 'Log a practice',
+                  style: { minHeight: 44, padding: '8px 12px', borderRadius: 6, border: '1px solid #3b82f6', background: 'transparent', color: _deFg('#bfdbfe'), cursor: 'pointer', fontSize: 11, fontWeight: 700, marginLeft: 4 } }, '+ Practiced once'))
             )
           ),
 
           h('div', { style: { display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' } },
-            h('button', { onClick: function() { goto('home'); }, 'aria-label': 'Edit script',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _deBg('#1e293b'), color: _deFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '✏️ Edit'),
-            h('button', { onClick: function() { goto('print'); }, 'aria-label': 'Print script',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _deBg('#1e293b'), color: _deFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '🖨 Print')
+            h('button', { type: 'button', onClick: function() { goto('home'); }, 'aria-label': 'Edit script',
+              style: { minHeight: 44, padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _deBg('#1e293b'), color: _deFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '✏️ Edit'),
+            h('button', { type: 'button', onClick: function() { goto('print'); }, 'aria-label': 'Print script',
+              style: { minHeight: 44, padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _deBg('#1e293b'), color: _deFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '🖨 Print')
           ),
 
           softPointer()
@@ -568,7 +572,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
             h('div', { style: { color: _deFg('#cbd5e1'), fontSize: 14, fontWeight: 800, marginBottom: 4 } }, 'Add one idea before rehearsing'),
             h('div', { style: { color: _deFg('#94a3b8'), fontSize: 12, lineHeight: 1.55 } }, 'Draft any DEAR MAN step, then come back to practice it out loud.'),
             h('button', { type: 'button', onClick: function() { setDM({ view: 'home', buildMode: 'guided', activeStep: 0 }); },
-              style: { marginTop: 12, padding: '8px 14px', borderRadius: 8, border: '1px solid #3b82f6', background: 'rgba(59,130,246,0.18)', color: _deFg('#bfdbfe'), cursor: 'pointer', fontSize: 12, fontWeight: 800 } }, 'Start with Describe')
+              style: { minHeight: 44, marginTop: 12, padding: '8px 14px', borderRadius: 8, border: '1px solid #3b82f6', background: 'rgba(59,130,246,0.18)', color: _deFg('#bfdbfe'), cursor: 'pointer', fontSize: 12, fontWeight: 800 } }, 'Start with Describe')
           );
         }
 
@@ -619,7 +623,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
               h('div', { style: { color: _deFg('#fcd34d'), fontSize: 10.5, lineHeight: 1.5, marginTop: 4 } }, 'Safety first: if speaking up could put you at risk, pause and ask a trusted adult for help.')
             ),
             h('button', { type: 'button', onClick: function() { goto('script'); },
-              style: { padding: '7px 10px', borderRadius: 8, border: '1px solid #475569', background: _deBg('#1e293b'), color: _deFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 800 } }, 'Back to script')
+              style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid #475569', background: _deBg('#1e293b'), color: _deFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 800 } }, 'Back to script')
           ),
 
           h('div', { role: 'navigation', 'aria-label': 'Rehearsal steps', style: { display: 'grid', gridTemplateColumns: 'repeat(' + practiceParts.length + ', minmax(30px, 1fr))', gap: 5, marginBottom: 12 } },
@@ -658,7 +662,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
                 : 'Hide my words; I can reveal them anytime.'))
           ),
 
-          h('div', { id: 'dearman-practice-card', tabIndex: -1, 'aria-labelledby': 'dearman-practice-heading', 'aria-describedby': 'dearman-practice-cue', style: { padding: '22px 20px', borderRadius: 14, outline: 'none', background: 'linear-gradient(145deg, rgba(59,130,246,0.13) 0%, rgba(15,23,42,0.62) 72%)', borderTop: '1px solid rgba(59,130,246,0.38)', borderRight: '1px solid rgba(59,130,246,0.38)', borderBottom: '1px solid rgba(59,130,246,0.38)', borderLeft: '5px solid ' + currentPart.letter.color, boxShadow: '0 12px 28px rgba(2,6,23,0.18)', marginBottom: 12 } },
+          h('div', { id: 'dearman-practice-card', tabIndex: -1, 'aria-labelledby': 'dearman-practice-heading', 'aria-describedby': 'dearman-practice-cue', style: { padding: '22px 20px', borderRadius: 14, outline: '2px solid transparent', background: 'linear-gradient(145deg, rgba(59,130,246,0.13) 0%, rgba(15,23,42,0.62) 72%)', borderTop: '1px solid rgba(59,130,246,0.38)', borderRight: '1px solid rgba(59,130,246,0.38)', borderBottom: '1px solid rgba(59,130,246,0.38)', borderLeft: '5px solid ' + currentPart.letter.color, boxShadow: '0 12px 28px rgba(2,6,23,0.18)', marginBottom: 12 } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 11, marginBottom: 14 } },
               h('span', { 'aria-hidden': 'true', style: { width: 42, height: 42, borderRadius: 12, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.06)', color: _deFg(currentPart.letter.color), fontSize: 24, fontWeight: 900, fontFamily: 'ui-monospace, monospace' } }, currentPart.letter.letter),
               h('div', null,
@@ -668,7 +672,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
             ),
             h('p', { id: 'dearman-practice-cue', 'data-dearman-practice-text': currentPart.letter.id, 'data-dearman-practice-cue-state': cueRevealed ? 'revealed' : practiceSupport, 'aria-live': 'polite', style: { margin: 0, color: cueRevealed || practiceSupport === 'starter' ? _deFg('#e2e8f0') : _deFg('#94a3b8'), fontSize: cueRevealed ? 19 : 16, lineHeight: 1.75, fontWeight: cueRevealed ? 600 : 500, fontStyle: cueRevealed ? 'normal' : 'italic', whiteSpace: 'pre-wrap' } }, displayedCue),
             practiceSupport !== 'full' ? h('button', { type: 'button', 'data-dearman-practice-reveal': 'true', 'aria-expanded': !!d.practiceReveal, 'aria-controls': 'dearman-practice-cue', onClick: togglePracticeReveal,
-              style: { marginTop: 12, padding: '7px 10px', borderRadius: 7, border: '1px solid #475569', background: _deBg('#1e293b'), color: _deFg('#cbd5e1'), cursor: 'pointer', fontSize: 10.5, fontWeight: 800 } }, d.practiceReveal ? 'Hide my words' : 'Reveal my words') : null
+              style: { minHeight: 44, marginTop: 12, padding: '8px 12px', borderRadius: 7, border: '1px solid #475569', background: _deBg('#1e293b'), color: _deFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 800 } }, d.practiceReveal ? 'Hide my words' : 'Reveal my words') : null
           ),
 
           h('div', { style: { padding: '9px 11px', borderRadius: 8, background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.24)', color: _deFg('#cbd5e1'), fontSize: 11.5, lineHeight: 1.55, marginBottom: 12 } },
@@ -678,14 +682,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
 
           h('div', { 'data-dearman-practice-controls': 'true', style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto minmax(0, 1fr)', alignItems: 'center', gap: 8 } },
             h('button', { type: 'button', disabled: practiceIndex === 0, onClick: function() { movePractice(practiceIndex - 1); },
-              style: { justifySelf: 'start', padding: '9px 12px', borderRadius: 8, border: '1px solid #475569', background: _deBg('#1e293b'), color: _deFg('#cbd5e1'), cursor: practiceIndex === 0 ? 'not-allowed' : 'pointer', opacity: practiceIndex === 0 ? 0.45 : 1, fontSize: 11, fontWeight: 800 } }, 'Previous'),
+              style: { justifySelf: 'start', minHeight: 44, padding: '9px 12px', borderRadius: 8, border: '1px solid #475569', background: _deBg('#1e293b'), color: _deFg('#cbd5e1'), cursor: practiceIndex === 0 ? 'not-allowed' : 'pointer', opacity: practiceIndex === 0 ? 0.45 : 1, fontSize: 11, fontWeight: 800 } }, 'Previous'),
             h('span', { role: 'status', 'aria-live': 'polite', style: { color: _deFg('#94a3b8'), fontSize: 10.5, fontWeight: 800, whiteSpace: 'nowrap' } }, 'Step ' + (practiceIndex + 1) + ' of ' + practiceParts.length),
             h('button', { type: 'button', 'data-dearman-practice-next': 'true', onClick: function() { practiceIndex === practiceParts.length - 1 ? finishPractice() : movePractice(practiceIndex + 1); },
-              style: { justifySelf: 'end', maxWidth: '100%', overflowWrap: 'anywhere', padding: '9px 12px', borderRadius: 8, border: '1px solid #3b82f6', background: 'rgba(59,130,246,0.18)', color: _deFg('#bfdbfe'), cursor: 'pointer', fontSize: 11, fontWeight: 800 } }, practiceIndex === practiceParts.length - 1 ? 'Finish rehearsal' : 'Next: ' + practiceParts[practiceIndex + 1].letter.label)
+              style: { justifySelf: 'end', minHeight: 44, maxWidth: '100%', overflowWrap: 'anywhere', padding: '9px 12px', borderRadius: 8, border: '1px solid #3b82f6', background: 'rgba(59,130,246,0.18)', color: _deFg('#bfdbfe'), cursor: 'pointer', fontSize: 11, fontWeight: 800 } }, practiceIndex === practiceParts.length - 1 ? 'Finish rehearsal' : 'Next: ' + practiceParts[practiceIndex + 1].letter.label)
           ),
 
           practiceSupport !== 'memory' ? h('details', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: _deBg('#0f172a'), border: '1px solid #1e293b' } },
-            h('summary', { style: { cursor: 'pointer', color: _deFg('#94a3b8'), fontSize: 11, fontWeight: 800 } }, 'Show the full script for reference'),
+            h('summary', { style: { minHeight: 44, padding: '10px 0', boxSizing: 'border-box', cursor: 'pointer', color: _deFg('#94a3b8'), fontSize: 11, fontWeight: 800 } }, 'Show the full script for reference'),
             h('p', { style: { margin: '9px 0 0', color: _deFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, buildScript())
           ) : null,
           softPointer()
@@ -703,9 +707,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
               h('strong', null, '🖨 Print preview. '),
               'Print or save as PDF; carry it in your pocket if it helps.'
             ),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)', color: _deFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
-            h('button', { onClick: function() { goto('script'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _deBg('#1e293b'), color: _deFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+            h('button', { type: 'button', onClick: printNow, style: { minHeight: 44, padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)', color: _deFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { type: 'button', onClick: function() { goto('script'); }, 'aria-label': 'Back',
+              style: { minHeight: 44, padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _deBg('#1e293b'), color: _deFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
@@ -839,11 +843,16 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
           h('div', { style: { fontSize: 11, color: _deFg('#93c5fd'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: _deFg('#bfdbfe'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+                style: { display: 'inline-flex', alignItems: 'center', minHeight: 44, fontSize: 13, color: _deFg('#bfdbfe'), fontWeight: 700, textDecoration: 'underline', marginBottom: 4 } }, title + ' ↗')
             : h('div', { style: { fontSize: 13, color: _deFg('#bfdbfe'), fontWeight: 700, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _deFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );
       }
+
+      var _deReducedMotion = false;
+      try {
+        _deReducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      } catch (_) {}
 
       var body;
       if (view === 'script') body = renderScript();
@@ -866,7 +875,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
             ),
             h('div', { role: 'progressbar', 'aria-label': 'Drafting progress', 'aria-valuemin': 0, 'aria-valuemax': LETTERS.length, 'aria-valuenow': draftedSteps, 'aria-valuetext': dearManProgressText, 'data-dearman-progress': draftedSteps,
               style: { height: 5, borderRadius: 999, background: 'rgba(148,163,184,0.18)', overflow: 'hidden', marginTop: 7 } },
-              h('div', { 'aria-hidden': 'true', style: { width: ((draftedSteps / LETTERS.length) * 100) + '%', height: '100%', borderRadius: 999, background: 'linear-gradient(90deg, #2563eb 0%, #22c55e 100%)', transition: 'width 180ms ease' } })
+              h('div', { 'aria-hidden': 'true', style: { width: ((draftedSteps / LETTERS.length) * 100) + '%', height: '100%', borderRadius: 999, background: 'linear-gradient(90deg, #2563eb 0%, #22c55e 100%)', transition: _deReducedMotion ? 'none' : 'width 180ms ease' } })
             )
           ),
           body

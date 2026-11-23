@@ -555,7 +555,7 @@
     "choices": [
       "made mainly for performances",
       "capable of carrying sound",
-      "lacking the item named by the base word",
+      "lacking what the base word names",
       "located a long distance away"
     ],
     "answerIndex": 2,
@@ -751,7 +751,7 @@
       "the sentence contains no action verb",
       "the word schedule has no dictionary meaning",
       "a comma must always follow the word club",
-      "the pronoun its could point to either of the two student organizations"
+      "the pronoun its could refer to either group"
     ],
     "answerIndex": 3,
     "rationale": "Both the debate team and the drama club are singular collective nouns that could possess an adviser, so the pronoun its has two plausible antecedents. Naming the organization would remove the ambiguity.",

@@ -13,7 +13,7 @@ describe('Help in the compact header bar', () => {
     const at = src.indexOf('data-compact-help-toggle');
     expect(at).toBeGreaterThan(0);
     const block = src.slice(src.lastIndexOf('{headerCollapsed && (', at), src.indexOf("{t('header.more_settings') || 'Settings & more'}", at));
-    expect(block).toContain('onClick={handleHelpButton} aria-pressed={isHelpMode}');
+    expect(block).toContain('onClick={handleHelpButton} aria-pressed={(!helpMenuAvailable || isHelpMode) ? isHelpMode : undefined}');
     expect(block).toContain('aria-label={helpButtonLabel}');
     expect(block).toContain('{helpMenu}');
     expect(block).toContain('data-compact-help-tip');
@@ -50,7 +50,7 @@ describe('Help in the compact header bar', () => {
 
   it('the menu closes on Escape and on a click outside it', () => {
     const src = header();
-    expect(src).toContain("if (event.key !== 'Escape') return;");
+    expect(src).toContain("if (event.key !== 'Escape' || event.isComposing || event.keyCode === 229) return;");
     expect(src).toContain("document.addEventListener('mousedown', outside);");
   });
 

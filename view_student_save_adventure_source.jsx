@@ -17,24 +17,41 @@
  * Icons (from window globals): Save, FolderOpen, Download, Send, MapIcon,
  * CheckCircle2, Lock, RefreshCw, History, Sparkles, Wifi
  */
-const StudentSaveThemeFallbackContext = (window.React && window.React.createContext)
+const StudentSaveThemeFallbackContext = (typeof window !== 'undefined' && window.React && window.React.createContext)
   ? window.React.createContext({ theme: 'light', colorOverlay: 'none' })
-  : null;
+  : (typeof React !== 'undefined' && React && React.createContext ? React.createContext({ theme: 'light', colorOverlay: 'none' }) : null);
 
 const cx = (...parts) => parts.filter(Boolean).join(' ');
 // Solo Adventure turns need text AI; the live class adventure does not (the teacher's device generates).
-function _aiUsable(kind, fn) {
-  if (typeof window !== 'undefined' && (
-    window.__alloStudentAiDisabled === true ||
-    window.__alloAiSecretsLocked === true ||
-    window.__alloQrStudentMode === true ||
-    window._alloQrBlocked === true ||
-    (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false)
-  )) return false;
+function _aiUsable(kind, fn, studentProjectSettings) {
+  if (studentProjectSettings && studentProjectSettings.hideStudentAiFeatures === true) return false;
+  if (typeof window !== 'undefined') {
+    const qr = window.__alloQrStudentMode;
+    const qrBlocksAi = qr === true || (qr && typeof qr === 'object' && (qr.aiDisabled === true || qr.aiPolicy === 'off'));
+    if (
+      window.__alloOfflineOnly === true ||
+      window.__alloStudentAiDisabled === true ||
+      window.__alloAiSecretsLocked === true ||
+      qrBlocksAi ||
+      window._alloQrBlocked === true ||
+      (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false)
+    ) return false;
+    try {
+      const policy = window.AlloModules && window.AlloModules.StudentPolicy;
+      if (policy && typeof policy.getDecision === 'function') {
+        const decision = policy.getDecision(kind || 'text');
+        if (decision && decision.allowed === false) return false;
+      }
+    } catch (_) {
+      return false;
+    }
+  }
   if (fn && fn._alloQrBlocked === true) return false;
   try {
     if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return Boolean(window.__alloAiUsable(kind, fn));
-  } catch (_) {}
+  } catch (_) {
+    return false;
+  }
   return typeof fn === 'function';
 }
 const STUDENT_SAVE_ANIMATION_CSS = `
@@ -183,7 +200,7 @@ function StudentSaveAdventurePanel({
   // means this panel does not depend on a DOM global having been clobbered, and
   // it renders standalone. React calls a bare class as a function component, so
   // getting History wrong is a crash, not a missing glyph.
-  const icon = (name) => (window.AlloIcons && window.AlloIcons[name]) || window[name] || noop;
+  const icon = (name) => (typeof window !== 'undefined' && ((window.AlloIcons && window.AlloIcons[name]) || window[name])) || noop;
   const Save = icon('Save');
   const FolderOpen = icon('FolderOpen');
   const Download = icon('Download');
@@ -203,6 +220,15 @@ function StudentSaveAdventurePanel({
   const adventureTitleId = 'student-adventure-panel-title';
   const adventureProgressId = 'student-adventure-progress-label';
   const [, setAiPolicyTick] = React.useState(0);
+  const storyCloseTimerRef = React.useRef(null);
+  React.useEffect(() => {
+    return () => {
+      if (storyCloseTimerRef.current) {
+        clearTimeout(storyCloseTimerRef.current);
+        storyCloseTimerRef.current = null;
+      }
+    };
+  }, []);
   React.useEffect(() => {
     if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return undefined;
     const bump = () => setAiPolicyTick((n) => (n + 1) % 1000000);
@@ -210,8 +236,10 @@ function StudentSaveAdventurePanel({
     evs.forEach((ev) => window.addEventListener(ev, bump));
     return () => evs.forEach((ev) => window.removeEventListener(ev, bump));
   }, []);
-  const safePoints = Math.max(0, Number(globalPoints) || 0);
-  const rawUnlockXp = Math.max(0, Number(studentProjectSettings?.adventureUnlockXP ?? 0) || 0);
+  const parsedPoints = Number(globalPoints);
+  const safePoints = Number.isFinite(parsedPoints) ? Math.max(0, parsedPoints) : 0;
+  const parsedUnlockXp = Number(studentProjectSettings?.adventureUnlockXP ?? 0);
+  const rawUnlockXp = Number.isFinite(parsedUnlockXp) ? Math.max(0, parsedUnlockXp) : 0;
   const unlockXp = Math.max(1, rawUnlockXp || 1);
   const boundedPoints = Math.max(0, Math.min(safePoints, unlockXp));
   const adventureProgress = Math.min(100, (boundedPoints / unlockXp) * 100);
@@ -226,27 +254,19 @@ function StudentSaveAdventurePanel({
     } catch (_) { return fallback; }
   };
   const adventureAvailable = isAdventureAvailable !== false;
-  const soloAdventureAiOff = !activeSessionCode && !_aiUsable('text', typeof window !== 'undefined' ? window.callGemini : undefined);
+  const soloAdventureAiOff = !activeSessionCode && !_aiUsable('text', typeof window !== 'undefined' ? window.callGemini : undefined, studentProjectSettings);
   const offlineAdventurePlay = !activeSessionCode && !!offlineAdventure && (soloAdventureAiOff || offlineAdventure.offlineOnly === true);
-  const soloAiNeededText = (() => {
-    const key = 'adventure.learning_settings.solo_needs_ai';
-    const value = typeof t === 'function' ? t(key) : '';
-    return value && value !== key ? value : "Adventure needs AI, which isn't available here. Join your teacher's live adventure to play.";
-  })();
-  const themeContext = React.useContext(window.AlloThemeContext || StudentSaveThemeFallbackContext);
+  const soloAiNeededText = tr('adventure.learning_settings.solo_needs_ai', "Adventure needs AI, which isn't available here. Join your teacher's live adventure to play.");
+  const themeContext = React.useContext((typeof window !== 'undefined' && window.AlloThemeContext) || StudentSaveThemeFallbackContext);
   const styles = getStudentSaveThemeStyles(themeContext);
   const [showStoryAuthor, setShowStoryAuthor] = React.useState(false);
   const storyBtnRef = React.useRef(null);
-  const offlineApi = window.AlloModules && window.AlloModules.AdventureOffline;
+  const offlineApi = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AdventureOffline;
   const StoryPanel = offlineApi && typeof offlineApi.Panel === 'function' ? offlineApi.Panel : null;
   const studentStoryAllowed = !activeSessionCode && typeof setHistory === 'function' && !!StoryPanel
     && !(studentProjectSettings && studentProjectSettings.allowStudentStories === false);
   const hasStudentStory = studentStoryAllowed && typeof offlineApi.findStudentStory === 'function' && !!offlineApi.findStudentStory(history);
-  const studentStoryText = (() => {
-    const key = 'adventure.offline.student_button';
-    const value = typeof t === 'function' ? t(key) : '';
-    return value && value !== key ? value : 'Write your own adventure';
-  })();
+  const studentStoryText = tr('adventure.offline.student_button', 'Write your own adventure');
   const Pencil = icon('Pencil');
 
   return (
@@ -261,8 +281,8 @@ function StudentSaveAdventurePanel({
             <Save size={20} />
           </div>
           <div>
-            <h4 id={saveTitleId} className={cx('font-bold text-sm', styles.saveTitle)}>{t('student.save_banner_title')}</h4>
-            <p className={cx('text-xs', styles.saveText)}>{t('student.save_banner_desc')}</p>
+            <h4 id={saveTitleId} className={cx('font-bold text-sm', styles.saveTitle)}>{tr('student.save_banner_title', 'Save your work')}</h4>
+            <p className={cx('text-xs', styles.saveText)}>{tr('student.save_banner_desc', 'Save a copy to your device or submit when ready.')}</p>
             {hasSaveableWork === false && (
               <p data-student-save-empty-hint="true" className={cx('text-[11px] mt-1 font-medium', styles.muted)}>
                 {tr('student.save_empty_hint', 'Open or complete an activity first to enable saving.')}
@@ -273,31 +293,31 @@ function StudentSaveAdventurePanel({
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            aria-label={t('student.load_file')}
+            aria-label={tr('student.load_file', 'Load file')}
             data-help-key="student_load_file"
             onClick={() => projectFileInputRef?.current?.click()}
             className={cx('min-h-11 px-4 py-2 font-bold text-xs rounded-xl transition-colors motion-reduce:transition-none flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.secondary, styles.focusTeal, styles.focusOffset)}
           >
-            <FolderOpen size={14} aria-hidden="true"/> {t('student.load_file')}
+            <FolderOpen size={14} aria-hidden="true"/> {tr('student.load_file', 'Load file')}
           </button>
           <button
             type="button"
-            aria-label={t('student.save_drive')}
+            aria-label={tr('student.save_drive', 'Save to device')}
             data-help-key="student_save_work"
             disabled={hasSaveableWork === false}
-            onClick={initiateSaveStudentProject}
+            onClick={() => { if (typeof initiateSaveStudentProject === 'function') initiateSaveStudentProject(); }}
             className={cx('min-h-11 px-4 py-2 font-bold text-xs rounded-xl transition-colors motion-reduce:transition-none flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.primaryTeal, styles.focusTeal, styles.focusOffset, 'disabled:cursor-not-allowed disabled:opacity-50', isSaveActionPulsing ? 'student-save-history-pulse shadow-teal-500/50' : '')}
           >
-            <Download size={14} aria-hidden="true"/> {t('student.save_drive')}
+            <Download size={14} aria-hidden="true"/> {tr('student.save_drive', 'Save to device')}
           </button>
           <button
             type="button"
             data-help-key="student_submit_work"
-            onClick={handleSetShowSubmitModalToTrue}
+            onClick={() => { if (typeof handleSetShowSubmitModalToTrue === 'function') handleSetShowSubmitModalToTrue(); }}
             className={cx('min-h-11 px-4 py-2 font-bold text-xs rounded-xl transition-colors motion-reduce:transition-none flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.primaryIndigo, styles.focusIndigo, styles.focusOffset)}
-            title={t('common.export_for_grading')}
+            title={tr('common.export_for_grading', 'Export for grading')}
           >
-            <Send size={14} aria-hidden="true"/> {t('common.submit')}
+            <Send size={14} aria-hidden="true"/> {tr('common.submit', 'Submit')}
           </button>
         </div>
       </section>
@@ -305,10 +325,10 @@ function StudentSaveAdventurePanel({
       <section className={cx(styles.adventurePanel, 'rounded-3xl shadow-lg overflow-hidden shrink-0 mb-4')} aria-labelledby={adventureTitleId}>
         <div className={cx(styles.adventureHeader, 'p-3 flex justify-between items-center')}>
           <div id={adventureTitleId} className={cx('text-sm font-bold flex items-center gap-2', styles.adventureTitle)}>
-            <MapIcon size={16} aria-hidden="true" /> {t('adventure.title')}
+            <MapIcon size={16} aria-hidden="true" /> {tr('adventure.title', 'Adventure')}
           </div>
           {safePoints >= rawUnlockXp && (
-            <span className={cx('text-[11px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1', styles.unlockedBadge)} role="status"><CheckCircle2 size={10} aria-hidden="true"/> {t('adventure.unlocked')}</span>
+            <span className={cx('text-[11px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1', styles.unlockedBadge)} role="status"><CheckCircle2 size={10} aria-hidden="true"/> {tr('adventure.unlocked', 'Unlocked')}</span>
           )}
         </div>
         <div className="p-4">
@@ -317,8 +337,8 @@ function StudentSaveAdventurePanel({
               <div className={cx('flex items-center gap-3 mb-2', styles.muted)}>
                 <div className={cx('p-2 rounded-full', styles.iconBubble)} aria-hidden="true"><Lock size={20}/></div>
                 <div className="text-xs">
-                  <strong className={cx('block', styles.adventureTitle)}>{t('adventure.locked_status')}</strong>
-                  {t('adventure.earn')} <span className={cx('font-bold', styles.accentText)}>{rawUnlockXp} XP</span> {t('adventure.to_unlock')}
+                  <strong className={cx('block', styles.adventureTitle)}>{tr('adventure.locked_status', 'Adventure locked')}</strong>
+                  {tr('adventure.earn', 'Earn')} <span className={cx('font-bold', styles.accentText)}>{rawUnlockXp} XP</span> {tr('adventure.to_unlock', 'to unlock')}
                 </div>
               </div>
               <div
@@ -345,10 +365,10 @@ function StudentSaveAdventurePanel({
             offlineAdventurePlay ? (
               <button
                 type="button"
-                data-help-key="adventure_start_btn" data-adventure-offline-start onClick={handleStartAdventure}
+                data-help-key="adventure_start_btn" data-adventure-offline-start onClick={() => { if (typeof handleStartAdventure === 'function') handleStartAdventure(); }}
                 className={cx('min-h-11 w-full py-3 rounded-2xl font-bold transition-all motion-reduce:transition-none active:scale-95 motion-reduce:transform-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.primaryPurple, styles.focusPurple, styles.focusOffset)}
               >
-                <MapIcon size={18} aria-hidden="true"/> {t('adventure.start')}
+                <MapIcon size={18} aria-hidden="true"/> {tr('adventure.start', 'Start Adventure')}
               </button>
             ) : soloAdventureAiOff ? (
               <p data-adventure-solo-ai-off className={cx('text-xs leading-relaxed', styles.muted)}>{soloAiNeededText}</p>
@@ -358,39 +378,39 @@ function StudentSaveAdventurePanel({
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
-                      data-help-key="adventure_resume_btn" onClick={handleResumeAdventure}
+                      data-help-key="adventure_resume_btn" onClick={() => { if (typeof handleResumeAdventure === 'function') handleResumeAdventure(); }}
                       disabled={isResumingAdventure}
                       className={cx('min-h-11 w-full py-3 rounded-xl font-bold transition-all motion-reduce:transition-none active:scale-95 motion-reduce:transform-none flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.primaryPurple, styles.focusPurple, styles.focusOffset)}
                     >
                       {isResumingAdventure ? <RefreshCw size={18} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : <History size={18} aria-hidden="true"/>}
-                      {t('adventure.resume')}
+                      {tr('adventure.resume', 'Resume')}
                     </button>
                     <button
                       type="button"
-                      data-help-key="adventure_start_btn" onClick={handleStartAdventure}
+                      data-help-key="adventure_start_btn" onClick={() => { if (typeof handleStartAdventure === 'function') handleStartAdventure(); }}
                       disabled={isResumingAdventure}
                       className={cx('min-h-11 w-full py-3 rounded-xl font-bold shadow-sm transition-all motion-reduce:transition-none active:scale-95 motion-reduce:transform-none flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.secondaryPurple, styles.focusPurple, styles.focusOffset)}
                     >
-                      <Sparkles size={18} aria-hidden="true"/> {t('adventure.new_game')}
+                      <Sparkles size={18} aria-hidden="true"/> {tr('adventure.new_game', 'New game')}
                     </button>
                   </div>
                 ) : (
                   <button
                     type="button"
-                    data-help-key="adventure_start_btn" onClick={handleStartAdventure}
+                    data-help-key="adventure_start_btn" onClick={() => { if (typeof handleStartAdventure === 'function') handleStartAdventure(); }}
                     className={cx('min-h-11 w-full py-3 rounded-2xl font-bold transition-all motion-reduce:transition-none active:scale-95 motion-reduce:transform-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.primaryPurple, styles.focusPurple, styles.focusOffset)}
                   >
-                    <Sparkles size={18} aria-hidden="true"/> {t('adventure.start')}
+                    <Sparkles size={18} aria-hidden="true"/> {tr('adventure.start', 'Start Adventure')}
                   </button>
                 )}
               </div>
             ) : (
               <div className={cx('p-4 rounded-xl text-center', styles.livePanel)} role="status" aria-live="polite">
                 <p className={cx('text-sm font-bold mb-1', styles.liveTitle)}>
-                  <Wifi size={16} className="inline mr-1 animate-pulse motion-reduce:animate-none" aria-hidden="true"/> {t('session.live_active')}
+                  <Wifi size={16} className="inline mr-1 animate-pulse motion-reduce:animate-none" aria-hidden="true"/> {tr('session.live_active', 'Live session active')}
                 </p>
                 <p className={cx('text-xs', styles.liveText)}>
-                  {sessionData?.democracy?.isActive ? t('session.vote_prompt') : t('session.watch_prompt')}
+                  {sessionData?.democracy?.isActive ? tr('session.vote_prompt', 'Vote on the next step') : tr('session.watch_prompt', 'Watch the shared adventure')}
                 </p>
               </div>
             )
@@ -400,6 +420,7 @@ function StudentSaveAdventurePanel({
               ref={storyBtnRef}
               type="button"
               aria-haspopup="dialog"
+              aria-expanded={showStoryAuthor}
               data-adventure-student-story-open
               onClick={() => setShowStoryAuthor(true)}
               className={cx('mt-3 min-h-11 w-full py-3 rounded-2xl font-bold transition-colors motion-reduce:transition-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.secondaryPurple, styles.focusPurple, styles.focusOffset)}
@@ -410,7 +431,18 @@ function StudentSaveAdventurePanel({
         </div>
       </section>
       )}
-      {showStoryAuthor && studentStoryAllowed && <StoryPanel studentMode history={history} setHistory={setHistory} t={t} theme={themeContext && themeContext.theme} onClose={() => { setShowStoryAuthor(false); setTimeout(() => { try { if (storyBtnRef.current && storyBtnRef.current !== document.body && storyBtnRef.current !== document.documentElement && storyBtnRef.current.isConnected) storyBtnRef.current?.focus(); } catch (_) {} }, 0); }} />}
+      {showStoryAuthor && studentStoryAllowed && <StoryPanel studentMode history={history} setHistory={setHistory} t={t} theme={themeContext && themeContext.theme} onClose={() => {
+        setShowStoryAuthor(false);
+        if (storyCloseTimerRef.current) clearTimeout(storyCloseTimerRef.current);
+        storyCloseTimerRef.current = setTimeout(() => {
+          storyCloseTimerRef.current = null;
+          try {
+            if (typeof document !== 'undefined' && storyBtnRef.current && storyBtnRef.current !== document.body && storyBtnRef.current !== document.documentElement && storyBtnRef.current.isConnected) {
+              storyBtnRef.current.focus();
+            }
+          } catch (_) {}
+        }, 0);
+      }} />}
     </>
   );
 }

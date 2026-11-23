@@ -1,0 +1,309 @@
+[
+  {
+    "id": "parapro-reading-skills-021",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "Read the passage. The student council proposed installing bottle-filling stations. First, members counted how many disposable bottles appeared in cafeteria recycling bins. Next, they surveyed students about where refill stations would be most useful. Finally, they presented the data and a cost estimate to the principal. Which description best explains how the passage is organized?",
+    "choices": [
+      "It compares two plans for reducing cafeteria waste.",
+      "It states a problem and argues that only one solution is possible.",
+      "It presents the council's work as a sequence of steps.",
+      "It lists several effects without identifying what caused them."
+    ],
+    "answerIndex": 2,
+    "rationale": "The transition words first, next, and finally place the council's actions in chronological order. The passage therefore uses a sequence structure rather than comparison, an exclusive argument, or an unconnected list of effects.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "The passage describes one council proposal rather than comparing two different plans.",
+      "The council gathers evidence, but the passage does not claim that no other solution could work.",
+      "First, next, and finally explicitly mark the ordered steps in the council's work.",
+      "The sentences describe connected actions in order, not unrelated effects with missing causes."
+    ]
+  },
+  {
+    "id": "parapro-reading-skills-022",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "A school library recorded the following checkouts during one week: graphic novels, 42; biographies, 18; science books, 27; poetry, 13. Which conclusion is best supported by the table?",
+    "choices": [
+      "Every student checked out at least one graphic novel.",
+      "Biographies and science books had the same number of checkouts.",
+      "Poetry books were unavailable for part of the week.",
+      "Graphic novels had more checkouts than biographies and poetry combined."
+    ],
+    "answerIndex": 3,
+    "rationale": "Biographies and poetry total 31 checkouts, while graphic novels had 42. The table supports that numerical comparison, but it does not identify individual borrowers, book availability, or equal category totals.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "Category totals do not show whether every student borrowed a graphic novel.",
+      "The table reports 18 biography checkouts and 27 science-book checkouts, so they are not equal.",
+      "A low checkout total does not establish that poetry books were unavailable.",
+      "Forty-two is greater than the combined biography and poetry total of thirty-one."
+    ]
+  },
+  {
+    "id": "parapro-reading-skills-023",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "foundation",
+    "prompt": "Which sentence states a fact rather than an opinion?",
+    "choices": [
+      "The after-school robotics club meets on Tuesdays and Thursdays.",
+      "Robotics is the most exciting activity the school offers.",
+      "Every student should be required to join an after-school club.",
+      "The new robotics room is much nicer than the old classroom."
+    ],
+    "answerIndex": 0,
+    "rationale": "A meeting schedule can be checked against a calendar or club announcement, so it is verifiable. The other statements express a preference, a recommendation, or a subjective comparison and therefore are opinions.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "The club's meeting days are specific and can be verified using a schedule.",
+      "Calling an activity the most exciting expresses a personal judgment.",
+      "Saying students should participate is a recommendation rather than a verifiable fact.",
+      "Calling one room nicer is a subjective comparison that can vary by observer."
+    ]
+  },
+  {
+    "id": "parapro-reading-application-011",
+    "type": "single-choice",
+    "domainId": "reading",
+    "difficulty": "application",
+    "prompt": "A student can state what happened in a short passage but has difficulty explaining why the main character changed a decision. Which support would best help the student make an evidence-based inference?",
+    "choices": [
+      "Ask the student to copy the final sentence several times.",
+      "Have the student find clues around the decision and explain the inference.",
+      "Tell the student the character's reason before rereading begins.",
+      "Replace the passage with a list of unrelated vocabulary words."
+    ],
+    "answerIndex": 1,
+    "rationale": "An inference connects relevant textual clues with reasoning. Locating evidence around the decision and explaining the connection makes that thinking visible while preserving the student's responsibility for constructing the inference.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "Copying a sentence practices transcription but does not connect evidence to a reason.",
+      "This scaffold directs attention to relevant clues and asks the student to articulate the inference.",
+      "Providing the answer removes the reasoning task instead of supporting the student through it.",
+      "Unrelated vocabulary practice does not address inference from the assigned passage."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-skills-021",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "foundation",
+    "prompt": "A rectangular storage box is 8 inches long, 3 inches wide, and 5 inches high. What is its volume?",
+    "choices": [
+      "16 cubic inches",
+      "40 cubic inches",
+      "80 cubic inches",
+      "120 cubic inches"
+    ],
+    "answerIndex": 3,
+    "rationale": "The volume of a rectangular prism is length times width times height. Multiplying 8 by 3 by 5 gives 120, and volume is expressed in cubic units because three dimensions are multiplied.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "Sixteen results from adding the three dimensions, which does not calculate volume.",
+      "Forty multiplies length and height but leaves out the width of the box.",
+      "Eighty does not equal the product of all three stated dimensions.",
+      "Multiplying 8 by 3 by 5 gives the correct volume of 120 cubic inches."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-skills-022",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "foundation",
+    "prompt": "Five students read 12, 15, 15, 18, and 20 pages during a study period. What was the mean number of pages read?",
+    "choices": [
+      "15 pages",
+      "15.5 pages",
+      "16 pages",
+      "17 pages"
+    ],
+    "answerIndex": 2,
+    "rationale": "Add the five values to obtain 80 pages, then divide by the five students. The mean is 80 divided by 5, or 16 pages. The repeated value 15 is the mode, not the mean.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "Fifteen is the most frequent value, so it is the mode rather than the mean.",
+      "Fifteen and one-half does not result from dividing the total of 80 by 5.",
+      "The total of 80 pages divided among 5 students gives a mean of 16 pages.",
+      "Seventeen is greater than the result of the required total-and-divide calculation."
+    ]
+  },
+  {
+    "id": "parapro-mathematics-application-011",
+    "type": "single-choice",
+    "domainId": "mathematics",
+    "difficulty": "application",
+    "prompt": "A student expands 3(x + 4) as 3x + 4. Which response would best address the student's error?",
+    "choices": [
+      "Ask the student to memorize the corrected expression 3x + 12.",
+      "Use an area model to show three groups of both x and 4, then connect the model to 3x + 12.",
+      "Tell the student to divide both sides by 3, even though no equation is given.",
+      "Have the student replace x with 0 and stop after checking one expression."
+    ],
+    "answerIndex": 1,
+    "rationale": "The error comes from distributing 3 to only one term. An area or grouping model shows that both x and 4 occur in each of three groups, making the structure of 3x plus 12 visible and explainable.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/details/books/prealgebra-2e/"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "Memorizing one result does not reveal why the 3 must multiply both terms.",
+      "The model directly represents three copies of each addend and connects them to symbolic notation.",
+      "Dividing both sides is inapplicable because the prompt contains an expression, not an equation.",
+      "Checking only x equals zero may detect a mismatch but does not explain the distributive structure."
+    ]
+  },
+  {
+    "id": "parapro-writing-skills-021",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "foundation",
+    "prompt": "Which sentence combines the ideas most clearly and correctly? The rain stopped. The track remained too wet for the relay race.",
+    "choices": [
+      "Although the rain stopped, the track remained too wet for the relay race.",
+      "The rain stopped, the track remained too wet for the relay race.",
+      "The rain stopped and because the track remained too wet for the relay race.",
+      "Stopping the rain, the relay race had a track that remained too wet."
+    ],
+    "answerIndex": 0,
+    "rationale": "Although accurately signals the contrast between the rain ending and the track still being unusable. The sentence is complete and correctly punctuated, unlike the comma splice, fragment, and illogical modifier in the other choices.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "The subordinating word although clearly connects the contrasting ideas in a complete sentence.",
+      "A comma alone cannot correctly join these two independent clauses.",
+      "The coordination and subordination are incomplete, leaving an ungrammatical construction.",
+      "The opening modifier illogically suggests that the relay race stopped the rain."
+    ]
+  },
+  {
+    "id": "parapro-writing-skills-022",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "application",
+    "prompt": "Which revision makes the pronoun reference clearest? When Maya spoke with Elena about the science display, she said the labels needed larger print.",
+    "choices": [
+      "When Maya spoke with Elena about it, she said the labels needed larger print.",
+      "Speaking with Elena about the science display, she said larger print was needed.",
+      "When Maya spoke with Elena, Maya said the science-display labels needed larger print.",
+      "Maya and Elena spoke about the science display because she needed larger labels."
+    ],
+    "answerIndex": 2,
+    "rationale": "Repeating Maya identifies the speaker and removes the ambiguity created by she when two people have just been named. The revision also preserves the original meaning about the science-display labels.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/handbook"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "Both it and she lack clear antecedents in this version, so ambiguity increases.",
+      "The pronoun she still could refer to Maya or Elena after both are mentioned.",
+      "Naming Maya as the speaker makes the reference explicit while retaining the intended detail.",
+      "The pronoun she remains ambiguous, and larger labels changes the original meaning."
+    ]
+  },
+  {
+    "id": "parapro-writing-application-011",
+    "type": "single-choice",
+    "domainId": "writing",
+    "difficulty": "application",
+    "prompt": "A student is revising an argument that the school should add a morning homework-help period. Which addition would provide the strongest relevant evidence?",
+    "choices": [
+      "A description of the colors used in the school's hallway murals",
+      "A personal statement that mornings have always been the best time of day",
+      "A list of unrelated clubs that meet after school during the spring",
+      "Attendance and assignment-completion data from a comparable school's morning support program"
+    ],
+    "answerIndex": 3,
+    "rationale": "Evidence from a comparable program directly addresses whether morning academic support is used and whether it relates to assignment completion. The other additions are subjective or unrelated to the proposed homework-help period.",
+    "references": [
+      "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text"
+    ],
+    "reviewStatus": "source-reviewed",
+    "legacySourceId": "",
+    "legacySourceFile": "",
+    "migrationStatus": "",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-13",
+    "choiceRationales": [
+      "Hallway mural colors have no meaningful connection to morning academic support.",
+      "A personal preference about mornings does not demonstrate that the proposed program would help students.",
+      "A list of unrelated clubs does not provide evidence about homework support or completion.",
+      "Comparable attendance and completion data are relevant, observable evidence for the proposal's likely value."
+    ]
+  }
+]

@@ -11,6 +11,8 @@
   'use strict';
 
   var STORE_KEY = 'alloflow-packets-math-practice/1';
+  var PRESET_KEY = 'alloflow-math-presets/1';
+  var MAX_PRESETS = 30;
   var TRY_PAGE = 'packets-try.html';
   var OWN = 'own';
   // 2026-11-13: subtraction and division sets beside addition and multiplication (packet_math_practice_builder.js).
@@ -19,7 +21,304 @@
   var MAX_STUDENTS = 40;   // "Make one for each student": files in one .zip, as on the other makers
   var METHOD_IDS = ['ccc', 'rehearsal'];
   var MAX_TYPED = 2000;
-  var MINUS = String.fromCharCode(0x2212), DIVIDE = String.fromCharCode(0xF7);
+  var TIMES = String.fromCharCode(0xD7), MINUS = String.fromCharCode(0x2212), DIVIDE = String.fromCharCode(0xF7);
+
+  // ---------------------------------------------------------------------------
+  // Pure Monochrome Printable Math Fact Practice Worksheet Builder (Wave 6)
+  // Exposed on window.AlloMathWorksheet = { buildMathWorksheetHtml }.
+  // Strictly monochrome (#000000, #ffffff, #808080), zero-network CSP, script-src 'none'.
+  // ---------------------------------------------------------------------------
+  function escHtml(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+  function normalizeOp(raw) {
+    var s = String(raw || '').trim();
+    if (s === 'add' || s === '+') return 'add';
+    if (s === 'sub' || s === '-' || s === MINUS || s === '\u2013' || s === '\u2014') return 'sub';
+    if (s === 'mul' || s === 'x' || s === 'X' || s === '*' || s === TIMES) return 'mul';
+    if (s === 'div' || s === '/' || s === ':' || s === DIVIDE) return 'div';
+    return '';
+  }
+  function opSymbol(op) {
+    return op === 'add' ? '+' : op === 'sub' ? MINUS : op === 'mul' ? TIMES : op === 'div' ? DIVIDE : '';
+  }
+  function computeAnswer(a, b, op) {
+    if (!Number.isFinite(a) || !Number.isFinite(b)) return '';
+    if (op === 'add') return String(a + b);
+    if (op === 'sub') return String(a - b);
+    if (op === 'mul') return String(a * b);
+    if (op === 'div' && b !== 0 && a % b === 0) return String(a / b);
+    return '';
+  }
+  function normalizeWorksheetFact(raw) {
+    if (raw == null) return null;
+    if (typeof raw === 'string') {
+      var trimmed = raw.trim();
+      if (!trimmed) return null;
+      var m = /^(\d+)\s*([-+xX*/:\u2212\u2013\u2014\u00D7\u00F7])\s*(\d+)$/.exec(trimmed);
+      if (m) {
+        var pa = Number(m[1]), pb = Number(m[3]), pop = normalizeOp(m[2]);
+        return { a: pa, b: pb, op: pop, expr: pa + ' ' + opSymbol(pop) + ' ' + pb, hasEquals: false, answer: computeAnswer(pa, pb, pop) };
+      }
+      return { a: null, b: null, op: '', expr: trimmed, hasEquals: trimmed.indexOf('=') >= 0, answer: '' };
+    }
+    var src = raw.fact && typeof raw.fact === 'object' ? raw.fact : raw;
+    var op = normalizeOp(src.op);
+    var a = src.a != null && src.a !== '' && Number.isFinite(Number(src.a)) ? Number(src.a) : null;
+    var b = src.b != null && src.b !== '' && Number.isFinite(Number(src.b)) ? Number(src.b) : null;
+    var customWord = raw.word != null ? String(raw.word).trim() : (raw.prompt != null ? String(raw.prompt).trim() : '');
+    if (customWord && (a === null || b === null || !op)) {
+      var m2 = /^(\d+)\s*([-+xX*/:\u2212\u2013\u2014\u00D7\u00F7])\s*(\d+)$/.exec(customWord);
+      if (m2) {
+        a = Number(m2[1]);
+        b = Number(m2[3]);
+        op = normalizeOp(m2[2]);
+      }
+    }
+    var expr = customWord || (a !== null && b !== null && op ? (a + ' ' + opSymbol(op) + ' ' + b) : '');
+    if (!expr) return null;
+    var ans = raw.answer != null && raw.answer !== '' ? String(raw.answer).trim() : (a !== null && b !== null && op ? computeAnswer(a, b, op) : '');
+    return { a: a, b: b, op: op, expr: expr, hasEquals: expr.indexOf('=') >= 0, answer: ans };
+  }
+  function svgTenFrame(a, b) {
+    var total = a + b;
+    var frames = total > 10 ? 2 : 1;
+    var cell = 18, pad = 4, gap = 10;
+    var frameW = cell * 5;
+    var w = pad * 2 + frames * frameW + (frames - 1) * gap;
+    var h = pad * 2 + cell * 2;
+    var out = ['<svg class="aid-svg" viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '" role="img" aria-label="Ten-frame visual for ' + a + ' plus ' + b + '">'];
+    var idx = 0;
+    for (var f = 0; f < frames; f++) {
+      var ox = pad + f * (frameW + gap);
+      out.push('<rect x="' + ox + '" y="' + pad + '" width="' + frameW + '" height="' + (cell * 2) + '" fill="#ffffff" stroke="#000000" stroke-width="1.2"/>');
+      for (var r = 0; r < 2; r++) {
+        for (var c = 0; c < 5; c++) {
+          var cx = ox + c * cell, cy = pad + r * cell;
+          out.push('<rect x="' + cx + '" y="' + cy + '" width="' + cell + '" height="' + cell + '" fill="none" stroke="#808080" stroke-width="0.8"/>');
+          if (idx < a) {
+            out.push('<circle cx="' + (cx + cell / 2) + '" cy="' + (cy + cell / 2) + '" r="5.5" fill="#000000"/>');
+          } else if (idx < total) {
+            out.push('<circle cx="' + (cx + cell / 2) + '" cy="' + (cy + cell / 2) + '" r="5.2" fill="#ffffff" stroke="#000000" stroke-width="1.6"/>');
+          }
+          idx++;
+        }
+      }
+    }
+    out.push('</svg>');
+    return out.join('');
+  }
+  function svgNumberLine(a, b, isSub) {
+    var maxVal = isSub ? Math.max(10, a <= 20 ? 20 : a) : Math.max(10, a + b <= 20 ? 20 : a + b);
+    var w = 220, h = 44, x0 = 12, x1 = w - 12, yLine = 30;
+    var out = ['<svg class="aid-svg" viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '" role="img" aria-label="Number-line jump strip">'];
+    out.push('<line x1="' + x0 + '" y1="' + yLine + '" x2="' + x1 + '" y2="' + yLine + '" stroke="#000000" stroke-width="1.4"/>');
+    if (maxVal <= 20) {
+      var step = (x1 - x0) / maxVal;
+      for (var n = 0; n <= maxVal; n++) {
+        var tx = (x0 + n * step).toFixed(1);
+        var tall = n % 5 === 0 ? 5 : 3;
+        out.push('<line x1="' + tx + '" y1="' + (yLine - tall) + '" x2="' + tx + '" y2="' + (yLine + tall) + '" stroke="#000000" stroke-width="' + (n % 5 === 0 ? '1.2' : '0.8') + '"/>');
+        if (n % 5 === 0) out.push('<text x="' + tx + '" y="' + (h - 1) + '" text-anchor="middle" font-size="8" fill="#000000">' + n + '</text>');
+      }
+      var sx = x0 + a * step;
+      var ex = isSub ? x0 + Math.max(0, a - b) * step : x0 + Math.min(maxVal, a + b) * step;
+      out.push('<circle cx="' + sx.toFixed(1) + '" cy="' + yLine + '" r="3.2" fill="#000000"/>');
+      if (b > 0) {
+        var mx = ((sx + ex) / 2).toFixed(1);
+        out.push('<path d="M ' + sx.toFixed(1) + ' ' + (yLine - 3) + ' Q ' + mx + ' 4 ' + ex.toFixed(1) + ' ' + (yLine - 3) + '" fill="none" stroke="#808080" stroke-width="1.4" stroke-dasharray="3 2"/>');
+        out.push('<text x="' + mx + '" y="10" text-anchor="middle" font-size="8" fill="#000000">' + (isSub ? MINUS : '+') + b + '</text>');
+      }
+    } else {
+      var pStart = isSub ? x1 - 24 : x0 + 24;
+      var pEnd = isSub ? x0 + 24 : x1 - 24;
+      var pMid = (pStart + pEnd) / 2;
+      out.push('<circle cx="' + pStart + '" cy="' + yLine + '" r="3.2" fill="#000000"/>');
+      out.push('<text x="' + pStart + '" y="' + (h - 1) + '" text-anchor="middle" font-size="8" fill="#000000">' + a + '</text>');
+      out.push('<path d="M ' + pStart + ' ' + (yLine - 3) + ' Q ' + pMid + ' 5 ' + pEnd + ' ' + (yLine - 3) + '" fill="none" stroke="#808080" stroke-width="1.4" stroke-dasharray="3 2"/>');
+      out.push('<text x="' + pMid + '" y="11" text-anchor="middle" font-size="8" fill="#000000">' + (isSub ? MINUS : '+') + b + '</text>');
+      out.push('<text x="' + pEnd + '" y="' + (h - 1) + '" text-anchor="middle" font-size="8" fill="#000000">?</text>');
+    }
+    out.push('</svg>');
+    return out.join('');
+  }
+  function svgArrayGrid(rows, cols) {
+    var rCount = Math.min(rows, 10), cCount = Math.min(cols, 10);
+    var step = 11, pad = 10;
+    var w = pad * 2 + cCount * step;
+    var h = pad * 2 + rCount * step;
+    var out = ['<svg class="aid-svg" viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '" role="img" aria-label="Array dot grid of ' + rows + ' rows by ' + cols + ' columns">'];
+    out.push('<rect x="' + (pad - 3) + '" y="' + (pad - 3) + '" width="' + (cCount * step + 6) + '" height="' + (rCount * step + 6) + '" fill="#ffffff" stroke="#808080" stroke-width="1" stroke-dasharray="2 2"/>');
+    for (var r = 0; r < rCount; r++) {
+      for (var c = 0; c < cCount; c++) {
+        out.push('<circle cx="' + (pad + c * step + step / 2) + '" cy="' + (pad + r * step + step / 2) + '" r="3.2" fill="#000000"/>');
+      }
+    }
+    out.push('</svg>');
+    return out.join('');
+  }
+  function svgEqualGroups(total, groups) {
+    var perGroup = groups > 0 ? Math.floor(total / groups) : 0;
+    var gShow = Math.min(groups, 10);
+    var boxW = 20, boxH = 22, gap = 4, pad = 4;
+    var w = pad * 2 + gShow * boxW + Math.max(0, gShow - 1) * gap;
+    var h = pad * 2 + boxH + 12;
+    var out = ['<svg class="aid-svg" viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '" role="img" aria-label="Equal groups visual for ' + total + ' divided by ' + groups + '">'];
+    out.push('<text x="' + (w / 2).toFixed(1) + '" y="10" text-anchor="middle" font-size="8" fill="#000000">' + total + ' in ' + groups + ' equal groups</text>');
+    for (var g = 0; g < gShow; g++) {
+      var bx = pad + g * (boxW + gap);
+      out.push('<rect x="' + bx + '" y="14" width="' + boxW + '" height="' + boxH + '" rx="2" fill="#ffffff" stroke="#000000" stroke-width="1"/>');
+      if (perGroup > 0 && perGroup <= 9) {
+        var cols = perGroup <= 4 ? 2 : 3;
+        for (var d = 0; d < perGroup; d++) {
+          var dx = bx + 4 + (d % cols) * 5.5;
+          var dy = 19 + Math.floor(d / cols) * 5.5;
+          out.push('<circle cx="' + dx.toFixed(1) + '" cy="' + dy.toFixed(1) + '" r="1.8" fill="#808080"/>');
+        }
+      }
+    }
+    out.push('</svg>');
+    return out.join('');
+  }
+  function svgPartWhole(label) {
+    var w = 150, h = 38;
+    return '<svg class="aid-svg" viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '" role="img" aria-label="Strategy workspace">' +
+      '<rect x="2" y="2" width="146" height="16" fill="#ffffff" stroke="#000000" stroke-width="1.2"/>' +
+      '<rect x="2" y="20" width="72" height="16" fill="#ffffff" stroke="#808080" stroke-width="1"/>' +
+      '<rect x="76" y="20" width="72" height="16" fill="#ffffff" stroke="#808080" stroke-width="1"/>' +
+      '<text x="75" y="13" text-anchor="middle" font-size="8" fill="#000000">' + escHtml(label) + '</text>' +
+      '</svg>';
+  }
+  function strategyAidFor(item) {
+    if (item.hasEquals || item.a === null || item.b === null || !item.op) {
+      return svgPartWhole('Show your thinking');
+    }
+    if (item.op === 'add') {
+      if (item.a >= 0 && item.b >= 0 && item.a <= 10 && item.b <= 10 && item.a + item.b <= 20) {
+        return svgTenFrame(item.a, item.b);
+      }
+      return svgNumberLine(item.a, item.b, false);
+    }
+    if (item.op === 'sub') {
+      return svgNumberLine(item.a, item.b, true);
+    }
+    if (item.op === 'mul') {
+      if (item.a >= 1 && item.a <= 10 && item.b >= 1 && item.b <= 10) {
+        return svgArrayGrid(item.a, item.b);
+      }
+      return svgPartWhole(item.a + ' groups of ' + item.b);
+    }
+    if (item.op === 'div') {
+      if (item.b >= 1 && item.b <= 10 && item.a >= 0 && item.a <= 100 && item.a % item.b === 0) {
+        return svgEqualGroups(item.a, item.b);
+      }
+      return svgPartWhole(item.a + ' split by ' + item.b);
+    }
+    return svgPartWhole('Show your thinking');
+  }
+  function buildMathWorksheetHtml(options) {
+    var opts = options && typeof options === 'object' ? options : {};
+    var title = String(opts.title || 'Math Fact Practice').trim() || 'Math Fact Practice';
+    var scaffolded = !!opts.scaffolded;
+    var includeAnswerKey = opts.includeAnswerKey !== false;
+    var directions = opts.directions != null ? String(opts.directions).trim()
+      : (scaffolded ? 'Use the visual model and workspace to solve each fact.' : 'Write the answer for each math fact.');
+    var rawFacts = Array.isArray(opts.facts) ? opts.facts : [];
+    var items = [];
+    for (var i = 0; i < rawFacts.length; i++) {
+      var norm = normalizeWorksheetFact(rawFacts[i]);
+      if (norm) items.push(norm);
+    }
+    var cols = opts.columns === 2 || opts.columns === 3 ? opts.columns : (items.length >= 15 ? 3 : 2);
+    var css = [
+      '@page { margin: 12mm; }',
+      '* { box-sizing: border-box; }',
+      'body { margin: 0; padding: 12mm; font-family: Arial, Helvetica, sans-serif; color: #000000; background: #ffffff; line-height: 1.4; }',
+      'header.ws-head { border-bottom: 2px solid #000000; padding-bottom: 8px; margin-bottom: 12px; }',
+      '.ws-meta { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 8px; font-size: 13px; }',
+      '.ws-field { flex: 1; display: flex; align-items: flex-end; gap: 6px; }',
+      '.ws-field-date { max-width: 180px; }',
+      '.ws-line { flex: 1; border-bottom: 1px solid #000000; height: 14px; }',
+      'h1.ws-title { margin: 0 0 4px; font-size: 20px; color: #000000; }',
+      'p.ws-directions { margin: 0; font-size: 13px; color: #000000; }',
+      '.ws-grid { display: grid; grid-template-columns: repeat(' + cols + ', 1fr); gap: 12px 18px; margin-top: 14px; }',
+      '.ws-item { display: flex; align-items: baseline; gap: 6px; padding: 8px 6px; border-bottom: 1px solid #808080; font-size: 16px; break-inside: avoid; }',
+      '.ws-num { font-weight: 700; min-width: 24px; color: #000000; }',
+      '.ws-expr { font-weight: 600; color: #000000; }',
+      '.ws-blank { display: inline-block; min-width: 44px; border-bottom: 1.5px solid #000000; margin-left: 4px; }',
+      '.ws-scaffold-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 12px; }',
+      '.ws-card { border: 1.5px solid #000000; padding: 10px; background: #ffffff; break-inside: avoid; }',
+      '.ws-card-top { display: flex; align-items: baseline; gap: 6px; font-size: 17px; font-weight: 700; margin-bottom: 8px; }',
+      '.ws-aid { margin: 6px 0 8px; }',
+      '.aid-svg { display: block; max-width: 100%; height: auto; }',
+      '.ws-work { min-height: 36px; border: 1px dashed #808080; padding: 4px 6px; font-size: 11px; color: #808080; }',
+      'section.answer-key { break-before: page; page-break-before: always; padding-top: 4px; }',
+      '.ak-head { border-bottom: 2px solid #000000; padding-bottom: 6px; margin-bottom: 12px; }',
+      '.ak-head h2 { margin: 0 0 4px; font-size: 18px; color: #000000; }',
+      '.ak-note { margin: 0; font-size: 12px; color: #808080; }',
+      '.ak-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px 14px; list-style: none; margin: 0; padding: 0; }',
+      '.ak-grid li { padding: 4px 0; border-bottom: 1px solid #808080; font-size: 14px; }',
+      '.ak-n { font-weight: 700; margin-right: 6px; }',
+      '.ak-a { font-weight: 700; }',
+      '@media print { body { padding: 0; } }'
+    ].join('\n');
+
+    var body = [];
+    body.push('<main class="ws-sheet" data-mode="' + (scaffolded ? 'scaffolded' : 'independent') + '">');
+    body.push('<header class="ws-head">');
+    body.push('<div class="ws-meta"><div class="ws-field"><span>Name:</span><span class="ws-line"></span></div><div class="ws-field ws-field-date"><span>Date:</span><span class="ws-line"></span></div></div>');
+    body.push('<h1 class="ws-title">' + escHtml(title) + '</h1>');
+    if (directions) body.push('<p class="ws-directions">' + escHtml(directions) + '</p>');
+    body.push('</header>');
+
+    if (scaffolded) {
+      body.push('<div class="ws-scaffold-list">');
+      for (var s = 0; s < items.length; s++) {
+        var it = items[s];
+        var promptHtml = it.hasEquals ? escHtml(it.expr) : (escHtml(it.expr) + ' = <span class="ws-blank" aria-label="blank"></span>');
+        body.push('<article class="ws-card">');
+        body.push('<div class="ws-card-top"><span class="ws-num">' + (s + 1) + '.</span><span class="ws-expr">' + promptHtml + '</span></div>');
+        body.push('<div class="ws-aid">' + strategyAidFor(it) + '</div>');
+        body.push('<div class="ws-work">Workspace</div>');
+        body.push('</article>');
+      }
+      body.push('</div>');
+    } else {
+      body.push('<div class="ws-grid">');
+      for (var k = 0; k < items.length; k++) {
+        var item = items[k];
+        var lineHtml = item.hasEquals ? escHtml(item.expr) : (escHtml(item.expr) + ' = <span class="ws-blank" aria-label="blank"></span>');
+        body.push('<div class="ws-item"><span class="ws-num">' + (k + 1) + '.</span><span class="ws-expr">' + lineHtml + '</span></div>');
+      }
+      body.push('</div>');
+    }
+    body.push('</main>');
+
+    if (includeAnswerKey) {
+      body.push('<section class="answer-key" aria-label="Teacher Answer Key">');
+      body.push('<div class="ak-head"><h2>' + escHtml(title) + ' &mdash; Teacher Answer Key</h2><p class="ak-note">Teacher copy. Keep separate from student sheets.</p></div>');
+      body.push('<ol class="ak-grid">');
+      for (var j = 0; j < items.length; j++) {
+        var ak = items[j];
+        var akText = ak.hasEquals
+          ? (escHtml(ak.expr) + (ak.answer !== '' ? ' <span class="ak-a">(Answer: ' + escHtml(ak.answer) + ')</span>' : ''))
+          : (escHtml(ak.expr) + ' = <span class="ak-a">' + escHtml(ak.answer) + '</span>');
+        body.push('<li><span class="ak-n">' + (j + 1) + '.</span>' + akText + '</li>');
+      }
+      body.push('</ol>');
+      body.push('</section>');
+    }
+
+    return '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+      '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; img-src data:; script-src \'none\'">\n' +
+      '<title>' + escHtml(title) + '</title>\n<style>\n' + css + '\n</style>\n</head>\n<body>\n' + body.join('\n') + '\n</body>\n</html>\n';
+  }
+  window.AlloMathWorksheet = { buildMathWorksheetHtml: buildMathWorksheetHtml };
 
   var doc = document;
   var $ = function (id) { return doc.getElementById(id); };
@@ -44,8 +343,13 @@
   var step = 1;
   var ownRows = [], ownStop = '', ownTimer = 0;
   var buildTimer = 0, buildRun = 0, built = null, fileUrl = '', batchFile = null, paperOn = false;
+  var previewOmit = Object.create(null);
   var previewSession = null, inPreviewAction = false;
   function stopPreview() { if (previewSession) { try { previewSession.stop(); } catch (_) {} previewSession = null; } }
+  function resetPreview(stopSession) {
+    previewOmit = Object.create(null);
+    if (stopSession) stopPreview();
+  }
 
   // title (2026-11-13): the file's title, empty for the builder's own. learner: a student's code name for the file. It is
   // not kept: the next file is often for someone else.
@@ -127,6 +431,7 @@
       radio.addEventListener('change', function () {
         if (!radio.checked) return;
         state.sets[state.kind] = set.id;
+        resetPreview(false);
         remember();
         syncRadios('set', set.id);
         drawSetResult();
@@ -183,6 +488,7 @@
     else if (bad) ownStop = count(bad, 'fact') + ' cannot be used. Change ' + (bad === 1 ? 'it' : 'them') + ' or take ' + (bad === 1 ? 'it' : 'them') + ' out to go on.';
     else if (good > builder.MAX_FACTS) ownStop = 'A file can hold ' + builder.MAX_FACTS + ' facts at most. Take ' + (good - builder.MAX_FACTS) + ' out to go on.';
     setText('own-line', line);
+    show('own-example-row', !parts.length);
     if (!ownStop) setText('step-1-problem', '');
   }
   function drawStep1() {
@@ -242,6 +548,7 @@
         var keys = [];
         Array.prototype.forEach.call(host.querySelectorAll('input[type="checkbox"]'), function (other) { if (other.checked) keys.push(other.value); });
         state.known[pick.source] = keys;
+        resetPreview(false);
         remember();
         label.classList.toggle('is-on', box.checked);
         drawPlanLine();
@@ -325,6 +632,8 @@
     clearPaper();
     show('summary', false);
     show('try', false);
+    show('download-worksheet', false);
+    show('download-bundle', false);
     show('save', false);
     show('after-save', false);
     show('build-problem', false);
@@ -342,16 +651,51 @@
     making('Putting the file together.');
     buildTimer = setTimeout(make, delay);
   }
+  function planSpec(pick, mode) {
+    var omitKeys = Object.keys(previewOmit);
+    if (!omitKeys.length) {
+      var plain = { mode: mode, known: knownNow(pick) };
+      if (pick.set) plain.factSet = pick.set.id; else plain.facts = pick.facts;
+      return { input: plain, edited: false, facts: pick.facts };
+    }
+    var sourceFacts = pick.facts;
+    if (pick.set && mode === 'ccc') {
+      try {
+        var basePlan = builder.planMathPractice({ mode: mode, factSet: pick.set.id });
+        if (basePlan && Array.isArray(basePlan.cards) && basePlan.cards.length) {
+          sourceFacts = basePlan.cards.map(function (c) { return c.fact; });
+        }
+      } catch (_) {}
+    }
+    var keptFacts = sourceFacts.filter(function (f) { return !previewOmit[builder.factKey(f)]; });
+    var keptMap = Object.create(null);
+    keptFacts.forEach(function (f) { keptMap[builder.factKey(f)] = true; });
+    var knownKeys = knownNow(pick).filter(function (k) { return !!keptMap[k]; });
+    if (mode === 'rehearsal' && pick.set && knownKeys.length < 3) {
+      try {
+        var base = planNow(pick, mode);
+        (base.addedKnown || []).forEach(function (f) {
+          var key = builder.factKey(f);
+          if (previewOmit[key] || keptMap[key]) return;
+          keptMap[key] = true;
+          keptFacts.push(f);
+          knownKeys.push(key);
+        });
+      } catch (_) {}
+    }
+    return { input: { mode: mode, facts: keptFacts, known: knownKeys }, edited: true, facts: keptFacts };
+  }
   function make() {
     clearTimeout(buildTimer);
     clearBuilt();
-    var run = buildRun, pick, plan, lesson, result;
+    var run = buildRun, pick, spec, plan, lesson, result;
     try {
       pick = chosen();
       if (!pick) throw new Error('no facts are chosen');
-      plan = planNow(pick, state.method);
-      var input = { loader: loader, mode: state.method, known: knownNow(pick) };
-      if (pick.set) input.factSet = pick.set.id; else input.facts = pick.facts;
+      spec = planSpec(pick, state.method);
+      plan = builder.planMathPractice(spec.input);
+      var input = Object.assign({ loader: loader }, spec.input);
+      if (spec.edited && !state.title && pick.set) input.title = titleFallback();
       lesson = builder.lessonFromMathPractice(input);
       result = builder.buildMathPracticePacket({ lesson: lesson, loader: loader, title: state.title });
     } catch (error) {
@@ -359,7 +703,7 @@
       if (run === buildRun) problem(msg);
       return Promise.resolve({ html: null, said: said(error) || msg });
     }
-    if (run === buildRun) drawResult(result, pick, plan, lesson);
+    if (run === buildRun) drawResult(result, pick, plan, lesson, spec.edited);
     return Promise.resolve(built && built.html ? { html: built.html, url: fileUrl } : { html: null, said: 'Could not update the file.' });
   }
   function describePreview(lesson) {
@@ -380,57 +724,57 @@
     });
     return out;
   }
+  function drawPreviewNote(edited) {
+    var box = $('summary'), note = $('preview-note');
+    var omitCount = edited ? Object.keys(previewOmit).length : 0;
+    if (!omitCount) {
+      if (note && note.parentNode) note.parentNode.removeChild(note);
+      return;
+    }
+    if (!box) return;
+    if (!note) {
+      note = el('p', 'result-sub');
+      note.id = 'preview-note';
+      box.appendChild(note);
+    }
+    note.textContent = count(omitCount, 'fact') + ' removed in Preview. ';
+    var restoreBtn = el('button', 'btn btn-text btn-small', 'Restore');
+    restoreBtn.type = 'button';
+    restoreBtn.id = 'preview-restore';
+    restoreBtn.addEventListener('click', function () {
+      resetPreview(false);
+      makeSoon(0);
+    });
+    note.appendChild(restoreBtn);
+  }
   function onPreviewAction(req) {
     if (!req || req.action !== 'remove') return { said: 'Nothing changed.' };
-    var pick, plan;
+    var pick, spec, plan;
     try {
       pick = chosen();
       if (!pick) return { said: 'No facts are chosen.' };
-      plan = planNow(pick, state.method);
+      spec = planSpec(pick, state.method);
+      plan = builder.planMathPractice(spec.input);
     } catch (err) {
       return { said: said(err) || 'Could not read the current facts.' };
     }
     var card = plan.cards[req.index];
     if (!card || !card.fact) return { said: 'Could not find that fact.' };
     var dropKey = builder.factKey(card.fact);
-    var keptFacts = pick.facts.filter(function (f) { return builder.factKey(f) !== dropKey; });
+    var keptFacts = spec.facts.filter(function (f) { return builder.factKey(f) !== dropKey; });
     if (!keptFacts.length) return { said: 'A file needs at least one fact.' };
-    var prevKind = state.kind, prevFacts = state.facts, hasPrevKnown = has(state.known, OWN), prevKnownOwn = hasPrevKnown ? state.known[OWN].slice() : null;
-    if (state.kind !== OWN) {
-      var keptKeys = {};
-      keptFacts.forEach(function (f) { keptKeys[builder.factKey(f)] = true; });
-      state.known[OWN] = knownNow(pick).filter(function (k) { return !!keptKeys[k]; });
-      state.kind = OWN;
-    } else if (hasPrevKnown) {
-      state.known[OWN] = state.known[OWN].filter(function (k) { return k !== dropKey; });
-    }
-    state.facts = keptFacts.map(word).join('\n');
-    $('f-facts').value = state.facts;
-    syncRadios('kind', state.kind);
-    show('panel-sets', false);
-    show('panel-own', true);
-    drawOwn();
-    remember();
-    drawTitle();
+    previewOmit[dropKey] = true;
     inPreviewAction = true;
     return make().then(function (res) {
       inPreviewAction = false;
       if (!res || !res.html) {
-        state.kind = prevKind;
-        state.facts = prevFacts;
-        if (hasPrevKnown) state.known[OWN] = prevKnownOwn; else delete state.known[OWN];
-        $('f-facts').value = prevFacts;
-        syncRadios('kind', state.kind);
-        show('panel-sets', OPS.indexOf(state.kind) >= 0);
-        show('panel-own', state.kind === OWN);
-        drawOwn();
-        remember();
-        drawTitle();
+        delete previewOmit[dropKey];
         return make().then(function () { return { said: (res && res.said) || 'Could not remove that fact.' }; });
       }
       return { html: res.html, url: res.url, said: 'Removed fact.' };
     }, function (err) {
       inPreviewAction = false;
+      delete previewOmit[dropKey];
       return { said: said(err) || 'Could not remove that fact.' };
     });
   }
@@ -470,12 +814,13 @@
       }
     }
   }
-  function drawResult(result, pick, plan, lesson) {
+  function drawResult(result, pick, plan, lesson, edited) {
     show('making', false);
     var cards = plan.cards.length, knownCards = plan.cards.filter(function (c) { return c.role === 'known'; }).length;
-    var rows = [['Facts', pick.set ? pick.set.opName + ': ' + pick.set.name + '. ' + capital(count(pick.facts.length, 'fact')) + '.' : capital(count(pick.facts.length, 'fact')) + ': ' + pick.facts.map(word).join(', ') + '.']];
+    var activeFacts = edited ? plan.facts : pick.facts;
+    var rows = [['Facts', pick.set ? pick.set.opName + ': ' + pick.set.name + '. ' + capital(count(activeFacts.length, 'fact')) + '.' : capital(count(activeFacts.length, 'fact')) + ': ' + activeFacts.map(word).join(', ') + '.']];
     if (plan.mode === 'ccc') {
-      var moved = plan.cards.map(function (c) { return builder.factKey(c.fact); }).join(',') !== pick.facts.map(builder.factKey).join(',');
+      var moved = plan.cards.map(function (c) { return builder.factKey(c.fact); }).join(',') !== activeFacts.map(builder.factKey).join(',');
       rows.push(['How', plan.method + '. Every fact once, ' + (pick.set ? 'in a mixed order, so the student cannot just count on.'
         : moved ? 'in the order you typed them, except that a fact is never right beside its turnaround.' : 'in the order you typed them.')]);
       rows.push(['Cards', capital(count(cards, 'card')) + '. Each one starts with the fact and its answer.']);
@@ -486,9 +831,12 @@
     rows.push(['Feedback', 'Right or wrong after every answer. After a wrong answer the file shows the answer, the student types it while looking, and then answers again from memory. Up to 3 tries from memory on each card.']);
     rows.push(['Clock', 'None.']);
     rows.push(['Title', result.lesson.title]);
-    built = { baseHtml: result.html, html: result.html, name: result.lesson.lessonId + '.html', bytes: 0, lesson: lesson, plain: result.lesson.lessonId + '.html', cards: cards, summaryBase: rows, codeName: '' };
+    built = { baseHtml: result.html, html: result.html, name: result.lesson.lessonId + '.html', bytes: 0, lesson: lesson, plain: result.lesson.lessonId + '.html', slug: result.lesson.lessonId || 'math-practice', title: result.lesson.title || 'Math Fact Practice', plan: plan, cards: cards, summaryBase: rows, codeName: '' };
     applySingleCodeName();
+    drawPreviewNote(edited);
     show('summary', true);
+    show('download-worksheet', true);
+    show('download-bundle', !!(window.AlloPacketZip && typeof window.AlloPacketZip.create === 'function'));
     show('save', true);
     try { drawPaper(result, plan); } catch (_) { clearPaper(); }
     setText('making-said', 'The file is ready: ' + count(cards, 'card') + ', ' + fileSize(built.bytes) + '.');
@@ -588,6 +936,54 @@
     link.click();
     doc.body.removeChild(link);
   }
+  function worksheetFactsFromBuilt() {
+    if (!built || !built.plan || !Array.isArray(built.plan.cards)) return [];
+    return built.plan.cards.map(function (c) {
+      var fw = builder.factWord(c.fact, loader);
+      return { a: c.fact.a, b: c.fact.b, op: c.fact.op, word: fw.word, answer: fw.answer };
+    });
+  }
+  function downloadBlobWithRevoke(blob, filename) {
+    var url = '';
+    try { url = URL.createObjectURL(blob); } catch (_) { url = ''; }
+    if (!url) return problem('This browser cannot save files from a page. Open this page in Chrome, Edge, Firefox or Safari.');
+    download(url, filename);
+    setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 0);
+  }
+  function downloadWorksheet() {
+    if (!built) return;
+    var html = buildMathWorksheetHtml({
+      title: built.title,
+      facts: worksheetFactsFromBuilt(),
+      scaffolded: true,
+      includeAnswerKey: true,
+    });
+    var slug = built.slug || built.plain.replace(/\.html$/i, '') || 'math-practice';
+    downloadBlobWithRevoke(new Blob([html], { type: 'text/html' }), slug + '-math-worksheet.html');
+  }
+  function downloadBundle() {
+    if (!built || !built.html) return;
+    if (!window.AlloPacketZip || typeof window.AlloPacketZip.create !== 'function') {
+      return problem('This page could not load the part that makes .zip files. Load the page again.');
+    }
+    try {
+      var zip = window.AlloPacketZip.create();
+      var encoder = new TextEncoder();
+      var facts = worksheetFactsFromBuilt();
+      var wsScaffolded = buildMathWorksheetHtml({ title: built.title, facts: facts, scaffolded: true, includeAnswerKey: false });
+      var wsIndependent = buildMathWorksheetHtml({ title: built.title, facts: facts, scaffolded: false, includeAnswerKey: false });
+      var wsAnswerKey = buildMathWorksheetHtml({ title: built.title, facts: facts, scaffolded: false, includeAnswerKey: true });
+      zip.add('01-Interactive-Math-Practice.html', encoder.encode(built.html));
+      zip.add('02-Worksheet-Scaffolded.html', encoder.encode(wsScaffolded));
+      zip.add('03-Worksheet-Independent.html', encoder.encode(wsIndependent));
+      zip.add('04-Teacher-Answer-Key.html', encoder.encode(wsAnswerKey));
+      var parts = zip.finish();
+      var slug = built.slug || built.plain.replace(/\.html$/i, '') || 'math-practice';
+      downloadBlobWithRevoke(new Blob(parts, { type: 'application/zip' }), slug + '-math-classroom-bundle.zip');
+    } catch (error) {
+      problem('The classroom bundle could not be made (' + said(error) + ').');
+    }
+  }
   function saveFile() {
     if (!built) return;
     var url = fileUrl;
@@ -596,6 +992,175 @@
     download(url, built.name);
     show('after-save', true);
     $('after-save').focus();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Saved Local Teacher Presets (localStorage key 'alloflow-math-presets/1', zero account)
+  // ---------------------------------------------------------------------------
+  function presetSlug(name) {
+    return String(name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'preset';
+  }
+  function sanitizePresetItem(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    var name = String(raw.name || '').trim().slice(0, 60);
+    if (!name) return null;
+    var out = {
+      id: typeof raw.id === 'string' && raw.id.trim() ? raw.id.trim().slice(0, 60) : presetSlug(name),
+      name: name,
+      kind: KINDS.indexOf(raw.kind) >= 0 ? raw.kind : '',
+      sets: { add: '', sub: '', mul: '', div: '' },
+      facts: typeof raw.facts === 'string' ? raw.facts.slice(0, MAX_TYPED) : '',
+      method: METHOD_IDS.indexOf(raw.method) >= 0 ? raw.method : '',
+      known: Object.create(null),
+      title: typeof raw.title === 'string' ? raw.title.slice(0, 80) : '',
+    };
+    OPS.forEach(function (kind) {
+      var id = raw.sets && typeof raw.sets === 'object' && has(raw.sets, kind) ? raw.sets[kind] : '';
+      var row = typeof id === 'string' ? setRow(id) : null;
+      if (row && row.op === kind) out.sets[kind] = id;
+    });
+    if (raw.known && typeof raw.known === 'object' && !Array.isArray(raw.known)) {
+      Object.keys(raw.known).forEach(function (source) {
+        var keys = raw.known[source];
+        if ((source === OWN || setRow(source)) && Array.isArray(keys)) {
+          out.known[source] = keys.filter(function (k) { return typeof k === 'string' && /^(add|sub|mul|div):\d{1,3}:\d{1,3}$/.test(k); }).slice(0, 60);
+        }
+      });
+    }
+    return out;
+  }
+  function readPresets() {
+    var parsed = null;
+    try {
+      parsed = JSON.parse(window.localStorage.getItem(PRESET_KEY) || 'null', function (k, v) {
+        return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+      });
+    } catch (_) { parsed = null; }
+    var rawList = Array.isArray(parsed) ? parsed : (parsed && parsed.v === 1 && Array.isArray(parsed.items) ? parsed.items : []);
+    var list = [], seen = Object.create(null);
+    rawList.forEach(function (entry) {
+      var item = sanitizePresetItem(entry);
+      if (!item || seen[item.id]) return;
+      seen[item.id] = true;
+      if (list.length < MAX_PRESETS) list.push(item);
+    });
+    return list;
+  }
+  function writePresets(list) {
+    try {
+      window.localStorage.setItem(PRESET_KEY, JSON.stringify({ v: 1, items: list }));
+      return true;
+    } catch (_) { return false; }
+  }
+  function renderPresets(selectedId) {
+    var select = $('math-preset-select');
+    var delBtn = $('math-preset-delete');
+    if (!select) return;
+    var list = readPresets();
+    select.textContent = '';
+    var blank = el('option', '', 'Choose a saved preset');
+    blank.value = '';
+    select.appendChild(blank);
+    var found = false;
+    list.forEach(function (item) {
+      var opt = el('option', '', item.name);
+      opt.value = item.id;
+      if (selectedId && item.id === selectedId) { opt.selected = true; found = true; }
+      select.appendChild(opt);
+    });
+    select.value = found ? selectedId : '';
+    if (delBtn) delBtn.disabled = !select.value;
+  }
+  function savePreset() {
+    var nameInput = $('math-preset-name');
+    var name = String((nameInput && nameInput.value) || '').trim().slice(0, 60);
+    if (!name) {
+      setText('math-preset-status', 'Type a preset name first.');
+      if (nameInput) nameInput.focus();
+      return;
+    }
+    var list = readPresets();
+    var id = presetSlug(name);
+    var knownCopy = Object.create(null);
+    Object.keys(state.known || {}).forEach(function (source) {
+      if (Array.isArray(state.known[source])) knownCopy[source] = state.known[source].slice();
+    });
+    var entry = {
+      id: id,
+      name: name,
+      kind: state.kind,
+      sets: { add: state.sets.add, sub: state.sets.sub, mul: state.sets.mul, div: state.sets.div },
+      facts: state.facts,
+      method: state.method,
+      known: knownCopy,
+      title: state.title,
+    };
+    var replaced = false;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === id || list[i].name.toLowerCase() === name.toLowerCase()) {
+        list[i] = entry;
+        replaced = true;
+        break;
+      }
+    }
+    if (!replaced) {
+      if (list.length >= MAX_PRESETS) list.pop();
+      list.unshift(entry);
+    }
+    if (!writePresets(list)) {
+      setText('math-preset-status', 'This browser could not save the preset.');
+      return;
+    }
+    if (nameInput) nameInput.value = '';
+    renderPresets(entry.id);
+    setText('math-preset-status', 'Saved preset "' + entry.name + '".');
+  }
+  function applyPreset(id) {
+    var delBtn = $('math-preset-delete');
+    if (!id) {
+      if (delBtn) delBtn.disabled = true;
+      setText('math-preset-status', '');
+      return;
+    }
+    var list = readPresets(), match = null;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === id) { match = list[i]; break; }
+    }
+    if (!match) {
+      renderPresets('');
+      setText('math-preset-status', 'That preset is no longer saved.');
+      return;
+    }
+    resetPreview(true);
+    var fresh = defaults();
+    fresh.kind = match.kind;
+    fresh.sets = { add: match.sets.add, sub: match.sets.sub, mul: match.sets.mul, div: match.sets.div };
+    fresh.facts = match.facts;
+    fresh.method = match.method;
+    fresh.title = match.title;
+    Object.keys(match.known || {}).forEach(function (source) {
+      if (Array.isArray(match.known[source])) fresh.known[source] = match.known[source].slice();
+    });
+    state = fresh;
+    remember();
+    drawStep1();
+    if (step === 2) drawStep2();
+    if (step === 3) { drawTitle(); makeSoon(30); }
+    if (delBtn) delBtn.disabled = false;
+    setText('math-preset-status', 'Loaded preset "' + match.name + '".');
+  }
+  function deletePreset() {
+    var select = $('math-preset-select');
+    var id = select ? select.value : '';
+    if (!id) return;
+    var list = readPresets(), removedName = '';
+    var next = list.filter(function (item) {
+      if (item.id === id) { removedName = item.name; return false; }
+      return true;
+    });
+    writePresets(next);
+    renderPresets('');
+    setText('math-preset-status', removedName ? 'Deleted preset "' + removedName + '".' : 'Preset deleted.');
   }
 
   // ---------------------------------------------------------------------------
@@ -664,7 +1229,7 @@
       var zipName = built.plain.replace(/\.html$/, '') + '__' + list.names.length + '-students.zip';
       var url = URL.createObjectURL(new Blob(parts, { type: 'application/zip' }));
       download(url, zipName);
-      setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+      setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 60000);
       setText('batch-said', 'Saved ' + zipName + ' (' + fileSize(zip.bytes) + '). Each file\'s name ends with the student\'s code name. Send each student their own file.');
     } catch (error) { setText('batch-problem', 'The .zip file could not be made (' + said(error) + ').'); }
   }
@@ -721,7 +1286,7 @@
     reopenPending = null;
     var got = result.math, items = [];
     clearTimeout(buildTimer);
-    stopPreview();
+    resetPreview(true);
     clearBuilt();
     var fresh = defaults();
     fresh.sets = state.sets;
@@ -755,26 +1320,63 @@
     var rawBytes = bytes || (typeof TextEncoder === 'function' ? new TextEncoder().encode(String(text || '')).buffer : null);
     applyReopen(reopenKit.readMath(text, { verify: window.AlloPacketVerify, builder: builder, codeName: builder.codeName }), String(name || 'the file').slice(0, 120), rawBytes);
   }
+  function openReopenFile(file) {
+    if (!file) return;
+    if (file.size > MAX_REOPEN_BYTES) { reopenPending = null; showReopen('This file is too large to be a practice file made here.', [], null); return; }
+    var done = function (buf) {
+      var text = typeof TextDecoder === 'function' ? new TextDecoder('utf-8').decode(buf) : '';
+      reopenText(text, file.name, buf);
+    };
+    if (typeof file.arrayBuffer === 'function') {
+      file.arrayBuffer().then(done, function () { showReopen('This browser could not read the file.', [], null); });
+    } else {
+      var reader = new FileReader();
+      reader.onload = function () { reopenText(String(reader.result || ''), file.name); };
+      reader.onerror = function () { showReopen('This browser could not read the file.', [], null); };
+      reader.readAsText(file);
+    }
+  }
   function wireReopen() {
     $('reopen-choose').addEventListener('click', function () { $('reopen-file').click(); });
     $('reopen-file').addEventListener('change', function () {
       var file = this.files && this.files[0];
       this.value = '';
-      if (!file) return;
-      if (file.size > MAX_REOPEN_BYTES) { reopenPending = null; showReopen('This file is too large to be a practice file made here.', [], null); return; }
-      var done = function (buf) {
-        var text = typeof TextDecoder === 'function' ? new TextDecoder('utf-8').decode(buf) : '';
-        reopenText(text, file.name, buf);
-      };
-      if (typeof file.arrayBuffer === 'function') {
-        file.arrayBuffer().then(done, function () { showReopen('This browser could not read the file.', [], null); });
-      } else {
-        var reader = new FileReader();
-        reader.onload = function () { reopenText(String(reader.result || ''), file.name); };
-        reader.onerror = function () { showReopen('This browser could not read the file.', [], null); };
-        reader.readAsText(file);
-      }
+      openReopenFile(file);
     });
+    if ($('reopen-close')) {
+      $('reopen-close').addEventListener('click', function () {
+        show('reopen-note', false);
+        reopenPending = null;
+        if ($('reopen-choose')) $('reopen-choose').focus();
+      });
+    }
+    var dropHost = doc.querySelector('main') || doc.body;
+    var reopenBox = $('reopen');
+    if (dropHost) {
+      var dragDepth = 0;
+      dropHost.addEventListener('dragenter', function (event) {
+        if (!event.dataTransfer || !reopenKit) return;
+        dragDepth++;
+        if (reopenBox) reopenBox.classList.add('is-dropping');
+      });
+      dropHost.addEventListener('dragover', function (event) {
+        if (!event.dataTransfer || !reopenKit) return;
+        event.preventDefault();
+        if (reopenBox) reopenBox.classList.add('is-dropping');
+      });
+      dropHost.addEventListener('dragleave', function () {
+        dragDepth = Math.max(0, dragDepth - 1);
+        if (!dragDepth && reopenBox) reopenBox.classList.remove('is-dropping');
+      });
+      dropHost.addEventListener('drop', function (event) {
+        dragDepth = 0;
+        if (reopenBox) reopenBox.classList.remove('is-dropping');
+        var files = event.dataTransfer && event.dataTransfer.files;
+        if (!files || !files.length || !reopenKit) return;
+        event.preventDefault();
+        openReopenFile(files[0]);
+      });
+    }
     if ($('reopen-page')) {
       $('reopen-page').addEventListener('click', function (event) {
         var handoff = window.AlloPacketHandoff;
@@ -827,6 +1429,7 @@
       });
     }
     state.kind = OWN;
+    resetPreview(true);
     state.facts = missedFacts.concat(knownFacts).map(word).join('\n');
     state.title = 'Practice missed math facts';
     if (knownFacts.length >= 3) {
@@ -894,10 +1497,10 @@
       tab.addEventListener('click', function () { goTo(Number(tab.getAttribute('data-go'))); });
     });
     Array.prototype.forEach.call(doc.querySelectorAll('input[name="kind"]'), function (radio) {
-      radio.addEventListener('change', function () { if (!radio.checked) return; state.kind = radio.value; remember(); setText('step-1-problem', ''); drawStep1(); });
+      radio.addEventListener('change', function () { if (!radio.checked) return; state.kind = radio.value; resetPreview(false); remember(); setText('step-1-problem', ''); drawStep1(); });
     });
     Array.prototype.forEach.call(doc.querySelectorAll('input[name="method"]'), function (radio) {
-      radio.addEventListener('change', function () { if (!radio.checked) return; state.method = radio.value; remember(); setText('step-2-problem', ''); drawStep2(); });
+      radio.addEventListener('change', function () { if (!radio.checked) return; state.method = radio.value; resetPreview(false); remember(); setText('step-2-problem', ''); drawStep2(); });
     });
     $('next-1').addEventListener('click', function () { goTo(2); });
     $('back-2').addEventListener('click', function () { goTo(1); });
@@ -907,10 +1510,21 @@
     $('retry').addEventListener('click', function () { makeSoon(30); });
     $('f-facts').addEventListener('input', function () {
       state.facts = this.value.slice(0, MAX_TYPED);
+      resetPreview(false);
       remember();
       clearTimeout(ownTimer);
       ownTimer = setTimeout(drawOwn, 250);
     });
+    if ($('own-example')) {
+      $('own-example').addEventListener('click', function () {
+        state.facts = '6 x 4\n7 x 8\n12 - 5\n9 + 6\n56 / 8';
+        $('f-facts').value = state.facts;
+        resetPreview(false);
+        remember();
+        drawOwn();
+        $('f-facts').focus();
+      });
+    }
     $('f-title').addEventListener('input', function () { state.title = this.value.slice(0, 80); remember(); if (step === 3) makeSoon(400); });
     $('f-batch-names').addEventListener('input', function () { setText('batch-problem', ''); applySingleCodeName(); drawBatch(); });
     $('batch-make').addEventListener('click', saveBatchZip);
@@ -923,15 +1537,22 @@
       });
     }
     if ($('print')) $('print').addEventListener('click', printPaper);
+    if ($('download-worksheet')) $('download-worksheet').addEventListener('click', downloadWorksheet);
+    if ($('download-bundle')) $('download-bundle').addEventListener('click', downloadBundle);
+    if ($('math-preset-save')) $('math-preset-save').addEventListener('click', savePreset);
+    if ($('math-preset-select')) $('math-preset-select').addEventListener('change', function () { applyPreset(this.value); });
+    if ($('math-preset-delete')) $('math-preset-delete').addEventListener('click', deletePreset);
     $('save').addEventListener('click', saveFile);
     $('forget').addEventListener('click', function () {
       try { window.localStorage.removeItem(STORE_KEY); } catch (_) {}
-      stopPreview();
+      resetPreview(true);
       state = defaults();
       $('f-facts').value = '';
       $('f-title').value = '';
       if ($('f-batch-names')) $('f-batch-names').value = '';
       show('rehearse-note', false);
+      show('reopen-note', false);
+      reopenPending = null;
       goTo(1, true);
       setText('forget-said', 'Done. The page is back to how it started.');
     });
@@ -957,12 +1578,17 @@
     var kit = window.AlloPacketReopen;
     reopenKit = kit && typeof kit.readMath === 'function' && window.AlloPacketVerify && typeof window.AlloPacketVerify.readParts === 'function' && typeof FileReader === 'function' ? kit : null;
     wire();
+    renderPresets('');
     if (reopenKit) wireReopen();
     show('reopen', !!reopenKit);
     show('batch', !!(window.AlloPacketZip && typeof builder.withCodeName === 'function'));
     show('loading', false);
     goTo(1, true);
     if (!applyRehearseHash()) takeHanded();
+    window.addEventListener('pagehide', function () {
+      if (fileUrl) { try { URL.revokeObjectURL(fileUrl); } catch (_) {} fileUrl = ''; }
+      stopPreview();
+    });
   }
 
   try { start(); } catch (error) {

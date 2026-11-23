@@ -219,7 +219,7 @@ function __alloBrainAtlasVoltageLabel(voltage) {
     '.brainatlas-search-field{display:flex;align-items:center;gap:7px;min-height:46px;border:1px solid var(--ba-button-border);border-radius:10px;background:var(--ba-panel);padding:0 7px 0 10px;transition:border-color .15s ease,box-shadow .15s ease;}',
     '.brainatlas-search-field:focus-within{border-color:var(--ba-focus);box-shadow:0 0 0 3px var(--ba-focus);}',
     '.brainatlas-search-icon{flex:0 0 auto;color:var(--ba-purple-ink);font-size:14px;line-height:1;}',
-    '.brainatlas-tool-shell .brainatlas-search-input{min-height:44px!important;font-size:16px!important;line-height:1.5!important;flex:1;min-width:0!important;border:0!important;background:transparent!important;color:var(--ba-text)!important;padding:9px 2px!important;outline:none!important;box-shadow:none!important;}',
+    '.brainatlas-tool-shell .brainatlas-search-input{min-height:44px!important;font-size:16px!important;line-height:1.5!important;flex:1;min-width:0!important;border:0!important;background:transparent!important;color:var(--ba-text)!important;padding:9px 2px!important;outline:2px solid transparent!important;box-shadow:none!important;}',
     '.brainatlas-clear-search{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:44px;flex:0 0 auto;border:1px solid var(--ba-button-border);border-radius:8px;background:var(--ba-button);color:var(--ba-button-text);font-size:18px;font-weight:900;}',
     '.brainatlas-clear-search:hover{border-color:var(--ba-purple);}',
     '.brainatlas-controls-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;}',

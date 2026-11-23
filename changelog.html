@@ -236,8 +236,8 @@
     * { transition: none !important; }
     html { scroll-behavior: auto; }
   }
-  .skip-link { position: absolute; left: -9999px; top: 8px; z-index: 999; background: #1e1b4b; color: #ffffff; padding: 10px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; }
-  .skip-link:focus { left: 12px; outline: 3px solid #facc15; outline-offset: 2px; }
+  .skip-link { position: absolute; inset-inline-start: 8px; top: 8px; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; pointer-events: none; z-index: 999; background: #1e1b4b; color: #ffffff; padding: 10px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; }
+  .skip-link:focus { inset-inline-start: 12px; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; pointer-events: auto; outline: 3px solid #facc15; outline-offset: 2px; }
   @media (forced-colors: active) { h1 { -webkit-text-fill-color: CanvasText; color: CanvasText; background: none; } a:focus-visible, button:focus-visible { outline: 3px solid Highlight; outline-offset: 2px; } }
 </style>
 </head>

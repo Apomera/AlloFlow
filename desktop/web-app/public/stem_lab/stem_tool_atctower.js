@@ -23,6 +23,7 @@
 // communication protocols, and decision-making under pressure
 // ═══════════════════════════════════════════
 
+if (typeof window !== 'undefined') {
 window.StemLab = window.StemLab || {
   _registry: {}, _order: [],
   registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); console.log('[StemLab] Registered tool: ' + id); },
@@ -30,13 +31,39 @@ window.StemLab = window.StemLab || {
   getRegisteredTools: function() { var self = this; return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean); },
   renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; } }
 };
+}
 
-if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
+if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
 
 (function() {
   'use strict';
+  function _atcIsGlobalMuted() {
+    if (typeof window === 'undefined') return false;
+    try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true; } catch (e) {}
+    return window.__alloGlobalMuted === true;
+  }
+  function _atcIsAiBlocked(ctx) {
+    if (ctx && (ctx.aiAvailable === false || ctx.aiHintsEnabled === false)) return true;
+    if (typeof window !== 'undefined') {
+      if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window.__alloOfflineOnly === true) return true;
+      var mp = window.ALLOFLOW_MANAGED_AI_POLICY;
+      if (mp != null) {
+        if (typeof mp !== 'object' || mp.enabled === false) return true;
+        if (Array.isArray(mp.connections) && mp.connections.length === 0) return true;
+      }
+      var sp = window.StudentPolicy;
+      if (sp && typeof sp === 'object') {
+        if (sp.aiDisabled === true || sp.allowAi === false) return true;
+        try { if (typeof sp.isAiAllowed === 'function' && sp.isAiAllowed('text') === false) return true; } catch (e) {}
+      }
+      if (ctx && typeof ctx.callGemini === 'function' && ctx.callGemini._alloQrBlocked === true) return true;
+      try { if (typeof window.__alloAiUsable === 'function' && window.__alloAiUsable('text') === false) return true; } catch (e) {}
+    }
+    return false;
+  }
   // ── Accessibility live region (WCAG 4.1.3) ──
   (function() {
+    if (typeof document === 'undefined' || !document.body) return;
     if (document.getElementById('allo-live-atcTower')) return;
     var lr = document.createElement('div');
     lr.id = 'allo-live-atcTower';
@@ -1370,9 +1397,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
       towerCss += '@media(max-width:760px){.atc-menu [role=tablist]{grid-template-columns:repeat(3,minmax(0,1fr))!important;padding:0 18px 14px!important;gap:6px!important}.atc-menu [role=tab]{padding:8px!important;text-align:center!important}.atc-menu [role=tab]>div+div{display:none}}';
       towerCss += '.atc-attempt-result{border-top:1px solid #486a7d;margin-top:12px;padding-top:12px;font-size:13px}.atc-attempt-result p{margin:4px 0!important}.atc-attempt-actions{display:flex;flex-wrap:wrap;gap:8px}.atc-review-card{margin:14px 0}.atc-review-card label{display:block;font-weight:750;margin:12px 0 7px}.atc-review-card select{width:100%;min-width:0;min-height:44px;padding:9px;border:1px solid #81ada4;border-radius:7px;color:#f8fafc;background:#122d3b;font:inherit}.atc-reflection-context{padding:12px;border-left:3px solid #99f6e4;background:#16313c;border-radius:6px;margin:12px 0;overflow-wrap:anywhere}.atc-reflection-context p{margin:6px 0!important}.atc-reflection-prompts{font-size:13px;line-height:1.6;color:#d5e5ee;padding-left:22px;margin:10px 0}.atc-carried-reflection{margin:12px 0;padding:0 14px!important}.atc-carried-reflection blockquote{margin:12px 0;padding:12px;border-left:3px solid #99f6e4;background:#16313c;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6}.atc-carried-reflection button{margin-bottom:12px}@media(forced-colors:active){.atc-reflection-context,.atc-carried-reflection blockquote,.atc-review-card select{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.atc-reflection-prompts{color:CanvasText!important}}';
       towerCss += '.atc-traffic-review{padding:12px;margin:10px 0 12px}.atc-traffic-review h4{margin:0 0 5px;font-size:14px}.atc-traffic-review>p{font-size:12px;margin-bottom:8px}.atc-review-links{display:flex;flex-wrap:wrap;gap:7px}.atc-tower .atc-review-links button{text-align:left;flex:1 1 150px;font-size:12px;padding:8px 10px}.atc-review-links button span{display:block;margin-top:3px;font-size:11px;color:#d5e5ee}.atc-review-links button[data-review-severity=conflict]{border-color:#fda4af}.atc-review-links button[data-review-severity=projected]{border-color:#fcd34d}.atc-guidance-command-note{padding:10px 12px;margin:10px 0;font-size:12px;border-left:3px solid #fcd34d;background:#332d15;color:#fff3c4;border-radius:6px}.atc-command-destination{display:block;margin-top:3px;font-size:12px;font-weight:750;color:#99f6e4}.atc-strip-selected{display:inline-block!important;width:fit-content;font-size:11px;font-weight:750;padding:2px 7px;border:1px solid #82e8d7;border-radius:20px;background:#153c43;color:#d6fff6;margin-bottom:5px}.atc-tower h3[tabindex="-1"]{scroll-margin-top:16px}.atc-tower h3[tabindex="-1"]:focus-visible{outline:3px solid #fcd34d;outline-offset:4px}@media(forced-colors:active){.atc-guidance-command-note,.atc-strip-selected{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.atc-command-destination,.atc-review-links button span{color:CanvasText!important}.atc-review-links button{border-color:ButtonText!important}}';
-      var upd = function(key, val) { ctx.update('atcTower', key, val); };
+      var upd = function(key, val) { if (typeof ctx.update === 'function') ctx.update('atcTower', key, val); };
       towerCss += '.atc-strip-selected{margin-right:6px}.atc-guidance-command-note{border-left-color:#99f6e4;background:#16313c;color:#d5e5ee}.atc-guidance-command-note[data-approach-note=true]{border-left-color:#fcd34d;background:#332d15;color:#fff3c4}@media(forced-colors:active){.atc-guidance-command-note{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}}';
-      var updMulti = function(obj) { ctx.updateMulti('atcTower', obj); };
+      var updMulti = function(obj) { if (typeof ctx.updateMulti === 'function') ctx.updateMulti('atcTower', obj); };
       var addToast = ctx.addToast;
       var callGemini = ctx.callGemini;
       var gradeLevel = ctx.gradeLevel;
@@ -1625,7 +1652,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
       useEffect(function() {
         if (view !== 'playing') return;
         refreshTower();
-        var timer = setInterval(refreshTower, 250);
+        var timer = setInterval(function() { if (typeof document !== 'undefined' && document.hidden) return; refreshTower(); }, 250);
         return function() { clearInterval(timer); };
       }, [view]);
       useEffect(function() {
@@ -1642,7 +1669,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
       useEffect(function() {
         if (view !== 'playing') return;
         checkpointShift();
-        var timer = setInterval(checkpointShift, 5000);
+        var timer = setInterval(function() { if (typeof document !== 'undefined' && document.hidden) return; checkpointShift(); }, 5000);
         var onVisibility = function() { if (document.hidden) { pendingStepRef.current = false; checkpointShift(); } };
         var onPageHide = function() { pendingStepRef.current = false; checkpointShift(); };
         document.addEventListener('visibilitychange', onVisibility);
@@ -1723,11 +1750,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
       // ── ATC Sound Effects ──
       var atcAudioRef = useRef({ ctx: null });
       var playATCSound = function(type) {
-        if (latestDataRef.current.soundEnabled === false) return;
+        if (latestDataRef.current.soundEnabled === false || _atcIsGlobalMuted()) return;
+        if (typeof window === 'undefined') return;
         try {
           var a = atcAudioRef.current;
-          if (!a.ctx) a.ctx = new (window.AudioContext || window.webkitAudioContext)();
-          if (a.ctx.state === 'suspended') a.ctx.resume();
+          var AC = window.AudioContext || window.webkitAudioContext;
+          if (!a.ctx && AC) a.ctx = new AC();
+          if (!a.ctx) return;
+          if (a.ctx.state === 'suspended') { try { a.ctx.resume().catch(function() {}); } catch (err) {} }
           var osc = a.ctx.createOscillator();
           var gain = a.ctx.createGain();
           osc.connect(gain); gain.connect(a.ctx.destination);
@@ -2258,7 +2288,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           // ═══ RENDER ═══
           checkATCBadges(game, game.time);
           if (game.touchdowns) game.touchdowns = game.touchdowns.filter(function(td) { return game.time - td.time < 3; });
-          if (gfx) {
+          if (gfx && W > 0 && H > 0 && !(typeof document !== 'undefined' && document.hidden)) {
           // High contrast color scheme
           var hc = !!latestDataRef.current.highContrast || !!(window.matchMedia && window.matchMedia('(forced-colors: active)').matches) || !!(typeof document !== 'undefined' && (document.documentElement.classList.contains('theme-contrast') || (canvas && canvas.closest && canvas.closest('.theme-contrast'))));
           var colors = {
@@ -3079,6 +3109,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           if (!game || !game.aircraft) return;
           if (game.commandEntry) return;
           var rect = canvas.getBoundingClientRect();
+          if (!rect || !rect.width || !rect.height) return;
           // Convert mouse coords from CSS display space to canvas pixel space
           var cssX = e.clientX - rect.left;
           var cssY = e.clientY - rect.top;
@@ -3177,6 +3208,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         };
         commandRef.current = issueCommand;
         var onKey = function(e) {
+          if (e.isComposing || e.keyCode === 229) return;
           if (e.target !== canvas || e.altKey || e.ctrlKey || e.metaKey || e.repeat) return;
           var key = e.key.toLowerCase();
           if (key === 'tab') return;
@@ -3200,6 +3232,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           if ('hrcgp dus'.replace(/ /g, '').indexOf(key) !== -1 && key.length === 1) { e.preventDefault(); issueCommand(key); }
         };
 
+        var onMuteChanged = function() {
+          if (_atcIsGlobalMuted()) {
+            try { var _a = atcAudioRef.current; if (_a && _a.ctx && _a.ctx.state === 'running') _a.ctx.suspend().catch(function() {}); } catch (e) {}
+          }
+        };
+        if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') window.addEventListener('alloflow-mute-changed', onMuteChanged);
         canvas.addEventListener('click', onClick);
         canvas.addEventListener('keydown', onKey);
         runningRef.current = true;
@@ -3209,6 +3247,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           pendingStepRef.current = false;
           cancelAnimationFrame(animRef.current);
           document.removeEventListener('visibilitychange', resetFrameClock);
+          if (typeof window !== 'undefined' && typeof window.removeEventListener === 'function') window.removeEventListener('alloflow-mute-changed', onMuteChanged);
           canvas.removeEventListener('click', onClick);
           canvas.removeEventListener('keydown', onKey);
           commandRef.current = null;
@@ -3265,6 +3304,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         ];
         var ATC_TAB_ORDER = menuTabs.map(function(tab) { return tab.id; });
         var atcTabKeyDown = function(e, index) {
+          if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var nextIndex = -1;
           if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % ATC_TAB_ORDER.length;
           else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + ATC_TAB_ORDER.length - 1) % ATC_TAB_ORDER.length;
@@ -3308,7 +3348,7 @@ recentShifts.length ? h('details', { 'data-atctower-history': 'true', style: { m
             h('summary', { style: { minHeight: '44px', display: 'flex', alignItems: 'center', color: '#ccfbf1', cursor: 'pointer', fontWeight: 800 } }, t('stem.atctower.recent_shifts', 'Recent shift debriefs') + ' (' + recentShifts.length + ')'),
             h('ol', { style: { paddingLeft: '22px', margin: '4px 0 0', display: 'grid', gap: '10px' } }, recentShifts.map(function(item) {
               var exercise = item.practice && item.exerciseResult && ATC_PRACTICE_SCENARIOS.find(function(scenario) { return scenario.id === item.practice.id && scenario.id === item.exerciseResult.id && scenario.airportId === item.airportId; });
-              var note = d.shiftReflections && d.shiftReflections[item.shiftId];
+              var note = d.shiftReflections && typeof d.shiftReflections === 'object' && Object.prototype.hasOwnProperty.call(d.shiftReflections, item.shiftId) ? d.shiftReflections[item.shiftId] : null;
               return h('li', { key: item.shiftId }, h('button', { onClick: function() { updMulti({ lastShift: item, view: 'debrief' }); }, style: { minHeight: '44px', width: '100%', padding: '10px 12px', background: '#123931', color: '#e2e8f0', border: '1px solid #52857c', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', lineHeight: 1.5 } },
                 exercise && h('strong', { style: { display: 'block', color: '#ccfbf1' } }, exercise.title + ' · ' + practiceOutcomeText(item.exerciseResult)),
                 item.airportName + ' · ' + (item.trainingMode === 'guided' ? t('stem.atctower.guided_practice', 'Guided practice') : t('stem.atctower.standard_shift', 'Standard shift')),
@@ -3745,8 +3785,9 @@ h('div', { style: { padding: '12px 24px 18px', borderTop: '1px solid rgba(148, 1
           var requestedContext = lessonRequestContext;
           var initial = {};
           initial[aiKey] = ''; initial[aiErrorKey] = ''; initial[aiTextLevelKey] = aiLevel;
-          initial[aiLoadingKey] = typeof callGemini === 'function';
-          if (typeof callGemini !== 'function') {
+          var aiAllowed = typeof callGemini === 'function' && !_atcIsAiBlocked(ctx);
+          initial[aiLoadingKey] = aiAllowed;
+          if (!aiAllowed) {
             requests.pending = null;
             initial[aiErrorKey] = 'AI tutor not available.';
             updMulti(initial);
@@ -3762,7 +3803,8 @@ h('div', { style: { padding: '12px 24px 18px', borderTop: '1px solid rgba(148, 1
           Promise.resolve().then(function() { return callGemini(prompt, false, false, 0.5); }).then(function (resp) {
             if (!requests.mounted || thisReqId !== requests.generation || requestedContext !== lessonContextRef.current) return;
             requests.pending = null;
-            var result = {}; result[aiKey] = String(resp || '').trim(); result[aiLoadingKey] = false; result[aiTextLevelKey] = aiLevel;
+            var respText = typeof resp === 'string' ? resp : (resp && typeof resp.text === 'string' ? resp.text : '');
+            var result = {}; result[aiKey] = String(respText || '').trim(); result[aiLoadingKey] = false; result[aiTextLevelKey] = aiLevel;
             updMulti(result);
           }).catch(function () {
             if (!requests.mounted || thisReqId !== requests.generation || requestedContext !== lessonContextRef.current) return;
@@ -3857,7 +3899,7 @@ h('div', { style: { padding: '12px 24px 18px', borderTop: '1px solid rgba(148, 1
                 h('div', { className: 'atc-lesson-formula' }, h('span', null, t('stem.atctower.key_formula', 'Key Formula')), h('strong', null, __alloT('stem.atctower.' + d.selectedLesson + '_formula_v2', les.formula))),
                 les.source && h('a', { className: 'atc-lesson-source', href: les.source, target: '_blank', rel: 'noopener noreferrer' }, les.sourceLabel),
                 h('button', { className: 'atc-primary atc-lesson-practice', 'data-atctower-lesson-practice': d.selectedLesson, disabled: !!d.activeShift && !!lessonPracticeId, onClick: function() { if (lessonPracticeId) startPractice(lessonPracticeId); else updMulti({ view: 'menu', atcMenuPanel: 'practice' }); } }, lessonPracticeId ? t('stem.atctower.practice_this_concept', 'Practice this concept') : t('stem.atctower.browse_exercises', 'Browse practice exercises'))),
-              typeof callGemini === 'function' && h('section', { className: 'atc-card atc-lesson-tutor', role: 'region', 'aria-label': t('stem.atctower.ai_tutor', 'AI tutor') },
+              typeof callGemini === 'function' && !_atcIsAiBlocked(ctx) && h('section', { className: 'atc-card atc-lesson-tutor', role: 'region', 'aria-label': t('stem.atctower.ai_tutor', 'AI tutor') },
                 h('div', { className: 'atc-lesson-tutor-head' }, h('h3', null, t('stem.atctower.lesson_tutor_title', 'Explain at my level'))),
                 h('div', { className: 'atc-lesson-levels', role: 'group', 'aria-label': t('stem.atctower.reading_level', 'Reading level') }, LEVELS.map(function(L) { var active = aiLevel === L.id; return h('button', { key: L.id, onClick: function() { if (active) return; lessonRequestRef.current.generation += 1; lessonRequestRef.current.pending = null; var nextLevel = {}; nextLevel[aiLevelKey] = L.id; nextLevel[aiKey] = ''; nextLevel[aiLoadingKey] = false; nextLevel[aiErrorKey] = ''; nextLevel[aiTextLevelKey] = L.id; updMulti(nextLevel); }, 'aria-label': 'Reading level: ' + L.label + (active ? ' (selected)' : ''), 'aria-pressed': active }, L.label); })),
                 h('button', { onClick: explain, disabled: aiLoading, 'aria-label': 'Generate AI explanation at ' + ((LEVELS.find(function(L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + ' level' }, aiLoading ? t('stem.atctower.tutor_thinking', 'Thinking…') : aiText ? t('stem.atctower.tutor_reexplain', 'Re-explain') : t('stem.atctower.tutor_explain', 'Explain')),
@@ -4013,7 +4055,8 @@ h('details', { className: 'atc-card', style: { marginTop: 12 }, open: true, 'dat
         };
         var feedback = commandFeedback && (commandFeedback.aircraftId == null || (selected && commandFeedback.aircraftId === selected.id)) ? commandFeedback : null;
         var challenge = live.mathChallenge;
-        var trafficStatus = live.gameOver ? 'closed' : (atcTrafficFrozen(live, document.hidden) || commandDraft) ? 'paused' : 'live';
+        var isDocHidden = typeof document !== 'undefined' && document.hidden;
+        var trafficStatus = live.gameOver ? 'closed' : (atcTrafficFrozen(live, isDocHidden) || commandDraft) ? 'paused' : 'live';
         var exerciseProgress = scenarioProgress(live);
         var practiceDecision = atcPracticeDecisionState(live);
         var doCommand = function(key, value) { if (commandRef.current) commandRef.current(key, value); };
@@ -4254,7 +4297,7 @@ h('section', { className: 'atc-card', 'data-atctower-aircraft-controls': 'true',
                 commandDraft && h('form', { onSubmit: commitEntry, 'data-atctower-command-entry': commandDraft.kind, style: { marginTop: 12 } },
                   h('p', null, commandDraft.callsign),
                   h('label', { htmlFor: 'atc-command-value' }, commandDraft.kind === 'heading' ? t('stem.atctower.heading_range', 'Heading (0–360°)') : t('stem.atctower.speed_range', 'Speed (60–250 knots)')),
-                  h('input', { id: 'atc-command-value', type: 'number', inputMode: 'numeric', autoFocus: true, min: commandDraft.kind === 'heading' ? 0 : 60, max: commandDraft.kind === 'heading' ? 360 : 250, step: 1, required: true, value: commandDraft.value, 'aria-invalid': !!commandDraft.error, 'aria-describedby': 'atc-command-help' + (commandDraft.error ? ' atc-command-error' : ''), onChange: function(e) { setCommandDraft(Object.assign({}, commandDraft, { value: e.target.value, error: '' })); }, onKeyDown: function(e) { if (e.key === 'Escape') { e.preventDefault(); closeEntry(); } } }),
+                  h('input', { id: 'atc-command-value', type: 'number', inputMode: 'numeric', autoFocus: true, min: commandDraft.kind === 'heading' ? 0 : 60, max: commandDraft.kind === 'heading' ? 360 : 250, step: 1, required: true, value: commandDraft.value, 'aria-invalid': !!commandDraft.error, 'aria-describedby': 'atc-command-help' + (commandDraft.error ? ' atc-command-error' : ''), onChange: function(e) { setCommandDraft(Object.assign({}, commandDraft, { value: e.target.value, error: '' })); }, onKeyDown: function(e) { if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Escape') { e.preventDefault(); closeEntry(); } } }),
                   h('p', { id: 'atc-command-help', className: 'atc-muted' }, t('stem.atctower.preview_paused', 'Traffic pauses while you preview. Send applies this instruction.')),
                   h('div', { className: 'atc-presets', role: 'group', 'aria-label': commandDraft.kind === 'heading' ? t('stem.atctower.heading_presets', 'Heading presets') : t('stem.atctower.speed_presets', 'Speed presets') },
                     (commandDraft.kind === 'heading' ? [[0,t('stem.atctower.north_heading', 'North · 000°')],[90,t('stem.atctower.east_heading', 'East · 090°')],[180,t('stem.atctower.south_heading', 'South · 180°')],[270,t('stem.atctower.west_heading', 'West · 270°')]] : [90,120,draftAircraft && draftAircraft.type ? Math.round(draftAircraft.type.speed) : 150,180].filter(function(value,index,all) { return value >= 60 && value <= 250 && all.indexOf(value) === index; }).sort(function(a,b) { return a-b; }).map(function(value) { return [value,value + ' kt']; })).map(function(item) {
@@ -4264,7 +4307,7 @@ h('section', { className: 'atc-card', 'data-atctower-aircraft-controls': 'true',
                   h('div', { className: 'atc-toolbar' }, h('button', { type: 'submit', className: 'atc-primary' }, t('stem.atctower.send_instruction', 'Send instruction')), h('button', { type: 'button', onClick: closeEntry }, t('stem.atctower.cancel', 'Cancel')))))),
 h('section', { className: 'atc-flight-lab', 'data-atctower-flight-lab': 'true', 'aria-labelledby': 'atc-flight-lab-title' },
   h('div', { className: 'atc-flight-heading' }, h('h4', { id: 'atc-flight-lab-title' }, t('stem.atctower.flight_path_lab','Inspect flight motion')), h('div', { className: 'atc-flight-actions' },
-    h('button', { 'data-atctower-step': '10', disabled: !atcCanStepTraffic(live,document.hidden) || !!commandDraft, onClick: function() { if (atcCanStepTraffic(gameRef.current,document.hidden)) pendingStepRef.current = gameRef.current; } }, t('stem.atctower.flight_step_10','Step 10 flight seconds')),
+    h('button', { 'data-atctower-step': '10', disabled: !atcCanStepTraffic(live, isDocHidden) || !!commandDraft, onClick: function() { if (atcCanStepTraffic(gameRef.current, typeof document !== 'undefined' && document.hidden)) pendingStepRef.current = gameRef.current; } }, t('stem.atctower.flight_step_10','Step 10 flight seconds')),
     h('button', { 'data-atctower-flight-path-toggle': 'true', 'aria-pressed': showFlightPath, onClick: function() { setShowFlightPath(!showFlightPath); } }, showFlightPath ? t('stem.atctower.flight_path_hide','Hide projection') : t('stem.atctower.flight_path_show','Show projection')))),
   showFlightPath && h(React.Fragment,null,
     h('div', { className: 'atc-flight-horizon', role: 'group', 'aria-label': t('stem.atctower.flight_path_horizon','Flight path look-ahead') }, h('span',null,t('stem.atctower.flight_path_lookahead','Look ahead · flight seconds')), [10,30,60,120].map(function(seconds) { return h('button', { key: seconds, 'data-atctower-flight-horizon':seconds,'aria-pressed':flightHorizon===seconds,onClick:function(){setFlightHorizon(seconds);setFlightTime(null);} },seconds + ' s'); })),

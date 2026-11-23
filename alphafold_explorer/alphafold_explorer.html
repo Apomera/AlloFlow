@@ -123,8 +123,26 @@
   :root[data-theme="contrast"] select,
   :root[data-theme="contrast"] textarea { border-color: var(--line) !important; }
   :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+  }
   @media (forced-colors: active) {
+    :root, :root[data-theme="dark"], :root[data-theme="light"], :root[data-theme="contrast"] {
+      --bg: Canvas; --panel: Canvas; --panel2: Canvas; --stage: Canvas;
+      --line: CanvasText; --line2: CanvasText; --text: CanvasText; --dim: CanvasText;
+      --muted: CanvasText; --soft: CanvasText; --accent: Highlight; --accent2: Highlight;
+      --teal: CanvasText; --teal2: Highlight; --sky: LinkText; --amber: CanvasText;
+      --red: CanvasText; --green: CanvasText; --violet: CanvasText; --ok: CanvasText; --warn: CanvasText;
+      --surface-header: Canvas; --surface-card: Canvas; --surface-input: Field;
+      --surface-control: ButtonFace; --surface-disabled: Canvas; --disabled-fg: GrayText;
+      --heading: CanvasText; --note-bg: Canvas; --note-border: CanvasText; --note-fg: CanvasText;
+      --coach-bg: Canvas; --coach-border: CanvasText; --coach-fg: CanvasText;
+      --code-bg: Canvas; --code-fg: CanvasText; --link-fg: LinkText;
+      --focus: Highlight; --warn-fg: CanvasText; --primary-fg: HighlightText;
+    }
+    .summaryBox { background: Canvas !important; color: CanvasText !important; border-color: CanvasText !important; }
     button, input, select, textarea, a { forced-color-adjust: auto; }
+    .skipLink:focus, :focus-visible { outline: 3px solid Highlight !important; outline-offset: 2px; }
   }
   * { box-sizing: border-box; }
   .skipLink {
@@ -132,6 +150,9 @@
     z-index: 10000;
     top: 8px;
     left: 8px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
     transform: translateY(-160%);
     padding: 10px 14px;
     border: 2px solid #fbbf24;
@@ -183,11 +204,11 @@
   .links { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
   .links .mobileViewerShortcut { display: none; }
   .links a, button.linkbtn {
-    min-height: 34px;
+    min-height: 44px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0 10px;
+    padding: 0 12px;
     border-radius: 8px;
     border: 1px solid var(--line2);
     color: var(--text);
@@ -246,7 +267,7 @@
     gap: 6px;
   }
   .flowNav button {
-    min-height: 34px;
+    min-height: 44px;
     border: 1px solid var(--line2);
     border-radius: 8px;
     background: var(--surface-control);
@@ -265,7 +286,7 @@
   .examples { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   button.example, button.primary, button.secondary {
     width: 100%;
-    min-height: 40px;
+    min-height: 44px;
     border: 1px solid var(--line2);
     border-radius: 8px;
     padding: 8px 10px;
@@ -296,6 +317,7 @@
   label { display: block; margin: 8px 0 5px; font-size: 12px; color: var(--soft); font-weight: 800; }
   input[type="text"], input[type="number"], select, textarea {
     width: 100%;
+    min-height: 44px;
     border: 1px solid var(--line2);
     border-radius: 8px;
     background: var(--surface-input);
@@ -303,7 +325,6 @@
     font: inherit;
     font-size: 13px;
     padding: 9px 10px;
-    outline: none;
   }
   select { cursor: pointer; }
   ::placeholder { color: var(--muted); opacity: 1; }
@@ -347,7 +368,7 @@
   details.advanced summary {
     display: flex;
     align-items: center;
-    min-height: 32px;
+    min-height: 44px;
     cursor: pointer;
     color: var(--heading);
     font-size: 12px;
@@ -355,7 +376,7 @@
     text-transform: uppercase;
   }
   input[type="file"] {
-    min-height: 40px;
+    min-height: 44px;
     padding: 8px 0;
     width: 100%;
     color: var(--soft);
@@ -532,8 +553,8 @@
   }
   .viewerToolbar button.secondary {
     width: auto;
-    min-height: 36px;
-    padding: 7px 11px;
+    min-height: 44px;
+    padding: 8px 12px;
     text-align: center;
     background: var(--surface-header);
     border-color: var(--line2);
@@ -621,7 +642,7 @@
   }
   .detailActions button.secondary {
     width: auto;
-    min-height: 32px;
+    min-height: 44px;
     text-align: center;
   }
   .fact { min-width: 0; }
@@ -716,7 +737,7 @@
   }
   .activityActions button.secondary {
     width: auto;
-    min-height: 32px;
+    min-height: 44px;
   }
   .reviewBox {
     display: grid;
@@ -951,7 +972,7 @@
   .paeLiveControls label { margin: 0; }
   .paeLiveControls output { float: right; color: var(--text); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
   .paeLiveControls input { margin-top: 3px; }
-  input[type="range"] { min-height: 24px; }
+  input[type="range"] { min-height: 44px; }
   #paeLiveReading { margin-top: 8px; }
   @media (max-width: 420px) {
     .paeLiveControls { grid-template-columns: 1fr; }
@@ -1262,13 +1283,13 @@
         <summary>Compare original and variant PAE</summary>
         <p class="help">Optionally load the PAE JSON exported with each prediction. Matrices must describe the same residue and chain order.</p>
         <div class="comparisonFileGrid">
-          <div><label for="originalPaeFileInput">Original PAE JSON</label><input id="originalPaeFileInput" type="file" accept=".json,application/json"></div>
-          <div><label for="variantPaeFileInput">Variant PAE JSON</label><input id="variantPaeFileInput" type="file" accept=".json,application/json"></div>
+          <div><label for="originalPaeFileInput">Original PAE JSON</label><input id="originalPaeFileInput" type="file" accept=".json,application/json" aria-label="Original PAE JSON"></div>
+          <div><label for="variantPaeFileInput">Variant PAE JSON</label><input id="variantPaeFileInput" type="file" accept=".json,application/json" aria-label="Variant PAE JSON"></div>
         </div>
         <button class="primary" id="loadPaeComparisonBtn" type="button">Load PAE comparison</button>
         <div class="row">
-          <div class="field"><label for="comparisonAlignedResidue">Aligned residue</label><input id="comparisonAlignedResidue" type="number" min="1" max="1" value="1"></div>
-          <div class="field"><label for="comparisonComparedResidue">Compared residue</label><input id="comparisonComparedResidue" type="number" min="1" max="1" value="1"></div>
+          <div class="field"><label for="comparisonAlignedResidue">Aligned residue</label><input id="comparisonAlignedResidue" type="number" min="1" max="1" value="1" aria-label="Aligned residue"></div>
+          <div class="field"><label for="comparisonComparedResidue">Compared residue</label><input id="comparisonComparedResidue" type="number" min="1" max="1" value="1" aria-label="Compared residue"></div>
         </div>
         <div class="paeResultCompare" id="paeResultCompare" role="group" aria-label="Load original and variant PAE matrices to compare uncertainty." hidden>
           <div class="paeResultRow original"><span>Original A to B</span><progress id="originalPaeForwardBar" max="31.75" value="0"></progress><output class="paeResultValue" id="originalPaeForwardValue">-</output></div>
@@ -1293,8 +1314,8 @@
           <div class="morphLegend" role="group" aria-label="Displacement marker legend"><span><i class="morphDot low"></i>Lower displacement</span><span><i class="morphDot medium"></i>Moderate displacement</span><span><i class="morphDot high"></i>Higher displacement</span></div>
           <div class="row">
             <button class="secondary" id="coordinateMorphPlayBtn" type="button" aria-pressed="false">Play morph</button>
-            <div class="field"><label for="coordinateMorphFrameInput">Morph frame <output class="morphReadout" id="coordinateMorphFrameValue">0%</output></label><input id="coordinateMorphFrameInput" type="range" min="0" max="100" step="1" value="0"></div>
-            <div class="field"><label for="coordinateMorphAmplifyInput">Displacement emphasis <output class="morphReadout" id="coordinateMorphAmplifyValue">1.0x</output></label><input id="coordinateMorphAmplifyInput" type="range" min="1" max="4" step="0.25" value="1"></div>
+            <div class="field"><label for="coordinateMorphFrameInput">Morph frame <output class="morphReadout" id="coordinateMorphFrameValue">0%</output></label><input id="coordinateMorphFrameInput" type="range" min="0" max="100" step="1" value="0" aria-valuetext="0% variant"></div>
+            <div class="field"><label for="coordinateMorphAmplifyInput">Displacement emphasis <output class="morphReadout" id="coordinateMorphAmplifyValue">1.0x</output></label><input id="coordinateMorphAmplifyInput" type="range" min="1" max="4" step="0.25" value="1" aria-valuetext="1.0x displacement emphasis"></div>
           </div>
           <p class="help" id="coordinateMorphSummary">The morph interpolates aligned C-alpha positions; it is not a molecular-dynamics trajectory.</p>
           <div class="coordinateHotspotTour" id="coordinateHotspotTour" hidden>
@@ -1325,8 +1346,8 @@
           <text x="8" y="16">100</text><text x="20" y="84">50</text><text x="28" y="154">0</text><text x="44" y="173">Original</text><text x="112" y="173">Variant</text>
         </svg>
         <div class="row">
-          <div class="field"><label for="coordinateResidueInput">Matched residue index</label><input id="coordinateResidueInput" type="number" min="1" max="1" value="1"></div>
-          <div class="field"><label for="coordinateRadiusInput">Radius (Angstroms)</label><input id="coordinateRadiusInput" type="number" min="4" max="12" step="1" value="8"></div>
+          <div class="field"><label for="coordinateResidueInput">Matched residue index</label><input id="coordinateResidueInput" type="number" min="1" max="1" value="1" aria-label="Matched residue index"></div>
+          <div class="field"><label for="coordinateRadiusInput">Radius (Angstroms)</label><input id="coordinateRadiusInput" type="number" min="4" max="12" step="1" value="8" aria-label="Radius (Angstroms)"></div>
         </div>
         <div class="output" id="coordinateNeighborhoodOutput" role="status" aria-live="polite" hidden></div>
         <canvas class="contactDifferenceCanvas" id="contactDifferenceCanvas" width="340" height="340" role="img" aria-label="Load and analyze two PDB files to compare residue contacts." hidden></canvas>
@@ -1406,7 +1427,7 @@
         <label for="dnaInput">DNA single strand</label>
         <textarea id="dnaInput" class="mini" spellcheck="false" placeholder="Optional public/synthetic DNA strand."></textarea>
         <label class="checkrow" for="dnaRevCompInput">
-          <input id="dnaRevCompInput" type="checkbox">
+          <input id="dnaRevCompInput" type="checkbox" aria-label="Add reverse-complement strand for double-stranded DNA">
           Add reverse-complement strand for double-stranded DNA
         </label>
         <label for="rnaInput">RNA single strand</label>
@@ -1414,7 +1435,7 @@
         <div class="row">
           <div class="field">
             <label for="ligandSelect">Allowed ligand</label>
-            <select id="ligandSelect">
+            <select id="ligandSelect" aria-label="Allowed ligand">
               <option value="">None</option>
               <option value="CCD_ATP">ATP</option>
               <option value="CCD_ADP">ADP</option>
@@ -1429,13 +1450,13 @@
           </div>
           <div class="field">
             <label for="ligandCountInput">Ligand copies</label>
-            <input id="ligandCountInput" type="number" min="1" max="12" step="1" value="1">
+            <input id="ligandCountInput" type="number" min="1" max="12" step="1" value="1" aria-label="Ligand copies">
           </div>
         </div>
         <div class="row">
           <div class="field">
             <label for="ionSelect">Allowed ion</label>
-            <select id="ionSelect">
+            <select id="ionSelect" aria-label="Allowed ion">
               <option value="">None</option>
               <option value="MG">Magnesium</option>
               <option value="ZN">Zinc</option>
@@ -1448,12 +1469,12 @@
           </div>
           <div class="field">
             <label for="ionCountInput">Ion copies</label>
-            <input id="ionCountInput" type="number" min="1" max="12" step="1" value="1">
+            <input id="ionCountInput" type="number" min="1" max="12" step="1" value="1" aria-label="Ion copies">
           </div>
         </div>
         <p class="help">Server JSON uses the AlphaFold Server dialect. Local-code JSON uses the open AlphaFold 3 codebase dialect.</p>
       </details>
-      <div class="complexPreview" id="complexPreview" aria-labelledby="complexPreviewTitle">
+      <div class="complexPreview" id="complexPreview" role="region" aria-labelledby="complexPreviewTitle">
         <div class="complexPreviewHead">
           <b id="complexPreviewTitle">Complex assembly preview</b>
           <span class="complexPreviewBadge" id="complexPreviewFormat">AlphaFold Server JSON</span>
@@ -1472,8 +1493,8 @@
         <summary>Protein variant sandbox</summary>
         <p class="help">Explore amino-acid substitutions in a public or synthetic protein. This generates hypotheses to test; it does not predict disease, clinical risk, or experimental function.</p>
         <div class="row variantControls">
-          <div class="field"><label for="variantPositionInput">Residue position</label><input id="variantPositionInput" type="number" min="1" max="1" step="1" value="1"></div>
-          <div class="field"><label for="variantAminoSelect">Replace with</label><select id="variantAminoSelect">
+          <div class="field"><label for="variantPositionInput">Residue position</label><input id="variantPositionInput" type="number" min="1" max="1" step="1" value="1" aria-label="Residue position"></div>
+          <div class="field"><label for="variantAminoSelect">Replace with</label><select id="variantAminoSelect" aria-label="Replace with">
             <option value="A">A - Alanine</option><option value="R">R - Arginine</option><option value="N">N - Asparagine</option><option value="D">D - Aspartate</option>
             <option value="C">C - Cysteine</option><option value="Q">Q - Glutamine</option><option value="E">E - Glutamate</option><option value="G">G - Glycine</option>
             <option value="H">H - Histidine</option><option value="I">I - Isoleucine</option><option value="L">L - Leucine</option><option value="K">K - Lysine</option>
@@ -1490,7 +1511,7 @@
         <div class="variantSequenceTrack" id="variantSequenceTrack" role="img" aria-label="No protein variant sequence available."></div>
         <div class="variantMutationList" id="variantMutationList" role="region" aria-label="Applied substitutions"><span class="variantMutationEmpty">No substitutions yet.</span></div>
         <label for="variantChallengeSelect">Guided comparison challenge</label>
-        <select id="variantChallengeSelect">
+        <select id="variantChallengeSelect" aria-label="Guided comparison challenge">
           <option value="charge">Introduce a charge contrast</option>
           <option value="proline">Test a backbone-constraining proline</option>
           <option value="glycine">Test a more flexible glycine</option>
@@ -1573,8 +1594,8 @@
         <div class="paeMarkerKey" role="group" aria-label="PAE selection marker key"><span><i class="paeMarkerSwatch paeMarkerSelected" aria-hidden="true"></i>Selected A to B</span><span><i class="paeMarkerSwatch paeMarkerReverse" aria-hidden="true"></i>Reverse B to A</span></div>
         <button class="secondary paeLensBtn" id="paeLensBtn" type="button" aria-pressed="false" disabled>Show directional difference</button>
         <div class="paeLiveControls">
-          <label for="paeAlignedResidue">Aligned residue <output id="paeAlignedValue" for="paeAlignedResidue">1</output><input id="paeAlignedResidue" type="range" min="1" max="1" value="1"></label>
-          <label for="paeComparedResidue">Compared residue <output id="paeComparedValue" for="paeComparedResidue">1</output><input id="paeComparedResidue" type="range" min="1" max="1" value="1"></label>
+          <label for="paeAlignedResidue">Aligned residue <output id="paeAlignedValue" for="paeAlignedResidue">1</output><input id="paeAlignedResidue" type="range" min="1" max="1" value="1" aria-valuetext="Residue 1"></label>
+          <label for="paeComparedResidue">Compared residue <output id="paeComparedValue" for="paeComparedResidue">1</output><input id="paeComparedResidue" type="range" min="1" max="1" value="1" aria-valuetext="Residue 1"></label>
         </div>
         <div class="summaryBox" id="paeLiveReading" role="status" aria-live="polite"></div>
         <div class="paePairCompare" id="paePairCompare" role="region" aria-label="Selected directional PAE comparison" hidden>
@@ -3273,6 +3294,8 @@
     paeForwardBar.setAttribute('aria-label', score == null ? 'Forward A to B PAE unavailable' : 'Forward A to B PAE ' + score + ' Angstroms out of ' + paeMatrix.max);
     paeReverseBar.setAttribute('aria-label', reverseScore == null ? 'Reverse B to A PAE unavailable' : 'Reverse B to A PAE ' + reverseScore + ' Angstroms out of ' + paeMatrix.max);
     paeAlignedValue.value = String(aligned); paeComparedValue.value = String(compared);
+    paeAlignedResidue.setAttribute('aria-valuetext', 'Residue ' + aligned + ' of ' + n);
+    paeComparedResidue.setAttribute('aria-valuetext', 'Residue ' + compared + ' of ' + n);
     if (paeViewMode === 'difference') {
       paeLiveReading.textContent = 'Directional difference for residues ' + aligned + ' and ' + compared + ': ' + (difference == null ? 'unavailable' : difference + ' Angstroms') + '. Forward A to B: ' + (score == null ? 'unavailable' : score + ' Angstroms') + '; reverse B to A: ' + (reverseScore == null ? 'unavailable' : reverseScore + ' Angstroms') + '. Larger differences show where alignment direction changes the uncertainty estimate more.';
     } else {
@@ -4876,7 +4899,9 @@
     });
     var phase = Math.round(frame * 100);
     coordinateMorphFrameValue.value = phase + '%'; coordinateMorphFrameValue.textContent = phase + '%';
+    coordinateMorphFrameInput.setAttribute('aria-valuetext', phase + '% variant');
     coordinateMorphAmplifyValue.value = amplify.toFixed(2).replace(/0$/, '') + 'x'; coordinateMorphAmplifyValue.textContent = coordinateMorphAmplifyValue.value;
+    coordinateMorphAmplifyInput.setAttribute('aria-valuetext', coordinateMorphAmplifyValue.value + ' displacement emphasis');
     coordinateMorphSummary.textContent = 'Interpolated frame: ' + phase + '% variant. Median aligned C-alpha displacement is ' + median.toFixed(2) + ' Angstroms; maximum is ' + maximum.toFixed(2) + ' Angstroms. ' + (amplify > 1 ? 'Positions are visually emphasized ' + amplify.toFixed(2).replace(/0$/, '') + ' times. ' : '') + 'This is a geometric interpolation, not a molecular-dynamics trajectory.';
     coordinateMorphCanvas.setAttribute('aria-label', 'Aligned C-alpha coordinate morph at ' + phase + ' percent variant with ' + pairs.length + ' matched residues. Median displacement ' + median.toFixed(2) + ' Angstroms and maximum displacement ' + maximum.toFixed(2) + ' Angstroms. Larger circles mark larger displacement; the selected residue has a white ring.' + measurementAria);
   }
@@ -6315,7 +6340,9 @@
 
   lookupBtn.addEventListener('click', function () { lookup(accessionInput.value); });
   accessionInput.addEventListener('keydown', function (ev) {
-    if (ev.key === 'Enter') lookup(accessionInput.value);
+    if (ev.isComposing || ev.keyCode === 229) return;
+    if (ev.key === 'Enter') { ev.preventDefault(); lookup(accessionInput.value); }
+    else if (ev.key === 'Escape' && accessionInput.value) { ev.preventDefault(); accessionInput.value = ''; setStatus(lookupStatus, 'Accession input cleared.', ''); }
   });
   fileInput.addEventListener('change', function () { loadLocalFile(fileInput.files && fileInput.files[0]); });
   comparisonOriginalInput.addEventListener('change', function () {
@@ -6427,7 +6454,8 @@
   fitStructureBtn.addEventListener('click', function () { fitStructure(true); });
   mobileViewerShortcut.addEventListener('click', function () { setViewerFocus(true); });
   document.addEventListener('keydown', function (event) {
-    if (event.key === 'Escape' && document.body.classList.contains('viewerFocus')) setViewerFocus(false);
+    if (event.isComposing || event.keyCode === 229) return;
+    if (event.key === 'Escape' && document.body.classList.contains('viewerFocus')) { event.preventDefault(); setViewerFocus(false); }
   });
   paeAlignedResidue.addEventListener('input', drawLivePae);
   paeComparedResidue.addEventListener('input', drawLivePae);

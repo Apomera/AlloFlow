@@ -968,14 +968,15 @@ var ALLO_INTERACTIVE_OBJECT_PROFILES = {
   'fluency-record': { label: 'Fluency Record', status: 'ready', html: 'interactive', canExportHtml: true, canExportIms: true, interactiveHtml: true, tracking: 'none', fallback: 'metrics-report', notes: 'Exports fluency metrics and optional offline audio playback when the recording is present.' },
   adventure: { label: 'Adventure', status: 'adapter-needed', html: 'none', canExportHtml: false, canExportIms: false, interactiveHtml: false, tracking: 'none', fallback: 'storybook-export', notes: 'Use the dedicated storybook export until adventure scenes can be packaged as a resource object.' },
   persona: { label: 'Persona Chat', status: 'unsupported', html: 'none', canExportHtml: false, canExportIms: false, interactiveHtml: false, tracking: 'live-runtime', fallback: 'transcript-snapshot-needed', notes: 'Live chat needs a model/session runtime; export should use a transcript snapshot once implemented.' },
-  'word-sounds': { label: 'Word Sounds Studio', status: 'adapter-needed', html: 'none', canExportHtml: false, canExportIms: false, interactiveHtml: false, tracking: 'none', fallback: 'studio-adapter-needed', notes: 'Studio tools need their own package adapter.' },
+  'word-sounds': { label: 'Word Sounds Studio', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'activity-worksheet', notes: 'Exports as a printable Word Sounds activity worksheet with student workspace and a teacher-only answer key.' },
   'storyforge-config': { label: 'StoryForge Assignment', status: 'adapter-needed', html: 'none', canExportHtml: false, canExportIms: false, interactiveHtml: false, tracking: 'none', fallback: 'studio-adapter-needed', notes: 'StoryForge packages need a separate object adapter.' },
   'storyforge-submission': { label: 'Story Submission', status: 'adapter-needed', html: 'none', canExportHtml: false, canExportIms: false, interactiveHtml: false, tracking: 'none', fallback: 'submission-export', notes: 'Student submissions are not standard resource objects yet.' },
   'stem-assessment': { label: 'STEM Assessment', status: 'adapter-needed', html: 'none', canExportHtml: false, canExportIms: false, interactiveHtml: false, tracking: 'assessment-runtime', fallback: 'assessment-adapter-needed', notes: 'Needs assessment-specific packaging/tracking.' },
 };
 function _alloInteractiveObjectProfileFor(typeOrItem) {
   var type = typeof typeOrItem === 'string' ? typeOrItem : ((typeOrItem && typeOrItem.type) || '');
-  var base = ALLO_INTERACTIVE_OBJECT_PROFILES[type] || {
+  var lookupType = type === 'word_sounds' ? 'word-sounds' : type;
+  var base = ALLO_INTERACTIVE_OBJECT_PROFILES[lookupType] || {
     label: type || 'Unknown resource',
     status: 'unsupported',
     html: 'none',

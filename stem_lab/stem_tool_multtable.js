@@ -4266,7 +4266,7 @@ window.StemLab = window.StemLab || {
                   'aria-current': isNext ? 'step' : undefined,
                   className: 'w-full text-left rounded-lg border-2 px-3 py-2 flex items-start gap-2 ' + (s.done ? 'bg-emerald-50 border-emerald-700 text-emerald-900' : isNext ? 'bg-pink-50 border-pink-700 text-pink-900' : 'bg-white border-slate-400 text-slate-900'),
                   style: hc ? { minHeight: 44, background: '#000000', color: s.done || isNext ? '#ffff00' : '#ffffff', borderColor: s.done || isNext ? '#ffff00' : '#ffffff', borderStyle: isNext ? 'double' : 'solid', borderWidth: isNext ? 4 : 2 } : { minHeight: 44 } },
-                  h('span', { 'aria-hidden': 'true', className: 'shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-black ' + (s.done ? 'bg-emerald-700 text-white' : 'bg-pink-800 text-white') }, s.done ? '✓' : String(i + 1)),
+                  h('span', { 'aria-hidden': 'true', className: 'shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-black ' + (s.done ? 'bg-emerald-700 text-white' : 'bg-pink-700 text-white') }, s.done ? '✓' : String(i + 1)),
                   h('span', { className: 'min-w-0' },
                     h('span', { className: 'sr-only' }, fmt(t('stem.multtable.path_step_n', 'Step {i}:'), { i: i + 1 }) + ' '),
                     h('span', { className: 'block text-sm font-bold' }, pathStepTitle(s.id)),
@@ -4536,7 +4536,7 @@ window.StemLab = window.StemLab || {
               return h('button', { key: id, id: 'mt-band-' + id, type: 'button', role: 'radio', 'aria-checked': active, tabIndex: active ? 0 : -1, disabled: !!bandLock && bandLock !== id,
                 onClick: function() { chooseBand(id); },
                 onKeyDown: function(e) { bandKeyDown(e, bi); },
-                className: 'px-3 rounded-lg text-[0.6875rem] font-bold transition-all disabled:opacity-50 ' + (active ? 'bg-pink-800 text-white shadow-sm' : 'bg-white text-pink-900 border border-pink-500 hover:bg-pink-50'), style: CHIP
+                className: 'px-3 rounded-lg text-[0.6875rem] font-bold transition-all disabled:opacity-50 ' + (active ? 'bg-pink-700 text-white shadow-sm' : 'bg-white text-pink-900 border border-pink-500 hover:bg-pink-50'), style: CHIP
               }, bandName(id) + (suggested ? ' ★' : ''));
             })),
           h('span', { className: 'text-[0.625rem] text-slate-700' }, '★ ' + t('stem.multtable.suggested_for_grade', 'suggested for your grade')),

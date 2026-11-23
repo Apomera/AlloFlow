@@ -2041,6 +2041,7 @@
 
     var submitAnswer = useCallback(function (skip) {
       if (finishedRef.current || !sessionMountedRef.current || manualPracticePauseRef.current !== null || confirmPauseRef.current !== null) return;
+      if (autoAdvanceTimerRef.current) { clearTimeout(autoAdvanceTimerRef.current); autoAdvanceTimerRef.current = null; }
       if (runConfigRef.current && !runConfigRef.current.untimed && nowMs() >= deadlineRef.current) { finishProbe('time'); return; }
       var isSkip = skip === true;
       var parsed = isSkip ? { valid: true, value: null } : parseStudentAnswer(studentInput);
@@ -2136,7 +2137,7 @@
       var currentProblem = problems[currentIndex];
       var parsed = parseStudentAnswer(studentInput);
       if (currentProblem && parsed.valid && parsed.value === currentProblem.answer) {
-        autoAdvanceTimerRef.current = setTimeout(function () { submitAnswer(false); }, 150);
+        autoAdvanceTimerRef.current = setTimeout(function () { autoAdvanceTimerRef.current = null; submitAnswer(false); }, 150);
       }
       return function () {
         if (autoAdvanceTimerRef.current) { clearTimeout(autoAdvanceTimerRef.current); autoAdvanceTimerRef.current = null; }
@@ -4305,8 +4306,14 @@
         var raw = String(item.answer || item.display || '').trim();
         var low = raw.toLowerCase();
         if (!low) return '';
+        var disp = item.display != null ? String(item.display).trim().toLowerCase() : '';
+        var digitSpoken = Object.prototype.hasOwnProperty.call(DIGIT_WORDS, low) ? DIGIT_WORDS[low] : low;
         if (cat === 'color_stroop') return opts.allowStroop === true ? low : '';
-        if (cat === 'number' || item.dots > 0 || /^\d{1,2}$/.test(low)) return Object.prototype.hasOwnProperty.call(DIGIT_WORDS, low) ? DIGIT_WORDS[low] : low;
+        if (cat === 'size_stroop' || cat === 'quantity_stroop') return opts.allowStroop === true ? digitSpoken : '';
+        if (!item.dots && disp && disp !== low && (cat === 'number' || /^\d{1,3}$/.test(low))) {
+          return opts.allowStroop === true ? digitSpoken : '';
+        }
+        if (cat === 'number' || item.dots > 0 || /^\d{1,2}$/.test(low)) return digitSpoken;
         if (cat === 'word' || cat === 'chunk') return low;
         if (/^(red|blue|green|yellow|purple|orange)$/.test(low)) return low;
         return '';
@@ -4521,8 +4528,20 @@
         var slowThresholdMs = Math.max(400, Math.min(10000, Number(opts.slowThresholdMs) || 1800));
         var spacingSteps = [1, 2, 4, 8];
 
-        var byKey = Object.create(null);
-        pool.forEach(function (it) { byKey[it.answer.toLowerCase()] = it; });
+        var byKeyList = Object.create(null);
+        pool.forEach(function (it) {
+          var k = String(it.answer || '').toLowerCase();
+          if (!byKeyList[k]) byKeyList[k] = [];
+          byKeyList[k].push(it);
+        });
+        var keyRotate = Object.create(null);
+        function nextCardForKey(k) {
+          var list = byKeyList[k];
+          if (!list || !list.length) return null;
+          var idx = keyRotate[k] || 0;
+          keyRotate[k] = (idx + 1) % list.length;
+          return list[idx];
+        }
 
         // Order letters/numbers (and color badges for 3-way RAS) when RAS mode is active.
         function orderedBaseList() {
@@ -4553,10 +4572,18 @@
             }
           }
           var deck = [];
-          var focusList = Array.isArray(opts.focusAnswers) ? opts.focusAnswers.map(function (a) { return String(a).toLowerCase(); }) : [];
+          var focusList = [];
           var focusSet = Object.create(null);
-          focusList.forEach(function (f) { if (byKey[f]) focusSet[f] = true; });
-          var knownPool = pool.filter(function (it) { return !focusSet[it.answer.toLowerCase()]; });
+          if (Array.isArray(opts.focusAnswers)) {
+            opts.focusAnswers.forEach(function (a) {
+              var fk = String(a == null ? '' : a).trim().toLowerCase();
+              if (fk && byKeyList[fk] && !focusSet[fk]) {
+                focusSet[fk] = true;
+                focusList.push(fk);
+              }
+            });
+          }
+          var knownPool = pool.filter(function (it) { return !focusSet[String(it.answer || '').toLowerCase()]; });
           if (!knownPool.length) knownPool = pool;
 
           if (focusList.length && knownPool.length) {
@@ -4564,11 +4591,17 @@
             var focusIdx = 0;
             while (deck.length < count) {
               var fk = focusList[focusIdx % focusList.length];
-              var focusItem = byKey[fk] || pool[0];
+              var focusItem = nextCardForKey(fk);
+              if (!focusItem) { focusIdx++; continue; }
               deck.push({ base: focusItem, role: 'new', study: focusIdx < focusList.length });
               var gap = spacingSteps[Math.min(spacingSteps.length - 1, Math.floor(focusIdx / focusList.length))];
               for (var g = 0; g < gap && deck.length < count; g++) {
-                var known = knownPool[Math.floor(rng() * knownPool.length)];
+                var prevAns = deck.length ? String(deck[deck.length - 1].base.answer || '').toLowerCase() : '';
+                var diffKnown = knownPool.length > 1
+                  ? knownPool.filter(function (it) { return String(it.answer || '').toLowerCase() !== prevAns; })
+                  : knownPool;
+                var pickFrom = diffKnown.length ? diffKnown : knownPool;
+                var known = pickFrom[Math.floor(rng() * pickFrom.length)];
                 deck.push({ base: known, role: 'known', study: false });
               }
               focusIdx++;
@@ -4584,9 +4617,15 @@
             }
             for (var m = 0; m < copy.length && deck.length < count; m++) {
               if (deck.length && deck[deck.length - 1].base.answer === copy[m].answer && copy.length > 1) {
-                var alt = copy[(m + 1) % copy.length];
-                copy[(m + 1) % copy.length] = copy[m];
-                copy[m] = alt;
+                var swapIdx = -1;
+                for (var s = m + 1; s < copy.length; s++) {
+                  if (copy[s].answer !== copy[m].answer) { swapIdx = s; break; }
+                }
+                if (swapIdx >= 0) {
+                  var alt = copy[swapIdx];
+                  copy[swapIdx] = copy[m];
+                  copy[m] = alt;
+                }
               }
               deck.push({ base: copy[m], role: 'practice', study: false });
             }
@@ -4890,6 +4929,7 @@
           '.asr-lock-pill[data-locked="true"]{background:#15803d;color:#fff}',
           '.asr-lock-pill[data-locked="false"]{background:#b45309;color:#fff}',
           '.asr-ran-grid{width:100%;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;padding:12px;box-sizing:border-box}',
+          '@media (max-width:480px){.asr-ran-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}',
           '.asr-ran-grid[hidden]{display:none}',
           // 2026-11-17: a part set hidden stays hidden, whatever display rule it has (lane row, color key, summary, canvas).
           '.asr-wrap [hidden]{display:none!important}',
@@ -5081,12 +5121,18 @@
         function stopClip() {
           if (activeClip) { try { activeClip.pause(); } catch (_) {} activeClip = null; }
         }
+        function cancelSpeech() {
+          if (root.speechSynthesis && typeof root.speechSynthesis.cancel === 'function') {
+            try { root.speechSynthesis.cancel(); } catch (_) {}
+          }
+        }
         function playAnchorAudio(item, opts) {
           if (soundMuted || destroyed) return false;
           var uri = resolveItemAudio(item);
           if (uri && typeof root.Audio === 'function') {
             try {
               stopClip();
+              cancelSpeech();
               var clip = new root.Audio(uri);
               activeClip = clip;
               if (opts && opts.restartClock && current && item && current.id === item.id && typeof clip.addEventListener === 'function') {
@@ -5103,11 +5149,16 @@
           var voice = spoken ? pickLocalSpeechVoice() : null;
           if (!spoken || !voice) return false;
           try {
-            if (typeof root.speechSynthesis.cancel === 'function') root.speechSynthesis.cancel();
+            stopClip();
+            cancelSpeech();
             var utt = new root.SpeechSynthesisUtterance(spoken);
             utt.voice = voice;
             utt.lang = voice.lang || 'en-US';
             utt.rate = 0.95;
+            if (opts && opts.restartClock && current && item && current.id === item.id) {
+              var forSpeechCard = item.id;
+              utt.onend = function () { if (!destroyed && current && current.id === forSpeechCard) cardStartMs = Date.now(); };
+            }
             root.speechSynthesis.speak(utt);
             return true;
           } catch (_) {
@@ -5219,6 +5270,10 @@
           soundMuted = !soundMuted;
           soundBtn.textContent = soundMuted ? T('sound_off') : T('sound_on');
           soundBtn.setAttribute('aria-pressed', !soundMuted ? 'true' : 'false');
+          if (soundMuted) {
+            stopClip();
+            cancelSpeech();
+          }
         });
 
         if (!cfg.hostControls) {
@@ -5368,15 +5423,27 @@
           locked = controlMode !== 'lockon' || viewMode === 'grid' || aimLane === current.lane;
         }
 
+        function syncLockUi() {
+          if (!current) return;
+          lockPill.setAttribute('data-locked', locked ? 'true' : 'false');
+          // Only the aiming mode has something to say here.
+          lockPill.hidden = controlMode !== 'lockon';
+          lockPill.textContent = controlMode === 'lockon' ? (locked ? T('locked') : T('aim')) : '';
+          laneButtons.forEach(function (b, idx) {
+            b.setAttribute('aria-pressed', aimLane === idx ? 'true' : 'false');
+            b.className = 'asr-lane-btn' + (aimLane === idx && current && current.lane === idx ? ' asr-lane-locked' : '');
+          });
+        }
+
         function setAimLane(laneIdx) {
           aimLane = Math.max(0, Math.min(2, Number(laneIdx) || 0));
           var wasLocked = locked;
           syncLockState();
           // Said only when it changes: moving the pointer over the lanes does not repeat it.
-          if (controlMode === 'lockon' && viewMode !== 'grid' && (locked !== wasLocked || !statusSaid.textContent)) {
+          if (current && controlMode === 'lockon' && viewMode !== 'grid' && (locked !== wasLocked || !statusSaid.textContent)) {
             say(locked ? T('locked_now') : T('move_to', { lane: laneIn[current.lane] }));
           }
-          updateUi();
+          syncLockUi();
           draw();
         }
 
@@ -5436,6 +5503,8 @@
 
         function finishRun() {
           stopVoice();
+          stopClip();
+          cancelSpeech();
           if (rafId) { try { root.cancelAnimationFrame(rafId); } catch (_) {} rafId = 0; }
           var st = scheduler.stats();
           say(T('round_done', { first: st.firstTryCorrect, total: st.total }));
@@ -5540,10 +5609,7 @@
           streakPill.setAttribute('aria-label', T('stars_aria', { n: st.firstTryCorrect }));
           speedPill.textContent = st.meanMs ? T('about_each', { time: secs(st.medianMs || st.meanMs) }) : T('ready');
           if (current) {
-            lockPill.setAttribute('data-locked', locked ? 'true' : 'false');
-            // Only the aiming mode has something to say here.
-            lockPill.hidden = controlMode !== 'lockon';
-            lockPill.textContent = controlMode === 'lockon' ? (locked ? T('locked') : T('aim')) : '';
+            syncLockUi();
             catBadge.textContent = T(current.category === 'flanker' ? 'b_flanker'
               : current.category === 'quantity_stroop' ? 'b_count'
               : current.category === 'size_stroop' ? 'b_size'
@@ -5571,10 +5637,6 @@
             // Before Start the card line is hidden too: it names the first symbol, and the clock has not started.
             cueBar.hidden = !started;
             inputRow.hidden = !started;
-            laneButtons.forEach(function (b, idx) {
-              b.setAttribute('aria-pressed', aimLane === idx ? 'true' : 'false');
-              b.className = 'asr-lane-btn' + (aimLane === idx && current && current.lane === idx ? ' asr-lane-locked' : '');
-            });
             // The keys are drawn again for each card. If the focus was on one, it goes back to the key in the same place.
             var focusedKey = doc.activeElement && doc.activeElement.parentNode === keypad ? Array.prototype.indexOf.call(keypad.children, doc.activeElement) : -1;
             keypad.replaceChildren();
@@ -5869,7 +5931,7 @@
           ctx.font = '800 ' + fontSize + 'px system-ui, -apple-system, sans-serif';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText(item.display, cx, cy);
+          ctx.fillText(item.display, cx, cy, Math.max(24, bw - 16));
         }
 
         function tick() {
@@ -5882,8 +5944,8 @@
           if (typeof root.requestAnimationFrame === 'function') rafId = root.requestAnimationFrame(tick);
         }
 
-        canvas.addEventListener('mousemove', function (e) {
-          if (!current || controlMode !== 'lockon') return;
+        function aimFromPointer(e) {
+          if (!current || !started || controlMode !== 'lockon') return;
           var rect = canvas.getBoundingClientRect ? canvas.getBoundingClientRect() : null;
           var x = rect && rect.width ? ((e.clientX - rect.left) / rect.width) * canvas.width : (e.offsetX != null ? e.offsetX : (e.clientX || 0));
           var y = rect && rect.height ? ((e.clientY - rect.top) / rect.height) * canvas.height : (e.offsetY != null ? e.offsetY : (e.clientY || 0));
@@ -5894,7 +5956,9 @@
           } else if (laneGuess !== aimLane) {
             setAimLane(laneGuess);
           }
-        });
+        }
+        canvas.addEventListener('mousemove', aimFromPointer);
+        canvas.addEventListener('pointerdown', aimFromPointer);
 
         var singleKeyRe = (function () {
           try { return new RegExp("^[\\p{L}\\p{N}'\\u2019-]$", 'u'); } catch (_) { return /^[A-Za-z0-9'\u2019-]$/; }
@@ -5920,7 +5984,27 @@
             return;
           }
           if (e.ctrlKey || e.metaKey || e.altKey) return;
-          if (e.target && e.target.closest && e.target.closest('button, summary, select, a[href], textarea, input')) return;
+          if (e.target && e.target.closest) {
+            if (e.target.closest('summary, select, a[href], textarea, input')) return;
+            var hitBtn = e.target.closest('button');
+            if (hitBtn && !hitBtn.classList.contains('asr-key') && !hitBtn.classList.contains('asr-lane-btn')) return;
+          }
+          if (e.key === 'Backspace') {
+            if (keyBuffer.length || typeInput.value) {
+              e.preventDefault();
+              keyBuffer = (keyBuffer || typeInput.value).slice(0, -1);
+              typeInput.value = keyBuffer;
+            }
+            return;
+          }
+          if (e.key === 'Escape') {
+            if (keyBuffer.length || typeInput.value) {
+              e.preventDefault();
+              keyBuffer = '';
+              typeInput.value = '';
+            }
+            return;
+          }
           if (typeof e.key === 'string' && e.key.length === 1 && singleKeyRe.test(e.key)) {
             e.preventDefault();
             keyBuffer += e.key;
@@ -6983,14 +7067,33 @@
         if (clean) knownSet[clean] = true;
       });
       var hasCustomKnown = Object.keys(knownSet).length > 0;
-      var focusAnswers = useRehearsal
+      var uniqueAnswers = [];
+      var uniqueAnswerMap = Object.create(null);
+      pool.forEach(function (p) {
+        var ans = String(p && p.answer || '');
+        var low = ans.toLowerCase();
+        if (low && !uniqueAnswerMap[low]) {
+          uniqueAnswerMap[low] = ans;
+          uniqueAnswers.push(ans);
+        }
+      });
+      var maxFocus = Math.max(0, uniqueAnswers.length - 1);
+      var focusAnswers = useRehearsal && maxFocus > 0
         ? (hasCustomKnown
-          ? pool.filter(function (p) { return !knownSet[String(p.answer || '').toLowerCase()]; }).slice(0, 6).map(function (p) { return p.answer; })
+          ? uniqueAnswers.filter(function (a) { return !knownSet[a.toLowerCase()]; }).slice(0, Math.min(6, maxFocus))
           : (function () {
-            var inPool = Object.create(null);
-            pool.forEach(function (p) { inPool[String(p.answer || '').toLowerCase()] = p.answer; });
-            var carried = trickyRef.current.map(function (a) { return inPool[String(a).toLowerCase()]; }).filter(Boolean);
-            return carried.length && carried.length < pool.length ? carried.slice(0, 4) : pool.slice(0, Math.min(3, Math.max(1, pool.length - 3))).map(function (p) { return p.answer; });
+            var seenCarried = Object.create(null);
+            var carried = trickyRef.current.map(function (a) {
+              var low = String(a || '').toLowerCase();
+              if (!low || seenCarried[low] || !uniqueAnswerMap[low]) return '';
+              seenCarried[low] = true;
+              return uniqueAnswerMap[low];
+            }).filter(Boolean);
+            if (carried.length && carried.length < uniqueAnswers.length) {
+              return carried.slice(0, Math.min(4, maxFocus));
+            }
+            var defaultCap = Math.min(3, Math.max(1, uniqueAnswers.length - 3), maxFocus);
+            return uniqueAnswers.slice(0, defaultCap);
           })())
         : [];
       var handle = runnerCore.mountRunner(stageRef.current, {
@@ -7108,7 +7211,7 @@
               nextPics[item.answer] = {
                 src: validSvg,
                 alt: item.display + ' cue: ' + (raw.label || cue),
-                credit: 'Mulberry Symbols',
+                credit: (raw && raw.credit) || 'Mulberry Symbols',
               };
             } else {
               nextPics[item.answer] = {
@@ -7799,6 +7902,8 @@
     var minimapTickRef = useRef(0);
     // Bump when we want the "wrong answer" screen shake to fire.
     var shakeRef = useRef(0);
+    // Synchronous guard preventing double-submit during the 220ms post-correct gate dismissal.
+    var gateSolvedRef = useRef(false);
     // Dust-particle queue — radial puffs spawned in submitAnswer's
     // correct path at the cell the player just left, decayed per
     // draw frame in the canvas useEffect. Kept as a ref because
@@ -7920,11 +8025,13 @@
       setMonsterPos({ r: 0, c: 0 });
       setMonsterAwake(false);
       setCurrentProblem(null);
+      gateSolvedRef.current = false;
       setScore(0); setCorrect(0); setWrong(0); setMoveCount(0); setElapsed(0);
       setGameOver(false); setWon(false); setFeedback('');
       setPaused(false); setHelpOpen(false);
       setStreak(0); setHintDir(null);
       setKeyCollected(false);
+      keyCollectedRef.current = false;
       setMedal(null);
       if (keyPos) {
         keyPosRef.current = keyPos;
@@ -7975,8 +8082,119 @@
       return (a < b) ? (a + '|' + b) : (b + '|' + a);
     }
 
+    // Shared win handler used by both submitAnswer (gate-unlocked entry into
+    // Exit) and tryMove (Explorer Mode walk-through into Exit over an already
+    // solved passage after collecting the golden key).
+    function completeMazeRun(finalCorrect, baseScore) {
+      setWon(true); setMode('results');
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (monsterTimerRef.current) clearInterval(monsterTimerRef.current);
+      // Win fanfare — rising C major arpeggio + sustained C-E-G chord.
+      playTone(523, 0.14, 'sine', 0.08);
+      setTimeout(function() { playTone(659, 0.14, 'sine', 0.08); }, 110);
+      setTimeout(function() { playTone(784, 0.14, 'sine', 0.08); }, 220);
+      setTimeout(function() { playTone(1047, 0.22, 'sine', 0.09); }, 330);
+      setTimeout(function() {
+        playTone(1047, 0.45, 'sine', 0.06);
+        playTone(1319, 0.45, 'sine', 0.05);
+        playTone(1568, 0.45, 'sine', 0.05);
+      }, 600);
+      // Medal thresholds scale with maze size — baseline is 2 seconds per
+      // cell, which is a sprinter's pace. Gold = 60% of that, silver =
+      // 100%, bronze = 180%. Beyond that, no medal (still a valid win).
+      var baseSec = MAZE_ROWS * MAZE_COLS * 2;
+      var medalKind = null;
+      var medalBonus = 0;
+      if (elapsed <= baseSec * 0.6) { medalKind = 'gold'; medalBonus = 20; }
+      else if (elapsed <= baseSec) { medalKind = 'silver'; medalBonus = 10; }
+      else if (elapsed <= baseSec * 1.8) { medalKind = 'bronze'; medalBonus = 5; }
+      setMedal(medalKind);
+      var finalScore = baseScore + medalBonus;
+      if (medalKind && addToast) {
+        var medalEmoji = { gold: '\uD83E\uDD47', silver: '\uD83E\uDD48', bronze: '\uD83E\uDD49' }[medalKind];
+        addToast(medalEmoji + ' ' + medalKind.toUpperCase() + ' TIME! +' + medalBonus + ' bonus', 'success');
+      }
+      _mfAnnounce(tt('math_fluency.maze_complete', 'Maze complete! ') + finalCorrect + ' gates unlocked in ' + elapsed + ' seconds.');
+      if (addToast) addToast('\uD83C\uDFC6 Maze complete! ' + finalCorrect + ' correct in ' + elapsed + 's', 'success');
+      if (handleScoreUpdate) handleScoreUpdate(Math.round(finalCorrect / Math.max(1, elapsed) * 60) + medalBonus, tt('math_fluency.fluency_maze_complete', 'Fluency Maze Complete'), 'fluency-maze');
+      _mfBumpLifetime({ mazesCompleted: 1, totalSeconds: elapsed });
+      // Save high score — keyed per (operation, size, difficulty) so
+      // distinct practice modes don't overwrite each other's bests.
+      // Legacy 'fluency_maze_best' (single global) is preserved as a
+      // fallback so existing students don't lose their prior best.
+      try {
+        var bestKey = buildMazeBestKey(operation, mazeSize, difficulty, controlMode, chaseMode);
+        var bestStore = _mfParsePlainObject(localStorage.getItem('fluency_maze_bests'));
+        var prior = Object.prototype.hasOwnProperty.call(bestStore, bestKey) ? bestStore[bestKey] : null;
+        setPriorBestSnapshot(prior ? { score: prior.score, time: prior.time, correct: prior.correct, wrong: prior.wrong } : null);
+        if (!prior || finalScore > prior.score) {
+          bestStore[bestKey] = { score: finalScore, correct: finalCorrect, wrong: wrong, time: elapsed, op: operation, size: mazeSize, difficulty: difficulty, controlMode: controlMode, chaseMode: chaseMode, savedAt: Date.now() };
+          localStorage.setItem('fluency_maze_bests', JSON.stringify(bestStore));
+          if (prior) _mfAnnounce(tt('math_fluency.new_personal_best_for_this_mode', 'New personal best for this mode: ') + finalScore + ' points.');
+        }
+        // Keep legacy global record in sync so the old key still works
+        var legacy = _mfParsePlainObject(localStorage.getItem('fluency_maze_best'));
+        if (!legacy.score || finalScore > legacy.score) {
+          localStorage.setItem('fluency_maze_best', JSON.stringify({ score: finalScore, correct: finalCorrect, wrong: wrong, time: elapsed, op: operation, size: mazeSize }));
+        }
+      } catch(e) {}
+      // 3D completion celebration — denser confetti + bigger spread +
+      // a floating "MAZE COMPLETE" banner sprite in front of the camera.
+      var eng3dC = maze3dEngRef.current;
+      if (eng3dC && window.THREE) {
+        var THREE = window.THREE;
+        var confColors = [0xfbbf24, 0x22c55e, 0x7c3aed, 0xef4444, 0x3b82f6, 0xec4899, 0x06b6d4, 0xf97316];
+        if (!eng3dC._particles) eng3dC._particles = [];
+        for (var ci = 0; ci < 70; ci++) {
+          var isRibbon = ci % 3 === 0;
+          var cGeo = isRibbon
+            ? new THREE.BoxGeometry(0.14, 0.02, 0.02)
+            : new THREE.BoxGeometry(0.08, 0.08, 0.08);
+          var cMat = new THREE.MeshBasicMaterial({ color: confColors[ci % confColors.length], transparent: true, opacity: 1 });
+          var cMesh = new THREE.Mesh(cGeo, cMat);
+          cMesh.position.copy(eng3dC.camera.position);
+          cMesh.userData._age = 0; cMesh.userData._life = 2.5 + Math.random() * 1.5;
+          cMesh.userData._gravity = 5;
+          cMesh.userData._vel = {
+            x: (Math.random() - 0.5) * 7,
+            y: 4 + Math.random() * 4,
+            z: (Math.random() - 0.5) * 7
+          };
+          eng3dC.scene.add(cMesh);
+          eng3dC._particles.push(cMesh);
+        }
+        try {
+          var bannerCnv = document.createElement('canvas');
+          bannerCnv.width = 512; bannerCnv.height = 128;
+          var bctx = bannerCnv.getContext('2d');
+          bctx.fillStyle = 'rgba(15,23,42,0.85)';
+          bctx.fillRect(0, 0, 512, 128);
+          bctx.strokeStyle = '#fbbf24'; bctx.lineWidth = 4;
+          bctx.strokeRect(6, 6, 500, 116);
+          bctx.font = 'bold 56px Georgia, serif';
+          bctx.textAlign = 'center'; bctx.textBaseline = 'middle';
+          bctx.fillStyle = '#fde047';
+          bctx.shadowColor = '#f59e0b'; bctx.shadowBlur = 20;
+          bctx.fillText('\uD83C\uDFC6 MAZE COMPLETE', 256, 64);
+          var bannerTex = new THREE.CanvasTexture(bannerCnv);
+          var banner = new THREE.Sprite(new THREE.SpriteMaterial({ map: bannerTex, transparent: true, opacity: 1 }));
+          banner.scale.set(4, 1, 1);
+          var camDir = new THREE.Vector3();
+          eng3dC.camera.getWorldDirection(camDir);
+          var bp = eng3dC.camera.position.clone().addScaledVector(camDir, 2.5);
+          banner.position.copy(bp);
+          banner.userData._age = 0;
+          banner.userData._life = 4;
+          banner.userData._gravity = 0;
+          banner.userData._vel = { x: 0, y: 0.2, z: 0 };
+          eng3dC.scene.add(banner);
+          eng3dC._particles.push(banner);
+        } catch (bErr) { /* banner is optional polish; swallow */ }
+      }
+    }
+
     function tryMove(dir) {
-      if (gameOver || won || paused) return;
+      if (gameOver || won || paused || helpOpen || currentProblem) return;
       var cell = maze[playerPos.r][playerPos.c];
       var canMove = false;
       var newR = playerPos.r, newC = playerPos.c;
@@ -7987,7 +8205,7 @@
       if (!canMove) { setFeedback('wall'); playTone(140, 0.08, 'triangle', 0.06); setTimeout(function() { setFeedback(''); }, 300); return; }
       // Explorer Mode: if this path-passage was already solved this run,
       // walk through silently — no gate. Mirrors the correct-path side of
-      // submitAnswer so the player still gets the visited / camera updates.
+      // submitAnswer so the player still gets visited / key / exit win updates.
       if (isExplorer) {
         var pk = _pathKey(playerPos.r, playerPos.c, newR, newC);
         if (solvedPathsRef.current[pk]) {
@@ -8000,19 +8218,33 @@
           playTone(420, 0.04, 'sine', 0.025);
           // Key pickup still triggers if walking onto the key cell.
           var kpE = keyPosRef.current;
-          if (!keyCollected && kpE && newR === kpE.r && newC === kpE.c) {
+          var pickedKeyNow = !keyCollected && !keyCollectedRef.current && kpE && newR === kpE.r && newC === kpE.c;
+          if (pickedKeyNow) {
             setKeyCollected(true);
+            keyCollectedRef.current = true;
             _mfAnnounce(tt('math_fluency.you_picked_up_the_golden_key_the_exit_po', 'You picked up the golden key. The exit portal is now unlocked.'));
             if (addToast) addToast('🗝️ Golden key collected! The exit is unlocked.', 'success');
             playTone(880, 0.08, 'sine', 0.06);
             setTimeout(function() { playTone(1175, 0.08, 'sine', 0.06); }, 90);
             setTimeout(function() { playTone(1568, 0.12, 'sine', 0.06); }, 180);
           }
+          // Exit revisit after collecting the key completes the Explorer run.
+          var atExitE = newR === MAZE_ROWS - 1 && newC === MAZE_COLS - 1;
+          if (atExitE) {
+            if (keyCollected || keyCollectedRef.current || pickedKeyNow) {
+              completeMazeRun(correct, score);
+            } else {
+              if (addToast) addToast('\uD83D\uDD12 Portal is locked — find the key first', 'error');
+              playTone(180, 0.12, 'sawtooth', 0.03);
+              setTimeout(function() { playTone(160, 0.15, 'sawtooth', 0.03); }, 100);
+            }
+          }
           return;
         }
       }
       // Show a problem to solve before moving
       var _prob = makeProblem();
+      gateSolvedRef.current = false;
       setCurrentProblem({ dir: dir, targetR: newR, targetC: newC, problem: _prob });
       setUserInput('');
       setAttemptCount(0);
@@ -8027,9 +8259,25 @@
     }
 
     function submitAnswer() {
-      if (!currentProblem) return;
-      var ans = parseInt(userInput);
+      if (!currentProblem || paused || feedback === 'correct' || gateSolvedRef.current) return;
+      var trimmedInput = String(userInput == null ? '' : userInput).trim();
+      if (!trimmedInput || trimmedInput === '-') {
+        setFeedback('empty');
+        _mfAnnounce(tt('math_fluency.type_your_answer_to', 'Type your answer to ') + currentProblem.problem.text);
+        if (inputRef.current) inputRef.current.focus();
+        setTimeout(function() { setFeedback(function(prev) { return prev === 'empty' ? '' : prev; }); }, 900);
+        return;
+      }
+      var ans = parseInt(trimmedInput, 10);
+      if (isNaN(ans)) {
+        setFeedback('empty');
+        _mfAnnounce(tt('math_fluency.type_your_answer_to', 'Type your answer to ') + currentProblem.problem.text);
+        if (inputRef.current) inputRef.current.focus();
+        setTimeout(function() { setFeedback(function(prev) { return prev === 'empty' ? '' : prev; }); }, 900);
+        return;
+      }
       if (ans === currentProblem.problem.answer) {
+        gateSolvedRef.current = true;
         // Correct — move to new cell
         var newPos = { r: currentProblem.targetR, c: currentProblem.targetC };
         setPlayerPos(newPos); playerPosRef.current = newPos;
@@ -8160,8 +8408,10 @@
         // Key pickup — if the new cell is the key cell, collect the key and
         // unlock the exit. Triggers a bright gold burst + chime.
         var kp = keyPosRef.current;
-        if (!keyCollected && kp && newPos.r === kp.r && newPos.c === kp.c) {
+        var pickedKeyInGate = !keyCollected && !keyCollectedRef.current && kp && newPos.r === kp.r && newPos.c === kp.c;
+        if (pickedKeyInGate) {
           setKeyCollected(true);
+          keyCollectedRef.current = true;
           _mfAnnounce(tt('math_fluency.golden_key_collected_the_exit_is_now_unl', 'Golden key collected. The exit is now unlocked.'));
           if (addToast) addToast('\uD83D\uDDDD\uFE0F Key collected! Portal unlocked', 'success');
           playTone(1175, 0.08, 'sine', 0.06);
@@ -8196,7 +8446,8 @@
         // Check win — only triggers when the key is collected AND the player
         // reached the exit cell. Exit-without-key plays a locked chime.
         var atExit = currentProblem.targetR === MAZE_ROWS - 1 && currentProblem.targetC === MAZE_COLS - 1;
-        if (atExit && !keyCollected && !(kp && newPos.r === kp.r && newPos.c === kp.c)) {
+        var hasKeyNow = keyCollected || keyCollectedRef.current || pickedKeyInGate || (kp && newPos.r === kp.r && newPos.c === kp.c);
+        if (atExit && !hasKeyNow) {
           // Player reached the exit but hasn't grabbed the key yet — lock
           // rattle sound + toast. They can keep moving freely; it just means
           // they have to backtrack through the key.
@@ -8204,123 +8455,8 @@
           playTone(180, 0.12, 'sawtooth', 0.03);
           setTimeout(function() { playTone(160, 0.15, 'sawtooth', 0.03); }, 100);
         }
-        if (atExit && (keyCollected || (kp && newPos.r === kp.r && newPos.c === kp.c))) {
-          setWon(true); setMode('results');
-          if (timerRef.current) clearInterval(timerRef.current);
-          if (monsterTimerRef.current) clearInterval(monsterTimerRef.current);
-          // Win fanfare — rising C major arpeggio + sustained C-E-G chord.
-          // Layered with the existing maze-complete tones in the surrounding
-          // path so the celebration is distinctly bigger than a gate-unlock.
-          playTone(523, 0.14, 'sine', 0.08);
-          setTimeout(function() { playTone(659, 0.14, 'sine', 0.08); }, 110);
-          setTimeout(function() { playTone(784, 0.14, 'sine', 0.08); }, 220);
-          setTimeout(function() { playTone(1047, 0.22, 'sine', 0.09); }, 330);
-          setTimeout(function() {
-            playTone(1047, 0.45, 'sine', 0.06);
-            playTone(1319, 0.45, 'sine', 0.05);
-            playTone(1568, 0.45, 'sine', 0.05);
-          }, 600);
-          // Medal thresholds scale with maze size — baseline is 2 seconds per
-          // cell, which is a sprinter's pace. Gold = 60% of that, silver =
-          // 100%, bronze = 180%. Beyond that, no medal (still a valid win).
-          var baseSec = MAZE_ROWS * MAZE_COLS * 2;
-          var medalKind = null;
-          var medalBonus = 0;
-          if (elapsed <= baseSec * 0.6) { medalKind = 'gold'; medalBonus = 20; }
-          else if (elapsed <= baseSec) { medalKind = 'silver'; medalBonus = 10; }
-          else if (elapsed <= baseSec * 1.8) { medalKind = 'bronze'; medalBonus = 5; }
-          setMedal(medalKind);
-          var finalScore = score + 10 + medalBonus;
-          if (medalKind && addToast) {
-            var medalEmoji = { gold: '\uD83E\uDD47', silver: '\uD83E\uDD48', bronze: '\uD83E\uDD49' }[medalKind];
-            addToast(medalEmoji + ' ' + medalKind.toUpperCase() + ' TIME! +' + medalBonus + ' bonus', 'success');
-          }
-          _mfAnnounce(tt('math_fluency.maze_complete', 'Maze complete! ') + (correct + 1) + ' gates unlocked in ' + elapsed + ' seconds.');
-          if (addToast) addToast('\uD83C\uDFC6 Maze complete! ' + (correct + 1) + ' correct in ' + elapsed + 's', 'success');
-          if (handleScoreUpdate) handleScoreUpdate(Math.round((correct + 1) / Math.max(1, elapsed) * 60) + medalBonus, tt('math_fluency.fluency_maze_complete', 'Fluency Maze Complete'), 'fluency-maze');
-          _mfBumpLifetime({ mazesCompleted: 1, totalSeconds: elapsed });
-          // Save high score — keyed per (operation, size, difficulty) so
-          // distinct practice modes don't overwrite each other's bests.
-          // Legacy 'fluency_maze_best' (single global) is preserved as a
-          // fallback so existing students don't lose their prior best.
-          try {
-            var bestKey = buildMazeBestKey(operation, mazeSize, difficulty, controlMode, chaseMode);
-            var bestStore = _mfParsePlainObject(localStorage.getItem('fluency_maze_bests'));
-            var prior = Object.prototype.hasOwnProperty.call(bestStore, bestKey) ? bestStore[bestKey] : null;
-            // Stash a frozen copy so the results screen can compare against
-            // the pre-win record. Stored as a plain object so a stale
-            // closure can't see further mutations of bestStore.
-            setPriorBestSnapshot(prior ? { score: prior.score, time: prior.time, correct: prior.correct, wrong: prior.wrong } : null);
-            if (!prior || finalScore > prior.score) {
-              bestStore[bestKey] = { score: finalScore, correct: correct + 1, wrong: wrong, time: elapsed, op: operation, size: mazeSize, difficulty: difficulty, controlMode: controlMode, chaseMode: chaseMode, savedAt: Date.now() };
-              localStorage.setItem('fluency_maze_bests', JSON.stringify(bestStore));
-              if (prior) _mfAnnounce(tt('math_fluency.new_personal_best_for_this_mode', 'New personal best for this mode: ') + finalScore + ' points.');
-            }
-            // Keep legacy global record in sync so the old key still works
-            var legacy = _mfParsePlainObject(localStorage.getItem('fluency_maze_best'));
-            if (!legacy.score || finalScore > legacy.score) {
-              localStorage.setItem('fluency_maze_best', JSON.stringify({ score: finalScore, correct: correct + 1, wrong: wrong, time: elapsed, op: operation, size: mazeSize }));
-            }
-          } catch(e) {}
-          // 3D completion celebration — denser confetti + bigger spread +
-          // a floating "MAZE COMPLETE" banner sprite in front of the camera.
-          var eng3dC = maze3dEngRef.current;
-          if (eng3dC && window.THREE) {
-            var THREE = window.THREE;
-            var confColors = [0xfbbf24, 0x22c55e, 0x7c3aed, 0xef4444, 0x3b82f6, 0xec4899, 0x06b6d4, 0xf97316];
-            if (!eng3dC._particles) eng3dC._particles = [];
-            // 70 confetti bits (was 20) — mix of cubes and thin ribbons for
-            // visual variety.
-            for (var ci = 0; ci < 70; ci++) {
-              var isRibbon = ci % 3 === 0;
-              var cGeo = isRibbon
-                ? new THREE.BoxGeometry(0.14, 0.02, 0.02)
-                : new THREE.BoxGeometry(0.08, 0.08, 0.08);
-              var cMat = new THREE.MeshBasicMaterial({ color: confColors[ci % confColors.length], transparent: true, opacity: 1 });
-              var cMesh = new THREE.Mesh(cGeo, cMat);
-              cMesh.position.copy(eng3dC.camera.position);
-              cMesh.userData._age = 0; cMesh.userData._life = 2.5 + Math.random() * 1.5;
-              cMesh.userData._gravity = 5;
-              cMesh.userData._vel = {
-                x: (Math.random() - 0.5) * 7,
-                y: 4 + Math.random() * 4,
-                z: (Math.random() - 0.5) * 7
-              };
-              eng3dC.scene.add(cMesh);
-              eng3dC._particles.push(cMesh);
-            }
-            // Floating banner — Canvas-rendered "MAZE COMPLETE" sprite placed
-            // ahead of the camera at the time of winning. Fades via the same
-            // particle-aging pipeline so it disappears with the confetti.
-            try {
-              var bannerCnv = document.createElement('canvas');
-              bannerCnv.width = 512; bannerCnv.height = 128;
-              var bctx = bannerCnv.getContext('2d');
-              bctx.fillStyle = 'rgba(15,23,42,0.85)';
-              bctx.fillRect(0, 0, 512, 128);
-              bctx.strokeStyle = '#fbbf24'; bctx.lineWidth = 4;
-              bctx.strokeRect(6, 6, 500, 116);
-              bctx.font = 'bold 56px Georgia, serif';
-              bctx.textAlign = 'center'; bctx.textBaseline = 'middle';
-              bctx.fillStyle = '#fde047';
-              bctx.shadowColor = '#f59e0b'; bctx.shadowBlur = 20;
-              bctx.fillText('\uD83C\uDFC6 MAZE COMPLETE', 256, 64);
-              var bannerTex = new THREE.CanvasTexture(bannerCnv);
-              var banner = new THREE.Sprite(new THREE.SpriteMaterial({ map: bannerTex, transparent: true, opacity: 1 }));
-              banner.scale.set(4, 1, 1);
-              // Position ~2 units in front of the current camera facing.
-              var camDir = new THREE.Vector3();
-              eng3dC.camera.getWorldDirection(camDir);
-              var bp = eng3dC.camera.position.clone().addScaledVector(camDir, 2.5);
-              banner.position.copy(bp);
-              banner.userData._age = 0;
-              banner.userData._life = 4;
-              banner.userData._gravity = 0; // floats, doesn't fall
-              banner.userData._vel = { x: 0, y: 0.2, z: 0 };
-              eng3dC.scene.add(banner);
-              eng3dC._particles.push(banner);
-            } catch (bErr) { /* banner is optional polish; swallow */ }
-          }
+        if (atExit && hasKeyNow) {
+          completeMazeRun(correct + 1, score + 10 + streakBonus);
         }
       } else {
         // Wrong — don't move, penalty, streak broken. KEEP the gate open
@@ -8358,6 +8494,7 @@
       // Correct path: dismiss the gate after a brief beat so the green
       // flash + key-turn audio register before the overlay disappears.
       setTimeout(function() {
+        gateSolvedRef.current = false;
         setCurrentProblem(null);
         setFeedback('');
       }, 220);
@@ -8390,6 +8527,13 @@
           if (e.key !== 'Tab' && e.key !== 'Shift') { e.preventDefault(); _dismissTutorial(); }
           return;
         }
+        if (helpOpen) {
+          if (e.key === 'Escape' || e.key === '?' || (e.shiftKey && e.key === '/')) {
+            e.preventDefault();
+            setHelpOpen(false);
+          }
+          return;
+        }
         if (paused) {
           if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') { e.preventDefault(); setPaused(false); }
           return;
@@ -8404,26 +8548,27 @@
         // (handled above), so here we can safely skip on any editable.
         var ae = (typeof document !== 'undefined') ? document.activeElement : null;
         if (ae && ae !== document.body && ae.matches && ae.matches('input, textarea, select, [contenteditable="true"]')) return;
-        if (e.key === 'p' || e.key === 'P') { setPaused(function(v) { return !v; }); return; }
+        var keyLow = typeof e.key === 'string' ? e.key.toLowerCase() : '';
+        if (keyLow === 'p') { setPaused(function(v) { return !v; }); return; }
         if (e.key === '?' || (e.shiftKey && e.key === '/')) { setHelpOpen(function(v) { return !v; }); return; }
-        if (e.key === 'm' || e.key === 'M') { _toggleMute(); return; }
-        if (e.key === 'f' || e.key === 'F') { setFullscreen(function(v) { return !v; }); return; }
+        if (keyLow === 'm') { _toggleMute(); return; }
+        if (keyLow === 'f') { setFullscreen(function(v) { return !v; }); return; }
         if (paused) return;
         // Explorer Mode keyboard rotate — Q/E nudge the look-yaw target
         // 30° per press; the animate loop lerps the actual camera yaw
         // toward it so the rotation feels smooth instead of snapping.
         // Classic ignores these keys (yaw stays at 0 there anyway).
-        if (isExplorer && (e.key === 'q' || e.key === 'Q')) { lookYawTargetRef.current -= Math.PI / 6; return; }
-        if (isExplorer && (e.key === 'e' || e.key === 'E')) { lookYawTargetRef.current += Math.PI / 6; return; }
+        if (isExplorer && keyLow === 'q') { lookYawTargetRef.current -= Math.PI / 6; return; }
+        if (isExplorer && keyLow === 'e') { lookYawTargetRef.current += Math.PI / 6; return; }
         // R restarts the SAME maze layout (reuses lastRunRef) so a
         // student can retry mid-run without trekking back to results.
         // Only fires when there's a cached layout to reuse.
-        if ((e.key === 'r' || e.key === 'R') && lastRunRef.current) { startMaze(true); return; }
-        if (e.key === 'ArrowUp' || e.key === 'w') tryMove('up');
-        if (e.key === 'ArrowDown' || e.key === 's') tryMove('down');
-        if (e.key === 'ArrowLeft' || e.key === 'a') tryMove('left');
-        if (e.key === 'ArrowRight' || e.key === 'd') tryMove('right');
-        if (e.key === 'h' || e.key === 'H') requestHint();
+        if (keyLow === 'r' && lastRunRef.current) { startMaze(true); return; }
+        if (e.key === 'ArrowUp' || keyLow === 'w') { if (e.key === 'ArrowUp') e.preventDefault(); tryMove('up'); return; }
+        if (e.key === 'ArrowDown' || keyLow === 's') { if (e.key === 'ArrowDown') e.preventDefault(); tryMove('down'); return; }
+        if (e.key === 'ArrowLeft' || keyLow === 'a') { if (e.key === 'ArrowLeft') e.preventDefault(); tryMove('left'); return; }
+        if (e.key === 'ArrowRight' || keyLow === 'd') { if (e.key === 'ArrowRight') e.preventDefault(); tryMove('right'); return; }
+        if (keyLow === 'h') requestHint();
       }
       document.addEventListener('keydown', handleKey);
       return function() { document.removeEventListener('keydown', handleKey); };
@@ -9902,7 +10047,7 @@
           if (!prior.time) return null;
           var diff = prior.time - elapsed;
           var medalBonusNow = medal === 'gold' ? 20 : medal === 'silver' ? 10 : medal === 'bronze' ? 5 : 0;
-          var newBest = (typeof prior.score === 'number') && (score + 10 + medalBonusNow) > prior.score;
+          var newBest = (typeof prior.score === 'number') && (score + medalBonusNow) > prior.score;
           var faster = diff > 0;
           var msg = newBest
             ? tt('math_fluency.new_personal_best', 'New personal best! ') + (faster ? diff + 's faster than your previous (' + prior.time + 's)' : tt('math_fluency.beat_your_prior_score_of', 'Beat your prior score of ') + prior.score)
@@ -10503,7 +10648,7 @@
           onKeyDown: function(e) { if (!e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && e.key === 'Escape') setUserInput(''); },
           'aria-label': tt('math_fluency.type_your_answer_to', 'Type your answer to ') + currentProblem.problem.text,
           inputMode: 'numeric', enterKeyHint: 'done', autoComplete: 'off', autoFocus: true,
-          style: { display: 'block', width: isFullscreen ? '180px' : '140px', padding: isFullscreen ? '10px 16px' : '8px 12px', margin: '0 auto 10px', fontSize: isFullscreen ? '36px' : '26px', fontWeight: 800, fontFamily: 'monospace', textAlign: 'center', color: feedback === 'wrong' ? '#fee2e2' : (feedback === 'correct' ? '#bbf7d0' : '#fff'), background: feedback === 'wrong' ? '#7f1d1d' : (feedback === 'correct' ? '#14532d' : '#0f172a'), border: '3px solid ' + (feedback === 'wrong' ? '#f87171' : (feedback === 'correct' ? '#4ade80' : '#a78bfa')), borderRadius: '8px', letterSpacing: '0.08em', outlineOffset: '3px' }
+          style: { display: 'block', width: isFullscreen ? '180px' : '140px', padding: isFullscreen ? '10px 16px' : '8px 12px', margin: '0 auto 10px', fontSize: isFullscreen ? '36px' : '26px', fontWeight: 800, fontFamily: 'monospace', textAlign: 'center', color: feedback === 'wrong' ? '#fee2e2' : (feedback === 'correct' ? '#bbf7d0' : '#fff'), background: feedback === 'wrong' ? '#7f1d1d' : (feedback === 'correct' ? '#14532d' : '#0f172a'), border: '3px solid ' + (feedback === 'wrong' ? '#f87171' : (feedback === 'correct' ? '#4ade80' : (feedback === 'empty' ? '#fbbf24' : '#a78bfa'))), borderRadius: '8px', letterSpacing: '0.08em', outlineOffset: '3px' }
         }),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: isFullscreen ? '8px' : '6px', maxWidth: isFullscreen ? '320px' : '220px', margin: '0 auto' } },
           ['1','2','3','4','5','6','7','8','9'].map(function(d) {
@@ -10543,6 +10688,7 @@
             }
           }, '\ud83d\udd11 Unlock')
         ),
+        feedback === 'empty' && h('div', { style: { marginTop: '8px', fontSize: '11px', fontWeight: 700, color: '#fde68a' }, 'aria-live': 'polite' }, tt('math_fluency.type_your_answer_to', 'Type your answer to ') + currentProblem.problem.text),
         attemptCount > 0 && h('div', { style: { marginTop: '8px', fontSize: '11px', fontWeight: 700, color: '#b45309', letterSpacing: '0.06em', textTransform: 'uppercase' }, 'aria-live': 'off' }, 'Attempt ' + (attemptCount + 1)),
         // Adaptive answer reveal \u2014 after 3 wrong attempts on the same
         // gate, surface the correct answer so a stuck student isn't

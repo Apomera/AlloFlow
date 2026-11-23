@@ -1655,7 +1655,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
           // "score" can't truly measure contrast. This computes a REAL ratio
           // from relative luminance — one honest, verifiable measurement.
           (function() {
-            var ccFg = d.ccFg || '#717b8c', ccBg = d.ccBg || '#ffffff';
+            var ccFg = d.ccFg || '#596373', ccBg = d.ccBg || '#ffffff';
             function _hexToRgb(hx) {
               var m = /^#?([0-9a-f]{6})$/i.exec(hx || '');
               if (!m) return [0, 0, 0];

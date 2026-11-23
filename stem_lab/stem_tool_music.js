@@ -5,6 +5,7 @@
 // ═══════════════════════════════════════════
 
 function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
+if (typeof window !== 'undefined') {
 window.StemLab = window.StemLab || {
   _registry: {}, _order: [],
   registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); console.log('[StemLab] Registered tool: ' + id); },
@@ -26,7 +27,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
     document.head.appendChild(st);
   })();
   (function() {
-    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-stem-motion-reduce-css';
     st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
@@ -118,7 +119,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
 
   // ── Accessibility live region (WCAG 4.1.3) ──
   (function() {
-    if (document.getElementById('allo-live-music')) return;
+    if (typeof document === 'undefined' || !document.body || document.getElementById('allo-live-music')) return;
     var lr = document.createElement('div');
     lr.id = 'allo-live-music';
     lr.setAttribute('aria-live', 'polite');
@@ -128,6 +129,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
     lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(lr);
   })();
+
+  function _musGlobalMuted() {
+    try {
+      if (typeof window !== 'undefined') {
+        if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+        if (typeof window.isAlloMuted === 'function' && window.isAlloMuted()) return true;
+        if (window._alloGlobalMute || window._alloGlobalMuted || window.__alloFlowMuted || window.__alloSoundMuted) return true;
+      }
+      if (typeof localStorage !== 'undefined') {
+        if (localStorage.getItem('alloflow-global-muted') === 'true' || localStorage.getItem('alloflow_muted') === '1') return true;
+      }
+    } catch (e) {}
+    return false;
+  }
+  function _musSafeJsonParse(raw, fallback) {
+    try {
+      var parsed = JSON.parse(raw, function (k, v) {
+        if (k === '__proto__' || k === 'constructor' || k === 'prototype') return undefined;
+        return v;
+      });
+      return parsed;
+    } catch (e) {
+      return fallback;
+    }
+  }
 
 
   // ═══════════════════════════════════════════
@@ -319,9 +345,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           this.out = this._ctx.createDynamicsCompressor();
           // Everything passes one last gain, so hush() can fade whatever is sounding without a click.
           this.master = this._ctx.createGain();
+          this.master.gain.value = _musGlobalMuted() ? 0 : 1;
           this.out.connect(this.master);
           this.master.connect(this._ctx.destination);
           this._armUnlock();
+        } else if (this.master && _musGlobalMuted()) {
+          this.master.gain.value = 0;
         }
         return this._ctx;
       }
@@ -1221,15 +1250,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
         }));
       };
       // Enter/Space route for a non-button control; ignores keys from controls nested inside it.
-      var musKeyAct = function (fn) { return function (e) { if (e.target !== e.currentTarget) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(e); } }; };
+      var musKeyAct = function (fn) { return function (e) { if (!e || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.target !== e.currentTarget) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(e); } }; };
       var setStemLabTool = function(v) { if (ctx.setStemLabTool) ctx.setStemLabTool(v); };
       var setToolSnapshots = ctx.setToolSnapshots || function() {};
       // Student AI-off: null unless text AI is usable, so the AI theory tutor hides.
+      var _musHardDeny = (function () {
+        try {
+          if (typeof window === 'undefined') return false;
+          var mp = window.ALLOFLOW_MANAGED_AI_POLICY;
+          if (mp && (mp.enabled === false || mp.allowAi === false || mp.aiEnabled === false || mp.disabled === true || mp.mode === 'disabled' || mp.mode === 'off')) return true;
+          var sp = window.StudentPolicy;
+          if (sp && (sp.allowAi === false || sp.aiEnabled === false || sp.aiDisabled === true || (typeof sp.isAiAllowed === 'function' && !sp.isAiAllowed('text')))) return true;
+          var qm = window.__alloQrStudentMode;
+          if (qm === true || (qm && typeof qm === 'object' && (qm.active === true || qm.aiEnabled === false || qm.allowAi === false))) return true;
+          if (window.__alloAiSecretsLocked === true) return true;
+        } catch (e) {}
+        return false;
+      })();
       var _aiUsable = function (kind, fn) {
+        if (_musHardDeny) return false;
         try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
         return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
       };
-      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
+      var callGemini = (!_musHardDeny && ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
       var gradeLevel = ctx.gradeLevel;
       var announceToSR = ctx.announceToSR;
       var isDark = !!(ctx.isDark || ctx.isContrast);
@@ -1244,7 +1287,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           var _MS_RANGES = {
             attack: [0.001, 2, 0.01], decay: [0.01, 1, 0.1],
             sustain: [0, 1, 0.7], release: [0.01, 3, 0.3],
-            filterCutoff: [0, 1000, 8000], filterQ: [0.1, 20, 1],
+            filterCutoff: [20, 20000, 8000], filterQ: [0.1, 20, 1],
             tremoloRate: [0.5, 20, 0], tremoloDepth: [0, 1, 0],
             vibratoRate: [0.5, 12, 0], vibratoDepth: [0, 1, 0],
             ksBrightness: [0.1, 1, 0.8], ksDamping: [0.99, 0.9999, 0.996],
@@ -1357,7 +1400,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             if (!AudioContextCtor) throw new Error('Web Audio API is not available in this environment.');
             if (!window._alloSynthCtx || window._alloSynthCtx.state === 'closed') {
               var ac = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)());
-              var gain = ac.createGain(); gain.gain.value = d.volume || 0.5;
+              var gain = ac.createGain(); gain.gain.value = _musGlobalMuted() ? 0 : (d.volume != null ? d.volume : 0.5);
               var analyser = ac.createAnalyser(); analyser.fftSize = 2048;
               // Resonant filter
               var filter = ac.createBiquadFilter();
@@ -1404,8 +1447,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               window._alloSynthCtx = ac; window._alloSynthGain = gain; window._alloSynthAnalyser = analyser;
               window._alloSynthEffects = { filter: filter, distortion: distortion, delay: delay, delayFeedback: delayFeedback, delayWet: delayWet, delayDry: delayDry, convolver: convolver, reverbWet: reverbWet, reverbDry: reverbDry, chorusDelay: chorusDelay, chorusLFO: chorusLFO, chorusDepth: chorusDepth, chorusWet: chorusWet, tremoloLFO: tremoloLFO, tremoloGain: tremoloGain, tremoloNode: tremoloNode };
             }
-            if (window._alloSynthCtx.state === 'suspended') window._alloSynthCtx.resume();
-            window._alloSynthGain.gain.value = d.volume || 0.5;
+            if (window._alloSynthCtx.state === 'suspended' && !_musGlobalMuted()) { try { var rp = window._alloSynthCtx.resume(); if (rp && typeof rp.catch === 'function') rp.catch(function () {}); } catch (e) {} }
+            window._alloSynthGain.gain.value = _musGlobalMuted() ? 0 : (d.volume != null ? d.volume : 0.5);
             var fx = window._alloSynthEffects;
             if (fx) {
               fx.filter.type = d.filterType || 'lowpass'; fx.filter.frequency.value = d.filterCutoff || 20000; fx.filter.Q.value = d.filterQ || 1;
@@ -1609,6 +1652,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
 
           // ═══ PLAY / STOP NOTE (enhanced with engine routing) ═══
           function playNote(freq, noteId, vibratoOverride) {
+            if (_musGlobalMuted()) return;
             var audio = getCtx();
             if (window._alloSynthActiveNotes[noteId]) return;
             var engine = (['standard','fm','pad','plucked','sub','supersaw'].indexOf(d.synthEngine) !== -1 ? d.synthEngine : 'standard');
@@ -1631,7 +1675,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               _vibLFO.connect(vibGain); vibGain.connect(osc.frequency); _vibLFO.start();
             }
             var now = audio.ctx.currentTime;
-            var atk = d.attack || 0.02; var dec = d.decay || 0.1; var sus = d.sustain || 0.7;
+            var atk = d.attack != null ? d.attack : 0.02; var dec = d.decay != null ? d.decay : 0.1; var sus = d.sustain != null ? d.sustain : 0.7;
             env.gain.setValueAtTime(0, now); env.gain.linearRampToValueAtTime(1, now + atk);
             env.gain.linearRampToValueAtTime(sus, now + atk + dec);
             osc.connect(env); env.connect(audio.effects.filter); osc.start(now);
@@ -1881,6 +1925,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           // ═══ UNIFIED DRUM SYNTHESIZER ═══
           // Handles ALL drum types with Web Audio synthesis
           function playDrum(type, when) {
+            if (_musGlobalMuted()) return;
             var audio = getCtx(); var ctxA = audio.ctx;
             var now = (typeof when === 'number' && isFinite(when) && when > ctxA.currentTime) ? when : ctxA.currentTime;
             var drumGain = ctxA.createGain(); drumGain.connect(audio.effects ? audio.effects.filter : audio.gain);
@@ -1965,6 +2010,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           }
           // Kit-flavored drum synthesis: applies per-kit tonal adjustments to synth drums
           function playDrumStyled(type, style, vol) {
+            if (_musGlobalMuted()) return;
             var audio = getCtx(); var ctxA = audio.ctx; var now = ctxA.currentTime;
             var dm = (style && style.decayMul) || 1.0;
             var ps = (style && style.pitchShift) || 0;
@@ -2062,6 +2108,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             }
           }
           function playClick(accent, when) {
+            if (_musGlobalMuted()) return;
             var audio = getCtx(); var ctx = audio.ctx;
             // Schedule ahead when asked, so a bar of clicks lands on the sample clock
             // rather than wherever setTimeout happens to fire.
@@ -2444,10 +2491,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
 
           function startMetronome() {
             stopMetronome();
+            if (_musGlobalMuted()) return;
             var audio = getCtx();
             if (!audio || !audio.ctx) return;
             var actx = audio.ctx;
-            if (actx.state === 'suspended') actx.resume();
+            if (actx.state === 'suspended') { try { var mp = actx.resume(); if (mp && typeof mp.catch === 'function') mp.catch(function () {}); } catch (e) {} }
             upd('metroOn', true);
 
             var st = _metroState.current;
@@ -2461,6 +2509,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             // that nextBeatSec advances by exactly one beat each time, so the audible
             // clicks stay locked to the sample clock no matter how the timer behaves.
             window._alloMetronomeInterval = setInterval(function () {
+              if (_musGlobalMuted()) { stopMetronome(); return; }
+              if (typeof document !== 'undefined' && document.hidden) return;
               while (st.nextBeatSec < actx.currentTime + METRO_LOOKAHEAD_SEC) {
                 playClick(st.beat === 0, st.nextBeatSec);
                 // Light the lamp when the click is due. A few ms out here is invisible,
@@ -2484,7 +2534,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             upd('metroOn', false); upd('metroBeat', -1);
           }
           function startArpeggiator() {
-            stopArpeggiator(); upd('arpOn', true);
+            stopArpeggiator();
+            if (_musGlobalMuted()) return;
+            upd('arpOn', true);
             var chordData = CHORDS[selectedChord]; if (!chordData) return;
             var ri = NOTE_NAMES.indexOf(chordRoot); var intervals = chordData.intervals.slice();
             var arpOctaves = d.arpOctaves || 1;
@@ -2492,6 +2544,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             for (var oi = 0; oi < arpOctaves; oi++) { intervals.forEach(function (intv) { allNotes.push(intv + oi * 12); }); }
             var step = 0; var ascending = true; var ms = (60000 / tempoBPM) / 2;
             window._alloArpInterval = setInterval(function () {
+              if (_musGlobalMuted()) { stopArpeggiator(); return; }
+              if (typeof document !== 'undefined' && document.hidden) return;
               var intv = allNotes[step]; var nIdx = (ri + intv) % 12;
               var nOct = (d.octave || 4) + Math.floor((ri + intv) / 12);
               playNoteFor(noteFreq(NOTE_NAMES[nIdx], nOct), 'arp_' + step, ms * 0.8);
@@ -2527,10 +2581,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             // Guard re-entry: a second press mid-round would interleave two schedules.
             if (d.rhythmPhase === 'listen' || d.rhythmPhase === 'record') return;
             stopRhythm();
+            if (_musGlobalMuted()) return;
             var audio = getCtx();
             if (!audio || !audio.ctx) return;
             var actx = audio.ctx;
-            if (actx.state === 'suspended') actx.resume();
+            if (actx.state === 'suspended') { try { var rp = actx.resume(); if (rp && typeof rp.catch === 'function') rp.catch(function () {}); } catch (e) {} }
 
             var pattern = rhythmPatternById(d.rhythmPatternId);
             var beatMs = 60000 / tempoBPM;
@@ -2666,7 +2721,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           // WCAG 2.1.4: the piano, chord and drum-pad keys act only while focus is
           // inside the music tool, never with Ctrl/Alt/Meta, and never in a text field.
           function musicKeyInTool(e) {
-            var tg = e && e.target;
+            if (!e || e.isComposing || e.keyCode === 229) return false;
+            var tg = e.target;
             if (!tg || !tg.closest || !tg.closest('.allo-music-tool')) return false;
             if (e.ctrlKey || e.metaKey || e.altKey) return false;
             return !(/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName || '') && tg.type !== 'range' && tg.type !== 'checkbox' && tg.type !== 'button') && !tg.isContentEditable;
@@ -2676,7 +2732,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             's': 1, 'd': 3, 'g': 6, 'h': 8, 'j': 10, 'l': 13, ';': 15
           };
           window._alloSynthKeyDown = function (e) {
-            if (e.repeat) return;
+            if (!e || e.repeat || typeof e.key !== 'string') return;
             if (!musicKeyInTool(e)) return;
             var semi = KEYBOARD_MAP[e.key.toLowerCase()];
             if (semi !== undefined && synthTab === 'play') {
@@ -2691,6 +2747,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             }
           };
           window._alloSynthKeyUp = function (e) {
+            if (!e || typeof e.key !== 'string') return;
             var semi = KEYBOARD_MAP[e.key.toLowerCase()];
             if (semi !== undefined) {
               var key = KEYS[semi];
@@ -2785,6 +2842,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             function draw() {
               if (!canvasEl.isConnected) { canvasEl._synthVizInit = false; return; }
               canvasEl._synthVizAnim = requestAnimationFrame(draw);
+              if (typeof document !== 'undefined' && document.hidden) return;
               var analyser = window._alloSynthAnalyser;
               var vizMode = canvasEl.dataset.vizMode || 'waveform';
               var reduced = musicReducedMotion();
@@ -3199,7 +3257,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           React.useEffect(function () {
             if (synthTab !== 'harmonypad' && synthTab !== 'beatpad') return;
             function onKeyDown(e) {
-              if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+              if (!e || e.isComposing || e.keyCode === 229 || typeof e.key !== 'string') return;
+              if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable)) return;
               if (!musicKeyInTool(e)) return;
               var k = e.key.toLowerCase();
               if (synthTab === 'harmonypad') {
@@ -3454,7 +3513,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               var h = location.hash;
               if (!h || h.indexOf('#beat=') !== 0) return;
               var json = decodeURIComponent(escape(atob(h.substring(6))));
-              var obj = JSON.parse(json);
+              var obj = _musSafeJsonParse(json, null);
+              if (!obj || typeof obj !== 'object') return;
               // Anything in the URL is untrusted input: shape-check the grid and
               // melody, and range-check the numbers, so a malformed or hand-edited
               // link cannot wedge the sequencer or persist nonsense.
@@ -3479,9 +3539,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               rec.onstop = function () {
                 audio.gain.disconnect(dest);
                 var blob = new Blob(chunks, { type: mimeType });
-                var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+                var blobUrl = URL.createObjectURL(blob);
+                var a = document.createElement('a'); a.href = blobUrl;
                 a.download = 'beat_' + new Date().toISOString().slice(0, 10) + '.webm';
                 document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                setTimeout(function () { try { URL.revokeObjectURL(blobUrl); } catch (e) {} }, 1000);
                 addToast(__alloT('stem.music.beat_exported', '\uD83D\uDCE5 Beat exported!'), 'success'); upd('bpExporting', false);
               };
               rec.start(); upd('bpExporting', true);
@@ -3507,6 +3569,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             var bpPrimed = false;
             function draw() {
               _bpAnimRef.current = requestAnimationFrame(draw);
+              if (typeof document !== 'undefined' && document.hidden) return;
               analyser.getByteTimeDomainData(buf);
               var hc = musicHighContrast();
               var reduced = musicReducedMotion();
@@ -3643,6 +3706,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           // Keep ref pointing to latest render's _seqTick
           _seqTickRef.current = _seqTick;
           function startSequencer() {
+            if (_musGlobalMuted()) return;
             if (_seqTimer.current) return;
             _seqStep.current = 0;
             _seqTick(); // fire first tick immediately, it schedules the chain
@@ -3655,7 +3719,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           }
           // Clean up on unmount — stop the metronome + arpeggiator intervals too (previously only
           // the sequencer was stopped, so those setInterval loops leaked when leaving mid-play).
-          React.useEffect(function () { return function () { stopSequencer(); stopMetronome(); stopArpeggiator(); stopRhythm(); stopAllNotes(); }; }, []);
+          React.useEffect(function () {
+            function onMuteChanged(ev) {
+              var muted = (ev && ev.detail && typeof ev.detail.muted === 'boolean') ? ev.detail.muted : _musGlobalMuted();
+              if (muted) {
+                stopSequencer(); stopMetronome(); stopArpeggiator(); stopRhythm(); stopAllNotes();
+                try { if (window._alloSynthGain) window._alloSynthGain.gain.value = 0; } catch (e) {}
+                try { if (window._alloSynthCtx && typeof window._alloSynthCtx.suspend === 'function' && window._alloSynthCtx.state === 'running') { var sp = window._alloSynthCtx.suspend(); if (sp && typeof sp.catch === 'function') sp.catch(function () {}); } } catch (e) {}
+              } else {
+                try { if (window._alloSynthGain) window._alloSynthGain.gain.value = d.volume != null ? d.volume : 0.5; } catch (e) {}
+              }
+            }
+            if (typeof window !== 'undefined') window.addEventListener('alloflow-mute-changed', onMuteChanged);
+            return function () {
+              if (typeof window !== 'undefined') window.removeEventListener('alloflow-mute-changed', onMuteChanged);
+              stopSequencer(); stopMetronome(); stopArpeggiator(); stopRhythm(); stopAllNotes();
+            };
+          }, []);
           // Restart the metronome when tempo or time signature changes while it runs —
           // startMetronome captures both in its interval closure.
           React.useEffect(function () {
@@ -3811,8 +3891,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           // Keyboard shortcuts for drum pads (number row)
           React.useEffect(function () {
             function handlePadKey(e) {
+              if (!e || e.isComposing || e.keyCode === 229) return;
               if (synthTab !== 'beatpad') return;
-              if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+              if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable)) return;
               if (!musicKeyInTool(e)) return;
               var padMap = { '1': 0, '2': 1, '3': 2, '4': 3, '5': 4, '6': 5, '7': 6, '8': 7, '9': 8, '0': 9, '-': 10, '=': 11 };
               var idx = padMap[e.key];
@@ -4124,8 +4205,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       if (announceToSR) announceToSR(key.note + key.octave);
                     };
                     var releaseKey = function () { stopNote(noteId); upd('activeKeys', _msKeys(d).filter(function (x) { return x !== noteId; })); };
-                    var onKeyDownKey = function (e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); pressKey(); } };
-                    var onKeyUpKey = function (e) { if (e.key === ' ' || e.key === 'Enter') releaseKey(); };
+                    var onKeyDownKey = function (e) { if (!e || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); pressKey(); } };
+                    var onKeyUpKey = function (e) { if (!e || e.isComposing || e.keyCode === 229) return; if (e.key === ' ' || e.key === 'Enter') releaseKey(); };
                     if (isBlack) {
                       return React.createElement("div", {
                         key: idx,
@@ -4800,6 +4881,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                         // stored, so without this the mic-viz rAF + analyser leaked on unmount.
                         if (!canvas.isConnected || !window._alloMicAnalyser) { canvas._micVizInit = false; return; }
                         requestAnimationFrame(drawMicViz);
+                        if (typeof document !== 'undefined' && document.hidden) return;
                         var analyser = window._alloMicAnalyser;
                         var bufLen = analyser.frequencyBinCount;
                         if (!micTimeBuf || micTimeBuf.length !== bufLen) micTimeBuf = new Uint8Array(bufLen);
@@ -5911,7 +5993,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                         },
                           React.createElement("span", null, "\uD83C\uDFB5"),
                           React.createElement("span", { className: "truncate max-w-[80px]" }, smp.name),
-                          React.createElement("span", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  onClick: function (e) { e.stopPropagation(); window._alloUserSamples.splice(si, 1); upd('userSampleCount', window._alloUserSamples.length); }, className: "transition-colors ml-1 text-red-400 hover:text-red-600 cursor-pointer" }, "\u2715")
+                          React.createElement("span", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e && !e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); e.target.click(); } },  onClick: function (e) { e.stopPropagation(); window._alloUserSamples.splice(si, 1); upd('userSampleCount', window._alloUserSamples.length); }, className: "transition-colors ml-1 text-red-400 hover:text-red-600 cursor-pointer" }, "\u2715")
                         );
                       })
                     )
@@ -6032,7 +6114,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       var name = String(d.bpCompName || '').trim() || ('Beat ' + new Date().toLocaleDateString());
                       var comp = { name: name, grid: Object.assign({}, d.seqGrid || {}), melody: (d.beatMelody || []).slice(), bpm: d.seqBPM || 120, kit: d.activeKit || '', swing: d.seqSwing || '0', scale: d.bpScale || 'major', timestamp: Date.now() };
                       var saved = [];
-                      try { var _sb = JSON.parse(localStorage.getItem('alloflow_beats') || '[]'); if (Array.isArray(_sb)) saved = _sb; } catch (_e) {}
+                      try { var _sb = _musSafeJsonParse(localStorage.getItem('alloflow_beats') || '[]', []); if (Array.isArray(_sb)) saved = _sb; } catch (_e) {}
                       saved.push(comp);
                       try { localStorage.setItem('alloflow_beats', JSON.stringify(saved)); } catch (_e) {}
                       upd('bpCompName', '');
@@ -6046,7 +6128,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     className: "px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold transition-all shadow-sm " + (d.bpExporting ? 'bg-gray-300 text-gray-800' : 'bg-orange-700 text-white hover:bg-orange-800')
                   }, d.bpExporting ? '\u23F3 Recording...' : '\uD83D\uDCE5 Export'),
                   React.createElement("button", { type: "button", "aria-label": __alloT('stem.music.snapshot', "Snapshot"),
-                    onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'bp-' + Date.now(), tool: 'synth', label: __alloT('stem.music.beat_pad', 'Beat Pad'), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast(__alloT('stem.music.snapshot_saved', '\uD83D\uDCF8 Snapshot saved!'), 'success'); },
+                    onClick: function () { setToolSnapshots(function (prev) { return (Array.isArray(prev) ? prev : []).concat([{ id: 'bp-' + Date.now(), tool: 'synth', label: __alloT('stem.music.beat_pad', 'Beat Pad'), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast(__alloT('stem.music.snapshot_saved', '\uD83D\uDCF8 Snapshot saved!'), 'success'); },
                     className: "px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-200 transition-all"
                   }, __alloT('stem.music.snapshot_2', "\uD83D\uDCF8 Snapshot"))
                 ),
@@ -6061,7 +6143,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 ),
                 (function () {
                   var saved = [];
-                  try { var _sb = JSON.parse(localStorage.getItem('alloflow_beats') || '[]'); if (Array.isArray(_sb)) saved = _sb; } catch (_e) {}
+                  try { var _sb = _musSafeJsonParse(localStorage.getItem('alloflow_beats') || '[]', []); if (Array.isArray(_sb)) saved = _sb; } catch (_e) {}
                   if (saved.length === 0) return React.createElement("p", { className: "text-[0.6875rem] text-emerald-700 italic" }, __alloT('stem.music.no_saved_beats_yet_create_a_pattern_an', "No saved beats yet. Create a pattern and click Save!"));
                   return React.createElement("div", { className: "flex flex-col gap-1 max-h-28 overflow-y-auto" },
                     saved.map(function (comp, ci) {
@@ -6082,7 +6164,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                         React.createElement("button", { "aria-label": __alloFmt('stem.music.aria_delete_saved_beat', 'Delete saved beat: {name}', { name: comp.name }),
                           onClick: function () {
                             var s = [];
-                            try { var _sb2 = JSON.parse(localStorage.getItem('alloflow_beats') || '[]'); if (Array.isArray(_sb2)) s = _sb2; } catch (_e) {}
+                            try { var _sb2 = _musSafeJsonParse(localStorage.getItem('alloflow_beats') || '[]', []); if (Array.isArray(_sb2)) s = _sb2; } catch (_e) {}
                             s.splice(ci, 1);
                             try { localStorage.setItem('alloflow_beats', JSON.stringify(s)); } catch (_e) {}
                             upd('beatSaveRefresh', Date.now());
@@ -6206,7 +6288,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                           'aria-label': __alloFmt('stem.music.aria_pluck_string', 'Pluck string {note}', { note: s.note + s.oct }),
                           onMouseDown: pluckString,
                           // stopPropagation keeps Space from also reaching the pad's strum shortcut
-                          onKeyDown: function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); pluckString(); } },
+                          onKeyDown: function (e) { if (e && !e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); e.stopPropagation(); pluckString(); } },
                           onMouseEnter: function (e) {
                             if (e.buttons === 1) {
                               playHarmonyTone(s.freq, 'omniStr_' + si, 900, d.omniVoice || 'harp');
@@ -7226,7 +7308,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
 
             // ── Snapshot button (bottom) ──
             React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
-              React.createElement("button", { "aria-label": __alloT('stem.music.snapshot_3', "Snapshot"), onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sy-' + Date.now(), tool: 'synth', label: t('stem.synth_ui.synth', 'Synth: ') + (["sine","square","sawtooth","triangle"].indexOf(d.waveType) !== -1 ? d.waveType : 'sine'), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast(__alloT('stem.music.snapshot_saved_2', '\uD83D\uDCF8 Snapshot saved!'), 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, __alloT('stem.music.snapshot_4', "\uD83D\uDCF8 Snapshot"))
+              React.createElement("button", { "aria-label": __alloT('stem.music.snapshot_3', "Snapshot"), onClick: function () { setToolSnapshots(function (prev) { return (Array.isArray(prev) ? prev : []).concat([{ id: 'sy-' + Date.now(), tool: 'synth', label: t('stem.synth_ui.synth', 'Synth: ') + (["sine","square","sawtooth","triangle"].indexOf(d.waveType) !== -1 ? d.waveType : 'sine'), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast(__alloT('stem.music.snapshot_saved_2', '\uD83D\uDCF8 Snapshot saved!'), 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, __alloT('stem.music.snapshot_4', "\uD83D\uDCF8 Snapshot"))
             ),
 
             // \u2550\u2550\u2550 HARMONIC SERIES \u2550\u2550\u2550
@@ -7269,6 +7351,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       if (!cvEl.isConnected) {
                         cancelAnimationFrame(cvEl._hsAnim);
                         if (cvEl._hsRo) { try { cvEl._hsRo.disconnect(); } catch (_) {} cvEl._hsRo = null; }
+                        return;
+                      }
+                      if (typeof document !== 'undefined' && document.hidden) {
+                        cvEl._hsAnim = requestAnimationFrame(drawHs);
                         return;
                       }
                       // Freeze the clock (not the loop) under reduced motion: the
@@ -7387,3 +7473,4 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
   console.log('[MusicSynth] Plugin loaded and registered');
 })();
 } // end duplicate guard
+} // end SSR guard

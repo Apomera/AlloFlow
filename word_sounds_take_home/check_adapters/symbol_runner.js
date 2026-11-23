@@ -9,7 +9,7 @@ module.exports = {
     symbol_runner_study: 'A new symbol to learn. Look closely at it, then choose Cover it.',
     symbol_runner_cover: 'Cover it',
     symbol_runner_direct: 'Choose the matching key or type the answer.',
-    symbol_runner_lockon_wait: 'Lock onto lane {n} by hovering over it or using Left and Right arrows.',
+    symbol_runner_lockon_wait: 'Lock onto lane {n} by tapping, hovering over it, or using Left and Right arrows.',
     symbol_runner_lockon_ready: 'Target locked on. Now choose or type the answer.',
     symbol_runner_lane_group: 'Three-lane target track',
     symbol_runner_lane: 'Lane {n}',
@@ -220,11 +220,11 @@ module.exports = {
           } else if (item.sizePair) {
             children.push(ctx.el('div', {
               'data-sr-symbol': item.word,
-              style: 'display:flex;align-items:baseline;justify-content:center;gap:12px;line-height:1.1;margin:4px 0',
+              style: 'display:flex;align-items:baseline;justify-content:center;gap:clamp(4px,2vw,12px);line-height:1.1;margin:4px 0',
             }, [
-              ctx.el('span', { style: 'font-weight:900;font-size:' + (1.45 * item.sizePair.leftScale).toFixed(2) + 'rem', text: item.sizePair.left }),
-              ctx.el('span', { 'aria-hidden': 'true', style: 'opacity:0.4;font-size:1rem', text: '|' }),
-              ctx.el('span', { style: 'font-weight:900;font-size:' + (1.45 * item.sizePair.rightScale).toFixed(2) + 'rem', text: item.sizePair.right }),
+              ctx.el('span', { style: 'font-weight:900;font-size:clamp(' + (1.0 * item.sizePair.leftScale).toFixed(2) + 'rem,' + (4.2 * item.sizePair.leftScale).toFixed(2) + 'vw,' + (1.45 * item.sizePair.leftScale).toFixed(2) + 'rem)', text: item.sizePair.left }),
+              ctx.el('span', { 'aria-hidden': 'true', style: 'opacity:0.4;font-size:clamp(0.8rem,2.5vw,1rem)', text: '|' }),
+              ctx.el('span', { style: 'font-weight:900;font-size:clamp(' + (1.0 * item.sizePair.rightScale).toFixed(2) + 'rem,' + (4.2 * item.sizePair.rightScale).toFixed(2) + 'vw,' + (1.45 * item.sizePair.rightScale).toFixed(2) + 'rem)', text: item.sizePair.right }),
             ]));
           } else if (item.stroopInk) {
             var badgeChildren = [];
@@ -235,7 +235,7 @@ module.exports = {
             children.push(ctx.el('span', {
               'data-sr-symbol': item.word,
               // A fixed white card in every theme (and with forced colors), so the ink is seen as it was made.
-              style: 'display:inline-block;font-size:1.7rem;font-weight:900;line-height:1.1;margin:4px 0;padding:6px 14px;border-radius:10px;border:2px solid #6b7280;background:#ffffff;forced-color-adjust:none;color:' + item.stroopInk,
+              style: 'display:inline-block;max-width:100%;font-size:clamp(1.05rem,4.8vw,1.7rem);font-weight:900;line-height:1.1;margin:4px 0;padding:6px clamp(6px,2.5vw,14px);border-radius:10px;border:2px solid #6b7280;background:#ffffff;forced-color-adjust:none;color:' + item.stroopInk,
             }, badgeChildren));
           } else if (item.flankerCenter >= 0) {
             var chars = item.word.split('');
@@ -246,12 +246,12 @@ module.exports = {
             });
             children.push(ctx.el('span', {
               'data-sr-symbol': item.word,
-              style: 'font-size:1.8rem;font-weight:800;line-height:1.1;margin:4px 0;letter-spacing:0.08em',
+              style: 'font-size:clamp(1.05rem,5vw,1.8rem);font-weight:800;line-height:1.1;margin:4px 0;letter-spacing:clamp(0.02em,0.8vw,0.08em)',
             }, fNodes));
           } else {
             children.push(ctx.el('span', {
               'data-sr-symbol': item.word,
-              style: 'font-size:2.4rem;font-weight:900;line-height:1.1;margin:4px 0',
+              style: 'font-size:clamp(1.25rem,6.5vw,2.4rem);font-weight:900;line-height:1.1;margin:4px 0;max-width:100%;overflow-wrap:anywhere',
               text: item.word,
             }));
           }
@@ -291,6 +291,7 @@ module.exports = {
       })(i);
     }
 
+    var numericChoices = item.choices.length > 0 && item.choices.every(function (c) { return /^[0-9]+$/.test(String(c).trim()); });
     var textInput = ctx.el('input', {
       type: 'text',
       autocomplete: 'off',
@@ -300,6 +301,7 @@ module.exports = {
       'aria-label': L.symbol_runner_input_label,
       style: 'max-width:160px;text-align:center;font-size:1.3rem;font-weight:700',
     });
+    if (numericChoices) textInput.setAttribute('inputmode', 'numeric');
 
     var submitBtn = ctx.el('button', {
       type: 'button',
@@ -342,7 +344,6 @@ module.exports = {
     });
 
     var shapeMap = { red: '●', blue: '▲', green: '■', gold: '★' };
-    var numericChoices = item.choices.length > 0 && item.choices.every(function (c) { return /^[0-9]+$/.test(String(c).trim()); });
     var choiceButtons = item.choices.map(function (c, cIdx) {
       var shapeCue = item.stroopInk ? (shapeMap[String(c).toLowerCase()] || '') : '';
       var labelChildren = [];
@@ -503,7 +504,7 @@ module.exports = {
     ctx.root.appendChild(coverButton);
     ctx.root.appendChild(padWrap);
     redraw();
-    if (isLockOn && phase === 'play' && !ctx.isDone() && laneButtons[aimLane]) {
+    if (!ctx.noFocus && isLockOn && phase === 'play' && !ctx.isDone() && laneButtons[aimLane]) {
       try { laneButtons[aimLane].focus(); } catch (_) {}
     }
 

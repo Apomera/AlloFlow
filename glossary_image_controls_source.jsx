@@ -112,6 +112,79 @@ async function prepareGlossaryMulberry(result, signal) {
   _setGlossaryCreditBand(symbol, 688 - 640);
   return symbol;
 }
+async function ensureOfflineGlossaryPictureAssets() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return null;
+  if (typeof window.__alloEnsureWordPictures === 'function') {
+    try { await window.__alloEnsureWordPictures(); } catch (_) {}
+  }
+  const loadScript = (src, attr) => new Promise(resolve => {
+    if (document.querySelector('script[' + attr + '="1"]')) { resolve(true); return; }
+    const sc = document.createElement('script');
+    sc.src = src; sc.async = true; sc.setAttribute(attr, '1');
+    sc.onload = () => resolve(true); sc.onerror = () => resolve(false);
+    (document.head || document.documentElement).appendChild(sc);
+  });
+  const pending = [];
+  if (!(window.AlloModules && window.AlloModules.WordSoundsSymbols)) pending.push(loadScript('word_sounds_symbols_en.js', 'data-allo-word-symbols'));
+  if (!(window.AlloReadingSymbolsExt || (window.AlloModules && window.AlloModules.ReadingSymbolsExt))) pending.push(loadScript('reading_symbols_ext_en.js', 'data-allo-reading-symbols-ext'));
+  if (!(window.AlloWordPictureSemantic || (window.AlloModules && window.AlloModules.WordPictureSemantic))) pending.push(loadScript('word_picture_semantic_en.js', 'data-allo-word-semantic'));
+  if (!(window.AlloWordPictureMatcher || (window.AlloModules && window.AlloModules.WordPictureMatcher))) pending.push(loadScript('word_picture_matcher.js', 'data-allo-word-matcher'));
+  if (pending.length) await Promise.all(pending);
+  const sym = (window.AlloModules && window.AlloModules.WordSoundsSymbols) || window.AlloWordSoundsSymbols || null;
+  const ext = window.AlloReadingSymbolsExt || (window.AlloModules && window.AlloModules.ReadingSymbolsExt) || null;
+  const fetchShards = async bank => {
+    if (!bank || !Array.isArray(bank.shards) || (typeof bank.ready === 'function' && bank.ready()) || typeof fetch !== 'function') return;
+    await Promise.all(bank.shards.map(sh => fetch(sh.url).then(r => (r && r.ok ? r.json() : null)).then(data => { if (data) bank.add(data); }).catch(() => {})));
+  };
+  await Promise.all([
+    fetchShards(sym),
+    ext && typeof ext.load === 'function' ? ext.load().catch(() => {}) : fetchShards(ext),
+  ]);
+  return window.AlloWordPictureMatcher || (window.AlloModules && window.AlloModules.WordPictureMatcher) || null;
+}
+function offlineSvgToDataUrl(svg) {
+  if (typeof svg !== 'string' || !svg.trim()) return '';
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+}
+async function prepareOfflineGlossarySymbol(hit, signal) {
+  const source = offlineSvgToDataUrl(hit?.svg);
+  if (!source) throw new Error('This offline picture has no usable drawing.');
+  const image = await new Promise((resolve, reject) => {
+    const img = new Image();
+    const stop = () => { img.src = ''; cleanup(); reject(new Error('Image replacement canceled.')); };
+    const cleanup = () => { if (signal) signal.removeEventListener('abort', stop); };
+    img.onload = () => { cleanup(); resolve(img); };
+    img.onerror = () => { cleanup(); reject(new Error('The offline picture could not be opened.')); };
+    if (signal?.aborted) { stop(); return; }
+    if (signal) signal.addEventListener('abort', stop, { once: true });
+    img.src = source;
+  });
+  const canvas = document.createElement('canvas');
+  canvas.width = 640; canvas.height = 688;
+  const ctx = canvas.getContext('2d');
+  if (!ctx || !image.naturalWidth || !image.naturalHeight) throw new Error('The offline picture could not be opened.');
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, 640, 688);
+  const scale = Math.min(608 / image.naturalWidth, 608 / image.naturalHeight);
+  const width = image.naturalWidth * scale, height = image.naturalHeight * scale;
+  ctx.drawImage(image, (640 - width) / 2, (640 - height) / 2, width, height);
+  const isDiagram = hit?.set === 'diagram';
+  const isOpenMoji = hit?.set === 'openmoji';
+  const lines = isDiagram
+    ? ['AlloFlow K-12 Curriculum Diagram (Offline)', 'alloflow.org | Included for offline classroom use']
+    : isOpenMoji
+      ? ['OpenMoji | CC BY-SA 4.0 | Converted to PNG', 'openmoji.org | creativecommons.org/licenses/by-sa/4.0/']
+      : ['Mulberry Symbols by Steve Lee | CC BY-SA 4.0 | Converted to PNG', 'globalsymbols.com/symbolsets/mulberry | creativecommons.org/licenses/by-sa/4.0/'];
+  ctx.fillStyle = '#334155'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
+  lines.forEach((ln, idx) => ctx.fillText(ln, 320, 654 + idx * 17, 624));
+  const png = canvas.toDataURL('image/png');
+  _setGlossaryCreditBand(png, 688 - 640);
+  return png;
+}
+function offlineGlossaryAttribution(hit) {
+  if (hit?.set === 'diagram') return { set: 'AlloFlow Curriculum Diagrams', author: 'AlloFlow', license: 'AGPL-3.0', label: hit.label || hit.word || '' };
+  if (hit?.set === 'openmoji') return { set: 'OpenMoji', author: 'OpenMoji', license: 'CC BY-SA 4.0', licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/', url: 'https://openmoji.org/', label: hit.label || hit.word || '' };
+  return { set: 'Mulberry Symbols', author: 'Steve Lee', license: 'CC BY-SA 4.0', licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/', via: 'Offline Bundle', label: hit.label || hit.word || '' };
+}
 // A classroom photo arrives screened, with AI alt text of the photo itself.
 // Credit is drawn in a band under it, as for Mulberry, so it survives exports
 // that copy only the image bytes.
@@ -243,6 +316,7 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
   const [mode, setMode] = React.useState('choices');
   const [query, setQuery] = React.useState(item.term || '');
   const [results, setResults] = React.useState([]);
+  const [offlineResults, setOfflineResults] = React.useState([]);
   const [searching, setSearching] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
   const [status, setStatus] = React.useState('');
@@ -323,7 +397,7 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
       if (typeof dialog.close === 'function' && dialog.open) dialog.close();
     };
   }, [open]);
-  React.useEffect(() => { if (open && mode === 'mulberry') searchInputRef.current?.focus(); }, [open, mode]);
+  React.useEffect(() => { if (open && (mode === 'mulberry' || mode === 'offline')) searchInputRef.current?.focus(); }, [open, mode]);
   function stopSearch() { searchRef.current?.abort(); searchRef.current = null; setSearching(false); }
   function closeDialog(restoreFocus = true) {
     stopSearch(); pendingRef.current?.cancel(); pendingRef.current = null;
@@ -338,6 +412,33 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
   function openDialog() {
     setMode('choices'); setError(''); setStatus(''); setOpen(true);
   }
+  async function searchOffline(value = query) {
+    const q = String(value || '').trim();
+    if (!q) return;
+    stopSearch();
+    const controller = new AbortController(); searchRef.current = controller;
+    setSearching(true); setError(''); setStatus(''); setOfflineResults([]);
+    try {
+      const matcher = await ensureOfflineGlossaryPictureAssets();
+      if (!mountedRef.current || searchRef.current !== controller) return;
+      if (!matcher || typeof matcher.searchSymbols !== 'function') {
+        setError(text('glossary.images.offline_unavailable', 'Offline symbols and diagrams are not loaded yet.'));
+        return;
+      }
+      const hits = await matcher.searchSymbols(q, { preferDiagrams: true, limit: 24, definition: item.def || '' });
+      if (!mountedRef.current || searchRef.current !== controller) return;
+      const list = Array.isArray(hits) ? hits.filter(h => h && typeof h.svg === 'string' && h.svg.trim()) : [];
+      setOfflineResults(list);
+      setStatus(list.length
+        ? text('glossary.images.offline_found', '{count} offline pictures or diagrams found.').replace('{count}', list.length)
+        : text('glossary.images.no_symbols', 'No symbols found. Try a simpler word.'));
+    } catch (_) {
+      if (mountedRef.current && searchRef.current === controller) setError(text('glossary.images.offline_unavailable', 'Offline symbols and diagrams could not be loaded.'));
+    } finally {
+      if (mountedRef.current && searchRef.current === controller) { searchRef.current = null; setSearching(false); }
+    }
+  }
+  function openOfflineSymbols() { setMode('offline'); setQuery(item.term || ''); searchOffline(item.term); }
   async function search(value = query) {
     const q = String(value || '').trim();
     if (!q) return;
@@ -445,13 +546,31 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
       <p className="mt-2 break-words text-sm text-slate-600">{item.def}</p>
       <div className="my-4 flex flex-wrap gap-2">
         <button type="button" className={buttonClass} disabled={working || !beginTask} aria-describedby={uploadHelpId} onClick={() => inputRef.current?.click()}>{text('glossary.images.upload', 'Upload image')}</button>
+        <button type="button" className={buttonClass} disabled={working || !beginTask} aria-pressed={mode === 'offline'} onClick={openOfflineSymbols}>{text('glossary.images.offline', 'Offline symbols & diagrams')}</button>
         <button type="button" className={buttonClass} disabled={working || !beginTask} aria-pressed={mode === 'mulberry'} onClick={openMulberry}>{text('glossary.images.mulberry', 'Find Mulberry symbol')}</button>
         <button type="button" className={buttonClass} disabled={working || !beginTask} aria-pressed={mode === 'photos'} onClick={() => { stopSearch(); setError(''); setStatus(''); setMode('photos'); }}>{text('glossary.images.photo', 'Find photo')}</button>
         <button type="button" className={buttonClass} disabled={working || !onGenerate || !!aiDoor?.disabled} title={aiDoor?.title || undefined} onClick={generate}>{text('glossary.images.generate', 'Generate image')}</button>
         {aiDoor?.disabled && typeof window.AlloAiSetupNotice === 'function' && <window.AlloAiSetupNotice t={t} kind="images" />}
       </div>
       <p id={uploadHelpId} className="mb-4 text-xs text-slate-600">{text('glossary.images.upload_help', 'Upload PNG, JPEG, GIF, WebP, or AVIF images, up to 10 MB.')}</p>
-      {mode === 'mulberry' ? <section aria-label={text('glossary.images.mulberry_section_aria', 'Mulberry symbols for {term}').replace('{term}', item.term)}>
+      {mode === 'offline' ? <section aria-label={text('glossary.images.offline_section_aria', 'Offline symbols and diagrams for {term}').replace('{term}', item.term)}>
+        <form onSubmit={event => { event.preventDefault(); searchOffline(); }} className="flex flex-wrap items-end gap-2">
+          <label className="min-w-0 flex-1 text-sm font-semibold">{text('glossary.images.offline_search_label', 'Search offline symbols & K-12 diagrams')}<input ref={searchInputRef} type="search" value={query} onChange={event => { stopSearch(); setQuery(event.target.value); setOfflineResults([]); setStatus(''); setError(''); }} className="mt-1 min-h-11 w-full min-w-0 rounded border border-slate-400 bg-white px-2 text-sm text-slate-800" /></label>
+          <button type="submit" className={buttonClass} disabled={searching || working || !query.trim()}>{text('common.search', 'Search')}</button>
+        </form>
+        {searching && <p role="status" className="mt-2 text-sm text-slate-700">{text('glossary.images.searching_offline', 'Searching offline library...')}</p>}
+        <div className="my-3 grid grid-cols-2 sm:grid-cols-3 gap-2" aria-busy={searching || working}>
+          {offlineResults.map((hit, idx) => <div key={(hit.set || 'sym') + ':' + (hit.word || idx) + ':' + idx} className="min-w-0 rounded-lg border border-slate-300 bg-white p-2">
+            <button type="button" disabled={working} onClick={() => replace(signal => prepareOfflineGlossarySymbol(hit, signal), offlineGlossaryAttribution(hit), () => ({ imageSource: hit.set === 'diagram' ? 'diagram' : (hit.set || 'mulberry') }))} className={buttonClass + ' w-full'} aria-label={text('glossary.images.use_symbol_aria', 'Use {symbol} for {term}').replace('{symbol}', hit.label || hit.word).replace('{term}', item.term)}>
+              <img src={offlineSvgToDataUrl(hit.svg)} alt="" className="h-24 w-full object-contain bg-white" />
+              <span className="mt-1 block break-words">{hit.label || hit.word}</span>
+              <span className="block text-xs font-normal text-slate-600">{hit.set === 'diagram' ? 'Diagram' : hit.set === 'openmoji' ? 'OpenMoji' : 'Mulberry'}</span>
+            </button>
+          </div>)}
+        </div>
+        <p className="my-3 text-xs text-slate-700">{text('glossary.images.offline_credit_note', 'Works 100% offline using Mulberry Symbols (CC BY-SA 4.0), OpenMoji (CC BY-SA 4.0), WordNet semantic matching, and K-12 curriculum diagrams. Credit is included in saved images.')}</p>
+        <button type="button" className={buttonClass} onClick={() => { stopSearch(); setMode('choices'); setStatus(''); setError(''); }}>{text('glossary.images.back', 'Back to current image')}</button>
+      </section> : mode === 'mulberry' ? <section aria-label={text('glossary.images.mulberry_section_aria', 'Mulberry symbols for {term}').replace('{term}', item.term)}>
         <form onSubmit={event => { event.preventDefault(); search(); }} className="flex flex-wrap items-end gap-2">
           <label className="min-w-0 flex-1 text-sm font-semibold">{text('glossary.images.search_label', 'Search Mulberry symbols')}<input ref={searchInputRef} type="search" value={query} onChange={event => { stopSearch(); setQuery(event.target.value); setResults([]); setStatus(''); setError(''); }} className="mt-1 min-h-11 w-full min-w-0 rounded border border-slate-400 bg-white px-2 text-sm text-slate-800" /></label>
           <button type="submit" className={buttonClass} disabled={searching || working || !query.trim()}>{text('common.search', 'Search')}</button>

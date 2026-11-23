@@ -3562,7 +3562,7 @@
           '.theme-contrast [data-print-lab],.theme-contrast [data-print-lab] :is(header,nav,section,aside,article,details,fieldset,form,dl){background:#000!important;background-image:none!important;color:#fff!important;border-color:#ff0!important;box-shadow:none!important}' +
           '.theme-contrast [data-print-lab] :is(h1,h2,h3,summary,legend,dt){color:#ff0!important}' +
           '.theme-contrast [data-print-lab] button,.theme-contrast [data-print-lab] input,.theme-contrast [data-print-lab] select,.theme-contrast [data-print-lab] textarea{background:#000!important;color:#ff0!important;border:1.5px solid #ff0!important}' +
-          '.theme-contrast [data-print-lab] [role=tab][aria-selected=true],.theme-contrast [data-print-lab] button[aria-pressed=true]{background:#ff0!important;color:#000!important;border:2px solid #ff0!important}' +
+          'html.theme-contrast [data-print-lab] button[role=tab][aria-selected=true],html.theme-contrast [data-print-lab] button[aria-pressed=true],.theme-contrast [data-print-lab] [role=tab][aria-selected=true],.theme-contrast [data-print-lab] button[aria-pressed=true]{background:#ff0!important;color:#000!important;border:2px solid #ff0!important}' +
           '@media(forced-colors:active){[data-print-lab] button{border:1px solid ButtonText!important}[data-print-lab] button:disabled{border-color:GrayText!important;color:GrayText!important}[data-print-lab] [role=tab][aria-selected=true]{border:2px solid Highlight!important;text-decoration:underline;text-underline-offset:4px}[data-print-lab] :focus-visible{outline:3px solid Highlight!important;outline-offset:3px}}'),
         h('header', {
           className: 'rounded-2xl border border-cyan-800 p-4 sm:p-5',

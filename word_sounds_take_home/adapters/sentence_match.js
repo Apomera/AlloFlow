@@ -48,6 +48,9 @@ module.exports = {
     sentence_match_hear_sentence: 'Hear the sentence',
     sentence_match_correct: 'Yes! The pictures match the sentence.',
     sentence_match_missed: 'Here are the pictures that match the sentence.',
+    sentence_match_placed: '{word} is in slot {n}.',
+    sentence_match_removed: '{word} taken out of slot {n}.',
+    sentence_match_cleared: 'All the slots are empty again.',
   },
   prepare: function (w, env) {
     remember(w, env);
@@ -104,7 +107,7 @@ module.exports = {
         var mark = retryMarks ? retryMarks[i] : '';
         b.textContent = '';
         b.appendChild(ctx.el('span', { 'aria-hidden': 'true', style: 'font-size:1rem;margin-inline-end:6px', text: String(i + 1) }));
-        b.appendChild(word ? ctx.el('img', { src: imageOf[word] || '', alt: '', style: 'width:72px;height:72px;object-fit:contain;background:#fff;border-radius:8px;padding:4px' }) : ctx.el('span', { 'aria-hidden': 'true', text: '?' }));
+        b.appendChild(word ? ctx.el('img', { src: imageOf[word] || '', alt: '', style: 'width:clamp(48px,14vw,72px);height:clamp(48px,14vw,72px);object-fit:contain;background:#fff;border-radius:8px;padding:4px' }) : ctx.el('span', { 'aria-hidden': 'true', text: '?' }));
         b.setAttribute('aria-label', word ? ctx.fmt(ctx.L.sentence_match_slot_filled, { n: i + 1, word: word }) : ctx.fmt(ctx.L.sentence_match_slot_empty, { n: i + 1 }));
         if (!word || ctx.isDone()) b.setAttribute('aria-disabled', 'true'); else b.removeAttribute('aria-disabled');
         if (mark) b.setAttribute('data-retry-mark', mark); else b.removeAttribute('data-retry-mark');
@@ -139,9 +142,10 @@ module.exports = {
         }
       }
     };
+    var say = function (text) { if (typeof ctx.announce === 'function') ctx.announce(text); };
     item.tiles.forEach(function (tile, ti) {
       // The picture's number, the key 1-9 that chooses it.
-      var number = ti < 9 ? ctx.el('span', { 'aria-hidden': 'true', 'data-key-number': '', style: 'position:absolute;top:6px;inset-inline-start:6px;min-width:28px;height:28px;line-height:28px;border-radius:14px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:1rem;text-align:center', text: String(ti + 1) }) : null;
+      var number = ti < 9 ? ctx.el('span', { 'aria-hidden': 'true', 'data-key-number': '', style: 'position:absolute;top:6px;inset-inline-start:6px;min-width:28px;height:28px;line-height:26px;border-radius:14px;border:1px solid var(--accent-ink);background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:1rem;text-align:center', text: String(ti + 1) }) : null;
       var pick = ctx.el('button', { type: 'button', 'aria-label': ctx.fmt(ctx.L.sentence_match_picture_of, { word: tile.text }),
         style: 'position:relative;width:100%;display:flex;justify-content:center;background:#fff',
         on: { click: function () {
@@ -152,28 +156,74 @@ module.exports = {
           if (at < 0) return;
           slots[at] = ti;
           drawSlots(false);
-          grade();
-        } } }, [number, ctx.el('img', { class: 'picture', src: imageOf[tile.text] || '', alt: '' })]);
+          if (slots.indexOf(null) >= 0) {
+            say(ctx.fmt(ctx.L.sentence_match_placed || '{word} is in slot {n}.', { word: tile.text, n: at + 1 }));
+          } else {
+            grade();
+          }
+        } } }, [number, ctx.el('img', { class: 'picture', src: imageOf[tile.text] || '', alt: '', style: 'max-width:min(100%,160px);height:auto;object-fit:contain' })]);
       var box = ctx.el('li', { class: 'choice' }, [pick]);
       tileCards.push({ text: tile.text, pick: pick, box: box, tried: false });
       tray.appendChild(box);
     });
     item.sequence.forEach(function (_, i) {
-      var b = ctx.el('button', { type: 'button', class: 'slot', style: 'border-style:dashed;min-width:96px;min-height:96px',
+      var b = ctx.el('button', { type: 'button', class: 'slot', style: 'border-style:dashed;min-width:clamp(70px,21vw,96px);min-height:clamp(70px,21vw,96px);padding:6px',
         on: { click: function () {
           if (ctx.isDone()) return;
-          if (retryMarks) { stopRetryHold(true); drawSlots(false); return; }
+          if (retryMarks) {
+            stopRetryHold(true);
+            drawSlots(false);
+            say(ctx.L.sentence_match_cleared || 'All the slots are empty again.');
+            return;
+          }
           if (slots[i] == null) return;
+          var removed = wordIn(i);
           slots[i] = null;
           drawSlots(false);
+          say(ctx.fmt(ctx.L.sentence_match_removed || '{word} taken out of slot {n}.', { word: removed, n: i + 1 }));
         } } });
       slotButtons.push(b);
       slotRow.appendChild(ctx.el('li', {}, [b]));
     });
+    if (typeof ctx.keys === 'function') {
+      ctx.keys(function (key) {
+        if (ctx.isDone()) return false;
+        var k = String(key == null ? '' : key);
+        if (k === 'Backspace') {
+          if (retryMarks) {
+            stopRetryHold(true);
+            drawSlots(false);
+            say(ctx.L.sentence_match_cleared || 'All the slots are empty again.');
+            return true;
+          }
+          for (var bi = slots.length - 1; bi >= 0; bi--) {
+            if (slots[bi] != null) {
+              var out = wordIn(bi);
+              slots[bi] = null;
+              drawSlots(false);
+              say(ctx.fmt(ctx.L.sentence_match_removed || '{word} taken out of slot {n}.', { word: out, n: bi + 1 }));
+              return true;
+            }
+          }
+          return false;
+        }
+        if (k === 'Escape' || k === 'Esc') {
+          if (retryMarks || slots.some(function (s) { return s != null; })) {
+            stopRetryHold(true);
+            slots = item.sequence.map(function () { return null; });
+            drawSlots(false);
+            say(ctx.L.sentence_match_cleared || 'All the slots are empty again.');
+            return true;
+          }
+          return false;
+        }
+        return false;
+      });
+    }
     drawSlots(false);
     ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.sentence_match_prompt }));
     // data-read: running text, where the shell's reading focus can go.
-    ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', dir: 'ltr', style: 'font-size:1.8rem', 'data-read': '', text: item.sentence }));
+    ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', dir: 'ltr', style: 'font-size:clamp(1.25rem,5vw,1.8rem);overflow-wrap:anywhere', 'data-read': '', text: item.sentence }));
     if (item.sequence.length > 1) ctx.root.appendChild(ctx.el('p', { class: 'muted', text: ctx.L.sentence_match_order_hint }));
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
       ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); ctx.play(item.prompt); } }, text: ctx.L.sentence_match_hear_instructions }),
@@ -182,6 +232,7 @@ module.exports = {
     ctx.root.appendChild(tray);
     ctx.root.appendChild(after);
     return {
+      stop: function () { stopRetryHold(false); },
       // After a right answer, once the praise is over, the sentence is read back by itself (the app's payoff).
       payoff: function () { if (item.sentenceAudio) ctx.play(item.sentenceAudio); },
       reveal: function () {

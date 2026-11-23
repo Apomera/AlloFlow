@@ -1,11 +1,18 @@
 // Shared between Canvas and standalone AI backend settings.
 function AllobotSearchSettings({ t }) {
   const tx = (key, fallback) => { const value = typeof t === 'function' ? t(key) : ''; return value && value !== key ? value : fallback; };
-  const isLocked = () => typeof window !== 'undefined' && (window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true || window.__alloStudentAiDisabled === true);
+  const isLocked = () => typeof window !== 'undefined' && (
+    window.__alloAiSecretsLocked === true
+    || window.__alloQrStudentMode === true
+    || window._alloQrBlocked === true
+    || window.__alloStudentAiDisabled === true
+    || window.__alloOfflineOnly === true
+    || Boolean(window.AlloModules && window.AlloModules.StudentPolicy && (window.AlloModules.StudentPolicy.aiDisabled === true || window.AlloModules.StudentPolicy.aiEnabled === false))
+  );
   const [locked, setLocked] = React.useState(isLocked);
   const read = () => {
     try {
-      const parsed = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
+      const parsed = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}', (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
       return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
     } catch (_) { return {}; }
   };
@@ -66,7 +73,7 @@ function AllobotSearchSettings({ t }) {
       <span className="block font-medium mb-1">{tx('chat_guide.personal_serper', 'Your Serper API key (optional)')}</span>
       <input type="password" autoComplete="off" spellCheck={false} value={key} placeholder="serper.dev" disabled={managedSearchOff} aria-describedby={helpId + '-key'}
         onChange={event => { setKey(event.target.value); setSaved(false); }}
-        onKeyDown={event => { if ((event.nativeEvent && event.nativeEvent.isComposing) || event.isComposing || event.keyCode === 229) return; if (event.key === 'Enter' && !managedSearchOff) { event.preventDefault(); save({ serperApiKey: key.trim() }); } }}
+        onKeyDown={event => { if ((event.nativeEvent && event.nativeEvent.isComposing) || event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return; if (event.key === 'Enter' && !managedSearchOff) { event.preventDefault(); save({ serperApiKey: key.trim() }); } }}
         className="min-h-11 w-full min-w-0 rounded-lg border border-slate-300 p-2 text-slate-900 bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50" />
     </label>
     <div className="flex flex-wrap gap-2">

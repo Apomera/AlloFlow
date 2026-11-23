@@ -18,6 +18,7 @@
 <meta name="twitter:description" content="Teach with Coaster Lab: design a coaster, predict its forces, run the inspection, and read real telemetry.">
 <link rel="stylesheet" href="shared.css">
 <link rel="stylesheet" href="tool-manual.css">
+<script src="tool-manual.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#manual-main">Skip to content</a>
@@ -33,7 +34,7 @@
     </div>
 </nav>
 
-<main id="manual-main" class="manual-page">
+<main id="manual-main" tabindex="-1" class="manual-page">
     <nav class="manual-crumbs" aria-label="Breadcrumb">
         <ol>
             <li><a href="./">AlloFlow</a></li>
@@ -100,7 +101,8 @@
         <h2 id="modes-heading">2. Explore or Engineer: choosing the level</h2>
         <p>The Certify panel has two modes, and this is the most important setting in the tool for
             matching it to a class.</p>
-        <table class="manual-table" tabindex="0">
+        <div class="manual-table-scroll" role="region" aria-label="The same coaster, two levels of demand" tabindex="0">
+        <table class="manual-table">
             <caption>The same coaster, two levels of demand</caption>
             <thead>
                 <tr><th scope="col">Mode</th><th scope="col">What the student does</th><th scope="col">Good for</th></tr>
@@ -124,6 +126,7 @@
                 </tr>
             </tbody>
         </table>
+        </div>
         <p>Two details worth knowing. First, <strong>a match is not a score</strong> in Explore mode
             — the tool says so on screen, deliberately, because a student whose prediction was wrong
             and who can explain why has done the better work. Second, Engineer mode's inspection
@@ -277,7 +280,8 @@
 
     <section class="manual-block" id="evidence" aria-labelledby="evidence-heading">
         <h2 id="evidence-heading">6. What students can hand in</h2>
-        <table class="manual-table" tabindex="0">
+        <div class="manual-table-scroll" role="region" aria-label="Artifacts, where they come from, and what they show" tabindex="0">
+        <table class="manual-table">
             <caption>Artifacts, where they come from, and what they show</caption>
             <thead>
                 <tr><th scope="col">Artifact</th><th scope="col">Where</th><th scope="col">What it evidences</th></tr>
@@ -290,6 +294,7 @@
                 <tr><th scope="row">Experiment log</th><td>Guided notebook</td><td>What the student changed, run by run, and what happened. This is the revision history.</td></tr>
             </tbody>
         </table>
+        </div>
         <p>Everything is generated on the device and handed over by the student. The tool does not
             submit work anywhere on its own.</p>
     </section>

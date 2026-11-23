@@ -160,8 +160,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
-          h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid ' + _cirBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _cirFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+          h('button', { type: 'button', onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
+            style: { minHeight: 44, background: 'rgba(255,255,255,0.05)', border: '1px solid ' + _cirBd('#334155'), borderRadius: 8, padding: '8px 12px', cursor: 'pointer', color: _cirFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _cirFg('#fda4af'), fontSize: 22, fontWeight: 900 } }, '🎯 Circles of Support'),
             h('div', { style: { fontSize: 12, color: _cirFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'Four concentric rings of relationship around the center of your life.')
@@ -181,10 +181,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
           tabs.map(function(t, idx) {
             var active = view === t.id;
-            return h('button', { key: t.id, id: 'cos-tab-' + t.id, 'aria-controls': 'cos-panel-' + t.id,
+            return h('button', { key: t.id, type: 'button', id: 'cos-tab-' + t.id, 'aria-controls': 'cos-panel-' + t.id,
               tabIndex: active ? 0 : -1,
               onClick: function() { goto(t.id); },
               onKeyDown: function(e) {
+                if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)) return;
                 var nextIdx = idx;
                 if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIdx = (idx + 1) % tabs.length;
                 else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIdx = (idx - 1 + tabs.length) % tabs.length;
@@ -197,7 +198,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
                 if (target && typeof target.focus === 'function') target.focus();
               },
               role: 'tab', 'aria-selected': active,
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? _cirBd('#fb7185') : _cirBd('#334155')),
+              style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + (active ? _cirBd('#fb7185') : _cirBd('#334155')),
                 background: active ? (_cirHC ? '#000000' : 'rgba(251,113,133,0.18)') : _cirBg('#1e293b'),
                 color: active ? _cirFg('#fecdd3') : _cirFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
@@ -223,11 +224,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
         if (totalCount() === 0) {
           return h('div', null,
             h('div', { style: { padding: 28, borderRadius: 14, background: _cirHC ? '#000000' : (_cirL ? '#fff1f2' : 'linear-gradient(135deg, rgba(251,113,133,0.18) 0%, rgba(15,23,42,0.4) 60%)'), border: '1px solid ' + (_cirHC ? '#ffff00' : 'rgba(251,113,133,0.4)'), textAlign: 'center', marginBottom: 14 } },
-              h('div', { style: { fontSize: 56, marginBottom: 8 } }, '🎯'),
+              h('div', { 'aria-hidden': 'true', style: { fontSize: 56, marginBottom: 8 } }, '🎯'),
               h('h3', { style: { margin: '0 0 8px', color: _cirFg('#fecdd3'), fontSize: 18 } }, 'Your circles are empty'),
               h('p', { style: { margin: '0 0 14px', color: _cirFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
                 'Four rings around you. Closest ring is the people you would tell anything to. The next ring is friends. The next is people you do things with. The outer ring is people who are part of your life because it is their job. Add a few names and see what your picture looks like.'),
-              h('button', { onClick: function() { goto('edit'); }, style: { padding: '10px 22px', borderRadius: 10, border: _cirHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _cirHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _cirFg('#fff'), fontWeight: 800, fontSize: 14 } },
+              h('button', { type: 'button', onClick: function() { goto('edit'); }, style: { minHeight: 44, padding: '10px 22px', borderRadius: 10, border: _cirHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _cirHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _cirFg('#fff'), fontWeight: 800, fontSize: 14 } },
                 '+ Start my circles')
             ),
             softPointer()
@@ -258,7 +259,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
             h('input', { id: 'cos-person', type: 'text', value: centerInputVal,
               onChange: function(e) { setCOS({ personLabel: e.target.value }); },
               onBlur: function(e) { scanCirclesText(e.target.value); },
-              style: { padding: 6, borderRadius: 6, border: '1px solid ' + _cirBd('#334155'), background: _cirBg('#1e293b'), color: _cirFg('#e2e8f0'), fontSize: 13, width: 160 } }),
+              style: { minHeight: 44, padding: '8px 10px', borderRadius: 6, border: '1px solid ' + _cirBd('#334155'), background: _cirBg('#1e293b'), color: _cirFg('#e2e8f0'), fontSize: 13, width: 160 } }),
             h('div', { style: { marginLeft: 'auto', fontSize: 11, color: _cirFg('#94a3b8') } }, totalCount() + ' total')
           ),
 
@@ -309,7 +310,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
 
           // Text-equivalent (accessible to all users; WCAG 1.1.1)
           h('details', { style: { marginBottom: 12 } },
-            h('summary', { style: { cursor: 'pointer', fontSize: 12, color: _cirFg('#fda4af'), fontWeight: 700, padding: '6px 10px', borderRadius: 6, background: _cirBg('#0f172a'), border: '1px solid ' + _cirBd('#1e293b') } }, '🔤 Read these circles as text'),
+            h('summary', { style: { minHeight: 44, boxSizing: 'border-box', cursor: 'pointer', fontSize: 12, color: _cirFg('#fda4af'), fontWeight: 700, padding: '11px 12px', borderRadius: 6, background: _cirBg('#0f172a'), border: '1px solid ' + _cirBd('#1e293b') } }, '🔤 Read these circles as text'),
             h('div', { style: { marginTop: 6, padding: 12, borderRadius: 8, background: _cirBg('#0f172a'), border: '1px solid ' + _cirBd('#1e293b') } },
               h('p', { style: { margin: '0 0 8px', color: _cirFg('#cbd5e1'), fontSize: 13, lineHeight: 1.65 } }, svgDesc),
               RINGS.map(function(ring) {
@@ -336,13 +337,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
           ),
 
           h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
-            h('button', { onClick: function() { goto('edit'); }, 'aria-label': 'Add or remove people',
-              style: { padding: '10px 20px', borderRadius: 10, border: _cirHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _cirHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _cirFg('#fff'), fontWeight: 800, fontSize: 14 } },
+            h('button', { type: 'button', onClick: function() { goto('edit'); }, 'aria-label': 'Add or remove people',
+              style: { minHeight: 44, padding: '10px 20px', borderRadius: 10, border: _cirHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _cirHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _cirFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '✏️ Add or remove people'),
-            h('button', { onClick: function() { goto('reflect'); }, 'aria-label': 'Reflect',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _cirBd('#475569'), background: _cirBg('#1e293b'), color: _cirFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '💭 Reflect'),
-            h('button', { onClick: function() { goto('print'); }, 'aria-label': 'Print',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _cirBd('#475569'), background: _cirBg('#1e293b'), color: _cirFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
+            h('button', { type: 'button', onClick: function() { goto('reflect'); }, 'aria-label': 'Reflect',
+              style: { minHeight: 44, padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _cirBd('#475569'), background: _cirBg('#1e293b'), color: _cirFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '💭 Reflect'),
+            h('button', { type: 'button', onClick: function() { goto('print'); }, 'aria-label': 'Print',
+              style: { minHeight: 44, padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _cirBd('#475569'), background: _cirBg('#1e293b'), color: _cirFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
           ),
 
           softPointer()
@@ -354,6 +355,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
       // ═══════════════════════════════════════════════════════════
       function renderEdit() {
         var r = rings();
+        function ringLabelFor(ringId) {
+          var found = RINGS.filter(function(rr) { return rr.id === ringId; })[0];
+          return found ? found.label : ringId;
+        }
         function addTo(ringId, name) {
           if (!name || !name.trim()) { if (typeof addToast === 'function') addToast('Add a name first, then press the button again.', 'info'); return; }
           var trimmedName = name.trim();
@@ -363,9 +368,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
             nx[ringId] = nx[ringId].concat([trimmedName]);
             return { rings: nx };
           });
-          if (announceToSR) announceToSR('Added.');
+          if (announceToSR) announceToSR('Added ' + trimmedName + ' to ' + ringLabelFor(ringId) + '.');
         }
         function removeFrom(ringId, idx) {
+          var removedName = (r[ringId] && r[ringId][idx]) || 'person';
           setCOS(function(prior) {
             var nx = normalizeRings(prior.rings);
             if (!nx[ringId] || idx < 0 || idx >= nx[ringId].length) return {};
@@ -373,9 +379,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
             nx[ringId].splice(idx, 1);
             return { rings: nx };
           });
+          if (announceToSR) announceToSR('Removed ' + removedName + ' from ' + ringLabelFor(ringId) + '.');
         }
         function moveTo(fromRingId, idx, toRingId) {
           if (fromRingId === toRingId) return;
+          var movedName = (r[fromRingId] && r[fromRingId][idx]) || 'person';
           setCOS(function(prior) {
             var nx = normalizeRings(prior.rings);
             if (!nx[fromRingId] || !nx[toRingId] || idx < 0 || idx >= nx[fromRingId].length) return {};
@@ -386,6 +394,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
             nx[toRingId].push(name);
             return { rings: nx };
           });
+          if (announceToSR) announceToSR('Moved ' + movedName + ' to ' + ringLabelFor(toRingId) + '.');
         }
 
         return h('div', null,
@@ -406,7 +415,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
               h('div', { style: { fontSize: 12, color: _cirFg('#94a3b8'), lineHeight: 1.55, marginBottom: 8, fontStyle: 'italic' } }, ring.blurb),
 
               // Items
-              items.length > 0 ? h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 6, marginBottom: 10 } },
+              items.length > 0 ? h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 6, marginBottom: 10 } },
                 items.map(function(name, i) {
                   return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: _cirBg('#1e293b'), display: 'flex', alignItems: 'center', gap: 6 } },
                     h('span', { style: { flex: 1, fontSize: 12.5, color: _cirFg('#e2e8f0') } }, name),
@@ -416,14 +425,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
                           moveTo(ring.id, i, e.target.value);
                         }
                       },
-                      style: { padding: 2, borderRadius: 4, border: '1px solid ' + _cirBd('#475569'), background: _cirBg('#0f172a'), color: _cirFg('#cbd5e1'), fontSize: 10 } },
+                      style: { minHeight: 44, padding: '6px 8px', borderRadius: 4, border: '1px solid ' + _cirBd('#475569'), background: _cirBg('#0f172a'), color: _cirFg('#cbd5e1'), fontSize: 11 } },
                       h('option', { value: ring.id }, 'Move to...'),
                       RINGS.filter(function(rr) { return rr.id !== ring.id; }).map(function(rr) {
                         return h('option', { key: rr.id, value: rr.id }, rr.label);
                       })
                     ),
-                    h('button', { onClick: function() { removeFrom(ring.id, i); }, 'aria-label': 'Remove ' + name,
-                      style: { background: 'transparent', border: '1px solid ' + _cirBd('#475569'), color: _cirFg('#94a3b8'), borderRadius: 4, padding: '2px 6px', cursor: 'pointer', fontSize: 10 } }, '✕')
+                    h('button', { type: 'button', onClick: function() { removeFrom(ring.id, i); }, 'aria-label': 'Remove ' + name,
+                      style: { minHeight: 44, minWidth: 44, background: 'transparent', border: '1px solid ' + _cirBd('#475569'), color: _cirFg('#94a3b8'), borderRadius: 4, padding: '6px 10px', cursor: 'pointer', fontSize: 12 } }, '✕')
                   );
                 })
               ) : null,
@@ -434,10 +443,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
                 h('input', { id: inputId, type: 'text',
                   placeholder: 'Add a name to ' + ring.label + '...',
                   onBlur: function(e) { scanCirclesText(e.target.value); },
-                  onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } },
-                  style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid ' + _cirBd('#334155'), background: _cirBg('#1e293b'), color: _cirFg('#e2e8f0'), fontSize: 13 } }),
-                h('button', { onClick: submit, 'aria-label': 'Add to ' + ring.label,
-                  style: { padding: '8px 14px', borderRadius: 6, border: _cirHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _cirSolid(ring.color), color: _cirFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+                  onKeyDown: function(e) {
+                    if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)) return;
+                    if (e.key === 'Enter') { e.preventDefault(); submit(); }
+                    else if (e.key === 'Escape' && e.target && e.target.value) { e.preventDefault(); e.target.value = ''; }
+                  },
+                  style: { flex: 1, minWidth: 200, minHeight: 44, padding: '8px 10px', borderRadius: 6, border: '1px solid ' + _cirBd('#334155'), background: _cirBg('#1e293b'), color: _cirFg('#e2e8f0'), fontSize: 13 } }),
+                h('button', { type: 'button', onClick: submit, 'aria-label': 'Add to ' + ring.label,
+                  style: { minHeight: 44, padding: '8px 14px', borderRadius: 6, border: _cirHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _cirSolid(ring.color), color: _cirFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
               )
             );
           }),
@@ -509,9 +522,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'
             ),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _cirHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _cirHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _cirFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
-            h('button', { onClick: function() { goto('circles'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _cirBd('#475569'), background: _cirBg('#1e293b'), color: _cirFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+            h('button', { type: 'button', onClick: printNow, style: { minHeight: 44, padding: '8px 18px', borderRadius: 8, border: _cirHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _cirHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _cirFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { type: 'button', onClick: function() { goto('circles'); }, 'aria-label': 'Back',
+              style: { minHeight: 44, padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _cirBd('#475569'), background: _cirBg('#1e293b'), color: _cirFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
@@ -613,7 +626,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
           h('div', { style: { fontSize: 11, color: _cirFg('#fda4af'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: _cirFg('#fecdd3'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+                style: { display: 'inline-flex', alignItems: 'center', minHeight: 44, fontSize: 13, color: _cirFg('#fecdd3'), fontWeight: 700, textDecoration: 'underline', marginBottom: 4 } }, title + ' ↗')
             : h('div', { style: { fontSize: 13, color: _cirFg('#fecdd3'), fontWeight: 700, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _cirFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );

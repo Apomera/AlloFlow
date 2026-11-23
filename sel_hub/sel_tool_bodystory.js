@@ -121,7 +121,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
       var _bodT = (ctx && ctx.theme) || {};
       var _bodHC = !!_bodT.isContrast, _bodL = !_bodHC && !_bodT.isDark;
       var _bod_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _bod_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#b45309':'#000000','#ef4444':'#000000','#15803d':'#000000','#fff':'#000000','#0ea5e9':'#000000','#a855f7':'#000000','#ec4899':'#000000'};
-      var _bod_FGL = {'#cbd5e1':'#334155','#fda4af':'#9f1239','#94a3b8':'#64748b','#fecaca':'#b91c1c','#fca5a5':'#991b1b','#e2e8f0':'#1e293b','#c4b5fd':'#5b21b6','#7dd3fc':'#075985','#fde68a':'#92400e','#e9d5ff':'#581c87','#fbcfe8':'#9d174d','#fcd34d':'#78350f','#fecdd3':'#9f1239','#bae6fd':'#075985','#bbf7d0':'#166534','#0ea5e9':'#0369a1','#f59e0b':'#92400e','#a855f7':'#6d28d9','#ec4899':'#9d174d'}, _bod_FGH = {'#a855f7':'#ffff00','#ec4899':'#ffff00','#f59e0b':'#ffff00','#cbd5e1':'#ffff00','#fda4af':'#ffff00','#94a3b8':'#ffff00','#fecaca':'#ffff00','#fca5a5':'#ffff00','#fecdd3':'#ffff00','#e2e8f0':'#ffff00','#c4b5fd':'#ffff00','#bae6fd':'#ffff00','#0ea5e9':'#ffff00','#7dd3fc':'#ffff00','#fde68a':'#ffff00','#fff':'#ffff00','#e9d5ff':'#ffff00','#bbf7d0':'#ffff00','#fbcfe8':'#ffff00','#fcd34d':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00'};
+      var _bod_FGL = {'#cbd5e1':'#334155','#fda4af':'#9f1239','#94a3b8':'#475569','#64748b':'#475569','#fecaca':'#b91c1c','#fca5a5':'#991b1b','#e2e8f0':'#1e293b','#c4b5fd':'#5b21b6','#7dd3fc':'#075985','#fde68a':'#92400e','#e9d5ff':'#581c87','#fbcfe8':'#9d174d','#fcd34d':'#78350f','#fecdd3':'#9f1239','#bae6fd':'#075985','#bbf7d0':'#166534','#0ea5e9':'#0369a1','#f59e0b':'#92400e','#a855f7':'#6d28d9','#ec4899':'#9d174d'}, _bod_FGH = {'#a855f7':'#ffff00','#ec4899':'#ffff00','#f59e0b':'#ffff00','#cbd5e1':'#ffff00','#fda4af':'#ffff00','#94a3b8':'#ffff00','#fecaca':'#ffff00','#fca5a5':'#ffff00','#fecdd3':'#ffff00','#e2e8f0':'#ffff00','#c4b5fd':'#ffff00','#bae6fd':'#ffff00','#0ea5e9':'#ffff00','#7dd3fc':'#ffff00','#fde68a':'#ffff00','#fff':'#ffff00','#e9d5ff':'#ffff00','#bbf7d0':'#ffff00','#fbcfe8':'#ffff00','#fcd34d':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00'};
       var _bod_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _bod_BDH = {'#334155':'#ffff00','#ef4444':'#ffff00','#1e293b':'#ffff00','#fb7185':'#ffff00','#a855f7':'#ffff00','#0ea5e9':'#ffff00','#f59e0b':'#ffff00','#22c55e':'#ffff00','#ec4899':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#be123c':'#ffff00'};
       var _bodBg = function(h){ return _bodHC ? (_bod_BGH[h]||h) : (_bodL ? (_bod_BGL[h]||h) : h); };
       var _bodFg = function(h){ return _bodHC ? (_bod_FGH[h]||h) : (_bodL ? (_bod_FGL[h]||h) : h); };
@@ -133,8 +133,16 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
       var labToolData = ctx.toolData || {};
       var setLabToolData = ctx.setToolData;
       var setSelHubTool = ctx.setSelHubTool;
+      var announceToSR = ctx.announceToSR;
       var onSafetyFlag = ctx.onSafetyFlag || null;
       var _bodBand = (ctx && ctx.gradeBand) || 'high';
+      function isImeComposing(e) {
+        return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+      }
+      function announceBody(msg) {
+        if (typeof announceToSR === 'function') { try { announceToSR(msg); } catch (_) {} }
+        _bodAnnounce(msg);
+      }
 
       var d = labToolData.bodyStory || defaultState();
       function setB(patch) {
@@ -178,8 +186,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
-          h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: _bodHC ? '#000000' : 'rgba(255,255,255,0.05)', border: '1px solid ' + _bodBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _bodFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+          h('button', { type: 'button', onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
+            style: { background: _bodHC ? '#000000' : 'rgba(255,255,255,0.05)', border: '1px solid ' + _bodBd('#334155'), borderRadius: 8, padding: '10px 14px', minHeight: 44, cursor: 'pointer', color: _bodFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _bodFg('#fda4af'), fontSize: 22, fontWeight: 900 } }, '🫂 Body Story'),
             h('div', { style: { fontSize: 12, color: _bodFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'Your body is not a problem to be solved.')
@@ -199,11 +207,26 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
         ];
         return h('div', { className: 'no-print', role: 'tablist', 'aria-label': 'Body Story sections',
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
-          tabs.map(function(t) {
+          tabs.map(function(t, idx) {
             var active = view === t.id;
-            return h('button', { key: t.id, id: 'bod-tab-' + t.id, onClick: function() { goto(t.id); },
+            return h('button', { key: t.id, type: 'button', id: 'bod-tab-' + t.id, onClick: function() { goto(t.id); },
+              onKeyDown: function(ev) {
+                if (isImeComposing(ev)) return;
+                var nextIdx = idx;
+                if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') nextIdx = (idx + 1) % tabs.length;
+                else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') nextIdx = (idx - 1 + tabs.length) % tabs.length;
+                else if (ev.key === 'Home') nextIdx = 0;
+                else if (ev.key === 'End') nextIdx = tabs.length - 1;
+                else return;
+                ev.preventDefault();
+                goto(tabs[nextIdx].id);
+                setTimeout(function() {
+                  var nextBtn = document.getElementById('bod-tab-' + tabs[nextIdx].id);
+                  if (nextBtn) nextBtn.focus();
+                }, 0);
+              },
               role: 'tab', 'aria-selected': active, 'aria-controls': 'bod-tab-panel', tabIndex: active ? 0 : -1,
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? _bodBd('#fb7185') : _bodBd('#334155')),
+              style: { padding: '10px 14px', minHeight: 44, borderRadius: 8, border: '1px solid ' + (active ? _bodBd('#fb7185') : _bodBd('#334155')),
                 background: active ? (_bodHC ? '#000000' : 'rgba(251,113,133,0.18)') : _bodBg('#1e293b'),
                 color: active ? _bodFg('#fecdd3') : _bodFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
@@ -287,8 +310,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
       }
 
       function stepCard(title, blurb, onClick, color) {
-        return h('button', { onClick: onClick, 'aria-label': title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: _bodBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _bodFg('#e2e8f0') } },
+        return h('button', { type: 'button', onClick: onClick, 'aria-label': title,
+          style: { width: '100%', minHeight: 44, textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: _bodBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _bodFg('#e2e8f0') } },
           h('div', { style: { fontSize: 14, fontWeight: 800, color: _bodFg(color), marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _bodFg('#94a3b8'), lineHeight: 1.55 } }, blurb)
         );
@@ -318,8 +341,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
             BODY_FUNCTIONS.map(function(f) {
               var selected = (Array.isArray(d.bodyDoes) ? d.bodyDoes : []).indexOf(f.id) !== -1;
-              return h('button', { key: f.id, onClick: function() { toggleFunction(f.id); }, 'aria-pressed': selected, 'aria-label': f.label,
-                style: { textAlign: 'left', padding: 12, borderRadius: 8, border: '2px solid ' + (selected ? _bodBd('#0ea5e9') : _bodBd('#1e293b')), background: selected ? (_bodHC ? '#000000' : 'rgba(14,165,233,0.10)') : _bodBg('#0f172a'), cursor: 'pointer', color: _bodFg('#e2e8f0') } },
+              return h('button', { key: f.id, type: 'button', onClick: function() { toggleFunction(f.id); }, 'aria-pressed': selected, 'aria-label': f.label,
+                style: { minHeight: 44, textAlign: 'left', padding: 12, borderRadius: 8, border: '2px solid ' + (selected ? _bodBd('#0ea5e9') : _bodBd('#1e293b')), background: selected ? (_bodHC ? '#000000' : 'rgba(14,165,233,0.10)') : _bodBg('#0f172a'), cursor: 'pointer', color: _bodFg('#e2e8f0') } },
                 h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 6 } },
                   h('span', { style: { fontSize: 18 } }, f.icon),
                   h('span', { style: { fontSize: 12, color: selected ? _bodFg('#7dd3fc') : _bodFg('#cbd5e1'), lineHeight: 1.5 } }, f.label),
@@ -350,16 +373,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
       function renderPressures() {
         var pressuresList = Array.isArray(d.pressures) ? d.pressures : [];
         function togglePressure(label) {
+          var already = pressuresList.indexOf(label) !== -1;
           setB(function(prior) {
             var list = (Array.isArray(prior.pressures) ? prior.pressures : []).slice();
             var idx = list.indexOf(label);
             if (idx >= 0) list.splice(idx, 1); else list.push(label);
             return { pressures: list };
           });
+          announceBody(already ? 'Removed ' + label + '.' : 'Added ' + label + '.');
         }
         function addCustom() {
           var el = document.getElementById('b-pressure-input');
-          if (!el || !el.value.trim()) { _bodAnnounce('Write something first, then press the button again.'); return; }
+          if (!el || !el.value.trim()) { announceBody('Write something first, then press the button again.'); return; }
           var val = el.value.trim();
           scanBodyText(val);
           setB(function(prior) {
@@ -368,6 +393,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
             return { pressures: list };
           });
           el.value = '';
+          announceBody('Pressure source added.');
         }
         function remove(i) {
           setB(function(prior) {
@@ -375,6 +401,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
             list.splice(i, 1);
             return { pressures: list };
           });
+          announceBody('Pressure source removed.');
         }
 
         return h('div', null,
@@ -390,10 +417,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
             h('div', { style: { fontSize: 12, color: _bodFg('#fde68a'), fontWeight: 800, marginBottom: 8 } }, 'My pressure sources (' + pressuresList.length + ')'),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
               pressuresList.map(function(p, i) {
-                return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 14, background: _bodBg('#1e293b'), border: '1px solid #f59e0b66', fontSize: 12, color: _bodFg('#e2e8f0') } },
+                return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '2px 4px 2px 12px', borderRadius: 22, background: _bodBg('#1e293b'), border: '1px solid #f59e0b66', fontSize: 12, color: _bodFg('#e2e8f0') } },
                   h('span', null, p),
-                  h('button', { onClick: function() { remove(i); }, 'aria-label': 'Remove ' + p,
-                    style: { minWidth: 24, minHeight: 24, background: 'transparent', border: 'none', color: _bodFg('#94a3b8'), cursor: 'pointer', fontSize: 11 } }, '✕')
+                  h('button', { type: 'button', onClick: function() { remove(i); }, 'aria-label': 'Remove ' + p,
+                    style: { minWidth: 44, minHeight: 44, background: 'transparent', border: 'none', color: _bodFg('#94a3b8'), cursor: 'pointer', fontSize: 12 } }, '✕')
                 );
               })
             )
@@ -405,10 +432,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
             h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
               h('label', { htmlFor: 'b-pressure-input', className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } }, 'Add pressure source'),
               h('input', { id: 'b-pressure-input', type: 'text', placeholder: 'Be specific...',
-                onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); addCustom(); } },
-                style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid ' + _bodBd('#334155'), background: _bodBg('#1e293b'), color: _bodFg('#e2e8f0'), fontSize: 13 } }),
-              h('button', { onClick: addCustom, 'aria-label': 'Add pressure',
-                style: { padding: '8px 14px', borderRadius: 6, border: _bodHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _bodBg('#b45309'), color: _bodFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+                onKeyDown: function(e) {
+                  if (isImeComposing(e)) return;
+                  if (e.key === 'Enter') { e.preventDefault(); addCustom(); }
+                  else if (e.key === 'Escape' && e.currentTarget && e.currentTarget.value) { e.preventDefault(); e.currentTarget.value = ''; }
+                },
+                style: { flex: 1, minWidth: 200, minHeight: 44, padding: 8, borderRadius: 6, border: '1px solid ' + _bodBd('#334155'), background: _bodBg('#1e293b'), color: _bodFg('#e2e8f0'), fontSize: 13 } }),
+              h('button', { type: 'button', onClick: addCustom, 'aria-label': 'Add pressure',
+                style: { padding: '10px 16px', minHeight: 44, borderRadius: 6, border: _bodHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _bodBg('#b45309'), color: _bodFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
             )
           ),
 
@@ -418,8 +449,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
               PRESSURE_STARTERS.map(function(p, i) {
                 var selected = pressuresList.indexOf(p) !== -1;
-                return h('button', { key: i, onClick: function() { togglePressure(p); }, 'aria-pressed': selected, 'aria-label': 'Toggle: ' + p,
-                  style: { padding: '4px 10px', borderRadius: 14, border: '1px solid ' + (_bodHC ? '#ffff00' : '#f59e0b66'), background: selected ? (_bodHC ? '#000000' : 'rgba(245,158,11,0.18)') : _bodBg('#0f172a'), color: selected ? _bodFg('#fde68a') : _bodFg('#cbd5e1'), cursor: 'pointer', fontSize: 11 } },
+                return h('button', { key: i, type: 'button', onClick: function() { togglePressure(p); }, 'aria-pressed': selected, 'aria-label': 'Toggle: ' + p,
+                  style: { padding: '8px 12px', minHeight: 44, borderRadius: 22, border: '1px solid ' + (_bodHC ? '#ffff00' : '#f59e0b66'), background: selected ? (_bodHC ? '#000000' : 'rgba(245,158,11,0.18)') : _bodBg('#0f172a'), color: selected ? _bodFg('#fde68a') : _bodFg('#cbd5e1'), cursor: 'pointer', fontSize: 12 } },
                   (selected ? '✓ ' : '+ ') + p);
               })
             )
@@ -468,7 +499,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
         var cutsList = Array.isArray(d.mediaCuts) ? d.mediaCuts : [];
         function addInflow() {
           var el = document.getElementById('b-media-in');
-          if (!el || !el.value.trim()) { _bodAnnounce('Write something first, then press the button again.'); return; }
+          if (!el || !el.value.trim()) { announceBody('Write something first, then press the button again.'); return; }
           var val = el.value.trim();
           scanBodyText(val);
           setB(function(prior) {
@@ -477,10 +508,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
             return { mediaInflows: list };
           });
           el.value = '';
+          announceBody('Media inflow added.');
         }
         function addCut() {
           var el = document.getElementById('b-media-cut');
-          if (!el || !el.value.trim()) { _bodAnnounce('Write something first, then press the button again.'); return; }
+          if (!el || !el.value.trim()) { announceBody('Write something first, then press the button again.'); return; }
           var val = el.value.trim();
           scanBodyText(val);
           setB(function(prior) {
@@ -489,6 +521,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
             return { mediaCuts: list };
           });
           el.value = '';
+          announceBody('Media cut added.');
         }
         function removeInflow(i) {
           setB(function(prior) {
@@ -496,6 +529,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
             list.splice(i, 1);
             return { mediaInflows: list };
           });
+          announceBody('Media inflow removed.');
         }
         function removeCut(i) {
           setB(function(prior) {
@@ -503,6 +537,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
             list.splice(i, 1);
             return { mediaCuts: list };
           });
+          announceBody('Media cut removed.');
         }
 
         return h('div', null,
@@ -519,19 +554,23 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
             h('div', { style: { fontSize: 11, color: _bodFg('#94a3b8'), marginBottom: 10, lineHeight: 1.55, fontStyle: 'italic' } }, 'Apps, accounts, shows, magazines, specific influencers. The stuff you actually look at.'),
             inflowsList.length > 0 ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
               inflowsList.map(function(item, i) {
-                return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 14, background: _bodBg('#1e293b'), border: '1px solid rgba(239,68,68,0.4)', fontSize: 12, color: _bodFg('#fecaca') } },
+                return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '2px 4px 2px 12px', borderRadius: 22, background: _bodBg('#1e293b'), border: '1px solid rgba(239,68,68,0.4)', fontSize: 12, color: _bodFg('#fecaca') } },
                   h('span', null, item),
-                  h('button', { onClick: function() { removeInflow(i); }, 'aria-label': 'Remove ' + item,
-                    style: { minWidth: 24, minHeight: 24, background: 'transparent', border: 'none', color: _bodFg('#94a3b8'), cursor: 'pointer', fontSize: 11 } }, '✕'));
+                  h('button', { type: 'button', onClick: function() { removeInflow(i); }, 'aria-label': 'Remove ' + item,
+                    style: { minWidth: 44, minHeight: 44, background: 'transparent', border: 'none', color: _bodFg('#94a3b8'), cursor: 'pointer', fontSize: 12 } }, '✕'));
               })
             ) : null,
             h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
               h('label', { htmlFor: 'b-media-in', className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } }, 'Add to inflows'),
               h('input', { id: 'b-media-in', type: 'text', placeholder: 'Specific account, show, app, person',
-                onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); addInflow(); } },
-                style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid ' + _bodBd('#334155'), background: _bodBg('#1e293b'), color: _bodFg('#e2e8f0'), fontSize: 13 } }),
-              h('button', { onClick: addInflow, 'aria-label': 'Add media inflow',
-                style: { padding: '8px 14px', borderRadius: 6, border: _bodHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _bodBg(_bodSolid('#ef4444')), color: _bodFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+                onKeyDown: function(e) {
+                  if (isImeComposing(e)) return;
+                  if (e.key === 'Enter') { e.preventDefault(); addInflow(); }
+                  else if (e.key === 'Escape' && e.currentTarget && e.currentTarget.value) { e.preventDefault(); e.currentTarget.value = ''; }
+                },
+                style: { flex: 1, minWidth: 200, minHeight: 44, padding: 8, borderRadius: 6, border: '1px solid ' + _bodBd('#334155'), background: _bodBg('#1e293b'), color: _bodFg('#e2e8f0'), fontSize: 13 } }),
+              h('button', { type: 'button', onClick: addInflow, 'aria-label': 'Add media inflow',
+                style: { padding: '10px 16px', minHeight: 44, borderRadius: 6, border: _bodHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _bodBg(_bodSolid('#ef4444')), color: _bodFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
             )
           ),
 
@@ -541,19 +580,23 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
             h('div', { style: { fontSize: 11, color: _bodFg('#94a3b8'), marginBottom: 10, lineHeight: 1.55, fontStyle: 'italic' } }, 'For each thing you let in, ask: is this helping me come home to my body, or is it telling me I am wrong? If it is telling you you are wrong: unfollow, mute, delete, leave. The relief comes within days.'),
             cutsList.length > 0 ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
               cutsList.map(function(item, i) {
-                return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 14, background: _bodBg('#1e293b'), border: '1px solid rgba(34,197,94,0.4)', fontSize: 12, color: _bodFg('#bbf7d0') } },
+                return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '2px 4px 2px 12px', borderRadius: 22, background: _bodBg('#1e293b'), border: '1px solid rgba(34,197,94,0.4)', fontSize: 12, color: _bodFg('#bbf7d0') } },
                   h('span', null, '✂ ' + item),
-                  h('button', { onClick: function() { removeCut(i); }, 'aria-label': 'Remove ' + item,
-                    style: { minWidth: 24, minHeight: 24, background: 'transparent', border: 'none', color: _bodFg('#94a3b8'), cursor: 'pointer', fontSize: 11 } }, '✕'));
+                  h('button', { type: 'button', onClick: function() { removeCut(i); }, 'aria-label': 'Remove ' + item,
+                    style: { minWidth: 44, minHeight: 44, background: 'transparent', border: 'none', color: _bodFg('#94a3b8'), cursor: 'pointer', fontSize: 12 } }, '✕'));
               })
             ) : null,
             h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
               h('label', { htmlFor: 'b-media-cut', className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } }, 'Add to cuts'),
               h('input', { id: 'b-media-cut', type: 'text', placeholder: 'What I will unfollow / mute / leave',
-                onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); addCut(); } },
-                style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid ' + _bodBd('#334155'), background: _bodBg('#1e293b'), color: _bodFg('#e2e8f0'), fontSize: 13 } }),
-              h('button', { onClick: addCut, 'aria-label': 'Add media to cut',
-                style: { padding: '8px 14px', borderRadius: 6, border: _bodHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _bodBg('#15803d'), color: _bodFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+                onKeyDown: function(e) {
+                  if (isImeComposing(e)) return;
+                  if (e.key === 'Enter') { e.preventDefault(); addCut(); }
+                  else if (e.key === 'Escape' && e.currentTarget && e.currentTarget.value) { e.preventDefault(); e.currentTarget.value = ''; }
+                },
+                style: { flex: 1, minWidth: 200, minHeight: 44, padding: 8, borderRadius: 6, border: '1px solid ' + _bodBd('#334155'), background: _bodBg('#1e293b'), color: _bodFg('#e2e8f0'), fontSize: 13 } }),
+              h('button', { type: 'button', onClick: addCut, 'aria-label': 'Add media to cut',
+                style: { padding: '10px 16px', minHeight: 44, borderRadius: 6, border: _bodHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _bodBg('#15803d'), color: _bodFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
             )
           ),
 
@@ -645,7 +688,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
           h('div', { style: { fontSize: 11, color: _bodFg('#fda4af'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: _bodFg('#fecdd3'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+                style: { fontSize: 13, color: _bodFg('#fecdd3'), fontWeight: 700, textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', minHeight: 44, marginBottom: 4 } }, title + ' ↗')
             : h('div', { style: { fontSize: 13, color: _bodFg('#fecdd3'), fontWeight: 700, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _bodFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );
@@ -667,9 +710,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _bodFg('#fecdd3'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Body Story summary — private work; print only for yourself or a therapist conversation.'),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _bodHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _bodHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _bodFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
-            h('button', { onClick: function() { goto('home'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _bodBd('#475569'), background: _bodBg('#1e293b'), color: _bodFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+            h('button', { type: 'button', onClick: printNow, style: { padding: '10px 18px', minHeight: 44, borderRadius: 8, border: _bodHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _bodHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _bodFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { type: 'button', onClick: function() { goto('home'); }, 'aria-label': 'Back',
+              style: { padding: '10px 18px', minHeight: 44, borderRadius: 8, border: '1px solid ' + _bodBd('#475569'), background: _bodBg('#1e293b'), color: _bodFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {

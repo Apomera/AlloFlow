@@ -38,6 +38,29 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
     liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(liveRegion);
   })();
+  // WCAG 2.3.3 / 2.4.7 / forced-colors scoped styles for Genogram
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-genogram-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-genogram-a11y-css';
+    st.textContent = [
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .selh-genogram *, .selh-genogram *::before, .selh-genogram *::after {',
+      '    animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;',
+      '    transition-duration: 0.01ms !important; scroll-behavior: auto !important;',
+      '  }',
+      '}',
+      '.selh-genogram button:focus-visible, .selh-genogram input:focus-visible, .selh-genogram select:focus-visible, .selh-genogram textarea:focus-visible, .selh-genogram summary:focus-visible, .selh-genogram a:focus-visible, .selh-genogram [tabindex]:focus-visible {',
+      '  outline: 3px solid #fb7185 !important; outline-offset: 2px !important;',
+      '}',
+      '@media (forced-colors: active) {',
+      '  .selh-genogram button:focus-visible, .selh-genogram input:focus-visible, .selh-genogram select:focus-visible, .selh-genogram textarea:focus-visible, .selh-genogram summary:focus-visible, .selh-genogram a:focus-visible, .selh-genogram [tabindex]:focus-visible {',
+      '    outline: 2px solid Highlight !important; outline-offset: 2px !important;',
+      '  }',
+      '}'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
 
   // The 3 generations.
   var GENS = [
@@ -91,7 +114,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
       var _genT = (ctx && ctx.theme) || {};
       var _genHC = !!_genT.isContrast, _genL = !_genHC && !_genT.isDark;
       var _gen_BGL = {'#0b1220':'#f1f5f9','#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _gen_BGH = {'#0b1220':'#000000','#0f172a':'#000000','#1e293b':'#000000','#fb7185':'#000000','#be123c':'#000000','#fff':'#000000'};
-      var _gen_FGL = {'#cbd5e1':'#334155','#fda4af':'#9f1239','#fecdd3':'#9f1239','#fb7185':'#be123c','#16a34a':'#15803d','#ef4444':'#b91c1c','#94a3b8':'#64748b','#fde68a':'#92400e','#e2e8f0':'#1e293b','#fcd34d':'#78350f'}, _gen_FGH = {'#cbd5e1':'#ffff00','#fda4af':'#ffff00','#94a3b8':'#ffff00','#fde68a':'#ffff00','#fecdd3':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#16a34a':'#ffff00','#ef4444':'#ffff00','#fb7185':'#ffff00','#64748b':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00'};
+      var _gen_FGL = {'#cbd5e1':'#334155','#fda4af':'#9f1239','#fecdd3':'#9f1239','#fb7185':'#be123c','#16a34a':'#15803d','#ef4444':'#b91c1c','#94a3b8':'#475569','#64748b':'#475569','#fde68a':'#92400e','#e2e8f0':'#1e293b','#fcd34d':'#78350f'}, _gen_FGH = {'#cbd5e1':'#ffff00','#fda4af':'#ffff00','#94a3b8':'#ffff00','#fde68a':'#ffff00','#fecdd3':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#16a34a':'#ffff00','#ef4444':'#ffff00','#fb7185':'#ffff00','#64748b':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00'};
       var _gen_BDL = {'#334155':'#cbd5e1','#1e293b':'#e2e8f0','#475569':'#cbd5e1'}, _gen_BDH = {'#334155':'#ffff00','#f59e0b':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#fb7185':'#ffff00','#cbd5e1':'#ffff00','#be123c':'#ffff00'};
       var _genBg = function(h){ return _genHC ? (_gen_BGH[h]||h) : (_genL ? (_gen_BGL[h]||h) : h); };
       var _genFg = function(h){ return _genHC ? (_gen_FGH[h]||h) : (_genL ? (_gen_FGL[h]||h) : h); };
@@ -105,6 +128,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
       var announceToSR = ctx.announceToSR;
       var onSafetyFlag = ctx.onSafetyFlag || null;
       var _genBand = (ctx && ctx.gradeBand) || 'high';
+      function isImeComposing(e) {
+        return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+      }
+      function announceGEN(msg) {
+        if (!msg) return;
+        if (typeof announceToSR === 'function') { try { announceToSR(msg); } catch (_) {} }
+        if (typeof document !== 'undefined') {
+          var lr = document.getElementById('allo-live-genogram');
+          if (lr) { lr.textContent = ''; setTimeout(function() { lr.textContent = msg; }, 20); }
+        }
+      }
 
       var d = labToolData.genogram || defaultState();
       function setGEN(patch) {
@@ -147,8 +181,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
-          h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: _genHC ? '#000000' : (_genL ? '#f1f5f9' : 'rgba(255,255,255,0.05)'), border: '1px solid ' + _genBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _genFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+          h('button', { type: 'button', onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
+            style: { background: _genHC ? '#000000' : (_genL ? '#f1f5f9' : 'rgba(255,255,255,0.05)'), border: '1px solid ' + _genBd('#334155'), borderRadius: 8, padding: '10px 14px', minHeight: 44, cursor: 'pointer', color: _genFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _genFg('#fda4af'), fontSize: 22, fontWeight: 900 } }, '🌳 Genogram'),
             h('div', { style: { fontSize: 12, color: _genFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A three-generation family map for personal self-understanding.')
@@ -164,13 +198,30 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
           { id: 'print', label: 'Print view', icon: '🖨' },
           { id: 'about', label: 'About', icon: 'ℹ' }
         ];
+        function onTabKeyDown(e, idx) {
+          if (isImeComposing(e) || e.ctrlKey || e.metaKey || e.altKey) return;
+          var next = null;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (idx + 1) % tabs.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (idx - 1 + tabs.length) % tabs.length;
+          else if (e.key === 'Home') next = 0;
+          else if (e.key === 'End') next = tabs.length - 1;
+          if (next === null) return;
+          e.preventDefault();
+          var targetId = tabs[next].id;
+          goto(targetId);
+          setTimeout(function() {
+            var el = typeof document !== 'undefined' && document.getElementById('gen-tab-' + targetId);
+            if (el && el.focus) el.focus();
+          }, 0);
+        }
         return h('div', { className: 'no-print', role: 'tablist', 'aria-label': 'Genogram sections',
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
-          tabs.map(function(t) {
+          tabs.map(function(t, idx) {
             var active = view === t.id;
-            return h('button', { key: t.id, id: 'gen-tab-' + t.id, onClick: function() { goto(t.id); },
+            return h('button', { key: t.id, type: 'button', id: 'gen-tab-' + t.id, onClick: function() { goto(t.id); },
+              onKeyDown: function(e) { onTabKeyDown(e, idx); },
               role: 'tab', 'aria-selected': active, 'aria-controls': 'gen-panel-' + t.id, tabIndex: active ? 0 : -1,
-              style: { padding: '6px 12px', borderRadius: 8, border: (_genHC ? '2px' : '1px') + ' solid ' + _genBd(active ? '#fb7185' : '#334155'),
+              style: { padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: (_genHC ? '2px' : '1px') + ' solid ' + _genBd(active ? '#fb7185' : '#334155'),
                 background: active ? (_genHC ? '#000000' : (_genL ? '#ffe4e6' : 'rgba(251,113,133,0.18)')) : _genBg('#1e293b'),
                 color: active ? _genFg('#fecdd3') : _genFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
@@ -204,11 +255,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
           return h('div', null,
             safetyBanner(),
             h('div', { style: { padding: 28, borderRadius: 14, background: _genHC ? '#000000' : (_genL ? '#fff1f2' : 'linear-gradient(135deg, rgba(251,113,133,0.18) 0%, rgba(15,23,42,0.4) 60%)'), border: '1px solid ' + (_genHC ? '#ffff00' : 'rgba(251,113,133,0.4)'), textAlign: 'center', marginBottom: 14 } },
-              h('div', { style: { fontSize: 56, marginBottom: 8 } }, '🌳'),
+              h('div', { style: { fontSize: 56, marginBottom: 8 }, 'aria-hidden': 'true' }, '🌳'),
               h('h3', { style: { margin: '0 0 8px', color: _genFg('#fecdd3'), fontSize: 18 } }, 'Your genogram is empty'),
               h('p', { style: { margin: '0 0 14px', color: _genFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
                 'A genogram is a family tree drawn with standardized symbols. Start with yourself, then add parents, then add grandparents. You can include siblings, aunts and uncles, and cousins if you want.'),
-              h('button', { onClick: function() { goto('people'); }, style: { padding: '10px 22px', borderRadius: 10, border: _genHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _genHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _genHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 14 } },
+              h('button', { type: 'button', onClick: function() { goto('people'); }, style: { padding: '10px 22px', minHeight: 44, borderRadius: 10, border: _genHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _genHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _genHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 14 } },
                 '+ Start with myself')
             ),
             softPointer()
@@ -300,7 +351,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
 
           // Text-equivalent (accessible to all users; WCAG 1.1.1)
           h('details', { style: { marginBottom: 12 } },
-            h('summary', { style: { cursor: 'pointer', fontSize: 12, color: _genFg('#fda4af'), fontWeight: 700, padding: '6px 10px', borderRadius: 6, background: _genBg('#0f172a'), border: '1px solid #1e293b' } }, '🔤 Read this genogram as text'),
+            h('summary', { style: { cursor: 'pointer', fontSize: 12, color: _genFg('#fda4af'), fontWeight: 700, padding: '10px 12px', minHeight: 44, boxSizing: 'border-box', borderRadius: 6, background: _genBg('#0f172a'), border: '1px solid #1e293b' } }, '🔤 Read this genogram as text'),
             h('div', { style: { marginTop: 6, padding: 12, borderRadius: 8, background: _genBg('#0f172a'), border: '1px solid #1e293b' } },
               h('p', { style: { margin: '0 0 8px', color: _genFg('#cbd5e1'), fontSize: 13, lineHeight: 1.65 } }, svgDesc),
               GENS.map(function(g) {
@@ -352,13 +403,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
           ),
 
           h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
-            h('button', { onClick: function() { goto('people'); }, 'aria-label': 'Add or edit people',
-              style: { padding: '10px 20px', borderRadius: 10, border: _genHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _genHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _genHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 14 } },
+            h('button', { type: 'button', onClick: function() { goto('people'); }, 'aria-label': 'Add or edit people',
+              style: { padding: '10px 20px', minHeight: 44, borderRadius: 10, border: _genHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _genHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _genHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 14 } },
               '👥 People'),
-            h('button', { onClick: function() { goto('relationships'); }, 'aria-label': 'Add relationships',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _genBd('#475569'), background: _genBg('#1e293b'), color: _genFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🔗 Relationships'),
-            h('button', { onClick: function() { goto('print'); }, 'aria-label': 'Print',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _genBd('#475569'), background: _genBg('#1e293b'), color: _genFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
+            h('button', { type: 'button', onClick: function() { goto('relationships'); }, 'aria-label': 'Add relationships',
+              style: { padding: '10px 20px', minHeight: 44, borderRadius: 10, border: '1px solid ' + _genBd('#475569'), background: _genBg('#1e293b'), color: _genFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🔗 Relationships'),
+            h('button', { type: 'button', onClick: function() { goto('print'); }, 'aria-label': 'Print',
+              style: { padding: '10px 20px', minHeight: 44, borderRadius: 10, border: '1px solid ' + _genBd('#475569'), background: _genBg('#1e293b'), color: _genFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
           ),
           softPointer()
         );
@@ -388,6 +439,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
             });
             return Object.assign({}, prev, { genogram: next });
           });
+          announceGEN('Person removed from genogram.');
         }
         function saveForm() {
           var nameEl = document.getElementById('gen-name');
@@ -404,6 +456,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
             notes: notesEl ? notesEl.value.trim() : ''
           };
           scanGenogramText([entry.name, entry.notes].filter(Boolean).join(' '));
+          var wasEditing = !!d.editingPersonId;
           setLabToolData(function(prev) {
             var prior = (prev && prev.genogram) || defaultState();
             var prevPeople = Array.isArray(prior.people) ? prior.people : [];
@@ -415,6 +468,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
             var created = Object.assign({}, entry, { id: uid(), gen: prior.addingForGen });
             return Object.assign({}, prev, { genogram: Object.assign({}, prior, { people: prevPeople.concat([created]), addingForGen: null, lastUpdated: todayISO() }) });
           });
+          announceGEN(wasEditing ? ('Updated ' + entry.name + '.') : ('Added ' + entry.name + ' to genogram.'));
         }
 
         function renderForm() {
@@ -424,7 +478,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
           var genLabel = (GENS.find(function(g) { return g.id === gen; }) || {}).label || '';
           var formKey = d.editingPersonId ? ('edit-' + d.editingPersonId) : ('add-' + d.addingForGen);
 
-          return h('div', { key: formKey, style: { padding: 16, borderRadius: 12, background: _genBg('#0f172a'), border: '2px solid ' + _genBd('#fb7185'), marginBottom: 14 } },
+          return h('div', { key: formKey,
+            onKeyDown: function(e) { if (!isImeComposing(e) && e.key === 'Escape') { e.preventDefault(); cancel(); } },
+            style: { padding: 16, borderRadius: 12, background: _genBg('#0f172a'), border: '2px solid ' + _genBd('#fb7185'), marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 10px', color: _genFg('#fda4af'), fontSize: 16, fontWeight: 800 } }, (editing ? 'Edit person' : 'Add to ') + genLabel),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 10 } },
               h('div', null,
@@ -432,23 +488,23 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
                 h('input', { id: 'gen-name', type: 'text', defaultValue: editing ? editing.name : '',
                   placeholder: 'e.g. Mom, Pop-pop, Aunt Lin, Me',
                   onBlur: function(e) { scanGenogramText(e.target.value); },
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _genBd('#334155'), background: _genBg('#1e293b'), color: _genFg('#e2e8f0'), fontSize: 13 } })
+                  style: { width: '100%', boxSizing: 'border-box', minHeight: 44, padding: '10px 12px', borderRadius: 6, border: '1px solid ' + _genBd('#334155'), background: _genBg('#1e293b'), color: _genFg('#e2e8f0'), fontSize: 13 } })
               ),
               h('div', null,
                 h('label', { htmlFor: 'gen-shape', style: { display: 'block', fontSize: 11, color: _genFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Shape'),
                 h('select', { id: 'gen-shape', defaultValue: editing ? editing.shape : 'circle',
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _genBd('#334155'), background: _genBg('#1e293b'), color: _genFg('#e2e8f0'), fontSize: 13 } },
+                  style: { width: '100%', boxSizing: 'border-box', minHeight: 44, padding: '10px 12px', borderRadius: 6, border: '1px solid ' + _genBd('#334155'), background: _genBg('#1e293b'), color: _genFg('#e2e8f0'), fontSize: 13 } },
                   SHAPES.map(function(s) { return h('option', { key: s.id, value: s.id }, s.label); }))
               ),
               h('div', null,
                 h('label', { htmlFor: 'gen-year', style: { display: 'block', fontSize: 11, color: _genFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Birth year (optional)'),
                 h('input', { id: 'gen-year', type: 'text', defaultValue: editing ? editing.year : '',
                   placeholder: 'e.g. 1968',
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _genBd('#334155'), background: _genBg('#1e293b'), color: _genFg('#e2e8f0'), fontSize: 13 } })
+                  style: { width: '100%', boxSizing: 'border-box', minHeight: 44, padding: '10px 12px', borderRadius: 6, border: '1px solid ' + _genBd('#334155'), background: _genBg('#1e293b'), color: _genFg('#e2e8f0'), fontSize: 13 } })
               ),
               h('div', { style: { display: 'flex', alignItems: 'flex-end' } },
-                h('label', { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: _genFg('#cbd5e1'), cursor: 'pointer' } },
-                  h('input', { id: 'gen-alive', type: 'checkbox', defaultChecked: editing ? (editing.alive !== false) : true }),
+                h('label', { style: { display: 'flex', alignItems: 'center', gap: 8, minHeight: 44, fontSize: 13, color: _genFg('#cbd5e1'), cursor: 'pointer' } },
+                  h('input', { id: 'gen-alive', type: 'checkbox', defaultChecked: editing ? (editing.alive !== false) : true, style: { width: 20, height: 20 } }),
                   h('span', null, 'Living')
                 )
               )
@@ -458,13 +514,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
               h('textarea', { id: 'gen-notes', defaultValue: editing ? editing.notes : '',
                 placeholder: 'Anything you want to remember about this person, your relationship, or your family history.',
                 onBlur: function(e) { scanGenogramText(e.target.value); },
-                style: { width: '100%', minHeight: 60, padding: 8, borderRadius: 6, border: '1px solid ' + _genBd('#334155'), background: _genBg('#1e293b'), color: _genFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', resize: 'vertical' } })
+                style: { width: '100%', boxSizing: 'border-box', minHeight: 60, padding: 10, borderRadius: 6, border: '1px solid ' + _genBd('#334155'), background: _genBg('#1e293b'), color: _genFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', resize: 'vertical' } })
             ),
             h('div', { style: { display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' } },
-              h('button', { onClick: saveForm, 'aria-label': editing ? 'Save' : 'Add',
-                style: { padding: '8px 18px', borderRadius: 8, border: _genHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _genHC ? '#000000' : '#be123c', color: _genHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 13 } }, editing ? '✓ Save' : '+ Add'),
-              h('button', { onClick: cancel, 'aria-label': 'Cancel',
-                style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _genBd('#475569'), background: _genBg('#1e293b'), color: _genFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, 'Cancel')
+              h('button', { type: 'button', onClick: saveForm, 'aria-label': editing ? 'Save' : 'Add',
+                style: { padding: '10px 18px', minHeight: 44, borderRadius: 8, border: _genHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _genHC ? '#000000' : '#be123c', color: _genHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 13 } }, editing ? '✓ Save' : '+ Add'),
+              h('button', { type: 'button', onClick: cancel, 'aria-label': 'Cancel',
+                style: { padding: '10px 18px', minHeight: 44, borderRadius: 8, border: '1px solid ' + _genBd('#475569'), background: _genBg('#1e293b'), color: _genFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, 'Cancel')
             )
           );
         }
@@ -477,8 +533,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
             return h('div', { key: g.id, style: { padding: 12, borderRadius: 10, background: _genBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #fb7185', marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                 h('div', { style: { fontSize: 13, fontWeight: 800, color: _genFg('#fda4af'), flex: 1 } }, g.label),
-                h('button', { onClick: function() { startAdd(g.id); }, 'aria-label': 'Add person in ' + g.label,
-                  style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #fb7185', background: 'transparent', color: _genFg('#fb7185'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '+ Add')
+                h('button', { type: 'button', onClick: function() { startAdd(g.id); }, 'aria-label': 'Add person in ' + g.label,
+                  style: { padding: '8px 14px', minHeight: 44, minWidth: 44, borderRadius: 6, border: '1px solid #fb7185', background: 'transparent', color: _genFg('#fb7185'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '+ Add')
               ),
               genPeople.length === 0
                 ? h('div', { style: { fontSize: 11, color: _genFg('#94a3b8'), fontStyle: 'italic', paddingLeft: 14 } }, '(no one added yet)')
@@ -489,11 +545,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
                         h('div', { style: { fontSize: 12.5, fontWeight: 700, color: _genFg('#e2e8f0') } }, p.name),
                         h('div', { style: { fontSize: 10, color: _genFg('#94a3b8') } }, sh + (p.year ? ' · ' + p.year : '') + (p.alive === false ? ' · deceased' : '')),
                         p.notes ? h('div', { style: { fontSize: 11, color: _genFg('#cbd5e1'), fontStyle: 'italic' } }, p.notes.slice(0, 80) + (p.notes.length > 80 ? '...' : '')) : null,
-                        h('div', { style: { display: 'flex', gap: 4, marginTop: 2 } },
-                          h('button', { onClick: function() { startEdit(p.id); }, 'aria-label': 'Edit ' + p.name,
-                            style: { padding: '2px 8px', borderRadius: 4, border: '1px solid #475569', background: 'transparent', color: _genFg('#cbd5e1'), cursor: 'pointer', fontSize: 10 } }, '✏️ Edit'),
-                          h('button', { onClick: function() { deletePerson(p.id); }, 'aria-label': 'Remove ' + p.name,
-                            style: { padding: '2px 8px', borderRadius: 4, border: '1px solid #475569', background: 'transparent', color: _genFg('#94a3b8'), cursor: 'pointer', fontSize: 10 } }, '✕'))
+                        h('div', { style: { display: 'flex', gap: 6, marginTop: 4 } },
+                          h('button', { type: 'button', onClick: function() { startEdit(p.id); }, 'aria-label': 'Edit ' + p.name,
+                            style: { padding: '8px 12px', minHeight: 44, minWidth: 44, borderRadius: 6, border: '1px solid #475569', background: 'transparent', color: _genFg('#cbd5e1'), cursor: 'pointer', fontSize: 12 } }, '✏️ Edit'),
+                          h('button', { type: 'button', onClick: function() { deletePerson(p.id); }, 'aria-label': 'Remove ' + p.name,
+                            style: { padding: '8px 12px', minHeight: 44, minWidth: 44, borderRadius: 6, border: '1px solid #475569', background: 'transparent', color: _genFg('#94a3b8'), cursor: 'pointer', fontSize: 12 } }, '✕'))
                       );
                     })
                   )
@@ -524,6 +580,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
             var prevRels = Array.isArray(prior.relationships) ? prior.relationships : [];
             return Object.assign({}, prev, { genogram: Object.assign({}, prior, { relationships: prevRels.concat([{ a: aVal, b: bVal, type: tVal }]), lastUpdated: todayISO() }) });
           });
+          announceGEN('Relationship added.');
         }
         function removeRel(i) {
           setLabToolData(function(prev) {
@@ -533,17 +590,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
             nx.splice(i, 1);
             return Object.assign({}, prev, { genogram: Object.assign({}, prior, { relationships: nx, lastUpdated: todayISO() }) });
           });
+          announceGEN('Relationship removed.');
         }
 
         if (people.length < 2) {
           return h('div', null,
             safetyBanner(),
             h('div', { style: { padding: 20, borderRadius: 12, background: _genBg('#0f172a'), border: '1px solid ' + _genBd('#1e293b'), textAlign: 'center' } },
-              h('div', { style: { fontSize: 36, marginBottom: 8 } }, '🔗'),
+              h('div', { style: { fontSize: 36, marginBottom: 8 }, 'aria-hidden': 'true' }, '🔗'),
               h('div', { style: { color: _genFg('#cbd5e1'), fontSize: 14, marginBottom: 4 } }, 'Add at least two people first'),
               h('div', { style: { color: _genFg('#94a3b8'), fontSize: 12 } }, 'You need at least two people on your map before you can describe relationships between them.'),
-              h('button', { onClick: function() { goto('people'); }, 'aria-label': 'Add people first',
-                style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid ' + _genBd('#fb7185'), background: _genHC ? '#000000' : (_genL ? '#ffe4e6' : 'rgba(251,113,133,0.18)'), color: _genFg('#fecdd3'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Add people')
+              h('button', { type: 'button', onClick: function() { goto('people'); }, 'aria-label': 'Add people first',
+                style: { marginTop: 12, padding: '10px 18px', minHeight: 44, borderRadius: 8, border: '1px solid ' + _genBd('#fb7185'), background: _genHC ? '#000000' : (_genL ? '#ffe4e6' : 'rgba(251,113,133,0.18)'), color: _genFg('#fecdd3'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Add people')
             )
           );
         }
@@ -556,26 +614,26 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
               h('div', null,
                 h('label', { htmlFor: 'rel-a', style: { display: 'block', fontSize: 11, color: _genFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Between'),
                 h('select', { id: 'rel-a',
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _genBd('#334155'), background: _genBg('#1e293b'), color: _genFg('#e2e8f0'), fontSize: 13 } },
+                  style: { width: '100%', boxSizing: 'border-box', minHeight: 44, padding: '10px 12px', borderRadius: 6, border: '1px solid ' + _genBd('#334155'), background: _genBg('#1e293b'), color: _genFg('#e2e8f0'), fontSize: 13 } },
                   h('option', { value: '' }, 'Select person...'),
                   people.map(function(p) { return h('option', { key: p.id, value: p.id }, p.name); }))
               ),
               h('div', null,
                 h('label', { htmlFor: 'rel-b', style: { display: 'block', fontSize: 11, color: _genFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'And'),
                 h('select', { id: 'rel-b',
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _genBd('#334155'), background: _genBg('#1e293b'), color: _genFg('#e2e8f0'), fontSize: 13 } },
+                  style: { width: '100%', boxSizing: 'border-box', minHeight: 44, padding: '10px 12px', borderRadius: 6, border: '1px solid ' + _genBd('#334155'), background: _genBg('#1e293b'), color: _genFg('#e2e8f0'), fontSize: 13 } },
                   h('option', { value: '' }, 'Select person...'),
                   people.map(function(p) { return h('option', { key: p.id, value: p.id }, p.name); }))
               ),
               h('div', null,
                 h('label', { htmlFor: 'rel-t', style: { display: 'block', fontSize: 11, color: _genFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Relationship'),
                 h('select', { id: 'rel-t',
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _genBd('#334155'), background: _genBg('#1e293b'), color: _genFg('#e2e8f0'), fontSize: 13 } },
+                  style: { width: '100%', boxSizing: 'border-box', minHeight: 44, padding: '10px 12px', borderRadius: 6, border: '1px solid ' + _genBd('#334155'), background: _genBg('#1e293b'), color: _genFg('#e2e8f0'), fontSize: 13 } },
                   RELATIONSHIP_TYPES.map(function(r) { return h('option', { key: r.id, value: r.id }, r.label); }))
               )
             ),
-            h('button', { onClick: addRel, 'aria-label': 'Add this relationship',
-              style: { padding: '8px 16px', borderRadius: 8, border: _genHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _genHC ? '#000000' : '#be123c', color: _genHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 13 } }, '+ Add relationship')
+            h('button', { type: 'button', onClick: addRel, 'aria-label': 'Add this relationship',
+              style: { padding: '10px 18px', minHeight: 44, borderRadius: 8, border: _genHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _genHC ? '#000000' : '#be123c', color: _genHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 13 } }, '+ Add relationship')
           ),
 
           rels.length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: _genBg('#0f172a'), border: '1px solid ' + _genBd('#1e293b') } },
@@ -585,8 +643,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
               return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: _genBg('#1e293b'), marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 } },
                 h('span', { style: { width: 12, height: 4, background: _genHC ? '#ffff00' : rt.color, borderRadius: 2 } }),
                 h('span', { style: { flex: 1, fontSize: 12.5, color: _genFg('#e2e8f0') } }, nameOf(r.a) + '  ↔  ' + nameOf(r.b) + '  ·  ' + rt.label),
-                h('button', { onClick: function() { removeRel(i); }, 'aria-label': 'Remove relationship between ' + nameOf(r.a) + ' and ' + nameOf(r.b),
-                  style: { background: 'transparent', border: '1px solid ' + _genBd('#475569'), color: _genFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
+                h('button', { type: 'button', onClick: function() { removeRel(i); }, 'aria-label': 'Remove relationship between ' + nameOf(r.a) + ' and ' + nameOf(r.b),
+                  style: { background: 'transparent', border: '1px solid ' + _genBd('#475569'), color: _genFg('#94a3b8'), borderRadius: 6, padding: '6px 10px', minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 12 } }, '✕')
               );
             })
           ) : null,
@@ -606,9 +664,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
               h('strong', null, '🖨 Print preview. '),
               'Includes a summary list (the visual is best viewed on screen).'
             ),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _genHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _genHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _genHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
-            h('button', { onClick: function() { goto('tree'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _genBd('#475569'), background: _genBg('#1e293b'), color: _genFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+            h('button', { type: 'button', onClick: printNow, style: { padding: '10px 18px', minHeight: 44, borderRadius: 8, border: _genHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _genHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _genHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { type: 'button', onClick: function() { goto('tree'); }, 'aria-label': 'Back',
+              style: { padding: '10px 18px', minHeight: 44, borderRadius: 8, border: '1px solid ' + _genBd('#475569'), background: _genBg('#1e293b'), color: _genFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
@@ -723,7 +781,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
           h('div', { style: { fontSize: 11, color: _genFg('#fda4af'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: _genFg('#fecdd3'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+                style: { fontSize: 13, color: _genFg('#fecdd3'), fontWeight: 700, textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', minHeight: 44, marginBottom: 4 } }, title + ' ↗')
             : h('div', { style: { fontSize: 13, color: _genFg('#fecdd3'), fontWeight: 700, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _genFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );
@@ -736,7 +794,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
       else if (view === 'about') body = renderAbout();
       else body = renderTree();
 
-      return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Genogram' },
+      return h('div', { className: 'selh-genogram', style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Genogram' },
         header(),
         navTabs(),
         (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')

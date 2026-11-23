@@ -83,47 +83,106 @@ module.exports = {
       answerAudio: units.concat([answerAudio]) } };
   },
   render: function (item, ctx) {
-    var win = ctx.root.ownerDocument.defaultView;
+    var doc = ctx.root.ownerDocument;
+    var win = doc.defaultView;
     var token = 0;
+    var timer = null;
+    var cancelPending = null;
     var delivered = false;
     var busy = false;
+    var watchingStop = false;
     var hear = null;
+    var playBtn = null;
+    var questionBtn = null;
     var cards = [];
     var parts = [];
     var answerText = item.target;
     var note = ctx.el('p', { class: 'muted', text: ctx.L.syllable_blending_listen_first });
+    var clearTimer = function () {
+      if (timer != null) { try { win.clearTimeout(timer); } catch (_) {} timer = null; }
+    };
     var setState = function () {
+      var done = ctx.isDone();
       cards.forEach(function (c) {
-        var lockChoose = ctx.isDone() || c.tried || !delivered || busy;
+        var lockChoose = done || c.tried || !delivered || busy;
         if (lockChoose) c.choose.setAttribute('aria-disabled', 'true'); else c.choose.removeAttribute('aria-disabled');
         if (busy) c.listen.setAttribute('aria-disabled', 'true'); else c.listen.removeAttribute('aria-disabled');
       });
-      if (hear) { if (busy) hear.button.setAttribute('aria-disabled', 'true'); else hear.button.removeAttribute('aria-disabled'); }
-      note.hidden = delivered || ctx.isDone();
+      if (hear) { if (busy || done) hear.button.setAttribute('aria-disabled', 'true'); else hear.button.removeAttribute('aria-disabled'); }
+      if (playBtn) { if (done) playBtn.setAttribute('aria-disabled', 'true'); else playBtn.removeAttribute('aria-disabled'); }
+      if (questionBtn) { if (done) questionBtn.setAttribute('aria-disabled', 'true'); else questionBtn.removeAttribute('aria-disabled'); }
+      note.hidden = delivered || done;
     };
     var highlight = function (index) {
       parts.forEach(function (p, i) { p.style.background = i === index ? 'var(--accent)' : ''; p.style.color = i === index ? 'var(--accent-ink)' : ''; });
     };
-    var halt = function () { token++; busy = false; highlight(-1); setState(); };
+    var onDocStop = function (e) {
+      if (!ctx.root.isConnected || (e && e.target && e.target.closest && e.target.closest('[data-player-stop-audio]'))) halt();
+    };
+    var onDocKey = function (e) {
+      var k = String((e && e.key) || '');
+      if (!ctx.root.isConnected || k === 'Escape' || k === 'Esc') halt();
+    };
+    var watchStop = function (on) {
+      if (!doc || !doc.addEventListener || watchingStop === on) return;
+      watchingStop = on;
+      if (on) { doc.addEventListener('click', onDocStop, true); doc.addEventListener('keydown', onDocKey, true); }
+      else { doc.removeEventListener('click', onDocStop, true); doc.removeEventListener('keydown', onDocKey, true); }
+    };
+    var halt = function () {
+      token++;
+      clearTimer();
+      watchStop(false);
+      var pending = cancelPending;
+      cancelPending = null;
+      busy = false;
+      highlight(-1);
+      setState();
+      if (pending) pending(false);
+    };
     // The syllable run the answer waits for: every unit must play through.
     var runSyllables = function (withPrompt) {
+      clearTimer();
+      var prev = cancelPending;
+      cancelPending = null;
+      if (prev) prev(false);
       var mine = ++token;
-      delivered = false; busy = true; setState();
+      busy = true;
+      watchStop(true);
+      setState();
       var gap = typeof ctx.soundGap === 'function' ? ctx.soundGap() : 350;
       var steps = (withPrompt ? [{ id: item.promptAudio, gap: 200, hi: -1 }] : [])
         .concat(item.units.map(function (id, i) { return { id: id, gap: i < item.units.length - 1 ? gap : 0, hi: i }; }));
       var i = 0;
       return new Promise(function (resolve) {
-        var finish = function (ok) { busy = false; if (ok) delivered = true; highlight(-1); setState(); resolve(ok); };
+        var settled = false;
+        var done = function (ok) {
+          if (settled) return;
+          settled = true;
+          if (cancelPending === done) cancelPending = null;
+          resolve(ok);
+        };
+        cancelPending = done;
+        var finish = function (ok) {
+          clearTimer();
+          watchStop(false);
+          busy = false;
+          if (ok) delivered = true;
+          highlight(-1);
+          setState();
+          done(ok);
+        };
         var step = function () {
-          if (mine !== token || !ctx.root.isConnected) { resolve(false); return; }
+          timer = null;
+          if (mine !== token) { done(false); return; }
+          if (!ctx.root.isConnected) { finish(false); return; }
           if (i >= steps.length) { finish(true); return; }
           var s = steps[i++];
           highlight(s.hi);
           ctx.play(s.id).then(function (ok) {
-            if (mine !== token) { resolve(false); return; }
+            if (mine !== token) { done(false); return; }
             if (!ok) { finish(false); return; }
-            win.setTimeout(step, s.gap || 0);
+            timer = win.setTimeout(step, s.gap || 0);
           });
         };
         step();
@@ -132,16 +191,11 @@ module.exports = {
     ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.syllable_blending_prompt }));
     var row = ctx.el('div', { class: 'row', 'aria-hidden': 'true', dir: 'ltr' });
     item.syllables.forEach(function (syllable) {
-      var p = ctx.el('span', { class: 'slot', text: ctx.showLetters ? syllable : '●' });
+      var p = ctx.el('span', { class: 'slot', style: 'padding:0 12px', text: ctx.showLetters ? syllable : '●' });
       parts.push(p);
       row.appendChild(p);
     });
     ctx.root.appendChild(row);
-    ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
-      ctx.el('button', { type: 'button', class: 'primary', on: { click: function () { if (ctx.isDone()) return; ctx.support('syllableReplays'); runSyllables(false); } }, text: '▶ ' + ctx.L.syllable_blending_play }),
-      ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; ctx.support('questionReplays'); runSyllables(true); } }, text: ctx.L.hear_question }),
-    ]));
-    ctx.root.appendChild(note);
     var list = ctx.el('ul', { class: 'choices' });
     item.choices.forEach(function (choice, i) {
       var n = i + 1;
@@ -160,25 +214,49 @@ module.exports = {
             missedText: ctx.showLetters ? ctx.fmt(ctx.L.syllable_blending_missed, { word: answerText }) : ctx.L.syllable_blending_missed_no_letters,
           });
           if (outcome !== 'correct') { card.tried = true; box.classList.add('tried'); setState(); }
-        } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', text: choice.text }) : ctx.fmt(ctx.L.syllable_blending_option_n, { n: n })]);
+        } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', lang: 'en', text: choice.text }) : ctx.fmt(ctx.L.syllable_blending_option_n, { n: n })]);
       var box = ctx.el('li', { class: 'choice' }, [listen, choose]);
       card.box = box; card.choose = choose; card.listen = listen;
       cards.push(card);
       list.appendChild(box);
     });
     // Hear all (the player's ctx.hearAll): each choice in turn, marked with its number, once the syllables are not playing.
-    hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ ready: function () { return !busy; },
+    hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ before: halt, ready: function () { return !busy && !ctx.isDone(); },
       list: function () { return cards.map(function (c, i) { return { box: c.box, say: function () { return ctx.play(item.choices[i].audio); } }; }); } }) : null;
-    if (hear) ctx.root.appendChild(hear.node);
+    playBtn = ctx.el('button', { type: 'button', class: 'primary', on: { click: function () { if (ctx.isDone()) return; ctx.support('syllableReplays'); runSyllables(false); } }, text: '▶ ' + ctx.L.syllable_blending_play });
+    questionBtn = ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; ctx.support('questionReplays'); runSyllables(true); } }, text: ctx.L.hear_question });
+    ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
+      playBtn,
+      questionBtn,
+      hear ? hear.button : null,
+      hear ? hear.note : null,
+    ]));
+    ctx.root.appendChild(note);
     ctx.root.appendChild(list);
+    if (typeof ctx.keys === 'function') {
+      ctx.keys(function (key) {
+        var k = String(key == null ? '' : key);
+        if (k === 'Escape' || k === 'Esc') {
+          var active = busy || timer != null || watchingStop;
+          halt();
+          if (typeof ctx.stop === 'function') ctx.stop();
+          return active;
+        }
+        return false;
+      });
+    }
     setState();
     var opening = !ctx.isDone() ? runSyllables(!ctx.skipDirections) : null;
     return {
       opening: opening,
+      stop: halt,
       // The R key: the question and the syllables again (the choices wait for them, as on the button).
       replay: function () { if (!ctx.isDone()) runSyllables(true); },
       reveal: function () {
         halt();
+        playBtn.setAttribute('aria-disabled', 'true');
+        questionBtn.setAttribute('aria-disabled', 'true');
+        if (hear) hear.button.setAttribute('aria-disabled', 'true');
         cards.forEach(function (c) {
           c.choose.setAttribute('aria-disabled', 'true');
           if (c.answer && !c.box.classList.contains('right')) {

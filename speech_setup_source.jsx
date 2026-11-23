@@ -5,6 +5,54 @@ var TIER_SIZES_MB = { tiny: 39, base: 73, small: 238 };
 var TIERS = ['tiny', 'base', 'small'];
 var TEST_SECONDS = 8;
 var MB = 1024 * 1024;
+var _SS_HAS_OWN = Object.prototype.hasOwnProperty;
+function _ssIsBlockedKey(k) { return k === '__proto__' || k === 'constructor' || k === 'prototype'; }
+function _ssIsGlobalMuted() {
+  if (typeof window === 'undefined') return false;
+  try {
+    if (window.__alloGlobalMuted === true || window._alloGlobalMute === true) return true;
+    if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted() === true) return true;
+  } catch (_) {}
+  return false;
+}
+function _ssHardAiPolicyBlocked() {
+  if (typeof window === 'undefined') return true;
+  try {
+    if (window.__alloStudentAiDisabled === true || window.__alloOfflineOnly === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true) return true;
+    var qr = window.__alloQrStudentMode;
+    if (qr === true || (qr && typeof qr === 'object' && (qr.aiDisabled === true || qr.aiPolicy === 'off'))) return true;
+    var mp = window.ALLOFLOW_MANAGED_AI_POLICY;
+    if (mp && typeof mp === 'object') {
+      if (mp.enabled === false || mp.disabled === true || mp.allowAi === false) return true;
+      if (Array.isArray(mp.allowedBackends) && mp.allowedBackends.length === 0) return true;
+      if (Array.isArray(mp.connections) && mp.connections.length === 0) return true;
+    }
+    var sp = (window.AlloModules && window.AlloModules.StudentPolicy) || window.StudentPolicy;
+    if (sp && typeof sp === 'object') {
+      if (sp.disabled === true || sp.aiDisabled === true || sp.allowAi === false || sp.aiEnabled === false) return true;
+      if (typeof sp.isAiBlocked === 'function' && sp.isAiBlocked()) return true;
+    }
+  } catch (_) {
+    return true;
+  }
+  return false;
+}
+var _SS_CRISIS_RE = /\b(?:kill\s+my\s*self|end\s+my\s+life|want\s+to\s+die|commit\s+suicide|suicidal|hurt\s+myself|harm\s+myself|self[\s-]?harm|cut\s+myself|overdose\s+on|shoot\s+myself|hang\s+myself)\b/i;
+var _SS_CRISIS_MSG = 'It sounds like you or someone you know may be going through a difficult time. Please pause and talk with a trusted adult right away. You can call or text 988 (Suicide & Crisis Lifeline), text HOME to 741741 (Crisis Text Line), or call 911 in an emergency.';
+function _ssScreenCrisis(text) {
+  var s = String(text || '').trim();
+  if (!s) return null;
+  try {
+    var checker = typeof window !== 'undefined' && ((window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker || (window.AlloModules && window.AlloModules.SafetyContentChecker));
+    if (checker && typeof checker.check === 'function') {
+      var res = checker.check(s);
+      if (Array.isArray(res) && res.some(function(f) { return f && (f.category === 'self_harm' || f.severity === 'crisis'); })) return { blocked: true, message: _SS_CRISIS_MSG };
+      if (res && typeof res === 'object' && (res.severity === 'crisis' || res.category === 'self_harm' || res.crisis === true || res.blocked === true)) return { blocked: true, message: _SS_CRISIS_MSG };
+    }
+  } catch (_) {}
+  if (_SS_CRISIS_RE.test(s)) return { blocked: true, message: _SS_CRISIS_MSG };
+  return null;
+}
 
 function fillText(text, params) {
   var out = String(text == null ? '' : text);
@@ -46,7 +94,7 @@ function summaryKind(choice, modelReady) {
   if (choice.requested === 'off') return 'off';
   if (choice.resolved === 'desktop-whisper') return 'desktop';
   if (choice.resolved === 'whisper' && choice.supported && modelReady) return 'ready';
-  if (choice.resolved === 'whisper' && !choice.capabilities.getUserMedia) return 'unavailable';
+  if (choice.resolved === 'whisper' && !(choice.capabilities && choice.capabilities.getUserMedia)) return 'unavailable';
   if (choice.resolved === 'whisper') return 'needs-model';
   if (choice.resolved === 'webspeech' && choice.supported) return 'browser';
   if (choice.resolved === 'gemini' && choice.supported) return 'gemini';
@@ -105,33 +153,35 @@ var SPEECH_SETUP_CSS = [
 var EMPTY_LANG_CONTEXT = typeof React !== 'undefined' && typeof React.createContext === 'function' ? React.createContext(null) : null;
 
 function SpeechSetupPanel(props) {
+  props = props && typeof props === 'object' ? props : {};
   var t = props.t || function() { return ''; };
   var onClose = props.onClose || function() {};
   var theme = props.theme === 'dark' || props.theme === 'contrast' ? props.theme : 'light';
-  var voiceNow = function() { return window.AlloFlowVoice || null; };
+  var voiceNow = function() { return (typeof window !== 'undefined' && window.AlloFlowVoice) || null; };
   var V = voiceNow();
-  var activeLangCtx = window.AlloLanguageContext || EMPTY_LANG_CONTEXT;
+  var activeLangCtx = (typeof window !== 'undefined' && window.AlloLanguageContext) || EMPTY_LANG_CONTEXT;
   var languageContext = (activeLangCtx && typeof React.useContext === 'function' ? React.useContext(activeLangCtx) : null) || {};
   var backdropDownRef = React.useRef(false);
   var uiLanguageTag = '';
   try {
-    if (languageContext.currentUiLanguage && window.AlloFlowLang && typeof window.AlloFlowLang.bcp47Full === 'function') {
+    if (languageContext.currentUiLanguage && typeof window !== 'undefined' && window.AlloFlowLang && typeof window.AlloFlowLang.bcp47Full === 'function') {
       uiLanguageTag = window.AlloFlowLang.bcp47Full(languageContext.currentUiLanguage) || '';
     }
   } catch (_) {}
-  var lang = props.lang || uiLanguageTag || (V && V.loadPreference().lang) || 'en-US';
+  var loadedPref = (V && typeof V.loadPreference === 'function' ? V.loadPreference() : null) || {};
+  var lang = props.lang || uiLanguageTag || loadedPref.lang || 'en-US';
 
   var dialogRef = React.useRef(null);
   var checkRef = React.useRef(null);
-  var filesRef = React.useRef({});
+  var filesRef = React.useRef(Object.create(null));
   var checkPhaseRef = React.useRef('idle');
   var mountedRef = React.useRef(true);
   var onCloseRef = React.useRef(onClose);
   onCloseRef.current = onClose;
 
-  var _engine = React.useState(function() { return V ? V.loadPreference().engine : 'auto'; });
+  var _engine = React.useState(function() { return loadedPref.engine || 'auto'; });
   var engine = _engine[0]; var setEngine = _engine[1];
-  var _tier = React.useState(function() { return V ? V.loadPreference().whisperTier : 'tiny'; });
+  var _tier = React.useState(function() { return loadedPref.whisperTier || 'tiny'; });
   var tier = _tier[0]; var setTier = _tier[1];
   var _status = React.useState(null);
   var modelStatus = _status[0]; var setModelStatus = _status[1];
@@ -161,15 +211,16 @@ function SpeechSetupPanel(props) {
 
   React.useEffect(function() {
     mountedRef.current = true;
-    var previousFocus = document.activeElement;
+    var previousFocus = typeof document !== 'undefined' ? document.activeElement : null;
     var dialog = dialogRef.current;
     var isolatedSiblings = [];
+    var liveSel = '[aria-live], [role="status"], [role="alert"], [role="log"], [data-toast-region]';
     if (dialog && typeof document !== 'undefined' && document.body) {
       var node = dialog;
       while (node && node.parentElement && node !== document.body) {
         var parent = node.parentElement;
         Array.prototype.slice.call(parent.children).forEach(function(sibling) {
-          if (sibling === node || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName) || (typeof sibling.matches === 'function' && sibling.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]'))) return;
+          if (sibling === node || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName) || (typeof sibling.matches === 'function' && sibling.matches(liveSel)) || (typeof sibling.querySelector === 'function' && sibling.querySelector(liveSel))) return;
           isolatedSiblings.push({
             el: sibling,
             hadInert: sibling.hasAttribute('inert'),
@@ -182,9 +233,10 @@ function SpeechSetupPanel(props) {
         node = parent;
       }
     }
-    var alloScrollLock = typeof window !== 'undefined' ? (window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '' })) : null;
+    var alloScrollLock = typeof window !== 'undefined' ? (window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, overflow: '' })) : null;
     var alloScrollLocked = !!(alloScrollLock && typeof document !== 'undefined' && document.body);
     if (alloScrollLocked && ++alloScrollLock.count === 1) {
+      alloScrollLock.overflow = document.body.style.overflow;
       alloScrollLock.prev = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
     }
@@ -231,6 +283,7 @@ function SpeechSetupPanel(props) {
       var d = dialogRef.current;
       if (!d) return;
       if (event.key === 'Escape') {
+        if (event.altKey || event.ctrlKey || event.metaKey) return;
         event.preventDefault();
         event.stopPropagation();
         if (typeof onCloseRef.current === 'function') onCloseRef.current();
@@ -253,11 +306,11 @@ function SpeechSetupPanel(props) {
         first.focus();
       }
     };
-    document.addEventListener('keydown', onDocKeyDown);
+    if (typeof document !== 'undefined') document.addEventListener('keydown', onDocKeyDown);
     if (dialog) { try { dialog.focus(); } catch (_) {} }
     refreshModelStatus();
     try {
-      if (navigator.storage && typeof navigator.storage.estimate === 'function') {
+      if (typeof navigator !== 'undefined' && navigator.storage && typeof navigator.storage.estimate === 'function') {
         navigator.storage.estimate().then(function(estimate) {
           if (mountedRef.current && estimate && estimate.quota) setFreeMb(Math.round((estimate.quota - (estimate.usage || 0)) / MB));
         }).catch(function() {});
@@ -268,24 +321,26 @@ function SpeechSetupPanel(props) {
       if (next) setEngine(next);
     };
     var onModules = function() { bump(function(n) { return n + 1; }); };
-    window.addEventListener('alloflow:voice-engine-changed', syncEngine);
-    window.addEventListener('alloflow:module-registry-changed', onModules);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('alloflow:voice-engine-changed', syncEngine);
+      window.addEventListener('alloflow:module-registry-changed', onModules);
+    }
     var voice = voiceNow();
     var unsubscribe = voice && typeof voice.subscribeToVoiceProgress === 'function'
       ? voice.subscribeToVoiceProgress(function(progress) {
           if (!progress || !mountedRef.current || checkPhaseRef.current !== 'idle') return;
           if (progress.phase === 'model-fetch-progress') {
-            if (progress.file && typeof progress.loaded === 'number') filesRef.current[progress.file] = { loaded: progress.loaded };
-            var tierMb = Object.prototype.hasOwnProperty.call(TIER_SIZES_MB, progress.tier) ? TIER_SIZES_MB[progress.tier] : 0;
+            if (progress.file && !_ssIsBlockedKey(progress.file) && typeof progress.loaded === 'number') filesRef.current[progress.file] = { loaded: progress.loaded };
+            var tierMb = _SS_HAS_OWN.call(TIER_SIZES_MB, progress.tier) ? TIER_SIZES_MB[progress.tier] : 0;
             var summary = downloadSummary(filesRef.current, tierMb);
             setDownload({ tier: progress.tier, key: progress.profile, percent: summary.percent, loadedMb: summary.loadedMb });
           } else if (progress.phase === 'model-loaded') {
-            filesRef.current = {};
+            filesRef.current = Object.create(null);
             setDownload(null);
             setDownloadError('');
             refreshModelStatus();
           } else if (progress.phase === 'model-error') {
-            filesRef.current = {};
+            filesRef.current = Object.create(null);
             setDownload(null);
             var kind = classifyDownloadError(progress.error);
             if (kind !== 'ignore') setDownloadError(kind);
@@ -296,10 +351,12 @@ function SpeechSetupPanel(props) {
     return function() {
       mountedRef.current = false;
       clearTimeout(focusTimer);
-      document.removeEventListener('keydown', onDocKeyDown);
+      if (typeof document !== 'undefined') document.removeEventListener('keydown', onDocKeyDown);
       if (alloScrollLocked) {
         alloScrollLock.count = Math.max(0, alloScrollLock.count - 1);
-        if (alloScrollLock.count === 0 && document.body) document.body.style.overflow = alloScrollLock.prev;
+        if (alloScrollLock.count === 0 && typeof document !== 'undefined' && document.body) {
+          document.body.style.overflow = (alloScrollLock.overflow != null ? alloScrollLock.overflow : (alloScrollLock.prev || ''));
+        }
       }
       isolatedSiblings.forEach(function(entry) {
         if (!entry.hadInert) {
@@ -314,8 +371,10 @@ function SpeechSetupPanel(props) {
         var idx = stack.lastIndexOf(trap);
         if (idx >= 0) stack.splice(idx, 1);
       }
-      window.removeEventListener('alloflow:voice-engine-changed', syncEngine);
-      window.removeEventListener('alloflow:module-registry-changed', onModules);
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('alloflow:voice-engine-changed', syncEngine);
+        window.removeEventListener('alloflow:module-registry-changed', onModules);
+      }
       try { unsubscribe(); } catch (_) {}
       // Closing stops the microphone. A download keeps going, and reopening shows it.
       if (checkRef.current) { try { checkRef.current.cancel(); } catch (_) {} checkRef.current = null; }
@@ -347,8 +406,12 @@ function SpeechSetupPanel(props) {
   var profile = V.resolveWhisperProfile(lang, tier);
   var languageKey = profile.supported ? profile.key : null;
   var shownEngine = engine === 'webspeech' && localOnly ? 'auto' : engine;
-  var geminiCapability = V.getGeminiAudioCapability({ callGeminiAudio: window.callGeminiAudio });
-  var choice = V.resolveHandsFreeEngine({ engine: shownEngine, lang: lang, callGeminiAudio: window.callGeminiAudio });
+  var geminiAudioAllowed = checkDictationAiAudioAllowed(undefined, V);
+  var gatedGeminiAudio = geminiAudioAllowed && typeof window !== 'undefined' ? window.callGeminiAudio : null;
+  var geminiCapability = geminiAudioAllowed
+    ? V.getGeminiAudioCapability({ callGeminiAudio: gatedGeminiAudio })
+    : { available: false, reason: 'policy-blocked' };
+  var choice = V.resolveHandsFreeEngine({ engine: shownEngine, lang: lang, callGeminiAudio: gatedGeminiAudio });
   var testTier = typeof V.preparedWhisperTier === 'function' ? V.preparedWhisperTier(tier, lang) : null;
   var canUseOnDevice = !iosCanvas && !caps.desktopWhisper && caps.getUserMedia && caps.audioContext && caps.dynamicImport;
   var kind = summaryKind(choice, !!testTier);
@@ -383,7 +446,7 @@ function SpeechSetupPanel(props) {
   function chooseEngine(next) {
     V.setVoiceEngine(next);
     setEngine(next);
-    var loop = window.__alloVoiceLoop;
+    var loop = typeof window !== 'undefined' ? window.__alloVoiceLoop : null;
     var listening = !!(loop && loop.isActive && loop.isActive());
     if (next === 'off') {
       if (typeof V.stopActiveVoiceSession === 'function') V.stopActiveVoiceSession('voice-input-off');
@@ -400,7 +463,7 @@ function SpeechSetupPanel(props) {
   }
   function startDownload(key) {
     setDownloadError('');
-    filesRef.current = {};
+    filesRef.current = Object.create(null);
     setDownload({ tier: tier, key: key, percent: 0, loadedMb: 0 });
     var targetLang = key === 'english' ? 'en-US' : (languageKey === 'multilingual' ? lang : 'es');
     V.preloadWhisper(tier, { lang: targetLang }).catch(function() {});
@@ -428,6 +491,11 @@ function SpeechSetupPanel(props) {
       }
     });
     checkRef.current = run;
+    if (!run || !run.promise || typeof run.promise.then !== 'function') {
+      checkRef.current = null;
+      checkPhaseRef.current = 'idle';
+      return;
+    }
     run.promise.then(function(report) {
       if (checkRef.current !== run) return;
       checkRef.current = null;
@@ -659,6 +727,1263 @@ function SpeechSetupPanel(props) {
       <div className="allo-ss-foot">
         <button type="button" className="allo-ss-button" onClick={onClose}>{say(t('speech_setup.done'), 'Done')}</button>
       </div>
+    </div>
+  </div>;
+}
+
+// Inline embeddable readiness card used by Dictation Studio (QuickStart & SourceView).
+// Defaults to Local Whisper with an explicit first-time download warning, live progress,
+// and an inline microphone test — keeping the full SpeechSetupPanel modal unchanged.
+function SpeechReadinessCard(props) {
+  var t = props.t || function() { return ''; };
+  var dsay = function(key, fallback, params) {
+    var v = '';
+    try { v = t(key); } catch (_) { v = ''; }
+    var usable = v && v !== key && !/^[\w-]+(\.[\w-]+)+$/.test(String(v));
+    return fillText(usable ? v : fallback, params);
+  };
+  var voiceNow = function() { return (typeof window !== 'undefined' && window.AlloFlowVoice) || null; };
+  var V = voiceNow();
+  var rcPref = (V && typeof V.loadPreference === 'function' ? V.loadPreference() : null) || {};
+  var lang = props.lang || rcPref.lang || 'en-US';
+  var mountedRef = React.useRef(true);
+  var filesRef = React.useRef(Object.create(null));
+  var checkRef = React.useRef(null);
+  var checkPhaseRef = React.useRef('idle');
+
+  var _tier = React.useState(function() { return rcPref.whisperTier || 'tiny'; });
+  var tier = _tier[0]; var setTier = _tier[1];
+  var _modelStatus = React.useState(null);
+  var modelStatus = _modelStatus[0]; var setModelStatus = _modelStatus[1];
+  var _download = React.useState(null);
+  var download = _download[0]; var setDownload = _download[1];
+  var _downloadError = React.useState('');
+  var downloadError = _downloadError[0]; var setDownloadError = _downloadError[1];
+  var _check = React.useState({ phase: 'idle', level: 0, report: null, error: '' });
+  var check = _check[0]; var setCheck = _check[1];
+  var _rev = React.useState(0);
+  var bump = _rev[1];
+
+  function refreshStatus() {
+    var voice = voiceNow();
+    if (!voice || typeof voice.getWhisperModelStatus !== 'function') return Promise.resolve();
+    return voice.getWhisperModelStatus().then(function(st) {
+      if (mountedRef.current) { setModelStatus(st); bump(function(n) { return n + 1; }); }
+    }).catch(function() {});
+  }
+
+  React.useEffect(function() {
+    mountedRef.current = true;
+    refreshStatus();
+    var onChanged = function() { refreshStatus(); };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('alloflow:voice-engine-changed', onChanged);
+      window.addEventListener('alloflow:module-registry-changed', onChanged);
+    }
+    var voice = voiceNow();
+    var unsub = voice && typeof voice.subscribeToVoiceProgress === 'function'
+      ? voice.subscribeToVoiceProgress(function(progress) {
+          if (!progress || !mountedRef.current || checkPhaseRef.current !== 'idle') return;
+          if (progress.phase === 'model-fetch-progress') {
+            if (progress.file && !_ssIsBlockedKey(progress.file) && typeof progress.loaded === 'number') filesRef.current[progress.file] = { loaded: progress.loaded };
+            var tierMb = _SS_HAS_OWN.call(TIER_SIZES_MB, progress.tier) ? TIER_SIZES_MB[progress.tier] : 0;
+            var summary = downloadSummary(filesRef.current, tierMb);
+            setDownload({ tier: progress.tier, key: progress.profile, percent: summary.percent, loadedMb: summary.loadedMb });
+          } else if (progress.phase === 'model-loaded') {
+            filesRef.current = Object.create(null);
+            setDownload(null);
+            setDownloadError('');
+            refreshStatus();
+          } else if (progress.phase === 'model-error') {
+            filesRef.current = Object.create(null);
+            setDownload(null);
+            var kind = classifyDownloadError(progress.error);
+            if (kind !== 'ignore') setDownloadError(kind);
+            refreshStatus();
+          }
+        })
+      : function() {};
+    return function() {
+      mountedRef.current = false;
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('alloflow:voice-engine-changed', onChanged);
+        window.removeEventListener('alloflow:module-registry-changed', onChanged);
+      }
+      try { unsub(); } catch (_) {}
+      if (checkRef.current) { try { checkRef.current.cancel(); } catch (_) {} checkRef.current = null; }
+    };
+  }, []);
+
+  var caps = V ? V.getCapabilities() : {};
+  var iosCanvas = !!(V && typeof V.isIosCanvasVoiceSurface === 'function' && V.isIosCanvasVoiceSurface());
+  var profile = V && typeof V.resolveWhisperProfile === 'function' ? V.resolveWhisperProfile(lang, tier) : { supported: true, key: 'english' };
+  var languageKey = profile.supported ? profile.key : null;
+  var preparedTier = V && typeof V.preparedWhisperTier === 'function' ? V.preparedWhisperTier(tier, lang) : null;
+  var canUseOnDevice = !!(V && !iosCanvas && !caps.desktopWhisper && caps.getUserMedia && caps.audioContext && caps.dynamicImport);
+  var isReady = !!(caps.desktopWhisper || preparedTier);
+  var tierSize = _SS_HAS_OWN.call(TIER_SIZES_MB, tier) ? TIER_SIZES_MB[tier] : 39;
+  var tierLabels = {
+    tiny: say(t('speech_setup.tier_tiny'), 'Tiny'),
+    base: say(t('speech_setup.tier_base'), 'Base'),
+    small: say(t('speech_setup.tier_small'), 'Small')
+  };
+  var activeTier = preparedTier || tier;
+  var activeProfile = V && typeof V.resolveWhisperProfile === 'function' ? V.resolveWhisperProfile(lang, activeTier) : profile;
+  var storedSpeeds = (rcPref && rcPref.whisperSpeedByModel && typeof rcPref.whisperSpeedByModel === 'object') ? rcPref.whisperSpeedByModel : {};
+  var rawSpeed = activeProfile && activeProfile.modelId && _SS_HAS_OWN.call(storedSpeeds, activeProfile.modelId) ? storedSpeeds[activeProfile.modelId] : null;
+  var recordedSpeed = typeof rawSpeed === 'number' && Number.isFinite(rawSpeed) && rawSpeed > 0 ? rawSpeed : null;
+  var speedAssessment = recordedSpeed != null
+    ? (V && typeof V.assessWhisperSpeed === 'function'
+        ? V.assessWhisperSpeed(recordedSpeed, 1000, activeTier)
+        : { speed: recordedSpeed, verdict: recordedSpeed >= 1.5 ? 'lesson' : (recordedSpeed >= 1 ? 'short' : 'slow'), biggerTier: null })
+    : null;
+  var suggestBiggerTier = speedAssessment && speedAssessment.biggerTier && !(V && typeof V.isWhisperPrepared === 'function' && V.isWhisperPrepared(speedAssessment.biggerTier, { lang: lang }))
+    ? speedAssessment.biggerTier
+    : null;
+
+  React.useEffect(function() {
+    if (typeof props.onReadyChange === 'function') {
+      props.onReadyChange({
+        ready: isReady,
+        iosCanvas: iosCanvas,
+        canUseOnDevice: canUseOnDevice,
+        desktopWhisper: !!caps.desktopWhisper,
+        tier: preparedTier || tier,
+        downloading: !!download
+      });
+    }
+  }, [isReady, iosCanvas, canUseOnDevice, !!caps.desktopWhisper, preparedTier, tier, !!download]);
+
+  function openFullSetup() {
+    if (typeof props.onOpenFullSetup === 'function') { props.onOpenFullSetup(); return; }
+    try {
+      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('alloflow:open-speech-setup'));
+    } catch (_) {}
+  }
+
+  function startDownload() {
+    if (!V || !languageKey || download) return;
+    setDownloadError('');
+    filesRef.current = Object.create(null);
+    setDownload({ tier: tier, key: languageKey, percent: 0, loadedMb: 0 });
+    var targetLang = languageKey === 'english' ? 'en-US' : lang;
+    if (typeof V.savePreference === 'function') V.savePreference({ whisperTier: tier });
+    V.preloadWhisper(tier, { lang: targetLang }).catch(function() {});
+  }
+
+  function startQuickTest() {
+    if (!V || checkRef.current || checkPhaseRef.current !== 'idle' || typeof V.startMicrophoneCheck !== 'function') return;
+    checkPhaseRef.current = 'starting';
+    setCheck({ phase: 'starting', level: 0, report: null, error: '' });
+    var run = V.startMicrophoneCheck({
+      seconds: 4,
+      lang: lang,
+      tier: canUseOnDevice && profile.supported ? preparedTier : null,
+      onLevel: function(level) {
+        if (checkRef.current !== run || !mountedRef.current) return;
+        setCheck(function(prev) { return Object.assign({}, prev, { level: Number.isFinite(level) ? Math.max(0, Math.min(1, level)) : 0 }); });
+      },
+      onPhase: function(phase) {
+        if (checkRef.current !== run) return;
+        checkPhaseRef.current = phase;
+        if (mountedRef.current) setCheck(function(prev) { return Object.assign({}, prev, { phase: phase, level: phase === 'listening' ? prev.level : 0 }); });
+      }
+    });
+    checkRef.current = run;
+    if (!run || !run.promise || typeof run.promise.then !== 'function') {
+      checkRef.current = null;
+      checkPhaseRef.current = 'idle';
+      return;
+    }
+    run.promise.then(function(report) {
+      if (checkRef.current !== run) return;
+      checkRef.current = null;
+      checkPhaseRef.current = 'idle';
+      if (mountedRef.current) {
+        setCheck({ phase: 'done', level: 0, report: report, error: '' });
+        bump(function(n) { return n + 1; });
+      }
+    }, function(err) {
+      if (checkRef.current !== run) return;
+      checkRef.current = null;
+      checkPhaseRef.current = 'idle';
+      if (mountedRef.current) {
+        var kind = classifyMicError(err);
+        setCheck({ phase: 'idle', level: 0, report: null, error: kind === 'ignore' ? '' : kind });
+      }
+    });
+  }
+
+  function stopQuickTest() {
+    if (checkRef.current) { try { checkRef.current.cancel(); } catch (_) {} }
+  }
+
+  if (!V) {
+    return <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700" role="status" data-testid="speech-readiness-loading">
+      {say(t('speech_setup.still_loading'), 'Voice tools are still loading. Try again in a moment.')}
+    </div>;
+  }
+
+  var testBusy = check.phase === 'starting' || check.phase === 'listening' || check.phase === 'transcribing';
+
+  if (iosCanvas) {
+    return <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-4 text-sm text-amber-950 space-y-2" data-testid="speech-readiness-ios-canvas">
+      <div className="font-bold">{dsay('dictation.ios_canvas_title', 'On-device Whisper is paused on iPhone/iPad inside Gemini Canvas')}</div>
+      <p className="text-xs leading-relaxed">{say(t('speech_setup.ios_canvas_note'), 'On an iPhone or iPad inside Gemini Canvas, the on-device model is paused because it can restart the page.')}</p>
+      <p className="text-xs leading-relaxed">{dsay('dictation.ios_canvas_hint', 'You can type directly below, open AlloFlow in a desktop browser for Local Whisper, or use Gemini Audio if configured.')}</p>
+    </div>;
+  }
+
+  return <div className={'rounded-xl border-2 p-4 text-sm space-y-3 ' + (isReady ? 'border-emerald-200 bg-emerald-50/70 text-slate-900' : 'border-amber-300 bg-amber-50/80 text-slate-900')} data-testid={isReady ? 'speech-readiness-ready' : 'speech-readiness-download-warning'}>
+    <div className="flex flex-wrap items-start justify-between gap-2">
+      <div className="space-y-1 min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className={'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold ' + (isReady ? 'bg-emerald-700 text-white' : 'bg-amber-800 text-white')}>
+            {caps.desktopWhisper
+              ? dsay('dictation.badge_desktop', 'Desktop Whisper Ready')
+              : isReady
+                ? dsay('dictation.badge_local_ready', 'Local Whisper Ready · {name}', { name: tierLabels[preparedTier] || preparedTier })
+                : dsay('dictation.badge_download_needed', 'Local Whisper · First-Time Download')}
+          </span>
+          <span className="text-xs font-semibold text-slate-700">{dsay('dictation.privacy_tag', 'Private · Offline after download · Zero API key needed')}</span>
+          {speedAssessment && (
+            <span
+              data-testid="speech-readiness-speed-badge"
+              data-verdict={speedAssessment.verdict}
+              className={'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ' + (speedAssessment.verdict === 'lesson' ? 'border-emerald-300 bg-white text-emerald-900' : speedAssessment.verdict === 'short' ? 'border-indigo-300 bg-white text-indigo-900' : 'border-amber-300 bg-white text-amber-950')}
+            >
+              {speedAssessment.verdict === 'lesson'
+                ? (suggestBiggerTier
+                    ? dsay('dictation.speed_badge_upgrade', 'Tested: {speed}x faster than speech · Good for long dictation (can also try {name})', { speed: speedAssessment.speed, name: tierLabels[suggestBiggerTier] || suggestBiggerTier })
+                    : dsay('dictation.speed_badge_lesson', 'Tested: {speed}x faster than speech · Good for long dictation', { speed: speedAssessment.speed }))
+                : speedAssessment.verdict === 'short'
+                  ? dsay('dictation.speed_badge_short', 'Tested: {speed}x faster than speech · Best for short clips', { speed: speedAssessment.speed })
+                  : dsay('dictation.speed_badge_slow', 'Tested: {speed}x · Slower than real time (expect pauses)', { speed: speedAssessment.speed })}
+            </span>
+          )}
+        </div>
+        {!isReady && canUseOnDevice && profile.supported && (
+          <p className="text-xs leading-relaxed text-amber-950" data-testid="speech-readiness-warning-text">
+            {dsay('dictation.download_warning', 'Download notice: Local Whisper defaults to private on-device speech recognition. Downloading the {name} model takes ~{size} MB once (~1–2 minutes depending on connection), caches offline in your browser, and keeps your voice recordings on this device.', { name: tierLabels[tier], size: tierSize })}
+          </p>
+        )}
+        {!canUseOnDevice && !caps.desktopWhisper && (
+          <p className="text-xs text-amber-950">{say(t('speech_setup.browser_too_old'), 'This browser cannot run the on-device model. It needs microphone access, Web Audio, and modern module support.')}</p>
+        )}
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        {check.phase === 'listening' || check.phase === 'starting'
+          ? <button type="button" onClick={stopQuickTest} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-xs font-bold text-slate-800 hover:bg-slate-100">{say(t('speech_setup.test_stop'), 'Stop test')}</button>
+          : <button type="button" onClick={startQuickTest} disabled={testBusy || !!download} data-testid="speech-readiness-test-mic" className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-xs font-bold text-slate-800 hover:bg-slate-100 disabled:opacity-50">{dsay('dictation.test_mic', 'Test mic (4s)')}</button>}
+        <button type="button" onClick={openFullSetup} data-testid="speech-readiness-open-setup" className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-100">{dsay('dictation.speech_settings', 'Speech settings')}</button>
+      </div>
+    </div>
+
+    {!isReady && canUseOnDevice && profile.supported && (
+      <div className="flex flex-wrap items-center gap-2 pt-1">
+        <div role="group" aria-label={dsay('dictation.model_size_label', 'Local Whisper model size')} className="inline-flex flex-wrap gap-1.5">
+          {TIERS.map(function(id) {
+            var active = tier === id;
+            return <button key={id} type="button" aria-pressed={active} disabled={!!download} onClick={function() { setTier(id); setDownloadError(''); }} className={'min-h-11 rounded-lg border px-2.5 text-xs font-bold ' + (active ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50')}>
+              {tierLabels[id]} ({TIER_SIZES_MB[id]} MB)
+            </button>;
+          })}
+        </div>
+        <button type="button" disabled={!!download} onClick={startDownload} data-testid="speech-readiness-download-btn" className="min-h-11 rounded-lg bg-emerald-700 px-4 text-xs font-bold text-white hover:bg-emerald-800 disabled:opacity-60">
+          {download
+            ? say(t('speech_setup.downloading'), 'Downloading…')
+            : dsay('dictation.download_now', 'Download Local Whisper ({size} MB)', { size: tierSize })}
+        </button>
+      </div>
+    )}
+
+    {download && (
+      <div className="space-y-1" role="status" aria-live="polite">
+        <p className="text-xs font-semibold text-slate-700">
+          {say(t('speech_setup.download_progress'), 'Downloaded {loaded} of {total} MB. You can keep working while this finishes.', { loaded: download.loadedMb, total: TIER_SIZES_MB[download.tier] || tierSize })} ({download.percent}%)
+        </p>
+        <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-label={say(t('speech_setup.download_label'), 'Speech model download')} aria-valuemin={0} aria-valuemax={100} aria-valuenow={download.percent}>
+          <div className="h-full bg-emerald-600 transition-all motion-reduce:transition-none" style={{ width: download.percent + '%' }} />
+        </div>
+      </div>
+    )}
+
+    {downloadError === 'network' && <p className="text-xs font-bold text-amber-900" role="alert">{say(t('speech_setup.download_failed_network'), 'The download did not finish. Check the connection. If this is a school network, ask IT to allow huggingface.co, hf.co, and cdn.jsdelivr.net.')}</p>}
+    {downloadError === 'storage' && <p className="text-xs font-bold text-amber-900" role="alert">{say(t('speech_setup.download_failed_storage'), 'This device ran out of storage for the download. Free some space or choose a smaller size.')}</p>}
+
+    {check.phase === 'listening' && (
+      <div className="space-y-1" role="status">
+        <p className="text-xs font-semibold text-slate-700">{say(t('speech_setup.test_listening'), 'Listening. Speak now.')}</p>
+        <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200" aria-hidden="true">
+          <div className="h-full bg-indigo-600" style={{ width: Math.round(check.level * 100) + '%' }} />
+        </div>
+      </div>
+    )}
+    {check.phase === 'transcribing' && <p className="text-xs font-semibold text-slate-700" role="status">{say(t('speech_setup.test_transcribing'), 'Turning your speech into text on this device…')}</p>}
+    {check.report && (
+      <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800" role="status" data-testid="speech-readiness-test-result">
+        {!check.report.heardSound
+          ? <span className="font-semibold text-amber-900">{say(t('speech_setup.result_silent'), 'No sound reached the microphone. Check that it is plugged in, not muted, and selected in your device settings.')}</span>
+          : !check.report.heardSpeech
+            ? <span className="font-semibold text-amber-900">{say(t('speech_setup.result_quiet'), 'The microphone works, but it did not pick up clear speech. Try again and speak a little louder or closer.')}</span>
+            : check.report.tier != null
+              ? <span><strong>{say(t('speech_setup.result_heard'), 'What it heard:')}</strong> {check.report.transcript || say(t('speech_setup.result_no_words'), 'No words came through. Try again.')}</span>
+              : <span className="font-semibold text-emerald-800">{say(t('speech_setup.result_level_ok'), 'Your microphone works.')}</span>}
+      </div>
+    )}
+    {check.error && <p className="text-xs font-bold text-amber-900" role="alert">{check.error === 'blocked' ? say(t('speech_setup.mic_blocked'), 'The browser is blocking the microphone. Allow it from the icon beside the web address, then test again.') : say(t('speech_setup.mic_failed'), 'The test did not finish. Try again.')}</p>}
+  </div>;
+}
+
+function formatClockSec(sec) {
+  var s = Math.max(0, Math.round(Number(sec) || 0));
+  var m = Math.floor(s / 60);
+  var r = s % 60;
+  return m + ':' + (r < 10 ? '0' : '') + r;
+}
+
+function applyDiscrepancyEdit(draftText, whisperText, replacement) {
+  var base = String(draftText || '');
+  var target = String(whisperText || '').trim();
+  var next = String(replacement || '').trim();
+  if (!target || !next) return base;
+  var exactAt = base.indexOf(target);
+  if (exactAt >= 0) {
+    return base.slice(0, exactAt) + next + base.slice(exactAt + target.length);
+  }
+  var lowAt = base.toLowerCase().indexOf(target.toLowerCase());
+  if (lowAt >= 0) {
+    return base.slice(0, lowAt) + next + base.slice(lowAt + target.length);
+  }
+  return base;
+}
+
+function checkDictationAiTextAllowed(propFlag) {
+  if (_ssHardAiPolicyBlocked()) return false;
+  if (typeof propFlag === 'boolean') return propFlag;
+  if (typeof window === 'undefined') return false;
+  if (typeof window.__alloResolveAiCapability === 'function') {
+    try { return !!window.__alloResolveAiCapability().text; } catch (_) { return false; }
+  }
+  if (typeof window.__alloAiUsable === 'function') {
+    try { return !!window.__alloAiUsable('text'); } catch (_) { return false; }
+  }
+  return false;
+}
+
+function checkDictationAiAudioAllowed(propFlag, voice) {
+  if (_ssHardAiPolicyBlocked()) return false;
+  if (typeof propFlag === 'boolean') return propFlag;
+  if (typeof window === 'undefined') return false;
+  if (typeof window.__alloAiUsable === 'function') {
+    try { if (!window.__alloAiUsable('audio', window.callGeminiAudio)) return false; } catch (_) { return false; }
+  }
+  if (voice && typeof voice.getGeminiAudioCapability === 'function') {
+    try {
+      var cap = voice.getGeminiAudioCapability({ callGeminiAudio: window.callGeminiAudio });
+      return !!(cap && cap.available);
+    } catch (_) { return false; }
+  }
+  return false;
+}
+
+function normalizeDictationSegments(list) {
+  if (!Array.isArray(list)) return [];
+  return list.filter(function(s) { return s && typeof s === 'object'; }).map(function(s, idx) {
+    return {
+      id: String(s.id || ('seg-' + (idx + 1))),
+      index: typeof s.index === 'number' ? s.index : idx,
+      startSec: Math.max(0, Number(s.startSec) || 0),
+      endSec: Math.max(0, Number(s.endSec) || 0),
+      text: typeof s.text === 'string' ? s.text : '',
+      blob: s.blob || null,
+      mimeType: s.mimeType || (s.blob && s.blob.type) || 'audio/wav'
+    };
+  });
+}
+
+function measureSegmentAudioBytes(list) {
+  return (Array.isArray(list) ? list : []).reduce(function(sum, s) {
+    return sum + ((s && s.blob && typeof s.blob.size === 'number') ? s.blob.size : 0);
+  }, 0);
+}
+
+var _SS_RA_MAX_CHARS = 6000;
+var _SS_RA_MAX_SENTENCES = 120;
+var _SS_RA_MAX_SENTENCE_CHARS = 400;
+var _SS_RA_ABBREVIATIONS = ['mr', 'mrs', 'ms', 'dr', 'st', 'jr', 'sr', 'vs', 'etc', 'e.g', 'i.e', 'no', 'mt', 'prof', 'gen', 'capt', 'sgt', 'lt', 'rev',
+  'gov', 'sen', 'rep', 'fig', 'ch', 'sec', 'vol', 'eq', 'ex', 'p', 'pp', 'apt', 'dept', 'u.s'];
+var _SS_RA_NUM_ABBREVIATIONS = ['jan', 'feb', 'mar', 'apr', 'aug', 'sep', 'sept', 'oct', 'nov', 'dec', 'ave', 'blvd', 'rd', 'ln', 'ct', 'a.m', 'p.m'];
+
+function _ssCutReadAlongSentence(sentence) {
+  var rest = sentence;
+  var out = [];
+  while (rest.length > _SS_RA_MAX_SENTENCE_CHARS) {
+    var head = rest.slice(0, _SS_RA_MAX_SENTENCE_CHARS);
+    var at = Math.max(head.lastIndexOf(', '), head.lastIndexOf('; '), head.lastIndexOf(': '));
+    if (at < _SS_RA_MAX_SENTENCE_CHARS / 3) at = head.lastIndexOf(' ');
+    if (at < 1) at = _SS_RA_MAX_SENTENCE_CHARS - 1;
+    out.push(rest.slice(0, at + 1).trim());
+    rest = rest.slice(at + 1).trim();
+  }
+  if (rest) out.push(rest);
+  return out;
+}
+
+function _ssSplitReadAlongSentences(value) {
+  var source = String(value == null ? '' : value)
+    .replace(/^\uFEFF/, '')
+    .replace(/[\u200B-\u200D\uFEFF]/g, '')
+    .replace(/\r\n?/g, '\n')
+    .slice(0, _SS_RA_MAX_CHARS);
+  if (!source.trim()) return [];
+  var out = [];
+  source.split(/\n[ \t]*\n+/).forEach(function(paragraph) {
+    paragraph.split('\n').forEach(function(line) {
+      var trimmed = line.replace(/[ \t\u00a0]+/g, ' ').trim();
+      if (!trimmed || /^-{3,}$/.test(trimmed)) return;
+      var hMatch = /^(#{1,3})\s+(.+)$/.exec(trimmed);
+      if (hMatch) {
+        var hText = hMatch[2].replace(/\s+/g, ' ').trim();
+        if (hText) out.push(hText.slice(0, _SS_RA_MAX_SENTENCE_CHARS));
+        return;
+      }
+      var words = trimmed.split(' ').filter(Boolean);
+      var run = [];
+      var push = function() {
+        if (!run.length) return;
+        _ssCutReadAlongSentence(run.join(' ')).forEach(function(piece) {
+          var cleanPiece = piece.replace(/\s+/g, ' ').trim();
+          if (cleanPiece) out.push(cleanPiece);
+        });
+        run = [];
+      };
+      words.forEach(function(word, wi) {
+        run.push(word);
+        var end = /[.!?]+["'\u201d\u2019)\]]*$/.exec(word);
+        if (!end) return;
+        if (wi + 1 < words.length && /^[a-z]/.test(words[wi + 1])) return;
+        var bare = word.slice(0, end.index).replace(/^["'\u201c\u2018(\[]+/, '').toLowerCase();
+        var stop = word.charAt(end.index);
+        var nextWord = wi + 1 < words.length ? words[wi + 1] : '';
+        if (stop === '.' && (_SS_RA_ABBREVIATIONS.indexOf(bare) >= 0 || /^[a-z]$/.test(bare) || (run.length === 1 && /^\d{1,3}$/.test(bare) && nextWord) || (_SS_RA_NUM_ABBREVIATIONS.indexOf(bare) >= 0 && /^[0-9(\[]/.test(nextWord)))) return;
+        push();
+      });
+      push();
+    });
+  });
+  return out.slice(0, _SS_RA_MAX_SENTENCES);
+}
+
+function _ssNormalizeAlignText(raw) {
+  var s = String(raw == null ? '' : raw).toLowerCase().replace(/[\u2018\u2019]/g, "'");
+  try {
+    s = s.replace(/[^\p{L}\p{N}']+/gu, ' ');
+  } catch (_) {
+    s = s.replace(/[^a-z0-9\u00c0-\u024f']+/g, ' ');
+  }
+  return s.replace(/(?:^|\s)'+|'+(?=\s|$)/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function _ssIsValidAudioBlob(blob) {
+  if (!blob || typeof blob !== 'object') return false;
+  if (typeof blob.size === 'number') return blob.size > 0;
+  return typeof blob.arrayBuffer === 'function' || typeof blob.slice === 'function';
+}
+
+function _ssTokenBag(tokens) {
+  var bag = Object.create(null);
+  for (var i = 0; i < tokens.length; i++) {
+    var tok = tokens[i];
+    if (!tok || _ssIsBlockedKey(tok)) continue;
+    bag[tok] = (bag[tok] || 0) + 1;
+  }
+  return bag;
+}
+
+function _ssBagOverlapCount(bagA, bagB) {
+  var matched = 0;
+  var keys = Object.keys(bagA);
+  for (var i = 0; i < keys.length; i++) {
+    var k = keys[i];
+    if (bagB[k]) matched += Math.min(bagA[k], bagB[k]);
+  }
+  return matched;
+}
+
+function _ssSubtractBags(segBag, sentBag) {
+  var res = Object.create(null);
+  var count = 0;
+  var keys = Object.keys(segBag);
+  for (var i = 0; i < keys.length; i++) {
+    var k = keys[i];
+    var diff = segBag[k] - (sentBag[k] || 0);
+    if (diff > 0) {
+      res[k] = diff;
+      count += diff;
+    }
+  }
+  return { bag: res, count: count };
+}
+
+function alignSegmentsToSentences(text, segments) {
+  var sentences = _ssSplitReadAlongSentences(text);
+  if (!sentences.length || !Array.isArray(segments) || !segments.length) return [];
+
+  var sentMeta = sentences.map(function(sentence, idx) {
+    var norm = _ssNormalizeAlignText(sentence);
+    var tokens = norm ? norm.split(' ') : [];
+    return {
+      sentence: sentence,
+      sentenceIndex: idx,
+      norm: norm,
+      tokens: tokens,
+      bag: _ssTokenBag(tokens)
+    };
+  });
+
+  var bestBySentence = Object.create(null);
+
+  for (var si = 0; si < segments.length; si++) {
+    var seg = segments[si];
+    if (!seg || typeof seg !== 'object' || !_ssIsValidAudioBlob(seg.blob)) continue;
+    var segNorm = _ssNormalizeAlignText(seg.text);
+    if (!segNorm) continue;
+
+    var exactMatches = [];
+    for (var ei = 0; ei < sentMeta.length; ei++) {
+      if (sentMeta[ei].norm && sentMeta[ei].norm === segNorm) exactMatches.push(ei);
+    }
+    if (exactMatches.length > 0) {
+      var chosenExact = -1;
+      for (var ex = 0; ex < exactMatches.length; ex++) {
+        if (!bestBySentence[exactMatches[ex]]) { chosenExact = exactMatches[ex]; break; }
+      }
+      if (chosenExact < 0) chosenExact = exactMatches[0];
+      var prevExact = bestBySentence[chosenExact];
+      if (!prevExact || 1 > prevExact.score) {
+        bestBySentence[chosenExact] = {
+          sentence: sentMeta[chosenExact].sentence,
+          sentenceIndex: chosenExact,
+          segment: seg,
+          score: 1
+        };
+      }
+      continue;
+    }
+
+    var segTokens = segNorm.split(' ');
+    var segBag = _ssTokenBag(segTokens);
+    var scores = [];
+    var bestIdx = -1;
+    var bestScore = 0;
+    for (var ji = 0; ji < sentMeta.length; ji++) {
+      var sm = sentMeta[ji];
+      var matched = sm.tokens.length ? _ssBagOverlapCount(segBag, sm.bag) : 0;
+      var f1 = (segTokens.length + sm.tokens.length) > 0
+        ? (2 * matched) / (segTokens.length + sm.tokens.length)
+        : 0;
+      scores.push(f1);
+      if (f1 > bestScore) {
+        bestScore = f1;
+        bestIdx = ji;
+      }
+    }
+
+    if (bestIdx < 0 || bestScore < 0.55) continue;
+
+    if (sentMeta.length > 1) {
+      var bestMeta = sentMeta[bestIdx];
+      var residual = _ssSubtractBags(segBag, bestMeta.bag);
+      var spansMultiple = false;
+      for (var oi = 0; oi < sentMeta.length; oi++) {
+        if (oi === bestIdx) continue;
+        var other = sentMeta[oi];
+        if (!other.tokens.length || other.norm === bestMeta.norm) continue;
+        var otherScore = scores[oi];
+        var resMatched = residual.count > 0 ? _ssBagOverlapCount(residual.bag, other.bag) : 0;
+        var resRecall = resMatched / other.tokens.length;
+        if (otherScore >= 0.45 && (bestScore < 0.8 || resRecall >= 0.25)) {
+          spansMultiple = true;
+          break;
+        }
+        if (residual.count >= Math.min(2, other.tokens.length) && resRecall >= 0.45) {
+          spansMultiple = true;
+          break;
+        }
+      }
+      if (spansMultiple) continue;
+    }
+
+    var prevBest = bestBySentence[bestIdx];
+    if (!prevBest || bestScore > prevBest.score) {
+      bestBySentence[bestIdx] = {
+        sentence: sentMeta[bestIdx].sentence,
+        sentenceIndex: bestIdx,
+        segment: seg,
+        score: bestScore
+      };
+    }
+  }
+
+  var results = [];
+  for (var ri = 0; ri < sentMeta.length; ri++) {
+    if (bestBySentence[ri]) results.push(bestBySentence[ri]);
+  }
+  return results;
+}
+
+// Reusable Dictation Source Studio (shared by QuickStartWizard Step 3 and SourceView).
+// Defaults to Local Whisper (private, offline after one-time download) with clear download
+// warning, strengths comparison, opt-in text-only AI cleanup, and explicit opt-in Gemini
+// audio cross-triangulation with 5-second local audio slice replay.
+function DictationSourceStudio(props) {
+  var t = props.t || function() { return ''; };
+  var dsay = function(key, fallback, params) {
+    var v = '';
+    try { v = t(key); } catch (_) { v = ''; }
+    var usable = v && v !== key && !/^[\w-]+(\.[\w-]+)+$/.test(String(v));
+    return fillText(usable ? v : fallback, params);
+  };
+  var voiceNow = function() { return (typeof window !== 'undefined' && window.AlloFlowVoice) || null; };
+  var V = voiceNow();
+  var lang = props.lang || (V && typeof V.loadPreference === 'function' ? V.loadPreference().lang : 'en-US') || 'en-US';
+  var value = typeof props.value === 'string' ? props.value : '';
+  var onChange = typeof props.onChange === 'function' ? props.onChange : function() {};
+
+  var hydratedSegmentsRef = React.useRef(null);
+  if (hydratedSegmentsRef.current === null) hydratedSegmentsRef.current = normalizeDictationSegments(props.initialSegments);
+  var prevInitialSegmentsPropRef = React.useRef(props.initialSegments);
+  var hydratedUrlsRef = React.useRef([]);
+
+  var _readyInfo = React.useState({ ready: false, iosCanvas: false, canUseOnDevice: true, desktopWhisper: false, tier: 'tiny', downloading: false });
+  var readyInfo = _readyInfo[0]; var setReadyInfo = _readyInfo[1];
+  var _recState = React.useState('idle'); // idle | recording | paused | stopping
+  var recState = _recState[0]; var setRecState = _recState[1];
+  var _level = React.useState(0);
+  var level = _level[0]; var setLevel = _level[1];
+  var _segments = React.useState(function() { return hydratedSegmentsRef.current.slice(); });
+  var segments = _segments[0]; var setSegments = _segments[1];
+  var _audioBytes = React.useState(function() { return measureSegmentAudioBytes(hydratedSegmentsRef.current); });
+  var audioBytes = _audioBytes[0]; var setAudioBytes = _audioBytes[1];
+  var _recError = React.useState('');
+  var recError = _recError[0]; var setRecError = _recError[1];
+
+  // Text-only AI cleanup state (non-destructive review + Undo)
+  var _cleaning = React.useState('');
+  var cleaning = _cleaning[0]; var setCleaning = _cleaning[1];
+  var _cleanupReview = React.useState(null); // { preset, suggested, previous }
+  var cleanupReview = _cleanupReview[0]; var setCleanupReview = _cleanupReview[1];
+  var _undoPrevious = React.useState(null);
+  var undoPrevious = _undoPrevious[0]; var setUndoPrevious = _undoPrevious[1];
+  var _cleanupError = React.useState('');
+  var cleanupError = _cleanupError[0]; var setCleanupError = _cleanupError[1];
+
+  // Explicit opt-in Gemini audio cross-triangulation state
+  var _checking = React.useState(false);
+  var checking = _checking[0]; var setChecking = _checking[1];
+  var _checkDone = React.useState(false);
+  var checkDone = _checkDone[0]; var setCheckDone = _checkDone[1];
+  var _checkError = React.useState('');
+  var checkError = _checkError[0]; var setCheckError = _checkError[1];
+  var _discrepancies = React.useState([]);
+  var discrepancies = _discrepancies[0]; var setDiscrepancies = _discrepancies[1];
+  var _editingId = React.useState(null);
+  var editingId = _editingId[0]; var setEditingId = _editingId[1];
+  var _editDraft = React.useState('');
+  var editDraft = _editDraft[0]; var setEditDraft = _editDraft[1];
+  var _playingId = React.useState(null);
+  var playingId = _playingId[0]; var setPlayingId = _playingId[1];
+  var _crisisBanner = React.useState('');
+  var crisisBanner = _crisisBanner[0]; var setCrisisBanner = _crisisBanner[1];
+  var _includeVoiceClips = React.useState(true);
+  var includeVoiceClips = _includeVoiceClips[0]; var setIncludeVoiceClips = _includeVoiceClips[1];
+
+  var mountedRef = React.useRef(true);
+  var recorderRef = React.useRef(null);
+  var audioElRef = React.useRef(null);
+  var sliceTimerRef = React.useRef(null);
+  var latestValueRef = React.useRef(value);
+  latestValueRef.current = value;
+
+  var aiTextAllowed = checkDictationAiTextAllowed(props.aiTextAvailable);
+  var aiAudioAllowed = checkDictationAiAudioAllowed(props.aiAudioAvailable, V);
+  var sendToReadAlongFn = typeof props.onSendToReadAlong === 'function'
+    ? props.onSendToReadAlong
+    : (props.onSendToReadAlong === undefined && typeof window !== 'undefined' && typeof window.__alloSendToReadAlongPacket === 'function'
+        ? window.__alloSendToReadAlongPacket
+        : null);
+
+  function revokeHydratedUrls() {
+    var urls = hydratedUrlsRef.current;
+    hydratedUrlsRef.current = [];
+    if (typeof URL === 'undefined' || typeof URL.revokeObjectURL !== 'function') return;
+    for (var i = 0; i < urls.length; i++) {
+      try { URL.revokeObjectURL(urls[i]); } catch (_) {}
+    }
+  }
+
+  React.useEffect(function() {
+    if (props.initialSegments === prevInitialSegmentsPropRef.current) return;
+    prevInitialSegmentsPropRef.current = props.initialSegments;
+    revokeHydratedUrls();
+    var nextHydrated = normalizeDictationSegments(props.initialSegments);
+    hydratedSegmentsRef.current = nextHydrated;
+    var recSegs = recorderRef.current ? recorderRef.current.getSegments() : [];
+    var merged = nextHydrated.concat(recSegs);
+    setSegments(merged);
+    setAudioBytes(measureSegmentAudioBytes(merged));
+  }, [props.initialSegments]);
+
+  React.useEffect(function() {
+    mountedRef.current = true;
+    var onMuteChanged = function(event) {
+      var muted = (event && event.detail && event.detail.muted === true) || _ssIsGlobalMuted();
+      if (muted) {
+        if (sliceTimerRef.current) { clearTimeout(sliceTimerRef.current); sliceTimerRef.current = null; }
+        if (audioElRef.current) { try { audioElRef.current.pause(); } catch (_) {} audioElRef.current = null; }
+        if (mountedRef.current) setPlayingId(null);
+      }
+    };
+    if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+      window.addEventListener('alloflow-mute-changed', onMuteChanged);
+    }
+    return function() {
+      mountedRef.current = false;
+      if (typeof window !== 'undefined' && typeof window.removeEventListener === 'function') {
+        window.removeEventListener('alloflow-mute-changed', onMuteChanged);
+      }
+      if (sliceTimerRef.current) { clearTimeout(sliceTimerRef.current); sliceTimerRef.current = null; }
+      if (audioElRef.current) { try { audioElRef.current.pause(); } catch (_) {} audioElRef.current = null; }
+      revokeHydratedUrls();
+      if (recorderRef.current) {
+        try { recorderRef.current.stop(); } catch (_) {}
+        try { recorderRef.current.clearAudio(); } catch (_) {}
+        recorderRef.current = null;
+      }
+    };
+  }, []);
+
+  function ensureRecorder() {
+    if (recorderRef.current) return recorderRef.current;
+    var voice = voiceNow();
+    if (!voice || typeof voice.createSegmentedDictationRecorder !== 'function') return null;
+    var rec = voice.createSegmentedDictationRecorder({
+      lang: lang,
+      tier: readyInfo.tier || 'tiny',
+      initialText: latestValueRef.current,
+      onLevel: function(lv) { if (mountedRef.current) setLevel(Number.isFinite(lv) ? Math.max(0, Math.min(1, lv)) : 0); },
+      onStatus: function(st) { if (!mountedRef.current) return; setRecState(st); if (st !== 'recording') setLevel(0); },
+      onSegment: function() {
+        if (!mountedRef.current) return;
+        var combined = hydratedSegmentsRef.current.concat(rec.getSegments());
+        setSegments(combined);
+        setAudioBytes(measureSegmentAudioBytes(combined));
+      },
+      onDraft: function(draft, segs) {
+        if (!mountedRef.current) return;
+        var combined = hydratedSegmentsRef.current.concat(Array.isArray(segs) ? segs : []);
+        setSegments(combined);
+        setAudioBytes(measureSegmentAudioBytes(combined));
+        onChange(draft);
+      },
+      onError: function(err) {
+        if (!mountedRef.current) return;
+        var msg = (err && err.message) ? err.message : 'Microphone or transcription error.';
+        setRecError(msg);
+      }
+    });
+    recorderRef.current = rec;
+    return rec;
+  }
+
+  function handleStart() {
+    setRecError('');
+    if (readyInfo.iosCanvas) {
+      setRecError(dsay('dictation.ios_canvas_blocked', 'Local Whisper is paused on iPhone/iPad inside Gemini Canvas. Type directly below or open AlloFlow in a desktop browser.'));
+      return;
+    }
+    var rec = ensureRecorder();
+    if (!rec) {
+      setRecError(dsay('dictation.voice_unavailable', 'Voice recorder is still loading. Please try again in a moment.'));
+      return;
+    }
+    rec.setDraft(latestValueRef.current);
+    rec.start().catch(function(err) {
+      if (mountedRef.current) setRecError((err && err.message) || dsay('dictation.mic_start_failed', 'Could not start the microphone. Check browser permissions.'));
+    });
+  }
+
+  function handlePause() {
+    if (recorderRef.current) recorderRef.current.pause();
+  }
+
+  function handleResume() {
+    setRecError('');
+    if (recorderRef.current) {
+      recorderRef.current.setDraft(latestValueRef.current);
+      recorderRef.current.resume().catch(function(err) {
+        if (mountedRef.current) setRecError((err && err.message) || dsay('dictation.mic_start_failed', 'Could not resume the microphone.'));
+      });
+    }
+  }
+
+  function handleStop() {
+    if (recorderRef.current) {
+      recorderRef.current.stop().then(function(res) {
+        if (!mountedRef.current) return;
+        var recSegs = (res && Array.isArray(res.segments)) ? res.segments : (recorderRef.current ? recorderRef.current.getSegments() : []);
+        var combined = hydratedSegmentsRef.current.concat(recSegs);
+        setSegments(combined);
+        setAudioBytes(measureSegmentAudioBytes(combined));
+      }).catch(function() {});
+    }
+  }
+
+  function handleClearAudio() {
+    if (sliceTimerRef.current) { clearTimeout(sliceTimerRef.current); sliceTimerRef.current = null; }
+    if (audioElRef.current) { try { audioElRef.current.pause(); } catch (_) {} audioElRef.current = null; }
+    setPlayingId(null);
+    revokeHydratedUrls();
+    hydratedSegmentsRef.current = [];
+    if (recorderRef.current) {
+      recorderRef.current.clearAudio();
+    }
+    setSegments([]);
+    setAudioBytes(0);
+    if (typeof props.onClearInitialSegments === 'function') {
+      try { props.onClearInitialSegments(); } catch (_) {}
+    }
+    setDiscrepancies([]);
+    setCheckDone(false);
+    setCheckError('');
+  }
+
+  function runCleanup(preset) {
+    if (!aiTextAllowed || !value.trim() || cleaning) return;
+    var crisis = _ssScreenCrisis(value);
+    if (crisis) { setCrisisBanner(crisis.message); return; }
+    setCrisisBanner('');
+    var handler = typeof props.onCleanupText === 'function'
+      ? props.onCleanupText
+      : (typeof window !== 'undefined' && typeof window.__alloRunDictationTextCleanup === 'function' ? window.__alloRunDictationTextCleanup : null);
+    if (!handler) {
+      setCleanupError(dsay('dictation.cleanup_unavailable', 'AI text cleanup is unavailable right now.'));
+      return;
+    }
+    setCleanupError('');
+    setCleaning(preset);
+    var base = value;
+    Promise.resolve(handler(base, preset)).then(function(suggested) {
+      if (!mountedRef.current) return;
+      var clean = typeof suggested === 'string' ? suggested.trim() : '';
+      if (clean && clean !== base.trim()) {
+        setCleanupReview({ preset: preset, suggested: clean, previous: base });
+      } else {
+        setCleanupError(dsay('dictation.cleanup_no_changes', 'No changes were suggested for this draft.'));
+      }
+    }).catch(function(err) {
+      if (mountedRef.current) setCleanupError((err && err.message) || dsay('dictation.cleanup_failed', 'Could not clean up the text right now.'));
+    }).finally(function() {
+      if (mountedRef.current) setCleaning('');
+    });
+  }
+
+  function applyCleanup() {
+    if (!cleanupReview) return;
+    setUndoPrevious(value);
+    onChange(cleanupReview.suggested);
+    setCleanupReview(null);
+  }
+
+  function undoCleanup() {
+    if (undoPrevious == null) return;
+    onChange(undoPrevious);
+    setUndoPrevious(null);
+  }
+
+  function runCrossCheck() {
+    var audioSegs = segments.filter(function(s) { return !!s.blob; });
+    if (!aiAudioAllowed || checking || !audioSegs.length || !value.trim()) return;
+    var crisis = _ssScreenCrisis(value);
+    if (crisis) { setCrisisBanner(crisis.message); return; }
+    setCrisisBanner('');
+    var handler = typeof props.onCrossCheckAudio === 'function'
+      ? props.onCrossCheckAudio
+      : (typeof window !== 'undefined' && typeof window.__alloRunGeminiAudioCrossCheck === 'function' ? window.__alloRunGeminiAudioCrossCheck : null);
+    if (!handler) {
+      setCheckError(dsay('dictation.crosscheck_unavailable', 'Gemini audio cross-triangulation is unavailable right now.'));
+      return;
+    }
+    setCheckError('');
+    setChecking(true);
+    setCheckDone(false);
+    Promise.resolve(handler(audioSegs, value, { lang: lang })).then(function(items) {
+      if (!mountedRef.current) return;
+      var list = Array.isArray(items) ? items.map(function(it, idx) {
+        return {
+          id: String((it && it.id) || ('diff-' + (idx + 1))),
+          segmentIndex: Number(it && it.segmentIndex) || 0,
+          startSec: Number(it && it.startSec) || 0,
+          endSec: Number(it && it.endSec) || 5,
+          whisperText: String((it && it.whisperText) || '').trim(),
+          geminiText: String((it && it.geminiText) || '').trim(),
+          reason: String((it && it.reason) || '').trim(),
+          status: 'open'
+        };
+      }).filter(function(it) { return it.whisperText || it.geminiText; }) : [];
+      setDiscrepancies(list);
+      setCheckDone(true);
+    }).catch(function(err) {
+      if (mountedRef.current) setCheckError((err && err.message) || dsay('dictation.crosscheck_failed', 'Gemini audio check did not finish. Your local transcript is untouched.'));
+    }).finally(function() {
+      if (mountedRef.current) setChecking(false);
+    });
+  }
+
+  function playDiscrepancySlice(item) {
+    if (!item) return;
+    if (sliceTimerRef.current) { clearTimeout(sliceTimerRef.current); sliceTimerRef.current = null; }
+    if (audioElRef.current) { try { audioElRef.current.pause(); } catch (_) {} audioElRef.current = null; }
+    if (playingId === item.id) { setPlayingId(null); return; }
+    if (_ssIsGlobalMuted()) { setPlayingId(null); return; }
+    var target = Math.max(0, Number(item.startSec) || 0);
+    var slice = null;
+    var match = null;
+    if (typeof item.segmentIndex === 'number' && segments[item.segmentIndex] && segments[item.segmentIndex].blob) {
+      var indexed = segments[item.segmentIndex];
+      if (target >= indexed.startSec - 0.5 && target <= indexed.endSec + 0.5) match = indexed;
+    }
+    if (!match) {
+      for (var i = 0; i < segments.length; i++) {
+        if (!segments[i] || !segments[i].blob) continue;
+        if (target >= segments[i].startSec - 0.5 && target <= segments[i].endSec + 0.5) {
+          match = segments[i];
+          break;
+        }
+      }
+    }
+    if (!match) {
+      for (var j = 0; j < segments.length; j++) {
+        if (segments[j] && segments[j].blob) { match = segments[j]; break; }
+      }
+    }
+    if (match && match.blob) {
+      var isHydrated = hydratedSegmentsRef.current.indexOf(match) !== -1 || hydratedSegmentsRef.current.some(function(h) { return h && h.id === match.id && h.blob === match.blob; });
+      if (!isHydrated && recorderRef.current && typeof recorderRef.current.getAudioSliceUrl === 'function') {
+        slice = recorderRef.current.getAudioSliceUrl(item.startSec, item.endSec);
+      } else if (typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') {
+        var url = URL.createObjectURL(match.blob);
+        hydratedUrlsRef.current.push(url);
+        var relStart = Math.max(0, target - (Number(match.startSec) || 0));
+        var span = Math.max(2, Math.min(12, (Number(item.endSec) > target ? (Number(item.endSec) - target) : 5)));
+        slice = { url: url, offsetSec: relStart, durationSec: span, segmentId: match.id };
+      }
+    } else if (recorderRef.current && typeof recorderRef.current.getAudioSliceUrl === 'function') {
+      slice = recorderRef.current.getAudioSliceUrl(item.startSec, item.endSec);
+    }
+    if (!slice || !slice.url || typeof window === 'undefined' || typeof window.Audio !== 'function') return;
+    var el = new window.Audio(slice.url);
+    audioElRef.current = el;
+    setPlayingId(item.id);
+    var seekToOffset = function() {
+      try {
+        if (slice.offsetSec > 0) {
+          el.currentTime = Number.isFinite(el.duration) && el.duration > 0
+            ? Math.min(slice.offsetSec, Math.max(0, el.duration - 0.5))
+            : slice.offsetSec;
+        }
+      } catch (_) {}
+    };
+    el.onloadedmetadata = seekToOffset;
+    if (el.readyState >= 1) seekToOffset();
+    var finishPlayback = function() {
+      if (sliceTimerRef.current) { clearTimeout(sliceTimerRef.current); sliceTimerRef.current = null; }
+      if (audioElRef.current === el) audioElRef.current = null;
+      if (mountedRef.current) setPlayingId(null);
+    };
+    el.onended = finishPlayback;
+    el.onerror = finishPlayback;
+    try {
+      var playRes = el.play();
+      if (playRes && typeof playRes.catch === 'function') playRes.catch(finishPlayback);
+    } catch (_) { finishPlayback(); }
+    var durationMs = Math.max(500, Math.min(30000, Math.round((Number(slice.durationSec) || 5) * 1000)));
+    sliceTimerRef.current = setTimeout(function() {
+      try { if (audioElRef.current === el) el.pause(); } catch (_) {}
+      finishPlayback();
+    }, durationMs);
+  }
+
+  function resolveDiscrepancy(id, action, customText) {
+    var target = discrepancies.filter(function(d) { return d.id === id; })[0];
+    if (!target) return;
+    if (action === 'accept' && target.geminiText) {
+      onChange(applyDiscrepancyEdit(latestValueRef.current, target.whisperText, target.geminiText));
+    } else if (action === 'edit' && customText && customText.trim()) {
+      onChange(applyDiscrepancyEdit(latestValueRef.current, target.whisperText, customText.trim()));
+    }
+    setDiscrepancies(function(prev) {
+      return prev.map(function(d) { return d.id === id ? Object.assign({}, d, { status: action }) : d; });
+    });
+    if (editingId === id) { setEditingId(null); setEditDraft(''); }
+  }
+
+  var words = value.trim() ? value.trim().split(/\s+/).length : 0;
+  var blobSegments = segments.filter(function(s) { return !!(s && _ssIsValidAudioBlob(s.blob)); });
+  var audioSegCount = blobSegments.length;
+  var totalElapsed = segments.length ? segments[segments.length - 1].endSec : 0;
+  var audioMb = (audioBytes / MB).toFixed(1);
+  var openDiscrepancies = discrepancies.filter(function(d) { return d.status === 'open'; });
+  var canRecord = !readyInfo.iosCanvas && (readyInfo.ready || readyInfo.canUseOnDevice);
+
+  return <div className="space-y-4 text-left" data-testid="dictation-source-studio">
+    <SpeechReadinessCard t={t} lang={lang} onReadyChange={setReadyInfo} />
+
+    <details data-testid="dictation-engine-guide" className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700">
+      <summary className="cursor-pointer font-bold text-slate-900 rounded focus-visible:ring-2 focus-visible:ring-indigo-600">
+        {dsay('dictation.guide_summary', 'Local Whisper vs. Gemini Audio — strengths & why use both')}
+      </summary>
+      <div className="mt-2.5 grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <div className="rounded-lg border border-emerald-200 bg-white p-2.5 space-y-1">
+          <div className="font-bold text-emerald-900">{dsay('dictation.guide_whisper_title', 'Local Whisper (Default)')}</div>
+          <p className="leading-relaxed">{dsay('dictation.guide_whisper_body', 'Private and offline after a one-time download (~39–73 MB). No audio leaves your device, no API key or quota is needed, and long continuous dictation works reliably.')}</p>
+        </div>
+        <div className="rounded-lg border border-indigo-200 bg-white p-2.5 space-y-1">
+          <div className="font-bold text-indigo-900">{dsay('dictation.guide_gemini_title', 'Gemini Audio (Optional check)')}</div>
+          <p className="leading-relaxed">{dsay('dictation.guide_gemini_body', 'No model download required. Stronger on specialized vocabulary, proper nouns, accented speech, noisy classrooms, and punctuation — sends recorded audio chunks to Gemini only if you opt in.')}</p>
+        </div>
+      </div>
+      <p className="mt-2 rounded-lg border border-slate-200 bg-white p-2.5 leading-relaxed text-slate-800">
+        <strong>{dsay('dictation.guide_both_label', 'Why use both (Cross-Triangulation):')}</strong>{' '}
+        {dsay('dictation.guide_both_body', 'Start privately with Local Whisper so your dictation stays fast and offline-first. If you want a second opinion on tricky terms or names, opt in to Gemini cross-triangulation to compare two independent models against your audio and replay 5-second clips at any flagged spot.')}
+      </p>
+    </details>
+
+    <div className="rounded-xl border-2 border-slate-200 bg-white p-4 space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {recState === 'idle' && (
+            <button type="button" data-testid="dictation-start-btn" disabled={!canRecord || readyInfo.downloading} onClick={handleStart} className="min-h-11 rounded-xl bg-emerald-700 px-4 text-sm font-bold text-white hover:bg-emerald-800 disabled:opacity-50">
+              {dsay('dictation.start_recording', 'Start dictating (Local Whisper)')}
+            </button>
+          )}
+          {recState === 'recording' && (
+            <button type="button" data-testid="dictation-pause-btn" onClick={handlePause} className="min-h-11 rounded-xl bg-amber-700 px-4 text-sm font-bold text-white hover:bg-amber-800">
+              {dsay('dictation.pause_recording', 'Pause')}
+            </button>
+          )}
+          {recState === 'paused' && (
+            <button type="button" data-testid="dictation-resume-btn" onClick={handleResume} className="min-h-11 rounded-xl bg-emerald-700 px-4 text-sm font-bold text-white hover:bg-emerald-800">
+              {dsay('dictation.resume_recording', 'Resume')}
+            </button>
+          )}
+          {(recState === 'recording' || recState === 'paused') && (
+            <button type="button" data-testid="dictation-stop-btn" onClick={handleStop} className="min-h-11 rounded-xl border border-slate-400 bg-white px-4 text-sm font-bold text-slate-800 hover:bg-slate-100">
+              {dsay('dictation.stop_recording', 'Stop')}
+            </button>
+          )}
+          {typeof props.onUploadMedia === 'function' && (
+            <button type="button" data-testid="dictation-upload-media-btn" onClick={props.onUploadMedia} className="min-h-11 rounded-xl border border-indigo-300 bg-indigo-50 px-3 text-xs font-bold text-indigo-900 hover:bg-indigo-100">
+              {dsay('dictation.upload_media', 'Transcribe audio/video file')}
+            </button>
+          )}
+        </div>
+        {audioSegCount > 0 && (
+          <button type="button" data-testid="dictation-clear-audio" onClick={handleClearAudio} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-100">
+            {dsay('dictation.clear_audio', 'Clear recorded audio ({mb} MB)', { mb: audioMb })}
+          </button>
+        )}
+      </div>
+
+      {recState === 'recording' && (
+        <div className="space-y-1" role="status" aria-live="polite">
+          <div className="flex items-center justify-between text-xs font-semibold text-emerald-900">
+            <span>{dsay('dictation.listening_local', 'Listening locally with Whisper… pause briefly or keep talking to append text.')}</span>
+            <span>{formatClockSec(totalElapsed)}</span>
+          </div>
+          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200" aria-hidden="true">
+            <div className="h-full bg-emerald-600 transition-all motion-reduce:transition-none" style={{ width: Math.round(level * 100) + '%' }} />
+          </div>
+        </div>
+      )}
+      {recState === 'paused' && <p className="text-xs font-semibold text-amber-900" role="status">{dsay('dictation.paused_note', 'Paused. You can edit the transcript below or press Resume to keep dictating.')}</p>}
+      {recError && <p className="text-xs font-bold text-amber-900" role="alert">{recError}</p>}
+      {crisisBanner && <div className="rounded-xl border-2 border-rose-500 bg-rose-50 p-3 text-xs font-semibold text-rose-950" role="alert">{crisisBanner}</div>}
+
+      <div>
+        <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+          <label htmlFor="dictation-draft-box" className="text-xs font-bold uppercase tracking-wider text-slate-700">
+            {dsay('dictation.draft_label', 'Transcript draft (editable)')}
+          </label>
+          <span className="text-xs text-slate-600" aria-live="polite">
+            {words} {words === 1 ? 'word' : 'words'}{segments.length > 0 ? (' · ' + segments.length + (segments.length === 1 ? ' segment' : ' segments')) : ''}
+          </span>
+        </div>
+        <textarea
+          id="dictation-draft-box"
+          data-testid="dictation-draft-textarea"
+          dir="auto"
+          rows={props.compact ? 6 : 8}
+          value={value}
+          onChange={function(e) { onChange(e.target.value); }}
+          placeholder={dsay('dictation.draft_placeholder', 'Press Start dictating above, or type/edit your transcript directly here…')}
+          className="w-full rounded-xl border-2 border-slate-200 bg-white p-3 text-sm leading-relaxed text-slate-900 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/20 resize-y"
+        />
+      </div>
+
+      {aiTextAllowed && (
+        <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-3 space-y-2" data-testid="dictation-cleanup-section">
+          <div className="text-xs font-bold text-slate-800">
+            {dsay('dictation.cleanup_heading', 'Optional AI text cleanup')} <span className="font-normal text-slate-600">({dsay('dictation.cleanup_text_only', 'text only — no audio is sent')})</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { id: 'punctuation', label: dsay('dictation.cleanup_punctuation', 'Clean punctuation & formatting') },
+              { id: 'fillers', label: dsay('dictation.cleanup_fillers', 'Tighten filler words') },
+              { id: 'notes', label: dsay('dictation.cleanup_notes', 'Format as classroom notes') }
+            ].map(function(preset) {
+              return <button key={preset.id} type="button" data-testid={'dictation-cleanup-' + preset.id} disabled={!value.trim() || !!cleaning} onClick={function() { runCleanup(preset.id); }} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-xs font-bold text-slate-800 hover:bg-indigo-50 hover:border-indigo-400 disabled:opacity-50">
+                {cleaning === preset.id ? dsay('dictation.cleanup_working', 'Cleaning…') : preset.label}
+              </button>;
+            })}
+            {undoPrevious != null && (
+              <button type="button" data-testid="dictation-cleanup-undo" onClick={undoCleanup} className="min-h-11 rounded-lg border border-violet-300 bg-violet-50 px-3 text-xs font-bold text-violet-900 hover:bg-violet-100">
+                {dsay('dictation.cleanup_undo', 'Undo cleanup')}
+              </button>
+            )}
+          </div>
+          {cleanupError && <p className="text-xs font-semibold text-amber-900" role="alert">{cleanupError}</p>}
+          {cleanupReview && (
+            <div data-testid="dictation-cleanup-review" className="rounded-xl border-2 border-indigo-300 bg-white p-3 space-y-2">
+              <div className="text-xs font-bold text-indigo-900">{dsay('dictation.cleanup_review_title', 'Suggested cleanup ready — your draft has not changed yet')}</div>
+              <div className="max-h-40 overflow-y-auto whitespace-pre-wrap rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900">{cleanupReview.suggested}</div>
+              <div className="flex flex-wrap gap-2">
+                <button type="button" data-testid="dictation-cleanup-apply" onClick={applyCleanup} className="min-h-11 rounded-lg bg-indigo-700 px-3 text-xs font-bold text-white hover:bg-indigo-800">{dsay('dictation.cleanup_apply', 'Apply cleanup')}</button>
+                <button type="button" onClick={function() { setCleanupReview(null); }} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-100">{dsay('dictation.cleanup_keep', 'Keep original')}</button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="rounded-xl border border-indigo-200 bg-indigo-50/50 p-3 space-y-2" data-testid="dictation-crosscheck-section">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="space-y-0.5 min-w-0">
+            <div className="text-xs font-bold text-indigo-950">{dsay('dictation.crosscheck_heading', 'Cross-triangulate against audio with Gemini (Opt-in)')}</div>
+            <p className="text-xs text-slate-700">
+              {aiAudioAllowed
+                ? dsay('dictation.crosscheck_disclosure', 'Only runs if you click below: sends your in-memory recorded audio segments and draft text to Gemini to flag possible word errors.')
+                : dsay('dictation.crosscheck_disabled_note', 'Unavailable right now (disabled in offline / student AI-off mode or without a Gemini key). Your Local Whisper dictation still works completely offline.')}
+            </p>
+          </div>
+          <button
+            type="button"
+            data-testid="dictation-crosscheck-btn"
+            disabled={!aiAudioAllowed || checking || audioSegCount === 0 || !value.trim()}
+            onClick={runCrossCheck}
+            className="min-h-11 rounded-lg bg-indigo-700 px-4 text-xs font-bold text-white hover:bg-indigo-800 disabled:opacity-50"
+          >
+            {checking ? dsay('dictation.crosscheck_running', 'Checking against audio…') : dsay('dictation.crosscheck_btn', 'Verify against audio with Gemini')}
+          </button>
+        </div>
+        {checkError && <p className="text-xs font-bold text-amber-900" role="alert">{checkError}</p>}
+        {checkDone && discrepancies.length === 0 && (
+          <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-900" role="status" data-testid="dictation-crosscheck-clean">
+            {dsay('dictation.crosscheck_none', 'No substantive discrepancies found between Local Whisper and Gemini Audio.')}
+          </p>
+        )}
+        {discrepancies.length > 0 && (
+          <div className="space-y-2" data-testid="dictation-crosscheck-list">
+            <div className="text-xs font-bold text-slate-800">
+              {openDiscrepancies.length > 0
+                ? dsay('dictation.crosscheck_count', '{count} flagged spot(s) to review:', { count: openDiscrepancies.length })
+                : dsay('dictation.crosscheck_all_resolved', 'All flagged spots reviewed.')}
+            </div>
+            {discrepancies.map(function(item) {
+              var resolved = item.status !== 'open';
+              return <div key={item.id} data-testid={'dictation-diff-' + item.id} className={'rounded-lg border p-2.5 text-xs space-y-2 ' + (resolved ? 'border-slate-200 bg-slate-50 opacity-75' : 'border-indigo-200 bg-white')}>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="rounded-full bg-slate-100 px-2 py-0.5 font-mono font-bold text-slate-700">{formatClockSec(item.startSec)} – {formatClockSec(item.endSec)}</span>
+                  {item.reason && <span className="text-slate-600">{item.reason}</span>}
+                </div>
+                <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                  <div className="rounded border border-slate-200 bg-slate-50 p-2"><strong className="block text-slate-700">Local Whisper:</strong> {item.whisperText || '—'}</div>
+                  <div className="rounded border border-indigo-200 bg-indigo-50/50 p-2"><strong className="block text-indigo-900">Gemini Audio:</strong> {item.geminiText || '—'}</div>
+                </div>
+                {editingId === item.id ? (
+                  <div className="flex flex-wrap gap-2">
+                    <input type="text" value={editDraft} onChange={function(e) { setEditDraft(e.target.value); }} aria-label="Edited phrase" className="min-h-11 flex-1 rounded-lg border border-slate-300 px-2.5 text-xs" />
+                    <button type="button" onClick={function() { resolveDiscrepancy(item.id, 'edit', editDraft); }} className="min-h-11 rounded-lg bg-emerald-700 px-3 font-bold text-white">Save edit</button>
+                    <button type="button" onClick={function() { setEditingId(null); setEditDraft(''); }} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 font-bold text-slate-700">Cancel</button>
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-1.5">
+                    {audioSegCount > 0 && (
+                      <button type="button" data-testid="dictation-play-slice" onClick={function() { playDiscrepancySlice(item); }} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 font-bold text-slate-800 hover:bg-slate-100">
+                        {playingId === item.id ? 'Stop clip' : 'Play 5s clip'}
+                      </button>
+                    )}
+                    {!resolved && item.geminiText && (
+                      <button type="button" data-testid={'dictation-accept-' + item.id} onClick={function() { resolveDiscrepancy(item.id, 'accept'); }} className="min-h-11 rounded-lg bg-indigo-700 px-3 font-bold text-white hover:bg-indigo-800">Accept Gemini</button>
+                    )}
+                    {!resolved && (
+                      <button type="button" data-testid={'dictation-keep-' + item.id} onClick={function() { resolveDiscrepancy(item.id, 'keep'); }} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 font-bold text-slate-700 hover:bg-slate-100">Keep Whisper</button>
+                    )}
+                    {!resolved && (
+                      <button type="button" onClick={function() { setEditingId(item.id); setEditDraft(item.geminiText || item.whisperText); }} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 font-bold text-slate-700 hover:bg-slate-100">Edit</button>
+                    )}
+                    {resolved && <span className="inline-flex items-center font-semibold text-emerald-800">{item.status === 'accept' ? '✓ Accepted Gemini' : item.status === 'edit' ? '✓ Edited' : '✓ Kept Whisper'}</span>}
+                  </div>
+                )}
+              </div>;
+            })}
+          </div>
+        )}
+      </div>
+
+      {(typeof props.onApplyToSource === 'function' || (sendToReadAlongFn && value.trim())) && (
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          {sendToReadAlongFn && value.trim() && audioSegCount > 0 && (
+            <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-slate-300 bg-slate-50 px-3 text-xs font-semibold text-slate-800 hover:bg-slate-100">
+              <input
+                type="checkbox"
+                data-testid="dictation-include-voice-clips"
+                checked={includeVoiceClips}
+                onChange={function(e) { setIncludeVoiceClips(!!e.target.checked); }}
+                className="h-4 w-4 rounded border-slate-400 accent-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-600"
+              />
+              <span>{'Include my recorded voice clips (' + audioSegCount + ')'}</span>
+            </label>
+          )}
+          {sendToReadAlongFn && value.trim() && (
+            <button
+              type="button"
+              data-testid="dictation-send-read-along"
+              onClick={function() {
+                sendToReadAlongFn({
+                  text: value,
+                  segments: includeVoiceClips ? blobSegments : [],
+                  includeVoiceClips: !!includeVoiceClips
+                });
+              }}
+              className="min-h-11 rounded-xl border border-indigo-600 bg-indigo-50 px-4 text-sm font-bold text-indigo-900 hover:bg-indigo-100"
+            >
+              {dsay('dictation.send_read_along', 'Send to Read-Along Packet')}
+            </button>
+          )}
+          {typeof props.onApplyToSource === 'function' && (
+            <button type="button" data-testid="dictation-apply-source" disabled={!value.trim()} onClick={function() {
+              var crisis = _ssScreenCrisis(value);
+              if (crisis) { setCrisisBanner(crisis.message); return; }
+              setCrisisBanner('');
+              props.onApplyToSource(value);
+            }} className="min-h-11 rounded-xl bg-indigo-700 px-5 text-sm font-bold text-white hover:bg-indigo-800 disabled:opacity-50">
+              {dsay('dictation.use_text', 'Use dictated text')}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   </div>;
 }

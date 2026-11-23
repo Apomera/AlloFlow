@@ -18,6 +18,7 @@
 <meta name="twitter:description" content="Teach evolution with 17 modules, real Grant finch data, and a 5-day unit plan built into the tool.">
 <link rel="stylesheet" href="shared.css">
 <link rel="stylesheet" href="tool-manual.css">
+<script src="tool-manual.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#manual-main">Skip to content</a>
@@ -33,7 +34,7 @@
     </div>
 </nav>
 
-<main id="manual-main" class="manual-page">
+<main id="manual-main" tabindex="-1" class="manual-page">
     <nav class="manual-crumbs" aria-label="Breadcrumb">
         <ol>
             <li><a href="./">AlloFlow</a></li>
@@ -50,7 +51,7 @@
             already written. The tool's real argument is structural: every module is a
             cause-and-effect sequence a student runs, not a story they are told.</p>
         <p class="manual-actions">
-            <a class="btn-primary manual-open" href="https://alloflow-cdn.pages.dev/evolab">Open EvoLab</a>
+            <a class="btn-primary manual-open" href="https://alloflow-cdn.pages.dev/evo-lab">Open EvoLab</a>
             <span class="manual-note">No account. Runs in a browser. Every activity below works with AI turned off.</span>
         </p>
     </header>
@@ -99,7 +100,8 @@
         <h2 id="loop-heading">2. The five-step loop that holds the unit together</h2>
         <p>Mission Control shows the mechanism as five numbered steps, and every module is an
             instance of it. Put these five on your board for the whole unit:</p>
-        <table class="manual-table" tabindex="0">
+        <div class="manual-table-scroll" role="region" aria-label="The evolution loop, as the tool states it" tabindex="0">
+        <table class="manual-table">
             <caption>The evolution loop, as the tool states it</caption>
             <thead><tr><th scope="col">Step</th><th scope="col">What it says</th></tr></thead>
             <tbody>
@@ -110,6 +112,7 @@
                 <tr><th scope="row">5. Population shift</th><td>The group changes over generations.</td></tr>
             </tbody>
         </table>
+        </div>
         <p>The pedagogical value is in step 5 being about the <em>group</em>. The single most
             durable misconception in this topic is that individuals evolve — that a finch grows a
             bigger beak because it needs one. A student who can name all five steps in order has
@@ -122,7 +125,8 @@
         <h2 id="paths-heading">3. Four paths, seventeen modules</h2>
         <p>The modules are grouped into four paths. You can teach a path as a unit, or switch paths
             freely — the tool does not lock them.</p>
-        <table class="manual-table" tabindex="0">
+        <div class="manual-table-scroll" role="region" aria-label="The four paths and what sits in them" tabindex="0">
+        <table class="manual-table">
             <caption>The four paths and what sits in them</caption>
             <thead><tr><th scope="col">Path</th><th scope="col">Focus</th><th scope="col">Modules</th></tr></thead>
             <tbody>
@@ -132,6 +136,7 @@
                 <tr><th scope="row">Practice and project</th><td>Check understanding</td><td>Selection Sleuth, Homology vs Analogy, Misconceptions Quiz, Capstone Project</td></tr>
             </tbody>
         </table>
+        </div>
         <p>The full catalogue, browsable from <strong>Browse every EvoLab module</strong>, includes:
             Predator Vision, Mate Choice Lab, Climate Pressure Lab, Selection Sandbox, Galápagos
             Beak Lab, Trait Divergence Model, Phylogenetic Tree Builder, Hardy-Weinberg, Genetic

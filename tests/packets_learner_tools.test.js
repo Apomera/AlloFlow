@@ -133,7 +133,8 @@ describe('every file carries the reading tools', () => {
     // Re-pinned 2026-11-19 (Immersive Reader parity Waves 2+4+5+6+8) from 26000: 4 text sizes + exact size slider (14-40px), custom bg/text color pickers, Rose theme, Mono/OpenDyslexic fonts, 1/3-line focus, 5-step live speed (~26.1 KB).
     // Re-pinned 2026-11-19 (Wave 11) from 27000: 6-color WCAG-AA theme-harmonized Break it Down chip palettes (--c0..--c5, --c0b..--c5b) across all 8 Reading Tools themes (~27.2 KB).
     // Re-pinned 2026-11-19 (Phase 1 universal Bold start / Bionic reading) from 28000: universal reversible Bold start across all 31 Packet activities inside takeHomeTools (~29.1 KB).
-    expect(bytes).toBeLessThan(30500);
+    // Re-pinned 2026-11-22 (Wave 9 shared polish) from 30500: Reduced Motion toggle (data-lt-motion) + custom Bg/Ink luminance contrast cascade (~31.6 KB).
+    expect(bytes).toBeLessThan(32000);
     // The copy in the file is the loader's own function, without its indentation.
     expect(fn.slice('\ntools:'.length, -1)).toBe(TH._tools.toString().replace(/\n +/g, '\n'));
   });
@@ -193,6 +194,7 @@ describe('the button and the panel', () => {
       // practice file with Blend Sounds, so hidden in this Find Sounds file (tests/packets_sound_space_2026_11_17.test.js).
       ['sounds', 'Space between sounds', ['Some=true', 'More=false', 'Less=false']],
       ['bold', 'Bold start', ['Off=true', 'On=false']],
+      ['motion', 'Motion', ['Usual=true', 'Less=false']],
     ]);
     expect(t.q('[data-tool-group="speed"]').hidden).toBe(false);
     expect(t.q('[data-tool-group="sounds"]').hidden).toBe(true);

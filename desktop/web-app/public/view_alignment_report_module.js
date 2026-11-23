@@ -9,6 +9,7 @@
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.AlignmentReportView) {
     console.log('[CDN] ViewAlignmentReportModule already loaded, skipping');
     return;
@@ -19,10 +20,46 @@
 
   var _lazyIcon = function (name) {
   return function (props) {
-    var I = window.AlloIcons && window.AlloIcons[name];
+    var I = typeof window !== 'undefined' && window.AlloIcons && window.AlloIcons[name];
     return I ? /*#__PURE__*/React.createElement(I, props) : null;
   };
 };
+function _arIsBlockedKey(key) {
+  return key === '__proto__' || key === 'constructor' || key === 'prototype';
+}
+function _arSafeSourceUrl(raw) {
+  var str = String(raw || '').trim();
+  if (!str || /[\u0000-\u001f\u007f]/.test(str)) return '';
+  try {
+    var parsed = new URL(str);
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:' || parsed.username || parsed.password) return '';
+    return parsed.href;
+  } catch (_) {
+    return '';
+  }
+}
+function _arHardAiBlocked() {
+  if (typeof window === 'undefined') return true;
+  try {
+    if (window.__alloStudentAiDisabled === true) return true;
+    if (window.__alloAiSecretsLocked === true) return true;
+    if (window.__alloQrStudentMode === true) return true;
+    if (window.__alloOfflineOnly === true) return true;
+    var mp = window.ALLOFLOW_MANAGED_AI_POLICY;
+    if (mp && typeof mp === 'object') {
+      if (mp.disabled === true || mp.allowAi === false) return true;
+      if (Array.isArray(mp.allowedBackends) && mp.allowedBackends.length === 0) return true;
+    }
+    var sp = window.AlloModules && window.AlloModules.StudentPolicy;
+    if (sp && typeof sp === 'object') {
+      if (sp.disabled === true || sp.allowAi === false || sp.aiEnabled === false) return true;
+      if (typeof sp.isAiBlocked === 'function' && sp.isAiBlocked()) return true;
+    }
+  } catch (_) {
+    return true;
+  }
+  return false;
+}
 var ShieldCheck = _lazyIcon('ShieldCheck');
 var BookOpen = _lazyIcon('BookOpen');
 var Quote = _lazyIcon('Quote');
@@ -91,7 +128,8 @@ var AUDIT_DIMENSION_FALLBACKS = {
   culturalResponsiveness: 'Cultural responsiveness'
 };
 function dimLabel(key) {
-  return atr('dim_' + key, AUDIT_DIMENSION_FALLBACKS[key] || key);
+  var fallback = Object.prototype.hasOwnProperty.call(AUDIT_DIMENSION_FALLBACKS, key) ? AUDIT_DIMENSION_FALLBACKS[key] : String(key || '');
+  return atr('dim_' + key, fallback);
 }
 // Say where the DOK numbers came from and how many quiz items they cover.
 function dokHeading(e) {
@@ -200,7 +238,7 @@ function normalizeReportLanguageTag(value) {
   if (/european.*portuguese|portuguese.*portugal/.test(name)) return 'pt-PT';
   if (/traditional.*chinese|chinese.*traditional/.test(name)) return 'zh-Hant';
   if (/simplified.*chinese|chinese.*simplified/.test(name)) return 'zh-Hans';
-  if (REPORT_LANGUAGE_NAME_TAGS[name]) return REPORT_LANGUAGE_NAME_TAGS[name];
+  if (Object.prototype.hasOwnProperty.call(REPORT_LANGUAGE_NAME_TAGS, name)) return REPORT_LANGUAGE_NAME_TAGS[name];
   var names = Object.keys(REPORT_LANGUAGE_NAME_TAGS).sort(function (a, b) {
     return b.length - a.length;
   });
@@ -286,10 +324,10 @@ function alignmentMapBadgeClass(status) {
 }
 function alignmentMapGraph(standards, auditScope, savedGraph) {
   if (savedGraph && savedGraph.version === 'acg/v1' && Array.isArray(savedGraph.nodes) && Array.isArray(savedGraph.edges)) return savedGraph;
-  var E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+  var E = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ConceptGraphEngine;
   if (!E || typeof E.fromAlignmentAudit !== 'function') return null;
   try {
-    var P = window.AlloModules && window.AlloModules.StandardsProvider;
+    var P = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.StandardsProvider;
     var provider = P && typeof P.getRegisteredProvider === 'function' ? P.getRegisteredProvider() : null;
     return E.fromAlignmentAudit({
       standards: standards
@@ -306,7 +344,7 @@ function alignmentPrereqGaps(reports) {
   // are source-provided buildsTowards edges, never model inference. Null
   // (provider absent) renders nothing rather than an empty claim.
   try {
-    var P = window.AlloModules && window.AlloModules.StandardsProvider;
+    var P = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.StandardsProvider;
     var provider = P && typeof P.getRegisteredProvider === 'function' ? P.getRegisteredProvider() : null;
     if (!provider || typeof provider.getPrerequisiteGaps !== 'function') return null;
     var codes = reports.map(function (report) {
@@ -323,7 +361,7 @@ function alignmentComponentCoverage(reports) {
   // source hasChild edges. Standards without components are omitted, not
   // shown as "0% covered".
   try {
-    var P = window.AlloModules && window.AlloModules.StandardsProvider;
+    var P = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.StandardsProvider;
     var provider = P && typeof P.getRegisteredProvider === 'function' ? P.getRegisteredProvider() : null;
     if (!provider || typeof provider.getComponentCoverage !== 'function') return null;
     var codes = reports.map(function (report) {
@@ -341,12 +379,12 @@ function alignmentMapEntries(standards, graph, auditScope) {
   var standardNodes = graph && Array.isArray(graph.nodes) ? graph.nodes.filter(function (node) {
     return node && node.type === 'standard';
   }) : [];
-  var nodeById = {};
-  var artifactById = {};
+  var nodeById = Object.create(null);
+  var artifactById = Object.create(null);
   if (graph && Array.isArray(graph.nodes)) graph.nodes.forEach(function (node) {
     if (!node) return;
-    if (node.id) nodeById[node.id] = node;
-    if (node.type === 'auditArtifact' && node.artifactId) artifactById[node.artifactId] = node;
+    if (node.id && !_arIsBlockedKey(String(node.id))) nodeById[String(node.id)] = node;
+    if (node.type === 'auditArtifact' && node.artifactId && !_arIsBlockedKey(String(node.artifactId))) artifactById[String(node.artifactId)] = node;
   });
   if (!Object.keys(artifactById).length && auditScope && typeof auditScope === 'object') {
     var scopeItems = Array.isArray(auditScope.includedArtifacts) ? auditScope.includedArtifacts.slice(0, 100) : Array.isArray(auditScope.includedArtifactIds) ? auditScope.includedArtifactIds.slice(0, 100).map(function (id) {
@@ -359,7 +397,7 @@ function alignmentMapEntries(standards, graph, auditScope) {
         id: item
       };
       var artifactId = String(item.id || '').trim();
-      if (artifactId) artifactById[artifactId] = {
+      if (artifactId && !_arIsBlockedKey(artifactId)) artifactById[artifactId] = {
         artifactId: artifactId,
         label: item.title || 'Audited artifact ' + artifactId,
         artifactType: item.type || 'unknown'
@@ -764,15 +802,16 @@ function AlignmentEvidenceMap(p) {
     }, "Standards context: ", ctxRecord.code || ctxRecord.label || entry.label, ctxRecord.framework ? ' · ' + ctxRecord.framework : '', ctxRecord.sourceUrl ? ' · Source verified' : ''), entry.context.related.length > 0 ? /*#__PURE__*/React.createElement("ul", {
       className: "mt-1 list-disc ml-5 text-indigo-950"
     }, entry.context.related.slice(0, 12).map(function (item) {
+      var safeUrl = _arSafeSourceUrl(item && item.sourceUrl);
       return /*#__PURE__*/React.createElement("li", {
         key: item.id
       }, /*#__PURE__*/React.createElement("details", null, /*#__PURE__*/React.createElement("summary", {
         className: "cursor-pointer min-h-11 flex items-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700"
-      }, item.direction === 'incoming' ? 'Parent/group: ' : 'Child/related: ', item.code ? item.code + ' · ' : '', item.label, item.kind && item.kind !== 'standard' ? ' (' + item.kind + ')' : ''), item.text ? /*#__PURE__*/React.createElement("p", {
+      }, item.direction === 'incoming' ? 'Parent/group: ' : 'Child/related: ', item.code ? item.code + ' · ' : '', auditText(item.label), item.kind && item.kind !== 'standard' ? ' (' + auditText(item.kind) + ')' : ''), auditText(item.text) ? /*#__PURE__*/React.createElement("p", {
         className: "mt-1 text-indigo-900"
-      }, item.text) : null, item.sourceUrl && /^https?:\/\//i.test(String(item.sourceUrl).trim()) ? /*#__PURE__*/React.createElement("a", {
+      }, auditText(item.text)) : null, safeUrl ? /*#__PURE__*/React.createElement("a", {
         className: "mt-1 inline-flex min-h-11 items-center text-indigo-700 underline rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700",
-        href: String(item.sourceUrl).trim(),
+        href: safeUrl,
         target: "_blank",
         rel: "noopener noreferrer"
       }, "Open source record") : null));
@@ -861,25 +900,26 @@ function StandardsSection(p) {
       className: 'min-h-11 px-3 py-2 cursor-pointer font-semibold text-sm select-none flex items-center justify-between gap-2 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 ' + (passColor ? 'text-emerald-800 hover:bg-emerald-100' : pendingColor ? 'text-slate-800 hover:bg-slate-100' : 'text-rose-800 hover:bg-rose-100')
     }, /*#__PURE__*/React.createElement("span", {
       className: "flex-1 min-w-0 break-words"
-    }, report && report.standard || 'Standard ' + (idx + 1)), /*#__PURE__*/React.createElement("span", {
+    }, auditText(report && report.standard) || 'Standard ' + (idx + 1)), /*#__PURE__*/React.createElement("span", {
       className: 'text-xs uppercase font-bold px-2 py-0.5 rounded ' + (passColor ? 'bg-emerald-200 text-emerald-900' : pendingColor ? 'bg-slate-200 text-slate-900' : 'bg-rose-200 text-rose-900')
-    }, report && report.overallDetermination || 'Not evaluated')), /*#__PURE__*/React.createElement("div", {
+    }, auditText(report && report.overallDetermination) || 'Not evaluated')), /*#__PURE__*/React.createElement("div", {
       className: "px-3 pb-3 pt-2 bg-white rounded-b-lg space-y-2 text-xs"
-    }, report && report.standardBreakdown && (report.standardBreakdown.cognitiveDemand || report.standardBreakdown.contentFocus) && /*#__PURE__*/React.createElement("div", {
+    }, report && report.standardBreakdown && (auditText(report.standardBreakdown.cognitiveDemand) || auditText(report.standardBreakdown.contentFocus)) && /*#__PURE__*/React.createElement("div", {
       className: "grid grid-cols-1 md:grid-cols-2 gap-2 mb-2 pb-2 border-b border-slate-200"
-    }, report.standardBreakdown.cognitiveDemand && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
+    }, auditText(report.standardBreakdown.cognitiveDemand) && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
       className: "font-bold uppercase text-slate-600"
     }, "Cognitive demand: "), /*#__PURE__*/React.createElement("span", {
       className: "text-slate-800"
-    }, report.standardBreakdown.cognitiveDemand)), report.standardBreakdown.contentFocus && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
+    }, auditText(report.standardBreakdown.cognitiveDemand))), auditText(report.standardBreakdown.contentFocus) && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
       className: "font-bold uppercase text-slate-600"
     }, "Content focus: "), /*#__PURE__*/React.createElement("span", {
       className: "text-slate-800"
-    }, report.standardBreakdown.contentFocus))), ['textAlignment', 'activityAlignment', 'assessmentAlignment'].map(function (key) {
+    }, auditText(report.standardBreakdown.contentFocus)))), ['textAlignment', 'activityAlignment', 'assessmentAlignment'].map(function (key) {
       var sec = report && report.analysis && report.analysis[key];
       if (!sec) return null;
       var lbl = key === 'textAlignment' ? 'Text' : key === 'activityAlignment' ? 'Activities' : 'Assessment';
-      var stat = sec.status || 'N/A';
+      var stat = auditText(sec.status) || 'N/A';
+      var evText = auditText(sec.evidence);
       return /*#__PURE__*/React.createElement("div", {
         key: key,
         className: "flex items-start gap-2"
@@ -891,17 +931,17 @@ function StandardsSection(p) {
         }
       }, lbl + ' · ' + stat), /*#__PURE__*/React.createElement("span", {
         className: "text-slate-700 italic"
-      }, sec.evidence ? '"' + sec.evidence + '"' : '—'));
-    }), report && report.adminRecommendation && /*#__PURE__*/React.createElement("div", {
+      }, evText ? '"' + evText + '"' : '—'));
+    }), auditText(report && report.adminRecommendation) && /*#__PURE__*/React.createElement("div", {
       className: "mt-2 pt-2 border-t border-slate-200"
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-xs uppercase font-bold text-indigo-700"
     }, "Recommendation: "), /*#__PURE__*/React.createElement("span", {
       className: "text-slate-800"
-    }, report.adminRecommendation))));
-  })), s.notes && /*#__PURE__*/React.createElement("div", {
+    }, auditText(report.adminRecommendation)))));
+  })), auditText(s.notes) && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 text-xs text-slate-600 italic"
-  }, s.notes), AlignmentEvidenceMap({
+  }, auditText(s.notes)), AlignmentEvidenceMap({
     standards: s,
     auditScope: p.auditScope,
     alignmentMapGraph: p.alignmentMapGraph,
@@ -914,9 +954,14 @@ function VocabularySection(p) {
   var v = p.vocab;
   if (!v) return null;
   // Backward-compat: older saved audits only have totalWords; show that as auditedTextWords.
-  var sourceWords = typeof v.sourceWords === 'number' ? v.sourceWords : null;
-  var auditedTextWords = typeof v.auditedTextWords === 'number' ? v.auditedTextWords : v.totalWords;
-  var scaleNote = v.expected && v.expected.scale && v.expected.scale > 1.5 ? '(rescaled ×' + v.expected.scale + ' for bundle size)' : '';
+  var sourceWords = finiteReportNumber(v.sourceWords);
+  var auditedTextWords = finiteReportNumber(v.auditedTextWords) !== null ? finiteReportNumber(v.auditedTextWords) : finiteReportNumber(v.totalWords) !== null ? finiteReportNumber(v.totalWords) : 0;
+  var tier2Count = finiteReportNumber(v.tier2Count) !== null ? finiteReportNumber(v.tier2Count) : 0;
+  var tier3Count = finiteReportNumber(v.tier3Count) !== null ? finiteReportNumber(v.tier3Count) : 0;
+  var glossaryTermsCount = finiteReportNumber(v.glossaryTermsCount) !== null ? finiteReportNumber(v.glossaryTermsCount) : 0;
+  var expectedTier2 = v.expected && v.expected.tier2 != null ? v.expected.tier2 : 'n/a';
+  var expectedTier3 = v.expected && v.expected.tier3 != null ? v.expected.tier3 : 'n/a';
+  var scaleNote = v.expected && finiteReportNumber(v.expected.scale) !== null && v.expected.scale > 1.5 ? '(rescaled ×' + v.expected.scale + ' for bundle size)' : '';
   return /*#__PURE__*/React.createElement(ComprehensiveSection, {
     id: "audit-vocabulary",
     icon: "📚",
@@ -941,23 +986,23 @@ function VocabularySection(p) {
     className: "p-3 bg-blue-50 rounded text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-2xl font-bold text-blue-800"
-  }, v.tier2Count), /*#__PURE__*/React.createElement("div", {
+  }, tier2Count), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-blue-700"
   }, "Tier 2 (academic)"), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600 mt-1"
-  }, 'expected ~' + (v.expected && v.expected.tier2) + ' ' + scaleNote)), /*#__PURE__*/React.createElement("div", {
+  }, 'expected ~' + expectedTier2 + (scaleNote ? ' ' + scaleNote : ''))), /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-purple-50 rounded text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-2xl font-bold text-purple-800"
-  }, v.tier3Count), /*#__PURE__*/React.createElement("div", {
+  }, tier3Count), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-purple-700"
   }, "Tier 3 (domain)"), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600 mt-1"
-  }, 'expected ~' + (v.expected && v.expected.tier3) + ' ' + scaleNote)), /*#__PURE__*/React.createElement("div", {
+  }, 'expected ~' + expectedTier3 + (scaleNote ? ' ' + scaleNote : ''))), /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-slate-50 rounded text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-2xl font-bold text-slate-800"
-  }, v.glossaryTermsCount), /*#__PURE__*/React.createElement("div", {
+  }, glossaryTermsCount), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600"
   }, "Glossary terms"))), v.tier2Examples && v.tier2Examples.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mb-3"
@@ -1054,7 +1099,7 @@ function VocabularySection(p) {
     }, '+ ' + auditText(w));
   })))), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600 italic"
-  }, v.notes || ''));
+  }, auditText(v.notes)));
 }
 function EngagementSection(p) {
   var e = p.eng;
@@ -1220,9 +1265,9 @@ function EngagementSection(p) {
     "aria-hidden": "true"
   }, "🤖"), " ", atr('ai_udl_dok', 'UDL + DOK review (AI)')), auditText(e.llmReview.narrative) && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-indigo-900 mb-2"
-  }, auditText(e.llmReview.narrative)), e.llmReview.dokAssessment && /*#__PURE__*/React.createElement("p", {
+  }, auditText(e.llmReview.narrative)), auditText(e.llmReview.dokAssessment) && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-indigo-900 mb-2 italic"
-  }, '"' + e.llmReview.dokAssessment + '"'), e.llmReview.formatGaps && e.llmReview.formatGaps.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  }, '"' + auditText(e.llmReview.dokAssessment) + '"'), e.llmReview.formatGaps && e.llmReview.formatGaps.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-semibold text-indigo-800 mb-1"
   }, "Suggested format additions:"), /*#__PURE__*/React.createElement("ul", {
     className: "list-disc ml-5 text-sm text-indigo-900 space-y-1"
@@ -1232,7 +1277,7 @@ function EngagementSection(p) {
     }, auditText(g));
   })))), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600 italic"
-  }, e.notes || ''));
+  }, auditText(e.notes)));
 }
 function AccessibilitySection(p) {
   var a = p.access;
@@ -1259,7 +1304,8 @@ function AccessibilitySection(p) {
       lbl: 'text-rose-700'
     }
   };
-  var altPctStyle = ALT_PCT_STYLES[a.altCoveragePct === null ? 'slate' : a.altCoveragePct >= 80 ? 'emerald' : a.altCoveragePct >= 50 ? 'amber' : 'rose'];
+  var altPct = boundedReportPercent(a.altCoveragePct);
+  var altPctStyle = ALT_PCT_STYLES[altPct === null ? 'slate' : altPct >= 80 ? 'emerald' : altPct >= 50 ? 'amber' : 'rose'];
   return /*#__PURE__*/React.createElement(ComprehensiveSection, {
     id: "audit-accessibility",
     icon: "♿",
@@ -1271,25 +1317,25 @@ function AccessibilitySection(p) {
     className: "p-3 bg-slate-50 rounded text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-2xl font-bold text-slate-800"
-  }, a.totalImages), /*#__PURE__*/React.createElement("div", {
+  }, boundedReportCount(a.totalImages, 0)), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600"
   }, "Images")), /*#__PURE__*/React.createElement("div", {
     className: 'p-3 rounded text-center ' + altPctStyle.box
   }, /*#__PURE__*/React.createElement("div", {
     className: 'text-2xl font-bold ' + altPctStyle.val
-  }, a.altCoveragePct === null ? 'n/a' : a.altCoveragePct + '%'), /*#__PURE__*/React.createElement("div", {
+  }, altPct === null ? 'n/a' : altPct + '%'), /*#__PURE__*/React.createElement("div", {
     className: 'text-xs ' + altPctStyle.lbl
   }, "Alt-text coverage")), /*#__PURE__*/React.createElement("div", {
-    className: 'p-3 rounded text-center ' + (a.colorOnlyCount > 0 ? 'bg-rose-50 border border-rose-200' : 'bg-emerald-50 border border-emerald-200')
+    className: 'p-3 rounded text-center ' + ((a.colorOnlyCount || 0) > 0 ? 'bg-rose-50 border border-rose-200' : 'bg-emerald-50 border border-emerald-200')
   }, /*#__PURE__*/React.createElement("div", {
-    className: 'text-2xl font-bold ' + (a.colorOnlyCount > 0 ? 'text-rose-800' : 'text-emerald-800')
-  }, a.colorOnlyCount), /*#__PURE__*/React.createElement("div", {
-    className: 'text-xs ' + (a.colorOnlyCount > 0 ? 'text-rose-700' : 'text-emerald-700')
+    className: 'text-2xl font-bold ' + ((a.colorOnlyCount || 0) > 0 ? 'text-rose-800' : 'text-emerald-800')
+  }, boundedReportCount(a.colorOnlyCount, 0)), /*#__PURE__*/React.createElement("div", {
+    className: 'text-xs ' + ((a.colorOnlyCount || 0) > 0 ? 'text-rose-700' : 'text-emerald-700')
   }, "Color-only refs")), /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-slate-50 rounded text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-2xl font-bold text-slate-800"
-  }, a.longestUnbrokenPassage), /*#__PURE__*/React.createElement("div", {
+  }, boundedReportCount(a.longestUnbrokenPassage, 0)), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600"
   }, "Longest passage (words)"))),
   // Color-only examples
@@ -1303,7 +1349,7 @@ function AccessibilitySection(p) {
     return /*#__PURE__*/React.createElement("li", {
       key: i,
       className: "font-mono italic"
-    }, '"' + ex + '"');
+    }, '"' + auditText(ex) + '"');
   }))),
   // Implicit image references
   a.implicitImageExamples && a.implicitImageExamples.length > 0 && /*#__PURE__*/React.createElement("div", {
@@ -1316,7 +1362,7 @@ function AccessibilitySection(p) {
     return /*#__PURE__*/React.createElement("li", {
       key: i,
       className: "font-mono italic"
-    }, '"' + ex + '"');
+    }, '"' + auditText(ex) + '"');
   }))),
   // Heuristic recommendations
   a.recommendations && a.recommendations.length > 0 && /*#__PURE__*/React.createElement("div", {
@@ -1359,7 +1405,7 @@ function AccessibilitySection(p) {
     }, auditText(f));
   })))), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600 italic"
-  }, a.notes || ''));
+  }, auditText(a.notes)));
 }
 function UdlPillar(p) {
   var pillar = p.pillar;
@@ -1460,25 +1506,25 @@ function AccuracySection(p) {
     className: "p-3 bg-slate-50 rounded text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-2xl font-bold text-slate-800"
-  }, a.totalAnalyses), /*#__PURE__*/React.createElement("div", {
+  }, boundedReportCount(a.totalAnalyses, 0)), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600"
   }, "Analyses run")), /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-emerald-50 rounded text-center border border-emerald-200"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-2xl font-bold text-emerald-800"
-  }, a.totalVerifiedFacts), /*#__PURE__*/React.createElement("div", {
+  }, boundedReportCount(a.totalVerifiedFacts, 0)), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-emerald-700"
   }, "Verified facts")), /*#__PURE__*/React.createElement("div", {
-    className: 'p-3 rounded text-center ' + (a.totalDiscrepancies > 0 ? 'bg-rose-50 border border-rose-200' : 'bg-slate-50 border border-slate-200')
+    className: 'p-3 rounded text-center ' + ((a.totalDiscrepancies || 0) > 0 ? 'bg-rose-50 border border-rose-200' : 'bg-slate-50 border border-slate-200')
   }, /*#__PURE__*/React.createElement("div", {
-    className: 'text-2xl font-bold ' + (a.totalDiscrepancies > 0 ? 'text-rose-800' : 'text-slate-800')
-  }, a.totalDiscrepancies), /*#__PURE__*/React.createElement("div", {
-    className: 'text-xs ' + (a.totalDiscrepancies > 0 ? 'text-rose-700' : 'text-slate-600')
+    className: 'text-2xl font-bold ' + ((a.totalDiscrepancies || 0) > 0 ? 'text-rose-800' : 'text-slate-800')
+  }, boundedReportCount(a.totalDiscrepancies, 0)), /*#__PURE__*/React.createElement("div", {
+    className: 'text-xs ' + ((a.totalDiscrepancies || 0) > 0 ? 'text-rose-700' : 'text-slate-600')
   }, "Discrepancies")), /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-slate-50 rounded text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-2xl font-bold text-slate-800"
-  }, counts.high + 'H/' + counts.medium + 'M/' + counts.low + 'L'), /*#__PURE__*/React.createElement("div", {
+  }, boundedReportCount(counts.high, 0) + 'H/' + boundedReportCount(counts.medium, 0) + 'M/' + boundedReportCount(counts.low, 0) + 'L'), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600"
   }, "Rating mix"))),
   // Sample verifications
@@ -1489,7 +1535,11 @@ function AccuracySection(p) {
   }, 'Per-analysis details (' + a.sampleVerifications.length + ')'), /*#__PURE__*/React.createElement("ul", {
     className: "mt-2 space-y-2"
   }, a.sampleVerifications.map(function (s, i) {
-    var ratingColor = (s.rating || '').toLowerCase().indexOf('high') >= 0 ? 'emerald' : (s.rating || '').toLowerCase().indexOf('low') >= 0 ? 'rose' : 'amber';
+    var ratingStr = auditText(s && s.rating);
+    var ratingColor = ratingStr.toLowerCase().indexOf('high') >= 0 ? 'emerald' : ratingStr.toLowerCase().indexOf('low') >= 0 ? 'rose' : 'amber';
+    var vCount = boundedReportCount(s && s.verifiedFactCount, 0);
+    var dCount = boundedReportCount(s && s.discrepancyCount, 0);
+    var reasonStr = auditText(s && s.reason);
     return /*#__PURE__*/React.createElement("li", {
       key: i,
       className: "p-2 bg-white border border-slate-200 rounded"
@@ -1497,11 +1547,11 @@ function AccuracySection(p) {
       className: "flex items-center gap-2 mb-1"
     }, /*#__PURE__*/React.createElement("span", {
       className: 'text-xs font-bold uppercase px-2 py-0.5 rounded ' + RATING_BADGE_CLASSES[ratingColor]
-    }, s.rating || 'Unknown'), /*#__PURE__*/React.createElement("span", {
+    }, ratingStr || 'Unknown'), /*#__PURE__*/React.createElement("span", {
       className: "text-xs text-slate-600"
-    }, s.verifiedFactCount + ' verified, ' + s.discrepancyCount + ' discrepanc' + (s.discrepancyCount === 1 ? 'y' : 'ies'))), s.reason && /*#__PURE__*/React.createElement("p", {
+    }, vCount + ' verified, ' + dCount + ' discrepanc' + (dCount === 1 ? 'y' : 'ies'))), reasonStr && /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-700"
-    }, s.reason));
+    }, reasonStr));
   }))),
   // Heuristic recommendations
   a.recommendations && a.recommendations.length > 0 && /*#__PURE__*/React.createElement("div", {
@@ -1545,7 +1595,7 @@ function AccuracySection(p) {
     }, auditText(f));
   })))), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600 italic"
-  }, a.notes || ''));
+  }, auditText(a.notes)));
 }
 
 // ─── DifferentiationSection ───────────────────────────────────────────
@@ -1568,6 +1618,9 @@ function DifferentiationSection(p) {
     visualOrImage: 'Image / visual',
     audioPath: 'Audio narration'
   };
+  var diffCoverage = boundedReportPercent(d.coverage);
+  var diffPresent = boundedReportCount(d.presentCount, 0);
+  var diffTotal = boundedReportCount(d.totalAccommodationTypes, 0);
   return /*#__PURE__*/React.createElement(ComprehensiveSection, {
     id: "audit-differentiation",
     icon: "🎚️",
@@ -1579,19 +1632,19 @@ function DifferentiationSection(p) {
     className: "p-3 bg-slate-50 rounded text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-2xl font-bold text-slate-800"
-  }, d.coverage + '%'), /*#__PURE__*/React.createElement("div", {
+  }, diffCoverage === null ? 'n/a' : diffCoverage + '%'), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600"
   }, "Access-path coverage")), /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-slate-50 rounded text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-2xl font-bold text-slate-800"
-  }, d.presentCount + '/' + d.totalAccommodationTypes), /*#__PURE__*/React.createElement("div", {
+  }, diffPresent + '/' + diffTotal), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600"
   }, "Scored access paths")), /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-emerald-50 rounded text-center border border-emerald-200"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-2xl font-bold text-emerald-800"
-  }, d.presentCount), /*#__PURE__*/React.createElement("div", {
+  }, diffPresent), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-emerald-700"
   }, "Present")), /*#__PURE__*/React.createElement("div", {
     className: 'p-3 rounded text-center ' + (d.missing && d.missing.length > 0 ? 'bg-rose-50 border border-rose-200' : 'bg-slate-50 border border-slate-200')
@@ -1603,6 +1656,7 @@ function DifferentiationSection(p) {
     className: "grid grid-cols-2 md:grid-cols-3 gap-1.5 mb-3"
   }, Object.keys(flags).map(function (k) {
     var on = flags[k];
+    var lbl = Object.prototype.hasOwnProperty.call(labelMap, k) ? labelMap[k] : k;
     return /*#__PURE__*/React.createElement("div", {
       key: k,
       className: 'flex items-center gap-2 text-xs px-2 py-1.5 rounded border ' + (on ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-slate-50 border-slate-200 text-slate-600')
@@ -1611,7 +1665,7 @@ function DifferentiationSection(p) {
       className: "flex-shrink-0"
     }, on ? '✓' : '○'), /*#__PURE__*/React.createElement("span", {
       className: "min-w-0 break-words"
-    }, labelMap[k] || k));
+    }, lbl));
   })), d.textAccess && /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-blue-50 border border-blue-200 rounded mb-3"
   }, /*#__PURE__*/React.createElement("div", {
@@ -1658,7 +1712,7 @@ function DifferentiationSection(p) {
     }, auditText(r));
   })))), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600 italic"
-  }, d.notes || ''));
+  }, auditText(d.notes)));
 }
 
 // ─── CognitiveLoadSection ─────────────────────────────────────────────
@@ -1666,7 +1720,10 @@ function CognitiveLoadSection(p) {
   var c = p.load;
   if (!c) return null;
   var b = c.breakdown || {};
-  var ratioTone = c.ratio === null ? 'slate' : c.ratio >= 0.7 && c.ratio <= 1.4 ? 'emerald' : c.ratio >= 0.4 && c.ratio <= 2.0 ? 'amber' : 'rose';
+  var ratioNum = finiteReportNumber(c.ratio);
+  var claimedMin = finiteReportNumber(c.claimedTotalMinutes);
+  var estimatedMin = finiteReportNumber(c.estimatedTotalMinutes);
+  var ratioTone = ratioNum === null ? 'slate' : ratioNum >= 0.7 && ratioNum <= 1.4 ? 'emerald' : ratioNum >= 0.4 && ratioNum <= 2.0 ? 'amber' : 'rose';
   var ratioToneStyles = {
     slate: {
       card: 'bg-slate-50 border border-slate-200',
@@ -1700,27 +1757,27 @@ function CognitiveLoadSection(p) {
     className: "p-3 bg-slate-50 rounded text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-2xl font-bold text-slate-800"
-  }, c.claimedTotalMinutes + 'm'), /*#__PURE__*/React.createElement("div", {
+  }, claimedMin === null ? 'n/a' : claimedMin + 'm'), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600"
   }, "Claimed")), /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-slate-50 rounded text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-2xl font-bold text-slate-800"
-  }, c.estimatedTotalMinutes + 'm'), /*#__PURE__*/React.createElement("div", {
+  }, estimatedMin === null ? 'n/a' : estimatedMin + 'm'), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600"
   }, "Estimated")), /*#__PURE__*/React.createElement("div", {
     className: 'p-3 rounded text-center ' + ratioToneStyles.card
   }, /*#__PURE__*/React.createElement("div", {
     className: 'text-2xl font-bold ' + ratioToneStyles.value
-  }, c.ratio === null ? 'n/a' : c.ratio + 'x'), /*#__PURE__*/React.createElement("div", {
+  }, ratioNum === null ? 'n/a' : ratioNum + 'x'), /*#__PURE__*/React.createElement("div", {
     className: 'text-xs ' + ratioToneStyles.label
   }, "Estimated / Claimed")), /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-slate-50 rounded text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-bold text-slate-800 leading-tight pt-1"
-  }, 'R: ' + b.reading + 'm · Q: ' + b.quiz + 'm · A: ' + b.activities + 'm'), /*#__PURE__*/React.createElement("div", {
+  }, 'R: ' + boundedReportCount(b.reading, 0) + 'm · Q: ' + boundedReportCount(b.quiz, 0) + 'm · A: ' + boundedReportCount(b.activities, 0) + 'm'), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600 mt-1"
-  }, 'Reading at ' + b.wpmAssumption + ' wpm'))),
+  }, 'Reading at ' + boundedReportCount(b.wpmAssumption, 0) + ' wpm'))),
   // Per-segment breakdown
   Array.isArray(c.perSegment) && c.perSegment.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mb-3"
@@ -1729,12 +1786,13 @@ function CognitiveLoadSection(p) {
   }, "Lesson plan segments:"), /*#__PURE__*/React.createElement("ul", {
     className: "space-y-0.5 text-sm text-slate-700"
   }, c.perSegment.map(function (s, i) {
+    var segMin = finiteReportNumber(s && s.claimedMinutes);
     return /*#__PURE__*/React.createElement("li", {
       key: i,
       className: "flex items-center justify-between gap-2"
-    }, /*#__PURE__*/React.createElement("span", null, s.label), /*#__PURE__*/React.createElement("span", {
-      className: 'font-mono text-xs ' + (s.claimedMinutes !== null ? 'text-slate-800' : 'text-slate-600 italic')
-    }, s.claimedMinutes !== null ? s.claimedMinutes + ' min' : '(no time given)'));
+    }, /*#__PURE__*/React.createElement("span", null, auditText(s && s.label)), /*#__PURE__*/React.createElement("span", {
+      className: 'font-mono text-xs ' + (segMin !== null ? 'text-slate-800' : 'text-slate-600 italic')
+    }, segMin !== null ? segMin + ' min' : '(no time given)'));
   }))), c.recommendations && c.recommendations.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-amber-50 border border-amber-200 rounded mb-3"
   }, /*#__PURE__*/React.createElement("div", {
@@ -1763,21 +1821,22 @@ function CognitiveLoadSection(p) {
     }, auditText(r));
   })))), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600 italic"
-  }, c.notes || ''));
+  }, auditText(c.notes)));
 }
 
 // ─── CulturalResponsivenessSection ────────────────────────────────────
 function CulturalResponsivenessSection(p) {
   var c = p.cr;
   if (!c) return null;
+  var crNarrative = auditText(c.narrative);
   return /*#__PURE__*/React.createElement(ComprehensiveSection, {
     id: "audit-culturalResponsiveness",
     icon: "🤝",
     title: dimLabel('culturalResponsiveness'),
     status: c.status
-  }, c.narrative && /*#__PURE__*/React.createElement("p", {
+  }, crNarrative && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-800 mb-3 leading-relaxed"
-  }, c.narrative),
+  }, crNarrative),
   // Strengths
   Array.isArray(c.strengths) && c.strengths.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-emerald-50 border border-emerald-200 rounded mb-2"
@@ -1815,7 +1874,7 @@ function CulturalResponsivenessSection(p) {
     }, auditText(r));
   }))), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600 italic mt-2"
-  }, c.notes || ''));
+  }, auditText(c.notes)));
 }
 var READINESS_DIMENSION_LABELS = {
   standards: 'Standards',
@@ -1842,7 +1901,7 @@ function ReadinessDimensionNav(p) {
     // Older saved audits may not include dimensionScores. Preserve all nine
     // navigation targets and infer only what their recorded percentage proves.
     var status = dimData.status || (dimData.computeFailed ? 'Compute failed' : dimData.notApplicable ? 'Not applicable' : dimData.notEvaluated ? 'Not evaluated' : pctValue === 100 ? 'Aligned' : pctValue === 0 ? 'Not Aligned' : pctValue !== null ? 'Partially Aligned' : 'Not evaluated');
-    var label = atr('nav_' + dim, READINESS_DIMENSION_LABELS[dim] || dim);
+    var label = atr('nav_' + dim, Object.prototype.hasOwnProperty.call(READINESS_DIMENSION_LABELS, dim) ? READINESS_DIMENSION_LABELS[dim] : dim);
     var chipColor = status === 'Aligned' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : status === 'Not Aligned' ? 'bg-rose-100 text-rose-800 border-rose-300' : status === 'Partially Aligned' ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-slate-100 text-slate-800 border-slate-300';
     return /*#__PURE__*/React.createElement("li", {
       key: dim
@@ -2016,7 +2075,7 @@ function extractTopRecommendations(comprehensive, n) {
       all.push({
         priority: 0,
         dimension: dimLabelStr,
-        dimensionKey: labelToKey[dimLabelStr] || null,
+        dimensionKey: Object.prototype.hasOwnProperty.call(labelToKey, dimLabelStr) ? labelToKey[dimLabelStr] : null,
         text: issueText
       });
     });
@@ -2025,7 +2084,7 @@ function extractTopRecommendations(comprehensive, n) {
     var d = comprehensive[dim];
     if (!d || d.computeFailed || d.notApplicable || d.status === 'Aligned') return;
     var priority = d.status === 'Not Aligned' ? 1 : 2;
-    var label = dimLabel[dim] || dim;
+    var label = Object.prototype.hasOwnProperty.call(dimLabel, dim) ? dimLabel[dim] : dim;
     if (Array.isArray(d.recommendations)) d.recommendations.forEach(function (r) {
       if (typeof r === 'string') all.push({
         priority: priority,
@@ -2123,9 +2182,14 @@ function ExecutiveSummary(p) {
   var copyTimerRef = typeof React !== 'undefined' && typeof React.useRef === 'function' ? React.useRef(null) : {
     current: null
   };
+  var mountedRef = typeof React !== 'undefined' && typeof React.useRef === 'function' ? React.useRef(true) : {
+    current: true
+  };
   if (typeof React !== 'undefined' && typeof React.useEffect === 'function') {
     React.useEffect(function () {
+      mountedRef.current = true;
       return function () {
+        mountedRef.current = false;
         if (copyTimerRef.current) {
           clearTimeout(copyTimerRef.current);
           copyTimerRef.current = null;
@@ -2194,11 +2258,12 @@ function ExecutiveSummary(p) {
     accent: 'rose'
   };
   var textDoor = typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway('text', t) : null;
-  var aiBusyOrBlocked = !!p.isProcessing || !!(textDoor && textDoor.disabled);
+  var aiBusyOrBlocked = !!p.isProcessing || _arHardAiBlocked() || !!(textDoor && textDoor.disabled);
   var buildAdminSummaryText = function () {
     var lines = [];
     lines.push('AlloFlow Curriculum Audit Summary');
-    if (score !== null && dimEvaluated > 0) lines.push('Readiness Score: ' + score + '/100' + (scoreIsProvisional ? ' (Provisional)' : '') + (overall.label ? ' — ' + overall.label : ''));
+    var overallLabel = auditText(overall.label);
+    if (score !== null && dimEvaluated > 0) lines.push('Readiness Score: ' + score + '/100' + (scoreIsProvisional ? ' (Provisional)' : '') + (overallLabel ? ' — ' + overallLabel : ''));
     lines.push('Dimensions evaluated: ' + dimEvaluated + ' of ' + dimApplicable + ' applicable (' + dimTotal + ' total)' + (standardsReportCount > 0 ? ' · ' + standardsReportCount + ' standard(s) audited' : ''));
     if (failedDims.length > 0) lines.push('Failed to compute: ' + failedDims.map(dimLabel).join(', '));
     var dimScores = overall.perDimensionPercent || {};
@@ -2224,31 +2289,35 @@ function ExecutiveSummary(p) {
     var summary = buildAdminSummaryText();
     if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
       navigator.clipboard.writeText(summary).then(function () {
+        if (!mountedRef.current) return;
         setCopyStatus(atr('summary_copied', 'Admin summary copied.'));
         if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
         copyTimerRef.current = setTimeout(function () {
           copyTimerRef.current = null;
-          setCopyStatus('');
+          if (mountedRef.current) setCopyStatus('');
         }, 2500);
       }).catch(function () {
-        setCopyStatus(atr('summary_copy_failed', 'Could not copy summary.'));
+        if (mountedRef.current) setCopyStatus(atr('summary_copy_failed', 'Could not copy summary.'));
       });
+    } else if (mountedRef.current) {
+      setCopyStatus(atr('summary_copy_failed', 'Could not copy summary.'));
     }
   };
   var handlePrintAuditSummary = function () {
     if (typeof window === 'undefined' || typeof window.open !== 'function') return;
     var esc = function (v) {
-      return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     };
     var popup = window.open('', '_blank', 'width=850,height=700');
     if (!popup) return;
     try {
       popup.opener = null;
     } catch (_) {}
+    var reportLang = resolveAuditLanguageTag(c);
     var summaryHtml = buildAdminSummaryText().split('\n').map(function (line) {
       return '<p style="margin:4px 0">' + esc(line) + '</p>';
     }).join('');
-    popup.document.write('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\';"><title>Curriculum Audit Summary</title><style>body{font-family:system-ui,-apple-system,sans-serif;max-width:800px;margin:0 auto;padding:24px;color:#0f172a;line-height:1.5}h1{font-size:20px;border-bottom:2px solid #4f46e5;padding-bottom:8px}</style></head><body><h1>Curriculum Audit Summary</h1>' + summaryHtml + '</body></html>');
+    popup.document.write('<!doctype html><html lang="' + esc(reportLang && reportLang !== 'und' ? reportLang : 'en') + '"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; base-uri \'none\'; form-action \'none\';"><title>Curriculum Audit Summary</title><style>body{font-family:system-ui,-apple-system,sans-serif;max-width:800px;margin:0 auto;padding:24px;color:#0f172a;line-height:1.5}h1{font-size:20px;border-bottom:2px solid #4f46e5;padding-bottom:8px}</style></head><body><h1>Curriculum Audit Summary</h1>' + summaryHtml + '</body></html>');
     popup.document.close();
     try {
       popup.focus();
@@ -2320,7 +2389,7 @@ function ExecutiveSummary(p) {
     style: {
       color: statusClr.text
     }
-  }, score !== null && dimEvaluated > 0 ? overall.label || score + ' / 100' : dimEvaluated === 0 ? atr('no_dimensions', 'No comprehensive dimensions evaluated') : atr('audit_summary', 'Audit summary')), /*#__PURE__*/React.createElement("div", {
+  }, score !== null && dimEvaluated > 0 ? auditText(overall.label) || score + ' / 100' : dimEvaluated === 0 ? atr('no_dimensions', 'No comprehensive dimensions evaluated') : atr('audit_summary', 'Audit summary')), /*#__PURE__*/React.createElement("div", {
     className: "text-xs",
     style: {
       color: statusClr.text
@@ -2427,7 +2496,7 @@ function ExecutiveSummary(p) {
             el.style.transition = 'box-shadow 800ms ease-out';
             el.style.boxShadow = '0 0 0 4px rgba(99, 102, 241, 0.4)';
             setTimeout(function () {
-              el.style.boxShadow = '';
+              if (el && el.isConnected) el.style.boxShadow = '';
             }, 1200);
           }
         }
@@ -2518,6 +2587,8 @@ function FailedDimensionCard(p) {
   var label = p.label;
   if (!d || !d.computeFailed) return null;
   var headingId = p.id ? p.id + '-heading' : undefined;
+  var notesText = auditText(d.notes);
+  var errText = auditText(d.error);
   return /*#__PURE__*/React.createElement("section", {
     id: p.id || undefined,
     "aria-labelledby": headingId,
@@ -2535,15 +2606,15 @@ function FailedDimensionCard(p) {
     label: label
   })), /*#__PURE__*/React.createElement("span", {
     className: "ml-auto text-xs uppercase font-bold px-2 py-0.5 rounded bg-amber-200 text-amber-900"
-  }, atr('badge_failed', 'Failed'))), d.notes && /*#__PURE__*/React.createElement("p", {
+  }, atr('badge_failed', 'Failed'))), notesText && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-amber-900 mb-2"
-  }, d.notes), d.error && /*#__PURE__*/React.createElement("details", {
+  }, notesText), errText && /*#__PURE__*/React.createElement("details", {
     className: "text-xs text-amber-800"
   }, /*#__PURE__*/React.createElement("summary", {
     className: "cursor-pointer min-h-11 flex items-center font-semibold rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, atr('show_error', 'Show error')), /*#__PURE__*/React.createElement("pre", {
     className: "mt-1 p-2 bg-amber-100 rounded overflow-x-auto whitespace-pre-wrap"
-  }, d.error)));
+  }, errText)));
 }
 function NotEvaluatedCard(p) {
   var d = p.data;
@@ -2596,6 +2667,7 @@ function NotApplicableCard(p) {
   var label = p.label;
   if (!d || !d.notApplicable) return null;
   var headingId = p.id ? p.id + '-heading' : undefined;
+  var reasonText = auditText(d.reason);
   return /*#__PURE__*/React.createElement("section", {
     id: p.id || undefined,
     "aria-labelledby": headingId,
@@ -2611,9 +2683,9 @@ function NotApplicableCard(p) {
     className: "font-bold text-slate-700"
   }, label), /*#__PURE__*/React.createElement("span", {
     className: "ml-auto text-xs uppercase font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-700"
-  }, atr('badge_not_applicable', 'Not applicable'))), d.reason && /*#__PURE__*/React.createElement("p", {
+  }, atr('badge_not_applicable', 'Not applicable'))), reasonText && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-600"
-  }, d.reason));
+  }, reasonText));
 }
 // Each dimension card renders inside its own boundary, so one bad AI field degrades to a
 // single "could not be displayed" card instead of tripping the error boundary above the
@@ -2644,7 +2716,7 @@ DimensionBoundary.getDerivedStateFromError = function (error) {
 };
 DimensionBoundary.prototype.componentDidCatch = function (error) {
   try {
-    (window.warnLog || console.warn)('[Alignment] ' + this.props.label + ' section failed to render: ' + (error && error.message ? error.message : error));
+    (typeof window !== 'undefined' && window.warnLog || console.warn)('[Alignment] ' + this.props.label + ' section failed to render: ' + (error && error.message ? error.message : error));
   } catch (_) {}
 };
 DimensionBoundary.prototype.render = function () {
@@ -2953,10 +3025,10 @@ function ComprehensiveBlock(p) {
   })));
 }
 function auditResourceFingerprint(resource) {
-  return window.AlloModules?.ResourceContentFingerprint?.fingerprint(resource) || null;
+  return typeof window !== 'undefined' && window.AlloModules?.ResourceContentFingerprint?.fingerprint(resource) || null;
 }
 function auditResourceSnapshot(resources) {
-  return window.AlloModules?.ResourceContentFingerprint?.snapshot(resources) || {};
+  return typeof window !== 'undefined' && window.AlloModules?.ResourceContentFingerprint?.snapshot(resources) || {};
 }
 // Types the audit never scores; a new one of these does not make a report stale.
 var FRESHNESS_IGNORED_TYPES = {
@@ -2969,31 +3041,37 @@ function computeAuditFreshness(generatedContent, history) {
   var generatedAt = comp.auditMetadata && comp.auditMetadata.generatedAt ? Date.parse(comp.auditMetadata.generatedAt) : NaN;
   if (isNaN(generatedAt)) generatedAt = generatedContent.timestamp ? Date.parse(generatedContent.timestamp) : NaN;
   var unknownDate = isNaN(generatedAt);
-  var included = {};
+  var included = Object.create(null);
   var includedIds = comp.auditScope && Array.isArray(comp.auditScope.includedArtifactIds) ? comp.auditScope.includedArtifactIds : [];
   includedIds.forEach(function (id) {
-    included[String(id)] = true;
+    var sid = String(id);
+    if (!_arIsBlockedKey(sid)) included[sid] = true;
   });
   var auditId = String(generatedContent.id || '');
-  var present = {};
+  var present = Object.create(null);
   var added = [],
     modified = [],
     unverified = 0;
-  var fingerprints = comp.auditScope?.artifactFingerprints || {};
-  (comp.auditScope?.includedArtifacts || []).forEach(item => {
+  var fingerprints = Object.create(null);
+  var rawFingerprints = comp.auditScope && comp.auditScope.artifactFingerprints;
+  if (rawFingerprints && typeof rawFingerprints === 'object') {
+    Object.keys(rawFingerprints).forEach(function (k) {
+      if (!_arIsBlockedKey(k)) fingerprints[k] = rawFingerprints[k];
+    });
+  }
+  (Array.isArray(comp.auditScope?.includedArtifacts) ? comp.auditScope.includedArtifacts : []).forEach(item => {
     if (!item || typeof item !== 'object') return;
-    if (item.contentFingerprint && !fingerprints[item.id]) fingerprints = {
-      ...fingerprints,
-      [item.id]: item.contentFingerprint
-    };
+    var sid = String(item.id || '');
+    if (sid && !_arIsBlockedKey(sid) && item.contentFingerprint && !fingerprints[sid]) fingerprints[sid] = item.contentFingerprint;
   });
   history.forEach(function (item) {
-    if (!item || !item.type || FRESHNESS_IGNORED_TYPES[item.type]) return;
+    if (!item || !item.type || Object.prototype.hasOwnProperty.call(FRESHNESS_IGNORED_TYPES, item.type)) return;
     var id = String(item.id || '');
-    if (id) present[id] = true;
-    if (id && included[id]) {
-      if (fingerprints[id] && auditResourceFingerprint(item)) {
-        if (fingerprints[id] !== auditResourceFingerprint(item)) modified.push(item.title || item.type);
+    if (id && !_arIsBlockedKey(id)) present[id] = true;
+    if (id && !_arIsBlockedKey(id) && included[id]) {
+      var fp = auditResourceFingerprint(item);
+      if (fingerprints[id] && fp) {
+        if (fingerprints[id] !== fp) modified.push(item.title || item.type);
       } else {
         const changedAt = Date.parse(item.updatedAt || item.timestamp || '');
         if (!isNaN(changedAt) && changedAt > generatedAt) modified.push(item.title || item.type);else unverified++;
@@ -3005,7 +3083,8 @@ function computeAuditFreshness(generatedContent, history) {
     if (!isNaN(ts) && ts > generatedAt) added.push(item.title || item.type);
   });
   var removed = includedIds.filter(function (id) {
-    return !present[String(id)];
+    var sid = String(id);
+    return !_arIsBlockedKey(sid) && !present[sid];
   }).length;
   return {
     added: added,
@@ -3025,14 +3104,17 @@ function auditRerunScope(generatedContent, history) {
     config: {},
     kind: 'rederive'
   };
-  var present = {};
+  var present = Object.create(null);
   (Array.isArray(history) ? history : []).forEach(function (item) {
-    if (item && item.id != null) present[String(item.id)] = true;
+    if (item && item.id != null) {
+      var sid = String(item.id);
+      if (!_arIsBlockedKey(sid)) present[sid] = true;
+    }
   });
   if (scope.selectionMode === 'explicit artifact IDs') {
     var saved = Array.isArray(scope.requestedArtifactIds) && scope.requestedArtifactIds.length ? scope.requestedArtifactIds : Array.isArray(scope.includedArtifactIds) ? scope.includedArtifactIds : [];
     var ids = saved.map(String).filter(function (id) {
-      return present[id];
+      return !_arIsBlockedKey(id) && present[id];
     });
     if (ids.length) return {
       config: {
@@ -3085,7 +3167,7 @@ function AuditFreshnessNotice(p) {
     n: rerun.count
   }) : rerun.kind === 'curriculum' ? atr('rerun_scope_curriculum', 'Re-run audits the same curriculum this audit selected.') : atr('rerun_scope_rederive', 'Re-run selects resources from the current lesson again, by the same rule this audit used.');
   var textDoor = typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway('text', _auditT) : null;
-  var rerunDisabled = !!p.isProcessing || !!(textDoor && textDoor.disabled);
+  var rerunDisabled = !!p.isProcessing || _arHardAiBlocked() || !!(textDoor && textDoor.disabled);
   return /*#__PURE__*/React.createElement("div", {
     role: "status",
     className: "p-3 rounded-lg border border-amber-300 bg-amber-50 flex flex-wrap items-center gap-3 print:hidden"
@@ -3109,6 +3191,27 @@ function AuditFreshnessNotice(p) {
   }, scopeNote)));
 }
 function AlignmentReportView(props) {
+  props = props && typeof props === 'object' ? props : {};
+  var _aiPolicyTick = typeof React !== 'undefined' && typeof React.useState === 'function' ? React.useState(0) : [0, function () {}];
+  var setAiPolicyTick = _aiPolicyTick[1];
+  if (typeof React !== 'undefined' && typeof React.useEffect === 'function') {
+    React.useEffect(function () {
+      if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return;
+      var bump = function () {
+        setAiPolicyTick(function (n) {
+          return n + 1;
+        });
+      };
+      window.addEventListener('alloflow:ai-config-changed', bump);
+      window.addEventListener('alloflow:student-ai-config-changed', bump);
+      window.addEventListener('alloflow:ai-key-lock-changed', bump);
+      return function () {
+        window.removeEventListener('alloflow:ai-config-changed', bump);
+        window.removeEventListener('alloflow:student-ai-config-changed', bump);
+        window.removeEventListener('alloflow:ai-key-lock-changed', bump);
+      };
+    }, []);
+  }
   var t = props.t;
   _auditT = typeof t === 'function' ? t : null;
   var generatedContent = props.generatedContent;
@@ -3118,6 +3221,7 @@ function AlignmentReportView(props) {
   var canonicalPerStandard = comprehensive && comprehensive.standards && Array.isArray(comprehensive.standards.perStandard) ? comprehensive.standards.perStandard : [];
   var standardsReportCount = canonicalPerStandard.length || (comprehensive && comprehensive.standards && typeof comprehensive.standards.totalStandards === 'number' ? comprehensive.standards.totalStandards : 0) || reports.length;
   var textDoor = typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway('text', t) : null;
+  var showAiNotice = (_arHardAiBlocked() || !!(textDoor && textDoor.disabled)) && typeof window !== 'undefined' && window.AlloAiSetupNotice;
   // All-chrome empty state: follows the page language when its strings are translated.
   var emptyTranslated = typeof t === 'function' && typeof t('audit_report.unavailable_title') === 'string' && t('audit_report.unavailable_title') !== 'audit_report.unavailable_title';
   if (!comprehensive) return /*#__PURE__*/React.createElement("section", {
@@ -3146,7 +3250,7 @@ function AlignmentReportView(props) {
   }, /*#__PURE__*/React.createElement("h1", {
     id: "curriculum-audit-report-heading",
     className: "sr-only"
-  }, atr('report_title', 'Curriculum audit report')), textDoor && textDoor.disabled && typeof window !== 'undefined' && window.AlloAiSetupNotice ? React.createElement(window.AlloAiSetupNotice, {
+  }, atr('report_title', 'Curriculum audit report')), showAiNotice ? React.createElement(window.AlloAiSetupNotice, {
     t: t,
     kind: 'text'
   }) : null,

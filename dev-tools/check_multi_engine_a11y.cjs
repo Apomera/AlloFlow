@@ -227,6 +227,7 @@ async function auditPage(browser, port, rel) {
     for (const el of document.querySelectorAll('button, a, h1, h2, h3, p, label')) {
       const st = getComputedStyle(el);
       if (st.display === 'none' || st.visibility === 'hidden' || el.classList.contains('sr-only') || el.classList.contains('skip-link') || el.classList.contains('skip')) continue;
+      if (!(el.textContent || '').trim()) continue;
       const r = el.getBoundingClientRect();
       if (r.width <= 2 || r.height <= 2) continue;
       if ((st.overflowY === 'hidden' || st.overflow === 'hidden') && el.scrollHeight > el.clientHeight + 8) {

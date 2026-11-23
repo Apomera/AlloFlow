@@ -186,8 +186,32 @@
   function hasWord(sentence, word) {
     var w = keyOf(word);
     if (!w) return false;
+    var s = text(sentence).replace(/’/g, "'");
     var esc = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    try { return new RegExp('(^|[^\\p{L}\\p{M}])' + esc + '(?![\\p{L}\\p{M}])', 'iu').test(text(sentence)); } catch (_) { return new RegExp('\\b' + esc + '\\b', 'i').test(text(sentence)); }
+    try { return new RegExp('(^|[^\\p{L}\\p{M}])' + esc + '(?![\\p{L}\\p{M}])', 'iu').test(s); } catch (_) { return new RegExp('\\b' + esc + '\\b', 'i').test(s); }
+  }
+  function svgSafe(svg, art) {
+    return typeof svg === 'string' && !(art ? art.svgRefusal(svg) : fallbackSvgRefusal(svg));
+  }
+  // Reject concept diagrams whose embedded <text> labels print the target word itself (prevents answer leaks in picture questions).
+  function diagramNamesWord(svg, word, base) {
+    if (typeof svg !== 'string' || !/<text\b/i.test(svg)) return false;
+    var labels = [];
+    svg.replace(/<text\b[^>]*>([\s\S]*?)<\/text>/gi, function (_, body) {
+      labels.push(body.replace(/<[^>]+>/g, ' ').replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&quot;/gi, '"').replace(/&#39;/g, "'"));
+      return '';
+    });
+    if (!labels.length) return false;
+    var all = labels.join(' ');
+    var targets = [keyOf(word), keyOf(base)].filter(Boolean);
+    return targets.some(function (t) {
+      if (hasWord(all, t)) return true;
+      if (t.length >= 4 && /^[a-z]+$/.test(t)) {
+        var esc = t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        if (new RegExp('(?:^|[^a-z])' + esc + '(?:s|es|ed|ing|ic|al|er|or)?(?![a-z])', 'i').test(all)) return true;
+      }
+      return false;
+    });
   }
 
   // ---------------------------------------------------------------------------
@@ -414,19 +438,37 @@
   function blankSentence(sentence, word, opts) {
     var s = line(sentence), w = keyOf(word), o = opts || {};
     if (!s || !w) return { ask: '', why: 'There is no example sentence.' };
+    var norm = s.replace(/’/g, "'");
     var base = keyOf(o.base || headOf(o.bank, w) || w), pos = line(o.pos, 20), found = [], re;
     if (/[ '’-]/.test(w)) {
       // A word of more than one part ("food chain") is found as written.
       var esc = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       try { re = new RegExp('(^|[^\\p{L}\\p{M}])(' + esc + ')(?![\\p{L}\\p{M}])', 'giu'); } catch (_) { re = new RegExp('(^|\\W)(' + esc + ')(?!\\w)', 'gi'); }
-      s.replace(re, function (m, before, at, offset) { found.push({ at: offset + before.length, text: at, form: base === w ? '' : null }); return m; });
+      norm.replace(re, function (m, before, at, offset) {
+        var start = offset + before.length, end = start + at.length;
+        if ((start > 0 && norm.charAt(start - 1) === '-') || norm.charAt(end) === '-') return m;
+        found.push({ at: start, text: s.slice(start, end), form: base === w ? '' : null });
+        return m;
+      });
     } else {
-      try { re = /[\p{L}\p{M}]+/gu; } catch (_) { re = /[A-Za-z]+/g; }
-      s.replace(re, function (token, offset) {
-        var k = keyOf(token);
-        if (k === w) { found.push({ at: offset, text: token, form: formOf(w, base, pos) }); return token; }
+      var postContr, preContr;
+      try {
+        re = /[\p{L}\p{M}]+/gu;
+        postContr = /^['’](?!s(?![\p{L}\p{M}]))[\p{L}\p{M}]/u;
+        preContr = /[\p{L}\p{M}]['’]$/u;
+      } catch (_) {
+        re = /[A-Za-z]+/g;
+        postContr = /^['’](?!s(?![A-Za-z]))[A-Za-z]/;
+        preContr = /[A-Za-z]['’]$/;
+      }
+      norm.replace(re, function (token, offset) {
+        var end = offset + token.length;
+        if ((offset > 0 && norm.charAt(offset - 1) === '-') || norm.charAt(end) === '-') return token;
+        if (postContr.test(norm.slice(end)) || (offset >= 2 && preContr.test(norm.slice(0, offset)))) return token;
+        var orig = s.slice(offset, end), k = keyOf(orig);
+        if (k === w) { found.push({ at: offset, text: orig, form: formOf(w, base, pos) }); return token; }
         var form = formOf(k, base, pos), h = form != null ? headOf(o.bank, k) : null;
-        if (form != null && (!h || h === base)) found.push({ at: offset, text: token, form: form });
+        if (form != null && (!h || h === base)) found.push({ at: offset, text: orig, form: form });
         return token;
       });
     }
@@ -563,6 +605,7 @@
       row.picture = '';
       row.pictureSource = '';
       row.customPicture = '';
+      row.customPictureCredit = null;
       row.diagramSvg = '';
       row.pictureLookupWord = '';
       row.pictureOff = mine.noPicture === true;
@@ -572,6 +615,7 @@
         var safeCustom = rawCustom ? validCustomDataUri(rawCustom, art) : '';
         if (safeCustom) {
           row.customPicture = safeCustom;
+          row.customPictureCredit = isObject(mine.customPicture) && isObject(mine.customPicture.credit) ? mine.customPicture.credit : null;
           row.picture = 'own:' + key;
           row.pictureSource = 'own';
         } else {
@@ -582,7 +626,7 @@
           if (!row.picture && useDiagrams) {
             try {
               var matched = useDiagrams.matchWord({ word: word, lemma: row.base || '', definition: row.def || '' }, { symbols: pics, preferDiagrams: true });
-              if (matched && matched.set === 'diagram' && typeof matched.svg === 'string' && (!art || !art.svgRefusal(matched.svg))) {
+              if (matched && matched.set === 'diagram' && svgSafe(matched.svg, art) && !diagramNamesWord(matched.svg, word, row.base)) {
                 row.picture = 'diagram:' + String(matched.matchedKey || key);
                 row.pictureSource = 'diagram';
                 row.diagramSvg = matched.svg;
@@ -622,7 +666,7 @@
       });
       delete row.mine;
     });
-    rows.forEach(function (row) { row.pictureWrong = row.picture ? pictureWrong(row, rows, bank, pics, useDiagrams) : []; });
+    rows.forEach(function (row) { row.pictureWrong = row.picture ? pictureWrong(row, rows, bank, pics, useDiagrams, art) : []; });
     return rows;
   }
   // The 3 other words of a picture question: list words with a picture (a fixed mix, the same kind of word first),
@@ -638,7 +682,7 @@
     var k = keyOf(word);
     return !!GROUP_WORDS[k] || (/s$/.test(k) && (!!GROUP_WORDS[k.slice(0, -1)] || (/es$/.test(k) && !!GROUP_WORDS[k.slice(0, -2)]))) || /ies$/.test(k) && !!GROUP_WORDS[k.slice(0, -3) + 'y'] || k === 'children';
   }
-  function pictureWrong(row, rows, bank, pics, matcher) {
+  function pictureWrong(row, rows, bank, pics, matcher, art) {
     var out = [], files = [row.picture];
     var base = function (w) { try { return bank && typeof bank.head === 'function' ? keyOf(bank.head(w) || w) : keyOf(w); } catch (_) { return keyOf(w); } };
     var mine = meaningsOf(bank, row.word, [row.def]);
@@ -648,7 +692,10 @@
       if (!k || k === row.key || isGroupWord(word) || base(word) === base(row.word) || sameFamily(row.word, word, bank) || out.some(function (c) { return c.key === k; })) return;
       if (!file && pics) { try { file = pics.has(word) ? String(pics.file(word) || '') : ''; } catch (_) { file = ''; } }
       if (!file && matcher && typeof matcher.getDiagram === 'function') {
-        try { var dg = matcher.getDiagram(word); if (dg && dg.matchedKey) file = 'diagram:' + dg.matchedKey; } catch (_) {}
+        try {
+          var dg = matcher.getDiagram(word);
+          if (dg && dg.matchedKey && svgSafe(dg.svg, art) && !diagramNamesWord(dg.svg, word)) file = 'diagram:' + dg.matchedKey;
+        } catch (_) {}
       }
       if (!file || files.indexOf(file) >= 0) return;
       var theirs = meaningsOf(bank, word, []);
@@ -770,7 +817,7 @@
     picture: [{ ask: 'dog', answer: 'dog', wrong: ['cup', 'sun', 'tree'] }, { ask: 'cat', answer: 'cat', wrong: ['ball', 'hat', 'fish'] }],
   };
   SAMPLES.picword = SAMPLES.picture;
-  function sampleFor(id, rows, bank, imageOf) {
+  function sampleFor(id, rows, bank, hasImage) {
     var listed = function (token) {
       return (rows || []).some(function (r) {
         // The token is a form of the list word (chair, chairs), or the list word a form of it (chairs, chair).
@@ -780,7 +827,7 @@
     var found = (own(SAMPLES, id) ? SAMPLES[id] : []).filter(function (s) {
       var words = contentWords([s.ask, s.answer].concat(s.wrong).join(' '));
       if (words.some(listed)) return false;
-      return typeOf(id).pictures ? [s.answer].concat(s.wrong).every(function (w) { return !!imageOf(w); }) : true;
+      return typeOf(id).pictures ? (id === 'picword' ? !!hasImage(s.answer) : [s.answer].concat(s.wrong).every(function (w) { return !!hasImage(w); })) : true;
     })[0];
     if (!found) return null;
     var word = id === 'meaning' || typeOf(id).pictures ? found.ask : found.answer;
@@ -822,29 +869,25 @@
     var matcher = o.diagrams === true && o.matcher && typeof o.matcher.getDiagram === 'function' ? o.matcher : null;
     var rowByWord = Object.create(null);
     rows.forEach(function (r) { if (r && r.key) rowByWord[r.key] = r; });
-    var imageOf = function (word) {
+    var resolveImage = function (word) {
       var wk = keyOf(word), r = own(rowByWord, wk) ? rowByWord[wk] : null;
       if (r && r.customPicture) {
         var safeOwn = validCustomDataUri(r.customPicture, art);
         if (safeOwn) {
-          var oid = 'p' + fnv('own|' + wk + '|' + safeOwn.slice(-48));
-          if (!images[oid]) images[oid] = safeOwn;
-          if (!own(pictured, wk)) pictured[wk] = { word: line(word, 60), set: 'own' };
-          return oid;
+          return { key: wk, id: 'p' + fnv('own|' + wk + '|' + safeOwn.slice(-48)), dataUri: safeOwn,
+            meta: { word: line(word, 60), set: 'own', credit: isObject(r.customPictureCredit) ? r.customPictureCredit : null } };
         }
       }
       var got = null;
       try { got = pics && art ? (pics.get(word) || (r && r.pictureLookupWord ? pics.get(r.pictureLookupWord) : null)) : null; } catch (_) { got = null; }
-      if (got && typeof got.svg === 'string' && art && !art.svgRefusal(got.svg)) {
-        var iid = 'p' + fnv('picture|' + String(got.file || wk));
-        if (!images[iid]) images[iid] = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(got.svg)));
-        if (!own(pictured, wk)) pictured[wk] = { word: line(word, 60), set: got.set === 'openmoji' ? 'openmoji' : 'mulberry' };
-        return iid;
+      if (got && typeof got.svg === 'string' && svgSafe(got.svg, art)) {
+        return { key: wk, id: 'p' + fnv('picture|' + String(got.file || wk)), dataUri: 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(got.svg))),
+          meta: { word: line(word, 60), set: got.set === 'openmoji' ? 'openmoji' : 'mulberry' } };
       }
       var diag = null;
-      if (r && r.diagramSvg && art && !art.svgRefusal(r.diagramSvg)) {
+      if (r && r.diagramSvg && svgSafe(r.diagramSvg, art) && !diagramNamesWord(r.diagramSvg, word, r.base)) {
         diag = { svg: r.diagramSvg, matchedKey: r.picture || wk };
-      } else if (matcher && art) {
+      } else if (matcher) {
         try {
           diag = matcher.getDiagram(word, (r && r.base) || '', word);
           if (!diag && typeof matcher.matchWord === 'function') {
@@ -853,13 +896,19 @@
           }
         } catch (_) { diag = null; }
       }
-      if (diag && typeof diag.svg === 'string' && art && !art.svgRefusal(diag.svg)) {
-        var did = 'p' + fnv('diagram|' + String(diag.matchedKey || wk));
-        if (!images[did]) images[did] = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(diag.svg)));
-        if (!own(pictured, wk)) pictured[wk] = { word: line(word, 60), set: 'diagram' };
-        return did;
+      if (diag && typeof diag.svg === 'string' && svgSafe(diag.svg, art) && !diagramNamesWord(diag.svg, word, r && r.base)) {
+        return { key: wk, id: 'p' + fnv('diagram|' + String(diag.matchedKey || wk)), dataUri: 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(diag.svg))),
+          meta: { word: line(word, 60), set: 'diagram' } };
       }
       return null;
+    };
+    var hasImage = function (word) { return !!resolveImage(word); };
+    var imageOf = function (word) {
+      var res = resolveImage(word);
+      if (!res) return null;
+      if (!images[res.id]) images[res.id] = res.dataUri;
+      if (!own(pictured, res.key)) pictured[res.key] = res.meta;
+      return res.id;
     };
     // The order of the kinds (2026-11-13): with Word to meaning and Meaning to word both on, Meaning to word comes first.
     // Its choices are words, so every meaning is asked before it is ever shown as a choice; Word to meaning then shows the
@@ -883,7 +932,13 @@
         });
       }
       if (t.pictures) list = list.filter(function (item) {
-        var ok = !!imageOf(item.answer) && item.wrong.every(function (w) { return !!imageOf(w); });
+        var ok;
+        if (id === 'picword') {
+          ok = hasImage(item.row.word);
+        } else {
+          var allWords = [item.answer].concat(item.wrong), seenIds = Object.create(null);
+          ok = allWords.every(function (w) { var res = resolveImage(w); if (!res || seenIds[res.id]) return false; seenIds[res.id] = true; return true; });
+        }
         if (!ok) q.left.push({ word: item.row.word, type: id, why: 'A picture could not be used.' });
         return ok;
       });
@@ -891,7 +946,7 @@
       asked[id] = Object.create(null);
       list.forEach(function (item, i) { asked[id][item.row.key] = i; });
       // A check opens with one sample question, not scored (as a math check does): see sampleFor.
-      var sample = check && !blocks.length ? sampleFor(id, rows, o.bank, imageOf) : null;
+      var sample = check && !blocks.length ? sampleFor(id, rows, o.bank, hasImage) : null;
       var made = (sample ? [sample] : []).concat(list).map(function (item, at) {
         var i = sample ? at - 1 : at;
         var choices = mixed([item.answer].concat(item.wrong), 'choices|' + id + '|' + item.row.key + '|' + item.ask + '|' + item.wrong.join('|'));
@@ -956,9 +1011,96 @@
     }
     if (check) { lesson.form = 'custom'; lesson.timeLimitS = null; lesson.check = Object.assign({}, MEASURE); }
     lesson.revision = 'r' + fnv(JSON.stringify([lesson.title, lesson.form || '', lesson.check || null, lesson.blocks]));
+    var wantMix = !check && (o.order === 'mix' || o.order === 'mixed') && blocks.length >= 2;
+    var orderSeed = typeof o.orderSeed === 'number' && isFinite(o.orderSeed) ? Math.floor(o.orderSeed) : null;
+    var mixBase = order.join(',') + '|' + rows.map(function (r) { return r.key; }).join(',');
+    var seq = wantMix ? mixedVocabSequence(lesson, (orderSeed !== null ? orderSeed + '|' : '') + mixBase) : null;
+    if (seq) {
+      lesson.sequence = seq;
+      lesson.revision = lesson.revision + 'm' + fnv(seq.join(','));
+    }
+    var storedOrder = !check ? (seq ? 'mix' : (o.order === 'blocks' ? 'blocks' : null)) : null;
     // What the file's credits name (buildVocabPacket): the words with a recording, and the words whose picture is used, by set.
-    MEDIA.set(lesson, { recorded: recorded, pictured: Object.keys(pictured).map(function (k) { return pictured[k]; }), art: art, left: q.left });
+    MEDIA.set(lesson, { recorded: recorded, pictured: Object.keys(pictured).map(function (k) { return pictured[k]; }), art: art, left: q.left, order: storedOrder, orderSeed: seq ? orderSeed : null });
     return lesson;
+  }
+
+  // Deterministic Practice-only activity mixing across 2+ vocab question types:
+  // 1. Never schedules vocab_meaning before vocab_word for the same target word (anti-leakage).
+  // 2. Never places two questions for the same word adjacent (and prefers gap >= 2 other questions when possible).
+  // 3. Avoids 3-in-a-row of the same activity type while another valid activity candidate remains.
+  function mixedVocabSequence(lesson, seed) {
+    if (!lesson || lesson.mode === 'probe') return null;
+    var blocks = (lesson.blocks || []).filter(function (b) { return b && Array.isArray(b.items) && b.items.length; });
+    if (blocks.length < 2) return null;
+    var usual = [], hasWord = Object.create(null), remWord = Object.create(null), actLeft = Object.create(null);
+    var actOrder = [], pools = Object.create(null);
+    blocks.forEach(function (b) {
+      var act = String(b.activity || '');
+      if (actOrder.indexOf(act) < 0) { actOrder.push(act); pools[act] = []; actLeft[act] = 0; }
+      b.items.forEach(function (it) {
+        var id = String(it.id);
+        usual.push(id);
+        var wk = keyOf(it.word || '');
+        if (!wk) {
+          var at = id.lastIndexOf('@');
+          wk = at >= 0 ? id.slice(at + 1).toLowerCase() : id;
+        }
+        if (act === 'vocab_word') hasWord[wk] = true;
+        remWord[wk] = (remWord[wk] || 0) + 1;
+        pools[act].push({ id: id, act: act, wordKey: wk });
+        actLeft[act]++;
+      });
+    });
+    var seedText = String(seed == null ? '' : seed);
+    actOrder.forEach(function (act) { pools[act] = mixed(pools[act], 'vocab-mix-pool|' + seedText + '|' + act); });
+    var total = usual.length;
+    var s = parseInt(fnv('vocab-mix-draw|' + seedText), 16) || 1;
+    var nextRand = function () { s ^= s << 13; s >>>= 0; s ^= s >>> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; };
+    var wordDone = Object.create(null), lastPos = Object.create(null);
+    var out = [], lastAct = '', run = 0;
+    for (var pos = 0; pos < total; pos++) {
+      var remaining = total - pos;
+      var unlocked = [];
+      actOrder.forEach(function (act) {
+        pools[act].forEach(function (it) {
+          if (it.act === 'vocab_meaning' && hasWord[it.wordKey] && !wordDone[it.wordKey]) return;
+          unlocked.push(it);
+        });
+      });
+      if (!unlocked.length) break;
+      var dist = function (it) { return lastPos[it.wordKey] == null ? 9999 : pos - lastPos[it.wordKey]; };
+      var no3 = function (it) { return !(it.act === lastAct && run >= 2); };
+      // Pigeonhole lookahead: if a word still has enough remaining items that skipping it now would force
+      // same-word adjacency later (2 * k - 1 >= remaining), prioritize an eligible non-adjacent item of that word.
+      var urgent = unlocked.filter(function (it) { return 2 * remWord[it.wordKey] - 1 >= remaining && dist(it) >= 2; });
+      var base = urgent.length ? urgent : unlocked;
+      var cands = base.filter(function (it) { return dist(it) >= 3 && no3(it); });
+      if (!cands.length) cands = base.filter(function (it) { return dist(it) >= 2 && no3(it); });
+      if (!cands.length) cands = base.filter(function (it) { return dist(it) >= 3; });
+      if (!cands.length) cands = base.filter(function (it) { return dist(it) >= 2; });
+      if (!cands.length) cands = base;
+      var byAct = Object.create(null), openActs = [];
+      cands.forEach(function (it) {
+        if (!byAct[it.act]) { byAct[it.act] = []; openActs.push(it.act); }
+        byAct[it.act].push(it);
+      });
+      var weight = openActs.reduce(function (sum, act) { return sum + actLeft[act]; }, 0);
+      var draw = nextRand() * weight, chosenAct = openActs[openActs.length - 1];
+      for (var k = 0; k < openActs.length; k++) { draw -= actLeft[openActs[k]]; if (draw < 0) { chosenAct = openActs[k]; break; } }
+      var chosen = byAct[chosenAct][0];
+      var idx = pools[chosenAct].indexOf(chosen);
+      if (idx >= 0) pools[chosenAct].splice(idx, 1);
+      actLeft[chosenAct]--;
+      remWord[chosen.wordKey]--;
+      if (chosen.act === 'vocab_word') wordDone[chosen.wordKey] = true;
+      lastPos[chosen.wordKey] = pos;
+      run = chosen.act === lastAct ? run + 1 : 1;
+      lastAct = chosen.act;
+      out.push(chosen.id);
+    }
+    if (out.length !== total) return null;
+    return out.join(',') === usual.join(',') ? null : out;
   }
 
   // The credits a file carries ("About this file", and the manifest): each source of the bank's text with its license
@@ -998,9 +1140,25 @@
   function safeJson(value) {
     return JSON.stringify(value).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
   }
+  function customCreditLine(credit) {
+    if (!isObject(credit) || credit.own === true) return '';
+    var strip = function (v) { return bare(v).replace(/^[a-z][a-z0-9+.-]*:\/*/i, '').replace(/[\s"'<>`]/g, ''); };
+    var title = line(credit.title, 200).replace(/"/g, "'"), author = line(credit.author, 200), license = line(credit.license, 60);
+    var licenseAt = strip(credit.licenseUrl), source = line(credit.source, 80), sourceAt = strip(credit.sourceUrl);
+    if (!title && !author && !license && !source && !sourceAt) return '';
+    var parts = [];
+    if (title) parts.push('"' + title + '"' + (author ? ' by ' + author : ''));
+    else if (author) parts.push('Picture by ' + author);
+    else parts.push('Picture');
+    if (license) parts.push(license + (licenseAt ? ' (' + licenseAt + ')' : ''));
+    if (source || sourceAt) parts.push('from ' + (source || sourceAt) + (source && sourceAt ? ' (' + sourceAt + ')' : ''));
+    if (credit.resized === true) parts.push('made smaller');
+    return (parts.join(', ') + '.').replace(/\b[a-z][a-z0-9+.-]{1,12}:\/\/+/gi, '').replace(/\/{2,}/g, '/').replace(/\.\.$/, '.');
+  }
   // More fields in the manifest block of a finished file. That block is data, not script: the script hash holds
   // (as withCredits in word_sounds_packet_builder.js).
   function withManifest(html, extra) {
+    if (typeof html !== 'string' || !isObject(extra)) return html;
     var open = '<script type="application/json" id="packet-manifest">';
     var at = html.indexOf(open);
     if (at < 0) return html;
@@ -1009,7 +1167,11 @@
     var manifest;
     try { manifest = JSON.parse(html.slice(from, to), function (k, v) { return k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v; }); } catch (_) { return html; }
     if (!isObject(manifest)) return html;
-    Object.keys(extra).forEach(function (k) { manifest[k] = extra[k]; });
+    Object.keys(extra).forEach(function (k) {
+      if (k === '__proto__' || k === 'constructor' || k === 'prototype') return;
+      if (extra[k] === undefined) delete manifest[k];
+      else manifest[k] = extra[k];
+    });
     return html.slice(0, from) + safeJson(manifest) + html.slice(to);
   }
   // A student's code name, as a file may carry it (the same rule as word_sounds_packet_builder.js codeName).
@@ -1017,7 +1179,19 @@
     var t = typeof value === 'string' ? value : '';
     try { return t.normalize('NFC').replace(/[^\p{L}\p{M}\p{N} ._-]+/gu, '').replace(/\s+/g, ' ').trim().slice(0, 40).trim(); } catch (_) { return t.replace(/[^A-Za-z0-9 ._-]+/g, '').trim().slice(0, 40); }
   }
-  function withCodeName(html, name) { var clean = codeName(name); return clean ? withManifest(html, { learner: clean }) : html; }
+  function withCodeName(html, name) {
+    var clean = codeName(name);
+    if (clean) return withManifest(html, { learner: clean });
+    var open = '<script type="application/json" id="packet-manifest">';
+    var at = typeof html === 'string' ? html.indexOf(open) : -1;
+    if (at < 0) return html;
+    var from = at + open.length, to = html.indexOf('</script>', from), manifest;
+    if (to < 0) return html;
+    try { manifest = JSON.parse(html.slice(from, to), function (k, v) { return k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v; }); } catch (_) { return html; }
+    if (!isObject(manifest) || !own(manifest, 'learner')) return html;
+    delete manifest.learner;
+    return html.slice(0, from) + safeJson(manifest) + html.slice(to);
+  }
 
   // The file. buildVocabPacket({ lesson, loader, rows, bank, teacherCode, learner, readAloud }) -> { html, manifest, sha256 }
   function buildVocabPacket(input) {
@@ -1045,18 +1219,28 @@
       var om = media.pictured.filter(function (p) { return p.set === 'openmoji'; }).map(function (p) { return p.word; });
       var mb = media.pictured.filter(function (p) { return p.set === 'mulberry' || (p.set !== 'openmoji' && p.set !== 'diagram' && p.set !== 'own'); }).map(function (p) { return p.word; });
       var dg = media.pictured.filter(function (p) { return p.set === 'diagram'; }).map(function (p) { return p.word; });
-      var ownPics = media.pictured.filter(function (p) { return p.set === 'own'; }).map(function (p) { return p.word; });
-      var mixedSets = om.length > 0 || dg.length > 0 || ownPics.length > 0;
+      var ownEntries = media.pictured.filter(function (p) { return p.set === 'own'; });
+      var mixedSets = om.length > 0 || dg.length > 0 || ownEntries.length > 0;
       if (art && mb.length) { credits.push(mixedSets ? art.pictureCredit(mb) : art.pictureCredit()); notices.push({ id: 'mulberry', name: art.MULBERRY_CREDIT.set, text: mixedSets ? art.mulberryNotice(mb) : art.MULBERRY_NOTICE }); }
       if (art && om.length) { credits.push(art.openMojiCredit(om)); notices.push({ id: 'openmoji', name: art.OPENMOJI_CREDIT.set, text: art.openMojiNotice(om, '') }); }
-      if (dg.length) credits.push('School concept diagrams from AlloFlow: ' + dg.join(', ') + '.');
-      if (ownPics.length) credits.push('Pictures added by the teacher: ' + ownPics.join(', ') + '.');
+      if (dg.length) credits.push('School concept diagrams from AlloFlow: AlloFlow Curriculum Diagrams (AGPL-3.0) (' + dg.join(', ') + ').');
+      var teacherPics = [], creditedPics = [];
+      ownEntries.forEach(function (p) {
+        var cl = customCreditLine(p.credit);
+        if (cl) creditedPics.push({ word: p.word, line: cl, shareAlike: /^CC BY-SA\b/i.test(line(p.credit && p.credit.license, 60)) });
+        else teacherPics.push(p.word);
+      });
+      if (teacherPics.length) credits.push('Pictures added by the teacher: ' + teacherPics.join(', ') + '.');
+      creditedPics.forEach(function (p) { credits.push('Picture for ' + p.word + ': ' + p.line); });
+      var shareAlikePics = creditedPics.filter(function (p) { return p.shareAlike; });
+      if (shareAlikePics.length) notices.push({ id: 'share-alike', name: 'Pictures under a share-alike license', text: 'Some pictures in this file were chosen by the teacher and stay under their own CC BY-SA license as a separate work from the program in this file:\n' + shareAlikePics.map(function (p) { return p.word + ': ' + p.line; }).join('\n') });
     }
     if (media.recorded.length) {
       credits.push('Recordings of ' + media.recorded.join(', ') + ': made ahead of time with Kokoro-82M text-to-speech (voice af_heart), a machine voice. They passed automatic checks; no person has listened to each one.');
       labels.about_never = 'It never uses the microphone or the camera. It has no cookies and runs no AI. Read aloud plays a recording made ahead of time for some words. For the rest it uses the voice that is built into this device, and only a voice that runs on the device.';
     }
     var sent = JSON.parse(JSON.stringify(lesson));
+    if (check) delete sent.sequence;
     // Practice: the missed questions once more at the end (o.repeatMissed, 2026-11-17). Never in a check.
     if (!check && o.repeatMissed === true) sent.repeatMissed = true;
     var html = loader.buildHtml(sent, { core: check ? undefined : EXACT, teacherCode: check ? code || null : undefined, labels: labels, attributions: credits });
@@ -1071,6 +1255,17 @@
     var noPicture = rows.filter(function (r) { return r.pictureOff; }).map(function (r) { return r.word; });
     if (noPicture.length) recipe.noPicture = noPicture;
     if (!check && o.repeatMissed === true) recipe.repeatMissed = true;
+    if (!check) {
+      var hasSeq = Array.isArray(lesson.sequence) && lesson.sequence.length > 0;
+      if (hasSeq) {
+        recipe.order = 'mix';
+        var oSeed = typeof o.orderSeed === 'number' && isFinite(o.orderSeed) ? Math.floor(o.orderSeed)
+          : (media && typeof media.orderSeed === 'number' ? media.orderSeed : null);
+        if (oSeed !== null) recipe.orderSeed = oSeed;
+      } else if (o.order === 'blocks' || (media && media.order === 'blocks')) {
+        recipe.order = 'blocks';
+      }
+    }
     // A practice file holds its answers anyway, so it also keeps what the teacher chose and changed, for "Open a file I made".
     if (!check) recipe.rows = rows.map(function (r) { return { word: r.word, sense: r.senseId, def: r.def, example: r.example, pos: r.pos || '', own: !!r.own, wrong: r.wrong.map(function (c) { return { id: c.id || '', word: c.word, def: c.def, from: c.from || '' }; }), blank: r.blank ? r.blank.wrong.slice() : [] }; });
     var speech = read ? { engine: 'speechSynthesis', when: 'only when the student presses Read aloud, Hear it or Hear all, or turns on Read the choices in the reading tools', voices: 'a voice that runs on this device (localService); none that needs the internet', sends: 'nothing' }
@@ -1089,7 +1284,7 @@
   // words: [word], senses: { key: senseId }, rows: [...] (a practice file only), teacherCode }
   function readBack(parts) {
     var p = parts || {}, m = isObject(p.manifest) ? p.manifest : {}, v = isObject(m.vocab) ? m.vocab : null, lesson = isObject(p.lesson) ? p.lesson : {};
-    var out = { ok: false, why: '', title: '', mode: 'practice', types: [], readAloud: true, voices: true, diagrams: false, repeatMissed: false, noPicture: [], learner: '', words: [], senses: {}, rows: [], teacherCode: false };
+    var out = { ok: false, why: '', title: '', mode: 'practice', types: [], readAloud: true, voices: true, diagrams: false, repeatMissed: false, order: 'blocks', orderSeed: null, noPicture: [], learner: '', words: [], senses: {}, rows: [], teacherCode: false };
     if (!v) { out.why = 'This file was not made on this page.'; return out; }
     out.ok = true;
     out.title = line(m.title || lesson.title, 120);
@@ -1099,6 +1294,8 @@
     out.voices = v.voices !== false;
     out.diagrams = v.diagrams === true;
     out.repeatMissed = out.mode !== 'check' && (v.repeatMissed === true || lesson.repeatMissed === true);
+    out.order = out.mode !== 'check' && (v.order === 'mix' || v.order === 'mixed' || (Array.isArray(lesson.sequence) && lesson.sequence.length > 0)) ? 'mix' : 'blocks';
+    out.orderSeed = out.mode !== 'check' && out.order === 'mix' && typeof v.orderSeed === 'number' && isFinite(v.orderSeed) ? Math.floor(v.orderSeed) : null;
     out.noPicture = (Array.isArray(v.noPicture) ? v.noPicture : []).map(normalizeWord).filter(Boolean).slice(0, MAX_WORDS);
     out.learner = codeName(m.learner);
     out.teacherCode = isObject(lesson.check) && isObject(lesson.check.lock);
@@ -1119,7 +1316,7 @@
   var api = { VERSION: VERSION, MAX_WORDS: MAX_WORDS, WRONG: WRONG, TYPES: TYPES.map(function (t) { return Object.assign({}, t); }), MEASURE: Object.assign({}, MEASURE),
     normalizeWord: normalizeWord, keyOf: keyOf, parseWords: parseWords, closeMeaning: closeMeaning, contentWords: contentWords, flat: flat, wrongProblem: wrongProblem,
     balancedTrio: balancedTrio, blankSentence: blankSentence, formOf: formOf, inflect: inflect, draftRows: draftRows, swap: swap, rowStop: rowStop, questions: questions,
-    lessonFromVocab: lessonFromVocab, creditLines: creditLines, MIN_PICTURES: MIN_PICTURES, pictureCount: pictureCount, pictureWrong: pictureWrong, wordsToHear: wordsToHear, buildVocabPacket: buildVocabPacket, withCodeName: withCodeName, codeName: codeName, readBack: readBack, mixed: mixed, validCustomDataUri: validCustomDataUri };
+    lessonFromVocab: lessonFromVocab, mixedVocabSequence: mixedVocabSequence, creditLines: creditLines, MIN_PICTURES: MIN_PICTURES, pictureCount: pictureCount, pictureWrong: pictureWrong, wordsToHear: wordsToHear, buildVocabPacket: buildVocabPacket, withCodeName: withCodeName, codeName: codeName, readBack: readBack, mixed: mixed, validCustomDataUri: validCustomDataUri };
   root.AlloPacketVocab = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -544,7 +544,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       // Species accent as text. Dark is the base because an unthemed host falls back
       // to the dark canvas; .theme-default puts the authored colour back.
       '.eco-accent { color: var(--eco-acc-dark, currentColor); }',
-      '.theme-default .eco-accent, .theme-light .eco-accent { color: var(--eco-acc-light, currentColor); }',
+      ':root:not(.theme-dark):not(.theme-contrast) .eco-accent, .theme-default .eco-accent, .theme-light .eco-accent { color: var(--eco-acc-light, currentColor); }',
       // The deep-dive panel hardcodes a dark gradient in every theme, so its accent
       // never switches.
       '.eco-accent-fixed { color: var(--eco-acc-dark, currentColor); }',
@@ -7537,7 +7537,7 @@ function EcoPairMeasurement(props) {
               h('caption', null, 'Saved biomass indices · observation ' + note.id),
               h('thead', null, h('tr', null, ['Group', 'Baseline', 'Experiment'].map(function(label) { return h('th', { key: label, scope: 'col' }, label); }))),
               h('tbody', null, ECO_WEB_SPECIES.map(function(group) { return h('tr', { key: group.id }, h('th', { scope: 'row' }, group.name), h('td', null, ecoWebFormat(note.baseline.values[group.id])), h('td', null, ecoWebFormat(note.experiment.values[group.id]))); }))))),
-          h('div', { className: 'efw-row' }, h('button', { type: 'button', onClick: function() { props.onReopen(note); }, 'aria-label': 'Reopen observation ' + note.id }, 'Reopen setup and time'), h('button', { type: 'button', onClick: function() { props.onRemove(note.id); }, 'aria-label': 'Remove observation ' + note.id }, 'Remove')));
+          h('div', { className: 'efw-row' }, h('button', { type: 'button', onClick: function() { props.onReopen(note); }, 'aria-label': 'Reopen setup and time for observation ' + note.id }, 'Reopen setup and time'), h('button', { type: 'button', onClick: function() { props.onRemove(note.id); }, 'aria-label': 'Remove observation ' + note.id }, 'Remove')));
       })),
       notes.length > 0 && h('small', null, 'Reopening replaces the current working setup and explanation with this observation. Saved evidence stays unchanged; the working charts are recalculated using the current model. Each observation includes all groups.'));
   }
@@ -12701,7 +12701,7 @@ function EcoPairMeasurement(props) {
 
       return h('div', { className: 'space-y-3 pb-4', 'data-ecosystem-tool': 'true', 'data-ecosystem-profile': displayProfile },
         h('style', null,
-          '.eco-header{flex-wrap:wrap}.theme-default [data-ecosystem-tool],.theme-light [data-ecosystem-tool]{--eco-choice-ink:#14532d;--eco-choice-soft:#166534}[data-ecosystem-tool] #eco-live-telemetry .grid{gap:8px}[data-ecosystem-tool] #eco-live-telemetry .grid>div{padding:10px 4px;border-radius:8px}' +
+          '.eco-header{flex-wrap:wrap}:root:not(.theme-dark):not(.theme-contrast) [data-ecosystem-tool],.theme-default [data-ecosystem-tool],.theme-light [data-ecosystem-tool]{--eco-choice-ink:#14532d;--eco-choice-soft:#166534}[data-ecosystem-tool] #eco-live-telemetry .grid{gap:8px}[data-ecosystem-tool] #eco-live-telemetry .grid>div{padding:10px 4px;border-radius:8px}' +
           "\n[data-ecosystem-tool]{--eco-copy:#e2e8f0;--eco-prey:#86efac;--eco-pred:#fda4af;--eco-capacity:#fcd34d;--eco-axis:#94a3b8;min-width:0;width:100%;font-family:system-ui,sans-serif;line-height:1.5}\n.theme-default [data-ecosystem-tool],.theme-light [data-ecosystem-tool],.theme-dark [data-ecosystem-tool]{--eco-copy:#1e293b;--eco-prey:#166534;--eco-pred:#9f1239;--eco-capacity:#854d0e;--eco-axis:#64748b}\n.theme-contrast [data-ecosystem-tool]{--eco-copy:#ffff00;--eco-prey:#ffff00;--eco-pred:#fff;--eco-capacity:#67e8f9;--eco-axis:#fff}\n[data-ecosystem-tool] [class*=\"text-[0.625rem]\"],[data-ecosystem-tool] [class*=\"text-[0.6875rem]\"]{font-size:12px;line-height:1.5}\n[data-ecosystem-tool] button{min-height:36px}\n[data-ecosystem-tool] :is(button,input,select,textarea,canvas):focus-visible{outline:3px solid var(--eco-prey);outline-offset:3px}\n.eco-scene{height:420px;background:#0f172a;box-shadow:0 8px 24px #0f172a18}\n.eco-scene-caption{position:absolute;bottom:0;left:0;right:0;display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;padding:8px 12px;background:#0f172a;color:#f8fafc;font-size:12px}\n.eco-scene-caption span{color:#f8fafc!important}\n.eco-scene-controls{flex-wrap:wrap}\n.eco-scene-controls input{min-width:60px}\n#eco-live-telemetry{padding:16px}\n#eco-live-telemetry .font-bold{font-variant-numeric:tabular-nums}\n#eco-live-graph-panel>div{flex-wrap:wrap}\n@media(max-width:600px){.eco-scene{height:360px}.eco-scene-caption span:last-child{display:none}[data-ecosystem-tool] [role=\"tablist\"] button{min-height:44px}.eco-scene-controls>div{min-width:160px}}\n" +
           '[data-ecosystem-profile="beginner"] [data-eco-advanced="true"]{display:none!important;}' +
           '[data-ecosystem-profile="projection"] [data-eco-projection-panel="true"]{padding:16px!important;}' +

@@ -365,6 +365,7 @@
     else { try { ownLesson(); } catch (error) { line = ownStop = said(error); } }
     if (!ownStop && belowZero(ownRows)) line += ' ' + belowZero(ownRows);
     setText('own-line', line);
+    show('own-example-row', !parts.length);
     if (!ownStop) setText('step-2-problem', '');
   }
   function drawOwnPanel() {
@@ -520,7 +521,7 @@
     var run = buildRun, todo, result;
     try {
       todo = plan();
-      result = buildFor(todo, state.learner);
+      result = buildFor(todo, '');
     } catch (error) {
       var msg = 'The file could not be put together (' + (said(error) || 'no reason was given') + '). Your choices are still here.';
       if (run === buildRun) problem(msg);
@@ -652,9 +653,10 @@
     show('making', false);
     var check = result.manifest.check, limit = check.timeLimitS, items = check.items, practice = check.practiceItems;
     var coded = check.teacherCode !== 'none';
-    var blob = new Blob([result.html], { type: 'text/html' });
     var learner = codeNameNow();
-    var baseHtml = typeof builder.withCodeName === 'function' ? builder.withCodeName(result.html, '') : result.html;
+    var baseHtml = result.html;
+    var html = learner && builder.withCodeName ? builder.withCodeName(baseHtml, learner) : baseHtml;
+    var blob = new Blob([html], { type: 'text/html' });
     // "question" for Quantity Discrimination, "problem" for every other check and for the teacher's own list.
     var item = todo.own ? 'problem' : todo.row.item;
     var skip = todo.lesson.check.allowSkip ? 'The student may skip a ' + item + '.' : 'There is no skip button.';
@@ -670,7 +672,7 @@
     rows.push(['Practice first', practice ? count(practice, 'practice question') + ', not scored.' : 'None.']);
     rows.push(['Teacher screen', coded ? 'Opens only with your teacher code. It shows the score and each answer.' : 'Shows only the score, not each answer. No teacher code is set.']);
     rows.push(['Title', result.manifest.title]);
-    built = { html: result.html, baseHtml: baseHtml, baseRows: rows, items: items, item: item, limit: limit, usual: usual,
+    built = { html: html, baseHtml: baseHtml, baseRows: rows, items: items, item: item, limit: limit, usual: usual,
       name: withName(todo.name, learner), bytes: blob.size, coded: coded, title: result.manifest.title, todo: todo };
     try { fileUrl = URL.createObjectURL(blob); } catch (_) { fileUrl = ''; }
     renderSummaryRows(built, learner);
@@ -837,9 +839,10 @@
   // which reads the same in every language (a comma is a decimal mark in many).
   var GAP = String.fromCharCode(0x202F);
   function shown(text) {
-    return String(text).replace(/(^|\s)-(?=\s|\d)/g, function (all, lead) { return lead + String.fromCharCode(0x2212); })
-      .replace(/([\d_]) [xX*] (?=[\d_])/g, function (all, lead) { return lead + ' ' + String.fromCharCode(0xD7) + ' '; })
-      .replace(/([\d_]) \/ (?=[\d_])/g, function (all, lead) { return lead + ' ' + DIVIDE + ' '; })
+    return String(text).replace(/(^|[\s(])[-\u2013\u2014](?=\s|\d|\()/g, '$1\u2212')
+      .replace(/([\d)_])\s*[-\u2013\u2014]\s*(?=[\d(_])/g, '$1 \u2212 ')
+      .replace(/([\d)_])\s*[xX*\u00B7\u22C5]\s*(?=[\d(_])/g, '$1 \u00D7 ')
+      .replace(/([\d)_])\s*\/\s*(?=[\d(_])/g, '$1 \u00F7 ')
       .replace(/\d{5,}/g, function (n) { return n.replace(/\B(?=(\d{3})+(?!\d))/g, GAP); });
   }
 
@@ -1157,26 +1160,63 @@
     var rawBytes = bytes || (typeof TextEncoder === 'function' ? new TextEncoder().encode(String(text || '')).buffer : null);
     applyReopen(reopenKit.readCheck(text, { verify: window.AlloPacketVerify, builder: builder, codeName: builder.codeName }), String(name || 'the file').slice(0, 120), rawBytes);
   }
+  function openReopenFile(file) {
+    if (!file) return;
+    if (file.size > 60 * 1024 * 1024) { showReopen('This file is larger than 60 MB, so it cannot be opened here.', [], null); return; }
+    var done = function (buf) {
+      var text = typeof TextDecoder === 'function' ? new TextDecoder('utf-8').decode(buf) : '';
+      reopenText(text, file.name, buf);
+    };
+    if (typeof file.arrayBuffer === 'function') {
+      file.arrayBuffer().then(done, function () { showReopen('This browser could not read the file.', [], null); });
+    } else {
+      var reader = new FileReader();
+      reader.onload = function () { done(reader.result); };
+      reader.onerror = function () { showReopen('This browser could not read the file.', [], null); };
+      reader.readAsArrayBuffer(file);
+    }
+  }
   function wireReopen() {
     $('reopen-choose').addEventListener('click', function () { $('reopen-file').click(); });
     $('reopen-file').addEventListener('change', function () {
       var file = this.files && this.files[0];
       this.value = '';
-      if (!file) return;
-      if (file.size > 60 * 1024 * 1024) { showReopen('This file is larger than 60 MB, so it cannot be opened here.', [], null); return; }
-      var done = function (buf) {
-        var text = typeof TextDecoder === 'function' ? new TextDecoder('utf-8').decode(buf) : '';
-        reopenText(text, file.name, buf);
-      };
-      if (typeof file.arrayBuffer === 'function') {
-        file.arrayBuffer().then(done, function () { showReopen('This browser could not read the file.', [], null); });
-      } else {
-        var reader = new FileReader();
-        reader.onload = function () { done(reader.result); };
-        reader.onerror = function () { showReopen('This browser could not read the file.', [], null); };
-        reader.readAsArrayBuffer(file);
-      }
+      openReopenFile(file);
     });
+    if ($('reopen-close')) {
+      $('reopen-close').addEventListener('click', function () {
+        show('reopen-note', false);
+        reopenPending = null;
+        if ($('reopen-choose')) $('reopen-choose').focus();
+      });
+    }
+    var dropHost = doc.querySelector('main') || doc.body;
+    var reopenBox = $('reopen');
+    if (dropHost) {
+      var dragDepth = 0;
+      dropHost.addEventListener('dragenter', function (event) {
+        if (!event.dataTransfer || !reopenKit) return;
+        dragDepth++;
+        if (reopenBox) reopenBox.classList.add('is-dropping');
+      });
+      dropHost.addEventListener('dragover', function (event) {
+        if (!event.dataTransfer || !reopenKit) return;
+        event.preventDefault();
+        if (reopenBox) reopenBox.classList.add('is-dropping');
+      });
+      dropHost.addEventListener('dragleave', function () {
+        dragDepth = Math.max(0, dragDepth - 1);
+        if (!dragDepth && reopenBox) reopenBox.classList.remove('is-dropping');
+      });
+      dropHost.addEventListener('drop', function (event) {
+        dragDepth = 0;
+        if (reopenBox) reopenBox.classList.remove('is-dropping');
+        var files = event.dataTransfer && event.dataTransfer.files;
+        if (!files || !files.length || !reopenKit) return;
+        event.preventDefault();
+        openReopenFile(files[0]);
+      });
+    }
     if ($('reopen-page')) {
       $('reopen-page').addEventListener('click', function (event) {
         var handoff = window.AlloPacketHandoff;
@@ -1267,6 +1307,15 @@
       clearTimeout(ownTimer);
       ownTimer = setTimeout(drawOwn, 250);
     });
+    if ($('own-example')) {
+      $('own-example').addEventListener('click', function () {
+        state.problems = '7 + 8\n12 - 5\n6 x 4\n24 / 6\n15 + 9\n30 - 12';
+        $('f-problems').value = state.problems;
+        remember();
+        drawOwn();
+        $('f-problems').focus();
+      });
+    }
     // The title is in step 3 (2026-11-13): the file is made again as it is typed.
     $('f-title').addEventListener('input', function () {
       var typed = this.value.slice(0, 80);
@@ -1308,6 +1357,8 @@
       $('f-code').value = '';
       $('f-title').value = '';
       if ($('f-batch-names')) $('f-batch-names').value = '';
+      show('reopen-note', false);
+      reopenPending = null;
       showCode(false);
       goTo(1, true);
       setText('forget-said', 'Done. The page is back to how it started.');

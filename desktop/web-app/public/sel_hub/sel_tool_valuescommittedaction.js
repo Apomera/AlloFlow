@@ -37,6 +37,21 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
     document.body.appendChild(liveRegion);
   })();
 
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-vca-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-vca-a11y-css';
+    st.textContent =
+      '.selh-vca button:focus-visible, .selh-vca input:focus-visible, .selh-vca a:focus-visible, .selh-vca [tabindex]:focus-visible { outline: 3px solid #818cf8 !important; outline-offset: 2px !important; }\n' +
+      '@media (prefers-reduced-motion: reduce) { .selh-vca *, .selh-vca *::before, .selh-vca *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }\n' +
+      '@media (forced-colors: active) { .selh-vca button, .selh-vca input { forced-color-adjust: auto; } .selh-vca button:focus-visible, .selh-vca input:focus-visible, .selh-vca a:focus-visible { outline: 2px solid Highlight !important; outline-offset: 2px !important; } }\n';
+    document.head.appendChild(st);
+  })();
+
+  function isImeComposing(e) {
+    return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+  }
+
   // The values deck: ~50 broad life directions grouped by domain.
   // ACT values are VERBS/ADVERBS describing how you want to be, not
   // achievements. We use noun phrases for readability but each
@@ -131,7 +146,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
       var _vcaT = (ctx && ctx.theme) || {};
       var _vcaHC = !!_vcaT.isContrast, _vcaL = !_vcaHC && !_vcaT.isDark;
       var _vca_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _vca_BGH = {'#0f172a':'#000000','#a855f7':'#000000','#7e22ce':'#000000','#1e293b':'#000000','#15803d':'#000000','#92400e':'#000000','#334155':'#000000','#fff':'#000000','#4f46e5':'#000000'};
-      var _vca_FGL = {'#cbd5e1':'#334155','#a5b4fc':'#3730a3','#94a3b8':'#475569','#e0e7ff':'#3730a3','#e2e8f0':'#1e293b','#e9d5ff':'#581c87','#fcd34d':'#78350f','#fde68a':'#92400e','#bbf7d0':'#166534','#818cf8':'#4338ca','#22c55e':'#166534','#f59e0b':'#92400e','#0ea5e9':'#0369a1','#a855f7':'#7e22ce'}, _vca_FGH = {'#a855f7':'#ffff00','#818cf8':'#ffff00','#0ea5e9':'#ffff00','#cbd5e1':'#ffff00','#a5b4fc':'#ffff00','#94a3b8':'#ffff00','#e0e7ff':'#ffff00','#e2e8f0':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00','#fff':'#ffff00','#e9d5ff':'#ffff00','#bbf7d0':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
+      var _vca_FGL = {'#cbd5e1':'#334155','#a5b4fc':'#3730a3','#94a3b8':'#475569','#64748b':'#475569','#e0e7ff':'#3730a3','#e2e8f0':'#1e293b','#e9d5ff':'#581c87','#fcd34d':'#78350f','#fde68a':'#92400e','#bbf7d0':'#166534','#818cf8':'#4338ca','#22c55e':'#166534','#f59e0b':'#92400e','#0ea5e9':'#0369a1','#a855f7':'#7e22ce'}, _vca_FGH = {'#a855f7':'#ffff00','#818cf8':'#ffff00','#0ea5e9':'#ffff00','#cbd5e1':'#ffff00','#a5b4fc':'#ffff00','#94a3b8':'#ffff00','#e0e7ff':'#ffff00','#e2e8f0':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00','#fff':'#ffff00','#e9d5ff':'#ffff00','#bbf7d0':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
       var _vca_BDL = {'#334155':'#cbd5e1','#1e293b':'#cbd5e1','#475569':'#cbd5e1'}, _vca_BDH = {'#334155':'#ffff00','#818cf8':'#ffff00','#1e293b':'#ffff00','#6366f1':'#ffff00','#a855f7':'#ffff00','#22c55e':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#4f46e5':'#ffff00','#f59e0b':'#ffff00'};
       var _vcaBg = function(h){ return _vcaHC ? (_vca_BGH[h]||h) : (_vcaL ? (_vca_BGL[h]||h) : h); };
       var _vcaFg = function(h){ return _vcaHC ? (_vca_FGH[h]||h) : (_vcaL ? (_vca_FGL[h]||h) : h); };
@@ -188,13 +203,21 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
       }
       var VALID_VIEWS = ['home', 'sort', 'top', 'actions', 'print', 'about'];
       var view = VALID_VIEWS.indexOf(d.view) !== -1 ? d.view : 'home';
+      function announceVCA(msg) {
+        if (!msg) return;
+        if (typeof announceToSR === 'function') { try { announceToSR(msg); } catch (_) {} }
+        if (typeof document !== 'undefined') {
+          var lr = document.getElementById('allo-live-valuescommitted');
+          if (lr) lr.textContent = msg;
+        }
+      }
       function goto(v) { setVCA({ view: v }); }
       function printNow() { try { window.print(); } catch (e) {} }
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
-          h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: _vcaHC ? '#000000' : (_vcaL ? '#ffffff' : 'rgba(255,255,255,0.05)'), border: '1px solid ' + _vcaBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _vcaFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+          h('button', { type: 'button', onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
+            style: { background: _vcaHC ? '#000000' : (_vcaL ? '#ffffff' : 'rgba(255,255,255,0.05)'), border: '1px solid ' + _vcaBd('#334155'), borderRadius: 8, padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', color: _vcaFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _vcaFg('#a5b4fc'), fontSize: 22, fontWeight: 900 } }, '🧭 Values & Action'),
             h('div', { style: { fontSize: 12, color: _vcaFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'Name what matters, then move toward it on purpose.')
@@ -211,13 +234,30 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
           { id: 'print', label: 'Print', icon: '🖨' },
           { id: 'about', label: 'About', icon: 'ℹ' }
         ];
+        function onTabKeyDown(e, idx) {
+          if (isImeComposing(e)) return;
+          var nextIdx = null;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIdx = (idx + 1) % tabs.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIdx = (idx - 1 + tabs.length) % tabs.length;
+          else if (e.key === 'Home') nextIdx = 0;
+          else if (e.key === 'End') nextIdx = tabs.length - 1;
+          if (nextIdx === null) return;
+          e.preventDefault();
+          var target = tabs[nextIdx];
+          goto(target.id);
+          setTimeout(function() {
+            var el = typeof document !== 'undefined' ? document.getElementById('vca-tab-' + target.id) : null;
+            if (el && typeof el.focus === 'function') el.focus();
+          }, 0);
+        }
         return h('div', { className: 'no-print', role: 'tablist', 'aria-label': 'Values and Action sections',
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
-          tabs.map(function(t) {
+          tabs.map(function(t, idx) {
             var active = view === t.id;
-            return h('button', { key: t.id, id: 'vca-tab-' + t.id, onClick: function() { goto(t.id); },
-              role: 'tab', 'aria-selected': active, 'aria-controls': 'vca-panel',
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? _vcaBd('#818cf8') : _vcaBd('#334155')),
+            return h('button', { key: t.id, type: 'button', id: 'vca-tab-' + t.id, onClick: function() { goto(t.id); },
+              onKeyDown: function(e) { onTabKeyDown(e, idx); },
+              role: 'tab', 'aria-selected': active, tabIndex: active ? 0 : -1, 'aria-controls': 'vca-panel',
+              style: { padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + (active ? _vcaBd('#818cf8') : _vcaBd('#334155')),
                 background: active ? (_vcaHC ? '#000000' : 'rgba(129,140,248,0.18)') : _vcaBg('#1e293b'),
                 color: active ? _vcaFg('#e0e7ff') : _vcaFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
@@ -254,7 +294,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
           );
         }
         function route(label, blurb, target, color) {
-          return h('button', { onClick: function() { goto(target); }, 'aria-label': label,
+          return h('button', { type: 'button', onClick: function() { goto(target); }, 'aria-label': label,
             style: { textAlign: 'left', padding: 12, borderRadius: 8, borderTop: '1px solid ' + _vcaBd('#1e293b'), borderRight: '1px solid ' + _vcaBd('#1e293b'), borderBottom: '1px solid ' + _vcaBd('#1e293b'), borderLeft: '3px solid ' + (_vcaHC ? '#ffff00' : color), background: _vcaBg('#0f172a'), color: _vcaFg('#e2e8f0'), cursor: 'pointer', minHeight: 92 } },
             h('div', { style: { fontSize: 13, color: _vcaFg(color), fontWeight: 900, marginBottom: 4 } }, label),
             h('div', { style: { fontSize: 11.5, color: _vcaFg('#94a3b8'), lineHeight: 1.5 } }, blurb)
@@ -313,8 +353,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
       }
 
       function stepCard(stepNum, title, blurb, status, onClick, color) {
-        return h('button', { onClick: onClick, 'aria-label': 'Go to step ' + stepNum + ': ' + title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: _vcaBg('#0f172a'), cursor: 'pointer', marginBottom: 10, color: _vcaFg('#e2e8f0') } },
+        return h('button', { type: 'button', onClick: onClick, 'aria-label': 'Go to step ' + stepNum + ': ' + title,
+          style: { width: '100%', textAlign: 'left', padding: 14, minHeight: 44, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: _vcaBg('#0f172a'), cursor: 'pointer', marginBottom: 10, color: _vcaFg('#e2e8f0') } },
           h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
             h('span', { style: { fontSize: 18, fontWeight: 900, color: _vcaFg(color) } }, 'Step ' + stepNum),
             h('span', { style: { fontSize: 14, fontWeight: 700, color: _vcaFg('#e2e8f0'), flex: 1 } }, title),
@@ -328,7 +368,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
       // SORT — rate each value as core / meaningful / not me
       // ═══════════════════════════════════════════════════════════
       function renderSort() {
-        function setRating(id, v) {
+        function setRating(id, v, label) {
+          var clearing = rated(id) === v;
           setVCA(function(prior) {
             var r = Object.assign({}, (prior.ratings && typeof prior.ratings === 'object' && !Array.isArray(prior.ratings)) ? prior.ratings : {});
             if (r[id] === v) delete r[id]; else r[id] = v;
@@ -339,6 +380,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
             }
             return patch;
           });
+          if (label) {
+            var nice = v === 'core' ? 'Core' : v === 'meaningful' ? 'Meaningful' : 'Not me';
+            announceVCA(clearing ? ('Cleared rating for ' + label + '.') : (label + ' marked ' + nice + '.'));
+          }
         }
 
         var domains = {};
@@ -366,12 +411,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
                     h('div', { style: { fontSize: 13, fontWeight: 700, color: _vcaFg('#e2e8f0'), marginBottom: 2 } }, c.label),
                     h('div', { style: { fontSize: 11, color: _vcaFg('#94a3b8'), lineHeight: 1.5, marginBottom: 8 } }, c.blurb),
                     h('div', { style: { display: 'flex', gap: 4 } },
-                      h('button', { onClick: function() { setRating(c.id, 'core'); }, 'aria-label': 'Mark ' + c.label + ' as core', 'aria-pressed': r === 'core',
-                        style: { flex: 1, padding: '4px 8px', borderRadius: 4, border: '1px solid ' + (r === 'core' ? _vcaBd('#22c55e') : _vcaBd('#475569')), background: r === 'core' ? _vcaBg('#15803d') : 'transparent', color: r === 'core' ? _vcaFg('#fff') : _vcaFg('#22c55e'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'CORE'),
-                      h('button', { onClick: function() { setRating(c.id, 'meaningful'); }, 'aria-label': 'Mark ' + c.label + ' as meaningful', 'aria-pressed': r === 'meaningful',
-                        style: { flex: 1, padding: '4px 8px', borderRadius: 4, border: '1px solid ' + (r === 'meaningful' ? _vcaBd('#f59e0b') : _vcaBd('#475569')), background: r === 'meaningful' ? _vcaBg('#92400e') : 'transparent', color: r === 'meaningful' ? _vcaFg('#fff') : _vcaFg('#f59e0b'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'MEANINGFUL'),
-                      h('button', { onClick: function() { setRating(c.id, 'not_me'); }, 'aria-label': 'Mark ' + c.label + ' as not me', 'aria-pressed': r === 'not_me',
-                        style: { flex: 1, padding: '4px 8px', borderRadius: 4, border: '1px solid ' + (r === 'not_me' ? _vcaBd('#475569') : _vcaBd('#475569')), background: r === 'not_me' ? _vcaBg('#334155') : 'transparent', color: r === 'not_me' ? _vcaFg('#fff') : _vcaFg('#94a3b8'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'NOT ME')
+                      h('button', { type: 'button', onClick: function() { setRating(c.id, 'core', c.label); }, 'aria-label': 'Mark ' + c.label + ' as core', 'aria-pressed': r === 'core',
+                        style: { flex: 1, minHeight: 44, padding: '8px 6px', borderRadius: 6, border: '1px solid ' + (r === 'core' ? _vcaBd('#22c55e') : _vcaBd('#475569')), background: r === 'core' ? _vcaBg('#15803d') : 'transparent', color: r === 'core' ? _vcaFg('#fff') : _vcaFg('#22c55e'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'CORE'),
+                      h('button', { type: 'button', onClick: function() { setRating(c.id, 'meaningful', c.label); }, 'aria-label': 'Mark ' + c.label + ' as meaningful', 'aria-pressed': r === 'meaningful',
+                        style: { flex: 1, minHeight: 44, padding: '8px 6px', borderRadius: 6, border: '1px solid ' + (r === 'meaningful' ? _vcaBd('#f59e0b') : _vcaBd('#475569')), background: r === 'meaningful' ? _vcaBg('#92400e') : 'transparent', color: r === 'meaningful' ? _vcaFg('#fff') : _vcaFg('#f59e0b'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'MEANINGFUL'),
+                      h('button', { type: 'button', onClick: function() { setRating(c.id, 'not_me', c.label); }, 'aria-label': 'Mark ' + c.label + ' as not me', 'aria-pressed': r === 'not_me',
+                        style: { flex: 1, minHeight: 44, padding: '8px 6px', borderRadius: 6, border: '1px solid ' + (r === 'not_me' ? _vcaBd('#475569') : _vcaBd('#475569')), background: r === 'not_me' ? _vcaBg('#334155') : 'transparent', color: r === 'not_me' ? _vcaFg('#fff') : _vcaFg('#94a3b8'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'NOT ME')
                     )
                   );
                 })
@@ -379,8 +424,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
             );
           }),
 
-          h('button', { onClick: function() { goto('top'); }, 'aria-label': 'Continue to top values',
-            style: { padding: '10px 22px', borderRadius: 10, border: _vcaHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _vcaHC ? '#000000' : 'linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)', color: _vcaFg('#fff'), fontWeight: 800, fontSize: 14, marginTop: 8 } },
+          h('button', { type: 'button', onClick: function() { goto('top'); }, 'aria-label': 'Continue to top values',
+            style: { padding: '10px 22px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 10, border: _vcaHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _vcaHC ? '#000000' : 'linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)', color: _vcaFg('#fff'), fontWeight: 800, fontSize: 14, marginTop: 8 } },
             '→ Continue to top values'),
 
           softPointer()
@@ -393,8 +438,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
       function renderTop() {
         var coreList = VALUE_CARDS.filter(function(c) { return rated(c.id) === 'core'; });
 
-        function toggleTop(id) {
+        function toggleTop(id, label) {
           var capped = false;
+          var wasTop = safeTopValues.indexOf(id) !== -1;
           setVCA(function(prior) {
             var top = (Array.isArray(prior.topValues) ? prior.topValues : []).slice();
             var idx = top.indexOf(id);
@@ -408,17 +454,22 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
             }
             return { topValues: top };
           });
-          if (capped && addToast) addToast('Cap at 7 top values. Remove one to add another.', 'info');
+          if (capped) {
+            if (addToast) addToast('Cap at 7 top values. Remove one to add another.', 'info');
+            announceVCA('Maximum of 7 top values reached.');
+          } else if (label) {
+            announceVCA(wasTop ? ('Removed ' + label + ' from top values.') : ('Added ' + label + ' to top values.'));
+          }
         }
 
         if (coreList.length === 0) {
           return h('div', null,
             h('div', { style: { padding: 20, borderRadius: 12, background: _vcaBg('#0f172a'), border: '1px solid ' + _vcaBd('#1e293b'), textAlign: 'center' } },
-              h('div', { style: { fontSize: 36, marginBottom: 8 } }, '🃏'),
+              h('div', { 'aria-hidden': 'true', style: { fontSize: 36, marginBottom: 8 } }, '🃏'),
               h('div', { style: { color: _vcaFg('#cbd5e1'), fontSize: 14, marginBottom: 4 } }, 'Sort the values first'),
               h('div', { style: { color: _vcaFg('#94a3b8'), fontSize: 12 } }, 'Mark some values as CORE before picking your top ones.'),
-              h('button', { onClick: function() { goto('sort'); }, 'aria-label': 'Go sort',
-                style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid ' + _vcaBd('#6366f1'), background: _vcaHC ? '#000000' : 'rgba(99,102,241,0.18)', color: _vcaFg('#e0e7ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Sort values')
+              h('button', { type: 'button', onClick: function() { goto('sort'); }, 'aria-label': 'Go sort',
+                style: { marginTop: 12, padding: '10px 16px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + _vcaBd('#6366f1'), background: _vcaHC ? '#000000' : 'rgba(99,102,241,0.18)', color: _vcaFg('#e0e7ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Sort values')
             )
           );
         }
@@ -433,10 +484,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 8 } },
             coreList.map(function(c) {
               var isTop = safeTopValues.indexOf(c.id) !== -1;
-              return h('button', { key: c.id, onClick: function() { toggleTop(c.id); }, 'aria-label': (isTop ? 'Remove ' : 'Add ') + c.label + (isTop ? ' from top values' : ' to top values'), 'aria-pressed': isTop,
-                style: { textAlign: 'left', padding: 10, borderRadius: 8, border: '2px solid ' + (isTop ? _vcaBd('#a855f7') : _vcaBd('#334155')), background: isTop ? (_vcaHC ? '#000000' : 'rgba(168,85,247,0.18)') : _vcaBg('#0f172a'), cursor: 'pointer', color: _vcaFg('#e2e8f0') } },
+              return h('button', { key: c.id, type: 'button', onClick: function() { toggleTop(c.id, c.label); }, 'aria-label': (isTop ? 'Remove ' : 'Add ') + c.label + (isTop ? ' from top values' : ' to top values'), 'aria-pressed': isTop,
+                style: { textAlign: 'left', padding: 10, minHeight: 44, borderRadius: 8, border: '2px solid ' + (isTop ? _vcaBd('#a855f7') : _vcaBd('#334155')), background: isTop ? (_vcaHC ? '#000000' : 'rgba(168,85,247,0.18)') : _vcaBg('#0f172a'), cursor: 'pointer', color: _vcaFg('#e2e8f0') } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
-                  h('span', { style: { fontSize: 18 } }, isTop ? '⭐' : '☆'),
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, isTop ? '⭐' : '☆'),
                   h('span', { style: { fontSize: 13, fontWeight: 700, flex: 1 } }, c.label),
                   h('span', { style: { fontSize: 9, color: _vcaFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5 } }, c.domain)
                 ),
@@ -453,7 +504,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
                 return c ? c.label : null;
               }).filter(Boolean).join('  ·  ')
             ),
-            h('button', { onClick: function() { goto('actions'); }, style: { marginTop: 10, padding: '8px 16px', borderRadius: 8, border: _vcaHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _vcaBg('#7e22ce'), color: _vcaFg('#fff'), fontWeight: 800, fontSize: 13 } }, '→ Define committed actions')
+            h('button', { type: 'button', onClick: function() { goto('actions'); }, style: { marginTop: 10, padding: '10px 16px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: _vcaHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _vcaBg('#7e22ce'), color: _vcaFg('#fff'), fontWeight: 800, fontSize: 13 } }, '→ Define committed actions')
           ) : null,
 
           softPointer()
@@ -468,9 +519,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
         if (top.length === 0) {
           return h('div', null,
             h('div', { style: { padding: 20, borderRadius: 12, background: _vcaBg('#0f172a'), border: '1px solid ' + _vcaBd('#1e293b'), textAlign: 'center' } },
-              h('div', { style: { fontSize: 36, marginBottom: 8 } }, '⭐'),
+              h('div', { 'aria-hidden': 'true', style: { fontSize: 36, marginBottom: 8 } }, '⭐'),
               h('div', { style: { color: _vcaFg('#cbd5e1'), fontSize: 14, marginBottom: 4 } }, 'Pick your top values first'),
-              h('button', { onClick: function() { goto('top'); }, style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid ' + _vcaBd('#a855f7'), background: _vcaHC ? '#000000' : 'rgba(168,85,247,0.18)', color: _vcaFg('#e9d5ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Pick top values')
+              h('button', { type: 'button', onClick: function() { goto('top'); }, style: { marginTop: 12, padding: '10px 16px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + _vcaBd('#a855f7'), background: _vcaHC ? '#000000' : 'rgba(168,85,247,0.18)', color: _vcaFg('#e9d5ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Pick top values')
             )
           );
         }
@@ -488,6 +539,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
             return { actions: actions };
           });
           input.value = '';
+          announceVCA('Added committed action: ' + text);
         }
         function removeAction(valueId, idx) {
           setVCA(function(prior) {
@@ -498,8 +550,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
             actions[valueId] = list;
             return { actions: actions };
           });
+          announceVCA('Removed committed action.');
         }
         function toggleDone(valueId, idx) {
+          var wasDone = Array.isArray(safeActions[valueId]) && safeActions[valueId][idx] && safeActions[valueId][idx].done;
           setVCA(function(prior) {
             var priorActs = (prior.actions && typeof prior.actions === 'object' && !Array.isArray(prior.actions)) ? prior.actions : {};
             var actions = Object.assign({}, priorActs);
@@ -509,6 +563,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
             actions[valueId] = list;
             return { actions: actions };
           });
+          announceVCA(wasDone ? 'Marked action not done.' : 'Marked action done.');
         }
 
         return h('div', null,
@@ -523,7 +578,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
             var actions = Array.isArray(safeActions[id]) ? safeActions[id] : [];
             return h('div', { key: id, style: { padding: 14, borderRadius: 10, background: _vcaBg('#0f172a'), borderTop: '1px solid ' + _vcaBd('#1e293b'), borderRight: '1px solid ' + _vcaBd('#1e293b'), borderBottom: '1px solid ' + _vcaBd('#1e293b'), borderLeft: '3px solid ' + _vcaBd('#22c55e'), marginBottom: 12 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 } },
-                h('span', { style: { fontSize: 20 } }, '⭐'),
+                h('span', { 'aria-hidden': 'true', style: { fontSize: 20 } }, '⭐'),
                 h('div', null,
                   h('div', { style: { fontSize: 14, fontWeight: 800, color: _vcaFg('#e9d5ff') } }, c.label),
                   h('div', { style: { fontSize: 11, color: _vcaFg('#94a3b8') } }, c.blurb)
@@ -534,11 +589,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
                 actions.map(function(a, i) {
                   if (!a || typeof a !== 'object') return null;
                   return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 6, padding: 6, borderRadius: 4, background: a.done ? (_vcaHC ? '#000000' : 'rgba(34,197,94,0.10)') : _vcaBg('#1e293b'), marginBottom: 4 } },
-                    h('button', { onClick: function() { toggleDone(id, i); }, 'aria-label': (a.done ? 'Mark not done: ' : 'Mark done: ') + a.text, 'aria-pressed': a.done,
-                      style: { padding: '4px 8px', borderRadius: 4, border: '1px solid ' + (a.done ? _vcaBd('#22c55e') : _vcaBd('#475569')), background: a.done ? _vcaBg('#15803d') : 'transparent', color: a.done ? _vcaFg('#fff') : _vcaFg('#94a3b8'), cursor: 'pointer', fontSize: 11, fontWeight: 700, minWidth: 28 } }, a.done ? '✓' : '○'),
+                    h('button', { type: 'button', onClick: function() { toggleDone(id, i); }, 'aria-label': (a.done ? 'Mark not done: ' : 'Mark done: ') + a.text, 'aria-pressed': a.done,
+                      style: { padding: '6px 10px', minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, border: '1px solid ' + (a.done ? _vcaBd('#22c55e') : _vcaBd('#475569')), background: a.done ? _vcaBg('#15803d') : 'transparent', color: a.done ? _vcaFg('#fff') : _vcaFg('#94a3b8'), cursor: 'pointer', fontSize: 13, fontWeight: 700 } }, a.done ? '✓' : '○'),
                     h('span', { style: { flex: 1, fontSize: 13, color: a.done ? _vcaFg('#94a3b8') : _vcaFg('#e2e8f0'), textDecoration: a.done ? 'line-through' : 'none' } }, a.text),
-                    h('button', { onClick: function() { removeAction(id, i); }, 'aria-label': 'Remove action: ' + a.text,
-                      style: { background: 'transparent', border: '1px solid ' + _vcaBd('#475569'), color: _vcaFg('#94a3b8'), borderRadius: 4, padding: '2px 6px', cursor: 'pointer', fontSize: 10 } }, '✕')
+                    h('button', { type: 'button', onClick: function() { removeAction(id, i); }, 'aria-label': 'Remove action: ' + a.text,
+                      style: { minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid ' + _vcaBd('#475569'), color: _vcaFg('#94a3b8'), borderRadius: 6, padding: '6px 10px', cursor: 'pointer', fontSize: 12 } }, '✕')
                   );
                 })
               ) : null,
@@ -547,17 +602,21 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
                 h('label', { htmlFor: 'vca-action-' + id, className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } }, 'Add an action for ' + c.label),
                 h('input', { id: 'vca-action-' + id, type: 'text', placeholder: 'A concrete thing you will do this week...',
                   onBlur: function(e) { scanValuesText(e.target.value); },
-                  onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); addAction(id); } },
-                  style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid ' + _vcaBd('#334155'), background: _vcaBg('#1e293b'), color: _vcaFg('#e2e8f0'), fontSize: 13 } }),
-                h('button', { onClick: function() { addAction(id); }, 'aria-label': 'Add action for ' + c.label,
-                  style: { padding: '8px 14px', borderRadius: 6, border: _vcaHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _vcaBg('#15803d'), color: _vcaFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+                  onKeyDown: function(e) {
+                    if (isImeComposing(e)) return;
+                    if (e.key === 'Enter') { e.preventDefault(); addAction(id); }
+                    else if (e.key === 'Escape' && e.currentTarget.value) { e.preventDefault(); e.currentTarget.value = ''; announceVCA('Cleared action input.'); }
+                  },
+                  style: { flex: 1, minWidth: 200, minHeight: 44, boxSizing: 'border-box', padding: 8, borderRadius: 6, border: '1px solid ' + _vcaBd('#334155'), background: _vcaBg('#1e293b'), color: _vcaFg('#e2e8f0'), fontSize: 13 } }),
+                h('button', { type: 'button', onClick: function() { addAction(id); }, 'aria-label': 'Add action for ' + c.label,
+                  style: { padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 6, border: _vcaHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _vcaBg('#15803d'), color: _vcaFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
               )
             );
           }),
 
           h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
-            h('button', { onClick: function() { goto('print'); }, 'aria-label': 'Print my values and actions',
-              style: { padding: '10px 20px', borderRadius: 10, border: _vcaHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _vcaHC ? '#000000' : 'linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)', color: _vcaFg('#fff'), fontWeight: 800, fontSize: 14 } },
+            h('button', { type: 'button', onClick: function() { goto('print'); }, 'aria-label': 'Print my values and actions',
+              style: { padding: '10px 20px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 10, border: _vcaHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _vcaHC ? '#000000' : 'linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)', color: _vcaFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '🖨 Print')
           ),
 
@@ -575,9 +634,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _vcaFg('#e0e7ff'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _vcaHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _vcaHC ? '#000000' : 'linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)', color: _vcaFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
-            h('button', { onClick: function() { goto('home'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _vcaBd('#475569'), background: _vcaBg('#1e293b'), color: _vcaFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+            h('button', { type: 'button', onClick: printNow, style: { padding: '10px 18px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: _vcaHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _vcaHC ? '#000000' : 'linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)', color: _vcaFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { type: 'button', onClick: function() { goto('home'); }, 'aria-label': 'Back',
+              style: { padding: '10px 18px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + _vcaBd('#475569'), background: _vcaBg('#1e293b'), color: _vcaFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
@@ -694,7 +753,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
           h('div', { style: { fontSize: 11, color: _vcaFg('#a5b4fc'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: _vcaFg('#e0e7ff'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+                style: { fontSize: 13, color: _vcaFg('#e0e7ff'), fontWeight: 700, textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', minHeight: 44, marginBottom: 4 } }, title + ' ↗')
             : h('div', { style: { fontSize: 13, color: _vcaFg('#e0e7ff'), fontWeight: 700, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _vcaFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );
@@ -708,7 +767,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
       else if (view === 'about') body = renderAbout();
       else body = renderHome();
 
-      return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Values and Committed Action' },
+      return h('div', { className: 'selh-vca', style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Values and Committed Action' },
         header(),
         navTabs(),
         (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')

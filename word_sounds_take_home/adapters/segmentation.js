@@ -221,6 +221,7 @@ module.exports = {
       halt(); picked = null; errors = [];
       for (var i = 0; i < n; i++) boxes[i] = null;
       draw(); tell(L.segmentation_cleared);
+      if (chipEls[0] && chipEls[0].pick) { try { chipEls[0].pick.focus(); } catch (_) {} }
     } }, text: L.segmentation_clear });
     // "Test Sequence" (:18795-18815): each box's sound spaced by ctx.soundGap() (500/800/250 ms); +100 ms for an empty box.
     var playBoxes = ctx.el('button', { type: 'button', on: { click: function () {
@@ -334,6 +335,15 @@ module.exports = {
       ctx.keys(function (key) {
         if (locked()) return false;
         var k = String(key == null ? '' : key);
+        if (k === 'Escape' || k === 'Esc') {
+          if (picked == null) return false;
+          var drop = picked;
+          picked = null;
+          draw();
+          tell(ctx.fmt(L.segmentation_dropped, { sound: name(drop) }));
+          if (chipEls[drop] && chipEls[drop].pick) { try { chipEls[drop].pick.focus(); } catch (_) {} }
+          return true;
+        }
         if (k === 'Backspace') {
           for (var bi = n - 1; bi >= 0; bi--) {
             if (boxes[bi] != null) {
