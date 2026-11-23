@@ -168,7 +168,12 @@
     "refine_go": "Suggest a rewrite",
     "refining": "Writing a suggestion…",
     "made_from_version": "Made from version {version} of your source",
-    "remake": "Remake from the current version"
+    "remake": "Remake from the current version",
+    "dictate": "Dictate",
+    "close_dictate": "Close dictation",
+    "send_read_along": "Send to Read-Along Packet",
+    "upload_verify_banner": "Audio/video transcribed locally with Whisper ({count} segments kept in memory)",
+    "clear_audio": "Clear audio"
   },
   "tour": {
     "exit": "Exit tour",
@@ -5539,7 +5544,10 @@
     "large_scan_warning": "This scanned document is {pages} pages — OCR will make many AI calls and take a while. Tip: use the page-range control to remediate it in smaller sections (e.g. 1–50, 51–100).",
     "close_report_writer": "Close report writer",
     "qd_results_saved_for": "QD results saved for {student}",
-    "report_writer_unavailable": "Report Writer is not available in this build."
+    "report_writer_unavailable": "Report Writer is not available in this build.",
+    "sent_to_read_along": "Sent passage to Read-Along Packet in a new tab.",
+    "read_along_handoff_failed": "Could not hand off draft to Read-Along Packet.",
+    "read_along_no_text": "Add or dictate source text before sending to Read-Along Packet."
   },
   "large_file": {
     "modal_title": "Import Large Audio File",
@@ -5556,7 +5564,8 @@
     "chunk_info": "Audio is split into 5-minute chunks for processing",
     "chunk_progress": "Chunk {current} of {total}",
     "audio_only_error": "Currently only audio files (MP3, WAV, etc.) are supported for chunked transcription.",
-    "starting": "Starting..."
+    "starting": "Starting...",
+    "engine_legend": "Transcription Engine"
   },
   "shell_link": {
     "banner_aria": "About this tool",
@@ -6083,8 +6092,10 @@
       "replace_with_ai": "Replace with an AI-written passage",
       "change_source": "Change source",
       "books_hint": "Open picture books — any book can become your source text",
-      "books_short": "Books"
+      "books_short": "Books",
+      "dictate_hint": "Dictate your source text with on-device Whisper and optional Gemini check"
     },
+    "dictate_or_record": "Dictate or record",
     "status_generating": "Generating source text...",
     "success_long_form": "Long-form text generated successfully!",
     "error_optimization_timeout": "Optimization timed out. Showing raw citations.",
@@ -6393,7 +6404,12 @@
       "l3": "Level 3: Strategic Thinking",
       "l4": "Level 4: Extended Thinking"
     },
-    "step_codename": "Pick Your Codename!"
+    "step_codename": "Pick Your Codename!",
+    "dictate_desc": "Local Whisper voice dictation & optional check",
+    "dictate_title": "Dictate or record your source text",
+    "dictate_helper": "Defaults to private on-device Whisper dictation. Edit freely, optionally clean up text, or cross-check against your recording with Gemini.",
+    "dictate_loading": "Loading Dictation Studio (Local Whisper)… You can also type or edit below while it loads.",
+    "words_dictated_unit": "words dictated"
   },
   "settings": {
     "immersive_options": "Immersive Options",
@@ -40627,5 +40643,68 @@
     "close": "Close Walkthrough Copilot",
     "observation_notes": "Observation notes",
     "email_placeholder": "teacher@yourschool.org"
+  },
+  "dictation": {
+    "badge_desktop": "Desktop Whisper Ready",
+    "badge_download_needed": "Local Whisper · First-Time Download",
+    "badge_local_ready": "Local Whisper Ready · {name}",
+    "cleanup_apply": "Apply cleanup",
+    "cleanup_failed": "Could not clean up the text right now.",
+    "cleanup_fillers": "Tighten filler words",
+    "cleanup_heading": "Optional AI text cleanup",
+    "cleanup_keep": "Keep original",
+    "cleanup_no_changes": "No changes were suggested for this draft.",
+    "cleanup_notes": "Format as classroom notes",
+    "cleanup_punctuation": "Clean punctuation & formatting",
+    "cleanup_review_title": "Suggested cleanup ready — your draft has not changed yet",
+    "cleanup_text_only": "text only — no audio is sent",
+    "cleanup_unavailable": "AI text cleanup is unavailable right now.",
+    "cleanup_undo": "Undo cleanup",
+    "cleanup_working": "Cleaning…",
+    "clear_audio": "Clear recorded audio ({mb} MB)",
+    "crosscheck_all_resolved": "All flagged spots reviewed.",
+    "crosscheck_btn": "Verify against audio with Gemini",
+    "crosscheck_count": "{count} flagged spot(s) to review:",
+    "crosscheck_disabled_note": "Unavailable right now (disabled in offline / student AI-off mode or without a Gemini key). Your Local Whisper dictation still works completely offline.",
+    "crosscheck_disclosure": "Only runs if you click below: sends your in-memory recorded audio segments and draft text to Gemini to flag possible word errors.",
+    "crosscheck_failed": "Gemini audio check did not finish. Your local transcript is untouched.",
+    "crosscheck_heading": "Cross-triangulate against audio with Gemini (Opt-in)",
+    "crosscheck_none": "No substantive discrepancies found between Local Whisper and Gemini Audio.",
+    "crosscheck_running": "Checking against audio…",
+    "crosscheck_unavailable": "Gemini audio cross-triangulation is unavailable right now.",
+    "download_now": "Download Local Whisper ({size} MB)",
+    "download_warning": "Download notice: Local Whisper defaults to private on-device speech recognition. Downloading the {name} model takes ~{size} MB once (~1–2 minutes depending on connection), caches offline in your browser, and keeps your voice recordings on this device.",
+    "draft_label": "Transcript draft (editable)",
+    "draft_placeholder": "Press Start dictating above, or type/edit your transcript directly here…",
+    "guide_both_body": "Start privately with Local Whisper so your dictation stays fast and offline-first. If you want a second opinion on tricky terms or names, opt in to Gemini cross-triangulation to compare two independent models against your audio and replay 5-second clips at any flagged spot.",
+    "guide_both_label": "Why use both (Cross-Triangulation):",
+    "guide_gemini_body": "No model download required. Stronger on specialized vocabulary, proper nouns, accented speech, noisy classrooms, and punctuation — sends recorded audio chunks to Gemini only if you opt in.",
+    "guide_gemini_title": "Gemini Audio (Optional check)",
+    "guide_summary": "Local Whisper vs. Gemini Audio — strengths & why use both",
+    "guide_whisper_body": "Private and offline after a one-time download (~39–73 MB). No audio leaves your device, no API key or quota is needed, and long continuous dictation works reliably.",
+    "guide_whisper_title": "Local Whisper (Default)",
+    "ios_canvas_blocked": "Local Whisper is paused on iPhone/iPad inside Gemini Canvas. Type directly below or open AlloFlow in a desktop browser.",
+    "ios_canvas_hint": "You can type directly below, open AlloFlow in a desktop browser for Local Whisper, or use Gemini Audio if configured.",
+    "ios_canvas_title": "On-device Whisper is paused on iPhone/iPad inside Gemini Canvas",
+    "listening_local": "Listening locally with Whisper… pause briefly or keep talking to append text.",
+    "mic_start_failed": "Could not start the microphone. Check browser permissions.",
+    "model_size_label": "Local Whisper model size",
+    "pause_recording": "Pause",
+    "paused_note": "Paused. You can edit the transcript below or press Resume to keep dictating.",
+    "privacy_tag": "Private · Offline after download · Zero API key needed",
+    "resume_recording": "Resume",
+    "send_read_along": "Send to Read-Along Packet",
+    "speech_settings": "Speech settings",
+    "speed_badge_lesson": "Tested: {speed}x faster than speech · Good for long dictation",
+    "speed_badge_short": "Tested: {speed}x faster than speech · Best for short clips",
+    "speed_badge_slow": "Tested: {speed}x · Slower than real time (expect pauses)",
+    "speed_badge_upgrade": "Tested: {speed}x faster than speech · Good for long dictation (can also try {name})",
+    "start_recording": "Start dictating (Local Whisper)",
+    "stop_recording": "Stop",
+    "studio_title": "Dictation Studio",
+    "test_mic": "Test mic (4s)",
+    "upload_media": "Transcribe audio/video file",
+    "use_text": "Use dictated text",
+    "voice_unavailable": "Voice recorder is still loading. Please try again in a moment."
   }
 }

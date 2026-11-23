@@ -461,8 +461,9 @@ function UDLGuideModal(props) {
     // preventDefault marks this press as consumed so the panel-level Escape
     // handler leaves the conversation open — one press closes one layer.
     const onKey = (ev) => {
+      if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
       if (ev.key === 'Escape') {
-        if (ev.ctrlKey || ev.metaKey || ev.altKey || ev.isComposing || ev.keyCode === 229) return;
+        if (ev.isComposing || ev.keyCode === 229) return;
         ev.preventDefault();
         setChatMenuOpen(false);
         // 2.4.3: dismissing a menu must not drop focus to <body>.
@@ -496,7 +497,7 @@ function UDLGuideModal(props) {
     handleRebuildBlueprintStep, handleOpenGenerationErrorLog, handleCopyBlueprintDiagnostics, handleDownloadBlueprintDiagnostics, getSafeGenerationFailureReason,
     lessonTemplates, handleSaveLessonTemplate, handleApplyLessonTemplate, handleDeleteLessonTemplate,
     handlePreviewBlueprintStep, blueprintPreview, closeBlueprintPreview,
-    aiStandardQuery, aiStandardRegion, autoSendVoice, chatStyles,
+    aiStandardQuery: _rawAiStandardQuery, aiStandardRegion, autoSendVoice, chatStyles,
     handleAutoFillToggle, handleBlueprintUIUpdate, handleExecuteBlueprint, handleFindStandards,
     handleSendUDLMessage, handleSetShowUDLGuideToFalse, handleToggleAutoSendVoice, handleToggleIsShowMeMode,
     handleToggleIsUDLGuideExpanded, hasUsedAutoFill, isAutoFillMode, isChatProcessing,
@@ -507,12 +508,14 @@ function UDLGuideModal(props) {
     setIsDictationMode, setStandardsInput, setUdlInput, setUdlMessages,
     setUdlStandardFramework, setUdlStandardGrade, showStemLab, showUDLGuide, suggestedStandards,
     alloVoiceActive, voiceAvailable, onToggleVoiceAgent,
-    t, theme, udlInput, udlInputRef,
+    t, theme, udlInput: _rawUdlInput, udlInputRef,
     udlMessages, udlScrollRef, udlStandardFramework, udlStandardGrade
   } = props;
   const safeUdlMessages = Array.isArray(udlMessages) ? udlMessages : [];
-  const safeUdlInput = typeof udlInput === 'string' ? udlInput : '';
-  const safeAiStandardQuery = typeof aiStandardQuery === 'string' ? aiStandardQuery : '';
+  const udlInput = typeof _rawUdlInput === 'string' ? _rawUdlInput : '';
+  const safeUdlInput = udlInput;
+  const aiStandardQuery = typeof _rawAiStandardQuery === 'string' ? _rawAiStandardQuery : '';
+  const safeAiStandardQuery = aiStandardQuery;
   const safeSuggestedStandards = Array.isArray(suggestedStandards) ? suggestedStandards : [];
   const [udlCrisisBanner, setUdlCrisisBanner] = React.useState('');
   const sendUdlMessageSafe = React.useCallback((payload) => {
@@ -1266,7 +1269,7 @@ function UDLGuideModal(props) {
                   />
                   <button type="button"
                       onClick={handleFindStandards}
-                      disabled={isFindingStandards || !safeAiStandardQuery.trim() || aiOff}
+                      disabled={isFindingStandards || !aiStandardQuery.trim() || aiOff}
                       aria-busy={isFindingStandards ? 'true' : undefined}
                       className={`min-w-11 min-h-11 inline-flex items-center justify-center p-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 shadow-sm ${chatStyles.button}`}
                       title={aiTitle || t('standards.search_button_title')}
@@ -1421,7 +1424,7 @@ function UDLGuideModal(props) {
                      : tx('chat_guide.send_aria', 'Send message')}
                 aria-busy={isChatProcessing ? 'true' : undefined}
                 onClick={() => sendUdlMessageSafe()}
-                disabled={!safeUdlInput.trim() || isChatProcessing}
+                disabled={!udlInput.trim() || isChatProcessing}
                 className={`min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${chatStyles.button}`}
                 data-help-key="chat_send"
              >

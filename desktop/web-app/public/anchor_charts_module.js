@@ -225,7 +225,7 @@ const AnchorChartSection = React.memo((props) => {
   const isInteractiveStudent = interactiveArmed && viewerIsStudent && onStudentAnswerChange;
   const label = section.label || "";
   const bullets = Array.isArray(section.bullets) ? section.bullets : [];
-  const iconUrl = section.iconUrl || "";
+  const iconUrl = typeof section.iconUrl === "string" ? section.iconUrl.trim() : "";
   const iconAlt = typeof section.iconAlt === "string" ? section.iconAlt.trim() : "";
   const iconPrompt = section.iconPrompt || "";
   const [iconPromptDraft, setIconPromptDraft] = React.useState(iconPrompt);
@@ -345,7 +345,7 @@ ${_ac_fenceUntrusted("REFINE_PROMPT", trimmed)}`;
       alignItems: "center",
       justifyContent: "center",
       position: "relative"
-    } }, _ac_isSafeIconUrl(iconUrl) ? /* @__PURE__ */ React.createElement("img", { src: iconUrl.trim(), alt: iconAlt, role: iconAlt ? void 0 : "presentation", style: { maxWidth: "100%", maxHeight: "100%", objectFit: "contain" } }) : isRegeneratingIcon ? /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 animate-pulse motion-reduce:animate-none", role: "status" }, "Drawing\u2026") : viewerIsStudent ? null : /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic text-center leading-tight" }, iconPrompt || "icon"), isEditing && onRegenIcon ? /* @__PURE__ */ React.createElement(
+    } }, _ac_isSafeIconUrl(iconUrl) ? /* @__PURE__ */ React.createElement("img", { src: iconUrl, alt: iconAlt, role: iconAlt ? void 0 : "presentation", style: { maxWidth: "100%", maxHeight: "100%", objectFit: "contain" } }) : isRegeneratingIcon ? /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 animate-pulse motion-reduce:animate-none", role: "status" }, "Drawing\u2026") : viewerIsStudent ? null : /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic text-center leading-tight" }, iconPrompt || "icon"), isEditing && onRegenIcon ? /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",

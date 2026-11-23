@@ -223,7 +223,7 @@ const AnchorChartSection = React.memo((props) => {
   const isInteractiveStudent = interactiveArmed && viewerIsStudent && onStudentAnswerChange;
   const label = section.label || '';
   const bullets = Array.isArray(section.bullets) ? section.bullets : [];
-  const iconUrl = section.iconUrl || '';
+  const iconUrl = typeof section.iconUrl === 'string' ? section.iconUrl.trim() : '';
   const iconAlt = typeof section.iconAlt === 'string' ? section.iconAlt.trim() : '';
   const iconPrompt = section.iconPrompt || '';
   // Inline icon-prompt editor (Phase 10) — only shown while editing.
@@ -336,7 +336,7 @@ const AnchorChartSection = React.memo((props) => {
           position: 'relative',
         }}>
           {_ac_isSafeIconUrl(iconUrl) ? (
-            <img src={iconUrl.trim()} alt={iconAlt} role={iconAlt ? undefined : 'presentation'} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+            <img src={iconUrl} alt={iconAlt} role={iconAlt ? undefined : 'presentation'} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
           ) : isRegeneratingIcon ? (
             <span className="text-xs text-slate-600 animate-pulse motion-reduce:animate-none" role="status">Drawing…</span>
           ) : viewerIsStudent ? null : (

@@ -65,7 +65,12 @@
       appLanguage: ctx.appLanguage || ctx.currentUiLanguage || '',
       nativeLanguageDefaultsVersion: Number(ctx.nativeLanguageDefaultsVersion) || 0,
       effectiveLanguageList: Array.isArray(ctx.effectiveLanguageList) ? ctx.effectiveLanguageList.slice() : undefined,
-      outputLanguagePreference: isPlainObject(ctx.outputLanguagePreference) ? safeAssign({}, ctx.outputLanguagePreference) : undefined,
+      outputLanguagePreference: (ctx.outputLanguagePreference && typeof ctx.outputLanguagePreference === 'object' && !Array.isArray(ctx.outputLanguagePreference))
+        ? Object.keys(ctx.outputLanguagePreference).reduce(function (acc, k) {
+          if (k !== '__proto__' && k !== 'constructor' && k !== 'prototype') acc[k] = ctx.outputLanguagePreference[k];
+          return acc;
+        }, {})
+        : undefined,
       standards: ctx.standards || '',
       standardsContext: ctx.standardsContext || null,
       instructionalContext: ctx.instructionalContext || null,
@@ -105,8 +110,12 @@
 
     function toBlueprint(legacyConfig, context) {
       var ctx = normalizeContext(context);
-      var draft = C.fromLegacyConfig(legacyConfig, ctx);
       var svc = service();
+      var normalizedLegacy = safeAssign({}, isPlainObject(legacyConfig) ? legacyConfig : {});
+      if (typeof svc.frozenSettings === 'function') {
+        normalizedLegacy.globalSettings = svc.frozenSettings(ctx, normalizedLegacy.globalSettings);
+      }
+      var draft = C.fromLegacyConfig(normalizedLegacy, ctx);
       if (typeof svc.applyTextAccessDefaults === 'function') {
         draft = svc.applyTextAccessDefaults(draft, { ensureAnalysis: true, ensureAdapted: true });
       }

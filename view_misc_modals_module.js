@@ -788,8 +788,9 @@ function UDLGuideModal(props) {
   React.useEffect(() => {
     if (!chatMenuOpen) return void 0;
     const onKey = (ev) => {
+      if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
       if (ev.key === "Escape") {
-        if (ev.ctrlKey || ev.metaKey || ev.altKey || ev.isComposing || ev.keyCode === 229) return;
+        if (ev.isComposing || ev.keyCode === 229) return;
         ev.preventDefault();
         setChatMenuOpen(false);
         try {
@@ -843,7 +844,7 @@ function UDLGuideModal(props) {
     handlePreviewBlueprintStep,
     blueprintPreview,
     closeBlueprintPreview,
-    aiStandardQuery,
+    aiStandardQuery: _rawAiStandardQuery,
     aiStandardRegion,
     autoSendVoice,
     chatStyles,
@@ -889,7 +890,7 @@ function UDLGuideModal(props) {
     onToggleVoiceAgent,
     t,
     theme,
-    udlInput,
+    udlInput: _rawUdlInput,
     udlInputRef,
     udlMessages,
     udlScrollRef,
@@ -897,8 +898,10 @@ function UDLGuideModal(props) {
     udlStandardGrade
   } = props;
   const safeUdlMessages = Array.isArray(udlMessages) ? udlMessages : [];
-  const safeUdlInput = typeof udlInput === "string" ? udlInput : "";
-  const safeAiStandardQuery = typeof aiStandardQuery === "string" ? aiStandardQuery : "";
+  const udlInput = typeof _rawUdlInput === "string" ? _rawUdlInput : "";
+  const safeUdlInput = udlInput;
+  const aiStandardQuery = typeof _rawAiStandardQuery === "string" ? _rawAiStandardQuery : "";
+  const safeAiStandardQuery = aiStandardQuery;
   const safeSuggestedStandards = Array.isArray(suggestedStandards) ? suggestedStandards : [];
   const [udlCrisisBanner, setUdlCrisisBanner] = React.useState("");
   const sendUdlMessageSafe = React.useCallback((payload) => {
@@ -1635,7 +1638,7 @@ function UDLGuideModal(props) {
       {
         type: "button",
         onClick: handleFindStandards,
-        disabled: isFindingStandards || !safeAiStandardQuery.trim() || aiOff,
+        disabled: isFindingStandards || !aiStandardQuery.trim() || aiOff,
         "aria-busy": isFindingStandards ? "true" : void 0,
         className: `min-w-11 min-h-11 inline-flex items-center justify-center p-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 shadow-sm ${chatStyles.button}`,
         title: aiTitle || t("standards.search_button_title"),
@@ -1753,7 +1756,7 @@ function UDLGuideModal(props) {
         "aria-label": isShowMeMode ? tx("chat_guide.send_showme_aria", "Show me where this is on screen") : tx("chat_guide.send_aria", "Send message"),
         "aria-busy": isChatProcessing ? "true" : void 0,
         onClick: () => sendUdlMessageSafe(),
-        disabled: !safeUdlInput.trim() || isChatProcessing,
+        disabled: !udlInput.trim() || isChatProcessing,
         className: `min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${chatStyles.button}`,
         "data-help-key": "chat_send"
       },

@@ -1060,7 +1060,7 @@
     '[data-stem-theme=contrast] :is(.bg-white,.bg-slate-50,.bg-slate-100,.bg-slate-800,.bg-slate-900,.bg-slate-950){background-color:#000!important}' +
     '[data-stem-theme=contrast] :is(.text-slate-300,.text-slate-400,.text-slate-500,.text-slate-600,.text-slate-700,.text-slate-800,.text-slate-900){color:#fff!important}' +
     '[data-stem-theme=contrast] :is(.border-slate-100,.border-slate-200,.border-slate-300,.border-slate-600,.border-slate-700,.border-slate-800){border-color:#fbbf24!important}' +
-    '@media (forced-colors:active){[data-stem-tool-shell] :is(button,input,select,textarea,summary,a){forced-color-adjust:auto!important}[data-stem-tool-shell] :focus-visible{outline:3px solid Highlight!important;outline-offset:2px!important}[data-stem-tool-shell] canvas,[data-stem-tool-shell] svg{border:1px solid CanvasText!important}}';
+    '@media (forced-colors:active){[data-stem-tool-shell],[data-stem-tool-shell] :not(svg):not(svg *):not(canvas):not(img){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important;text-shadow:none!important;-webkit-text-fill-color:CanvasText!important}[data-stem-tool-shell] :is(button,[role=tab],[role=button]){background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;-webkit-text-fill-color:ButtonText!important;forced-color-adjust:auto!important}[data-stem-tool-shell] :is(button,[role=tab],[role=button]) :not(svg):not(svg *):not(canvas):not(img){background:transparent!important;color:inherit!important;-webkit-text-fill-color:inherit!important}[data-stem-tool-shell] :is(button[aria-pressed=true],[role=tab][aria-selected=true],[aria-current=step]){background:Highlight!important;color:HighlightText!important;border-color:Highlight!important;-webkit-text-fill-color:HighlightText!important}[data-stem-tool-shell] :is(input,select,textarea){background:Field!important;color:FieldText!important;border-color:CanvasText!important;-webkit-text-fill-color:FieldText!important;forced-color-adjust:auto!important}[data-stem-tool-shell] a{color:LinkText!important;-webkit-text-fill-color:LinkText!important;forced-color-adjust:auto!important}[data-stem-tool-shell] :is(button,input,select,textarea,summary,a){forced-color-adjust:auto!important}[data-stem-tool-shell] :focus-visible{outline:3px solid Highlight!important;outline-offset:2px!important}[data-stem-tool-shell] canvas,[data-stem-tool-shell] svg{border:1px solid CanvasText!important}}';
   if (document.head) document.head.appendChild(st);
 })();
 
@@ -5185,10 +5185,11 @@
             if (sp && (sp.allowAi === false || sp.aiEnabled === false || sp.aiDisabled === true || (typeof sp.isAiAllowed === 'function' && !sp.isAiAllowed(kind || 'text')))) return false;
             var qm = window.__alloQrStudentMode;
             if (qm === true || (qm && typeof qm === 'object' && (qm.active === true || qm.aiEnabled === false || qm.allowAi === false))) return false;
+            if (window.__alloAiSecretsLocked === true) return false;
             if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn);
           }
         } catch (_) {}
-        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
       }
       var _stemAiText = _stemAiUsable('text', callGemini);
       if (!_stemAiText) callGemini = null;
@@ -7490,7 +7491,7 @@
         // Screen reader live region — must be inside the dialog for modal context
         React.createElement("div", {
           id: "stem-a11y-live", role: "status", "aria-live": "assertive", "aria-atomic": "true",
-          style: { position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }
+          style: { position: 'absolute', insetInlineStart: 0, top: 0, width: '1px', height: '1px', overflow: 'hidden', clipPath: 'inset(50%)', whiteSpace: 'nowrap' }
         }, a11yAnnouncement),
         /*#__PURE__*/React.createElement("div", {
         className: "stem-lab-modal-shell w-full max-w-[98vw] m-2 rounded-2xl shadow-2xl flex flex-col overflow-hidden" + (_reduceMotion ? "" : " animate-in zoom-in-95 duration-300"),
